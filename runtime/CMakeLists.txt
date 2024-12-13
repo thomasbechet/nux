@@ -5,4 +5,7 @@ set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_executable(${PROJECT_NAME} runtime.c)
 
-install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_BINARY_DIR})
+add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
+target_link_libraries(${PROJECT_NAME} vmlib m)
+
+include_directories(${CMAKE_SOURCE_DIR})
