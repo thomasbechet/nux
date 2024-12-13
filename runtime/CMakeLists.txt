@@ -7,5 +7,6 @@ add_executable(${PROJECT_NAME} runtime.c)
 
 add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
 target_link_libraries(${PROJECT_NAME} vmlib m)
+set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "nux")
 
 include_directories(${CMAKE_SOURCE_DIR})
