@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 3.5.0)
-
-project(nux LANGUAGES C VERSION 0.0.1)
+project(runtime LANGUAGES C)
 
 set (CMAKE_C_STANDARD 99)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
