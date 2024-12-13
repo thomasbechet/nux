@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.5.0)
+
+project(nux LANGUAGES C VERSION 0.0.1)
+
+set (CMAKE_C_STANDARD 99)
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+add_executable(${PROJECT_NAME} runtime.c)
+
+install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_BINARY_DIR})
