@@ -13,8 +13,17 @@ fi
 
 DIR=$1
 
-if [ ! -d $DIR ]; then
+if [ ! -d $DIR ];
+then
     echo "$DIR is not a directory"
+    exit 1
+fi
+
+SDK=$NUX_SDK
+
+if [ -z $SDK ]; 
+then
+    echo "NUX_SDK is not defined"
     exit 1
 fi
 
