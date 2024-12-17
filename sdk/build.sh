@@ -21,11 +21,11 @@ fi
 
 SDK=$NUX_SDK
 
-if [ -z $SDK ]; 
-then
-    echo "NUX_SDK is not defined"
-    exit 1
-fi
+# if [ -z $SDK ]; 
+# then
+#     echo "NUX_SDK is not defined"
+#     exit 1
+# fi
 
 set -e
 
