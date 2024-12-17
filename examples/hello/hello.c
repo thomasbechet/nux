@@ -1,9 +1,7 @@
+void print(void);
+
 void
 start (void)
 {
-}
-
-void
-update (void)
-{
+    print();
 }

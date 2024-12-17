@@ -15,13 +15,19 @@ void nu_draw(int primitive, int first, int count);
 // Cart api
 void nu_load(const char *section, void *addr);
 
+static void
+print (void)
+{
+    printf("hello\n");
+}
+
 static nu_byte_t *
 nu__seria_load_bytes (const char *filename, nu_size_t *size)
 {
     FILE *f = fopen((char *)filename, "rb");
     if (!f)
     {
-        printf("failed to open file %s\n", filename);
+        printf("Failed to open file %s\n", filename);
         return NU_NULL;
     }
     fseek(f, 0, SEEK_END);
@@ -33,19 +39,35 @@ nu__seria_load_bytes (const char *filename, nu_size_t *size)
     return bytes;
 }
 
+static NativeSymbol native_symbols[] = {
+    {
+        "print", // the name of WASM function name
+        print,   // the native function pointer
+        "()",    // the function prototype signature, avoid to use i32
+        NULL     // attachment is NULL
+    },
+};
+
+static char global_heap_buf[512 * 1024];
+
 int
 main (int argc, char **argv)
 {
     // Configure memory allocator
-    static char     global_heap_buf[512 * 1024];
     RuntimeInitArgs init_args;
     memset(&init_args, 0, sizeof(RuntimeInitArgs));
+
     init_args.mem_alloc_type                  = Alloc_With_Pool;
     init_args.mem_alloc_option.pool.heap_buf  = global_heap_buf;
     init_args.mem_alloc_option.pool.heap_size = sizeof(global_heap_buf);
+
+    init_args.native_module_name = "env";
+    init_args.native_symbols     = native_symbols;
+    init_args.n_native_symbols   = NU_ARRAY_SIZE(native_symbols);
+
     if (!wasm_runtime_full_init(&init_args))
     {
-        printf("failed to full init wasm\n");
+        printf("Failed to full init wasm\n");
     }
 
     wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
@@ -56,8 +78,7 @@ main (int argc, char **argv)
 
     // Load module
     char          error_buf[128];
-    wasm_module_t module = NU_NULL;
-    module               = wasm_runtime_load(
+    wasm_module_t module = wasm_runtime_load(
         (nu_byte_t *)buffer, size, error_buf, sizeof(error_buf));
     if (!module)
     {
@@ -66,10 +87,9 @@ main (int argc, char **argv)
     }
 
     // Instantiate module
-    wasm_module_inst_t instance   = NU_NULL;
     const nu_size_t    stack_size = 8092;
     const nu_size_t    heap_size  = 8092;
-    instance                      = wasm_runtime_instantiate(
+    wasm_module_inst_t instance   = wasm_runtime_instantiate(
         module, stack_size, heap_size, error_buf, sizeof(error_buf));
     if (!instance)
     {
@@ -78,11 +98,33 @@ main (int argc, char **argv)
     }
 
     // Create execution env
-    wasm_exec_env_t env = NU_NULL;
-    env                 = wasm_runtime_create_exec_env(instance, stack_size);
+    wasm_exec_env_t env = wasm_runtime_create_exec_env(instance, stack_size);
     if (!env)
     {
         printf("Create wasm execution environment failed.\n");
+        return 0;
+    }
+
+    // Find entry point
+    wasm_function_inst_t func = wasm_runtime_lookup_function(instance, "start");
+    if (!func)
+    {
+        printf("The start wasm function is not found.\n");
+        return 0;
+    }
+
+    // wasm_val_t results[1] = { { .kind = WASM_F32, .of.f32 = 0 } };
+    // wasm_val_t arguments[3] = {
+    //     { .kind = WASM_I32, .of.i32 = 10 },
+    //     { .kind = WASM_F64, .of.f64 = 0.000101 },
+    //     { .kind = WASM_F32, .of.f32 = 300.002 },
+    // };
+
+    // pass 4 elements for function arguments
+    if (!wasm_runtime_call_wasm_a(env, func, 0, NU_NULL, 0, NU_NULL))
+    {
+        printf("Call wasm function start failed. %s\n",
+               wasm_runtime_get_exception(instance));
         return 0;
     }
 
