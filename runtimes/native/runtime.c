@@ -5,8 +5,6 @@
 // GFX resource api
 void nu_upload_vertices(int first, int count, void *data);
 void nu_upload_texture(int idx, int x, int y, int w, int h, void *data);
-int  nu_max_vertices(void);
-int  nu_max_textures(void);
 
 // GFX commands api
 void nu_bind_texture(int idx);
