@@ -27,10 +27,13 @@ set (WAMR_DISABLE_STACK_HW_BOUND_CHECK 1)
 
 include (${CMAKE_SOURCE_DIR}/externals/wasm-micro-runtime/build-scripts/runtime_lib.cmake)
 
-add_executable(${PROJECT_NAME} runtime.c)
+file(GLOB RUNTIME_SOURCES *.c)
+add_executable(${PROJECT_NAME} ${RUNTIME_SOURCES})
 
-add_library(vmlib ${WAMR_RUNTIME_LIB_SOURCE})
-target_link_libraries(${PROJECT_NAME} vmlib m)
+add_library(wamr ${WAMR_RUNTIME_LIB_SOURCE})
+target_link_libraries(${PROJECT_NAME} wamr m)
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "nux")
 
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/externals)
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)

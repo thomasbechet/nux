@@ -1,11 +1,7 @@
-#ifndef NU_CORE_API_H
-#define NU_CORE_API_H
+#ifndef NU_CORE_H
+#define NU_CORE_H
 
-//////////////////////////////////////////////////////////////////////////
-//////                         Configuration                        //////
-//////////////////////////////////////////////////////////////////////////
-
-#define NU_VERSION 1
+#include <nux.h>
 
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Detection                     //////
@@ -50,37 +46,6 @@
 #elif defined(NU_PLATFORM_UNIX)
 #elif defined(NU_PLATFORM_APPLE)
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-//////                     Import/Export Macros                     //////
-//////////////////////////////////////////////////////////////////////////
-
-#if defined(NU_PLATFORM_WINDOWS)
-
-#define NU_API_EXPORT __declspec(dllexport)
-#define NU_API_IMPORT __declspec(dllimport)
-#if defined(_MSC_VER)
-#define NU_ALIGN(X) __declspec(align(X))
-#else
-#define NU_ALIGN(X) __attribute((aligned(X)))
-#endif
-
-#elif defined(NU_PLATFORM_UNIX)
-
-#define NU_API_EXPORT __attribute__((visibility("default")))
-#define NU_API_IMPORT
-#define NU_ALIGN(X) __attribute((aligned(X)))
-
-#else
-
-#define NU_API_EXPORT
-#define NU_API_IMPORT
-#define NU_ALIGN(X)
-#pragma warning Unknown linkage directive import / export semantics.
-
-#endif
-
-#define NU_API NU_API_EXPORT
 
 //////////////////////////////////////////////////////////////////////////
 //////                            Macros                            //////
@@ -395,12 +360,6 @@ typedef unsigned char  nu_u8_t;
 typedef signed char    nu_i8_t;
 typedef unsigned short nu_u16_t;
 typedef signed short   nu_i16_t;
-typedef unsigned int   nu_u32_t;
-typedef signed int     nu_i32_t;
-typedef unsigned long  nu_u64_t;
-typedef signed long    nu_i64_t;
-typedef float          nu_f32_t;
-typedef double         nu_f64_t;
 
 typedef int           nu_bool_t;
 typedef nu_i32_t      nu_int_t;
@@ -410,7 +369,6 @@ typedef nu_u8_t       nu_byte_t;
 typedef int           nu_word_t;
 typedef nu_u32_t      nu_uid_t;
 typedef nu_i32_t      nu_wchar_t;
-typedef void         *nu_object_t;
 
 typedef enum
 {
@@ -778,4 +736,3 @@ NU_API nu_v3_t nu_axis3d(nu_f32_t  pos_x,
 NU_API nu_v3_t nu_triangle_normal(nu_v3_t p0, nu_v3_t p1, nu_v3_t p2);
 
 #endif
-

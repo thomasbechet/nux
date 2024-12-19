@@ -1,55 +1,17 @@
-#include <runtimes/native/core.h>
-#include <wasm_export.h>
-#include <unistd.h>
+#ifndef NU_VM_IMPL_H
+#define NU_VM_IMPL_H
 
-// GFX resource api
-void nu_upload_vertices(int first, int count, void *data);
-void nu_upload_texture(int idx, int x, int y, int w, int h, void *data);
+#include <internal.h>
 
-// GFX commands api
-void nu_bind_texture(int idx);
-void nu_draw(int primitive, int first, int count);
-
-// Cart api
-void nu_load(const char *section, void *addr);
-
-static void
-print (void)
-{
-    printf("hello\n");
-}
-
-static nu_byte_t *
-nu__seria_load_bytes (const char *filename, nu_size_t *size)
-{
-    FILE *f = fopen((char *)filename, "rb");
-    if (!f)
-    {
-        printf("Failed to open file %s\n", filename);
-        return NU_NULL;
-    }
-    fseek(f, 0, SEEK_END);
-    nu_size_t fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    nu_byte_t *bytes = (nu_byte_t *)malloc(fsize);
-    fread(bytes, fsize, 1, f);
-    *size = fsize;
-    return bytes;
-}
-
-static NativeSymbol native_symbols[] = {
-    {
-        "print", // the name of WASM function name
-        print,   // the native function pointer
-        "()",    // the function prototype signature, avoid to use i32
-        NULL     // attachment is NULL
-    },
+static NativeSymbol nu_wasm_vm_native_symbols[] = {
+    EXPORT_WASM_API_WITH_SIG(push_gpu_state, "(*)"),
+    EXPORT_WASM_API_WITH_SIG(pop_gpu_state, "(*)"),
 };
 
 static char global_heap_buf[512 * 1024];
 
-int
-main (int argc, char **argv)
+static void
+wasm_init (const nu_byte_t *buffer, nu_size_t size)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
@@ -60,8 +22,8 @@ main (int argc, char **argv)
     init_args.mem_alloc_option.pool.heap_size = sizeof(global_heap_buf);
 
     init_args.native_module_name = "env";
-    init_args.native_symbols     = native_symbols;
-    init_args.n_native_symbols   = NU_ARRAY_SIZE(native_symbols);
+    init_args.native_symbols     = nu_wasm_vm_native_symbols;
+    init_args.n_native_symbols   = NU_ARRAY_SIZE(nu_wasm_vm_native_symbols);
 
     if (!wasm_runtime_full_init(&init_args))
     {
@@ -70,10 +32,6 @@ main (int argc, char **argv)
 
     wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
 
-    // Load wasm file
-    nu_size_t  size;
-    nu_byte_t *buffer = nu__seria_load_bytes(argv[1], &size);
-
     // Load module
     char          error_buf[128];
     wasm_module_t module = wasm_runtime_load(
@@ -81,7 +39,6 @@ main (int argc, char **argv)
     if (!module)
     {
         printf("Load wasm module failed. error: %s\n", error_buf);
-        return 0;
     }
 
     // Instantiate module
@@ -92,7 +49,6 @@ main (int argc, char **argv)
     if (!instance)
     {
         printf("Instantiate wasm module failed. error: %s\n", error_buf);
-        return 0;
     }
 
     // Create execution env
@@ -100,7 +56,6 @@ main (int argc, char **argv)
     if (!env)
     {
         printf("Create wasm execution environment failed.\n");
-        return 0;
     }
 
     // Find entry point
@@ -108,7 +63,6 @@ main (int argc, char **argv)
     if (!func)
     {
         printf("The start wasm function is not found.\n");
-        return 0;
     }
 
     // wasm_val_t results[1] = { { .kind = WASM_F32, .of.f32 = 0 } };
@@ -123,8 +77,7 @@ main (int argc, char **argv)
     {
         printf("Call wasm function start failed. %s\n",
                wasm_runtime_get_exception(instance));
-        return 0;
     }
-
-    return 0;
 }
+
+#endif

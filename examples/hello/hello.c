@@ -1,7 +1,7 @@
-void print(void);
+#include <nux.h>
 
 void
 start (void)
 {
-    print();
+    push_gpu_state(0);
 }
