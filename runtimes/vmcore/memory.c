@@ -1,22 +1,4 @@
-#ifndef NU_MEMORY_IMPL_H
-#define NU_MEMORY_IMPL_H
-
-#include <internal.h>
-
-#ifdef NU_STDLIB
-
-static void *
-nu__malloc (nu_size_t n)
-{
-    return malloc(n);
-}
-static void
-nu__free (void *p)
-{
-    free(p);
-}
-
-#endif
+#include "common.h"
 
 nu_int_t
 nu_memcmp (const void *p0, const void *p1, nu_size_t n)
@@ -77,5 +59,3 @@ nu_memalign (void *ptr, nu_size_t align)
     NU_ASSERT(align > 0);
     return (void *)(((nu_intptr_t)ptr + align - 1) & ~(align - 1));
 }
-
-#endif

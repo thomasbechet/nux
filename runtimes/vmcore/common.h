@@ -1,27 +1,7 @@
-#ifndef NU_CORE_H
-#define NU_CORE_H
+#ifndef NU_COMMON_H
+#define NU_COMMON_H
 
-#include <nux.h>
-
-//////////////////////////////////////////////////////////////////////////
-//////                       Platform Detection                     //////
-//////////////////////////////////////////////////////////////////////////
-
-#if (defined(__WIN32__) || defined(WIN32) || defined(__MINGW32__) \
-     || defined(_WIN32))
-#define NU_PLATFORM_WINDOWS
-#elif defined(__linux__) || defined(__unix__)
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE // Ensure ppoll definition for glfw
-#endif
-#define NU_PLATFORM_UNIX
-#elif defined(__APPLE__)
-#define NU_PLATFORM_APPLE
-#endif
-
-#ifdef __cplusplus
-#define NU_CXX
-#endif
+#include <nux_api.h>
 
 //////////////////////////////////////////////////////////////////////////
 //////                         External Includes                    //////
@@ -360,6 +340,12 @@ typedef unsigned char  nu_u8_t;
 typedef signed char    nu_i8_t;
 typedef unsigned short nu_u16_t;
 typedef signed short   nu_i16_t;
+typedef int            nu_i32_t;
+typedef unsigned int   nu_u32_t;
+typedef long           nu_i64_t;
+typedef unsigned long  nu_u64_t;
+typedef float          nu_f32_t;
+typedef double         nu_f64_t;
 
 typedef int           nu_bool_t;
 typedef nu_i32_t      nu_int_t;
@@ -572,12 +558,6 @@ NU_API void nu_vlog(nu_log_level_t level,
                     nu_str_t       source,
                     nu_str_t       format,
                     va_list        args);
-
-NU_API nu_int_t nu_memcmp(const void *p0, const void *p1, nu_size_t n);
-NU_API void    *nu_memset(void *dst, nu_word_t c, nu_size_t n);
-NU_API void     nu_memcpy(void *dst, const void *src, nu_size_t n);
-NU_API void     nu_memswp(void *a, void *b, nu_size_t n);
-NU_API void    *nu_memalign(void *ptr, nu_size_t align);
 
 nu_size_t        nu_cstr_len(const nu_byte_t *str, nu_size_t maxlen);
 NU_API nu_str_t  nu_str(nu_byte_t *bytes, nu_size_t n);

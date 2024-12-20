@@ -1,7 +1,9 @@
-#ifndef NU_VM_IMPL_H
-#define NU_VM_IMPL_H
+#include "vm.h"
+#include "common.h"
 
-#include <internal.h>
+#include <nux_api.h>
+
+static nu_vm_t vm;
 
 static NativeSymbol nu_wasm_vm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(push_gpu_state, "(*)"),
@@ -10,8 +12,8 @@ static NativeSymbol nu_wasm_vm_native_symbols[] = {
 
 static char global_heap_buf[512 * 1024];
 
-static void
-wasm_init (const nu_byte_t *buffer, nu_size_t size)
+void
+vm_init (const nu_byte_t *buffer, nu_size_t size)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
@@ -79,5 +81,3 @@ wasm_init (const nu_byte_t *buffer, nu_size_t size)
                wasm_runtime_get_exception(instance));
     }
 }
-
-#endif

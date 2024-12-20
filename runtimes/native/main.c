@@ -1,7 +1,5 @@
 #include <unistd.h>
-
-#define NU_IMPLEMENTATION
-#include <runtime.h>
+#include <vmcore.h>
 
 static nu_byte_t *
 load_bytes (const char *filename, nu_size_t *size)
@@ -27,7 +25,7 @@ main (int argc, char **argv)
     nu_size_t  size;
     nu_byte_t *buffer = load_bytes(argv[1], &size);
 
-    wasm_init(buffer, size);
+    vm_init(buffer, size);
 
     return 0;
 }

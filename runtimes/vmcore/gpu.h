@@ -1,7 +1,7 @@
 #ifndef NU_GPU_H
 #define NU_GPU_H
 
-#include <core/core.h>
+#include "common.h"
 
 typedef struct
 {
