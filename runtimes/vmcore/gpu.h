@@ -13,9 +13,4 @@ typedef struct
     nu_u32_t mode;
 } nu_gpu_state_t;
 
-typedef struct
-{
-    nu_gpu_state_t state;
-} nu_gpu_t;
-
 #endif

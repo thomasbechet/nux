@@ -1,12 +1,17 @@
 #include "vm.h"
 #include "common.h"
 
-#include <nux_api.h>
+#define NU_START_CALLBACK  "start"
+#define NU_UPDATE_CALLBACK "update"
 
-#define NU_START_CALLBACK  "_start"
-#define NU_UPDATE_CALLBACK "_update"
-
-static nu_vm_t vm;
+static struct
+{
+    wasm_module_t        module;
+    wasm_module_inst_t   instance;
+    wasm_exec_env_t      env;
+    wasm_function_inst_t start_callback;
+    wasm_function_inst_t update_callback;
+} _vm;
 
 static NativeSymbol nu_wasm_vm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(push_gpu_state, "(*)"),
@@ -16,7 +21,7 @@ static NativeSymbol nu_wasm_vm_native_symbols[] = {
 static char global_heap_buf[512 * 1024];
 
 void
-vm_init (const nu_byte_t *buffer, nu_size_t size)
+nu_vm_init (const nu_byte_t *buffer, nu_size_t size)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
@@ -39,9 +44,9 @@ vm_init (const nu_byte_t *buffer, nu_size_t size)
 
     // Load module
     char error_buf[128];
-    vm.module = wasm_runtime_load(
+    _vm.module = wasm_runtime_load(
         (nu_byte_t *)buffer, size, error_buf, sizeof(error_buf));
-    if (!vm.module)
+    if (!_vm.module)
     {
         printf("Load wasm module failed. error: %s\n", error_buf);
     }
@@ -49,24 +54,24 @@ vm_init (const nu_byte_t *buffer, nu_size_t size)
     // Instantiate module
     const nu_size_t stack_size = 8092;
     const nu_size_t heap_size  = 0;
-    vm.instance                = wasm_runtime_instantiate(
-        vm.module, stack_size, heap_size, error_buf, sizeof(error_buf));
-    if (!vm.instance)
+    _vm.instance               = wasm_runtime_instantiate(
+        _vm.module, stack_size, heap_size, error_buf, sizeof(error_buf));
+    if (!_vm.instance)
     {
         printf("Instantiate wasm module failed. error: %s\n", error_buf);
     }
 
     // Create execution env
-    vm.env = wasm_runtime_create_exec_env(vm.instance, stack_size);
-    if (!vm.env)
+    _vm.env = wasm_runtime_create_exec_env(_vm.instance, stack_size);
+    if (!_vm.env)
     {
         printf("Create wasm execution environment failed.\n");
     }
 
     // Find entry point
-    vm.start_callback
-        = wasm_runtime_lookup_function(vm.instance, NU_START_CALLBACK);
-    if (!vm.start_callback)
+    _vm.start_callback
+        = wasm_runtime_lookup_function(_vm.instance, NU_START_CALLBACK);
+    if (!_vm.start_callback)
     {
         printf("The " NU_START_CALLBACK " wasm function is not found.\n");
     }
@@ -80,9 +85,9 @@ vm_init (const nu_byte_t *buffer, nu_size_t size)
 
     // pass 4 elements for function arguments
     if (!wasm_runtime_call_wasm_a(
-            vm.env, vm.start_callback, 0, NU_NULL, 0, NU_NULL))
+            _vm.env, _vm.start_callback, 0, NU_NULL, 0, NU_NULL))
     {
         printf("Call wasm function " NU_START_CALLBACK " failed. %s\n",
-               wasm_runtime_get_exception(vm.instance));
+               wasm_runtime_get_exception(_vm.instance));
     }
 }

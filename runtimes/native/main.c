@@ -25,7 +25,7 @@ main (int argc, char **argv)
     nu_size_t  size;
     nu_byte_t *buffer = load_bytes(argv[1], &size);
 
-    vm_init(buffer, size);
+    nu_vm_init(buffer, size);
 
     return 0;
 }
