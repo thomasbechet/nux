@@ -18,17 +18,18 @@ typedef double        f64;
 //////////////////////////////////////////////////////////////////////////
 //////                        Export Macros                         //////
 //////////////////////////////////////////////////////////////////////////
-///
+
 #if (defined(__WIN32__) || defined(WIN32) || defined(__MINGW32__) \
      || defined(_WIN32))
 #define NU_API_EXPORT __declspec(dllexport)
-#elif defined(__linux__) || defined(__unix__)
-#define NU_PLATFORM_UNIX
+#elif defined(__linux__) || defined(__unix__) || defined(__linux)
 #define NU_API_EXPORT __attribute__((visibility("default")))
 #elif defined(__APPLE__)
 #define NU_API_EXPORT
+#elif defined(_POSIX_VERSION)
+#define NU_API_EXPORT
 #else
-#pragma warning Unknown linkage directive import / export semantics.
+#define NU_API_EXPORT
 #endif
 
 #define NU_API NU_API_EXPORT

@@ -32,4 +32,4 @@ set -e
 PROJECT=$(basename $1)
 MAIN=$PROJECT.c
 
-clang --target=wasm32 -nostdlib -O0 -I$NUX_ROOT/include -Wl,--strip-all -Wl,--export=start -z stack-size=8192 -Wl,--initial-memory=65536 -Wl,--no-entry -Wl,--export-all -Wl,--allow-undefined -o $PROJECT.wasm $DIR/$MAIN
+clang -v -I$NUX_ROOT/include/ --target=wasm32 -nostdlib -O0 -Wl,--strip-all -Wl,--export=start -z stack-size=8192 -Wl,--initial-memory=65536 -Wl,--no-entry -Wl,--export-all -Wl,--allow-undefined -o $PROJECT.wasm $DIR/$MAIN
