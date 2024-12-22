@@ -1,0 +1,14 @@
+{
+    "textures": [
+        {
+            "slot": 0,
+            "size": 128,
+            "data": []
+        },
+        {
+            "slot": 1,
+            "size": 128,
+            "data": null
+        }
+    ]
+}

@@ -1,4 +1,8 @@
-#include "common.h"
+#ifndef NU_MEMORY_IMPL_H
+#define NU_MEMORY_IMPL_H
+
+#include <nulib/types.h>
+#include <nulib/assert.h>
 
 nu_int_t
 nu_memcmp (const void *p0, const void *p1, nu_size_t n)
@@ -59,3 +63,5 @@ nu_memalign (void *ptr, nu_size_t align)
     NU_ASSERT(align > 0);
     return (void *)(((nu_intptr_t)ptr + align - 1) & ~(align - 1));
 }
+
+#endif

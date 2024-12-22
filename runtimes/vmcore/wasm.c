@@ -1,5 +1,8 @@
-#include "vm.h"
-#include "common.h"
+#include "wasm.h"
+
+#include <nulib.h>
+#include <nux.h>
+#include <wasm_export.h>
 
 #define NU_START_CALLBACK  "start"
 #define NU_UPDATE_CALLBACK "update"
@@ -14,18 +17,20 @@ static struct
 } _vm;
 
 static NativeSymbol nu_wasm_vm_native_symbols[] = {
-    EXPORT_WASM_API_WITH_SIG(push_gpu_state, "(*)"),
-    EXPORT_WASM_API_WITH_SIG(pop_gpu_state, "(*)"),
+    EXPORT_WASM_API_WITH_SIG(write_texture, "(ii*)"),
+    EXPORT_WASM_API_WITH_SIG(write_vertex, "(ii*)"),
+    EXPORT_WASM_API_WITH_SIG(bind_texture, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(draw, "(ii)"),
 };
 
 static char global_heap_buf[512 * 1024];
 
 void
-nu_vm_init (const nu_byte_t *buffer, nu_size_t size)
+nu_wasm_init (const nu_byte_t *buffer, nu_size_t size)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
-    memset(&init_args, 0, sizeof(RuntimeInitArgs));
+    nu_memset(&init_args, 0, sizeof(RuntimeInitArgs));
 
     init_args.mem_alloc_type                  = Alloc_With_Pool;
     init_args.mem_alloc_option.pool.heap_buf  = global_heap_buf;

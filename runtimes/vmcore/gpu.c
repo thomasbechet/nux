@@ -1,19 +1,29 @@
 #include "gpu.h"
-#include "common.h"
-#include "memory.h"
+
+#include <nux.h>
 
 static struct
 {
+    gpu_config_t   config;
     nu_gpu_state_t state;
+    nu_u8_t       *cmds;
 } _gpu;
 
 void
-push_gpu_state (nu_byte_t *p)
+write_texture (u32 type, u32 slot, const void *p)
 {
-    nu_memcpy(p, &_gpu.state, sizeof(_gpu.state));
 }
 void
-pop_gpu_state (const nu_byte_t *p)
+write_vertex (u32 first, u32 count, const void *p)
 {
-    nu_memcpy(&_gpu.state, p, sizeof(_gpu.state));
+}
+
+void
+bind_texture (u32 type, u32 slot)
+{
+}
+
+void
+draw (u32 first, u32 count)
+{
 }

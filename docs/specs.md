@@ -16,5 +16,4 @@ Vertex:
 Vertex:
 - position = 3 * 4 (f32)
 - uv       = 2 * 2 (u16)
-- color    = 1     (u8)
-= 32 bytes
+= 16 bytes

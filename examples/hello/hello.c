@@ -1,12 +1,14 @@
 #include <nux.h>
 
+const f32 positions[] = { 0, 1, 2 };
+
 void
 start (void)
 {
-    push_gpu_state(0);
 }
 
 void
 update (void)
 {
+    draw(0, 3);
 }

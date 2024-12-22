@@ -27,9 +27,9 @@ set (WAMR_DISABLE_STACK_HW_BOUND_CHECK 1)
 
 include (${CMAKE_SOURCE_DIR}/externals/wasm-micro-runtime/build-scripts/runtime_lib.cmake)
 
-file(GLOB VMCORE_SOURCES *.c)
-file(GLOB VMCORE_HEADERS *.h)
-add_library(${PROJECT_NAME} ${VMCORE_SOURCES} ${VMCORE_SOURCES})
+file(GLOB_RECURSE VMCORE_SOURCES *.c)
+file(GLOB_RECURSE VMCORE_HEADERS *.h)
+add_library(${PROJECT_NAME} ${VMCORE_SOURCES} ${VMCORE_HEADERS})
 
 add_library(wamr ${WAMR_RUNTIME_LIB_SOURCE})
 target_link_libraries(${PROJECT_NAME} wamr m)

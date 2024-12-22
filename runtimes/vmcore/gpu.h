@@ -1,7 +1,7 @@
 #ifndef NU_GPU_H
 #define NU_GPU_H
 
-#include "common.h"
+#include <nulib.h>
 
 typedef struct
 {
@@ -11,6 +11,7 @@ typedef struct
     nu_v4u_t viewport;
     nu_m4_t  model;
     nu_u32_t mode;
+    nu_u8_t *cmds;
 } nu_gpu_state_t;
 
 #endif
