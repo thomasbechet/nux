@@ -1,7 +1,7 @@
 #ifndef NU_WINDOW_H
 #define NU_WINDOW_H
 
-#include <vmcore.h>
+#include <vm.h>
 
 #define NU_WINDOW_WIDTH  500
 #define NU_WINDOW_HEIGHT 500

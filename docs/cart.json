@@ -1,14 +1,19 @@
 {
-    "textures": [
+    "chunks": [
         {
-            "slot": 0,
-            "size": 128,
-            "data": []
+            "type": "texS",
+            "src": "alfred.png",
+            "dst": 0
         },
         {
-            "slot": 1,
-            "size": 128,
-            "data": null
+            "type": "mesh",
+            "src": "alfred.obj",
+            "dst": 0
+        },
+        {
+            "type": "mem",
+            "src": "file.bin",
+            "dst": 3333
         }
     ]
 }

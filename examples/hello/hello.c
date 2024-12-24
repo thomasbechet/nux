@@ -2,6 +2,10 @@
 
 const f32 positions[] = { 0, 1, 2 };
 
+#define ALFRED_TEX_SLT 0
+
+static const f32 *orbit_info = (const f32 *)0x3333;
+
 void
 start (void)
 {

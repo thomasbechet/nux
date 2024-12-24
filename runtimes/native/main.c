@@ -1,7 +1,7 @@
 #include "window.h"
 
 #include <nulib.h>
-#include <vmcore.h>
+#include <vm.h>
 
 void os_draw(void);
 
@@ -29,7 +29,10 @@ main (int argc, char **argv)
     nu_size_t  size;
     nu_byte_t *buffer = load_bytes(argv[1], &size);
 
-    nu_vmcore_init(buffer, size);
+    nux_vm_info_t info;
+    nu_memset(&info, 0, sizeof(info));
+    nux_vm_t vm = nux_vm_init(&info);
+    NU_ASSERT(vm);
     nu_window_init();
 
     while (!nu_window_close_requested())
@@ -37,7 +40,6 @@ main (int argc, char **argv)
         nu_window_poll_events();
     }
 
-    nu_vmcore_free();
     nu_window_free();
 
     return 0;

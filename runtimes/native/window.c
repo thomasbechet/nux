@@ -1,6 +1,6 @@
 #include "window.h"
 
-#include <vmcore.h>
+#include <vm.h>
 #define RGFW_IMPLEMENTATION
 #include <rgfw/RGFW.h>
 

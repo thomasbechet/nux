@@ -7,6 +7,7 @@
 #include <nulib/math.h>
 #include <nulib/string.h>
 #include <nulib/ds.h>
+#include <nulib/assert.h>
 
 #ifdef NU_IMPLEMENTATION
 #include <nulib/memory_impl.h>

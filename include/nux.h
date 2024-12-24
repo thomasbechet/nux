@@ -43,21 +43,12 @@ WASM_EXPORT("update") void update();
 //////                              GPU                             //////
 //////////////////////////////////////////////////////////////////////////
 
-#define GPU_MAX_MEM
-
-#define GPU_TEXS 0 // 64
-#define GPU_TEXM 1 // 128
-#define GPU_TEXL 2 // 256
-#define GPU_TEXH 3 // 512
-
-typedef struct
+typedef enum
 {
-    u32 max_texs;
-    u32 max_texm;
-    u32 max_texl;
-    u32 max_texh;
-    u32 max_vert;
-} gpu_config_t;
+    GPU_TEX64  = 0,
+    GPU_TEX128 = 1,
+    GPU_TEX256 = 2
+} gpu_texture_t;
 
 // Resources
 WASM_IMPORT("write_texture")
@@ -78,7 +69,12 @@ WASM_IMPORT("blit") void blit(i32 x, i32 y, i32 dx, i32 dy, u32 h, u32 w);
 //////                               IO                             //////
 //////////////////////////////////////////////////////////////////////////
 
-WASM_IMPORT("load") void load(void *p, u32 section);
+// Load raw data from cart
+WASM_IMPORT("load") void load(u32 chunk);
+// Load raw data from cart with overrided destination
+// @chunk chunk index
+// @dst   destination (slot for gpu, addr for memory...)
+WASM_IMPORT("loadd") void loadd(u32 chunk, u32 dst);
 
 //////////////////////////////////////////////////////////////////////////
 //////                              INPUT                           //////

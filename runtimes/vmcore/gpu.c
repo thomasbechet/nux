@@ -1,29 +1,26 @@
 #include "gpu.h"
 
-#include <nux.h>
-
-static struct
-{
-    gpu_config_t   config;
-    nu_gpu_state_t state;
-    nu_u8_t       *cmds;
-} _gpu;
-
 void
-write_texture (u32 type, u32 slot, const void *p)
-{
-}
-void
-write_vertex (u32 first, u32 count, const void *p)
+nux_gpu_init (nux_gpu_t *gpu)
 {
 }
 
 void
-bind_texture (u32 type, u32 slot)
+write_texture (wasm_exec_env_t env, nu_u32_t type, nu_u32_t slot, const void *p)
 {
 }
-
 void
-draw (u32 first, u32 count)
+write_vertex (wasm_exec_env_t env,
+              nu_u32_t        first,
+              nu_u32_t        count,
+              const void     *p)
+{
+}
+void
+bind_texture (wasm_exec_env_t env, nu_u32_t type, nu_u32_t slot)
+{
+}
+void
+draw (wasm_exec_env_t env, nu_u32_t first, nu_u32_t count)
 {
 }
