@@ -1,9 +1,27 @@
+#include "platform.h"
 #include "window.h"
 
 #include <nulib.h>
 #include <vm.h>
 
-void os_draw(void);
+static FILE *vmfile;
+
+void
+os_mount (void *user, const nu_byte_t *name)
+{
+    vmfile = fopen((char *)name, "rb");
+    NU_ASSERT(vmfile);
+}
+void
+os_seek (void *user, nu_size_t n)
+{
+    fseek(vmfile, n, SEEK_SET);
+}
+nu_size_t
+os_read (void *user, void *p, nu_size_t n)
+{
+    return fread(p, n, 1, vmfile);
+}
 
 static nu_byte_t *
 load_bytes (const char *filename, nu_size_t *size)
@@ -23,17 +41,22 @@ load_bytes (const char *filename, nu_size_t *size)
     return bytes;
 }
 
+static nu_byte_t global_heap[NU_MEM_1M];
+
 int
 main (int argc, char **argv)
 {
-    nu_size_t  size;
-    nu_byte_t *buffer = load_bytes(argv[1], &size);
+    nu_window_init();
 
     nux_vm_info_t info;
     nu_memset(&info, 0, sizeof(info));
-    nux_vm_t vm = nux_vm_init(&info);
+    info.heap      = global_heap;
+    info.heap_size = NU_ARRAY_SIZE(global_heap);
+    nux_vm_t *vm   = nux_vm_init(&info);
     NU_ASSERT(vm);
-    nu_window_init();
+
+    const nu_byte_t *name = (const nu_byte_t *)argv[1];
+    nux_vm_load(vm, name);
 
     while (!nu_window_close_requested())
     {

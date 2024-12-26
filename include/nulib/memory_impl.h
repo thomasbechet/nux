@@ -3,6 +3,7 @@
 
 #include <nulib/types.h>
 #include <nulib/assert.h>
+#include <nulib/platform.h>
 
 nu_int_t
 nu_memcmp (const void *p0, const void *p1, nu_size_t n)
@@ -62,6 +63,22 @@ nu_memalign (void *ptr, nu_size_t align)
 {
     NU_ASSERT(align > 0);
     return (void *)(((nu_intptr_t)ptr + align - 1) & ~(align - 1));
+}
+
+nu_u32_t
+nu_u32_le (nu_u32_t v)
+{
+    if (NU_BIG_ENDIAN)
+    {
+        return ((v >> 24) & 0xff) |      // move byte 3 to byte 0
+               ((v << 8) & 0xff0000) |   // move byte 1 to byte 2
+               ((v >> 8) & 0xff00) |     // move byte 2 to byte 1
+               ((v << 24) & 0xff000000); // byte 0 to byte 3
+    }
+    else
+    {
+        return v;
+    }
 }
 
 #endif

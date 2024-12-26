@@ -3,9 +3,9 @@
 
 #include <nulib.h>
 
-nu_u32_t  os_cart_mount(void *user, const nu_byte_t *name);
-void      os_cart_seek(void *user, nu_size_t n);
-nu_size_t os_cart_read(void *user, void *p, nu_size_t n);
+void      os_mount(void *user, const nu_byte_t *name);
+void      os_seek(void *user, nu_size_t n);
+nu_size_t os_read(void *user, void *p, nu_size_t n);
 
 void os_swap_buffer(void *user);
 void os_draw(void *user);

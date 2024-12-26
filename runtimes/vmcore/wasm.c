@@ -1,7 +1,8 @@
 #include "wasm.h"
 
+#include "vm.h"
+#include "platform.h"
 #include "gpu.h"
-#include <nulib.h>
 
 #define NU_START_CALLBACK  "start"
 #define NU_UPDATE_CALLBACK "update"
@@ -21,8 +22,8 @@ nux_wasm_init (nux_wasm_t *wasm, const nux_wasm_info_t *info)
     nu_memset(&init_args, 0, sizeof(RuntimeInitArgs));
 
     init_args.mem_alloc_type                  = Alloc_With_Pool;
-    init_args.mem_alloc_option.pool.heap_buf  = info->heap;
-    init_args.mem_alloc_option.pool.heap_size = info->heap_size;
+    init_args.mem_alloc_option.pool.heap_buf  = info->runtime_heap;
+    init_args.mem_alloc_option.pool.heap_size = info->runtime_heap_size;
 
     init_args.native_module_name = "env";
     init_args.native_symbols     = nux_wasm_vm_native_symbols;
@@ -34,13 +35,21 @@ nux_wasm_init (nux_wasm_t *wasm, const nux_wasm_info_t *info)
     }
 
     wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+}
+void
+nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
+{
+    nux_wasm_t *wasm = &vm->wasm;
+
+    // Load module data
+    wasm->buffer_size = header->length;
+    wasm->buffer      = vm_malloc(vm, header->length);
+    NU_ASSERT(os_read(vm->user, wasm->buffer, header->length));
 
     // Load module
     char error_buf[128];
-    wasm->module = wasm_runtime_load((nu_byte_t *)info->main_module,
-                                     info->main_module_size,
-                                     error_buf,
-                                     sizeof(error_buf));
+    wasm->module = wasm_runtime_load(
+        wasm->buffer, wasm->buffer_size, error_buf, sizeof(error_buf));
     if (!wasm->module)
     {
         printf("Load wasm module failed. error: %s\n", error_buf);
@@ -73,13 +82,6 @@ nux_wasm_init (nux_wasm_t *wasm, const nux_wasm_info_t *info)
     {
         printf("The " NU_START_CALLBACK " wasm function is not found.\n");
     }
-
-    // wasm_val_t results[1] = { { .kind = WASM_F32, .of.f32 = 0 } };
-    // wasm_val_t arguments[3] = {
-    //     { .kind = WASM_I32, .of.i32 = 10 },
-    //     { .kind = WASM_F64, .of.f64 = 0.000101 },
-    //     { .kind = WASM_F32, .of.f32 = 300.002 },
-    // };
 
     // pass 4 elements for function arguments
     if (!wasm_runtime_call_wasm_a(
