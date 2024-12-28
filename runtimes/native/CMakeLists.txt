@@ -1,5 +1,7 @@
-file(GLOB RUNTIME_SOURCES *.c)
-add_executable(${PROJECT_NAME} ${RUNTIME_SOURCES})
+project(vmnative LANGUAGES C)
+
+file(GLOB NATIVE_RUNTIME_SOURCES *.c)
+add_library(${PROJECT_NAME} ${NATIVE_RUNTIME_SOURCES})
 
 find_package(OpenGL REQUIRED)
 if (UNIX)

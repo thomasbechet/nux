@@ -1,7 +1,8 @@
+#include "runtime.h"
+
 #include "platform.h"
 #include "window.h"
 
-#include <nulib.h>
 #include <vm.h>
 
 static FILE *vmfile;
@@ -43,8 +44,8 @@ load_bytes (const char *filename, nu_size_t *size)
 
 static nu_byte_t global_heap[NU_MEM_1M];
 
-int
-main (int argc, char **argv)
+void
+nux_runtime_run (int argc, const char **argv)
 {
     nu_window_init();
 
@@ -64,6 +65,4 @@ main (int argc, char **argv)
     }
 
     nu_window_free();
-
-    return 0;
 }

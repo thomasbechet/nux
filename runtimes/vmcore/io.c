@@ -38,10 +38,9 @@ nux_cart_load_full (nux_vm_t *vm, const nu_byte_t *name)
         {
             case NUX_CHUNK_RAW:
                 break;
-            case NUX_CHUNK_WASM: {
+            case NUX_CHUNK_WASM:
                 nux_wasm_load(vm, &header);
-            }
-            break;
+                break;
             case NUX_CHUNK_TEXS:
                 break;
             case NUX_CHUNK_TEXM:
