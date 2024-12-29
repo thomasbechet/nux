@@ -56,7 +56,7 @@ nux_runtime_run (int argc, const char **argv)
     nux_vm_t *vm   = nux_vm_init(&info);
     NU_ASSERT(vm);
 
-    const nu_byte_t *name = (const nu_byte_t *)argv[1];
+    const nu_byte_t *name = (const nu_byte_t *)argv[0];
     nux_vm_load(vm, name);
 
     while (!nu_window_close_requested())

@@ -2,39 +2,97 @@
 
 #include <argparse/argparse.h>
 
-static const char *const usages[] = {
-    "basic [options] [[--] args]",
-    "basic [options]",
-    NULL,
+struct cmd_struct
+{
+    nu_str_t cmd;
+    int (*fn)(int, const char **);
 };
 
-#define PERM_READ  (1 << 0)
-#define PERM_WRITE (1 << 1)
-#define PERM_EXEC  (1 << 2)
+static int
+cmd_run (int argc, const char **argv)
+{
+    const char       *path = NULL;
+    struct argparse   argparse;
+    const char *const usages[] = {
+        "nux run [-h] <cart>",
+        NULL,
+    };
+    struct argparse_option options[] = {
+        OPT_HELP(),
+        OPT_END(),
+    };
+    argparse_init(&argparse, options, usages, 0);
+    argc = argparse_parse(&argparse, argc, argv);
+    if (argc < 1)
+    {
+        argparse_usage(&argparse);
+        return -1;
+    }
+    nux_runtime_run(argc, argv);
+    return 0;
+}
+static int
+cmd_init (int argc, const char **argv)
+{
+    return 0;
+}
+static int
+cmd_build (int argc, const char **argv)
+{
+    return 0;
+}
 
 int
 main (int argc, const char *argv[])
 {
-    const char            *cart_path = NULL;
+    nu_bool_t         version = NU_FALSE;
+    struct argparse   argparse;
+    const char *const usages[] = {
+        "nux [-h] [-v] <command> [<args>]",
+        NULL,
+    };
+    struct cmd_struct commands[] = {
+        { NU_STR("run"), cmd_run },
+        { NU_STR("init"), cmd_init },
+        { NU_STR("build"), cmd_build },
+    };
     struct argparse_option options[] = {
         OPT_HELP(),
-        OPT_GROUP("Basic options"),
-        OPT_STRING('c', "path", &cart_path, "path of the cart", NULL, 0, 0),
+        OPT_BOOLEAN('v', "version", &version, "show version", NULL, 0, 0),
         OPT_END(),
     };
-
-    struct argparse argparse;
-    argparse_init(&argparse, options, usages, 0);
-    argparse_describe(
-        &argparse,
-        "\nA brief description of what the program does and how it works.",
-        "\nAdditional description of the program after the description of the "
-        "arguments.");
+    argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);
+    argparse_describe(&argparse,
+                      "\nNUX is fantasy retro console",
+                      "\nCOMMANDS\n"
+                      "\n    run     Execute a cartridge"
+                      "\n    init    Create a new nux project"
+                      "\n    build   Compile project to cartridge");
     argc = argparse_parse(&argparse, argc, argv);
-    if (cart_path != NULL)
+    if (version)
     {
-        printf("path: %s\n", cart_path);
+        printf("nux version 1.0.0\n");
+        return 0;
     }
-    nux_runtime_run(argc, argv);
-    return 0;
+    else if (argc < 1)
+    {
+        argparse_usage(&argparse);
+        return -1;
+    }
+
+    struct cmd_struct *cmd      = NULL;
+    nu_str_t           cmd_name = nu_str_from_cstr((nu_byte_t *)argv[0]);
+    for (int i = 0; i < NU_ARRAY_SIZE(commands); i++)
+    {
+        if (nu_str_eq(commands[i].cmd, cmd_name))
+        {
+            cmd = &commands[i];
+        }
+    }
+    if (!cmd)
+    {
+        argparse_usage(&argparse);
+        return -1;
+    }
+    return cmd->fn(argc, argv);
 }
