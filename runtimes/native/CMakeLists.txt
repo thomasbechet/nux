@@ -12,8 +12,6 @@ if (WIN32)
     target_link_libraries(${PROJECT_NAME} vmcore ${OPENGL_LIBRARIES} m)
 endif (WIN32)
 
-set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "nux")
-
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/runtimes)

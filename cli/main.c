@@ -1,5 +1,5 @@
 #include <native/runtime.h>
-
+#include <builder/builder.h>
 #include <argparse/argparse.h>
 
 struct cmd_struct
@@ -39,6 +39,24 @@ cmd_init (int argc, const char **argv)
 static int
 cmd_build (int argc, const char **argv)
 {
+    struct argparse   argparse;
+    const char *const usages[] = {
+        "nux build [-h] <path>",
+        NULL,
+    };
+    struct argparse_option options[] = {
+        OPT_HELP(),
+        OPT_END(),
+    };
+    argparse_init(&argparse, options, usages, 0);
+    argc = argparse_parse(&argparse, argc, argv);
+    if (argc < 1)
+    {
+        argparse_usage(&argparse);
+        return -1;
+    }
+    const nu_byte_t *path = (const nu_byte_t *)argv[0];
+    nux_build_cart(path);
     return 0;
 }
 

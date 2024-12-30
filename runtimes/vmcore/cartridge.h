@@ -1,5 +1,5 @@
-#ifndef NU_IO_H
-#define NU_IO_H
+#ifndef NUX_CARTRIDGE_H
+#define NUX_CARTRIDGE_H
 
 #include "types.h"
 

@@ -36,19 +36,25 @@ typedef double   f64;
 #define WASM_IMPORT(name)
 #endif
 
+//////////////////////////////////////////////////////////////////////////
+//////                            MODULE                            //////
+//////////////////////////////////////////////////////////////////////////
+
+// Module start callback
 WASM_EXPORT("start") void start();
+// Module update callback
 WASM_EXPORT("update") void update();
+
+// Trace a message to the runtime (UTF-8 format)
+WASM_IMPORT("trace") void trace(const void *str, u32 n);
 
 //////////////////////////////////////////////////////////////////////////
 //////                              GPU                             //////
 //////////////////////////////////////////////////////////////////////////
 
-typedef enum
-{
-    GPU_TEX64  = 0,
-    GPU_TEX128 = 1,
-    GPU_TEX256 = 2
-} gpu_texture_t;
+#define GPU_TEX64  0
+#define GPU_TEX128 1
+#define GPU_TEX256 2
 
 // Resources
 WASM_IMPORT("write_texture")
@@ -66,7 +72,7 @@ WASM_IMPORT("draw") void draw(u32 first, u32 count);
 WASM_IMPORT("blit") void blit(i32 x, i32 y, i32 dx, i32 dy, u32 h, u32 w);
 
 //////////////////////////////////////////////////////////////////////////
-//////                               IO                             //////
+//////                            CARTRIDGE                         //////
 //////////////////////////////////////////////////////////////////////////
 
 // Load raw data from cart
@@ -77,7 +83,7 @@ WASM_IMPORT("load") void load(u32 chunk);
 WASM_IMPORT("loadd") void loadd(u32 chunk, u32 dst);
 
 //////////////////////////////////////////////////////////////////////////
-//////                              INPUT                           //////
+//////                            CONTROLLER                        //////
 //////////////////////////////////////////////////////////////////////////
 
 #endif

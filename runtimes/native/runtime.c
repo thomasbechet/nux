@@ -1,31 +1,10 @@
 #include "runtime.h"
 
-#include "platform.h"
 #include "window.h"
+#include "renderer.h"
 
+#include <platform.h>
 #include <vm.h>
-
-static FILE *vmfile;
-
-void
-os_mount (void *user, const nu_byte_t *name)
-{
-    printf("os_mount %s\n", name);
-    vmfile = fopen((char *)name, "rb");
-    NU_ASSERT(vmfile);
-}
-void
-os_seek (void *user, nu_size_t n)
-{
-    printf("os_seek %lu\n", n);
-    fseek(vmfile, n, SEEK_SET);
-}
-nu_size_t
-os_read (void *user, void *p, nu_size_t n)
-{
-    printf("os_read %lu\n", n);
-    return fread(p, n, 1, vmfile);
-}
 
 static nu_byte_t *
 load_bytes (const char *filename, nu_size_t *size)
@@ -50,7 +29,8 @@ static nu_byte_t global_heap[NU_MEM_1M];
 void
 nux_runtime_run (int argc, const char **argv)
 {
-    nu_window_init();
+    nux_window_init();
+    nux_renderer_init();
 
     nux_vm_info_t info;
     nu_memset(&info, 0, sizeof(info));
@@ -62,10 +42,13 @@ nux_runtime_run (int argc, const char **argv)
     const nu_byte_t *name = (const nu_byte_t *)argv[0];
     nux_vm_load(vm, name);
 
-    while (!nu_window_close_requested())
+    while (!nux_window_close_requested())
     {
-        nu_window_poll_events();
+        nux_window_poll_events();
+        nux_renderer_render();
+        nux_window_swap_buffers();
     }
 
-    nu_window_free();
+    nux_renderer_free();
+    nux_window_free();
 }

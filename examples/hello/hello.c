@@ -9,6 +9,7 @@ static const f32 *orbit_info = (const f32 *)0x3333;
 void
 start (void)
 {
+    trace("hello", 5);
 }
 
 void

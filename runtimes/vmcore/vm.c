@@ -1,8 +1,8 @@
 #include "vm.h"
 
 #include "gpu.h"
-#include "io.h"
 #include "wasm.h"
+#include "cartridge.h"
 
 #include <nulib.h>
 

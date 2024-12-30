@@ -162,9 +162,9 @@
 
 #ifndef RGFWDEF
 #ifdef __clang__
-#define RGFWDEF static inline
+#define RGFWDEF static
 #else
-#define RGFWDEF inline
+#define RGFWDEF
 #endif
 #endif
 
@@ -272,9 +272,8 @@ typedef u32 b32;
 
 #if defined(RGFW_DIRECTX)
 #include <d3d11.h>
-#include <dxgi.h>
-#include <dxgi.h>
 #include <d3dcompiler.h>
+#include <dxgi.h>
 
 #ifndef __cplusplus
 #define __uuidof(T) IID_##T
@@ -2306,8 +2305,8 @@ void RGFW_window_setDND(RGFW_window *win, b8 allow) {
 #ifndef GL_SILENCE_DEPRECATION
 #define GL_SILENCE_DEPRECATION
 #endif
-#include <OpenGL/gl.h>
 #include <OpenGL/OpenGL.h>
+#include <OpenGL/gl.h>
 #endif
 
 /* EGL, normal OpenGL only */
@@ -2743,8 +2742,8 @@ This is where OS specific stuff starts
 int RGFW_eventWait_forceStop[] = {0, 0, 0}; /* for wait events */
 
 #ifdef __linux__
-#include <linux/joystick.h>
 #include <fcntl.h>
+#include <linux/joystick.h>
 #include <unistd.h>
 
 RGFW_Event *RGFW_linux_updateJoystick(RGFW_window *win) {
@@ -4698,14 +4697,14 @@ scale the window to the screen
 - other missing functions functions ("TODO wayland") (~30 functions)
 - fix buffer rendering weird behavior
 */
-#include <errno.h>
-#include <unistd.h>
-#include <sys/mman.h>
-#include <xkbcommon/xkbcommon.h>
-#include <xkbcommon/xkbcommon-keysyms.h>
 #include <dirent.h>
+#include <errno.h>
 #include <linux/kd.h>
+#include <sys/mman.h>
+#include <unistd.h>
 #include <wayland-cursor.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
+#include <xkbcommon/xkbcommon.h>
 
 RGFW_window *RGFW_key_win = NULL;
 
@@ -5680,12 +5679,12 @@ char *RGFW_readClipboard(size_t *size) {
 #define OEMRESOURCE
 #include <windows.h>
 
-#include <processthreadsapi.h>
-#include <wchar.h>
 #include <locale.h>
-#include <windowsx.h>
+#include <processthreadsapi.h>
 #include <shellapi.h>
 #include <shellscalingapi.h>
+#include <wchar.h>
+#include <windowsx.h>
 
 #include <winuser.h>
 
@@ -7876,9 +7875,11 @@ CVReturn displayCallback(CVDisplayLinkRef displayLink, const CVTimeStamp *inNow,
                          const CVTimeStamp *inOutputTime, CVOptionFlags flagsIn,
                          CVOptionFlags *flagsOut, void *displayLinkContext) {
   RGFW_UNUSED(displayLink)
-  RGFW_UNUSED(inNow) RGFW_UNUSED(inOutputTime) RGFW_UNUSED(flagsIn)
-      RGFW_UNUSED(flagsOut)
-          RGFW_UNUSED(displayLinkContext) return kCVReturnSuccess;
+  RGFW_UNUSED(inNow)
+  RGFW_UNUSED(inOutputTime)
+  
+  RGFW_UNUSED(flagsIn) RGFW_UNUSED(flagsOut)
+      RGFW_UNUSED(displayLinkContext) return kCVReturnSuccess;
 }
 
 id NSWindow_delegate(RGFW_window *win) {

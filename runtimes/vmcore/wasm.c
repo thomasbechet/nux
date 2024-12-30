@@ -1,13 +1,21 @@
 #include "wasm.h"
 
 #include "vm.h"
-#include "platform.h"
 #include "gpu.h"
+#include "platform.h"
 
 #define NU_START_CALLBACK  "start"
 #define NU_UPDATE_CALLBACK "update"
 
+static void
+trace (wasm_exec_env_t env, const void *str, nu_u32_t n)
+{
+    nux_vm_t *vm = wasm_runtime_get_user_data(env);
+    os_trace(vm->user, str, n);
+}
+
 static NativeSymbol nux_wasm_vm_native_symbols[] = {
+    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
     EXPORT_WASM_API_WITH_SIG(write_texture, "(ii*)"),
     EXPORT_WASM_API_WITH_SIG(write_vertex, "(ii*)"),
     EXPORT_WASM_API_WITH_SIG(bind_texture, "(i)"),
@@ -74,6 +82,7 @@ nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
     {
         printf("Create wasm execution environment failed.\n");
     }
+    wasm_runtime_set_user_data(wasm->env, vm);
 
     // Find entry point
     wasm->start_callback

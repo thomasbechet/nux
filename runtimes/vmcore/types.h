@@ -1,6 +1,8 @@
 #ifndef NUX_TYPES_H
 #define NUX_TYPES_H
 
+#include "constants.h"
+
 #include <nulib.h>
 #include <wasm_export.h>
 
@@ -19,10 +21,9 @@ typedef struct
 
 typedef struct
 {
-    nu_u32_t max_texs;
-    nu_u32_t max_texm;
-    nu_u32_t max_texl;
-    nu_u32_t max_texh;
+    nu_u32_t max_tex64;
+    nu_u32_t max_tex128;
+    nu_u32_t max_tex256;
     nu_u32_t max_vert;
 } nux_gpu_config_t;
 
@@ -34,17 +35,6 @@ typedef struct
 } nux_gpu_t;
 
 // IO
-//
-
-typedef enum
-{
-    NUX_CHUNK_RAW  = 0,
-    NUX_CHUNK_WASM = 1,
-    NUX_CHUNK_TEXS = 2,
-    NUX_CHUNK_TEXM = 3,
-    NUX_CHUNK_TEXL = 4,
-    NUX_CHUNK_MESH = 5,
-} nux_chunk_type_t;
 
 typedef struct
 {

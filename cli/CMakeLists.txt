@@ -7,5 +7,6 @@ add_executable(nux ${NATIVE_CLI_SOURCES} ${ARGPARSE_SOURCES})
 include_directories(${CMAKE_SOURCE_DIR}/runtimes)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
+include_directories(${CMAKE_SOURCE_DIR}/devtools)
 
-target_link_libraries(nux vmnative)
+target_link_libraries(nux vmnative builder)

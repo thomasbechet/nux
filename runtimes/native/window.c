@@ -1,6 +1,9 @@
 #include "window.h"
 
 #include <vm.h>
+#define GLAD_GL_IMPLEMENTATION
+#include <glad/gl.h>
+#define RGFW_EXPORT
 #define RGFW_IMPLEMENTATION
 #include <rgfw/RGFW.h>
 
@@ -79,12 +82,12 @@ update_viewport (nu_viewport_t *v)
     v->viewport  = nu_b2i_xywh(vpos.x, vpos.y, size.x, size.y);
 }
 
-void
-nu_window_init (void)
+nux_error_code_t
+nux_window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = NU_WINDOW_WIDTH;
-    const nu_int_t height = NU_WINDOW_HEIGHT;
+    const nu_int_t width  = NUX_WINDOW_WIDTH;
+    const nu_int_t height = NUX_WINDOW_HEIGHT;
 
     // Initialize values
     _window.close_requested   = NU_FALSE;
@@ -92,13 +95,13 @@ nu_window_init (void)
     _window.switch_fullscreen = NU_FALSE;
 
     // Create window
-    _window.win = RGFW_createWindow(
-        "nucleus", RGFW_RECT(0, 0, width, height), RGFW_CENTER);
+    _window.win
+        = RGFW_createWindow("nux", RGFW_RECT(0, 0, width, height), RGFW_CENTER);
     RGFW_window_swapInterval(_window.win, 1);
 
     // Initialize viewport
     _window.viewport.mode     = NU_VIEWPORT_STRETCH_KEEP_ASPECT;
-    _window.viewport.screen   = nu_v2u(640, 400);
+    _window.viewport.screen   = nu_v2u(NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     _window.viewport.extent   = nu_b2i_xywh(0, 0, width, height);
     _window.viewport.viewport = nu_b2i_xywh(0, 0, width, height);
     update_viewport(&_window.viewport);
@@ -107,14 +110,17 @@ nu_window_init (void)
     RGFW_window_makeCurrent_OpenGL(_window.win);
     RGFW_window_makeCurrent(_window.win);
     // RGFW_setWindowResizeCallback(nu__window_size_callback);
+
+    return NUX_ERROR_NONE;
 }
-void
-nu_window_free (void)
+nux_error_code_t
+nux_window_free (void)
 {
     RGFW_window_close(_window.win);
+    return NUX_ERROR_NONE;
 }
 void
-nu_window_poll_events (void)
+nux_window_poll_events (void)
 {
     if (_window.win)
     {
@@ -200,8 +206,13 @@ nu_window_poll_events (void)
         }
     }
 }
+void
+nux_window_swap_buffers (void)
+{
+    RGFW_window_swapBuffers(_window.win);
+}
 nu_bool_t
-nu_window_close_requested (void)
+nux_window_close_requested (void)
 {
     return _window.close_requested;
 }

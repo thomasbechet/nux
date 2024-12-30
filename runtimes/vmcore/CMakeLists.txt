@@ -31,7 +31,7 @@ file(GLOB_RECURSE VMCORE_HEADERS *.h)
 add_library(${PROJECT_NAME} ${VMCORE_SOURCES} ${VMCORE_HEADERS})
 
 add_library(wamr ${WAMR_RUNTIME_LIB_SOURCE})
-target_link_libraries(${PROJECT_NAME} wamr m)
+target_link_libraries(${PROJECT_NAME} vmnative wamr m)
 
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/include)

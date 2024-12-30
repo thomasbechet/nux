@@ -1,4 +1,4 @@
-#include "io.h"
+#include "cartridge.h"
 
 #include "types.h"
 #include "platform.h"
@@ -41,13 +41,11 @@ nux_cart_load_full (nux_vm_t *vm, const nu_byte_t *name)
             case NUX_CHUNK_WASM:
                 nux_wasm_load(vm, &header);
                 break;
-            case NUX_CHUNK_TEXS:
+            case NUX_CHUNK_TEX64:
                 break;
-            case NUX_CHUNK_TEXM:
+            case NUX_CHUNK_TEX128:
                 break;
-            case NUX_CHUNK_TEXL:
-                break;
-            case NUX_CHUNK_MESH:
+            case NUX_CHUNK_TEX256:
                 break;
         }
 
