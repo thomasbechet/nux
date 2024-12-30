@@ -1,0 +1,13 @@
+[
+	{
+		"type": "wasm",
+		"name": "main",
+		"src": "hello.wasm"
+	},
+	{
+		"type": "tex64",
+		"name": "alfred",
+		"src": "texture.png",
+		"dst": 0
+	}
+]

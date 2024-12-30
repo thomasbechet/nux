@@ -10,17 +10,20 @@ static FILE *vmfile;
 void
 os_mount (void *user, const nu_byte_t *name)
 {
+    printf("os_mount %s\n", name);
     vmfile = fopen((char *)name, "rb");
     NU_ASSERT(vmfile);
 }
 void
 os_seek (void *user, nu_size_t n)
 {
+    printf("os_seek %lu\n", n);
     fseek(vmfile, n, SEEK_SET);
 }
 nu_size_t
 os_read (void *user, void *p, nu_size_t n)
 {
+    printf("os_read %lu\n", n);
     return fread(p, n, 1, vmfile);
 }
 
