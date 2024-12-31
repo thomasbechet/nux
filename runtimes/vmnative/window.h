@@ -3,7 +3,7 @@
 
 #include "error.h"
 
-#include <vm.h>
+#include <vmcore/vm.h>
 
 #define NUX_WINDOW_WIDTH  500
 #define NUX_WINDOW_HEIGHT 500

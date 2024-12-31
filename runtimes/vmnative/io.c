@@ -1,6 +1,6 @@
 #include "io.h"
 
-#include <platform.h>
+#include <vmcore/platform.h>
 
 static struct
 {

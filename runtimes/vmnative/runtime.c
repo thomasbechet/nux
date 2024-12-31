@@ -3,8 +3,8 @@
 #include "window.h"
 #include "renderer.h"
 
-#include <platform.h>
-#include <vm.h>
+#include <vmcore/platform.h>
+#include <vmcore/vm.h>
 
 static nu_byte_t *
 load_bytes (const char *filename, nu_size_t *size)

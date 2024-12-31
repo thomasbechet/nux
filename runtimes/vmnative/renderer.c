@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 #include <nulib.h>
-#include <platform.h>
+#include <vmcore/platform.h>
 #include <glad/gl.h>
 #define RGFW_IMPORT
 #include <rgfw/RGFW.h>

@@ -1,6 +1,6 @@
 #include "window.h"
 
-#include <vm.h>
+#include <vmcore/vm.h>
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define RGFW_EXPORT

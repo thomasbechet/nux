@@ -3,13 +3,7 @@
 
 #include <assert.h>
 
-#if !defined(NU_NDEBUG) && defined(NU_STDLIB)
-#define NU_ASSERT(x) assert(x)
-#else
-#define NU_ASSERT(x) (void)(x)
-#endif
-
-#if defined(NU_STDLIB)
+#if defined(NU_DEBUG) && defined(NU_STDLIB)
 #define NU_ASSERT(x) assert(x)
 #else
 #define NU_ASSERT(x) (void)(x)
