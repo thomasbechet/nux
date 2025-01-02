@@ -17,6 +17,12 @@
         (nu_byte_t *)str, (sizeof(str) / sizeof(str[0])) - 1 \
     }
 
+#define NU_STR_FMT       "%.*s"
+#define NU_STR_ARGS(str) (int)str.size, str.data
+#define NU_STR_BUF(name, size)   \
+    nu_byte_t name##_data[size]; \
+    nu_str_t  name = nu_str(name##_data, size);
+
 typedef struct
 {
     nu_byte_t *data;

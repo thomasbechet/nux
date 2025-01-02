@@ -3,7 +3,7 @@
 #include "platform.h"
 
 void
-nux_gpu_init (nux_gpu_t *gpu)
+nux_gpu_init (nux_vm_t *vm)
 {
 }
 

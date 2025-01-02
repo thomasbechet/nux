@@ -1,13 +1,15 @@
-[
-	{
-		"type": "wasm",
-		"name": "main",
-		"src": "hello.wasm"
-	},
-	{
-		"type": "tex64",
-		"name": "alfred",
-		"src": "texture.png",
-		"dst": 0
-	}
-]
+{
+	"target": "hello.bin",
+	"chunks": [
+		{
+			"type": "wasm",
+			"src": "hello.wasm",
+			"dst": 0
+		},
+		{
+			"type": "tex128",
+			"src": "/home/thomas/Projects/nux/examples/hello/Horror_Brick_01-128x128.png",
+			"dst": 0
+		}
+	]
+}

@@ -1,6 +1,9 @@
 #ifndef NUX_CONSTANTS_H
 #define NUX_CONSTANTS_H
 
+#define NUX_SCREEN_WIDTH  640
+#define NUX_SCREEN_HEIGHT 400
+
 typedef enum
 {
     NUX_CHUNK_RAW    = 0,

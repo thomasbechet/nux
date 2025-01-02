@@ -10,6 +10,8 @@ typedef enum
     NUX_TEX256 = 2
 } nux_gpu_texture_t;
 
+void *os_malloc(void *user, nu_size_t n);
+
 void      os_mount(void *user, const nu_byte_t *name);
 void      os_seek(void *user, nu_size_t n);
 nu_size_t os_read(void *user, void *p, nu_size_t n);

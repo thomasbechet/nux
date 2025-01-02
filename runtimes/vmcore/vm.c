@@ -2,7 +2,7 @@
 
 #include "gpu.h"
 #include "wasm.h"
-#include "cartridge.h"
+#include "io.h"
 
 #include <nulib.h>
 
@@ -16,15 +16,9 @@ nux_vm_init (const nux_vm_info_t *info)
     vm->heap      = info->heap;
     vm->heap_size = info->heap_size;
 
-    nux_wasm_info_t wasm_info;
-    nu_memset(&wasm_info, 0, sizeof(wasm_info));
-    wasm_info.runtime_heap_size = NU_MEM_32K;
-    wasm_info.runtime_heap      = vm_malloc(vm, wasm_info.runtime_heap_size);
-    NU_ASSERT(wasm_info.runtime_heap);
-    // TODO: wasm module info
-    nux_wasm_init(&vm->wasm, &wasm_info);
-
-    nux_gpu_init(&vm->gpu);
+    nux_io_init(vm);
+    nux_wasm_init(vm);
+    nux_gpu_init(vm);
 
     return vm;
 }

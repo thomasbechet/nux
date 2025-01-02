@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-void nux_gpu_init(nux_gpu_t *gpu);
+void nux_gpu_init(nux_vm_t *vm);
 
 void write_texture(wasm_exec_env_t env,
                    nu_u32_t        type,

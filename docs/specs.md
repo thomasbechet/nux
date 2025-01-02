@@ -6,7 +6,7 @@ VRAM:
 
 Support multiple cartridge required specs (A, AA, AAA)
 
-- vmcore
-- native
-- dev
 
+Runtime Memory :
+- WASM memory (continuous)
+- Core memory

@@ -7,8 +7,6 @@
 
 #define NUX_WINDOW_WIDTH  500
 #define NUX_WINDOW_HEIGHT 500
-#define NUX_SCREEN_WIDTH  640
-#define NUX_SCREEN_HEIGHT 400
 
 nux_error_code_t nux_window_init(void);
 nux_error_code_t nux_window_free(void);

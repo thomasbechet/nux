@@ -23,15 +23,18 @@ static NativeSymbol nux_wasm_vm_native_symbols[] = {
 };
 
 void
-nux_wasm_init (nux_wasm_t *wasm, const nux_wasm_info_t *info)
+nux_wasm_init (nux_vm_t *vm)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
     nu_memset(&init_args, 0, sizeof(RuntimeInitArgs));
 
-    init_args.mem_alloc_type                  = Alloc_With_Pool;
-    init_args.mem_alloc_option.pool.heap_buf  = info->runtime_heap;
-    init_args.mem_alloc_option.pool.heap_size = info->runtime_heap_size;
+    const nu_size_t runtime_heap_size = NU_MEM_32K;
+
+    init_args.mem_alloc_type                 = Alloc_With_Pool;
+    init_args.mem_alloc_option.pool.heap_buf = vm_malloc(vm, runtime_heap_size);
+    init_args.mem_alloc_option.pool.heap_size = runtime_heap_size;
+    NU_ASSERT(init_args.mem_alloc_option.pool.heap_buf);
 
     init_args.native_module_name = "env";
     init_args.native_symbols     = nux_wasm_vm_native_symbols;

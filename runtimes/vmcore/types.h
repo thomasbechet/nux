@@ -52,7 +52,8 @@ typedef struct
 typedef struct
 {
     nux_cart_header_t header;
-} nux_cart_t;
+    void             *heap;
+} nux_io_t;
 
 // WASM
 
@@ -67,24 +68,17 @@ typedef struct
     wasm_function_inst_t update_callback;
 } nux_wasm_t;
 
-typedef struct
-{
-    void     *runtime_heap;
-    nu_size_t runtime_heap_size;
-} nux_wasm_info_t;
-
 // VM
 
 typedef struct nux_vm_t
 {
     nux_gpu_t  gpu;
     nux_wasm_t wasm;
-    nux_cart_t cart;
-    void      *heap_ptr;
-    nu_size_t  heap_size;
+    nux_io_t   io;
     void      *heap;
+    nu_size_t  heap_size;
+    void      *heap_ptr;
     void      *user;
-    nu_u32_t   cart_id;
 } nux_vm_t;
 
 #endif

@@ -93,6 +93,7 @@ os_write_texture (void             *user,
                   nu_u32_t          slot,
                   const void       *p)
 {
+    printf("load\n");
 }
 
 void
