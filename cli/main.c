@@ -1,3 +1,4 @@
+#include <vmcore/vm.h>
 #include <vmnative/runtime.h>
 #include <builder/builder.h>
 #include <argparse/argparse.h>
@@ -89,7 +90,7 @@ main (int argc, const char *argv[])
     argc = argparse_parse(&argparse, argc, argv);
     if (version)
     {
-        printf("nux version 1.0.0\n");
+        printf("nux runtime " NUX_RUNTIME_VERSION "\n");
         return 0;
     }
     else if (argc < 1)

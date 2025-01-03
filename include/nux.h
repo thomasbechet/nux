@@ -63,9 +63,7 @@ WASM_IMPORT("write_vertex")
 void write_vertex(u32 first, u32 count, const void *p);
 
 // State
-WASM_IMPORT("push_gpu_state") void push_gpu_state(void *p);
-WASM_IMPORT("pop_gpu_state") void pop_gpu_state(const void *p);
-WASM_IMPORT("bind_texture") void bind_texture(u32 type, u32 slot);
+WASM_IMPORT("bind_texture") void bind_texture(u32 slot);
 
 // Commands
 WASM_IMPORT("draw") void draw(u32 first, u32 count);

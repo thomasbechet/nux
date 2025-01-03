@@ -15,13 +15,13 @@ write_texture (wasm_exec_env_t env, nu_u32_t type, nu_u32_t slot, const void *p)
     switch ((nux_gpu_texture_t)type)
     {
         case NUX_TEX64:
-            NU_ASSERT(slot < vm->gpu.config.max_tex64);
+            NU_ASSERT(slot < vm->config.gpu_tex64_unit);
             break;
         case NUX_TEX128:
-            NU_ASSERT(slot < vm->gpu.config.max_tex128);
+            NU_ASSERT(slot < vm->config.gpu_tex128_unit);
             break;
         case NUX_TEX256:
-            NU_ASSERT(slot < vm->gpu.config.max_tex256);
+            NU_ASSERT(slot < vm->config.gpu_tex256_unit);
             break;
     }
     os_write_texture(vm->user, (nux_gpu_texture_t)type, slot, p);

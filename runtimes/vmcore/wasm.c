@@ -29,11 +29,10 @@ nux_wasm_init (nux_vm_t *vm)
     RuntimeInitArgs init_args;
     nu_memset(&init_args, 0, sizeof(RuntimeInitArgs));
 
-    const nu_size_t runtime_heap_size = NU_MEM_32K;
-
-    init_args.mem_alloc_type                 = Alloc_With_Pool;
-    init_args.mem_alloc_option.pool.heap_buf = vm_malloc(vm, runtime_heap_size);
-    init_args.mem_alloc_option.pool.heap_size = runtime_heap_size;
+    init_args.mem_alloc_type = Alloc_With_Pool;
+    init_args.mem_alloc_option.pool.heap_buf
+        = vm_malloc(vm, vm->config.mem_heap_size);
+    init_args.mem_alloc_option.pool.heap_size = vm->config.mem_heap_size;
     NU_ASSERT(init_args.mem_alloc_option.pool.heap_buf);
 
     init_args.native_module_name = "env";
@@ -67,7 +66,7 @@ nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
     }
 
     // Instantiate module
-    const nu_size_t init_stack_size = 8092;
+    const nu_size_t init_stack_size = vm->config.mem_stack_size;
     const nu_size_t init_heap_size  = 0;
     wasm->instance                  = wasm_runtime_instantiate(wasm->module,
                                               init_stack_size,

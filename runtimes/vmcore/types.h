@@ -1,9 +1,8 @@
 #ifndef NUX_TYPES_H
 #define NUX_TYPES_H
 
-#include "constants.h"
+#include "config.h"
 
-#include <nulib.h>
 #include <wasm_export.h>
 
 // GPU
@@ -21,17 +20,8 @@ typedef struct
 
 typedef struct
 {
-    nu_u32_t max_tex64;
-    nu_u32_t max_tex128;
-    nu_u32_t max_tex256;
-    nu_u32_t max_vert;
-} nux_gpu_config_t;
-
-typedef struct
-{
-    nux_gpu_config_t config;
-    nux_gpu_state_t  state;
-    nu_u8_t         *cmds;
+    nux_gpu_state_t state;
+    nu_u8_t        *cmds;
 } nux_gpu_t;
 
 // IO
@@ -72,13 +62,14 @@ typedef struct
 
 typedef struct nux_vm_t
 {
-    nux_gpu_t  gpu;
-    nux_wasm_t wasm;
-    nux_io_t   io;
-    void      *heap;
-    nu_size_t  heap_size;
-    void      *heap_ptr;
-    void      *user;
+    nux_vm_config_t config;
+    nux_gpu_t       gpu;
+    nux_wasm_t      wasm;
+    nux_io_t        io;
+    void           *heap;
+    nu_size_t       heap_size;
+    void           *heap_ptr;
+    void           *user;
 } nux_vm_t;
 
 #endif

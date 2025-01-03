@@ -29,13 +29,17 @@ static nu_byte_t global_heap[NU_MEM_1M];
 void
 nux_runtime_run (int argc, const char **argv)
 {
+
+    nux_vm_config_t config = NUX_CONFIG_DEFAULT;
     nux_window_init();
-    nux_renderer_init();
+    nux_renderer_init(&config);
 
     nux_vm_info_t info;
     nu_memset(&info, 0, sizeof(info));
     info.heap      = global_heap;
     info.heap_size = NU_ARRAY_SIZE(global_heap);
+    info.user      = NU_NULL;
+    info.specs     = &config;
     nux_vm_t *vm   = nux_vm_init(&info);
     NU_ASSERT(vm);
 

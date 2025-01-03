@@ -1,6 +1,6 @@
 #include "builder.h"
 
-#include <vmcore/constants.h>
+#include <vmcore/config.h>
 #include <cJSON/cJSON.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION

@@ -6,8 +6,16 @@
 #define RGFW_IMPORT
 #include <rgfw/RGFW.h>
 
+typedef struct
+{
+    GLuint handle;
+} texture_entry_t;
+
 static struct
 {
+    texture_entry_t *tex64;
+    texture_entry_t *tex128;
+    texture_entry_t *tex256;
 } _renderer;
 
 static const GLchar *
@@ -61,7 +69,7 @@ message_callback (GLenum        source,
     NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
 }
 nux_error_code_t
-nux_renderer_init (void)
+nux_renderer_init (const nux_vm_config_t *config)
 {
     // Initialize GL functions
     if (!gladLoadGL((GLADloadfunc)RGFW_getProcAddress))
@@ -72,6 +80,13 @@ nux_renderer_init (void)
     // During init, enable debug output
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(message_callback, NU_NULL);
+
+    // Initialize resources
+    _renderer.tex64 = malloc(sizeof(*_renderer.tex64) * config->gpu_tex64_unit);
+    _renderer.tex128
+        = malloc(sizeof(*_renderer.tex128) * config->gpu_tex128_unit);
+    _renderer.tex256
+        = malloc(sizeof(*_renderer.tex256) * config->gpu_tex256_unit);
 
     return NUX_ERROR_NONE;
 }
@@ -93,7 +108,15 @@ os_write_texture (void             *user,
                   nu_u32_t          slot,
                   const void       *p)
 {
-    printf("load\n");
+    switch (type)
+    {
+        case NUX_TEX64:
+            break;
+        case NUX_TEX128:
+            break;
+        case NUX_TEX256:
+            break;
+    }
 }
 
 void

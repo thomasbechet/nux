@@ -38,20 +38,17 @@ nux_cart_load_full (nux_vm_t *vm, const nu_byte_t *name)
         READ_U32(&header.type);
         READ_U32(&header.length);
         READ_U32(&header.dst);
-        printf("%d %d %d\n", header.type, header.length, header.dst);
 
         switch (header.type)
         {
             case NUX_CHUNK_RAW:
                 break;
             case NUX_CHUNK_WASM:
-                printf("load wasm %d\n", header.length);
                 nux_wasm_load(vm, &header);
                 break;
             case NUX_CHUNK_TEX64:
                 break;
             case NUX_CHUNK_TEX128: {
-                printf("load tex128 %d\n", header.length);
                 const nu_size_t size = 128 * 128 * 4;
                 NU_ASSERT(os_read(vm->user, vm->io.heap, size));
                 os_write_texture(vm->user, NUX_TEX128, header.dst, vm->io.heap);
