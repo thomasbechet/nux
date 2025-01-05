@@ -32,6 +32,34 @@ typedef enum
     NUX_CHUNK_MESH    = 3,
 } nux_chunk_type_t;
 
+typedef union
+{
+    struct
+    {
+        nu_u32_t addr;
+    } raw;
+    struct
+    {
+        nu_u32_t slot;
+        nu_u32_t x;
+        nu_u32_t y;
+        nu_u32_t w;
+        nu_u32_t h;
+    } texture;
+    struct
+    {
+        nu_u32_t first;
+        nu_u32_t count;
+    } mesh;
+} nux_chunk_target_t;
+
+typedef struct
+{
+    nux_chunk_type_t   type;
+    nux_chunk_target_t target;
+    nu_u32_t           length;
+} nux_chunk_header_t;
+
 #define NUX_CONFIG_DEFAULT                                       \
     (nux_vm_config_t)                                            \
     {                                                            \

@@ -4,8 +4,8 @@
 #include "gpu.h"
 #include "platform.h"
 
-#define NU_START_CALLBACK  "start"
-#define NU_UPDATE_CALLBACK "update"
+#define NUX_START_CALLBACK  "start"
+#define NUX_UPDATE_CALLBACK "update"
 
 static void
 trace (wasm_exec_env_t env, const void *str, nu_u32_t n)
@@ -88,17 +88,33 @@ nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
 
     // Find entry point
     wasm->start_callback
-        = wasm_runtime_lookup_function(wasm->instance, NU_START_CALLBACK);
+        = wasm_runtime_lookup_function(wasm->instance, NUX_START_CALLBACK);
     if (!wasm->start_callback)
     {
-        printf("The " NU_START_CALLBACK " wasm function is not found.\n");
+        printf("The " NUX_START_CALLBACK " wasm function is not found.\n");
+    }
+    wasm->update_callback
+        = wasm_runtime_lookup_function(wasm->instance, NUX_UPDATE_CALLBACK);
+    if (!wasm->update_callback)
+    {
+        printf("The " NUX_UPDATE_CALLBACK " wasm function is not found.\n");
     }
 
     // pass 4 elements for function arguments
     if (!wasm_runtime_call_wasm_a(
             wasm->env, wasm->start_callback, 0, NU_NULL, 0, NU_NULL))
     {
-        printf("Call wasm function " NU_START_CALLBACK " failed. %s\n",
+        printf("Call wasm function " NUX_START_CALLBACK " failed. %s\n",
                wasm_runtime_get_exception(wasm->instance));
+    }
+}
+void
+nux_wasm_update (nux_vm_t *vm)
+{
+    if (!wasm_runtime_call_wasm_a(
+            vm->wasm.env, vm->wasm.start_callback, 0, NU_NULL, 0, NU_NULL))
+    {
+        printf("Call wasm function " NUX_UPDATE_CALLBACK " failed. %s\n",
+               wasm_runtime_get_exception(vm->wasm.instance));
     }
 }

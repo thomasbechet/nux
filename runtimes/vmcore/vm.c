@@ -15,7 +15,7 @@ nux_vm_init (const nux_vm_info_t *info)
     vm->heap_ptr  = (void *)((nu_size_t)info->heap + sizeof(*vm));
     vm->heap      = info->heap;
     vm->heap_size = info->heap_size;
-    vm->config     = *info->specs;
+    vm->config    = *info->specs;
 
     nux_io_init(vm);
     nux_wasm_init(vm);
@@ -31,6 +31,7 @@ nux_vm_load (nux_vm_t *vm, const nu_byte_t *name)
 void
 nux_vm_update (nux_vm_t *vm)
 {
+    nux_wasm_update(vm);
 }
 
 void *

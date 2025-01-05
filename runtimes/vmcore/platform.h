@@ -18,6 +18,6 @@ void os_write_texture(void       *user,
                       const void *p);
 void os_write_vertex(void *user, nu_u32_t first, nu_u32_t count, const void *p);
 void os_bind_texture(void *user, nu_u32_t slot);
-void os_draw(void *user);
+void os_draw(void *user, nu_u32_t first, nu_u32_t count);
 
 #endif

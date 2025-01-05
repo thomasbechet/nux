@@ -129,7 +129,7 @@ nux_load_gltf (const nu_byte_t *path, nu_size_t *size)
     // Load resources
     for (nu_size_t i = 0; i < data->meshes_count; ++i)
     {
-        error = nu__load_mesh(loader, data->meshes + i);
+        // error = nu__load_mesh(loader, data->meshes + i);
     }
 
     // Load scenes and nodes
@@ -168,27 +168,27 @@ nux_load_gltf (const nu_byte_t *path, nu_size_t *size)
                                 transform);
             }
 
-            if (node->mesh)
-            {
-                // Find mesh
-                {
-                    for (nu_size_t i = 0; i < loader->resources.size; ++i)
-                    {
-                        if (loader->resources.data[i].ptr == node->mesh)
-                        {
-                            mesh = loader->resources.data[i].handle;
-                            break;
-                        }
-                    }
-                    if (!mesh)
-                    {
-                        return NU_NULL;
-                    }
-                }
-
-                // Set node
-                nu_model_set(model, n, mesh, material, transform);
-            }
+            // if (node->mesh)
+            // {
+            //     // Find mesh
+            //     {
+            //         for (nu_size_t i = 0; i < loader->resources.size; ++i)
+            //         {
+            //             if (loader->resources.data[i].ptr == node->mesh)
+            //             {
+            //                 mesh = loader->resources.data[i].handle;
+            //                 break;
+            //             }
+            //         }
+            //         if (!mesh)
+            //         {
+            //             return NU_NULL;
+            //         }
+            //     }
+            //
+            //     // Set node
+            //     nu_model_set(model, n, mesh, material, transform);
+            // }
         }
 
         break; // TODO: support multiple scene

@@ -40,5 +40,5 @@ void
 draw (wasm_exec_env_t env, nu_u32_t first, nu_u32_t count)
 {
     nux_vm_t *vm = wasm_runtime_get_user_data(env);
-    os_draw(vm->user);
+    os_draw(vm->user, first, count);
 }

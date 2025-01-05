@@ -18,17 +18,22 @@
 
 typedef struct
 {
-} nux_error_t;
+    char *shader_log;
+} nux_error_data_t;
 
 typedef enum
 {
     NUX_ERROR_NONE = 0,
-    NUX_ERROR_RENDERER_GL_LOADING
+    NUX_ERROR_VM_INITIALIZATION,
+    NUX_ERROR_RENDERER_GL_LOADING,
+    NUX_ERROR_RENDERER_SHADER_COMPILATION,
 } nux_error_code_t;
 
-nux_error_code_t nux_error(nux_error_code_t   code,
-                           const nu_byte_t   *source,
-                           const nux_error_t *error);
+nux_error_code_t nux_error(nux_error_code_t        code,
+                           const nu_byte_t        *source,
+                           const nux_error_data_t *error);
+void             nux_error_init(void);
+void             nux_error_free(void);
 void             nux_error_print(void);
 
 #endif

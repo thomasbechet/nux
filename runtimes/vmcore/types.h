@@ -34,12 +34,6 @@ typedef struct
 
 typedef struct
 {
-    nux_chunk_type_t type;
-    nu_u32_t         length;
-} nux_chunk_header_t;
-
-typedef struct
-{
     nux_cart_header_t header;
     void             *heap;
 } nux_io_t;

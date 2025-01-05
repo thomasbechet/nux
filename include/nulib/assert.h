@@ -11,18 +11,10 @@
 
 #define NU_UNREACHABLE() NU_ASSERT(NU_FALSE)
 
-#define _NU_CHECK(check, action, source) \
-    if (!(check))                        \
-    {                                    \
-        action;                          \
-    }
-#define NU_CHECK(check, action) _NU_CHECK(check, action, __SOURCE__)
-#define NU_CHECK_ERROR(error, action) \
-    _NU_CHECK(error == NU_ERROR_NONE, action, __SOURCE__)
-#define NU_CHECK_PANIC(check, format, ...) \
-    if (!(check))                          \
-    {                                      \
-        NU_PANIC(format, ##__VA_ARGS__);   \
+#define NU_CHECK(check, action) \
+    if (!(check))               \
+    {                           \
+        action;                 \
     }
 
 #endif

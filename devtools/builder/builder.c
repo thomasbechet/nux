@@ -1,4 +1,5 @@
 #include "builder.h"
+#include "nulib/math.h"
 
 #include <vmcore/config.h>
 #include <cJSON/cJSON.h>
@@ -33,42 +34,49 @@ load_bytes (const nu_byte_t *filename, nu_size_t *size)
 
 typedef struct
 {
-    nux_chunk_type_t type;
-    nu_byte_t        src[MAX_NAME_SIZE];
-    union
-    {
-        struct
-        {
-            nu_u32_t slot;
-            nu_v4u_t area;
-        } texture;
-        struct
-        {
-            nu_u32_t first;
-        } mesh;
-    } dst;
-} project_entry_t;
+    nux_chunk_header_t header;
+    nu_byte_t          source[MAX_NAME_SIZE];
+} chunk_entry_t;
 
-static nu_bool_t
-parse_area (cJSON *object, nu_v4u_t *area)
+static nu_f32_t
+parse_f32 (cJSON *object, const char *name)
 {
-    NU_ASSERT(cJSON_IsObject(object));
-    cJSON *jx = cJSON_GetObjectItem(object, "x");
-    NU_ASSERT(jx && cJSON_IsNumber(jx));
-    cJSON *jy = cJSON_GetObjectItem(object, "y");
-    NU_ASSERT(jy && cJSON_IsNumber(jy));
-    cJSON *jw = cJSON_GetObjectItem(object, "w");
-    NU_ASSERT(jw && cJSON_IsNumber(jw));
-    cJSON *jh = cJSON_GetObjectItem(object, "h");
-    NU_ASSERT(jh && cJSON_IsNumber(jh));
-    area->x = cJSON_GetNumberValue(jx);
-    area->y = cJSON_GetNumberValue(jy);
-    area->w = cJSON_GetNumberValue(jw);
-    area->z = cJSON_GetNumberValue(jh);
-    return NU_TRUE;
+    NU_ASSERT(object && name && cJSON_IsObject(object));
+    cJSON *f = cJSON_GetObjectItem(object, name);
+    NU_ASSERT(f && cJSON_IsNumber(f));
+    return cJSON_GetNumberValue(f);
 }
 
-static project_entry_t *
+static void
+parse_target (cJSON *j, nux_chunk_type_t type, nux_chunk_target_t *target)
+{
+    switch (type)
+    {
+        case NUX_CHUNK_RAW: {
+            NU_ASSERT(cJSON_IsObject(j));
+            target->raw.addr = parse_f32(j, "addr");
+        }
+        break;
+        case NUX_CHUNK_WASM:
+            break;
+        case NUX_CHUNK_TEXTURE: {
+            NU_ASSERT(cJSON_IsObject(j));
+            target->texture.slot = parse_f32(j, "slot");
+            target->texture.x    = parse_f32(j, "x");
+            target->texture.y    = parse_f32(j, "y");
+            target->texture.w    = parse_f32(j, "w");
+            target->texture.h    = parse_f32(j, "h");
+        }
+        break;
+        case NUX_CHUNK_MESH: {
+            NU_ASSERT(cJSON_IsObject(j));
+            target->mesh.first = parse_f32(j, "first");
+            target->mesh.count = parse_f32(j, "count");
+        }
+        break;
+    }
+}
+static chunk_entry_t *
 parse_json (const nu_byte_t *path,
             nu_byte_t        target[MAX_NAME_SIZE],
             nu_size_t       *entry_count)
@@ -81,10 +89,10 @@ parse_json (const nu_byte_t *path,
     NU_ASSERT(cJSON_IsObject(root));
 
     // load target
-    cJSON *jtarget = cJSON_GetObjectItem(root, "target");
-    NU_ASSERT(jtarget);
-    NU_ASSERT(cJSON_IsString(jtarget));
-    nu_str_to_cstr(nu_str_from_cstr((nu_byte_t *)cJSON_GetStringValue(jtarget)),
+    cJSON *jcart = cJSON_GetObjectItem(root, "target");
+    NU_ASSERT(jcart);
+    NU_ASSERT(cJSON_IsString(jcart));
+    nu_str_to_cstr(nu_str_from_cstr((nu_byte_t *)cJSON_GetStringValue(jcart)),
                    target,
                    MAX_NAME_SIZE);
 
@@ -93,7 +101,7 @@ parse_json (const nu_byte_t *path,
     NU_ASSERT(cJSON_IsArray(jentries));
     *entry_count = cJSON_GetArraySize(jentries);
     NU_ASSERT(*entry_count);
-    project_entry_t *entries = malloc(sizeof(project_entry_t) * (*entry_count));
+    chunk_entry_t *entries = malloc(sizeof(chunk_entry_t) * (*entry_count));
     NU_ASSERT(entries);
     cJSON *jchild = jentries->child;
     for (nu_size_t i = 0; i < *entry_count; ++i)
@@ -102,9 +110,10 @@ parse_json (const nu_byte_t *path,
         cJSON *jtype = cJSON_GetObjectItem(jchild, "type");
         NU_ASSERT(jtype);
         NU_ASSERT(cJSON_IsString(jtype));
-        cJSON *jsrc = cJSON_GetObjectItem(jchild, "src");
-        NU_ASSERT(jsrc);
-        NU_ASSERT(cJSON_IsString(jsrc));
+        cJSON *jtarget = cJSON_GetObjectItem(jchild, "target");
+        cJSON *jsource = cJSON_GetObjectItem(jchild, "source");
+        NU_ASSERT(jsource);
+        NU_ASSERT(cJSON_IsString(jsource));
 
         // check type
         nu_str_t type_str
@@ -116,6 +125,7 @@ parse_json (const nu_byte_t *path,
             nu_str_t         name;
             nux_chunk_type_t type;
         } name_to_chunk_type[] = {
+            { NU_STR("raw"), NUX_CHUNK_RAW },
             { NU_STR("wasm"), NUX_CHUNK_WASM },
             { NU_STR("texture"), NUX_CHUNK_TEXTURE },
             { NU_STR("mesh"), NUX_CHUNK_MESH },
@@ -134,41 +144,14 @@ parse_json (const nu_byte_t *path,
             printf("Chunk type not found for entry %lu\n", i);
             return NU_NULL;
         }
-        entries[i].type = type;
+        entries[i].header.type = type;
         nu_str_to_cstr(
-            nu_str_from_cstr((nu_byte_t *)cJSON_GetStringValue(jsrc)),
-            entries[i].src,
+            nu_str_from_cstr((nu_byte_t *)cJSON_GetStringValue(jsource)),
+            entries[i].source,
             MAX_NAME_SIZE);
 
-        // parse dst object
-        switch (type)
-        {
-            case NUX_CHUNK_RAW:
-                break;
-            case NUX_CHUNK_WASM:
-                break;
-            case NUX_CHUNK_TEXTURE: {
-                cJSON *jdst = cJSON_GetObjectItem(jchild, "dst");
-                NU_ASSERT(jdst);
-                NU_ASSERT(cJSON_IsObject(jdst));
-                cJSON *jarea = cJSON_GetObjectItem(jdst, "area");
-                NU_ASSERT(jarea);
-                parse_area(jarea, &entries[i].dst.texture.area);
-                cJSON *jslot = cJSON_GetObjectItem(jdst, "slot");
-                NU_ASSERT(cJSON_IsNumber(jslot));
-                entries[i].dst.texture.slot = cJSON_GetNumberValue(jslot);
-            }
-            break;
-            case NUX_CHUNK_MESH: {
-                cJSON *jdst = cJSON_GetObjectItem(jchild, "dst");
-                NU_ASSERT(jdst);
-                NU_ASSERT(cJSON_IsObject(jdst));
-                cJSON *jfirst = cJSON_GetObjectItem(jdst, "first");
-                NU_ASSERT(cJSON_IsNumber(jfirst));
-                entries[i].dst.mesh.first = cJSON_GetNumberValue(jfirst);
-            }
-            break;
-        }
+        // parse target object
+        parse_target(jtarget, type, &entries[i].header.target);
 
         jchild = jchild->next;
     }
@@ -193,20 +176,41 @@ write_v4u (FILE *f, nu_v4u_t v)
     }
 }
 static void
-write_chunk_header (FILE *f, const project_entry_t *entry, nu_size_t length)
+write_chunk_header (FILE *f, nux_chunk_header_t *header)
 {
-    write_u32(f, entry->type);
-    write_u32(f, length);
-    printf("[chunk %d s:'%s' l:%lu]\n", entry->type, entry->src, length);
+    // type / length
+    write_u32(f, header->type);
+    write_u32(f, header->length);
+    // target
+    switch (header->type)
+    {
+        case NUX_CHUNK_RAW: {
+        }
+        break;
+        case NUX_CHUNK_WASM: {
+        }
+        break;
+        case NUX_CHUNK_TEXTURE: {
+            write_u32(f, header->target.texture.slot);
+            write_u32(f, header->target.texture.x);
+            write_u32(f, header->target.texture.y);
+            write_u32(f, header->target.texture.w);
+            write_u32(f, header->target.texture.h);
+        }
+        break;
+        case NUX_CHUNK_MESH: {
+        }
+        break;
+    }
 }
 void
 nux_build_cart (const nu_byte_t *path)
 {
     // Parse json entries
-    nu_byte_t        target[MAX_NAME_SIZE];
-    nu_size_t        entry_count;
-    project_entry_t *entries = NU_NULL;
-    entries                  = parse_json(path, target, &entry_count);
+    nu_byte_t      target[MAX_NAME_SIZE];
+    nu_size_t      entry_count;
+    chunk_entry_t *entries = NU_NULL;
+    entries                = parse_json(path, target, &entry_count);
     NU_ASSERT(entries);
 
     // Open cart
@@ -226,17 +230,18 @@ nux_build_cart (const nu_byte_t *path)
     // Compile entries
     for (nu_size_t i = 0; i < entry_count; ++i)
     {
-        const project_entry_t *entry = entries + i;
-        switch (entry->type)
+        chunk_entry_t *entry = entries + i;
+        switch (entry->header.type)
         {
             case NUX_CHUNK_RAW:
                 break;
             case NUX_CHUNK_WASM: {
                 nu_size_t  size;
-                nu_byte_t *buffer = load_bytes(entry->src, &size);
+                nu_byte_t *buffer = load_bytes(entry->source, &size);
                 NU_ASSERT(buffer);
                 // header
-                write_chunk_header(f, entry, size);
+                entry->header.length = size;
+                write_chunk_header(f, &entry->header);
                 // data
                 NU_ASSERT(fwrite(buffer, size, 1, f));
                 free(buffer);
@@ -245,8 +250,8 @@ nux_build_cart (const nu_byte_t *path)
             case NUX_CHUNK_TEXTURE: {
                 int        w, h, n;
                 nu_byte_t  fn[256];
-                nu_byte_t *img
-                    = stbi_load((char *)entry->src, &w, &h, &n, STBI_default);
+                nu_byte_t *img = stbi_load(
+                    (char *)entry->source, &w, &h, &n, STBI_default);
                 NU_ASSERT(img);
                 nu_v2u_t  target_size = nu_v2u(128, 128);
                 nu_u32_t  target_comp = 4;
@@ -265,10 +270,8 @@ nux_build_cart (const nu_byte_t *path)
                                                     STBIR_RGBA));
 
                 // header
-                write_chunk_header(f, entry, length);
-                // destination
-                write_u32(f, entry->dst.texture.slot);
-                write_v4u(f, entry->dst.texture.area);
+                entry->header.length = length;
+                write_chunk_header(f, &entry->header);
                 // data
                 NU_ASSERT(fwrite(output, length, 1, f));
 

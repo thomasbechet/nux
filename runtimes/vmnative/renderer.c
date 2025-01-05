@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+#include "shader_data.h"
+
 #include <nulib.h>
 #include <vmcore/platform.h>
 #include <glad/gl.h>
@@ -15,6 +17,7 @@ static struct
     GLuint vbo_uvs;
     GLuint vbo_normals;
     GLuint vao;
+    GLuint unlit_shader;
 } _renderer;
 
 static const GLchar *
@@ -65,11 +68,78 @@ message_callback (GLenum        source,
             printf("GL: %s, message = %s", message_type_string(type), message);
             break;
     }
-    NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
+    // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
+}
+static nux_error_code_t
+compile_shader (nu_str_t source, GLuint shader_type, GLuint *shader)
+{
+    GLint success;
+    *shader                 = glCreateShader(shader_type);
+    const GLchar *psource[] = { (const GLchar *)source.data };
+    const GLint   psize[]   = { source.size };
+    glShaderSource(*shader, 1, psource, psize);
+    glCompileShader(*shader);
+    glGetShaderiv(*shader, GL_COMPILE_STATUS, &success);
+    if (success == GL_FALSE)
+    {
+        GLint max_length = 0;
+        glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &max_length);
+        nux_error_data_t error;
+        GLchar          *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
+        error.shader_log     = log;
+        glGetShaderInfoLog(*shader, max_length, &max_length, log);
+        glDeleteShader(*shader);
+        return NUX_ERROR(NUX_ERROR_RENDERER_SHADER_COMPILATION, &error);
+    }
+    return NUX_ERROR_NONE;
+}
+static nux_error_code_t
+compile_program (nu_str_t vert, nu_str_t frag, GLuint *program)
+{
+    GLuint vertex_shader, fragment_shader;
+    GLint  success;
+
+    nux_error_code_t error = NUX_ERROR_NONE;
+
+    error = compile_shader(vert, GL_VERTEX_SHADER, &vertex_shader);
+    NU_CHECK(!error, goto cleanup0);
+
+    error = compile_shader(frag, GL_FRAGMENT_SHADER, &fragment_shader);
+    NU_CHECK(!error, goto cleanup1);
+
+    *program = glCreateProgram();
+    glAttachShader(*program, vertex_shader);
+    glAttachShader(*program, fragment_shader);
+
+    glLinkProgram(*program);
+    glGetProgramiv(*program, GL_LINK_STATUS, &success);
+    if (success == GL_FALSE)
+    {
+        GLint max_length = 0;
+        glGetProgramiv(*program, GL_INFO_LOG_LENGTH, &max_length);
+        GLchar *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
+        glGetProgramInfoLog(*program, max_length, &max_length, log);
+
+        glDeleteProgram(*program);
+        glDeleteShader(vertex_shader);
+        glDeleteShader(fragment_shader);
+
+        nux_error_data_t error_data;
+        error_data.shader_log = log;
+        return NUX_ERROR(NUX_ERROR_RENDERER_SHADER_COMPILATION, &error_data);
+    }
+
+    glDeleteShader(fragment_shader);
+cleanup1:
+    glDeleteShader(vertex_shader);
+cleanup0:
+    return error;
 }
 nux_error_code_t
 nux_renderer_init (const nux_vm_config_t *config)
 {
+    nux_error_code_t error = NUX_ERROR_NONE;
+
     // Initialize GL functions
     if (!gladLoadGL((GLADloadfunc)RGFW_getProcAddress))
     {
@@ -119,11 +189,18 @@ nux_renderer_init (const nux_vm_config_t *config)
     //     2, 3, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V3_SIZE, (void *)0);
     // glEnableVertexAttribArray(2);
 
-    return NUX_ERROR_NONE;
+    // Compile shaders
+    error = compile_program(
+        shader_unlit_vert, shader_unlit_frag, &_renderer.unlit_shader);
+    NU_CHECK(!error, goto cleanup0);
+
+cleanup0:
+    return error;
 }
 nux_error_code_t
 nux_renderer_free (void)
 {
+    glDeleteProgram(_renderer.unlit_shader);
     for (nu_size_t i = 0; i < MAX_TEXTURE; ++i)
     {
         if (_renderer.textures[i])
@@ -224,6 +301,10 @@ os_bind_texture (void *user, nu_u32_t slot)
 {
 }
 void
-os_draw (void *user)
+os_draw (void *user, nu_u32_t first, nu_u32_t count)
 {
+    glUseProgram(_renderer.unlit_shader);
+    glBindVertexArray(_renderer.vao);
+    glDrawArrays(GL_TRIANGLES, first, count);
+    glBindVertexArray(0);
 }
