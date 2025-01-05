@@ -39,12 +39,14 @@ nux_wasm_init (nux_vm_t *vm)
     init_args.native_symbols     = nux_wasm_vm_native_symbols;
     init_args.n_native_symbols   = NU_ARRAY_SIZE(nux_wasm_vm_native_symbols);
 
+    init_args.max_thread_num = 1;
+
+    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+
     if (!wasm_runtime_full_init(&init_args))
     {
         printf("Failed to full init wasm\n");
     }
-
-    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
 }
 void
 nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
@@ -54,6 +56,7 @@ nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
     // Load module data
     wasm->buffer_size = header->length;
     wasm->buffer      = vm_malloc(vm, header->length);
+    NU_ASSERT(wasm->buffer);
     NU_ASSERT(os_read(vm->user, wasm->buffer, header->length));
 
     // Load module
@@ -67,7 +70,7 @@ nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
 
     // Instantiate module
     const nu_size_t init_stack_size = vm->config.mem_stack_size;
-    const nu_size_t init_heap_size  = 0;
+    const nu_size_t init_heap_size  = NU_MEM_1K;
     wasm->instance                  = wasm_runtime_instantiate(wasm->module,
                                               init_stack_size,
                                               init_heap_size,
@@ -112,7 +115,7 @@ void
 nux_wasm_update (nux_vm_t *vm)
 {
     if (!wasm_runtime_call_wasm_a(
-            vm->wasm.env, vm->wasm.start_callback, 0, NU_NULL, 0, NU_NULL))
+            vm->wasm.env, vm->wasm.update_callback, 0, NU_NULL, 0, NU_NULL))
     {
         printf("Call wasm function " NUX_UPDATE_CALLBACK " failed. %s\n",
                wasm_runtime_get_exception(vm->wasm.instance));

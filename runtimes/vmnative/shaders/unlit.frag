@@ -10,5 +10,6 @@ in VS_OUT {
 
 void main()
 {
-    frag_color = texture(texture0, fs_in.uv);
+    // frag_color = texture(texture0, fs_in.uv);
+    frag_color = vec4(1, 0, 0, 1);
 }

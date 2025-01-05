@@ -64,7 +64,7 @@ typedef struct
     (nux_vm_config_t)                                            \
     {                                                            \
         .gpu_texture_count = 4, .gpu_vertex_count = 1024,        \
-        .mem_heap_size = NU_MEM_32K, .mem_stack_size = NU_MEM_1K \
+        .mem_heap_size = NU_MEM_1M, .mem_stack_size = NU_MEM_64K \
     }
 
 #endif

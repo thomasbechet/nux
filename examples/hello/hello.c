@@ -4,9 +4,9 @@
 
 static const f32 *orbit_info = (const f32 *)0x3333;
 
-static const f32 vertices[] = { 0, 0, 0, 0, 0, //
-                                0, 0, 0, 0, 0, //
-                                0, 0, 0, 0, 0 };
+static const f32 vertices[] = { 0,  0, 0, 0, 0, //
+                                1,  1, 0, 0, 0, //
+                                -1, 0, 0, 0, 0 };
 
 void
 start (void)
@@ -18,7 +18,7 @@ start (void)
 void
 update (void)
 {
-    // bind_texture(0);
-    // draw(0, 3);
+    bind_texture(0);
+    draw(0, 3);
     trace("update", 6);
 }

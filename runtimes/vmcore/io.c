@@ -46,6 +46,7 @@ void
 nux_io_init (nux_vm_t *vm)
 {
     vm->io.heap = vm_malloc(vm, NUX_IO_MEM_SIZE);
+    NU_ASSERT(vm->io.heap);
 }
 void
 nux_cart_load_full (nux_vm_t *vm, const nu_byte_t *name)
@@ -71,6 +72,7 @@ nux_cart_load_full (nux_vm_t *vm, const nu_byte_t *name)
                 nux_wasm_load(vm, &header);
                 break;
             case NUX_CHUNK_TEXTURE: {
+                NU_ASSERT(header.length <= NUX_IO_MEM_SIZE);
                 NU_ASSERT(os_read(vm->user, vm->io.heap, header.length));
                 os_write_texture(vm->user,
                                  header.target.texture.slot,
@@ -82,6 +84,7 @@ nux_cart_load_full (nux_vm_t *vm, const nu_byte_t *name)
             }
             break;
             case NUX_CHUNK_MESH: {
+                NU_ASSERT(header.length <= NUX_IO_MEM_SIZE);
                 NU_ASSERT(os_read(vm->user, vm->io.heap, header.length));
                 os_write_vertex(vm->user,
                                 header.target.mesh.first,

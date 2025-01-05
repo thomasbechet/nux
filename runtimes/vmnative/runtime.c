@@ -24,7 +24,7 @@ load_bytes (const char *filename, nu_size_t *size)
     return bytes;
 }
 
-static nu_byte_t global_heap[NU_MEM_1M];
+static nu_byte_t global_heap[NU_MEM_32M];
 
 void
 nux_runtime_run (int argc, const char **argv)

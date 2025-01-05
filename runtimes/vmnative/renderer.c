@@ -217,8 +217,8 @@ nux_renderer_free (void)
 void
 nux_renderer_render (void)
 {
-    glClearColor(1, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClearColor(1, 0, 0, 1);
+    // glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void

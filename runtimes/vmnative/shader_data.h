@@ -14,7 +14,8 @@ static const nu_str_t shader_unlit_frag = NU_STR(
 "\n"
 "void main()\n"
 "{\n"
-"    frag_color = texture(texture0, fs_in.uv);\n"
+"    // frag_color = texture(texture0, fs_in.uv);\n"
+"    frag_color = vec4(1, 0, 0, 1);\n"
 "}\n"
 );
 static const nu_str_t shader_unlit_vert = NU_STR(
@@ -44,11 +45,13 @@ static const nu_str_t shader_unlit_vert = NU_STR(
 "\n"
 "void main()\n"
 "{\n"
-"    vec4 position = view_projection * model * vec4(in_position, 1);\n"
-"    // gl_Position = snap_vertex(position);\n"
-"    gl_Position = position;\n"
+"    // vec4 position = view_projection * model * vec4(in_position, 1);\n"
+"    // // gl_Position = snap_vertex(position);\n"
+"    // gl_Position = position;\n"
+"    //\n"
+"    // vs_out.uv = (uv_transform * vec3(in_uv, 1)).xy;\n"
 "\n"
-"    vs_out.uv = (uv_transform * vec3(in_uv, 1)).xy;\n"
+"    gl_Position = vec4(in_position, 1);\n"
 "}\n"
 );
 #endif

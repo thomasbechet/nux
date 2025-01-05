@@ -1,6 +1,5 @@
 #include "vm.h"
 
-#include "gpu.h"
 #include "wasm.h"
 #include "io.h"
 
@@ -19,7 +18,6 @@ nux_vm_init (const nux_vm_info_t *info)
 
     nux_io_init(vm);
     nux_wasm_init(vm);
-    nux_gpu_init(vm);
 
     return vm;
 }
@@ -37,8 +35,10 @@ nux_vm_update (nux_vm_t *vm)
 void *
 vm_malloc (nux_vm_t *vm, nu_size_t n)
 {
+    printf("allocate %lu\n", n);
     if ((nu_size_t)vm->heap_ptr > (nu_size_t)vm->heap + vm->heap_size)
     {
+        fprintf(stderr, "out of memory\n");
         return NU_NULL;
     }
     void *ptr    = vm->heap_ptr;
