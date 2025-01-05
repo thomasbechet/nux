@@ -80,5 +80,14 @@ nu_u32_le (nu_u32_t v)
         return v;
     }
 }
+nu_f32_t
+nu_f32_le (nu_f32_t v)
+{
+    nu_u32_t a;
+    nu_memcpy(&a, &v, sizeof(a));
+    a = nu_u32_le(a);
+    nu_memcpy(&v, &a, sizeof(a));
+    return v;
+}
 
 #endif

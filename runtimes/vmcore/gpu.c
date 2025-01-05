@@ -8,23 +8,17 @@ nux_gpu_init (nux_vm_t *vm)
 }
 
 void
-write_texture (wasm_exec_env_t env, nu_u32_t type, nu_u32_t slot, const void *p)
+write_texture (wasm_exec_env_t env,
+               nu_u32_t        slot,
+               nu_u32_t        x,
+               nu_u32_t        y,
+               nu_u32_t        w,
+               nu_u32_t        h,
+               const void     *p)
 {
     nux_vm_t *vm = wasm_runtime_get_user_data(env);
-    NU_ASSERT(type <= NUX_TEX256);
-    switch ((nux_gpu_texture_t)type)
-    {
-        case NUX_TEX64:
-            NU_ASSERT(slot < vm->config.gpu_tex64_unit);
-            break;
-        case NUX_TEX128:
-            NU_ASSERT(slot < vm->config.gpu_tex128_unit);
-            break;
-        case NUX_TEX256:
-            NU_ASSERT(slot < vm->config.gpu_tex256_unit);
-            break;
-    }
-    os_write_texture(vm->user, (nux_gpu_texture_t)type, slot, p);
+    NU_ASSERT(slot <= vm->config.gpu_texture_count);
+    os_write_texture(vm->user, slot, x, y, w, h, p);
 }
 void
 write_vertex (wasm_exec_env_t env,
@@ -32,10 +26,15 @@ write_vertex (wasm_exec_env_t env,
               nu_u32_t        count,
               const void     *p)
 {
+    nux_vm_t *vm = wasm_runtime_get_user_data(env);
+    NU_ASSERT(first + count <= vm->config.gpu_vertex_count);
+    os_write_vertex(vm->user, first, count, p);
 }
 void
-bind_texture (wasm_exec_env_t env, nu_u32_t type, nu_u32_t slot)
+bind_texture (wasm_exec_env_t env, nu_u32_t slot)
 {
+    nux_vm_t *vm = wasm_runtime_get_user_data(env);
+    os_bind_texture(vm->user, slot);
 }
 void
 draw (wasm_exec_env_t env, nu_u32_t first, nu_u32_t count)

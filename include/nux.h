@@ -52,13 +52,9 @@ WASM_IMPORT("trace") void trace(const void *str, u32 n);
 //////                              GPU                             //////
 //////////////////////////////////////////////////////////////////////////
 
-#define GPU_TEX64  0
-#define GPU_TEX128 1
-#define GPU_TEX256 2
-
 // Resources
 WASM_IMPORT("write_texture")
-void write_texture(u32 type, u32 slot, const void *p);
+void write_texture(u32 slot, u32 x, u32 y, u32 w, u32 h, const void *p);
 WASM_IMPORT("write_vertex")
 void write_vertex(u32 first, u32 count, const void *p);
 

@@ -3,13 +3,27 @@
 	"chunks": [
 		{
 			"type": "wasm",
-			"src": "hello.wasm",
-			"dst": 0
+			"src": "hello.wasm"
 		},
 		{
-			"type": "tex128",
+			"type": "texture",
 			"src": "/home/thomas/Projects/nux/examples/hello/Horror_Brick_01-128x128.png",
-			"dst": 0
-		}
+			"dst": {
+				"slot": 0,
+				"area": {
+					"x": 0,
+					"y": 0,
+					"h": 128,
+					"w": 128
+				}
+			}
+		},
+        {
+            "type": "mesh",
+            "src": "/home/thomas/Projects/nux/examples/hello/ariane6.glb",
+            "dst": {
+                "first": 0
+            }
+        }
 	]
 }

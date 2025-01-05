@@ -32,5 +32,6 @@ NU_API void     nu_memswp(void *a, void *b, nu_size_t n);
 NU_API void    *nu_memalign(void *ptr, nu_size_t align);
 
 NU_API nu_u32_t nu_u32_le(nu_u32_t v);
+NU_API nu_f32_t nu_f32_le(nu_f32_t v);
 
 #endif

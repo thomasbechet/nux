@@ -6,16 +6,15 @@
 #define RGFW_IMPORT
 #include <rgfw/RGFW.h>
 
-typedef struct
-{
-    GLuint handle;
-} texture_entry_t;
+#define MAX_TEXTURE 256
 
 static struct
 {
-    texture_entry_t *tex64;
-    texture_entry_t *tex128;
-    texture_entry_t *tex256;
+    GLuint textures[MAX_TEXTURE];
+    GLuint vbo_positions;
+    GLuint vbo_uvs;
+    GLuint vbo_normals;
+    GLuint vao;
 } _renderer;
 
 static const GLchar *
@@ -81,18 +80,61 @@ nux_renderer_init (const nux_vm_config_t *config)
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(message_callback, NU_NULL);
 
-    // Initialize resources
-    _renderer.tex64 = malloc(sizeof(*_renderer.tex64) * config->gpu_tex64_unit);
-    _renderer.tex128
-        = malloc(sizeof(*_renderer.tex128) * config->gpu_tex128_unit);
-    _renderer.tex256
-        = malloc(sizeof(*_renderer.tex256) * config->gpu_tex256_unit);
+    // Initialize textures
+    nu_memset(
+        &_renderer.textures, 0, sizeof(*_renderer.textures) * MAX_TEXTURE);
+
+    // Initialize vertices
+    glGenBuffers(1, &_renderer.vbo_positions);
+    glGenBuffers(1, &_renderer.vbo_uvs);
+    glGenBuffers(1, &_renderer.vbo_normals);
+    glGenVertexArrays(1, &_renderer.vao);
+    glBindVertexArray(_renderer.vao);
+    // positions
+    glBindBuffer(GL_ARRAY_BUFFER, _renderer.vbo_positions);
+    glBufferData(GL_ARRAY_BUFFER,
+                 config->gpu_vertex_count * NU_V3_SIZE * sizeof(nu_f32_t),
+                 NU_NULL,
+                 GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(
+        0, 3, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V3_SIZE, (void *)0);
+    glEnableVertexAttribArray(0);
+    // uvs
+    glBindBuffer(GL_ARRAY_BUFFER, _renderer.vbo_uvs);
+    glBufferData(GL_ARRAY_BUFFER,
+                 config->gpu_vertex_count * NU_V2_SIZE * sizeof(nu_f32_t),
+                 NU_NULL,
+                 GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(
+        1, 2, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V2_SIZE, (void *)0);
+    glEnableVertexAttribArray(1);
+    // normals
+    // TODO
+    // glBindBuffer(GL_ARRAY_BUFFER, _renderer.vbo_normals);
+    // glBufferData(GL_ARRAY_BUFFER,
+    //              config->gpu_vertex_count * NU_V3_SIZE * sizeof(nu_f32_t),
+    //              NU_NULL,
+    //              GL_DYNAMIC_DRAW);
+    // glVertexAttribPointer(
+    //     2, 3, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V3_SIZE, (void *)0);
+    // glEnableVertexAttribArray(2);
 
     return NUX_ERROR_NONE;
 }
 nux_error_code_t
 nux_renderer_free (void)
 {
+    for (nu_size_t i = 0; i < MAX_TEXTURE; ++i)
+    {
+        if (_renderer.textures[i])
+        {
+            glDeleteTextures(1, _renderer.textures + i);
+        }
+    }
+    glDeleteVertexArrays(1, &_renderer.vao);
+    glDeleteBuffers(1, &_renderer.vbo_positions);
+    glDeleteBuffers(1, &_renderer.vbo_uvs);
+    // glDeleteBuffers(1, &_renderer.vbo_normals);
     return NUX_ERROR_NONE;
 }
 void
@@ -103,22 +145,84 @@ nux_renderer_render (void)
 }
 
 void
-os_write_texture (void             *user,
-                  nux_gpu_texture_t type,
-                  nu_u32_t          slot,
-                  const void       *p)
+os_write_texture (void       *user,
+                  nu_u32_t    slot,
+                  nu_u32_t    x,
+                  nu_u32_t    y,
+                  nu_u32_t    w,
+                  nu_u32_t    h,
+                  const void *p)
 {
-    switch (type)
+    GLuint handle = _renderer.textures[slot];
+    if (!handle)
     {
-        case NUX_TEX64:
-            break;
-        case NUX_TEX128:
-            break;
-        case NUX_TEX256:
-            break;
-    }
-}
+        glGenTextures(1, &handle);
+        glBindTexture(GL_TEXTURE_2D, handle);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_RGBA,
+                     NUX_TEXTURE_SIZE,
+                     NUX_TEXTURE_SIZE,
+                     0,
+                     GL_RGBA,
+                     GL_UNSIGNED_BYTE,
+                     NU_NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
+        glBindTexture(GL_TEXTURE_2D, 0);
+        _renderer.textures[slot] = handle;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, handle);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, p);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+void
+os_write_vertex (void *user, nu_u32_t first, nu_u32_t count, const void *p)
+{
+    const nu_f32_t *data = p;
+    nu_f32_t       *ptr  = NU_NULL;
+    // positions
+    glBindBuffer(GL_ARRAY_BUFFER, _renderer.vbo_positions);
+    ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(ptr);
+    for (nu_size_t i = 0; i < count; ++i)
+    {
+        ptr[(first + i) * NU_V3_SIZE + 0]
+            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 0];
+        ptr[(first + i) * NU_V3_SIZE + 1]
+            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 1];
+        ptr[(first + i) * NU_V3_SIZE + 2]
+            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 2];
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    // uvs
+    glBindBuffer(GL_ARRAY_BUFFER, _renderer.vbo_uvs);
+    ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(ptr);
+    for (nu_size_t i = 0; i < count; ++i)
+    {
+        ptr[(first + i) * NU_V2_SIZE + 0]
+            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 3];
+        ptr[(first + i) * NU_V2_SIZE + 1]
+            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 4];
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // normals
+    // TODO
+}
+void
+os_bind_texture (void *user, nu_u32_t slot)
+{
+}
 void
 os_draw (void *user)
 {

@@ -16,7 +16,7 @@ trace (wasm_exec_env_t env, const void *str, nu_u32_t n)
 
 static NativeSymbol nux_wasm_vm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
-    EXPORT_WASM_API_WITH_SIG(write_texture, "(ii*)"),
+    EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(write_vertex, "(ii*)"),
     EXPORT_WASM_API_WITH_SIG(bind_texture, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw, "(ii)"),
