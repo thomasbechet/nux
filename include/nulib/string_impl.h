@@ -134,6 +134,11 @@ nu_sv_vfmt (nu_char_t *buf, nu_size_t n, const nu_char_t *format, va_list args)
     return nu_sv(buf, k);
 #endif
 }
+nu_sv_t
+nu_sv_join (nu_char_t *buf, nu_size_t n, nu_sv_t a, nu_sv_t b)
+{
+    return nu_sv_fmt(buf, n, NU_SV_FMT NU_SV_FMT, NU_SV_ARGS(a), NU_SV_ARGS(b));
+}
 
 nu_sv_t
 nu_path_basename (nu_sv_t path)

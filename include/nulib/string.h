@@ -6,6 +6,8 @@
 
 #include <stdarg.h>
 
+#define NU_PATH_MAX 256
+
 #define NU_SV(str)                                     \
     (nu_sv_t)                                          \
     {                                                  \
@@ -42,6 +44,7 @@ NU_API nu_sv_t   nu_sv_vfmt(nu_char_t       *buf,
                             nu_size_t        n,
                             const nu_char_t *format,
                             va_list          args);
+NU_API nu_sv_t   nu_sv_join(nu_char_t *buf, nu_size_t n, nu_sv_t a, nu_sv_t b);
 
 NU_API nu_sv_t nu_path_basename(nu_sv_t path);
 NU_API nu_sv_t nu_path_dirname(nu_sv_t path);

@@ -1,5 +1,6 @@
 #include "builder.h"
 #include "nulib/math.h"
+#include "nulib/string.h"
 
 #include <vmcore/config.h>
 #include <cJSON/cJSON.h>
@@ -80,7 +81,7 @@ parse_target (cJSON *j, nux_chunk_type_t type, nux_chunk_target_t *target)
 }
 static chunk_entry_t *
 parse_json (nu_sv_t    path,
-            nu_char_t  target[MAX_NAME_SIZE],
+            nu_char_t  project_name[MAX_NAME_SIZE],
             nu_size_t *entry_count)
 {
     // load file
@@ -90,12 +91,12 @@ parse_json (nu_sv_t    path,
     NU_ASSERT(root);
     NU_ASSERT(cJSON_IsObject(root));
 
-    // load target
-    cJSON *jcart = cJSON_GetObjectItem(root, "target");
+    // load project name
+    cJSON *jcart = cJSON_GetObjectItem(root, "name");
     NU_ASSERT(jcart);
     NU_ASSERT(cJSON_IsString(jcart));
     nu_sv_to_cstr(
-        nu_sv_cstr(cJSON_GetStringValue(jcart)), target, MAX_NAME_SIZE);
+        nu_sv_cstr(cJSON_GetStringValue(jcart)), project_name, MAX_NAME_SIZE);
 
     // parse entries
     cJSON *jentries = cJSON_GetObjectItem(root, "chunks");
@@ -203,21 +204,37 @@ write_chunk_header (FILE *f, nux_chunk_header_t *header)
     }
 }
 void
-nux_build_cart (nu_sv_t path)
+nux_build_project (nu_sv_t workdir)
 {
+    // Find package file
+    nu_char_t package_filename[NU_PATH_MAX];
+    nu_sv_t   package_filename_sv = nu_path_concat(
+        package_filename, NU_PATH_MAX, workdir, NU_SV("package.json"));
+
     // Parse json entries
-    nu_char_t      target[MAX_NAME_SIZE];
+    nu_char_t      project_name[MAX_NAME_SIZE];
     nu_size_t      entry_count;
-    chunk_entry_t *entries = NU_NULL;
-    entries                = parse_json(path, target, &entry_count);
+    chunk_entry_t *entries
+        = parse_json(package_filename_sv, project_name, &entry_count);
     NU_ASSERT(entries);
 
+    // Compute target name
+    nu_char_t target_filename[NU_PATH_MAX];
+    nu_sv_t   target_filename_sv = nu_sv_join(
+        target_filename, NU_PATH_MAX, nu_sv_cstr(project_name), NU_SV(".bin"));
+    nu_char_t target_path[NU_PATH_MAX];
+    nu_path_concat(target_path, NU_PATH_MAX, workdir, target_filename_sv);
+
     // Open cart
-    FILE *f = fopen((char *)target, "wb");
+    FILE *f = fopen(target_path, "wb");
     if (!f)
     {
         printf("Failed to open file\n");
         goto cleanup0;
+    }
+    else
+    {
+        printf("Cart file created at %s\n", target_path);
     }
 
     // Write header

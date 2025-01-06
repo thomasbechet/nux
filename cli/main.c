@@ -42,7 +42,7 @@ cmd_build (nu_u32_t argc, const nu_char_t **argv)
 {
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux build [-h] <path>",
+        "nux build [-h] <workdir>",
         NULL,
     };
     struct argparse_option options[] = {
@@ -50,14 +50,13 @@ cmd_build (nu_u32_t argc, const nu_char_t **argv)
         OPT_END(),
     };
     argparse_init(&argparse, options, usages, 0);
-    argc = argparse_parse(&argparse, argc, argv);
-    if (argc < 1)
+    argc            = argparse_parse(&argparse, argc, argv);
+    nu_sv_t workdir = NU_SV(".");
+    if (argc >= 1)
     {
-        argparse_usage(&argparse);
-        return -1;
+        workdir = nu_sv_cstr(argv[0]);
     }
-    nu_sv_t path = nu_sv_cstr(argv[0]);
-    nux_build_cart(path);
+    nux_build_project(workdir);
     return 0;
 }
 
