@@ -1,7 +1,7 @@
 #ifndef NUX_SHADER_DATA_H
 #define NUX_SHADER_DATA_H
 #include <nulib.h>
-static const nu_str_t shader_unlit_frag = NU_STR(
+static const nu_sv_t shader_unlit_frag = NU_SV(
 "#version 330 core\n"
 "\n"
 "out vec4 frag_color;\n"
@@ -18,7 +18,7 @@ static const nu_str_t shader_unlit_frag = NU_STR(
 "    frag_color = vec4(1, 0, 0, 1);\n"
 "}\n"
 );
-static const nu_str_t shader_unlit_vert = NU_STR(
+static const nu_sv_t shader_unlit_vert = NU_SV(
 "#version 330 core\n"
 "\n"
 "layout(location = 0) in vec3 in_position;\n"

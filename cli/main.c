@@ -5,7 +5,7 @@
 
 typedef struct
 {
-    nu_str_t cmd;
+    nu_sv_t cmd;
     nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
 } cmd_entry_t;
 
@@ -56,7 +56,7 @@ cmd_build (nu_u32_t argc, const nu_char_t **argv)
         argparse_usage(&argparse);
         return -1;
     }
-    nu_str_t path = nu_str_from_cstr(argv[0]);
+    nu_sv_t path = nu_sv_cstr(argv[0]);
     nux_build_cart(path);
     return 0;
 }
@@ -71,9 +71,9 @@ main (int argc, const nu_char_t *argv[])
         NULL,
     };
     cmd_entry_t commands[] = {
-        { NU_STR("run"), cmd_run },
-        { NU_STR("init"), cmd_init },
-        { NU_STR("build"), cmd_build },
+        { NU_SV("run"), cmd_run },
+        { NU_SV("init"), cmd_init },
+        { NU_SV("build"), cmd_build },
     };
     struct argparse_option options[] = {
         OPT_HELP(),
@@ -100,10 +100,10 @@ main (int argc, const nu_char_t *argv[])
     }
 
     cmd_entry_t *cmd      = NULL;
-    nu_str_t     cmd_name = nu_str_from_cstr(argv[0]);
+    nu_sv_t      cmd_name = nu_sv_cstr(argv[0]);
     for (nu_size_t i = 0; i < NU_ARRAY_SIZE(commands); i++)
     {
-        if (nu_str_eq(commands[i].cmd, cmd_name))
+        if (nu_sv_eq(commands[i].cmd, cmd_name))
         {
             cmd = &commands[i];
         }

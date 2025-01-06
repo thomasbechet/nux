@@ -3,6 +3,6 @@
 
 #include <nulib.h>
 
-NU_API void nux_build_cart(nu_str_t path);
+NU_API void nux_build_cart(nu_sv_t path);
 
 #endif

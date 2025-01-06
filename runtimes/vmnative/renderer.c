@@ -71,7 +71,7 @@ message_callback (GLenum        source,
     // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
 }
 static nux_error_code_t
-compile_shader (nu_str_t source, GLuint shader_type, GLuint *shader)
+compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
 {
     GLint success;
     *shader                 = glCreateShader(shader_type);
@@ -94,7 +94,7 @@ compile_shader (nu_str_t source, GLuint shader_type, GLuint *shader)
     return NUX_ERROR_NONE;
 }
 static nux_error_code_t
-compile_program (nu_str_t vert, nu_str_t frag, GLuint *program)
+compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
 {
     GLuint vertex_shader, fragment_shader;
     GLint  success;

@@ -18,7 +18,7 @@ printf "#include <nulib.h>\n"
 
 for file in $1/*; do
     name="shader_$(basename $file | tr '.' '_')" 
-    printf "static const nu_str_t $name = NU_STR(\n"
+    printf "static const nu_sv_t $name = NU_SV(\n"
     while IFS= read -r line; do
         # if [[ -z $line ]]; then
         #     continue 
