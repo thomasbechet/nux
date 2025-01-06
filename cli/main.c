@@ -6,15 +6,15 @@
 struct cmd_struct
 {
     nu_str_t cmd;
-    int (*fn)(int, const char **);
+    nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
 };
 
-static int
-cmd_run (int argc, const char **argv)
+static nu_u32_t
+cmd_run (nu_u32_t argc, const nu_char_t **argv)
 {
-    const char       *path = NULL;
-    struct argparse   argparse;
-    const char *const usages[] = {
+    const nu_char_t       *path = NULL;
+    struct argparse        argparse;
+    const nu_char_t *const usages[] = {
         "nux run [-h] <cart>",
         NULL,
     };
@@ -32,16 +32,16 @@ cmd_run (int argc, const char **argv)
     nux_runtime_run(argc, argv);
     return 0;
 }
-static int
-cmd_init (int argc, const char **argv)
+static nu_u32_t
+cmd_init (nu_u32_t argc, const nu_char_t **argv)
 {
     return 0;
 }
-static int
-cmd_build (int argc, const char **argv)
+static nu_u32_t
+cmd_build (nu_u32_t argc, const nu_char_t **argv)
 {
-    struct argparse   argparse;
-    const char *const usages[] = {
+    struct argparse        argparse;
+    const nu_char_t *const usages[] = {
         "nux build [-h] <path>",
         NULL,
     };
@@ -56,17 +56,17 @@ cmd_build (int argc, const char **argv)
         argparse_usage(&argparse);
         return -1;
     }
-    const nu_byte_t *path = (const nu_byte_t *)argv[0];
+    nu_str_t path = nu_str_from_cstr(argv[0]);
     nux_build_cart(path);
     return 0;
 }
 
 int
-main (int argc, const char *argv[])
+main (int argc, const nu_char_t *argv[])
 {
-    nu_bool_t         version = NU_FALSE;
-    struct argparse   argparse;
-    const char *const usages[] = {
+    nu_bool_t              version = NU_FALSE;
+    struct argparse        argparse;
+    const nu_char_t *const usages[] = {
         "nux [-h] [-v] <command> [<args>]",
         NULL,
     };
@@ -100,8 +100,8 @@ main (int argc, const char *argv[])
     }
 
     struct cmd_struct *cmd      = NULL;
-    nu_str_t           cmd_name = nu_str_from_cstr((nu_byte_t *)argv[0]);
-    for (int i = 0; i < NU_ARRAY_SIZE(commands); i++)
+    nu_str_t           cmd_name = nu_str_from_cstr(argv[0]);
+    for (nu_size_t i = 0; i < NU_ARRAY_SIZE(commands); i++)
     {
         if (nu_str_eq(commands[i].cmd, cmd_name))
         {

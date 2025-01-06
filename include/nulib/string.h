@@ -6,11 +6,6 @@
 
 #include <stdarg.h>
 
-#define _NU_S(x)      #x
-#define _NU_S_(x)     _NU_S(x)
-#define _NU_S__LINE__ _NU_S_(__LINE__)
-
-#define NU_MATCH(a, b) (nu_str_eq(a, b))
 #define NU_STR(str)                                          \
     (nu_str_t)                                               \
     {                                                        \
@@ -19,20 +14,16 @@
 
 #define NU_STR_FMT       "%.*s"
 #define NU_STR_ARGS(str) (int)str.size, str.data
-#define NU_STR_BUF(name, size)   \
-    nu_byte_t name##_data[size]; \
-    nu_str_t  name = nu_str(name##_data, size);
 
 typedef struct
 {
-    nu_byte_t *data;
-    nu_size_t  size;
+    const nu_byte_t *data; // might not be null-terminated
+    nu_u32_t         size;
 } nu_str_t;
 
-NU_API nu_size_t nu_cstr_len(const nu_byte_t *str, nu_size_t maxlen);
-NU_API nu_str_t  nu_str(nu_byte_t *bytes, nu_size_t n);
-NU_API nu_str_t  nu_str_from_cstr(nu_byte_t *s);
-NU_API void      nu_str_to_cstr(nu_str_t str, nu_byte_t *s, nu_size_t n);
+NU_API nu_str_t  nu_str_from_cstr(const nu_char_t *s);
+NU_API nu_str_t  nu_str_from_bytes(const nu_byte_t *bytes, nu_size_t n);
+NU_API void      nu_str_to_cstr(nu_str_t str, nu_char_t *s, nu_size_t n);
 NU_API nu_bool_t nu_str_eq(nu_str_t s1, nu_str_t s2);
 NU_API nu_u32_t  nu_str_hash(nu_str_t s);
 NU_API nu_bool_t nu_str_next(nu_str_t s, nu_size_t *it, nu_wchar_t *c);

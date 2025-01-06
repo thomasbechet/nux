@@ -9,12 +9,14 @@
 #include <stb/stb_image_resize2.h>
 
 static nu_byte_t *
-load_bytes (const nu_byte_t *filename, nu_size_t *size)
+load_bytes (nu_str_t filename, nu_size_t *size)
 {
-    FILE *f = fopen((char *)filename, "rb");
+    char buf[256]; // TODO: support PATH_MAX
+    nu_str_to_cstr(filename, buf, sizeof(buf));
+    FILE *f = fopen(buf, "rb");
     if (!f)
     {
-        printf("Failed to open file %s\n", filename);
+        printf("Failed to open file %s\n", buf);
         return NU_NULL;
     }
     fseek(f, 0, SEEK_END);
@@ -35,11 +37,11 @@ load_bytes (const nu_byte_t *filename, nu_size_t *size)
 typedef struct
 {
     nux_chunk_header_t header;
-    nu_byte_t          source[MAX_NAME_SIZE];
+    nu_char_t          source[MAX_NAME_SIZE];
 } chunk_entry_t;
 
 static nu_f32_t
-parse_f32 (cJSON *object, const char *name)
+parse_f32 (cJSON *object, const nu_char_t *name)
 {
     NU_ASSERT(object && name && cJSON_IsObject(object));
     cJSON *f = cJSON_GetObjectItem(object, name);
@@ -77,9 +79,7 @@ parse_target (cJSON *j, nux_chunk_type_t type, nux_chunk_target_t *target)
     }
 }
 static chunk_entry_t *
-parse_json (const nu_byte_t *path,
-            nu_byte_t        target[MAX_NAME_SIZE],
-            nu_size_t       *entry_count)
+parse_json (nu_str_t path, char target[MAX_NAME_SIZE], nu_size_t *entry_count)
 {
     // load file
     nu_byte_t *jfile = load_bytes(path, NU_NULL);
@@ -92,9 +92,8 @@ parse_json (const nu_byte_t *path,
     cJSON *jcart = cJSON_GetObjectItem(root, "target");
     NU_ASSERT(jcart);
     NU_ASSERT(cJSON_IsString(jcart));
-    nu_str_to_cstr(nu_str_from_cstr((nu_byte_t *)cJSON_GetStringValue(jcart)),
-                   target,
-                   MAX_NAME_SIZE);
+    nu_str_to_cstr(
+        nu_str_from_cstr(cJSON_GetStringValue(jcart)), target, MAX_NAME_SIZE);
 
     // parse entries
     cJSON *jentries = cJSON_GetObjectItem(root, "chunks");
@@ -116,8 +115,7 @@ parse_json (const nu_byte_t *path,
         NU_ASSERT(cJSON_IsString(jsource));
 
         // check type
-        nu_str_t type_str
-            = nu_str_from_cstr((nu_byte_t *)cJSON_GetStringValue(jtype));
+        nu_str_t type_str = nu_str_from_cstr(cJSON_GetStringValue(jtype));
         nux_chunk_type_t type;
         nu_bool_t        found = NU_FALSE;
         const struct
@@ -145,10 +143,9 @@ parse_json (const nu_byte_t *path,
             return NU_NULL;
         }
         entries[i].header.type = type;
-        nu_str_to_cstr(
-            nu_str_from_cstr((nu_byte_t *)cJSON_GetStringValue(jsource)),
-            entries[i].source,
-            MAX_NAME_SIZE);
+        nu_str_to_cstr(nu_str_from_cstr(cJSON_GetStringValue(jsource)),
+                       entries[i].source,
+                       MAX_NAME_SIZE);
 
         // parse target object
         parse_target(jtarget, type, &entries[i].header.target);
@@ -204,10 +201,10 @@ write_chunk_header (FILE *f, nux_chunk_header_t *header)
     }
 }
 void
-nux_build_cart (const nu_byte_t *path)
+nux_build_cart (nu_str_t path)
 {
     // Parse json entries
-    nu_byte_t      target[MAX_NAME_SIZE];
+    nu_char_t      target[MAX_NAME_SIZE];
     nu_size_t      entry_count;
     chunk_entry_t *entries = NU_NULL;
     entries                = parse_json(path, target, &entry_count);
@@ -237,7 +234,8 @@ nux_build_cart (const nu_byte_t *path)
                 break;
             case NUX_CHUNK_WASM: {
                 nu_size_t  size;
-                nu_byte_t *buffer = load_bytes(entry->source, &size);
+                nu_byte_t *buffer
+                    = load_bytes(nu_str_from_cstr(entry->source), &size);
                 NU_ASSERT(buffer);
                 // header
                 entry->header.length = size;

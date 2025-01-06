@@ -11,40 +11,40 @@
 #endif
 
 static nu_size_t
-nu__cstr_len (const nu_byte_t *str)
+nu__cstr_len (const char *str)
 {
-    const nu_byte_t *p = str;
+    const char *p = str;
     while (*p)
     {
         p++;
     }
     return p - str;
 }
-nu_size_t
-nu_cstr_len (const nu_byte_t *str, nu_size_t maxlen)
+// nu_size_t
+// nu_cstr_len (const char *c, nu_size_t maxlen)
+// {
+//     const char *p = c;
+//     while (maxlen-- > 0 && *p)
+//     {
+//         p++;
+//     }
+//     return p - c;
+// }
+nu_str_t
+nu_str_from_cstr (const nu_char_t *s)
 {
-    const nu_byte_t *p = str;
-    while (maxlen-- > 0 && *p)
-    {
-        p++;
-    }
-    return p - str;
+    return nu_str_from_bytes((const nu_byte_t *)s, nu__cstr_len(s));
 }
 nu_str_t
-nu_str (nu_byte_t *bytes, nu_size_t n)
+nu_str_from_bytes (const nu_byte_t *bytes, nu_size_t n)
 {
     nu_str_t str;
     str.data = bytes;
     str.size = n;
     return str;
 }
-nu_str_t
-nu_str_from_cstr (nu_byte_t *s)
-{
-    return nu_str(s, nu__cstr_len(s));
-}
 void
-nu_str_to_cstr (nu_str_t str, nu_byte_t *chars, nu_size_t n)
+nu_str_to_cstr (nu_str_t str, char *chars, nu_size_t n)
 {
     NU_ASSERT(str.size < n);
     nu_memset(chars, 0, n);
@@ -85,7 +85,7 @@ nu_bool_t
 nu_str_to_u32 (nu_str_t s, nu_u32_t *v)
 {
 #ifdef NU_STDLIB
-    nu_byte_t  buf[32];
+    char       buf[32];
     nu_byte_t *nptr = NU_NULL;
     nu_str_to_cstr(s, buf, 32);
     *v = strtoul((char *)buf, (char **)&nptr, 10);
@@ -96,10 +96,10 @@ nu_bool_t
 nu_str_to_i32 (nu_str_t s, nu_i32_t *v)
 {
 #ifdef NU_STDLIB
-    nu_byte_t  buf[32];
-    nu_byte_t *nptr = NU_NULL;
+    nu_char_t  buf[32];
+    nu_char_t *nptr = NU_NULL;
     nu_str_to_cstr(s, buf, 32);
-    *v = strtol((char *)buf, (char **)&nptr, 10);
+    *v = strtol(buf, &nptr, 10);
     return !*nptr;
 #endif
 }
@@ -107,10 +107,10 @@ nu_bool_t
 nu_str_to_f32 (nu_str_t s, nu_f32_t *v)
 {
 #ifdef NU_STDLIB
-    nu_byte_t  buf[32];
-    nu_byte_t *nptr = NU_NULL;
+    nu_char_t  buf[32];
+    nu_char_t *nptr = NU_NULL;
     nu_str_to_cstr(s, buf, 32);
-    *v = strtof((char *)buf, (char **)&nptr);
+    *v = strtof(buf, &nptr);
     return !*nptr;
 #endif
 }
@@ -130,7 +130,7 @@ nu_str_vfmt (nu_str_t buf, nu_str_t format, va_list args)
 {
 #ifdef NU_STDLIB
     int r = vsnprintf((char *)buf.data, buf.size, (char *)format.data, args);
-    return nu_str(buf.data, r);
+    return nu_str_from_bytes(buf.data, r);
 #endif
 }
 

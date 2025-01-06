@@ -74,6 +74,7 @@ typedef unsigned long nu_size_t;
 typedef intptr_t      nu_intptr_t;
 typedef nu_u8_t       nu_byte_t;
 typedef int           nu_word_t;
+typedef char          nu_char_t;
 typedef nu_i32_t      nu_wchar_t;
 
 #endif
