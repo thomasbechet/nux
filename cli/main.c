@@ -3,11 +3,11 @@
 #include <builder/builder.h>
 #include <argparse/argparse.h>
 
-struct cmd_struct
+typedef struct
 {
     nu_str_t cmd;
     nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
-};
+} cmd_entry_t;
 
 static nu_u32_t
 cmd_run (nu_u32_t argc, const nu_char_t **argv)
@@ -70,7 +70,7 @@ main (int argc, const nu_char_t *argv[])
         "nux [-h] [-v] <command> [<args>]",
         NULL,
     };
-    struct cmd_struct commands[] = {
+    cmd_entry_t commands[] = {
         { NU_STR("run"), cmd_run },
         { NU_STR("init"), cmd_init },
         { NU_STR("build"), cmd_build },
@@ -99,8 +99,8 @@ main (int argc, const nu_char_t *argv[])
         return -1;
     }
 
-    struct cmd_struct *cmd      = NULL;
-    nu_str_t           cmd_name = nu_str_from_cstr(argv[0]);
+    cmd_entry_t *cmd      = NULL;
+    nu_str_t     cmd_name = nu_str_from_cstr(argv[0]);
     for (nu_size_t i = 0; i < NU_ARRAY_SIZE(commands); i++)
     {
         if (nu_str_eq(commands[i].cmd, cmd_name))

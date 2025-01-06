@@ -31,6 +31,16 @@ nu__cstr_len (const char *str)
 //     return p - c;
 // }
 nu_str_t
+nu_str_null (void)
+{
+    return nu_str_from_bytes(NU_NULL, 0);
+}
+nu_bool_t
+nu_str_is_null (nu_str_t str)
+{
+    return str.data == NU_NULL;
+}
+nu_str_t
 nu_str_from_cstr (const nu_char_t *s)
 {
     return nu_str_from_bytes((const nu_byte_t *)s, nu__cstr_len(s));
@@ -115,23 +125,54 @@ nu_str_to_f32 (nu_str_t s, nu_f32_t *v)
 #endif
 }
 nu_str_t
-nu_str_fmt (nu_str_t buf, nu_str_t format, ...)
+nu_str_fmt (nu_char_t *buf, nu_size_t n, const nu_char_t *format, ...)
 {
 #ifdef NU_STDLIB
     va_list args;
     va_start(args, format);
-    nu_str_t r = nu_str_vfmt(buf, format, args);
+    nu_str_t r = nu_str_vfmt(buf, n, format, args);
     va_end(args);
     return r;
 #endif
 }
 nu_str_t
-nu_str_vfmt (nu_str_t buf, nu_str_t format, va_list args)
+nu_str_vfmt (nu_char_t *buf, nu_size_t n, const nu_char_t *format, va_list args)
 {
 #ifdef NU_STDLIB
-    int r = vsnprintf((char *)buf.data, buf.size, (char *)format.data, args);
-    return nu_str_from_bytes(buf.data, r);
+    vsnprintf(buf, n, format, args);
+    return nu_str_from_cstr(buf);
 #endif
+}
+
+nu_str_t
+nu_path_basename (nu_str_t path)
+{
+    for (nu_size_t n = path.size; n; --n)
+    {
+        if (path.data[n - 1] == '/')
+        {
+            return nu_str_from_bytes(path.data + n, path.size - n);
+        }
+    }
+    return path;
+}
+nu_str_t
+nu_path_dirname (nu_str_t path)
+{
+    for (nu_size_t n = path.size; n; --n)
+    {
+        if (path.data[n - 1] == '/')
+        {
+            return nu_str_from_bytes(path.data, n);
+        }
+    }
+    return path;
+}
+nu_str_t
+nu_path_concat (nu_char_t *buf, nu_size_t n, nu_str_t p1, nu_str_t p2)
+{
+    return nu_str_fmt(
+        buf, n, NU_STR_FMT "/" NU_STR_FMT, NU_STR_ARGS(p1), NU_STR_ARGS(p2));
 }
 
 #endif
