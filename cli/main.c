@@ -1,6 +1,6 @@
 #include <vmcore/vm.h>
 #include <vmnative/runtime.h>
-#include <builder/builder.h>
+#include <builder/package.h>
 #include <argparse/argparse.h>
 
 typedef struct
@@ -9,6 +9,50 @@ typedef struct
     nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
 } cmd_entry_t;
 
+static nu_u32_t
+cmd_init (nu_u32_t argc, const nu_char_t **argv)
+{
+    struct argparse        argparse;
+    const nu_char_t *const usages[] = {
+        "nux init [-h] [path]",
+        NULL,
+    };
+    struct argparse_option options[] = {
+        OPT_HELP(),
+        OPT_END(),
+    };
+    argparse_init(&argparse, options, usages, 0);
+    argc         = argparse_parse(&argparse, argc, argv);
+    nu_sv_t path = NU_SV(".");
+    if (argc >= 1)
+    {
+        path = nu_sv_cstr(argv[0]);
+    }
+    nux_init_package(path);
+    return 0;
+}
+static nu_u32_t
+cmd_build (nu_u32_t argc, const nu_char_t **argv)
+{
+    struct argparse        argparse;
+    const nu_char_t *const usages[] = {
+        "nux build [-h] [path]",
+        NULL,
+    };
+    struct argparse_option options[] = {
+        OPT_HELP(),
+        OPT_END(),
+    };
+    argparse_init(&argparse, options, usages, 0);
+    argc         = argparse_parse(&argparse, argc, argv);
+    nu_sv_t path = NU_SV(".");
+    if (argc >= 1)
+    {
+        path = nu_sv_cstr(argv[0]);
+    }
+    nux_build_package(path);
+    return 0;
+}
 static nu_u32_t
 cmd_run (nu_u32_t argc, const nu_char_t **argv)
 {
@@ -32,33 +76,6 @@ cmd_run (nu_u32_t argc, const nu_char_t **argv)
     nux_runtime_run(argc, argv);
     return 0;
 }
-static nu_u32_t
-cmd_init (nu_u32_t argc, const nu_char_t **argv)
-{
-    return 0;
-}
-static nu_u32_t
-cmd_build (nu_u32_t argc, const nu_char_t **argv)
-{
-    struct argparse        argparse;
-    const nu_char_t *const usages[] = {
-        "nux build [-h] <workdir>",
-        NULL,
-    };
-    struct argparse_option options[] = {
-        OPT_HELP(),
-        OPT_END(),
-    };
-    argparse_init(&argparse, options, usages, 0);
-    argc            = argparse_parse(&argparse, argc, argv);
-    nu_sv_t workdir = NU_SV(".");
-    if (argc >= 1)
-    {
-        workdir = nu_sv_cstr(argv[0]);
-    }
-    nux_build_project(workdir);
-    return 0;
-}
 
 int
 main (int argc, const nu_char_t *argv[])
@@ -70,9 +87,9 @@ main (int argc, const nu_char_t *argv[])
         NULL,
     };
     cmd_entry_t commands[] = {
-        { NU_SV("run"), cmd_run },
         { NU_SV("init"), cmd_init },
         { NU_SV("build"), cmd_build },
+        { NU_SV("run"), cmd_run },
     };
     struct argparse_option options[] = {
         OPT_HELP(),
@@ -83,9 +100,9 @@ main (int argc, const nu_char_t *argv[])
     argparse_describe(&argparse,
                       "\nNUX is fantasy retro console",
                       "\nCOMMANDS\n"
-                      "\n    run     Execute a cartridge"
-                      "\n    init    Create a new nux project"
-                      "\n    build   Compile project to cartridge");
+                      "\n    init    Create a new nux package"
+                      "\n    build   Compile a package to cartridge"
+                      "\n    run     Run a cartridge");
     argc = argparse_parse(&argparse, argc, argv);
     if (version)
     {
