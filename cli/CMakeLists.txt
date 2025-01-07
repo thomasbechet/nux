@@ -9,4 +9,4 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/devtools)
 
-target_link_libraries(nux vmnative builder)
+target_link_libraries(nux vmnative package)

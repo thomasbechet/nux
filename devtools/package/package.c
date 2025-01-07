@@ -1,5 +1,7 @@
 #include "package.h"
 
+#include "nulib/string.h"
+
 #include <cJSON/cJSON.h>
 
 nu_byte_t *
@@ -83,7 +85,10 @@ parse_package (nu_sv_t path, nux_package_t *pkg)
         nu_sv_cstr(cJSON_GetStringValue(jcart)), pkg->name, NUX_NAME_MAX);
 
     // Compute target name
-    nu_sv_join(pkg->target, NUX_NAME_MAX, nu_sv_cstr(pkg->name), NU_SV(".bin"));
+    nu_char_t target_name[NUX_NAME_MAX];
+    nu_sv_join(target_name, NUX_NAME_MAX, nu_sv_cstr(pkg->name), NU_SV(".bin"));
+    nu_path_concat(
+        pkg->target_path, NU_PATH_MAX, path, nu_sv_cstr(target_name));
 
     // Parse entries
     cJSON *jentries = cJSON_GetObjectItem(root, "chunks");
@@ -134,7 +139,7 @@ parse_package (nu_sv_t path, nux_package_t *pkg)
         }
         entries[i].header.type = type;
         nu_sv_to_cstr(nu_sv_cstr(cJSON_GetStringValue(jsource)),
-                      entries[i].source,
+                      entries[i].source_path,
                       NU_PATH_MAX);
 
         // parse target object
@@ -148,10 +153,13 @@ parse_package (nu_sv_t path, nux_package_t *pkg)
 }
 
 void
-nux_package_init (nu_sv_t path, nux_package_t *package)
+nux_package_load (nu_sv_t path, nux_package_t *package)
 {
     nu_memset(package, 0, sizeof(*package));
-    parse_package(path, package);
+    nu_char_t json_path[NU_PATH_MAX];
+    nu_sv_t   json_path_sv
+        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV("nux.json"));
+    parse_package(json_path_sv, package);
 }
 void
 nux_package_free (nux_package_t *package)

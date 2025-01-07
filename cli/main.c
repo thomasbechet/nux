@@ -1,6 +1,6 @@
 #include <vmcore/vm.h>
 #include <vmnative/runtime.h>
-#include <builder/package.h>
+#include <package/package.h>
 #include <argparse/argparse.h>
 
 typedef struct
@@ -14,21 +14,30 @@ cmd_init (nu_u32_t argc, const nu_char_t **argv)
 {
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux init [-h] [path]",
+        "nux init [-h] <name>",
         NULL,
     };
+    const nu_char_t       *name      = NU_NULL;
+    const nu_char_t       *path      = NU_NULL;
+    const nu_char_t       *lang      = NU_NULL;
     struct argparse_option options[] = {
         OPT_HELP(),
+        OPT_STRING(
+            'p', "path", &name, "init package at location", NU_NULL, 0, 0),
+        OPT_STRING(
+            'l', "lang", &lang, "initialize the wasm language", NU_NULL, 0, 0),
         OPT_END(),
     };
     argparse_init(&argparse, options, usages, 0);
-    argc         = argparse_parse(&argparse, argc, argv);
-    nu_sv_t path = NU_SV(".");
-    if (argc >= 1)
+    argc = argparse_parse(&argparse, argc, argv);
+    if (argc < 1)
     {
-        path = nu_sv_cstr(argv[0]);
+        argparse_usage(&argparse);
+        return -1;
     }
-    nux_init_package(path);
+    nux_command_init(path ? nu_sv_cstr(path) : NU_SV("."),
+                     nu_sv_cstr(argv[0]),
+                     lang ? nu_sv_cstr(lang) : nu_sv_null());
     return 0;
 }
 static nu_u32_t
@@ -50,7 +59,7 @@ cmd_build (nu_u32_t argc, const nu_char_t **argv)
     {
         path = nu_sv_cstr(argv[0]);
     }
-    nux_build_package(path);
+    nux_command_build(path);
     return 0;
 }
 static nu_u32_t

@@ -51,22 +51,14 @@ write_chunk_header (FILE *f, nux_chunk_header_t *header)
     }
 }
 void
-nux_build_package (nu_sv_t path)
+nux_command_build (nu_sv_t path)
 {
-    // Find package file
-    nu_char_t package_filename[NU_PATH_MAX];
-    nu_sv_t   package_filename_sv = nu_path_concat(
-        package_filename, NU_PATH_MAX, path, NU_SV("package.json"));
-
-    // Parse json entries
-    nu_char_t          project_name[MAX_NAME_SIZE];
-    nu_size_t          entry_count;
-    nux_chunk_entry_t *entries
-        = parse_json(package_filename_sv, project_name, &entry_count);
-    NU_ASSERT(entries);
+    // Load package
+    nux_package_t package;
+    nux_package_load(path, &package);
 
     // Open cart
-    FILE *f = fopen(target_path, "wb");
+    FILE *f = fopen(package.target_path, "wb");
     if (!f)
     {
         printf("Failed to open file\n");
@@ -74,19 +66,19 @@ nux_build_package (nu_sv_t path)
     }
     else
     {
-        printf("Cart file created at %s\n", target_path);
+        printf("Cart file created at %s\n", package.target_path);
     }
 
     // Write header
     const nu_u32_t version = 100;
     NU_ASSERT(fwrite(&version, sizeof(version), 1, f));
-    const nu_u32_t chunk_count = entry_count;
+    const nu_u32_t chunk_count = package.entry_count;
     NU_ASSERT(fwrite(&chunk_count, sizeof(chunk_count), 1, f));
 
     // Compile entries
-    for (nu_size_t i = 0; i < entry_count; ++i)
+    for (nu_size_t i = 0; i < package.entry_count; ++i)
     {
-        nux_chunk_entry_t *entry = entries + i;
+        nux_chunk_entry_t *entry = package.entries + i;
         switch (entry->header.type)
         {
             case NUX_CHUNK_RAW:
@@ -94,7 +86,7 @@ nux_build_package (nu_sv_t path)
             case NUX_CHUNK_WASM: {
                 nu_size_t  size;
                 nu_byte_t *buffer
-                    = load_bytes(nu_sv_cstr(entry->source), &size);
+                    = load_bytes(nu_sv_cstr(entry->source_path), &size);
                 NU_ASSERT(buffer);
                 // header
                 entry->header.length = size;
@@ -108,7 +100,7 @@ nux_build_package (nu_sv_t path)
                 int        w, h, n;
                 nu_byte_t  fn[256];
                 nu_byte_t *img = stbi_load(
-                    (char *)entry->source, &w, &h, &n, STBI_default);
+                    (char *)entry->source_path, &w, &h, &n, STBI_default);
                 NU_ASSERT(img);
                 nu_v2u_t  target_size = nu_v2u(128, 128);
                 nu_u32_t  target_comp = 4;
@@ -151,5 +143,5 @@ nux_build_package (nu_sv_t path)
     // Free resources
     fclose(f);
 cleanup0:
-    free(entries);
+    nux_package_free(&package);
 }

@@ -1,8 +1,8 @@
-project(builder LANGUAGES C)
+project(package LANGUAGES C)
 
-file(GLOB BUILDER_SOURCES *.c)
+file(GLOB PACKAGE_SOURCES *.c)
 file(GLOB CJSON_SOURCES ${CMAKE_SOURCE_DIR}/externals/cJSON/*.c)
-add_library(${PROJECT_NAME} ${BUILDER_SOURCES} ${CJSON_SOURCES}) 
+add_library(${PROJECT_NAME} ${PACKAGE_SOURCES} ${CJSON_SOURCES}) 
 
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/include)
