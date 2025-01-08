@@ -1,0 +1,1 @@
+- set parson_escape_slashes to 0 in parson.c
