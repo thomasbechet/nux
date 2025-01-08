@@ -1,7 +1,5 @@
 #include "project.h"
 
-#include <cJSON/cJSON.h>
-
 void
 nux_command_init (nu_sv_t path, nu_sv_t lang)
 {

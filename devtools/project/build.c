@@ -1,7 +1,7 @@
 #include "project.h"
 
 #include <vmcore/config.h>
-#include <cJSON/cJSON.h>
+#include <parson/parson.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
 #include <stb/stb_image.h>
