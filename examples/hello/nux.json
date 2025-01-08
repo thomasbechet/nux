@@ -1,7 +1,7 @@
 {
 	"name": "hello",
-    "postbuild": [
-    ],
+	"postbuild": [],
+	"test": {},
 	"chunks": [
 		{
 			"type": "wasm",

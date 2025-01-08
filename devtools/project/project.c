@@ -18,7 +18,7 @@ static const struct
 nu_byte_t *
 load_bytes (nu_sv_t filename, nu_size_t *size)
 {
-    char buf[256]; // TODO: support PATH_MAX
+    char buf[NU_PATH_MAX];
     nu_sv_to_cstr(filename, buf, sizeof(buf));
     FILE *f = fopen(buf, "rb");
     if (!f)
@@ -26,10 +26,17 @@ load_bytes (nu_sv_t filename, nu_size_t *size)
         printf("Failed to open file %s\n", buf);
         return NU_NULL;
     }
-    fseek(f, 0, SEEK_END);
-    nu_size_t fsize = ftell(f);
+    NU_ASSERT(!fseek(f, 0, SEEK_END));
+    long fsize = ftell(f);
+    NU_ASSERT(fsize != -1);
     fseek(f, 0, SEEK_SET);
     nu_byte_t *bytes = (nu_byte_t *)malloc(fsize);
+    if (!bytes)
+    {
+        printf("Failed to allocate %lu bytes for file %s\n", fsize, buf);
+        fclose(f);
+        return NU_NULL;
+    }
     fread(bytes, fsize, 1, f);
     fclose(f);
     if (size)
@@ -41,7 +48,7 @@ load_bytes (nu_sv_t filename, nu_size_t *size)
 nu_bool_t
 save_bytes (nu_sv_t filename, const nu_byte_t *data, nu_size_t size)
 {
-    char buf[256]; // TODO: support PATH_MAX
+    char buf[NU_PATH_MAX]; // TODO: support PATH_MAX
     nu_sv_to_cstr(filename, buf, sizeof(buf));
     FILE *f = fopen(buf, "wb");
     if (!f)
@@ -55,7 +62,7 @@ save_bytes (nu_sv_t filename, const nu_byte_t *data, nu_size_t size)
 }
 
 static nu_f32_t
-parse_f32 (cJSON *object, const nu_char_t *name)
+parse_f32 (const cJSON *object, const nu_char_t *name)
 {
     NU_ASSERT(object && name && cJSON_IsObject(object));
     cJSON *f = cJSON_GetObjectItem(object, name);
@@ -72,56 +79,64 @@ write_f32 (cJSON *object, const nu_char_t *name, nu_f32_t value)
 }
 
 static void
-parse_target (cJSON *j, nux_chunk_type_t type, nux_chunk_target_t *target)
+parse_target (const cJSON        *jchunk,
+              nux_chunk_type_t    type,
+              nux_chunk_target_t *target)
 {
+    const cJSON *jtarget = cJSON_GetObjectItem(jchunk, "target");
     switch (type)
     {
         case NUX_CHUNK_RAW: {
-            NU_ASSERT(cJSON_IsObject(j));
-            target->raw.addr = parse_f32(j, "addr");
+            NU_ASSERT(jtarget && cJSON_IsObject(jtarget));
+            target->raw.addr = parse_f32(jtarget, "addr");
         }
         break;
         case NUX_CHUNK_WASM:
             break;
         case NUX_CHUNK_TEXTURE: {
-            NU_ASSERT(cJSON_IsObject(j));
-            target->texture.slot = parse_f32(j, "slot");
-            target->texture.x    = parse_f32(j, "x");
-            target->texture.y    = parse_f32(j, "y");
-            target->texture.w    = parse_f32(j, "w");
-            target->texture.h    = parse_f32(j, "h");
+            NU_ASSERT(jtarget && cJSON_IsObject(jtarget));
+            target->texture.slot = parse_f32(jtarget, "slot");
+            target->texture.x    = parse_f32(jtarget, "x");
+            target->texture.y    = parse_f32(jtarget, "y");
+            target->texture.w    = parse_f32(jtarget, "w");
+            target->texture.h    = parse_f32(jtarget, "h");
         }
         break;
         case NUX_CHUNK_MESH: {
-            NU_ASSERT(cJSON_IsObject(j));
-            target->mesh.first = parse_f32(j, "first");
-            target->mesh.count = parse_f32(j, "count");
+            NU_ASSERT(jtarget && cJSON_IsObject(jtarget));
+            target->mesh.first = parse_f32(jtarget, "first");
+            target->mesh.count = parse_f32(jtarget, "count");
         }
         break;
     }
 }
 static void
-write_target (cJSON *j, nux_chunk_type_t type, const nux_chunk_target_t *target)
+write_target (cJSON                    *chunk,
+              nux_chunk_type_t          type,
+              const nux_chunk_target_t *target)
 {
+    cJSON *jtarget = cJSON_CreateObject();
+    NU_ASSERT(jtarget);
+    cJSON_AddItemToObject(chunk, "target", jtarget);
     switch (type)
     {
         case NUX_CHUNK_RAW: {
-            NU_ASSERT(write_f32(j, "addr", target->raw.addr));
+            NU_ASSERT(write_f32(jtarget, "addr", target->raw.addr));
         }
         break;
         case NUX_CHUNK_WASM:
             break;
         case NUX_CHUNK_TEXTURE: {
-            NU_ASSERT(write_f32(j, "slot", target->texture.slot));
-            NU_ASSERT(write_f32(j, "x", target->texture.x));
-            NU_ASSERT(write_f32(j, "y", target->texture.y));
-            NU_ASSERT(write_f32(j, "w", target->texture.w));
-            NU_ASSERT(write_f32(j, "h", target->texture.h));
+            NU_ASSERT(write_f32(jtarget, "slot", target->texture.slot));
+            NU_ASSERT(write_f32(jtarget, "x", target->texture.x));
+            NU_ASSERT(write_f32(jtarget, "y", target->texture.y));
+            NU_ASSERT(write_f32(jtarget, "w", target->texture.w));
+            NU_ASSERT(write_f32(jtarget, "h", target->texture.h));
         }
         break;
         case NUX_CHUNK_MESH: {
-            NU_ASSERT(write_f32(j, "first", target->mesh.first));
-            NU_ASSERT(write_f32(j, "count", target->mesh.count));
+            NU_ASSERT(write_f32(jtarget, "first", target->mesh.first));
+            NU_ASSERT(write_f32(jtarget, "count", target->mesh.count));
         }
         break;
     }
@@ -137,42 +152,29 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
         = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV("nux.json"));
 
     // Parse file
-    nu_byte_t *jfile = load_bytes(path, NU_NULL);
+    nu_byte_t *jfile = load_bytes(json_path_sv, NU_NULL);
     NU_ASSERT(jfile);
     cJSON *jroot = cJSON_Parse((const char *)jfile);
     NU_ASSERT(jroot);
     NU_ASSERT(cJSON_IsObject(jroot));
 
-    // Parse project name
-    cJSON *jcart = cJSON_GetObjectItem(jroot, "name");
-    NU_ASSERT(jcart);
-    NU_ASSERT(cJSON_IsString(jcart));
-    nu_sv_to_cstr(
-        nu_sv_cstr(cJSON_GetStringValue(jcart)), project->name, NUX_NAME_MAX);
-
     // Compute target name
-    nu_char_t target_name[NUX_NAME_MAX];
-    nu_sv_join(
-        target_name, NUX_NAME_MAX, nu_sv_cstr(project->name), NU_SV(".bin"));
-    nu_path_concat(
-        project->target_path, NU_PATH_MAX, path, nu_sv_cstr(target_name));
+    nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
 
     // Parse entries
     cJSON *jentries = cJSON_GetObjectItem(jroot, "chunks");
     NU_ASSERT(cJSON_IsArray(jentries));
     project->entry_count = cJSON_GetArraySize(jentries);
-    nux_chunk_entry_t *entries
-        = malloc(sizeof(nux_chunk_entry_t) * project->entry_count);
-    NU_ASSERT(entries);
-    cJSON *jchild = jentries->child;
+    project->entries = malloc(sizeof(nux_chunk_entry_t) * project->entry_count);
+    NU_ASSERT(project->entries);
+    cJSON *jchunk = jentries->child;
     for (nu_size_t i = 0; i < project->entry_count; ++i)
     {
         // Check fields
-        cJSON *jtype = cJSON_GetObjectItem(jchild, "type");
+        cJSON *jtype = cJSON_GetObjectItem(jchunk, "type");
         NU_ASSERT(jtype);
         NU_ASSERT(cJSON_IsString(jtype));
-        cJSON *jtarget = cJSON_GetObjectItem(jchild, "target");
-        cJSON *jsource = cJSON_GetObjectItem(jchild, "source");
+        cJSON *jsource = cJSON_GetObjectItem(jchunk, "source");
         NU_ASSERT(jsource);
         NU_ASSERT(cJSON_IsString(jsource));
 
@@ -194,15 +196,15 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
             printf("Chunk type not found for entry %lu\n", i);
             return NU_NULL;
         }
-        entries[i].header.type = type;
+        project->entries[i].header.type = type;
         nu_sv_to_cstr(nu_sv_cstr(cJSON_GetStringValue(jsource)),
-                      entries[i].source_path,
+                      project->entries[i].source_path,
                       NU_PATH_MAX);
 
         // Parse target object
-        parse_target(jtarget, type, &entries[i].header.target);
+        parse_target(jchunk, type, &project->entries[i].header.target);
 
-        jchild = jchild->next;
+        jchunk = jchunk->next;
     }
     cJSON_Delete(jroot);
     free(jfile);
@@ -215,10 +217,6 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
     cJSON *jroot = cJSON_CreateObject();
     NU_CHECK(jroot, goto cleanup0);
 
-    cJSON *jname = cJSON_CreateString(project->name);
-    NU_CHECK(jname, goto cleanup1);
-    cJSON_AddItemToObject(jroot, "name", jname);
-
     cJSON *jtarget_path = cJSON_CreateString(project->target_path);
     NU_CHECK(jtarget_path, goto cleanup1);
     cJSON_AddItemToObject(jroot, "target", jtarget_path);
@@ -227,6 +225,7 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
     NU_CHECK(jchunks, goto cleanup1);
     cJSON_AddItemToObject(jroot, "chunks", jchunks);
 
+    NU_ASSERT(project->entries);
     for (nu_size_t i = 0; i < project->entry_count; ++i)
     {
         cJSON *jchunk = cJSON_CreateObject();
@@ -242,7 +241,7 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
         for (nu_size_t j = 0; j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
              ++j)
         {
-            if (name_to_chunk_type[j].type == project->entries[j].header.type)
+            if (name_to_chunk_type[j].type == project->entries[i].header.type)
             {
                 type_str = name_to_chunk_type[j].name;
                 found    = NU_TRUE;
@@ -250,11 +249,8 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
         }
         NU_ASSERT(found);
 
-        cJSON *jtarget = cJSON_CreateObject();
-        NU_CHECK(jtarget, goto cleanup1);
-        cJSON_AddItemToObject(jroot, "target", jtarget);
-
-        write_target(jtarget,
+        // Write chunk target
+        write_target(jchunk,
                      project->entries[i].header.type,
                      &project->entries[i].header.target);
     }
@@ -278,11 +274,11 @@ cleanup0:
     return NU_FALSE;
 }
 void
-nux_project_free (nux_project_t *package)
+nux_project_free (nux_project_t *project)
 {
-    if (package->entries)
+    if (project->entries)
     {
-        NU_ASSERT(package->entry_count);
-        free(package->entries);
+        NU_ASSERT(project->entry_count);
+        free(project->entries);
     }
 }
