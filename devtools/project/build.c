@@ -1,4 +1,4 @@
-#include "package.h"
+#include "project.h"
 
 #include <vmcore/config.h>
 #include <cJSON/cJSON.h>
@@ -54,8 +54,8 @@ void
 nux_command_build (nu_sv_t path)
 {
     // Load package
-    nux_package_t package;
-    nux_package_load(path, &package);
+    nux_project_t package;
+    nux_project_load(&package, path);
 
     // Open cart
     FILE *f = fopen(package.target_path, "wb");
@@ -143,5 +143,5 @@ nux_command_build (nu_sv_t path)
     // Free resources
     fclose(f);
 cleanup0:
-    nux_package_free(&package);
+    nux_project_free(&package);
 }

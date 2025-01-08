@@ -1,4 +1,4 @@
-#include "package.h"
+#include "project.h"
 
 #include <cJSON/cJSON.h>
 
@@ -10,18 +10,8 @@ nux_command_init (nu_sv_t path, nu_sv_t name, nu_sv_t lang)
            NU_SV_ARGS(name),
            NU_SV_ARGS(lang));
 
-    // Generate project file
-    cJSON *jroot = cJSON_CreateObject();
-    if (jroot == NULL)
-    {
-        goto end;
-    }
-
-    name = cJSON_CreateString("Awesome 4K");
-    if (name == NULL)
-    {
-        goto end;
-    }
+    nux_project_t pkg;
+    nu_sv_to_cstr(name, pkg.name, NUX_NAME_MAX);
 
     // Find lang
     static struct
@@ -36,6 +26,4 @@ nux_command_init (nu_sv_t path, nu_sv_t name, nu_sv_t lang)
         {
         }
     }
-
-cleanup0:;
 }

@@ -1,6 +1,6 @@
 #include <vmcore/vm.h>
 #include <vmnative/runtime.h>
-#include <package/package.h>
+#include <project/project.h>
 #include <argparse/argparse.h>
 
 typedef struct
