@@ -2,6 +2,8 @@
 
 #include <parson/parson.h>
 
+#define NUX_PROJECT_JSON "nux.json"
+
 static const struct
 {
     const nu_char_t *name;
@@ -88,46 +90,36 @@ write_target (JSON_Object              *chunk,
 }
 
 nu_bool_t
-nux_project_init (nux_project_t *project, nu_sv_t path, nu_size_t entry_count)
+nux_project_init_empty (nux_project_t *project, nu_sv_t path)
 {
     nu_memset(project, 0, sizeof(*project));
     nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
-    project->entry_count = entry_count;
-    if (project->entry_count)
-    {
-        project->entries
-            = malloc(sizeof(*project->entries) * project->entry_count);
-        NU_ASSERT(project->entries);
-    }
     return NU_TRUE;
 }
 nu_bool_t
 nux_project_load (nux_project_t *project, nu_sv_t path)
 {
-    // Initialize project
-    nu_char_t json_path[NU_PATH_MAX];
-    nu_sv_t   json_path_sv
-        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV("nux.json"));
+    nux_project_init_empty(project, path);
 
     // Parse file
+    nu_char_t json_path[NU_PATH_MAX];
+    nu_sv_t   json_path_sv
+        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(NUX_PROJECT_JSON));
     JSON_Value *jrootv = json_parse_file(json_path);
     NU_ASSERT(jrootv);
     JSON_Object *jroot = json_object(jrootv);
     NU_ASSERT(jroot);
 
-    // Init project
-    JSON_Array *jentries = json_object_get_array(jroot, "chunks");
-    project->entry_count = json_array_get_count(jentries);
-    nux_project_init(project, path, json_array_get_count(jentries));
-
-    // Parse entries
-    if (project->entry_count)
+    // Entries
+    JSON_Array *jentries   = json_object_get_array(jroot, "chunks");
+    project->entries_count = json_array_get_count(jentries);
+    if (project->entries_count)
     {
         project->entries
-            = malloc(sizeof(*project->entries) * project->entry_count);
+            = malloc(sizeof(*project->entries) * project->entries_count);
         NU_ASSERT(project->entries);
     }
-    for (nu_size_t i = 0; i < project->entry_count; ++i)
+    for (nu_size_t i = 0; i < project->entries_count; ++i)
     {
         JSON_Object *jchunk = json_array_get_object(jentries, i);
         // Check fields
@@ -163,6 +155,14 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
         // Parse target object
         parse_target(jchunk, type, &project->entries[i].header.target);
     }
+
+    // Prebuild
+    const nu_char_t *jprebuild = json_object_get_string(jroot, "prebuild");
+    if (jprebuild)
+    {
+        nu_sv_to_cstr(nu_sv_cstr(jprebuild), project->prebuild, NUX_NAME_MAX);
+    }
+
     json_value_free(jrootv);
     return NU_TRUE;
 cleanup0:
@@ -181,12 +181,13 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
     // Target
     json_object_set_string(jroot, "target", project->target_path);
 
+    // Chunks
     JSON_Value *jchunksv = json_value_init_array();
     NU_CHECK(jchunksv, goto cleanup1);
     json_object_set_value(jroot, "chunks", jchunksv);
     JSON_Array *jchunks = json_array(jchunksv);
 
-    for (nu_size_t i = 0; i < project->entry_count; ++i)
+    for (nu_size_t i = 0; i < project->entries_count; ++i)
     {
         JSON_Value *jchunkv = json_value_init_object();
         NU_CHECK(jchunkv, goto cleanup1);
@@ -218,10 +219,16 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
                      &project->entries[i].header.target);
     }
 
+    // Prebuild
+    if (nu_strlen(project->prebuild))
+    {
+        json_object_set_string(jroot, "prebuild", project->prebuild);
+    }
+
     // Write json file
     nu_char_t json_path[NU_PATH_MAX];
     nu_sv_t   json_path_sv
-        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV("nux.json"));
+        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(NUX_PROJECT_JSON));
 
     json_serialize_to_file_pretty(jrootv, json_path);
 
@@ -239,7 +246,7 @@ nux_project_free (nux_project_t *project)
 {
     if (project->entries)
     {
-        NU_ASSERT(project->entry_count);
+        NU_ASSERT(project->entries_count);
         free(project->entries);
     }
 }

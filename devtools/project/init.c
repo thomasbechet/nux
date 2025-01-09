@@ -3,29 +3,21 @@
 #include "templates_data.h"
 
 void
-nux_command_init (nu_sv_t path, nu_sv_t lang)
+nux_command_init (nu_sv_t path, nu_sv_t lang, nu_bool_t verbose)
 {
-    printf("init package " NU_SV_FMT " " NU_SV_FMT "\n",
-           NU_SV_ARGS(path),
-           NU_SV_ARGS(lang));
-
-    nux_project_t project;
+    if (verbose)
+    {
+        printf("Initialize new project " NU_SV_FMT " with language " NU_SV_FMT
+               "\n",
+               NU_SV_ARGS(path),
+               NU_SV_ARGS(lang));
+    }
 
     // Find lang
     nux_project_template_file_t *template_file = NU_NULL;
     if (nu_sv_eq(lang, NU_SV("c")))
     {
         template_file = template_c_files;
-        nux_project_init(&project, path, 1);
-        project.entries[0].header.type   = NUX_CHUNK_WASM;
-        project.entries[0].header.length = 0;
-        nu_sv_to_cstr(NU_SV("build/cart.wasm"),
-                      project.entries[0].source_path,
-                      NU_PATH_MAX);
-    }
-    else
-    {
-        nux_project_init(&project, path, 0);
     }
 
     // Template found, generate files
@@ -41,8 +33,12 @@ nux_command_init (nu_sv_t path, nu_sv_t lang)
             ++template_file;
         }
     }
-
-    // Save nux project file
-    nux_project_save(&project, path);
-    nux_project_free(&project);
+    else
+    {
+        // Generate empty project file
+        nux_project_t project;
+        nux_project_init_empty(&project, path);
+        nux_project_save(&project, path);
+        nux_project_free(&project);
+    }
 }

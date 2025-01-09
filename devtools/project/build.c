@@ -51,14 +51,26 @@ write_chunk_header (FILE *f, nux_chunk_header_t *header)
     }
 }
 void
-nux_command_build (nu_sv_t path)
+nux_command_build (nu_sv_t path, nu_bool_t verbose)
 {
     // Load package
-    nux_project_t package;
-    nux_project_load(&package, path);
+    nux_project_t project;
+    nux_project_load(&project, path);
+
+    // Execute prebuild command
+    if (nu_strlen(project.prebuild))
+    {
+        if (verbose)
+        {
+            printf("Execute prebuild command: %s\n", project.prebuild);
+        }
+#ifdef NU_PLATFORM_UNIX
+        system(project.prebuild);
+#endif
+    }
 
     // Open cart
-    FILE *f = fopen(package.target_path, "wb");
+    FILE *f = fopen(project.target_path, "wb");
     if (!f)
     {
         printf("Failed to open file\n");
@@ -66,19 +78,22 @@ nux_command_build (nu_sv_t path)
     }
     else
     {
-        printf("Cart file created at %s\n", package.target_path);
+        if (verbose)
+        {
+            printf("Cartridge %s generated.\n", project.target_path);
+        }
     }
 
     // Write header
     const nu_u32_t version = 100;
     NU_ASSERT(fwrite(&version, sizeof(version), 1, f));
-    const nu_u32_t chunk_count = package.entry_count;
+    const nu_u32_t chunk_count = project.entries_count;
     NU_ASSERT(fwrite(&chunk_count, sizeof(chunk_count), 1, f));
 
     // Compile entries
-    for (nu_size_t i = 0; i < package.entry_count; ++i)
+    for (nu_size_t i = 0; i < project.entries_count; ++i)
     {
-        nux_chunk_entry_t *entry = package.entries + i;
+        nux_chunk_entry_t *entry = project.entries + i;
         switch (entry->header.type)
         {
             case NUX_CHUNK_RAW:
@@ -147,5 +162,5 @@ nux_command_build (nu_sv_t path)
     // Free resources
     fclose(f);
 cleanup0:
-    nux_project_free(&package);
+    nux_project_free(&project);
 }
