@@ -14,7 +14,7 @@ cmd_init (nu_u32_t argc, const nu_char_t **argv)
 {
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux init [-h]",
+        "nux init [-h] [-p <path>] [-l <lang>]",
         NULL,
     };
     const nu_char_t       *path      = NU_NULL;

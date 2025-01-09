@@ -1,6 +1,6 @@
 #include "renderer.h"
 
-#include "shader_data.h"
+#include "shaders_data.h"
 
 #include <nulib.h>
 #include <vmcore/platform.h>
