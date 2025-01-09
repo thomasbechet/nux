@@ -1,7 +1,5 @@
 #include "project.h"
 
-#include "nulib/string.h"
-
 #include <parson/parson.h>
 
 static const struct
@@ -14,52 +12,6 @@ static const struct
     { "texture", NUX_CHUNK_TEXTURE },
     { "mesh", NUX_CHUNK_MESH },
 };
-
-nu_byte_t *
-load_bytes (nu_sv_t filename, nu_size_t *size)
-{
-    char buf[NU_PATH_MAX];
-    nu_sv_to_cstr(filename, buf, sizeof(buf));
-    FILE *f = fopen(buf, "rb");
-    if (!f)
-    {
-        printf("Failed to open file %s\n", buf);
-        return NU_NULL;
-    }
-    NU_ASSERT(!fseek(f, 0, SEEK_END));
-    long fsize = ftell(f);
-    NU_ASSERT(fsize != -1);
-    fseek(f, 0, SEEK_SET);
-    nu_byte_t *bytes = (nu_byte_t *)malloc(fsize);
-    if (!bytes)
-    {
-        printf("Failed to allocate %lu bytes for file %s\n", fsize, buf);
-        fclose(f);
-        return NU_NULL;
-    }
-    fread(bytes, fsize, 1, f);
-    fclose(f);
-    if (size)
-    {
-        *size = fsize;
-    }
-    return bytes;
-}
-nu_bool_t
-save_bytes (nu_sv_t filename, const nu_byte_t *data, nu_size_t size)
-{
-    char buf[NU_PATH_MAX]; // TODO: support PATH_MAX
-    nu_sv_to_cstr(filename, buf, sizeof(buf));
-    FILE *f = fopen(buf, "wb");
-    if (!f)
-    {
-        printf("Failed to open file %s\n", buf);
-        return NU_NULL;
-    }
-    nu_int_t n = fwrite(data, size, 1, f);
-    fclose(f);
-    return n == 1;
-}
 
 static nu_f32_t
 parse_f32 (const JSON_Object *object, const nu_char_t *name)
@@ -136,6 +88,16 @@ write_target (JSON_Object              *chunk,
 }
 
 nu_bool_t
+nux_project_init (nux_project_t *project, nu_sv_t path, nu_size_t entry_count)
+{
+    nu_memset(project, 0, sizeof(*project));
+    nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
+    project->entry_count = entry_count;
+    project->entries = malloc(sizeof(*project->entries) * project->entry_count);
+    NU_ASSERT(project->entries);
+    return NU_TRUE;
+}
+nu_bool_t
 nux_project_load (nux_project_t *project, nu_sv_t path)
 {
     // Initialize project
@@ -156,7 +118,7 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
     // Parse entries
     JSON_Array *jentries = json_object_get_array(jroot, "chunks");
     project->entry_count = json_array_get_count(jentries);
-    project->entries = malloc(sizeof(nux_chunk_entry_t) * project->entry_count);
+    project->entries = malloc(sizeof(*project->entries) * project->entry_count);
     NU_ASSERT(project->entries);
     for (nu_size_t i = 0; i < project->entry_count; ++i)
     {
@@ -213,7 +175,6 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
     json_object_set_value(jroot, "chunks", jchunksv);
     JSON_Array *jchunks = json_array(jchunksv);
 
-    NU_ASSERT(project->entries);
     for (nu_size_t i = 0; i < project->entry_count; ++i)
     {
         JSON_Value *jchunkv = json_value_init_object();
@@ -221,9 +182,7 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
         json_array_append_value(jchunks, jchunkv);
         JSON_Object *jchunk = json_object(jchunkv);
 
-        json_object_set_string(
-            jchunk, "source", project->entries[i].source_path);
-
+        // Type
         const nu_char_t *type_str = NU_NULL;
         nu_bool_t        found    = NU_FALSE;
         for (nu_size_t j = 0; j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
@@ -236,6 +195,11 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
             }
         }
         NU_ASSERT(found);
+        json_object_set_string(jchunk, "type", type_str);
+
+        // Source
+        json_object_set_string(
+            jchunk, "source", project->entries[i].source_path);
 
         // Write chunk target
         write_target(jchunk,

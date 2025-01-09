@@ -1,6 +1,5 @@
-#include <vmcore/vm.h>
-#include <vmnative/runtime.h>
 #include <project/project.h>
+
 #include <argparse/argparse.h>
 
 typedef struct
@@ -38,44 +37,52 @@ cmd_build (nu_u32_t argc, const nu_char_t **argv)
 {
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux build [-h] [path]",
+        "nux build [-h] [-p <path>]",
         NULL,
     };
+    const nu_char_t       *path      = NU_NULL;
     struct argparse_option options[] = {
         OPT_HELP(),
+        OPT_STRING('p', "path", &path, "project location", NU_NULL, 0, 0),
         OPT_END(),
     };
     argparse_init(&argparse, options, usages, 0);
-    argc         = argparse_parse(&argparse, argc, argv);
-    nu_sv_t path = NU_SV(".");
-    if (argc >= 1)
+    argc            = argparse_parse(&argparse, argc, argv);
+    nu_sv_t path_sv = NU_SV(".");
+    if (path)
     {
-        path = nu_sv_cstr(argv[0]);
+        path_sv = nu_sv_cstr(path);
     }
-    nux_command_build(path);
+    nux_command_build(path_sv);
     return 0;
 }
 static nu_u32_t
 cmd_run (nu_u32_t argc, const nu_char_t **argv)
 {
-    const nu_char_t       *path = NULL;
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux run [-h] <cart>",
+        "nux run [-h] [-p <path>] [cart]",
         NULL,
     };
+    const nu_char_t       *path      = NU_NULL;
     struct argparse_option options[] = {
         OPT_HELP(),
+        OPT_STRING('p', "path", &path, "location of project", NU_NULL, 0, 0),
         OPT_END(),
     };
     argparse_init(&argparse, options, usages, 0);
-    argc = argparse_parse(&argparse, argc, argv);
-    if (argc < 1)
+    argc            = argparse_parse(&argparse, argc, argv);
+    nu_sv_t path_sv = NU_SV(".");
+    if (path)
     {
-        argparse_usage(&argparse);
-        return -1;
+        path_sv = nu_sv_cstr(path);
     }
-    nux_runtime_run(argc, argv);
+    nu_sv_t cart_sv = nu_sv_null();
+    if (argc >= 1)
+    {
+        cart_sv = nu_sv_cstr(argv[1]);
+    }
+    nux_command_run(path_sv, cart_sv);
     return 0;
 }
 

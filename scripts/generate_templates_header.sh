@@ -1,44 +1,46 @@
 #!/bin/bash
 
-function usage {
-  echo "usage: $0 shader_directory"
-  exit 1
-}
+TEMPLATES=devtools/templates
+OUTPUT=devtools/project/templates_data.h
 
-if [ $# -ne 1 ] || [ -z $1 ];
-then
-  usage 
-  exit
-fi
+printf "#ifndef NUX_TEMPLATES_DATA_H\n" > $OUTPUT
+printf "#define NUX_TEMPLATES_DATA_H\n" >> $OUTPUT
 
-TEMPLATES=devtools/templates/
-FILENAME=devtools/project/templates_data.h
+printf "#include <nulib.h>\n" >> $OUTPUT
+printf "typedef struct
+{const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } nux_project_template_file_t;\n" >> $OUTPUT
 
-printf "#ifndef NUX_TEMPLATES_DATA_H\n" > $FILENAME
-printf "#define NUX_TEMPLATES_DATA_H\n" >> $FILENAME
+shopt -s dotglob # Iter hidden files
 
-printf "#include <nulib.h>\n" >> $FILENAME
+for TEMPLATE in $TEMPLATES/*; do
+    LANG=$(basename $TEMPLATE)
+    echo $LANG
+    echo $TEMPLATE
+    for FILE in $TEMPLATE/* $TEMPLATE/**/*; do
+        echo $FILE
+        if [ ! -f $FILE ]; then
+            continue
+        fi
+        FILENAME=$(basename $FILE | tr '.' '_')
+        printf "static const nu_byte_t template_${LANG}_${FILENAME}_data[] = {\n" >> $OUTPUT
+        printf "$(xxd -i $FILE | head -n -2 | tail -n +2)" >> $OUTPUT
+        printf "};\n" >> $OUTPUT
+    done
 
-for lang in $TEMPLATES/*; do
-    name="template_$(basename $file | tr '.' '_')" 
-    printf "static struct {\n
-        const nu_char_t *path;\n
-        const nu_byte_t *data;\n
-    } template_($lang)[] = {\n" >> $FILENAME
-        { 
-          .path="",
-          .data=NU_NULL
-        }
-    printf "};\n" >> $FILENAME
-    while IFS= read -r line; do
-        # if [[ -z $line ]]; then
-        #     continue 
-        # fi
-        printf "\"$line\\\n\"\n" >> $FILENAME
-    done < $file
-    printf ");\n" >> $FILENAME
-    xxd -i Makefile | head -n -2 | tail -n +2
+    printf "static nux_project_template_file_t template_${LANG}_files[] = {\n" >> $OUTPUT
+    for FILE in $TEMPLATE/* $TEMPLATE/**/*; do
+        if [ ! -f $FILE ]; then
+            continue
+        fi
+        FILENAME=$(basename $FILE | tr '.' '_')
+        SIZE=${#TEMPLATE}
+        FILEPATH=$(echo $FILE | cut -c $(($SIZE + 2))-)
+        FILEDATA="template_${LANG}_${FILENAME}_data"
+        printf "{ .path=\"$FILEPATH\", .data=$FILEDATA, .size=sizeof($FILEDATA) },\n" >> $OUTPUT
+    done
+    printf "{ .path=NU_NULL, .data=NU_NULL, .size=0 }\n" >> $OUTPUT
+    printf "};\n" >> $OUTPUT
 done
 
-printf "#endif\n" >> $FILENAME
+printf "#endif\n" >> $OUTPUT
 

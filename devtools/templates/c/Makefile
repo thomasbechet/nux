@@ -16,7 +16,7 @@ endif
 
 # LDFLAGS = -Wl,-zstack-size=14752,--no-entry,--import-memory \
 	-Wl,--initial-memory=65536,--max-memory=65536,--stack-first
-LDFLAGS = -z stack-size=8192  --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--strip-all -Wl,--initial-memory=65536
+LDFLAGS = -z stack-size=8192  --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--strip-all -Wl,--initial-memory=65536 -Wl,--export=start -Wl,--export=update -Wl,--allow-undefined
 ifeq ($(DEBUG), 1)
 	# LDFLAGS += -Wl,--export-all,--no-gc-sections
 else

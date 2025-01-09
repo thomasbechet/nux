@@ -1,5 +1,7 @@
 #include "project.h"
 
+#include "templates_data.h"
+
 void
 nux_command_init (nu_sv_t path, nu_sv_t lang)
 {
@@ -7,27 +9,36 @@ nux_command_init (nu_sv_t path, nu_sv_t lang)
            NU_SV_ARGS(path),
            NU_SV_ARGS(lang));
 
-    nux_project_t pkg;
-    nux_project_load(&pkg, path);
-    // nu_sv_to_cstr(name, pkg.name, NUX_NAME_MAX);
-    // nu_sv_to_cstr(NU_SV("test"), pkg.target_path, NU_PATH_MAX);
-    // pkg.entries     = NU_NULL;
-    // pkg.entry_count = 0;
-
-    nux_project_save(&pkg, NU_SV("."));
-    nux_project_free(&pkg);
+    nux_project_t project;
 
     // Find lang
-    static struct
+    nux_project_template_file_t *template_file = NU_NULL;
+    if (nu_sv_eq(lang, NU_SV("c")))
     {
-        const nu_sv_t name;
-    } languages[] = {
-        NU_SV("c"),
-    };
-    for (nu_size_t i = 0; i < NU_ARRAY_SIZE(languages); i++)
+        template_file = template_c_files;
+        nux_project_init(&project, path, 1);
+        project.entries[0].header.type   = NUX_CHUNK_WASM;
+        project.entries[0].header.length = 0;
+        nu_sv_to_cstr(NU_SV("build/cart.wasm"),
+                      project.entries[0].source_path,
+                      NU_PATH_MAX);
+    }
+
+    // Template found, generate files
+    if (template_file)
     {
-        if (nu_sv_eq(languages[i].name, lang))
+        while (template_file->path)
         {
+            nu_char_t filepath[NU_PATH_MAX];
+            nu_sv_t   filepath_sv = nu_path_concat(
+                filepath, NU_PATH_MAX, path, nu_sv_cstr(template_file->path));
+            NU_ASSERT(nu_save_bytes(
+                filepath_sv, template_file->data, template_file->size));
+            ++template_file;
         }
     }
+
+    // Save nux project file
+    nux_project_save(&project, path);
+    nux_project_free(&project);
 }

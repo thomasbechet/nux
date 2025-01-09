@@ -45,7 +45,7 @@ nu_sv_is_null (nu_sv_t str)
     return str.data == NU_NULL;
 }
 void
-nu_sv_to_cstr (nu_sv_t str, char *chars, nu_size_t n)
+nu_sv_to_cstr (nu_sv_t str, nu_char_t *chars, nu_size_t n)
 {
     NU_ASSERT(str.size < n);
     nu_memset(chars, 0, n);

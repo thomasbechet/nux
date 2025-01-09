@@ -8,11 +8,13 @@
 #include <nulib/string.h>
 #include <nulib/ds.h>
 #include <nulib/assert.h>
+#include <nulib/io.h>
 
 #ifdef NU_IMPLEMENTATION
 #include <nulib/memory_impl.h>
 #include <nulib/math_impl.h>
 #include <nulib/string_impl.h>
+#include <nulib/io_impl.h>
 #endif
 
 #endif

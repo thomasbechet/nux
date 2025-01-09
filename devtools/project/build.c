@@ -85,9 +85,13 @@ nux_command_build (nu_sv_t path)
                 break;
             case NUX_CHUNK_WASM: {
                 nu_size_t  size;
-                nu_byte_t *buffer
-                    = load_bytes(nu_sv_cstr(entry->source_path), &size);
+                nu_byte_t *buffer;
+                NU_ASSERT(nu_load_bytes(
+                    nu_sv_cstr(entry->source_path), NU_NULL, &size));
+                buffer = malloc(size);
                 NU_ASSERT(buffer);
+                NU_ASSERT(nu_load_bytes(
+                    nu_sv_cstr(entry->source_path), buffer, &size));
                 // header
                 entry->header.length = size;
                 write_chunk_header(f, &entry->header);

@@ -5,3 +5,8 @@ start (void)
 {
     trace("Hello World !", 24);
 }
+
+void
+update (void)
+{
+}
