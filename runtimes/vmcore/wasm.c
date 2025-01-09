@@ -41,7 +41,7 @@ nux_wasm_init (nux_vm_t *vm)
 
     init_args.max_thread_num = 1;
 
-    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
 
     if (!wasm_runtime_full_init(&init_args))
     {

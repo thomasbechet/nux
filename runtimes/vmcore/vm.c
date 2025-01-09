@@ -35,7 +35,6 @@ nux_vm_update (nux_vm_t *vm)
 void *
 vm_malloc (nux_vm_t *vm, nu_size_t n)
 {
-    printf("allocate %lu\n", n);
     if ((nu_size_t)vm->heap_ptr > (nu_size_t)vm->heap + vm->heap_size)
     {
         fprintf(stderr, "out of memory\n");
