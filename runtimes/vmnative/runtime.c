@@ -6,28 +6,10 @@
 #include <vmcore/platform.h>
 #include <vmcore/vm.h>
 
-static nu_byte_t *
-load_bytes (const char *filename, nu_size_t *size)
-{
-    FILE *f = fopen((char *)filename, "rb");
-    if (!f)
-    {
-        printf("Failed to open file %s\n", filename);
-        return NU_NULL;
-    }
-    fseek(f, 0, SEEK_END);
-    nu_size_t fsize = ftell(f);
-    fseek(f, 0, SEEK_SET);
-    nu_byte_t *bytes = (nu_byte_t *)malloc(fsize);
-    fread(bytes, fsize, 1, f);
-    *size = fsize;
-    return bytes;
-}
-
 static nu_byte_t global_heap[NU_MEM_32M];
 
 void
-nux_runtime_run (int argc, const char **argv)
+nux_runtime_run (nu_sv_t path)
 {
     nux_error_code_t error;
 
@@ -51,7 +33,8 @@ nux_runtime_run (int argc, const char **argv)
         goto cleanup2;
     }
 
-    const nu_byte_t *name = (const nu_byte_t *)argv[0];
+    nu_char_t name[NU_PATH_MAX];
+    nu_sv_to_cstr(path, name, NU_PATH_MAX);
     nux_vm_load(vm, name);
 
     while (!nux_window_close_requested())

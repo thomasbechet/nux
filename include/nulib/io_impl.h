@@ -80,5 +80,19 @@ nu_save_bytes (nu_sv_t filename, const nu_byte_t *data, nu_size_t size)
     fclose(f);
     return n == 1;
 }
+nu_bool_t
+nu_isdir (nu_sv_t path)
+{
+#ifdef NU_PLATFORM_UNIX
+    nu_char_t s[NU_PATH_MAX];
+    nu_sv_to_cstr(path, s, NU_PATH_MAX);
+    struct stat statbuf;
+    if (stat(s, &statbuf) != 0)
+    {
+        return NU_FALSE;
+    }
+    return S_ISDIR(statbuf.st_mode);
+#endif
+}
 
 #endif

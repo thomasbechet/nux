@@ -23,6 +23,10 @@ nux_command_init (nu_sv_t path, nu_sv_t lang)
                       project.entries[0].source_path,
                       NU_PATH_MAX);
     }
+    else
+    {
+        nux_project_init(&project, path, 0);
+    }
 
     // Template found, generate files
     if (template_file)

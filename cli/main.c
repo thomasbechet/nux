@@ -61,28 +61,21 @@ cmd_run (nu_u32_t argc, const nu_char_t **argv)
 {
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux run [-h] [-p <path>] [cart]",
+        "nux run [-h] [path]",
         NULL,
     };
-    const nu_char_t       *path      = NU_NULL;
     struct argparse_option options[] = {
         OPT_HELP(),
-        OPT_STRING('p', "path", &path, "location of project", NU_NULL, 0, 0),
         OPT_END(),
     };
     argparse_init(&argparse, options, usages, 0);
-    argc            = argparse_parse(&argparse, argc, argv);
-    nu_sv_t path_sv = NU_SV(".");
-    if (path)
-    {
-        path_sv = nu_sv_cstr(path);
-    }
-    nu_sv_t cart_sv = nu_sv_null();
+    argc         = argparse_parse(&argparse, argc, argv);
+    nu_sv_t path = NU_SV(".");
     if (argc >= 1)
     {
-        cart_sv = nu_sv_cstr(argv[1]);
+        path = nu_sv_cstr(argv[0]);
     }
-    nux_command_run(path_sv, cart_sv);
+    nux_command_run(path);
     return 0;
 }
 

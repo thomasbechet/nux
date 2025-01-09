@@ -32,6 +32,6 @@ NU_API void       nux_project_free(nux_project_t *project);
 
 NU_API void nux_command_init(nu_sv_t path, nu_sv_t lang);
 NU_API void nux_command_build(nu_sv_t path);
-NU_API void nux_command_run(nu_sv_t path, nu_sv_t cart);
+NU_API void nux_command_run(nu_sv_t path);
 
 #endif

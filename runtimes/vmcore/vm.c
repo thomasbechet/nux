@@ -22,7 +22,7 @@ nux_vm_init (const nux_vm_info_t *info)
     return vm;
 }
 void
-nux_vm_load (nux_vm_t *vm, const nu_byte_t *name)
+nux_vm_load (nux_vm_t *vm, const nu_char_t *name)
 {
     nux_cart_load_full(vm, name);
 }

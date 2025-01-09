@@ -8,7 +8,7 @@ static struct
 } _io;
 
 void
-os_mount (void *user, const nu_byte_t *name)
+os_mount (void *user, const nu_char_t *name)
 {
     printf("os_mount %s\n", name);
     _io.file = fopen((char *)name, "rb");

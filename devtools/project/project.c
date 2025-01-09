@@ -93,15 +93,18 @@ nux_project_init (nux_project_t *project, nu_sv_t path, nu_size_t entry_count)
     nu_memset(project, 0, sizeof(*project));
     nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
     project->entry_count = entry_count;
-    project->entries = malloc(sizeof(*project->entries) * project->entry_count);
-    NU_ASSERT(project->entries);
+    if (project->entry_count)
+    {
+        project->entries
+            = malloc(sizeof(*project->entries) * project->entry_count);
+        NU_ASSERT(project->entries);
+    }
     return NU_TRUE;
 }
 nu_bool_t
 nux_project_load (nux_project_t *project, nu_sv_t path)
 {
     // Initialize project
-    nu_memset(project, 0, sizeof(*project));
     nu_char_t json_path[NU_PATH_MAX];
     nu_sv_t   json_path_sv
         = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV("nux.json"));
@@ -112,14 +115,18 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
     JSON_Object *jroot = json_object(jrootv);
     NU_ASSERT(jroot);
 
-    // Compute target name
-    nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
-
-    // Parse entries
+    // Init project
     JSON_Array *jentries = json_object_get_array(jroot, "chunks");
     project->entry_count = json_array_get_count(jentries);
-    project->entries = malloc(sizeof(*project->entries) * project->entry_count);
-    NU_ASSERT(project->entries);
+    nux_project_init(project, path, json_array_get_count(jentries));
+
+    // Parse entries
+    if (project->entry_count)
+    {
+        project->entries
+            = malloc(sizeof(*project->entries) * project->entry_count);
+        NU_ASSERT(project->entries);
+    }
     for (nu_size_t i = 0; i < project->entry_count; ++i)
     {
         JSON_Object *jchunk = json_array_get_object(jentries, i);
@@ -146,7 +153,7 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
         if (!found)
         {
             printf("Chunk type not found for entry %lu\n", i);
-            return NU_NULL;
+            goto cleanup0;
         }
         project->entries[i].header.type = type;
         nu_sv_to_cstr(nu_sv_cstr(source_string),
@@ -158,6 +165,10 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
     }
     json_value_free(jrootv);
     return NU_TRUE;
+cleanup0:
+    json_value_free(jrootv);
+    nux_project_free(project);
+    return NU_FALSE;
 }
 nu_bool_t
 nux_project_save (const nux_project_t *project, nu_sv_t path)

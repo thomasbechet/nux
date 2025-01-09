@@ -3,6 +3,6 @@
 
 #include <nulib.h>
 
-NU_API void nux_runtime_run(int argc, const char **argv);
+NU_API void nux_runtime_run(nu_sv_t path);
 
 #endif

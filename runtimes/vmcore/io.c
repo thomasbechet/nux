@@ -49,7 +49,7 @@ nux_io_init (nux_vm_t *vm)
     NU_ASSERT(vm->io.heap);
 }
 void
-nux_cart_load_full (nux_vm_t *vm, const nu_byte_t *name)
+nux_cart_load_full (nux_vm_t *vm, const nu_char_t *name)
 {
     // Load cart header
     os_mount(vm->user, name);
