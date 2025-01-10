@@ -19,6 +19,10 @@ nux_command_init (nu_sv_t path, nu_sv_t lang, nu_bool_t verbose)
     {
         template_file = template_c_files;
     }
+    else if (nu_sv_eq(lang, NU_SV("rust")))
+    {
+        template_file = template_rust_files;
+    }
 
     // Template found, generate files
     if (template_file)

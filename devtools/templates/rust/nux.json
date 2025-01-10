@@ -1,0 +1,10 @@
+{
+	"target": "cart.bin",
+	"prebuild": "cargo build --release",
+	"chunks": [
+		{
+			"type": "wasm",
+			"source": "target/wasm32-unknown-unknown/release/cart.wasm"
+		}
+	]
+}
