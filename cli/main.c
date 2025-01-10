@@ -1,6 +1,7 @@
 #include <project/project.h>
 
 #include <argparse/argparse.h>
+#include <vmnative/runtime.h>
 
 typedef struct
 {
@@ -82,7 +83,18 @@ cmd_run (nu_u32_t argc, const nu_char_t **argv)
     {
         path = nu_sv_cstr(argv[0]);
     }
-    nux_command_run(path);
+    if (nu_isdir(path))
+    {
+        nux_project_t project;
+        NU_ASSERT(nux_project_load(&project, path));
+        path = nu_sv_cstr(project.target_path);
+        nux_runtime_run(path);
+        nux_project_free(&project);
+    }
+    else
+    {
+        nux_runtime_run(path);
+    }
     return 0;
 }
 

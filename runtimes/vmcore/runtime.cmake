@@ -1,7 +1,3 @@
-project(vmcore LANGUAGES C)
-
-set (CMAKE_C_STANDARD 99)
-
 set (WAMR_BUILD_PLATFORM "linux")
 set (WAMR_BUILD_TARGET "X86_64")
 
@@ -26,12 +22,4 @@ set (WAMR_BUILD_ALLOC_WITH_USAGE 0)
 
 include (${CMAKE_SOURCE_DIR}/externals/wasm-micro-runtime/build-scripts/runtime_lib.cmake)
 
-file(GLOB_RECURSE VMCORE_SOURCES *.c)
-file(GLOB_RECURSE VMCORE_HEADERS *.h)
-add_library(${PROJECT_NAME} ${VMCORE_SOURCES} ${VMCORE_HEADERS})
-
-add_library(wamr ${WAMR_RUNTIME_LIB_SOURCE})
-target_link_libraries(${PROJECT_NAME} wamr m)
-
-include_directories(${CMAKE_SOURCE_DIR}/externals)
-include_directories(${CMAKE_SOURCE_DIR}/include)
+file(GLOB_RECURSE VMCORE_SOURCES ${CMAKE_CURRENT_LIST_DIR}/*.c ${WAMR_RUNTIME_LIB_SOURCE})

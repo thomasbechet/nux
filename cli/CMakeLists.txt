@@ -1,12 +1,13 @@
 project(nuxcli LANGUAGES C)
 
-file(GLOB NATIVE_CLI_SOURCES *.c)
+file(GLOB CLI_SOURCES *.c)
 file(GLOB ARGPARSE_SOURCES ${CMAKE_SOURCE_DIR}/externals/argparse/*.c)
-add_executable(nux ${NATIVE_CLI_SOURCES} ${ARGPARSE_SOURCES})
+add_executable(nux ${CLI_SOURCES} ${ARGPARSE_SOURCES})
 
 include_directories(${CMAKE_SOURCE_DIR}/runtimes)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/devtools)
 
-target_link_libraries(nux project vmnative vmcore vmnative)
+target_link_libraries(nux project vmnative)
+install(TARGETS nux)
