@@ -1,4 +1,4 @@
-#include "gltf.h"
+#include "importer.h"
 
 #include <vmcore/config.h>
 #define CGLTF_IMPLEMENTATION
