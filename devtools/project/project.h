@@ -20,7 +20,8 @@ typedef struct
     nu_char_t              prebuild[PROJECT_NAME_MAX];
 } project_t;
 
-NU_API nu_bool_t project_init_empty(project_t *project, nu_sv_t path);
+NU_API nu_bool_t project_generate_template(nu_sv_t path, nu_sv_t lang);
+NU_API nu_bool_t project_build(const project_t *project);
 NU_API nu_bool_t project_load(project_t *project, nu_sv_t path);
 NU_API nu_bool_t project_save(const project_t *project, nu_sv_t path);
 NU_API void      project_free(project_t *project);

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-TEMPLATES=devtools/templates
+TEMPLATES=devtools/project/templates
 OUTPUT=devtools/project/templates_data.h
 
 printf "#ifndef PROJECT_TEMPLATES_DATA_H\n" > $OUTPUT

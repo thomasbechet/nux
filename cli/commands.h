@@ -3,8 +3,8 @@
 
 #include <nulib.h>
 
-NU_API void cli_command_init(nu_sv_t path, nu_sv_t lang, nu_bool_t verbose);
-NU_API void cli_command_build(nu_sv_t path, nu_bool_t verbose);
-NU_API void cli_command_run(nu_sv_t path);
+NU_API nu_u32_t cli_command_init(nu_u32_t argc, const nu_char_t **argv);
+NU_API nu_u32_t cli_command_build(nu_u32_t argc, const nu_char_t **argv);
+NU_API nu_u32_t cli_command_run(nu_u32_t argc, const nu_char_t **argv);
 
 #endif

@@ -1,19 +1,28 @@
 #include "project.h"
 
+#include "templates_data.h"
 #include <parson/parson.h>
+#include <importer/importer.h>
 
 #define PROJECT_JSON "nux.json"
 
 static const struct
 {
     const nu_char_t *name;
-    vm_chunk_type_t type;
+    vm_chunk_type_t  type;
 } name_to_chunk_type[] = {
     { "raw", VM_CHUNK_RAW },
     { "wasm", VM_CHUNK_WASM },
     { "texture", VM_CHUNK_TEXTURE },
     { "mesh", VM_CHUNK_MESH },
 };
+
+static void
+project_init (project_t *project, nu_sv_t path)
+{
+    nu_memset(project, 0, sizeof(*project));
+    nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
+}
 
 static nu_f32_t
 parse_f32 (const JSON_Object *object, const nu_char_t *name)
@@ -22,13 +31,7 @@ parse_f32 (const JSON_Object *object, const nu_char_t *name)
     return json_object_get_number(object, name);
 }
 static void
-write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
-{
-    json_object_set_number(object, name, value);
-}
-
-static void
-parse_target (const JSON_Object  *jchunk,
+parse_target (const JSON_Object *jchunk,
               vm_chunk_type_t    type,
               vm_chunk_target_t *target)
 {
@@ -56,8 +59,14 @@ parse_target (const JSON_Object  *jchunk,
         break;
     }
 }
+
 static void
-write_target (JSON_Object              *chunk,
+write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
+{
+    json_object_set_number(object, name, value);
+}
+static void
+write_target (JSON_Object             *chunk,
               vm_chunk_type_t          type,
               const vm_chunk_target_t *target)
 {
@@ -89,17 +98,180 @@ write_target (JSON_Object              *chunk,
     }
 }
 
-nu_bool_t
-project_init_empty (project_t *project, nu_sv_t path)
+static void
+write_u32 (FILE *f, nu_u32_t v)
 {
-    nu_memset(project, 0, sizeof(*project));
-    nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
+    nu_u32_t a = nu_u32_le(v);
+    NU_ASSERT(fwrite(&a, sizeof(a), 1, f));
+}
+static void
+write_v4u (FILE *f, nu_v4u_t v)
+{
+    for (nu_size_t i = 0; i < NU_V4_SIZE; ++i)
+    {
+        nu_u32_t a = nu_u32_le(v.data[i]);
+        NU_ASSERT(fwrite(&a, sizeof(a), 1, f));
+    }
+}
+static void
+write_chunk_header (FILE *f, vm_chunk_header_t *header)
+{
+    // type / length
+    write_u32(f, header->type);
+    write_u32(f, header->length);
+    // target
+    switch (header->type)
+    {
+        case VM_CHUNK_RAW: {
+        }
+        break;
+        case VM_CHUNK_WASM: {
+        }
+        break;
+        case VM_CHUNK_TEXTURE: {
+            write_u32(f, header->target.texture.slot);
+            write_u32(f, header->target.texture.x);
+            write_u32(f, header->target.texture.y);
+            write_u32(f, header->target.texture.w);
+            write_u32(f, header->target.texture.h);
+        }
+        break;
+        case VM_CHUNK_MESH: {
+        }
+        break;
+    }
+}
+
+nu_bool_t
+project_generate_template (nu_sv_t path, nu_sv_t lang)
+{
+    printf("Initialize new project " NU_SV_FMT " with language " NU_SV_FMT "\n",
+           NU_SV_ARGS(path),
+           NU_SV_ARGS(lang));
+
+    // Find lang
+    project_template_file_t *template_file = NU_NULL;
+    if (nu_sv_eq(lang, NU_SV("c")))
+    {
+        template_file = template_c_files;
+    }
+    else if (nu_sv_eq(lang, NU_SV("rust")))
+    {
+        template_file = template_rust_files;
+    }
+
+    // Template found, generate files
+    if (template_file)
+    {
+        while (template_file->path)
+        {
+            nu_char_t filepath[NU_PATH_MAX];
+            nu_sv_t   filepath_sv = nu_path_concat(
+                filepath, NU_PATH_MAX, path, nu_sv_cstr(template_file->path));
+            NU_ASSERT(nu_save_bytes(
+                filepath_sv, template_file->data, template_file->size));
+            ++template_file;
+        }
+    }
+    else
+    {
+        // Generate empty project file
+        project_t project;
+        project_init(&project, path);
+        project_save(&project, path);
+        project_free(&project);
+    }
+    return NU_TRUE;
+}
+nu_bool_t
+project_build (const project_t *project)
+{
+    // Execute prebuild command
+    if (nu_strlen(project->prebuild))
+    {
+        printf("Execute prebuild command: %s\n", project->prebuild);
+#ifdef NU_PLATFORM_UNIX
+        system(project->prebuild);
+#endif
+    }
+
+    // Open cart
+    FILE *f = fopen(project->target_path, "wb");
+    if (!f)
+    {
+        printf("Failed to open file\n");
+        return NU_FALSE;
+    }
+    else
+    {
+        printf("Cartridge %s generated.\n", project->target_path);
+    }
+
+    // Write header
+    const nu_u32_t version = 100;
+    NU_ASSERT(fwrite(&version, sizeof(version), 1, f));
+    const nu_u32_t chunk_count = project->entries_count;
+    NU_ASSERT(fwrite(&chunk_count, sizeof(chunk_count), 1, f));
+
+    // Compile entries
+    for (nu_size_t i = 0; i < project->entries_count; ++i)
+    {
+        project_chunk_entry_t *entry = project->entries + i;
+        switch (entry->header.type)
+        {
+            case VM_CHUNK_RAW:
+                break;
+            case VM_CHUNK_WASM: {
+                nu_size_t  size;
+                nu_byte_t *buffer;
+                NU_ASSERT(nu_load_bytes(
+                    nu_sv_cstr(entry->source_path), NU_NULL, &size));
+                buffer = malloc(size);
+                NU_ASSERT(buffer);
+                NU_ASSERT(nu_load_bytes(
+                    nu_sv_cstr(entry->source_path), buffer, &size));
+                // header
+                entry->header.length = size;
+                write_chunk_header(f, &entry->header);
+                // data
+                NU_ASSERT(fwrite(buffer, size, 1, f));
+                free(buffer);
+            }
+            break;
+            case VM_CHUNK_TEXTURE: {
+                nu_v2u_t   size;
+                nu_byte_t *data = importer_load_image(
+                    nu_sv_cstr(entry->source_path), &size);
+                nu_size_t length = sizeof(nu_byte_t) * size.x * size.y * 4;
+
+                // header
+                entry->header.length = length;
+                write_chunk_header(f, &entry->header);
+                // data
+                NU_ASSERT(fwrite(data, length, 1, f));
+
+                free(data);
+            }
+            break;
+            case VM_CHUNK_MESH: {
+                // // header
+                // write_chunk_header(f, entry, length);
+                // // destination
+                // write_u32(f, entry->dst.mesh.first);
+                // // data
+                // NU_ASSERT(fwrite(output, length, 1, f));
+            }
+            break;
+        }
+    }
+
+    fclose(f);
     return NU_TRUE;
 }
 nu_bool_t
 project_load (project_t *project, nu_sv_t path)
 {
-    project_init_empty(project, path);
+    project_init(project, path);
 
     // Parse file
     nu_char_t json_path[NU_PATH_MAX];
@@ -130,9 +302,9 @@ project_load (project_t *project, nu_sv_t path)
         NU_ASSERT(source_string);
 
         // Check type
-        nu_sv_t          type_sv = nu_sv_cstr(type_string);
+        nu_sv_t         type_sv = nu_sv_cstr(type_string);
         vm_chunk_type_t type;
-        nu_bool_t        found = NU_FALSE;
+        nu_bool_t       found = NU_FALSE;
         for (nu_size_t j = 0; j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
              ++j)
         {
