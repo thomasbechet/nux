@@ -1,5 +1,7 @@
 #include <project/project.h>
 
+#include "commands.h"
+
 #include <argparse/argparse.h>
 #include <vmnative/runtime.h>
 
@@ -32,7 +34,7 @@ cmd_init (nu_u32_t argc, const nu_char_t **argv)
     };
     argparse_init(&argparse, options, usages, 0);
     argc = argparse_parse(&argparse, argc, argv);
-    nux_command_init(path ? nu_sv_cstr(path) : NU_SV("."),
+    cli_command_init(path ? nu_sv_cstr(path) : NU_SV("."),
                      lang ? nu_sv_cstr(lang) : nu_sv_null(),
                      verbose);
     return 0;
@@ -61,7 +63,7 @@ cmd_build (nu_u32_t argc, const nu_char_t **argv)
     {
         path_sv = nu_sv_cstr(path);
     }
-    nux_command_build(path_sv, verbose);
+    cli_command_build(path_sv, verbose);
     return 0;
 }
 static nu_u32_t
@@ -85,15 +87,15 @@ cmd_run (nu_u32_t argc, const nu_char_t **argv)
     }
     if (nu_isdir(path))
     {
-        nux_project_t project;
-        NU_ASSERT(nux_project_load(&project, path));
+        project_t project;
+        NU_ASSERT(project_load(&project, path));
         path = nu_sv_cstr(project.target_path);
-        nux_runtime_run(path);
-        nux_project_free(&project);
+        vmn_run(path);
+        project_free(&project);
     }
     else
     {
-        nux_runtime_run(path);
+        vmn_run(path);
     }
     return 0;
 }
@@ -127,7 +129,7 @@ main (int argc, const nu_char_t *argv[])
     argc = argparse_parse(&argparse, argc, argv);
     if (version)
     {
-        printf("nux runtime " NUX_RUNTIME_VERSION "\n");
+        printf("nux runtime " VM_RUNTIME_VERSION "\n");
         return 0;
     }
     else if (argc < 1)

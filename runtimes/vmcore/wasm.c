@@ -4,13 +4,13 @@
 #include "gpu.h"
 #include "platform.h"
 
-#define NUX_START_CALLBACK  "start"
-#define NUX_UPDATE_CALLBACK "update"
+#define VM_START_CALLBACK  "start"
+#define VM_UPDATE_CALLBACK "update"
 
 static void
 trace (wasm_exec_env_t env, const void *str, nu_u32_t n)
 {
-    nux_vm_t *vm = wasm_runtime_get_user_data(env);
+    vm_t *vm = wasm_runtime_get_user_data(env);
     os_trace(vm->user, str, n);
 }
 
@@ -23,7 +23,7 @@ static NativeSymbol nux_wasm_vm_native_symbols[] = {
 };
 
 void
-nux_wasm_init (nux_vm_t *vm)
+vm_wasm_init (vm_t *vm)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
@@ -49,9 +49,9 @@ nux_wasm_init (nux_vm_t *vm)
     }
 }
 void
-nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
+vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
 {
-    nux_wasm_t *wasm = &vm->wasm;
+    vm_wasm_t *wasm = &vm->wasm;
 
     // Load module data
     wasm->buffer_size = header->length;
@@ -91,33 +91,33 @@ nux_wasm_load (nux_vm_t *vm, const nux_chunk_header_t *header)
 
     // Find entry point
     wasm->start_callback
-        = wasm_runtime_lookup_function(wasm->instance, NUX_START_CALLBACK);
+        = wasm_runtime_lookup_function(wasm->instance, VM_START_CALLBACK);
     if (!wasm->start_callback)
     {
-        printf("The " NUX_START_CALLBACK " wasm function is not found.\n");
+        printf("The " VM_START_CALLBACK " wasm function is not found.\n");
     }
     wasm->update_callback
-        = wasm_runtime_lookup_function(wasm->instance, NUX_UPDATE_CALLBACK);
+        = wasm_runtime_lookup_function(wasm->instance, VM_UPDATE_CALLBACK);
     if (!wasm->update_callback)
     {
-        printf("The " NUX_UPDATE_CALLBACK " wasm function is not found.\n");
+        printf("The " VM_UPDATE_CALLBACK " wasm function is not found.\n");
     }
 
     // pass 4 elements for function arguments
     if (!wasm_runtime_call_wasm_a(
             wasm->env, wasm->start_callback, 0, NU_NULL, 0, NU_NULL))
     {
-        printf("Call wasm function " NUX_START_CALLBACK " failed. %s\n",
+        printf("Call wasm function " VM_START_CALLBACK " failed. %s\n",
                wasm_runtime_get_exception(wasm->instance));
     }
 }
 void
-nux_wasm_update (nux_vm_t *vm)
+vm_wasm_update (vm_t *vm)
 {
     if (!wasm_runtime_call_wasm_a(
             vm->wasm.env, vm->wasm.update_callback, 0, NU_NULL, 0, NU_NULL))
     {
-        printf("Call wasm function " NUX_UPDATE_CALLBACK " failed. %s\n",
+        printf("Call wasm function " VM_UPDATE_CALLBACK " failed. %s\n",
                wasm_runtime_get_exception(vm->wasm.instance));
     }
 }

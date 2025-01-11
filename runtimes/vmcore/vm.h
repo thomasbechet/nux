@@ -1,22 +1,22 @@
-#ifndef NUX_VM_H
-#define NUX_VM_H
+#ifndef VM_H
+#define VM_H
 
 #include "config.h"
 
-typedef struct nux_vm_t nux_vm_t;
+typedef struct vm vm_t;
 
-typedef struct nux_vm_info_t
+typedef struct vm_info
 {
-    void                  *heap;
-    nu_size_t              heap_size;
-    void                  *user;
-    const nux_vm_config_t *specs;
-} nux_vm_info_t;
+    void              *heap;
+    nu_size_t          heap_size;
+    void              *user;
+    const vm_config_t *specs;
+} vm_info_t;
 
-NU_API nux_vm_t *nux_vm_init(const nux_vm_info_t *info);
-NU_API void      nux_vm_load(nux_vm_t *vm, const nu_char_t *name);
-NU_API void      nux_vm_update(nux_vm_t *vm);
+NU_API vm_t *vm_init(const vm_info_t *info);
+NU_API void  vm_load(vm_t *vm, const nu_char_t *name);
+NU_API void  vm_update(vm_t *vm);
 
-void *vm_malloc(nux_vm_t *vm, nu_size_t n);
+void *vm_malloc(vm_t *vm, nu_size_t n);
 
 #endif

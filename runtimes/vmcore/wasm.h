@@ -1,11 +1,11 @@
-#ifndef NU_WASM_H
-#define NU_WASM_H
+#ifndef VM_WASM_H
+#define VM_WASM_H
 
 #include "types.h"
 
-void nux_wasm_init(nux_vm_t *vm);
-void nux_wasm_free(nux_vm_t *vm);
-void nux_wasm_load(nux_vm_t *vm, const nux_chunk_header_t *header);
-void nux_wasm_update(nux_vm_t *vm);
+void vm_wasm_init(vm_t *vm);
+void vm_wasm_free(vm_t *vm);
+void vm_wasm_load(vm_t *vm, const vm_chunk_header_t *header);
+void vm_wasm_update(vm_t *vm);
 
 #endif

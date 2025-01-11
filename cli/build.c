@@ -1,6 +1,7 @@
-#include "project.h"
+#include "commands.h"
 
 #include <vmcore/config.h>
+#include <project/project.h>
 #include <parson/parson.h>
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
@@ -23,7 +24,7 @@ write_v4u (FILE *f, nu_v4u_t v)
     }
 }
 static void
-write_chunk_header (FILE *f, nux_chunk_header_t *header)
+write_chunk_header (FILE *f, vm_chunk_header_t *header)
 {
     // type / length
     write_u32(f, header->type);
@@ -31,13 +32,13 @@ write_chunk_header (FILE *f, nux_chunk_header_t *header)
     // target
     switch (header->type)
     {
-        case NUX_CHUNK_RAW: {
+        case VM_CHUNK_RAW: {
         }
         break;
-        case NUX_CHUNK_WASM: {
+        case VM_CHUNK_WASM: {
         }
         break;
-        case NUX_CHUNK_TEXTURE: {
+        case VM_CHUNK_TEXTURE: {
             write_u32(f, header->target.texture.slot);
             write_u32(f, header->target.texture.x);
             write_u32(f, header->target.texture.y);
@@ -45,17 +46,17 @@ write_chunk_header (FILE *f, nux_chunk_header_t *header)
             write_u32(f, header->target.texture.h);
         }
         break;
-        case NUX_CHUNK_MESH: {
+        case VM_CHUNK_MESH: {
         }
         break;
     }
 }
 void
-nux_command_build (nu_sv_t path, nu_bool_t verbose)
+cli_command_build (nu_sv_t path, nu_bool_t verbose)
 {
     // Load package
-    nux_project_t project;
-    nux_project_load(&project, path);
+    project_t project;
+    project_load(&project, path);
 
     // Execute prebuild command
     if (nu_strlen(project.prebuild))
@@ -93,12 +94,12 @@ nux_command_build (nu_sv_t path, nu_bool_t verbose)
     // Compile entries
     for (nu_size_t i = 0; i < project.entries_count; ++i)
     {
-        nux_chunk_entry_t *entry = project.entries + i;
+        project_chunk_entry_t *entry = project.entries + i;
         switch (entry->header.type)
         {
-            case NUX_CHUNK_RAW:
+            case VM_CHUNK_RAW:
                 break;
-            case NUX_CHUNK_WASM: {
+            case VM_CHUNK_WASM: {
                 nu_size_t  size;
                 nu_byte_t *buffer;
                 NU_ASSERT(nu_load_bytes(
@@ -115,7 +116,7 @@ nux_command_build (nu_sv_t path, nu_bool_t verbose)
                 free(buffer);
             }
             break;
-            case NUX_CHUNK_TEXTURE: {
+            case VM_CHUNK_TEXTURE: {
                 int        w, h, n;
                 nu_byte_t  fn[256];
                 nu_byte_t *img = stbi_load(
@@ -147,7 +148,7 @@ nux_command_build (nu_sv_t path, nu_bool_t verbose)
                 stbi_image_free(img);
             }
             break;
-            case NUX_CHUNK_MESH: {
+            case VM_CHUNK_MESH: {
                 // // header
                 // write_chunk_header(f, entry, length);
                 // // destination
@@ -162,5 +163,5 @@ nux_command_build (nu_sv_t path, nu_bool_t verbose)
     // Free resources
     fclose(f);
 cleanup0:
-    nux_project_free(&project);
+    project_free(&project);
 }

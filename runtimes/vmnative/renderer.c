@@ -70,7 +70,7 @@ message_callback (GLenum        source,
     }
     // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
 }
-static nux_error_code_t
+static vmn_error_code_t
 compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
 {
     GLint success;
@@ -84,22 +84,22 @@ compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
     {
         GLint max_length = 0;
         glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &max_length);
-        nux_error_data_t error;
+        vmn_error_data_t error;
         GLchar          *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
         error.shader_log     = log;
         glGetShaderInfoLog(*shader, max_length, &max_length, log);
         glDeleteShader(*shader);
-        return NUX_ERROR(NUX_ERROR_RENDERER_SHADER_COMPILATION, &error);
+        return VMN_ERROR(VMN_ERROR_RENDERER_SHADER_COMPILATION, &error);
     }
-    return NUX_ERROR_NONE;
+    return VMN_ERROR_NONE;
 }
-static nux_error_code_t
+static vmn_error_code_t
 compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
 {
     GLuint vertex_shader, fragment_shader;
     GLint  success;
 
-    nux_error_code_t error = NUX_ERROR_NONE;
+    vmn_error_code_t error = VMN_ERROR_NONE;
 
     error = compile_shader(vert, GL_VERTEX_SHADER, &vertex_shader);
     NU_CHECK(!error, goto cleanup0);
@@ -124,9 +124,9 @@ compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
 
-        nux_error_data_t error_data;
+        vmn_error_data_t error_data;
         error_data.shader_log = log;
-        return NUX_ERROR(NUX_ERROR_RENDERER_SHADER_COMPILATION, &error_data);
+        return VMN_ERROR(VMN_ERROR_RENDERER_SHADER_COMPILATION, &error_data);
     }
 
     glDeleteShader(fragment_shader);
@@ -135,15 +135,15 @@ cleanup1:
 cleanup0:
     return error;
 }
-nux_error_code_t
-nux_renderer_init (const nux_vm_config_t *config)
+vmn_error_code_t
+vmn_renderer_init (const vm_config_t *config)
 {
-    nux_error_code_t error = NUX_ERROR_NONE;
+    vmn_error_code_t error = VMN_ERROR_NONE;
 
     // Initialize GL functions
     if (!gladLoadGL((GLADloadfunc)RGFW_getProcAddress))
     {
-        return NUX_ERROR(NUX_ERROR_RENDERER_GL_LOADING, NU_NULL);
+        return VMN_ERROR(VMN_ERROR_RENDERER_GL_LOADING, NU_NULL);
     }
 
     // During init, enable debug output
@@ -197,8 +197,8 @@ nux_renderer_init (const nux_vm_config_t *config)
 cleanup0:
     return error;
 }
-nux_error_code_t
-nux_renderer_free (void)
+vmn_error_code_t
+vmn_renderer_free (void)
 {
     glDeleteProgram(_renderer.unlit_shader);
     for (nu_size_t i = 0; i < MAX_TEXTURE; ++i)
@@ -212,10 +212,10 @@ nux_renderer_free (void)
     glDeleteBuffers(1, &_renderer.vbo_positions);
     glDeleteBuffers(1, &_renderer.vbo_uvs);
     // glDeleteBuffers(1, &_renderer.vbo_normals);
-    return NUX_ERROR_NONE;
+    return VMN_ERROR_NONE;
 }
 void
-nux_renderer_render (void)
+vmn_renderer_render (void)
 {
     // glClearColor(1, 0, 0, 1);
     // glClear(GL_COLOR_BUFFER_BIT);
@@ -238,8 +238,8 @@ os_write_texture (void       *user,
         glTexImage2D(GL_TEXTURE_2D,
                      0,
                      GL_RGBA,
-                     NUX_TEXTURE_SIZE,
-                     NUX_TEXTURE_SIZE,
+                     VM_TEXTURE_SIZE,
+                     VM_TEXTURE_SIZE,
                      0,
                      GL_RGBA,
                      GL_UNSIGNED_BYTE,
@@ -273,11 +273,11 @@ os_write_vertex (void *user, nu_u32_t first, nu_u32_t count, const void *p)
     for (nu_size_t i = 0; i < count; ++i)
     {
         ptr[(first + i) * NU_V3_SIZE + 0]
-            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 0];
+            = data[(first + i) * VM_VERTEX_SIZE_F32 + 0];
         ptr[(first + i) * NU_V3_SIZE + 1]
-            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 1];
+            = data[(first + i) * VM_VERTEX_SIZE_F32 + 1];
         ptr[(first + i) * NU_V3_SIZE + 2]
-            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 2];
+            = data[(first + i) * VM_VERTEX_SIZE_F32 + 2];
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
     // uvs
@@ -287,9 +287,9 @@ os_write_vertex (void *user, nu_u32_t first, nu_u32_t count, const void *p)
     for (nu_size_t i = 0; i < count; ++i)
     {
         ptr[(first + i) * NU_V2_SIZE + 0]
-            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 3];
+            = data[(first + i) * VM_VERTEX_SIZE_F32 + 3];
         ptr[(first + i) * NU_V2_SIZE + 1]
-            = data[(first + i) * NUX_VERTEX_SIZE_F32 + 4];
+            = data[(first + i) * VM_VERTEX_SIZE_F32 + 4];
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

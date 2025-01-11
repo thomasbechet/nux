@@ -1,5 +1,5 @@
-#ifndef NUX_NATIVE_ERROR_H
-#define NUX_NATIVE_ERROR_H
+#ifndef VMN_ERROR_H
+#define VMN_ERROR_H
 
 #include <nulib.h>
 
@@ -13,27 +13,27 @@
 #define __SOURCE__ ""
 #endif
 
-#define NUX_ERROR(code, error) \
-    nux_error(code, (const nu_byte_t *)__SOURCE__, error)
+#define VMN_ERROR(code, error) \
+    vmn_error(code, (const nu_byte_t *)__SOURCE__, error)
 
 typedef struct
 {
     char *shader_log;
-} nux_error_data_t;
+} vmn_error_data_t;
 
 typedef enum
 {
-    NUX_ERROR_NONE = 0,
-    NUX_ERROR_VM_INITIALIZATION,
-    NUX_ERROR_RENDERER_GL_LOADING,
-    NUX_ERROR_RENDERER_SHADER_COMPILATION,
-} nux_error_code_t;
+    VMN_ERROR_NONE = 0,
+    VMN_ERROR_VM_INITIALIZATION,
+    VMN_ERROR_RENDERER_GL_LOADING,
+    VMN_ERROR_RENDERER_SHADER_COMPILATION,
+} vmn_error_code_t;
 
-nux_error_code_t nux_error(nux_error_code_t        code,
+vmn_error_code_t vmn_error(vmn_error_code_t        code,
                            const nu_byte_t        *source,
-                           const nux_error_data_t *error);
-void             nux_error_init(void);
-void             nux_error_free(void);
-void             nux_error_print(void);
+                           const vmn_error_data_t *error);
+void             vmn_error_init(void);
+void             vmn_error_free(void);
+void             vmn_error_print(void);
 
 #endif

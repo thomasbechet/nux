@@ -3,12 +3,12 @@
 TEMPLATES=devtools/templates
 OUTPUT=devtools/project/templates_data.h
 
-printf "#ifndef NUX_TEMPLATES_DATA_H\n" > $OUTPUT
-printf "#define NUX_TEMPLATES_DATA_H\n" >> $OUTPUT
+printf "#ifndef PROJECT_TEMPLATES_DATA_H\n" > $OUTPUT
+printf "#define PROJECT_TEMPLATES_DATA_H\n" >> $OUTPUT
 
 printf "#include <nulib.h>\n" >> $OUTPUT
 printf "typedef struct
-{const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } nux_project_template_file_t;\n" >> $OUTPUT
+{const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } project_template_file_t;\n" >> $OUTPUT
 
 shopt -s dotglob # Iter hidden files
 
@@ -27,7 +27,7 @@ for TEMPLATE in $TEMPLATES/*; do
         printf "};\n" >> $OUTPUT
     done
 
-    printf "static nux_project_template_file_t template_${LANG}_files[] = {\n" >> $OUTPUT
+    printf "static project_template_file_t template_${LANG}_files[] = {\n" >> $OUTPUT
     for FILE in $TEMPLATE/* $TEMPLATE/**/*; do
         if [ ! -f $FILE ]; then
             continue

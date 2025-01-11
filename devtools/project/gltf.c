@@ -10,13 +10,13 @@ emplace_index (nu_f32_t      *vertices,
                const nu_v2_t *uvs,
                nu_u16_t       index)
 {
-    const nu_v3_t *pos                        = positions + index;
-    const nu_v2_t *uv                         = uvs ? uvs + index : NU_NULL;
-    vertices[NUX_VERTEX_SIZE_F32 * index + 0] = pos->x;
-    vertices[NUX_VERTEX_SIZE_F32 * index + 1] = pos->y;
-    vertices[NUX_VERTEX_SIZE_F32 * index + 2] = pos->z;
-    vertices[NUX_VERTEX_SIZE_F32 * index + NUX_VERTEX_UV_OFFSET + 0] = uv->x;
-    vertices[NUX_VERTEX_SIZE_F32 * index + NUX_VERTEX_UV_OFFSET + 1] = uv->y;
+    const nu_v3_t *pos                       = positions + index;
+    const nu_v2_t *uv                        = uvs ? uvs + index : NU_NULL;
+    vertices[VM_VERTEX_SIZE_F32 * index + 0] = pos->x;
+    vertices[VM_VERTEX_SIZE_F32 * index + 1] = pos->y;
+    vertices[VM_VERTEX_SIZE_F32 * index + 2] = pos->z;
+    vertices[VM_VERTEX_SIZE_F32 * index + VM_VERTEX_UV_OFFSET + 0] = uv->x;
+    vertices[VM_VERTEX_SIZE_F32 * index + VM_VERTEX_UV_OFFSET + 1] = uv->y;
 }
 #define EMPLACE_VERTEX(index_type)                                \
     index_type *indices                                           \
@@ -38,7 +38,7 @@ load_mesh (const cgltf_mesh *mesh, nu_size_t *size)
         cgltf_accessor  *accessor  = primitive->indices;
         *size += accessor->count;
     }
-    nu_f32_t *vertices = malloc(NUX_VERTEX_SIZE * (*size));
+    nu_f32_t *vertices = malloc(VM_VERTEX_SIZE * (*size));
     NU_ASSERT(vertices);
 
     // fill buffer
@@ -76,7 +76,7 @@ load_mesh (const cgltf_mesh *mesh, nu_size_t *size)
             nu_byte_t         *data         = (nu_byte_t *)view->buffer->data;
             nu_size_t          indice_count = accessor->count;
 
-            nu_f32_t *vertices = malloc(NUX_VERTEX_SIZE * indice_count);
+            nu_f32_t *vertices = malloc(VM_VERTEX_SIZE * indice_count);
             *size              = indice_count;
             NU_ASSERT(vertices);
 
@@ -107,7 +107,7 @@ load_mesh (const cgltf_mesh *mesh, nu_size_t *size)
     return vertices;
 }
 nu_f32_t *
-nux_load_gltf (const nu_byte_t *path, nu_size_t *size)
+project_load_gltf (const nu_byte_t *path, nu_size_t *size)
 {
     cgltf_options options;
     nu_memset(&options, 0, sizeof(options));

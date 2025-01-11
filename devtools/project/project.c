@@ -2,17 +2,17 @@
 
 #include <parson/parson.h>
 
-#define NUX_PROJECT_JSON "nux.json"
+#define PROJECT_JSON "nux.json"
 
 static const struct
 {
     const nu_char_t *name;
-    nux_chunk_type_t type;
+    vm_chunk_type_t type;
 } name_to_chunk_type[] = {
-    { "raw", NUX_CHUNK_RAW },
-    { "wasm", NUX_CHUNK_WASM },
-    { "texture", NUX_CHUNK_TEXTURE },
-    { "mesh", NUX_CHUNK_MESH },
+    { "raw", VM_CHUNK_RAW },
+    { "wasm", VM_CHUNK_WASM },
+    { "texture", VM_CHUNK_TEXTURE },
+    { "mesh", VM_CHUNK_MESH },
 };
 
 static nu_f32_t
@@ -29,19 +29,19 @@ write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
 
 static void
 parse_target (const JSON_Object  *jchunk,
-              nux_chunk_type_t    type,
-              nux_chunk_target_t *target)
+              vm_chunk_type_t    type,
+              vm_chunk_target_t *target)
 {
     const JSON_Object *jtarget = json_object_get_object(jchunk, "target");
     switch (type)
     {
-        case NUX_CHUNK_RAW: {
+        case VM_CHUNK_RAW: {
             target->raw.addr = parse_f32(jtarget, "addr");
         }
         break;
-        case NUX_CHUNK_WASM:
+        case VM_CHUNK_WASM:
             break;
-        case NUX_CHUNK_TEXTURE: {
+        case VM_CHUNK_TEXTURE: {
             target->texture.slot = parse_f32(jtarget, "slot");
             target->texture.x    = parse_f32(jtarget, "x");
             target->texture.y    = parse_f32(jtarget, "y");
@@ -49,7 +49,7 @@ parse_target (const JSON_Object  *jchunk,
             target->texture.h    = parse_f32(jtarget, "h");
         }
         break;
-        case NUX_CHUNK_MESH: {
+        case VM_CHUNK_MESH: {
             target->mesh.first = parse_f32(jtarget, "first");
             target->mesh.count = parse_f32(jtarget, "count");
         }
@@ -58,8 +58,8 @@ parse_target (const JSON_Object  *jchunk,
 }
 static void
 write_target (JSON_Object              *chunk,
-              nux_chunk_type_t          type,
-              const nux_chunk_target_t *target)
+              vm_chunk_type_t          type,
+              const vm_chunk_target_t *target)
 {
     JSON_Value *jtargetv = json_value_init_object();
     NU_ASSERT(jtargetv);
@@ -67,13 +67,13 @@ write_target (JSON_Object              *chunk,
     JSON_Object *jtarget = json_object(jtargetv);
     switch (type)
     {
-        case NUX_CHUNK_RAW: {
+        case VM_CHUNK_RAW: {
             write_f32(jtarget, "addr", target->raw.addr);
         }
         break;
-        case NUX_CHUNK_WASM:
+        case VM_CHUNK_WASM:
             break;
-        case NUX_CHUNK_TEXTURE: {
+        case VM_CHUNK_TEXTURE: {
             write_f32(jtarget, "slot", target->texture.slot);
             write_f32(jtarget, "x", target->texture.x);
             write_f32(jtarget, "y", target->texture.y);
@@ -81,7 +81,7 @@ write_target (JSON_Object              *chunk,
             write_f32(jtarget, "h", target->texture.h);
         }
         break;
-        case NUX_CHUNK_MESH: {
+        case VM_CHUNK_MESH: {
             write_f32(jtarget, "first", target->mesh.first);
             write_f32(jtarget, "count", target->mesh.count);
         }
@@ -90,21 +90,21 @@ write_target (JSON_Object              *chunk,
 }
 
 nu_bool_t
-nux_project_init_empty (nux_project_t *project, nu_sv_t path)
+project_init_empty (project_t *project, nu_sv_t path)
 {
     nu_memset(project, 0, sizeof(*project));
     nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
     return NU_TRUE;
 }
 nu_bool_t
-nux_project_load (nux_project_t *project, nu_sv_t path)
+project_load (project_t *project, nu_sv_t path)
 {
-    nux_project_init_empty(project, path);
+    project_init_empty(project, path);
 
     // Parse file
     nu_char_t json_path[NU_PATH_MAX];
     nu_sv_t   json_path_sv
-        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(NUX_PROJECT_JSON));
+        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
     JSON_Value *jrootv = json_parse_file(json_path);
     NU_ASSERT(jrootv);
     JSON_Object *jroot = json_object(jrootv);
@@ -131,7 +131,7 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
 
         // Check type
         nu_sv_t          type_sv = nu_sv_cstr(type_string);
-        nux_chunk_type_t type;
+        vm_chunk_type_t type;
         nu_bool_t        found = NU_FALSE;
         for (nu_size_t j = 0; j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
              ++j)
@@ -160,18 +160,19 @@ nux_project_load (nux_project_t *project, nu_sv_t path)
     const nu_char_t *jprebuild = json_object_get_string(jroot, "prebuild");
     if (jprebuild)
     {
-        nu_sv_to_cstr(nu_sv_cstr(jprebuild), project->prebuild, NUX_NAME_MAX);
+        nu_sv_to_cstr(
+            nu_sv_cstr(jprebuild), project->prebuild, PROJECT_NAME_MAX);
     }
 
     json_value_free(jrootv);
     return NU_TRUE;
 cleanup0:
     json_value_free(jrootv);
-    nux_project_free(project);
+    project_free(project);
     return NU_FALSE;
 }
 nu_bool_t
-nux_project_save (const nux_project_t *project, nu_sv_t path)
+project_save (const project_t *project, nu_sv_t path)
 {
     // Build json object
     JSON_Value *jrootv = json_value_init_object();
@@ -228,7 +229,7 @@ nux_project_save (const nux_project_t *project, nu_sv_t path)
     // Write json file
     nu_char_t json_path[NU_PATH_MAX];
     nu_sv_t   json_path_sv
-        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(NUX_PROJECT_JSON));
+        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
 
     json_serialize_to_file_pretty(jrootv, json_path);
 
@@ -242,7 +243,7 @@ cleanup0:
     return NU_FALSE;
 }
 void
-nux_project_free (nux_project_t *project)
+project_free (project_t *project)
 {
     if (project->entries)
     {

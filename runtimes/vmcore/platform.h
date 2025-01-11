@@ -1,5 +1,5 @@
-#ifndef NUX_PLATFORM_H
-#define NUX_PLATFORM_H
+#ifndef VM_PLATFORM_H
+#define VM_PLATFORM_H
 
 #include <nulib.h>
 

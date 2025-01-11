@@ -1,8 +1,8 @@
-#ifndef NUX_TEMPLATES_DATA_H
-#define NUX_TEMPLATES_DATA_H
+#ifndef PROJECT_TEMPLATES_DATA_H
+#define PROJECT_TEMPLATES_DATA_H
 #include <nulib.h>
 typedef struct
-{const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } nux_project_template_file_t;
+{const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } project_template_file_t;
 static const nu_byte_t template_c__gitignore_data[] = {
   0x62, 0x75, 0x69, 0x6c, 0x64, 0x2f, 0x2a, 0x2a, 0x0a, 0x63, 0x61, 0x72,
   0x74, 0x2e, 0x62, 0x69, 0x6e, 0x0a};
@@ -438,7 +438,7 @@ static const nu_byte_t template_c_nux_h_data[] = {
   0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x2f,
   0x2f, 0x2f, 0x2f, 0x2f, 0x2f, 0x0a, 0x0a, 0x23, 0x65, 0x6e, 0x64, 0x69,
   0x66, 0x0a};
-static nux_project_template_file_t template_c_files[] = {
+static project_template_file_t template_c_files[] = {
 { .path=".gitignore", .data=template_c__gitignore_data, .size=sizeof(template_c__gitignore_data) },
 { .path="Makefile", .data=template_c_Makefile_data, .size=sizeof(template_c_Makefile_data) },
 { .path="nux.json", .data=template_c_nux_json_data, .size=sizeof(template_c_nux_json_data) },
@@ -507,7 +507,7 @@ static const nu_byte_t template_rust_lib_rs_data[] = {
   0x7b, 0x7d, 0x0a, 0x0a, 0x23, 0x5b, 0x6e, 0x6f, 0x5f, 0x6d, 0x61, 0x6e,
   0x67, 0x6c, 0x65, 0x5d, 0x0a, 0x66, 0x6e, 0x20, 0x75, 0x70, 0x64, 0x61,
   0x74, 0x65, 0x28, 0x29, 0x20, 0x7b, 0x7d, 0x0a};
-static nux_project_template_file_t template_rust_files[] = {
+static project_template_file_t template_rust_files[] = {
 { .path="Cargo.toml", .data=template_rust_Cargo_toml_data, .size=sizeof(template_rust_Cargo_toml_data) },
 { .path=".gitignore", .data=template_rust__gitignore_data, .size=sizeof(template_rust__gitignore_data) },
 { .path="nux.json", .data=template_rust_nux_json_data, .size=sizeof(template_rust_nux_json_data) },

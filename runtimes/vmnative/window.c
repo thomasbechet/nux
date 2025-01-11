@@ -82,12 +82,12 @@ update_viewport (nu_viewport_t *v)
     v->viewport  = nu_b2i_xywh(vpos.x, vpos.y, size.x, size.y);
 }
 
-nux_error_code_t
-nux_window_init (void)
+vmn_error_code_t
+vmn_window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = NUX_WINDOW_WIDTH;
-    const nu_int_t height = NUX_WINDOW_HEIGHT;
+    const nu_int_t width  = VMN_WINDOW_WIDTH;
+    const nu_int_t height = VMN_WINDOW_HEIGHT;
 
     // Initialize values
     _window.close_requested   = NU_FALSE;
@@ -101,7 +101,7 @@ nux_window_init (void)
 
     // Initialize viewport
     _window.viewport.mode     = NU_VIEWPORT_STRETCH_KEEP_ASPECT;
-    _window.viewport.screen   = nu_v2u(NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+    _window.viewport.screen   = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
     _window.viewport.extent   = nu_b2i_xywh(0, 0, width, height);
     _window.viewport.viewport = nu_b2i_xywh(0, 0, width, height);
     update_viewport(&_window.viewport);
@@ -111,16 +111,16 @@ nux_window_init (void)
     RGFW_window_makeCurrent(_window.win);
     // RGFW_setWindowResizeCallback(nu__window_size_callback);
 
-    return NUX_ERROR_NONE;
+    return VMN_ERROR_NONE;
 }
-nux_error_code_t
-nux_window_free (void)
+vmn_error_code_t
+vmn_window_free (void)
 {
     RGFW_window_close(_window.win);
-    return NUX_ERROR_NONE;
+    return VMN_ERROR_NONE;
 }
 void
-nux_window_poll_events (void)
+vmn_window_poll_events (void)
 {
     if (_window.win)
     {
@@ -207,12 +207,12 @@ nux_window_poll_events (void)
     }
 }
 void
-nux_window_swap_buffers (void)
+vmn_window_swap_buffers (void)
 {
     RGFW_window_swapBuffers(_window.win);
 }
 nu_bool_t
-nux_window_close_requested (void)
+vmn_window_close_requested (void)
 {
     return _window.close_requested;
 }

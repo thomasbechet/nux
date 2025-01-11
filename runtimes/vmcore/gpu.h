@@ -1,5 +1,5 @@
-#ifndef NUX_GPU_H
-#define NUX_GPU_H
+#ifndef VM_GPU_H
+#define VN_GPU_H
 
 #include "types.h"
 

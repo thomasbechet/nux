@@ -1,5 +1,5 @@
-#ifndef NUX_SHADERS_DATA_H
-#define NUX_SHADERS_DATA_H
+#ifndef VMN_SHADERS_DATA_H
+#define VMN_SHADERS_DATA_H
 #include <nulib.h>
 static const nu_sv_t shader_unlit_frag = NU_SV(
     "#version 330 core\n"

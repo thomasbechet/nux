@@ -13,8 +13,8 @@ fi
 
 FILENAME=runtimes/vmnative/shaders_data.h
 
-printf "#ifndef NUX_SHADERS_DATA_H\n" > $FILENAME
-printf "#define NUX_SHADERS_DATA_H\n" >> $FILENAME
+printf "#ifndef VMN_SHADERS_DATA_H\n" > $FILENAME
+printf "#define VMN_SHADERS_DATA_H\n" >> $FILENAME
 
 printf "#include <nulib.h>\n" >> $FILENAME
 
