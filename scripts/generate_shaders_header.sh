@@ -1,34 +1,23 @@
 #!/bin/bash
 
-function usage {
-  echo "usage: $0 shaders_directory"
-  exit 1
-}
+SHADERS=runtimes/vmnative/shaders
+OUTPUT=runtimes/vmnative/shaders_data.h
 
-if [ $# -ne 1 ] || [ -z $1 ];
-then
-  usage 
-  exit
-fi
+printf "#ifndef VMN_SHADERS_DATA_H\n" > $OUTPUT
+printf "#define VMN_SHADERS_DATA_H\n" >> $OUTPUT
 
-FILENAME=runtimes/vmnative/shaders_data.h
+printf "#include <nulib.h>\n" >> $OUTPUT
 
-printf "#ifndef VMN_SHADERS_DATA_H\n" > $FILENAME
-printf "#define VMN_SHADERS_DATA_H\n" >> $FILENAME
-
-printf "#include <nulib.h>\n" >> $FILENAME
-
-for file in $1/*; do
+for file in $SHADERS/*; do
     name="shader_$(basename $file | tr '.' '_')" 
-    printf "static const nu_sv_t $name = NU_SV(\n" >> $FILENAME
+    printf "static const nu_sv_t $name = NU_SV(\n" >> $OUTPUT
     while IFS= read -r line; do
         # if [[ -z $line ]]; then
         #     continue 
         # fi
-        printf "\"$line\\\n\"\n" >> $FILENAME
+        printf "\"$line\\\n\"\n" >> $OUTPUT
     done < $file
-    printf ");\n" >> $FILENAME
+    printf ");\n" >> $OUTPUT
 done
 
-printf "#endif\n" >> $FILENAME
-
+printf "#endif\n" >> $OUTPUT
