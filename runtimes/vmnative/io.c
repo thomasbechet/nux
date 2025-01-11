@@ -1,5 +1,3 @@
-#include "io.h"
-
 #include <vmcore/platform.h>
 
 static struct

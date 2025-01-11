@@ -9,5 +9,5 @@ include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/devtools)
 
-target_link_libraries(nux project vmnative)
+target_link_libraries(nux project $<LINK_GROUP:RESCAN,vmnative,vmcore>)
 install(TARGETS nux)
