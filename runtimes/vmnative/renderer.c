@@ -70,8 +70,11 @@ message_callback (GLenum        source,
     }
     // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
 }
-static vmn_error_code_t
-compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
+static nu_status_t
+compile_shader (nu_sv_t      source,
+                GLuint       shader_type,
+                GLuint      *shader,
+                vmn_error_t *error)
 {
     GLint success;
     *shader                 = glCreateShader(shader_type);
@@ -84,28 +87,31 @@ compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
     {
         GLint max_length = 0;
         glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &max_length);
-        vmn_error_data_t error;
-        GLchar          *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
-        error.shader_log     = log;
+        GLchar *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
         glGetShaderInfoLog(*shader, max_length, &max_length, log);
         glDeleteShader(*shader);
-        return VMN_ERROR(VMN_ERROR_RENDERER_SHADER_COMPILATION, &error);
+        error->code       = VMN_ERROR_RENDERER_SHADER_COMPILATION;
+        error->shader_log = log;
+        return NU_FAILURE;
     }
-    return VMN_ERROR_NONE;
+    return NU_SUCCESS;
 }
-static vmn_error_code_t
-compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
+static nu_status_t
+compile_program (nu_sv_t      vert,
+                 nu_sv_t      frag,
+                 GLuint      *program,
+                 vmn_error_t *error)
 {
     GLuint vertex_shader, fragment_shader;
     GLint  success;
 
-    vmn_error_code_t error = VMN_ERROR_NONE;
+    nu_status_t status = NU_SUCCESS;
 
-    error = compile_shader(vert, GL_VERTEX_SHADER, &vertex_shader);
-    NU_CHECK(!error, goto cleanup0);
+    status = compile_shader(vert, GL_VERTEX_SHADER, &vertex_shader, error);
+    NU_CHECK(status, goto cleanup0);
 
-    error = compile_shader(frag, GL_FRAGMENT_SHADER, &fragment_shader);
-    NU_CHECK(!error, goto cleanup1);
+    status = compile_shader(frag, GL_FRAGMENT_SHADER, &fragment_shader, error);
+    NU_CHECK(status, goto cleanup1);
 
     *program = glCreateProgram();
     glAttachShader(*program, vertex_shader);
@@ -124,26 +130,27 @@ compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
 
-        vmn_error_data_t error_data;
-        error_data.shader_log = log;
-        return VMN_ERROR(VMN_ERROR_RENDERER_SHADER_COMPILATION, &error_data);
+        error->code       = VMN_ERROR_RENDERER_SHADER_COMPILATION;
+        error->shader_log = log;
+        return NU_FAILURE;
     }
 
     glDeleteShader(fragment_shader);
 cleanup1:
     glDeleteShader(vertex_shader);
 cleanup0:
-    return error;
+    return status;
 }
-vmn_error_code_t
-vmn_renderer_init (const vm_config_t *config)
+nu_status_t
+vmn_renderer_init (const vm_config_t *config, vmn_error_t *error)
 {
-    vmn_error_code_t error = VMN_ERROR_NONE;
+    nu_status_t status = NU_SUCCESS;
 
     // Initialize GL functions
     if (!gladLoadGL((GLADloadfunc)RGFW_getProcAddress))
     {
-        return VMN_ERROR(VMN_ERROR_RENDERER_GL_LOADING, NU_NULL);
+        error->code = VMN_ERROR_RENDERER_GL_LOADING;
+        return NU_FAILURE;
     }
 
     // During init, enable debug output
@@ -190,14 +197,14 @@ vmn_renderer_init (const vm_config_t *config)
     // glEnableVertexAttribArray(2);
 
     // Compile shaders
-    error = compile_program(
-        shader_unlit_vert, shader_unlit_frag, &_renderer.unlit_shader);
-    NU_CHECK(!error, goto cleanup0);
+    status = compile_program(
+        shader_unlit_vert, shader_unlit_frag, &_renderer.unlit_shader, error);
+    NU_CHECK(status, goto cleanup0);
 
 cleanup0:
-    return error;
+    return status;
 }
-vmn_error_code_t
+void
 vmn_renderer_free (void)
 {
     glDeleteProgram(_renderer.unlit_shader);
@@ -212,7 +219,6 @@ vmn_renderer_free (void)
     glDeleteBuffers(1, &_renderer.vbo_positions);
     glDeleteBuffers(1, &_renderer.vbo_uvs);
     // glDeleteBuffers(1, &_renderer.vbo_normals);
-    return VMN_ERROR_NONE;
 }
 void
 vmn_renderer_render (void)

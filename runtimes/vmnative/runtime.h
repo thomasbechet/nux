@@ -3,6 +3,6 @@
 
 #include <nulib.h>
 
-NU_API void vmn_run(nu_sv_t path);
+NU_API void vmn_execute(nu_sv_t path);
 
 #endif

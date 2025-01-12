@@ -7,6 +7,7 @@
 nu_u32_t
 cli_command_run (nu_u32_t argc, const nu_char_t **argv)
 {
+    nu_status_t            status;
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
         "nux run [-h] [path]",
@@ -25,15 +26,20 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
     }
     if (nu_isdir(path))
     {
-        project_t project;
-        NU_ASSERT(project_load(&project, path));
+        project_t       project;
+        project_error_t error;
+        if (!project_load(&project, path, &error))
+        {
+            project_error_print(&error);
+            return -1;
+        }
         path = nu_sv_cstr(project.target_path);
-        vmn_run(path);
+        vmn_execute(path);
         project_free(&project);
     }
     else
     {
-        vmn_run(path);
+        vmn_execute(path);
     }
     return 0;
 }

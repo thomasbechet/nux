@@ -48,9 +48,11 @@ vm_io_init (vm_t *vm)
     vm->io.heap = vm_malloc(vm, VM_IO_MEM_SIZE);
     NU_ASSERT(vm->io.heap);
 }
-void
-vm_cart_load_full (vm_t *vm, const nu_char_t *name)
+nu_status_t
+vm_cart_load_full (vm_t *vm, const nu_char_t *name, vm_error_t *error)
 {
+    nu_status_t status = NU_SUCCESS;
+
     // Load cart header
     os_mount(vm->user, name);
     os_seek(vm->user, 0);
@@ -96,4 +98,6 @@ vm_cart_load_full (vm_t *vm, const nu_char_t *name)
                 break;
         }
     }
+
+    return status;
 }

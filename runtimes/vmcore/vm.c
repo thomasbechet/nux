@@ -6,7 +6,7 @@
 #include <nulib.h>
 
 vm_t *
-vm_init (const vm_info_t *info)
+vm_init (const vm_info_t *info, vm_error_t *error)
 {
     NU_ASSERT(info->heap_size > sizeof(vm_t));
     vm_t *vm = info->heap;
@@ -21,10 +21,10 @@ vm_init (const vm_info_t *info)
 
     return vm;
 }
-void
-vm_load (vm_t *vm, const nu_char_t *name)
+nu_status_t
+vm_load (vm_t *vm, const nu_char_t *name, vm_error_t *error)
 {
-    vm_cart_load_full(vm, name);
+    return vm_cart_load_full(vm, name, error);
 }
 void
 vm_update (vm_t *vm)

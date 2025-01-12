@@ -5,8 +5,8 @@
 
 #include <vmcore/vm.h>
 
-vmn_error_code_t vmn_renderer_init(const vm_config_t *config);
-vmn_error_code_t vmn_renderer_free(void);
-void             vmn_renderer_render(void);
+nu_status_t vmn_renderer_init(const vm_config_t *config, vmn_error_t *error);
+void        vmn_renderer_free(void);
+void        vmn_renderer_render(void);
 
 #endif

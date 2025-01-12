@@ -77,4 +77,10 @@ typedef int           nu_word_t;
 typedef char          nu_char_t;
 typedef nu_i32_t      nu_wchar_t;
 
+typedef enum
+{
+    NU_SUCCESS = 1,
+    NU_FAILURE = 0
+} nu_status_t;
+
 #endif

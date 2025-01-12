@@ -9,13 +9,13 @@
 #include <errno.h>
 #endif
 
-nu_bool_t
+static nu_status_t
 mkpath_p (nu_sv_t path)
 {
 #ifdef NU_PLATFORM_UNIX
     nu_char_t file_path[NU_PATH_MAX];
     nu_sv_to_cstr(path, file_path, NU_PATH_MAX);
-    for (char *p = strchr(file_path + 1, '/'); p; p = strchr(p + 1, '/'))
+    for (nu_char_t *p = strchr(file_path + 1, '/'); p; p = strchr(p + 1, '/'))
     {
         *p = '\0';
         if (mkdir(file_path, 0755) == -1)
@@ -23,15 +23,15 @@ mkpath_p (nu_sv_t path)
             if (errno != EEXIST)
             {
                 *p = '/';
-                return NU_FALSE;
+                return NU_FAILURE;
             }
         }
         *p = '/';
     }
-    return NU_TRUE;
+    return NU_SUCCESS;
 #endif
 }
-nu_bool_t
+nu_status_t
 nu_load_bytes (nu_sv_t filename, nu_byte_t *data, nu_size_t *size)
 {
     nu_char_t buf[NU_PATH_MAX];
@@ -39,8 +39,7 @@ nu_load_bytes (nu_sv_t filename, nu_byte_t *data, nu_size_t *size)
     FILE *f = fopen(buf, "rb");
     if (!f)
     {
-        printf("Failed to open file %s\n", buf);
-        return NU_NULL;
+        return NU_FAILURE;
     }
 
     fseek(f, 0, SEEK_END);
@@ -58,27 +57,25 @@ nu_load_bytes (nu_sv_t filename, nu_byte_t *data, nu_size_t *size)
     }
 
     fclose(f);
-    return NU_TRUE;
+    return NU_SUCCESS;
 }
-nu_bool_t
+nu_status_t
 nu_save_bytes (nu_sv_t filename, const nu_byte_t *data, nu_size_t size)
 {
     nu_char_t buf[NU_PATH_MAX]; // TODO: support PATH_MAX
     nu_sv_to_cstr(filename, buf, sizeof(buf));
     if (!mkpath_p(filename))
     {
-        printf("Failed to create directory for %s\n", buf);
-        return NU_FALSE;
+        return NU_FAILURE;
     }
     FILE *f = fopen(buf, "wb");
     if (!f)
     {
-        printf("Failed to open file %s\n", buf);
-        return NU_FALSE;
+        return NU_FAILURE;
     }
     nu_int_t n = fwrite(data, size, 1, f);
     fclose(f);
-    return n == 1;
+    return n == 1 ? NU_SUCCESS : NU_FAILURE;
 }
 nu_bool_t
 nu_isdir (nu_sv_t path)

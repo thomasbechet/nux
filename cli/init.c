@@ -26,7 +26,13 @@ cli_command_init (nu_u32_t argc, const nu_char_t **argv)
     };
     argparse_init(&argparse, options, usages, 0);
     argc = argparse_parse(&argparse, argc, argv);
-    project_generate_template(path ? nu_sv_cstr(path) : NU_SV("."),
-                              lang ? nu_sv_cstr(lang) : nu_sv_null());
+    project_error_t error;
+    if (!project_generate_template(path ? nu_sv_cstr(path) : NU_SV("."),
+                                   lang ? nu_sv_cstr(lang) : nu_sv_null(),
+                                   &error))
+    {
+        project_error_print(&error);
+        return -1;
+    }
     return 0;
 }

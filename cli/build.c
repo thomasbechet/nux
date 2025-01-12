@@ -29,9 +29,20 @@ cli_command_build (nu_u32_t argc, const nu_char_t **argv)
     {
         path_sv = nu_sv_cstr(path);
     }
-    project_t project;
-    project_load(&project, path_sv);
-    project_build(&project);
+    project_t       project;
+    project_error_t error;
+    nu_status_t     status;
+    status = project_load(&project, path_sv, &error);
+    NU_CHECK(status, goto cleanup0);
+    status = project_build(&project, &error);
+    NU_CHECK(status, goto cleanup1);
+cleanup1:
     project_free(&project);
+cleanup0:
+    if (!status)
+    {
+        project_error_print(&error);
+        return -1;
+    }
     return 0;
 }

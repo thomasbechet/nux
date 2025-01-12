@@ -9,16 +9,16 @@
 static nu_byte_t global_heap[NU_MEM_32M];
 
 void
-vmn_run (nu_sv_t path)
+vmn_execute (nu_sv_t path)
 {
-    vmn_error_code_t error;
+    nu_status_t status = NU_SUCCESS;
+    vmn_error_t error;
 
     vm_config_t config = VM_CONFIG_DEFAULT;
-    vmn_error_init();
-    error = vmn_window_init();
-    NU_CHECK(!error, goto cleanup0);
-    error = vmn_renderer_init(&config);
-    NU_CHECK(!error, goto cleanup1);
+    status             = vmn_window_init(&error);
+    NU_CHECK(status, goto cleanup0);
+    status = vmn_renderer_init(&config, &error);
+    NU_CHECK(status, goto cleanup1);
 
     vm_info_t info;
     nu_memset(&info, 0, sizeof(info));
@@ -26,16 +26,18 @@ vmn_run (nu_sv_t path)
     info.heap_size = NU_ARRAY_SIZE(global_heap);
     info.user      = NU_NULL;
     info.specs     = &config;
-    vm_t *vm       = vm_init(&info);
+    vm_t *vm       = vm_init(&info, &error.vm);
     if (!vm)
     {
-        VMN_ERROR(VMN_ERROR_VM_INITIALIZATION, NU_NULL);
+        error.code = VMN_ERROR_VM;
+        status     = NU_FAILURE;
         goto cleanup2;
     }
 
     nu_char_t name[NU_PATH_MAX];
     nu_sv_to_cstr(path, name, NU_PATH_MAX);
-    vm_load(vm, name);
+    status = vm_load(vm, name, &error.vm);
+    NU_CHECK(status, goto cleanup2);
 
     while (!vmn_window_close_requested())
     {
@@ -50,6 +52,8 @@ cleanup2:
 cleanup1:
     vmn_window_free();
 cleanup0:
-    vmn_error_print();
-    vmn_error_free();
+    if (!status)
+    {
+        vmn_error_print(&error);
+    }
 }

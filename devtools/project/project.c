@@ -4,7 +4,14 @@
 #include <parson/parson.h>
 #include <importer/importer.h>
 
-#define PROJECT_JSON "nux.json"
+#define PROJECT_CART_DEFAULT "cart.bin"
+#define PROJECT_JSON         "nux.json"
+#define PROJECT_TARGET       "target"
+#define PROJECT_CHUNKS       "chunks"
+#define PROJECT_PREBUILD     "prebuild"
+#define PROJECT_CHUNK_TYPE   "type"
+#define PROJECT_CHUNK_SOURCE "source"
+#define PROJECT_CHUNK_TARGET "target"
 
 static const struct
 {
@@ -21,7 +28,8 @@ static void
 project_init (project_t *project, nu_sv_t path)
 {
     nu_memset(project, 0, sizeof(*project));
-    nu_path_concat(project->target_path, NU_PATH_MAX, path, NU_SV("cart.bin"));
+    nu_path_concat(
+        project->target_path, NU_PATH_MAX, path, NU_SV(PROJECT_CART_DEFAULT));
 }
 
 static nu_f32_t
@@ -35,7 +43,8 @@ parse_target (const JSON_Object *jchunk,
               vm_chunk_type_t    type,
               vm_chunk_target_t *target)
 {
-    const JSON_Object *jtarget = json_object_get_object(jchunk, "target");
+    const JSON_Object *jtarget
+        = json_object_get_object(jchunk, PROJECT_CHUNK_TARGET);
     switch (type)
     {
         case VM_CHUNK_RAW: {
@@ -72,7 +81,7 @@ write_target (JSON_Object             *chunk,
 {
     JSON_Value *jtargetv = json_value_init_object();
     NU_ASSERT(jtargetv);
-    json_object_set_value(chunk, "target", jtargetv);
+    json_object_set_value(chunk, PROJECT_CHUNK_TARGET, jtargetv);
     JSON_Object *jtarget = json_object(jtargetv);
     switch (type)
     {
@@ -142,9 +151,11 @@ write_chunk_header (FILE *f, vm_chunk_header_t *header)
     }
 }
 
-nu_bool_t
-project_generate_template (nu_sv_t path, nu_sv_t lang)
+nu_status_t
+project_generate_template (nu_sv_t path, nu_sv_t lang, project_error_t *error)
 {
+    nu_status_t status = NU_SUCCESS;
+
     printf("Initialize new project " NU_SV_FMT " with language " NU_SV_FMT "\n",
            NU_SV_ARGS(path),
            NU_SV_ARGS(lang));
@@ -178,13 +189,13 @@ project_generate_template (nu_sv_t path, nu_sv_t lang)
         // Generate empty project file
         project_t project;
         project_init(&project, path);
-        project_save(&project, path);
+        status = project_save(&project, path, error);
         project_free(&project);
     }
-    return NU_TRUE;
+    return status;
 }
-nu_bool_t
-project_build (const project_t *project)
+nu_status_t
+project_build (const project_t *project, project_error_t *error)
 {
     // Execute prebuild command
     if (nu_strlen(project->prebuild))
@@ -199,8 +210,8 @@ project_build (const project_t *project)
     FILE *f = fopen(project->target_path, "wb");
     if (!f)
     {
-        printf("Failed to open file\n");
-        return NU_FALSE;
+        error->code = PROJECT_ERROR_IO_CART;
+        return NU_FAILURE;
     }
     else
     {
@@ -210,13 +221,13 @@ project_build (const project_t *project)
     // Write header
     const nu_u32_t version = 100;
     NU_ASSERT(fwrite(&version, sizeof(version), 1, f));
-    const nu_u32_t chunk_count = project->entries_count;
+    const nu_u32_t chunk_count = project->chunks_count;
     NU_ASSERT(fwrite(&chunk_count, sizeof(chunk_count), 1, f));
 
     // Compile entries
-    for (nu_size_t i = 0; i < project->entries_count; ++i)
+    for (nu_size_t i = 0; i < project->chunks_count; ++i)
     {
-        project_chunk_entry_t *entry = project->entries + i;
+        project_chunk_entry_t *entry = project->chunks + i;
         switch (entry->header.type)
         {
             case VM_CHUNK_RAW:
@@ -266,70 +277,89 @@ project_build (const project_t *project)
     }
 
     fclose(f);
-    return NU_TRUE;
+    return NU_SUCCESS;
 }
-nu_bool_t
-project_load (project_t *project, nu_sv_t path)
+nu_status_t
+project_load (project_t *project, nu_sv_t path, project_error_t *error)
 {
-    project_init(project, path);
+    nu_status_t status = NU_SUCCESS;
 
     // Parse file
     nu_char_t json_path[NU_PATH_MAX];
     nu_sv_t   json_path_sv
         = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
     JSON_Value *jrootv = json_parse_file(json_path);
-    NU_ASSERT(jrootv);
+    if (!jrootv)
+    {
+        error->code = PROJECT_ERROR_IO_PROJECT;
+        return NU_FAILURE;
+    }
+
+    project_init(project, path);
+
     JSON_Object *jroot = json_object(jrootv);
-    NU_ASSERT(jroot);
+    if (!jroot)
+    {
+        error->code = PROJECT_ERROR_MALFORMED;
+        status      = NU_FAILURE;
+        goto cleanup0;
+    }
 
     // Entries
-    JSON_Array *jentries   = json_object_get_array(jroot, "chunks");
-    project->entries_count = json_array_get_count(jentries);
-    if (project->entries_count)
+    JSON_Array *jchunks = json_object_get_array(jroot, PROJECT_CHUNKS);
+    if (jchunks)
     {
-        project->entries
-            = malloc(sizeof(*project->entries) * project->entries_count);
-        NU_ASSERT(project->entries);
-    }
-    for (nu_size_t i = 0; i < project->entries_count; ++i)
-    {
-        JSON_Object *jchunk = json_array_get_object(jentries, i);
-        // Check fields
-        const nu_char_t *type_string = json_object_get_string(jchunk, "type");
-        NU_ASSERT(type_string);
-        const nu_char_t *source_string
-            = json_object_get_string(jchunk, "source");
-        NU_ASSERT(source_string);
-
-        // Check type
-        nu_sv_t         type_sv = nu_sv_cstr(type_string);
-        vm_chunk_type_t type;
-        nu_bool_t       found = NU_FALSE;
-        for (nu_size_t j = 0; j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
-             ++j)
+        project->chunks_count = json_array_get_count(jchunks);
+        if (project->chunks_count)
         {
-            if (nu_sv_eq(nu_sv_cstr(name_to_chunk_type[j].name), type_sv))
+            project->chunks
+                = malloc(sizeof(*project->chunks) * project->chunks_count);
+            NU_ASSERT(project->chunks);
+        }
+        for (nu_size_t i = 0; i < project->chunks_count; ++i)
+        {
+            JSON_Object *jchunk = json_array_get_object(jchunks, i);
+            // Check fields
+            const nu_char_t *type_string
+                = json_object_get_string(jchunk, PROJECT_CHUNK_TYPE);
+            NU_ASSERT(type_string);
+            const nu_char_t *source_string
+                = json_object_get_string(jchunk, PROJECT_CHUNK_SOURCE);
+            NU_ASSERT(source_string);
+
+            // Check type
+            nu_sv_t         type_sv = nu_sv_cstr(type_string);
+            vm_chunk_type_t type;
+            nu_bool_t       found = NU_FALSE;
+            for (nu_size_t j = 0;
+                 j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
+                 ++j)
             {
-                type  = name_to_chunk_type[j].type;
-                found = NU_TRUE;
+                if (nu_sv_eq(nu_sv_cstr(name_to_chunk_type[j].name), type_sv))
+                {
+                    type  = name_to_chunk_type[j].type;
+                    found = NU_TRUE;
+                }
             }
-        }
-        if (!found)
-        {
-            printf("Chunk type not found for entry %lu\n", i);
-            goto cleanup0;
-        }
-        project->entries[i].header.type = type;
-        nu_sv_to_cstr(nu_sv_cstr(source_string),
-                      project->entries[i].source_path,
-                      NU_PATH_MAX);
+            if (!found)
+            {
+                error->code = PROJECT_ERROR_MALFORMED;
+                status      = NU_FAILURE;
+                goto cleanup0;
+            }
+            project->chunks[i].header.type = type;
+            nu_sv_to_cstr(nu_sv_cstr(source_string),
+                          project->chunks[i].source_path,
+                          NU_PATH_MAX);
 
-        // Parse target object
-        parse_target(jchunk, type, &project->entries[i].header.target);
+            // Parse target object
+            parse_target(jchunk, type, &project->chunks[i].header.target);
+        }
     }
 
     // Prebuild
-    const nu_char_t *jprebuild = json_object_get_string(jroot, "prebuild");
+    const nu_char_t *jprebuild
+        = json_object_get_string(jroot, PROJECT_PREBUILD);
     if (jprebuild)
     {
         nu_sv_to_cstr(
@@ -337,65 +367,73 @@ project_load (project_t *project, nu_sv_t path)
     }
 
     json_value_free(jrootv);
-    return NU_TRUE;
+    return NU_SUCCESS;
+
 cleanup0:
     json_value_free(jrootv);
     project_free(project);
-    return NU_FALSE;
+    return status;
 }
-nu_bool_t
-project_save (const project_t *project, nu_sv_t path)
+nu_status_t
+project_save (const project_t *project, nu_sv_t path, project_error_t *error)
 {
+    nu_status_t status = NU_SUCCESS;
+
     // Build json object
     JSON_Value *jrootv = json_value_init_object();
     NU_CHECK(jrootv, goto cleanup0);
     JSON_Object *jroot = json_object(jrootv);
 
     // Target
-    json_object_set_string(jroot, "target", project->target_path);
+    json_object_set_string(jroot, PROJECT_TARGET, project->target_path);
 
     // Chunks
-    JSON_Value *jchunksv = json_value_init_array();
-    NU_CHECK(jchunksv, goto cleanup1);
-    json_object_set_value(jroot, "chunks", jchunksv);
-    JSON_Array *jchunks = json_array(jchunksv);
-
-    for (nu_size_t i = 0; i < project->entries_count; ++i)
+    if (nu_strlen(project->target_path))
     {
-        JSON_Value *jchunkv = json_value_init_object();
-        NU_CHECK(jchunkv, goto cleanup1);
-        json_array_append_value(jchunks, jchunkv);
-        JSON_Object *jchunk = json_object(jchunkv);
+        JSON_Value *jchunksv = json_value_init_array();
+        NU_CHECK(jchunksv, goto cleanup1);
+        json_object_set_value(jroot, PROJECT_CHUNKS, jchunksv);
+        JSON_Array *jchunks = json_array(jchunksv);
 
-        // Type
-        const nu_char_t *type_str = NU_NULL;
-        nu_bool_t        found    = NU_FALSE;
-        for (nu_size_t j = 0; j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
-             ++j)
+        for (nu_size_t i = 0; i < project->chunks_count; ++i)
         {
-            if (name_to_chunk_type[j].type == project->entries[i].header.type)
+            JSON_Value *jchunkv = json_value_init_object();
+            NU_CHECK(jchunkv, goto cleanup1);
+            json_array_append_value(jchunks, jchunkv);
+            JSON_Object *jchunk = json_object(jchunkv);
+
+            // Type
+            const nu_char_t *type_str = NU_NULL;
+            nu_bool_t        found    = NU_FALSE;
+            for (nu_size_t j = 0;
+                 j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
+                 ++j)
             {
-                type_str = name_to_chunk_type[j].name;
-                found    = NU_TRUE;
+                if (name_to_chunk_type[j].type
+                    == project->chunks[i].header.type)
+                {
+                    type_str = name_to_chunk_type[j].name;
+                    found    = NU_TRUE;
+                }
             }
+            NU_ASSERT(found);
+            json_object_set_string(jchunk, PROJECT_CHUNK_TYPE, type_str);
+
+            // Source
+            json_object_set_string(
+                jchunk, PROJECT_CHUNK_SOURCE, project->chunks[i].source_path);
+
+            // Write chunk target
+            write_target(jchunk,
+                         project->chunks[i].header.type,
+                         &project->chunks[i].header.target);
         }
-        NU_ASSERT(found);
-        json_object_set_string(jchunk, "type", type_str);
-
-        // Source
-        json_object_set_string(
-            jchunk, "source", project->entries[i].source_path);
-
-        // Write chunk target
-        write_target(jchunk,
-                     project->entries[i].header.type,
-                     &project->entries[i].header.target);
     }
 
     // Prebuild
     if (nu_strlen(project->prebuild))
     {
-        json_object_set_string(jroot, "prebuild", project->prebuild);
+        json_object_set_string(jroot, PROJECT_PREBUILD, project->prebuild);
     }
 
     // Write json file
@@ -403,23 +441,24 @@ project_save (const project_t *project, nu_sv_t path)
     nu_sv_t   json_path_sv
         = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
 
-    json_serialize_to_file_pretty(jrootv, json_path);
-
-    json_value_free(jrootv);
-
-    return NU_TRUE;
+    if (json_serialize_to_file_pretty(jrootv, json_path))
+    {
+        error->code = PROJECT_ERROR_IO_PROJECT;
+        status      = NU_FAILURE;
+        goto cleanup1;
+    }
 
 cleanup1:
     json_value_free(jrootv);
 cleanup0:
-    return NU_FALSE;
+    return status;
 }
 void
 project_free (project_t *project)
 {
-    if (project->entries)
+    if (project->chunks)
     {
-        NU_ASSERT(project->entries_count);
-        free(project->entries);
+        NU_ASSERT(project->chunks_count);
+        free(project->chunks);
     }
 }
