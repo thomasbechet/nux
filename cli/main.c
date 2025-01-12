@@ -3,12 +3,35 @@
 #include "commands.h"
 
 #include <argparse/argparse.h>
+#include <vmnative/runtime.h>
 
 typedef struct
 {
     nu_sv_t cmd;
     nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
 } cmd_entry_t;
+
+static void
+runtime_log (nu_log_level_t level, const nu_char_t *fmt, va_list args)
+{
+    switch (level)
+    {
+        case NU_LOG_DEBUG:
+            fprintf(stdout, "\x1B[36m[DEBUG]\x1B[0m");
+            break;
+        case NU_LOG_INFO:
+            fprintf(stdout, "\x1B[32m[INFO]\x1B[0m");
+            break;
+        case NU_LOG_WARNING:
+            fprintf(stdout, "\033[0;33m[WARN]\x1B[0m");
+            break;
+        case NU_LOG_ERROR:
+            fprintf(stdout, "\x1B[31m[ERROR]\x1B[0m");
+            break;
+    }
+    vfprintf(stdout, fmt, args);
+    fprintf(stdout, "\n");
+}
 
 int
 main (int argc, const nu_char_t *argv[])
@@ -29,6 +52,9 @@ main (int argc, const nu_char_t *argv[])
         OPT_BOOLEAN('v', "version", &version, "show version", NULL, 0, 0),
         OPT_END(),
     };
+
+    vmn_setlogger(runtime_log);
+
     argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);
     argparse_describe(&argparse,
                       "\nNUX is fantasy retro console",

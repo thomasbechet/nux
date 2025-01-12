@@ -10,8 +10,10 @@
 static void
 trace (wasm_exec_env_t env, const void *str, nu_u32_t n)
 {
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    os_trace(vm->user, str, n);
+    vm_t     *vm = wasm_runtime_get_user_data(env);
+    nu_char_t buf[256];
+    nu_sv_to_cstr(nu_sv(str, n), buf, sizeof(buf));
+    os_log(vm->user, NU_LOG_INFO, buf);
 }
 
 static NativeSymbol nux_wasm_vm_native_symbols[] = {
@@ -94,20 +96,26 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
         = wasm_runtime_lookup_function(wasm->instance, VM_START_CALLBACK);
     if (!wasm->start_callback)
     {
-        printf("The " VM_START_CALLBACK " wasm function is not found.\n");
+        vm_log(vm,
+               NU_LOG_INFO,
+               "The " VM_START_CALLBACK " wasm function is not found");
     }
     wasm->update_callback
         = wasm_runtime_lookup_function(wasm->instance, VM_UPDATE_CALLBACK);
     if (!wasm->update_callback)
     {
-        printf("The " VM_UPDATE_CALLBACK " wasm function is not found.\n");
+        vm_log(vm,
+               NU_LOG_INFO,
+               "The " VM_UPDATE_CALLBACK " wasm function is not found.\n");
     }
 
     // pass 4 elements for function arguments
     if (!wasm_runtime_call_wasm_a(
             wasm->env, wasm->start_callback, 0, NU_NULL, 0, NU_NULL))
     {
-        printf("Call wasm function " VM_START_CALLBACK " failed. %s\n",
+        vm_log(vm,
+               NU_LOG_ERROR,
+               "Call wasm function " VM_START_CALLBACK " failed. %s",
                wasm_runtime_get_exception(wasm->instance));
     }
 }

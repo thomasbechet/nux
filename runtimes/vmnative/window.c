@@ -83,7 +83,7 @@ update_viewport (nu_viewport_t *v)
 }
 
 nu_status_t
-vmn_window_init (vmn_error_t *error)
+vmn_window_init (void)
 {
     // Initialize surface (and inputs)
     const nu_int_t width  = VMN_WINDOW_WIDTH;

@@ -1,6 +1,7 @@
 #include "renderer.h"
 
 #include "shaders_data.h"
+#include "runtime.h"
 
 #include <nulib.h>
 #include <vmcore/platform.h>
@@ -71,10 +72,7 @@ message_callback (GLenum        source,
     // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
 }
 static nu_status_t
-compile_shader (nu_sv_t      source,
-                GLuint       shader_type,
-                GLuint      *shader,
-                vmn_error_t *error)
+compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
 {
     GLint success;
     *shader                 = glCreateShader(shader_type);
@@ -89,28 +87,25 @@ compile_shader (nu_sv_t      source,
         glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &max_length);
         GLchar *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
         glGetShaderInfoLog(*shader, max_length, &max_length, log);
+        vmn_log(NU_LOG_ERROR, "Failed to compile shader: %s", log);
+        free(log);
         glDeleteShader(*shader);
-        error->code       = VMN_ERROR_RENDERER_SHADER_COMPILATION;
-        error->shader_log = log;
         return NU_FAILURE;
     }
     return NU_SUCCESS;
 }
 static nu_status_t
-compile_program (nu_sv_t      vert,
-                 nu_sv_t      frag,
-                 GLuint      *program,
-                 vmn_error_t *error)
+compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
 {
     GLuint vertex_shader, fragment_shader;
     GLint  success;
 
     nu_status_t status = NU_SUCCESS;
 
-    status = compile_shader(vert, GL_VERTEX_SHADER, &vertex_shader, error);
+    status = compile_shader(vert, GL_VERTEX_SHADER, &vertex_shader);
     NU_CHECK(status, goto cleanup0);
 
-    status = compile_shader(frag, GL_FRAGMENT_SHADER, &fragment_shader, error);
+    status = compile_shader(frag, GL_FRAGMENT_SHADER, &fragment_shader);
     NU_CHECK(status, goto cleanup1);
 
     *program = glCreateProgram();
@@ -125,13 +120,13 @@ compile_program (nu_sv_t      vert,
         glGetProgramiv(*program, GL_INFO_LOG_LENGTH, &max_length);
         GLchar *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
         glGetProgramInfoLog(*program, max_length, &max_length, log);
+        vmn_log(NU_LOG_ERROR, "Failed to link shader: %s", log);
+        free(log);
 
         glDeleteProgram(*program);
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
 
-        error->code       = VMN_ERROR_RENDERER_SHADER_COMPILATION;
-        error->shader_log = log;
         return NU_FAILURE;
     }
 
@@ -142,14 +137,14 @@ cleanup0:
     return status;
 }
 nu_status_t
-vmn_renderer_init (const vm_config_t *config, vmn_error_t *error)
+vmn_renderer_init (const vm_config_t *config)
 {
     nu_status_t status = NU_SUCCESS;
 
     // Initialize GL functions
     if (!gladLoadGL((GLADloadfunc)RGFW_getProcAddress))
     {
-        error->code = VMN_ERROR_RENDERER_GL_LOADING;
+        vmn_log(NU_LOG_ERROR, "Failed to load GL functions");
         return NU_FAILURE;
     }
 
@@ -198,7 +193,7 @@ vmn_renderer_init (const vm_config_t *config, vmn_error_t *error)
 
     // Compile shaders
     status = compile_program(
-        shader_unlit_vert, shader_unlit_frag, &_renderer.unlit_shader, error);
+        shader_unlit_vert, shader_unlit_frag, &_renderer.unlit_shader);
     NU_CHECK(status, goto cleanup0);
 
 cleanup0:

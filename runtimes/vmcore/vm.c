@@ -2,11 +2,12 @@
 
 #include "wasm.h"
 #include "io.h"
+#include "platform.h"
 
 #include <nulib.h>
 
 vm_t *
-vm_init (const vm_info_t *info, vm_error_t *error)
+vm_init (const vm_info_t *info)
 {
     NU_ASSERT(info->heap_size > sizeof(vm_t));
     vm_t *vm = info->heap;
@@ -15,6 +16,7 @@ vm_init (const vm_info_t *info, vm_error_t *error)
     vm->heap      = info->heap;
     vm->heap_size = info->heap_size;
     vm->config    = *info->specs;
+    vm->user      = info->user;
 
     vm_io_init(vm);
     vm_wasm_init(vm);
@@ -22,13 +24,14 @@ vm_init (const vm_info_t *info, vm_error_t *error)
     return vm;
 }
 nu_status_t
-vm_load (vm_t *vm, const nu_char_t *name, vm_error_t *error)
+vm_load (vm_t *vm, const nu_char_t *name)
 {
-    return vm_cart_load_full(vm, name, error);
+    return vm_cart_load_full(vm, name);
 }
 void
 vm_update (vm_t *vm)
 {
+    vm_log(vm, NU_LOG_INFO, "Update");
     vm_wasm_update(vm);
 }
 
@@ -37,10 +40,18 @@ vm_malloc (vm_t *vm, nu_size_t n)
 {
     if ((nu_size_t)vm->heap_ptr > (nu_size_t)vm->heap + vm->heap_size)
     {
-        fprintf(stderr, "out of memory\n");
+        vm_log(vm, NU_LOG_ERROR, "out of memory");
         return NU_NULL;
     }
     void *ptr    = vm->heap_ptr;
     vm->heap_ptr = (void *)((nu_size_t)vm->heap_ptr + n);
     return ptr;
+}
+void
+vm_log (vm_t *vm, nu_log_level_t level, const nu_char_t *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    os_log(vm->user, level, format, args);
+    va_end(args);
 }

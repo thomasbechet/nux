@@ -1,5 +1,7 @@
 #include <vmcore/platform.h>
 
+#include "runtime.h"
+
 static struct
 {
     FILE *file;
@@ -22,7 +24,12 @@ os_read (void *user, void *p, nu_size_t n)
     return fread(p, n, 1, _io.file);
 }
 void
-os_trace (void *user, const void *str, nu_size_t n)
+os_log (void *user, nu_log_level_t level, const nu_char_t *fmt, ...)
 {
-    fprintf(stdout, "%s\n", (char *)str);
+    nu_char_t buf[256];
+    nu_sv_join(buf, sizeof(buf), NU_SV("[VM] "), nu_sv_cstr(fmt));
+    va_list args;
+    va_start(args, fmt);
+    vmn_vlog(level, buf, args);
+    va_end(args);
 }

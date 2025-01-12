@@ -83,4 +83,12 @@ typedef enum
     NU_FAILURE = 0
 } nu_status_t;
 
+typedef enum
+{
+    NU_LOG_DEBUG   = 4,
+    NU_LOG_INFO    = 3,
+    NU_LOG_WARNING = 2,
+    NU_LOG_ERROR   = 1,
+} nu_log_level_t;
+
 #endif

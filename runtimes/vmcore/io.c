@@ -49,7 +49,7 @@ vm_io_init (vm_t *vm)
     NU_ASSERT(vm->io.heap);
 }
 nu_status_t
-vm_cart_load_full (vm_t *vm, const nu_char_t *name, vm_error_t *error)
+vm_cart_load_full (vm_t *vm, const nu_char_t *name)
 {
     nu_status_t status = NU_SUCCESS;
 
