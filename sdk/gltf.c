@@ -1,4 +1,4 @@
-#include "importer.h"
+#include "sdk.h"
 
 #include <vmcore/config.h>
 #define CGLTF_IMPLEMENTATION
@@ -144,7 +144,7 @@ project_load_gltf (const nu_byte_t *path, nu_size_t *size)
         for (nu_size_t n = 0; n < scene->nodes_count; ++n)
         {
             cgltf_node *node = scene->nodes[n];
-            printf("loading node: %s", node->name);
+            sdk_log(NU_LOG_INFO, "Loading node %s", node->name);
 
             nu_m4_t transform = nu_m4_identity();
             if (node->has_scale)

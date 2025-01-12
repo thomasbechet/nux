@@ -24,7 +24,7 @@ static NativeSymbol nux_wasm_vm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(draw, "(ii)"),
 };
 
-void
+nu_status_t
 vm_wasm_init (vm_t *vm)
 {
     // Configure memory allocator
@@ -47,10 +47,12 @@ vm_wasm_init (vm_t *vm)
 
     if (!wasm_runtime_full_init(&init_args))
     {
-        printf("Failed to full init wasm\n");
+        vm_log(vm, NU_LOG_ERROR, "Failed to fully initialize wasm");
+        return NU_FAILURE;
     }
+    return NU_SUCCESS;
 }
-void
+nu_status_t
 vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
 {
     vm_wasm_t *wasm = &vm->wasm;
@@ -62,12 +64,13 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
     NU_ASSERT(os_read(vm->user, wasm->buffer, header->length));
 
     // Load module
-    char error_buf[128];
+    nu_char_t error_buf[128];
     wasm->module = wasm_runtime_load(
         wasm->buffer, wasm->buffer_size, error_buf, sizeof(error_buf));
     if (!wasm->module)
     {
-        printf("Load wasm module failed. error: %s\n", error_buf);
+        vm_log(vm, NU_LOG_ERROR, "Load wasm module failed: %s", error_buf);
+        return NU_FAILURE;
     }
 
     // Instantiate module
@@ -80,14 +83,16 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
                                               sizeof(error_buf));
     if (!wasm->instance)
     {
-        printf("Instantiate wasm module failed. error: %s\n", error_buf);
+        vm_log(
+            vm, NU_LOG_ERROR, "Instantiate wasm module failed: %s", error_buf);
+        return NU_FAILURE;
     }
 
     // Create execution env
     wasm->env = wasm_runtime_create_exec_env(wasm->instance, init_stack_size);
     if (!wasm->env)
     {
-        printf("Create wasm execution environment failed.\n");
+        vm_log(vm, NU_LOG_ERROR, "Create wasm execution environment failed");
     }
     wasm_runtime_set_user_data(wasm->env, vm);
 
@@ -106,7 +111,7 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
     {
         vm_log(vm,
                NU_LOG_INFO,
-               "The " VM_UPDATE_CALLBACK " wasm function is not found.\n");
+               "The " VM_UPDATE_CALLBACK " wasm function is not found");
     }
 
     // pass 4 elements for function arguments
@@ -115,17 +120,22 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
     {
         vm_log(vm,
                NU_LOG_ERROR,
-               "Call wasm function " VM_START_CALLBACK " failed. %s",
+               "Call wasm function " VM_START_CALLBACK " failed: %s",
                wasm_runtime_get_exception(wasm->instance));
     }
+
+    return NU_SUCCESS;
 }
-void
+nu_status_t
 vm_wasm_update (vm_t *vm)
 {
     if (!wasm_runtime_call_wasm_a(
             vm->wasm.env, vm->wasm.update_callback, 0, NU_NULL, 0, NU_NULL))
     {
-        printf("Call wasm function " VM_UPDATE_CALLBACK " failed. %s\n",
+        vm_log(vm,
+               NU_LOG_ERROR,
+               "Call wasm function " VM_UPDATE_CALLBACK " failed: %s",
                wasm_runtime_get_exception(vm->wasm.instance));
     }
+    return NU_SUCCESS;
 }

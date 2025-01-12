@@ -1,4 +1,4 @@
-#include "importer.h"
+#include "sdk.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
@@ -6,7 +6,7 @@
 #include <stb/stb_image_resize2.h>
 
 nu_byte_t *
-importer_load_image (nu_sv_t path, nu_v2u_t *size)
+sdk_load_image (nu_sv_t path, nu_v2u_t *size)
 {
     nu_i32_t  w, h, n;
     nu_char_t fn[NU_PATH_MAX];

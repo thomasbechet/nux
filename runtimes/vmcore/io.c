@@ -42,11 +42,12 @@ read_header (vm_t *vm, vm_chunk_header_t *header)
     return NU_TRUE;
 }
 
-void
+nu_status_t
 vm_io_init (vm_t *vm)
 {
     vm->io.heap = vm_malloc(vm, VM_IO_MEM_SIZE);
     NU_ASSERT(vm->io.heap);
+    return NU_SUCCESS;
 }
 nu_status_t
 vm_cart_load_full (vm_t *vm, const nu_char_t *name)

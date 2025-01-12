@@ -1,8 +1,7 @@
-#include "project.h"
+#include "sdk.h"
 
 #include "templates_data.h"
 #include <parson/parson.h>
-#include <importer/importer.h>
 
 #define PROJECT_CART_DEFAULT "cart.bin"
 #define PROJECT_JSON         "nux.json"
@@ -25,7 +24,7 @@ static const struct
 };
 
 static void
-project_init (project_t *project, nu_sv_t path)
+project_init (sdk_project_t *project, nu_sv_t path)
 {
     nu_memset(project, 0, sizeof(*project));
     nu_path_concat(
@@ -143,13 +142,9 @@ write_chunk_header (FILE *f, vm_chunk_header_t *header)
 }
 
 nu_status_t
-project_generate_template (nu_sv_t path, nu_sv_t lang, project_error_t *error)
+sdk_generate_template (nu_sv_t path, nu_sv_t lang)
 {
     nu_status_t status = NU_SUCCESS;
-
-    printf("Initialize new project " NU_SV_FMT " with language " NU_SV_FMT "\n",
-           NU_SV_ARGS(path),
-           NU_SV_ARGS(lang));
 
     // Find lang
     project_template_file_t *template_file = NU_NULL;
@@ -160,6 +155,13 @@ project_generate_template (nu_sv_t path, nu_sv_t lang, project_error_t *error)
     else if (nu_sv_eq(lang, NU_SV("rust")))
     {
         template_file = template_rust_files;
+    }
+    else if (!nu_sv_is_null(lang))
+    {
+        sdk_log(NU_LOG_ERROR,
+                "Project language '" NU_SV_FMT "' not found or not supported",
+                NU_SV_ARGS(lang));
+        return NU_FAILURE;
     }
 
     // Template found, generate files
@@ -174,24 +176,29 @@ project_generate_template (nu_sv_t path, nu_sv_t lang, project_error_t *error)
                 filepath_sv, template_file->data, template_file->size));
             ++template_file;
         }
+        sdk_log(NU_LOG_INFO,
+                "Project generated with language '" NU_SV_FMT "'",
+                NU_SV_ARGS(lang));
     }
     else
     {
         // Generate empty project file
-        project_t project;
+        sdk_project_t project;
         project_init(&project, path);
-        status = project_save(&project, path, error);
-        project_free(&project);
+        status = sdk_project_save(&project, path);
+        sdk_project_free(&project);
+        sdk_log(NU_LOG_INFO, "Empty project generated");
     }
     return status;
 }
 nu_status_t
-project_build (const project_t *project, project_error_t *error)
+sdk_build (const sdk_project_t *project)
 {
     // Execute prebuild command
     if (nu_strlen(project->prebuild))
     {
-        printf("Execute prebuild command: %s\n", project->prebuild);
+        sdk_log(
+            NU_LOG_INFO, "Executing prebuild command: %s", project->prebuild);
 #ifdef NU_PLATFORM_UNIX
         system(project->prebuild);
 #endif
@@ -201,12 +208,14 @@ project_build (const project_t *project, project_error_t *error)
     FILE *f = fopen(project->target_path, "wb");
     if (!f)
     {
-        error->code = PROJECT_ERROR_IO_CART;
+        sdk_log(NU_LOG_ERROR,
+                "Failed to create cartridge file %s",
+                project->target_path);
         return NU_FAILURE;
     }
     else
     {
-        printf("Cartridge %s generated.\n", project->target_path);
+        sdk_log(NU_LOG_INFO, "Cartridge built %s", project->target_path);
     }
 
     // Write header
@@ -218,7 +227,7 @@ project_build (const project_t *project, project_error_t *error)
     // Compile entries
     for (nu_size_t i = 0; i < project->chunks_count; ++i)
     {
-        project_chunk_entry_t *entry = project->chunks + i;
+        sdk_project_chunk_t *entry = project->chunks + i;
         switch (entry->header.type)
         {
             case VM_CHUNK_RAW:
@@ -242,8 +251,8 @@ project_build (const project_t *project, project_error_t *error)
             break;
             case VM_CHUNK_TEXTURE: {
                 nu_v2u_t   size;
-                nu_byte_t *data = importer_load_image(
-                    nu_sv_cstr(entry->source_path), &size);
+                nu_byte_t *data
+                    = sdk_load_image(nu_sv_cstr(entry->source_path), &size);
                 nu_size_t length = sizeof(nu_byte_t) * size.x * size.y * 4;
 
                 // header
@@ -271,7 +280,7 @@ project_build (const project_t *project, project_error_t *error)
     return NU_SUCCESS;
 }
 nu_status_t
-project_load (project_t *project, nu_sv_t path, project_error_t *error)
+sdk_project_load (sdk_project_t *project, nu_sv_t path)
 {
     nu_status_t status = NU_SUCCESS;
 
@@ -281,7 +290,7 @@ project_load (project_t *project, nu_sv_t path, project_error_t *error)
     JSON_Value *jrootv = json_parse_file(json_path);
     if (!jrootv)
     {
-        error->code = PROJECT_ERROR_IO_PROJECT;
+        sdk_log(NU_LOG_ERROR, "Failed to parse project file %s", json_path);
         return NU_FAILURE;
     }
 
@@ -290,8 +299,8 @@ project_load (project_t *project, nu_sv_t path, project_error_t *error)
     JSON_Object *jroot = json_object(jrootv);
     if (!jroot)
     {
-        error->code = PROJECT_ERROR_MALFORMED;
-        status      = NU_FAILURE;
+        sdk_log(NU_LOG_ERROR, "Project json root is not an object");
+        status = NU_FAILURE;
         goto cleanup0;
     }
 
@@ -333,8 +342,8 @@ project_load (project_t *project, nu_sv_t path, project_error_t *error)
             }
             if (!found)
             {
-                error->code = PROJECT_ERROR_MALFORMED;
-                status      = NU_FAILURE;
+                sdk_log(NU_LOG_ERROR, "Invalid chunk type %s", type_string);
+                status = NU_FAILURE;
                 goto cleanup0;
             }
             project->chunks[i].header.type = type;
@@ -352,8 +361,7 @@ project_load (project_t *project, nu_sv_t path, project_error_t *error)
         = json_object_get_string(jroot, PROJECT_PREBUILD);
     if (jprebuild)
     {
-        nu_sv_to_cstr(
-            nu_sv_cstr(jprebuild), project->prebuild, PROJECT_NAME_MAX);
+        nu_sv_to_cstr(nu_sv_cstr(jprebuild), project->prebuild, SDK_NAME_MAX);
     }
 
     json_value_free(jrootv);
@@ -361,11 +369,11 @@ project_load (project_t *project, nu_sv_t path, project_error_t *error)
 
 cleanup0:
     json_value_free(jrootv);
-    project_free(project);
+    sdk_project_free(project);
     return status;
 }
 nu_status_t
-project_save (const project_t *project, nu_sv_t path, project_error_t *error)
+sdk_project_save (const sdk_project_t *project, nu_sv_t path)
 {
     nu_status_t status = NU_SUCCESS;
 
@@ -431,8 +439,9 @@ project_save (const project_t *project, nu_sv_t path, project_error_t *error)
     nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
     if (json_serialize_to_file_pretty(jrootv, json_path))
     {
-        error->code = PROJECT_ERROR_IO_PROJECT;
-        status      = NU_FAILURE;
+        sdk_log(
+            NU_LOG_ERROR, "Failed to serialize project to json %s", json_path);
+        status = NU_FAILURE;
         goto cleanup1;
     }
 
@@ -442,7 +451,7 @@ cleanup0:
     return status;
 }
 void
-project_free (project_t *project)
+sdk_project_free (sdk_project_t *project)
 {
     if (project->chunks)
     {

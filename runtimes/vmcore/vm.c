@@ -18,8 +18,11 @@ vm_init (const vm_info_t *info)
     vm->config    = *info->specs;
     vm->user      = info->user;
 
-    vm_io_init(vm);
-    vm_wasm_init(vm);
+    nu_status_t status;
+    status = vm_io_init(vm);
+    NU_CHECK(status, return NU_NULL);
+    status = vm_wasm_init(vm);
+    NU_CHECK(status, return NU_NULL);
 
     return vm;
 }
@@ -31,7 +34,6 @@ vm_load (vm_t *vm, const nu_char_t *name)
 void
 vm_update (vm_t *vm)
 {
-    vm_log(vm, NU_LOG_INFO, "Update");
     vm_wasm_update(vm);
 }
 
@@ -40,7 +42,7 @@ vm_malloc (vm_t *vm, nu_size_t n)
 {
     if ((nu_size_t)vm->heap_ptr > (nu_size_t)vm->heap + vm->heap_size)
     {
-        vm_log(vm, NU_LOG_ERROR, "out of memory");
+        vm_log(vm, NU_LOG_ERROR, "Out of memory");
         return NU_NULL;
     }
     void *ptr    = vm->heap_ptr;

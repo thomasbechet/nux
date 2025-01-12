@@ -31,7 +31,7 @@ os_log (void *user, nu_log_level_t level, const nu_char_t *fmt, ...)
 {
     (void)user;
     nu_char_t buf[256];
-    nu_sv_join(buf, sizeof(buf), NU_SV("[VM] "), nu_sv_cstr(fmt));
+    nu_sv_join(buf, sizeof(buf), NU_SV("- VM - "), nu_sv_cstr(fmt));
     va_list args;
     va_start(args, fmt);
     vmn_vlog(level, buf, args);

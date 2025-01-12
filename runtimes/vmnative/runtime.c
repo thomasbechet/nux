@@ -54,7 +54,7 @@ cleanup0:
     return status;
 }
 void
-vmn_setlogger (vmn_log_callback_t callback)
+vmn_set_log_callback (vmn_log_callback_t callback)
 {
     log_callback = callback;
 }

@@ -1,9 +1,8 @@
-#include <project/project.h>
-
 #include "commands.h"
 
 #include <argparse/argparse.h>
 #include <vmnative/runtime.h>
+#include <sdk.h>
 
 typedef struct
 {
@@ -12,21 +11,21 @@ typedef struct
 } cmd_entry_t;
 
 static void
-runtime_log (nu_log_level_t level, const nu_char_t *fmt, va_list args)
+cli_log (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
     switch (level)
     {
         case NU_LOG_DEBUG:
-            fprintf(stdout, "\x1B[36m[DEBUG]\x1B[0m");
+            fprintf(stdout, "\x1B[36mDEBUG\x1B[0m ");
             break;
         case NU_LOG_INFO:
-            fprintf(stdout, "\x1B[32m[INFO]\x1B[0m");
+            fprintf(stdout, "\x1B[32mINFO\x1B[0m ");
             break;
         case NU_LOG_WARNING:
-            fprintf(stdout, "\033[0;33m[WARN]\x1B[0m");
+            fprintf(stdout, "\033[0;33mWARN\x1B[0m ");
             break;
         case NU_LOG_ERROR:
-            fprintf(stdout, "\x1B[31m[ERROR]\x1B[0m");
+            fprintf(stdout, "\x1B[31mERROR\x1B[0m ");
             break;
     }
     vfprintf(stdout, fmt, args);
@@ -53,7 +52,8 @@ main (int argc, const nu_char_t *argv[])
         OPT_END(),
     };
 
-    vmn_setlogger(runtime_log);
+    vmn_set_log_callback(cli_log);
+    sdk_set_log_callback(cli_log);
 
     argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);
     argparse_describe(&argparse,
