@@ -114,15 +114,6 @@ write_u32 (FILE *f, nu_u32_t v)
     NU_ASSERT(fwrite(&a, sizeof(a), 1, f));
 }
 static void
-write_v4u (FILE *f, nu_v4u_t v)
-{
-    for (nu_size_t i = 0; i < NU_V4_SIZE; ++i)
-    {
-        nu_u32_t a = nu_u32_le(v.data[i]);
-        NU_ASSERT(fwrite(&a, sizeof(a), 1, f));
-    }
-}
-static void
 write_chunk_header (FILE *f, vm_chunk_header_t *header)
 {
     // type / length
@@ -286,8 +277,7 @@ project_load (project_t *project, nu_sv_t path, project_error_t *error)
 
     // Parse file
     nu_char_t json_path[NU_PATH_MAX];
-    nu_sv_t   json_path_sv
-        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
+    nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
     JSON_Value *jrootv = json_parse_file(json_path);
     if (!jrootv)
     {
@@ -438,9 +428,7 @@ project_save (const project_t *project, nu_sv_t path, project_error_t *error)
 
     // Write json file
     nu_char_t json_path[NU_PATH_MAX];
-    nu_sv_t   json_path_sv
-        = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
-
+    nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
     if (json_serialize_to_file_pretty(jrootv, json_path))
     {
         error->code = PROJECT_ERROR_IO_PROJECT;

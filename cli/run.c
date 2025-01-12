@@ -7,7 +7,6 @@
 nu_u32_t
 cli_command_run (nu_u32_t argc, const nu_char_t **argv)
 {
-    nu_status_t            status;
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
         "nux run [-h] [path]",

@@ -50,6 +50,10 @@ message_callback (GLenum        source,
                   const GLchar *message,
                   const void   *userParam)
 {
+    (void)source;
+    (void)id;
+    (void)length;
+    (void)userParam;
     if (type == GL_DEBUG_TYPE_OTHER) // Skip other messages
     {
         return;
@@ -57,16 +61,28 @@ message_callback (GLenum        source,
     switch (severity)
     {
         case GL_DEBUG_SEVERITY_HIGH:
-            printf("GL: %s, message = %s", message_type_string(type), message);
+            vmn_log(NU_LOG_ERROR,
+                    "GL: %s, message = %s",
+                    message_type_string(type),
+                    message);
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
-            printf("GL: %s, message = %s", message_type_string(type), message);
+            vmn_log(NU_LOG_ERROR,
+                    "GL: %s, message = %s",
+                    message_type_string(type),
+                    message);
             break;
         case GL_DEBUG_SEVERITY_LOW:
-            printf("GL: %s, message = %s", message_type_string(type), message);
+            vmn_log(NU_LOG_INFO,
+                    "GL: %s, message = %s",
+                    message_type_string(type),
+                    message);
             break;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-            printf("GL: %s, message = %s", message_type_string(type), message);
+            vmn_log(NU_LOG_INFO,
+                    "GL: %s, message = %s",
+                    message_type_string(type),
+                    message);
             break;
     }
     // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
@@ -231,6 +247,7 @@ os_write_texture (void       *user,
                   nu_u32_t    h,
                   const void *p)
 {
+    (void)user;
     GLuint handle = _renderer.textures[slot];
     if (!handle)
     {
@@ -265,6 +282,7 @@ os_write_texture (void       *user,
 void
 os_write_vertex (void *user, nu_u32_t first, nu_u32_t count, const void *p)
 {
+    (void)user;
     const nu_f32_t *data = p;
     nu_f32_t       *ptr  = NU_NULL;
     // positions
@@ -300,10 +318,13 @@ os_write_vertex (void *user, nu_u32_t first, nu_u32_t count, const void *p)
 void
 os_bind_texture (void *user, nu_u32_t slot)
 {
+    (void)user;
+    (void)slot;
 }
 void
 os_draw (void *user, nu_u32_t first, nu_u32_t count)
 {
+    (void)user;
     glUseProgram(_renderer.unlit_shader);
     glBindVertexArray(_renderer.vao);
     glDrawArrays(GL_TRIANGLES, first, count);
