@@ -72,6 +72,7 @@ vm_cart_load_full (vm_t *vm, const nu_char_t *name)
         switch (header.type)
         {
             case VM_CHUNK_WASM:
+                NU_ASSERT(header.length <= VM_IO_MEM_SIZE);
                 vm_wasm_load(vm, &header);
                 break;
             case VM_CHUNK_TEXTURE: {

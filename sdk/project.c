@@ -194,6 +194,7 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
 nu_status_t
 sdk_build (const sdk_project_t *project)
 {
+    nu_status_t status = NU_SUCCESS;
     // Execute prebuild command
     if (nu_strlen(project->prebuild))
     {
@@ -215,7 +216,7 @@ sdk_build (const sdk_project_t *project)
     }
     else
     {
-        sdk_log(NU_LOG_INFO, "Cartridge built %s", project->target_path);
+        sdk_log(NU_LOG_INFO, "Compiling cartridge %s...", project->target_path);
     }
 
     // Write header
@@ -233,10 +234,19 @@ sdk_build (const sdk_project_t *project)
             case VM_CHUNK_RAW:
                 break;
             case VM_CHUNK_WASM: {
+                sdk_log(
+                    NU_LOG_INFO, "Compiling wasm chunk %s", entry->source_path);
                 nu_size_t  size;
                 nu_byte_t *buffer;
-                NU_ASSERT(nu_load_bytes(
-                    nu_sv_cstr(entry->source_path), NU_NULL, &size));
+                if (!nu_load_bytes(
+                        nu_sv_cstr(entry->source_path), NU_NULL, &size))
+                {
+                    sdk_log(NU_LOG_ERROR,
+                            "Failed to load wasm file %s",
+                            entry->source_path);
+                    status = NU_FAILURE;
+                    goto cleanup0;
+                }
                 buffer = malloc(size);
                 NU_ASSERT(buffer);
                 NU_ASSERT(nu_load_bytes(
@@ -250,9 +260,20 @@ sdk_build (const sdk_project_t *project)
             }
             break;
             case VM_CHUNK_TEXTURE: {
+                sdk_log(NU_LOG_INFO,
+                        "Compiling texture chunk %s",
+                        entry->source_path);
                 nu_v2u_t   size;
                 nu_byte_t *data
                     = sdk_load_image(nu_sv_cstr(entry->source_path), &size);
+                if (!data)
+                {
+                    sdk_log(NU_LOG_ERROR,
+                            "Failed to load texture file %s",
+                            entry->source_path);
+                    status = NU_FAILURE;
+                    goto cleanup0;
+                }
                 nu_size_t length = sizeof(nu_byte_t) * size.x * size.y * 4;
 
                 // header
@@ -276,8 +297,11 @@ sdk_build (const sdk_project_t *project)
         }
     }
 
+    sdk_log(NU_LOG_INFO, "Compilation success.");
+
+cleanup0:
     fclose(f);
-    return NU_SUCCESS;
+    return status;
 }
 nu_status_t
 sdk_project_load (sdk_project_t *project, nu_sv_t path)
