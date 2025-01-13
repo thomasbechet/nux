@@ -9,7 +9,6 @@ CC = "$(WASI_SDK_PATH)/bin/clang" --sysroot="$(WASI_SDK_PATH)/share/wasi-sysroot
 WASM_OPT = wasm-opt
 WASM_OPT_FLAGS = -Oz --zero-filled-memory --strip-producers --enable-bulk-memory
 
-
 CFLAGS = -W -Wall -Wextra -Werror -Wno-unused -Wconversion -Wsign-conversion -MMD -MP -fno-exceptions -mbulk-memory
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -O0 -g
@@ -44,7 +43,7 @@ else
 	RMDIR = rm -rf
 endif
 
-all: build/cart.wasm
+all: clean build/cart.wasm
 
 build/cart.wasm: $(OBJECTS)
 	$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
