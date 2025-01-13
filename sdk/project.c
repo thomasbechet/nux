@@ -147,7 +147,7 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
     nu_status_t status = NU_SUCCESS;
 
     // Find lang
-    project_template_file_t *template_file = NU_NULL;
+    sdk_template_file_t *template_file = NU_NULL;
     if (nu_sv_eq(lang, NU_SV("c")))
     {
         template_file = template_c_files;
@@ -182,7 +182,7 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
     }
     else
     {
-        // Generate empty project file
+        // Generate empty sdk file
         sdk_project_t project;
         project_init(&project, path);
         status = sdk_project_save(&project, path);

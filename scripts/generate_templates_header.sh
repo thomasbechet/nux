@@ -1,14 +1,14 @@
 #!/bin/bash
 
-TEMPLATES=devtools/project/templates
-OUTPUT=devtools/project/templates_data.h
+TEMPLATES=sdk/templates
+OUTPUT=sdk/templates_data.h
 
-printf "#ifndef PROJECT_TEMPLATES_DATA_H\n" > $OUTPUT
-printf "#define PROJECT_TEMPLATES_DATA_H\n" >> $OUTPUT
+printf "#ifndef SDK_TEMPLATES_DATA_H\n" > $OUTPUT
+printf "#define SDK_TEMPLATES_DATA_H\n" >> $OUTPUT
 
 printf "#include <nulib.h>\n" >> $OUTPUT
 printf "typedef struct
-{const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } project_template_file_t;\n" >> $OUTPUT
+{const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } sdk_template_file_t;\n" >> $OUTPUT
 
 shopt -s dotglob # Iter hidden files
 
@@ -27,7 +27,7 @@ for TEMPLATE in $TEMPLATES/*; do
         printf "};\n" >> $OUTPUT
     done
 
-    printf "static project_template_file_t template_${LANG}_files[] = {\n" >> $OUTPUT
+    printf "static sdk_template_file_t template_${LANG}_files[] = {\n" >> $OUTPUT
     for FILE in $TEMPLATE/* $TEMPLATE/**/*; do
         if [ ! -f $FILE ]; then
             continue

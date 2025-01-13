@@ -30,10 +30,14 @@ void
 os_log (void *user, nu_log_level_t level, const nu_char_t *fmt, ...)
 {
     (void)user;
-    nu_char_t buf[256];
-    nu_sv_join(buf, sizeof(buf), NU_SV("- VM - "), nu_sv_cstr(fmt));
     va_list args;
     va_start(args, fmt);
-    vmn_vlog(level, buf, args);
+    vmn_vlog(level, fmt, args);
     va_end(args);
+}
+void
+os_trace (void *user, const nu_char_t *s, nu_size_t n)
+{
+    (void)user;
+    vmn_log(NU_LOG_INFO, "trace: %*.s", n, s);
 }

@@ -8,12 +8,10 @@
 #define VM_UPDATE_CALLBACK "update"
 
 static void
-trace (wasm_exec_env_t env, const void *str, nu_u32_t n)
+trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
 {
-    vm_t     *vm = wasm_runtime_get_user_data(env);
-    nu_char_t buf[256];
-    nu_sv_to_cstr(nu_sv(str, n), buf, sizeof(buf));
-    os_log(vm->user, NU_LOG_INFO, buf);
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    os_log(vm->user, NU_LOG_INFO, "%.*s", n, s);
 }
 
 static NativeSymbol nux_wasm_vm_native_symbols[] = {
