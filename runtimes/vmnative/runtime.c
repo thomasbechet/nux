@@ -14,6 +14,8 @@ vmn_execute (nu_sv_t path)
 {
     nu_status_t status = NU_SUCCESS;
 
+    vmn_log(NU_LOG_INFO, "Running " NU_SV_FMT, NU_SV_ARGS(path));
+
     vm_config_t config = VM_CONFIG_DEFAULT;
     status             = vmn_window_init();
     NU_CHECK(status, goto cleanup0);

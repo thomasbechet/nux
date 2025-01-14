@@ -41,7 +41,8 @@ vm_wasm_init (vm_t *vm)
 
     init_args.max_thread_num = 1;
 
-    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_FATAL);
+    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
 
     if (!wasm_runtime_full_init(&init_args))
     {
@@ -74,8 +75,9 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
 
     // Instantiate module
     const nu_size_t init_stack_size = vm->config.mem_stack_size;
-    const nu_size_t init_heap_size  = NU_MEM_1K;
-    wasm->instance                  = wasm_runtime_instantiate(wasm->module,
+    // const nu_size_t init_heap_size  = NU_MEM_1K;
+    const nu_size_t init_heap_size = 0;
+    wasm->instance                 = wasm_runtime_instantiate(wasm->module,
                                               init_stack_size,
                                               init_heap_size,
                                               error_buf,

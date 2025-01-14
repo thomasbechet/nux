@@ -1,5 +1,5 @@
 ifndef WASI_SDK_PATH
-	$(error WASI SDK required: Install https://github.com/WebAssembly/wasi-sdk and set $$WASI_SDK_PATH)
+$(error WASI SDK required: Install https://github.com/WebAssembly/wasi-sdk and set WASI_SDK_PATH)
 endif
 
 DEBUG = 0
@@ -9,7 +9,7 @@ CC = "$(WASI_SDK_PATH)/bin/clang" --sysroot="$(WASI_SDK_PATH)/share/wasi-sysroot
 WASM_OPT = wasm-opt
 WASM_OPT_FLAGS = -Oz --zero-filled-memory --strip-producers --enable-bulk-memory
 
-CFLAGS = -W -Wall -Wextra -Werror -Wno-unused -Wconversion -Wsign-conversion -MMD -MP -fno-exceptions -mbulk-memory
+CFLAGS = -W -Wall -Wextra -Wno-unused -MMD -MP -fno-exceptions -mbulk-memory -Isrc
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -O0 -g
 else
