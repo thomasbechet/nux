@@ -33,7 +33,7 @@ set (BH_FREE wasm_free)
 # set (WAMR_DISABLE_HW_BOUND_CHECK 0)
 # set (WAMR_DISABLE_STACK_HW_BOUND_CHECK 0)
 
-include (${CMAKE_SOURCE_DIR}/externals/wasm-micro-runtime/build-scripts/runtime_lib.cmake)
+include (${CMAKE_SOURCE_DIR}/externals/wamr/build-scripts/runtime_lib.cmake)
 
 file(GLOB VMCORE_SOURCES *.c)
 add_library(${PROJECT_NAME} ${VMCORE_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE}) 
