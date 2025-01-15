@@ -1,6 +1,0 @@
-[submodule "externals/wasm-micro-runtime"]
-	url = https://github.com/bytecodealliance/wasm-micro-runtime
-	path = externals/wasm-micro-runtime
-[submodule "externals/argparse"]
-	path = externals/argparse
-	url = https://github.com/cofyc/argparse.git
