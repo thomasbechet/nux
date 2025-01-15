@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10.0)
 project(nux VERSION 0.0.1)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# set (CMAKE_VERBOSE_MAKEFILE ON)
 
 include(CheckCCompilerFlag)
 function(enable_c_compiler_flag_if_supported flag)

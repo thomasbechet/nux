@@ -27,13 +27,10 @@ os_read (void *user, void *p, nu_size_t n)
     return fread(p, n, 1, _io.file);
 }
 void
-os_log (void *user, nu_log_level_t level, const nu_char_t *fmt, ...)
+os_vlog (void *user, nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
     (void)user;
-    va_list args;
-    va_start(args, fmt);
     vmn_vlog(level, fmt, args);
-    va_end(args);
 }
 void
 os_trace (void *user, const nu_char_t *s, nu_size_t n)

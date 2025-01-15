@@ -11,16 +11,51 @@ static void
 trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    os_log(vm->user, NU_LOG_INFO, "%.*s", n, s);
+    vm_log(vm, NU_LOG_INFO, "%.*s", n, s);
 }
 
-static NativeSymbol nux_wasm_vm_native_symbols[] = {
-    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
-    EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
-    EXPORT_WASM_API_WITH_SIG(write_vertex, "(ii*)"),
-    EXPORT_WASM_API_WITH_SIG(bind_texture, "(i)"),
-    EXPORT_WASM_API_WITH_SIG(draw, "(ii)"),
-};
+void *
+wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
+{
+    vm_log(user,
+           NU_LOG_INFO,
+           "MALLOC %s %lu",
+           usage == Alloc_For_Runtime ? "runtime" : "linear",
+           n);
+    return vm_malloc(user, n);
+}
+void *
+wasm_realloc (mem_alloc_usage_t usage,
+              nu_bool_t         full_size_mmapped,
+              void             *user,
+              void             *p,
+              nu_u32_t          n)
+{
+    vm_log(user,
+           NU_LOG_INFO,
+           "REALLOC %s %u",
+           usage == Alloc_For_Runtime ? "runtime" : "linear",
+           n);
+    return realloc(p, n);
+}
+void
+wasm_free (mem_alloc_usage_t usage, void *user, void *p)
+{
+    vm_log(user,
+           NU_LOG_INFO,
+           "FREE %s %p",
+           usage == Alloc_For_Runtime ? "runtime" : "linear",
+           p);
+    free(p);
+}
+
+static NativeSymbol nux_wasm_vm_native_symbols[]
+    = { EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
+        EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
+        EXPORT_WASM_API_WITH_SIG(write_vertex, "(ii*)"),
+        EXPORT_WASM_API_WITH_SIG(bind_texture, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(draw, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(draw, "(ii)") };
 
 nu_status_t
 vm_wasm_init (vm_t *vm)
@@ -29,11 +64,11 @@ vm_wasm_init (vm_t *vm)
     RuntimeInitArgs init_args;
     nu_memset(&init_args, 0, sizeof(RuntimeInitArgs));
 
-    init_args.mem_alloc_type = Alloc_With_Pool;
-    init_args.mem_alloc_option.pool.heap_buf
-        = vm_malloc(vm, vm->config.mem_heap_size);
-    init_args.mem_alloc_option.pool.heap_size = vm->config.mem_heap_size;
-    NU_ASSERT(init_args.mem_alloc_option.pool.heap_buf);
+    init_args.mem_alloc_type                          = Alloc_With_Allocator;
+    init_args.mem_alloc_option.allocator.malloc_func  = wasm_malloc;
+    init_args.mem_alloc_option.allocator.realloc_func = wasm_realloc;
+    init_args.mem_alloc_option.allocator.free_func    = wasm_free;
+    init_args.mem_alloc_option.allocator.user_data    = vm;
 
     init_args.native_module_name = "env";
     init_args.native_symbols     = nux_wasm_vm_native_symbols;
@@ -41,7 +76,6 @@ vm_wasm_init (vm_t *vm)
 
     init_args.max_thread_num = 1;
 
-    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_FATAL);
     wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
 
     if (!wasm_runtime_full_init(&init_args))
@@ -49,7 +83,30 @@ vm_wasm_init (vm_t *vm)
         vm_log(vm, NU_LOG_ERROR, "Failed to fully initialize wasm");
         return NU_FAILURE;
     }
+
     return NU_SUCCESS;
+}
+static void
+wasm_unload_cart (vm_t *vm)
+{
+    if (vm->wasm.env)
+    {
+        wasm_runtime_destroy_exec_env(vm->wasm.env);
+    }
+    if (vm->wasm.instance)
+    {
+        wasm_runtime_deinstantiate(vm->wasm.instance);
+    }
+    if (vm->wasm.module)
+    {
+        wasm_runtime_unload(vm->wasm.module);
+    }
+}
+void
+vm_wasm_free (vm_t *vm)
+{
+    wasm_unload_cart(vm);
+    wasm_runtime_destroy();
 }
 nu_status_t
 vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
@@ -59,7 +116,7 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
     // Load module data
     wasm->buffer_size = header->length;
     NU_ASSERT(header->length);
-    wasm->buffer = vm_malloc(vm, header->length);
+    wasm->buffer = wasm_runtime_malloc(header->length);
     NU_ASSERT(wasm->buffer);
     NU_ASSERT(os_read(vm->user, wasm->buffer, header->length));
 
@@ -70,14 +127,14 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
     if (!wasm->module)
     {
         vm_log(vm, NU_LOG_ERROR, "Load wasm module failed: %s", error_buf);
+        wasm_unload_cart(vm);
         return NU_FAILURE;
     }
 
     // Instantiate module
     const nu_size_t init_stack_size = vm->config.mem_stack_size;
-    // const nu_size_t init_heap_size  = NU_MEM_1K;
-    const nu_size_t init_heap_size = 0;
-    wasm->instance                 = wasm_runtime_instantiate(wasm->module,
+    const nu_size_t init_heap_size  = 0;
+    wasm->instance                  = wasm_runtime_instantiate(wasm->module,
                                               init_stack_size,
                                               init_heap_size,
                                               error_buf,
@@ -86,6 +143,7 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
     {
         vm_log(
             vm, NU_LOG_ERROR, "Instantiate wasm module failed: %s", error_buf);
+        wasm_unload_cart(vm);
         return NU_FAILURE;
     }
 
@@ -105,6 +163,8 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
         vm_log(vm,
                NU_LOG_INFO,
                "The " VM_START_CALLBACK " wasm function is not found");
+        wasm_unload_cart(vm);
+        return NU_FAILURE;
     }
     wasm->update_callback
         = wasm_runtime_lookup_function(wasm->instance, VM_UPDATE_CALLBACK);
@@ -113,6 +173,8 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
         vm_log(vm,
                NU_LOG_INFO,
                "The " VM_UPDATE_CALLBACK " wasm function is not found");
+        wasm_unload_cart(vm);
+        return NU_FAILURE;
     }
 
     // pass 4 elements for function arguments
@@ -123,6 +185,8 @@ vm_wasm_load (vm_t *vm, const vm_chunk_header_t *header)
                NU_LOG_ERROR,
                "Call wasm function " VM_START_CALLBACK " failed: %s",
                wasm_runtime_get_exception(wasm->instance));
+        wasm_unload_cart(vm);
+        return NU_FAILURE;
     }
 
     return NU_SUCCESS;
@@ -137,6 +201,7 @@ vm_wasm_update (vm_t *vm)
                NU_LOG_ERROR,
                "Call wasm function " VM_UPDATE_CALLBACK " failed: %s",
                wasm_runtime_get_exception(vm->wasm.instance));
+        return NU_FAILURE;
     }
     return NU_SUCCESS;
 }

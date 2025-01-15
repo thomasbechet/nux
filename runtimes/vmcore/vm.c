@@ -54,6 +54,6 @@ vm_log (vm_t *vm, nu_log_level_t level, const nu_char_t *format, ...)
 {
     va_list args;
     va_start(args, format);
-    os_log(vm->user, level, format, args);
+    os_vlog(vm->user, level, format, args);
     va_end(args);
 }
