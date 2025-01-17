@@ -22,7 +22,8 @@ wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
            "MALLOC %s %lu",
            usage == Alloc_For_Runtime ? "runtime" : "linear",
            n);
-    return vm_malloc(user, n);
+    // return vm_malloc(user, n);
+    return malloc(n);
 }
 void *
 wasm_realloc (mem_alloc_usage_t usage,
