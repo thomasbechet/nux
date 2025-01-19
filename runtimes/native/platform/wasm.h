@@ -1,7 +1,7 @@
-#ifndef VM_WASM_H
-#define VM_WASM_H
+#ifndef WASM_H
+#define WASM_H
 
-#include "../vm.h"
+#include <core/vm.h>
 
 nu_status_t wasm_init(void);
 void        wasm_free(void);

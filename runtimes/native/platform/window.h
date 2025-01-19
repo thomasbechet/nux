@@ -1,10 +1,10 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include "../vm.h"
+#include <nulib.h>
 
-#define VM_WINDOW_WIDTH  500
-#define VM_WINDOW_HEIGHT 500
+#define WINDOW_WIDTH  500
+#define WINDOW_HEIGHT 500
 
 nu_status_t window_init(void);
 void        window_free(void);

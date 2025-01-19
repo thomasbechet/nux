@@ -22,9 +22,6 @@ set (WAMR_BUILD_LIBC_UVWASI 0)
 
 set (WAMR_BUILD_REF_TYPES 1) # Prevent wamr error for wasi
 
-set (BH_MALLOC wasm_malloc)
-set (BH_FREE wasm_free)
-
 # set (WAMR_DISABLE_APP_ENTRY 1)
 # set (WAMR_BUILD_SIMD 0)
 # set (WAMR_BUILD_AOT_INTRINSICS 0)
@@ -35,9 +32,9 @@ set (BH_FREE wasm_free)
 
 include (${CMAKE_SOURCE_DIR}/externals/wamr/build-scripts/runtime_lib.cmake)
 
-file(GLOB SOURCES *.c)
+file(GLOB CORE_SOURCES core/*.c)
 file(GLOB PLATFORM_SOURCES platform/*.c)
-add_library(${PROJECT_NAME} ${SOURCES} ${PLATFORM_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE})
+add_library(${PROJECT_NAME} ${CORE_SOURCES} ${PLATFORM_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE})
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
@@ -49,4 +46,4 @@ if (WIN32)
 endif (WIN32)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/runtimes)
+include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)

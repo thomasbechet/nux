@@ -1,9 +1,9 @@
 #include "renderer.h"
 
-#include "../platform.h"
 #include "shaders_data.h"
 #include "logger.h"
 
+#include <core/platform.h>
 #include <glad/gl.h>
 #define RGFW_IMPORT
 #include <rgfw/RGFW.h>
@@ -236,13 +236,13 @@ renderer_render (void)
 }
 
 void
-os_write_texture (vm_t       *vm,
-                  nu_u32_t    slot,
-                  nu_u32_t    x,
-                  nu_u32_t    y,
-                  nu_u32_t    w,
-                  nu_u32_t    h,
-                  const void *p)
+os_gpu_write_texture (vm_t       *vm,
+                      nu_u32_t    slot,
+                      nu_u32_t    x,
+                      nu_u32_t    y,
+                      nu_u32_t    w,
+                      nu_u32_t    h,
+                      const void *p)
 {
     GLuint handle = renderer.textures[slot];
     if (!handle)
@@ -277,7 +277,7 @@ os_write_texture (vm_t       *vm,
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 void
-os_write_vertex (vm_t *vm, nu_u32_t first, nu_u32_t count, const void *p)
+os_gpu_write_vertex (vm_t *vm, nu_u32_t first, nu_u32_t count, const void *p)
 {
     // const nu_f32_t *data = p;
     nu_f32_t *ptr = NU_NULL;
@@ -312,12 +312,12 @@ os_write_vertex (vm_t *vm, nu_u32_t first, nu_u32_t count, const void *p)
     // TODO
 }
 void
-os_bind_texture (vm_t *vm, nu_u32_t slot)
+os_gpu_bind_texture (vm_t *vm, nu_u32_t slot)
 {
     (void)slot;
 }
 void
-os_draw (vm_t *vm, nu_u32_t first, nu_u32_t count)
+os_gpu_draw (vm_t *vm, nu_u32_t first, nu_u32_t count)
 {
     glUseProgram(renderer.unlit_shader);
     glBindVertexArray(renderer.vao);

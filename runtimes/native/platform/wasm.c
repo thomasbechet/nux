@@ -1,9 +1,9 @@
 #include "wasm.h"
 
-#include "../gpu.h"
-#include "../iop.h"
 #include "logger.h"
 
+#include <core/gpu.h>
+#include <core/iop.h>
 #include <wasm_export.h>
 
 #define VM_START_CALLBACK  "start"
@@ -150,7 +150,7 @@ wasm_free (void)
     wasm_runtime_destroy();
 }
 nu_status_t
-os_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
+os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
 {
     // Load module
     nu_char_t error_buf[128];
@@ -224,7 +224,7 @@ os_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     return NU_SUCCESS;
 }
 nu_status_t
-os_update_wasm (vm_t *vm)
+os_cpu_update_wasm (vm_t *vm)
 {
     if (!wasm_runtime_call_wasm_a(
             wasm.env, wasm.update_callback, 0, NU_NULL, 0, NU_NULL))

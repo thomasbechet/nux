@@ -7,7 +7,7 @@ static nu_u32_t
 read_u32 (vm_t *vm)
 {
     nu_u32_t v;
-    NU_ASSERT(os_read(vm, &v, sizeof(v)));
+    NU_ASSERT(os_iop_read(vm, &v, sizeof(v)));
     return nu_u32_le(v);
 }
 static nu_bool_t
@@ -53,15 +53,15 @@ iop_load_full (vm_t *vm, const nu_char_t *name)
     nu_status_t status = NU_SUCCESS;
 
     // Load cart header
-    os_mount(vm, name);
-    os_seek(vm, 0);
+    os_iop_mount(vm, name);
+    os_iop_seek(vm, 0);
     vm->iop.header.version = read_u32(vm);
     // TODO: validate
     vm->iop.header.chunk_count = read_u32(vm);
     // TODO: validate
 
     // Load chunks
-    os_seek(vm, sizeof(vm_cart_header_t));
+    os_iop_seek(vm, sizeof(vm_cart_header_t));
     for (nu_size_t i = 0; i < vm->iop.header.chunk_count; ++i)
     {
         // read chunk header
@@ -75,8 +75,8 @@ iop_load_full (vm_t *vm, const nu_char_t *name)
                 break;
             case VM_CHUNK_TEXTURE: {
                 NU_ASSERT(header.length <= VM_IO_MEM_SIZE);
-                NU_ASSERT(os_read(vm, vm->iop.heap, header.length));
-                os_write_texture(vm,
+                NU_ASSERT(os_iop_read(vm, vm->iop.heap, header.length));
+                os_gpu_write_texture(vm,
                                  header.target.texture.slot,
                                  header.target.texture.x,
                                  header.target.texture.y,
@@ -87,8 +87,8 @@ iop_load_full (vm_t *vm, const nu_char_t *name)
             break;
             case VM_CHUNK_MESH: {
                 NU_ASSERT(header.length <= VM_IO_MEM_SIZE);
-                NU_ASSERT(os_read(vm, vm->iop.heap, header.length));
-                os_write_vertex(vm,
+                NU_ASSERT(os_iop_read(vm, vm->iop.heap, header.length));
+                os_gpu_write_vertex(vm,
                                 header.target.mesh.first,
                                 header.target.mesh.count,
                                 vm->iop.heap);
@@ -113,5 +113,5 @@ iop_log (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, ...)
 void
 iop_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
-    os_vlog(vm, level, fmt, args);
+    os_iop_vlog(vm, level, fmt, args);
 }

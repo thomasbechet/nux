@@ -1,6 +1,6 @@
 #include "logger.h"
 
-#include "../platform.h"
+#include <core/vm.h>
 
 static runtime_log_callback_t logger;
 
@@ -24,7 +24,7 @@ logger_vlog (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 }
 
 void
-os_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
+os_iop_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
     logger_vlog(level, fmt, args);
 }

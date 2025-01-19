@@ -1,6 +1,6 @@
 #include "sdk.h"
 
-#include <native/vm.h>
+#include <native/core/vm.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 

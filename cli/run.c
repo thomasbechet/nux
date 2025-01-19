@@ -1,7 +1,7 @@
 #include "cli.h"
 
 #include <argparse/argparse.h>
-#include <native/runtime.h>
+#include <native/core/runtime.h>
 #include <sdk.h>
 
 nu_u32_t

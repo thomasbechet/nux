@@ -1,5 +1,6 @@
 #include "window.h"
 
+#include <core/vm.h>
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define RGFW_EXPORT
@@ -85,8 +86,8 @@ nu_status_t
 window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = VM_WINDOW_WIDTH;
-    const nu_int_t height = VM_WINDOW_HEIGHT;
+    const nu_int_t width  = WINDOW_WIDTH;
+    const nu_int_t height = WINDOW_HEIGHT;
 
     // Initialize values
     window.close_requested   = NU_FALSE;
