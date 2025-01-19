@@ -1,33 +1,8 @@
 #include "commands.h"
 
 #include <argparse/argparse.h>
-#include <native/vm.h>
+#include <native/runtime.h>
 #include <sdk.h>
-
-static nu_status_t
-run (nu_sv_t path)
-{
-    nu_status_t status;
-    vm_t        vm;
-    vm_config_t config = VM_CONFIG_DEFAULT;
-
-    status = vm_init(&vm, &config, &vm);
-    NU_CHECK(status, return NU_FAILURE);
-
-    nu_char_t name[NU_PATH_MAX];
-    nu_sv_to_cstr(path, name, NU_PATH_MAX);
-    status = vm_load(&vm, name);
-    NU_CHECK(status, goto cleanup0);
-
-    for (;;)
-    {
-    }
-
-cleanup0:
-    vm_free(&vm);
-
-    return status;
-}
 
 nu_u32_t
 cli_command_run (nu_u32_t argc, const nu_char_t **argv)
@@ -56,13 +31,16 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         {
             return -1;
         }
-        path   = nu_sv_cstr(project.target_path);
-        status = run(path);
+        path                = nu_sv_cstr(project.target_path);
+        runtime_info_t info = {
+            path,
+        };
+        status = runtime_init(path);
         sdk_project_free(&project);
     }
     else
     {
-        status = run(path);
+        status = runtime_init(path);
     }
     return status ? 0 : -1;
 }

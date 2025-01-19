@@ -2,6 +2,13 @@
 
 #include "../platform.h"
 
+static runtime_log_callback_t logger;
+
+void
+logger_init (runtime_log_callback_t callback)
+{
+    logger = callback;
+}
 void
 logger_log (nu_log_level_t level, const nu_char_t *fmt, ...)
 {
@@ -13,23 +20,7 @@ logger_log (nu_log_level_t level, const nu_char_t *fmt, ...)
 void
 logger_vlog (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
-    switch (level)
-    {
-        case NU_LOG_DEBUG:
-            fprintf(stdout, "\x1B[36mDEBUG\x1B[0m ");
-            break;
-        case NU_LOG_INFO:
-            fprintf(stdout, "\x1B[32mINFO\x1B[0m ");
-            break;
-        case NU_LOG_WARNING:
-            fprintf(stdout, "\033[0;33mWARN\x1B[0m ");
-            break;
-        case NU_LOG_ERROR:
-            fprintf(stdout, "\x1B[31mERROR\x1B[0m ");
-            break;
-    }
-    vfprintf(stdout, fmt, args);
-    fprintf(stdout, "\n");
+    logger(level, fmt, args);
 }
 
 void

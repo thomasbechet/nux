@@ -118,7 +118,7 @@ window_free (void)
     RGFW_window_close(window.win);
 }
 void
-_window_poll_events (void)
+window_poll_events (void)
 {
     if (window.win)
     {

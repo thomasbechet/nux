@@ -1,5 +1,5 @@
-#ifndef VM_WINDOW_H
-#define VM_WINDOW_H
+#ifndef WINDOW_H
+#define WINDOW_H
 
 #include "../vm.h"
 

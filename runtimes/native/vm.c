@@ -6,16 +6,6 @@
 #include "platform.h"
 
 nu_status_t
-vm_init_platform (void)
-{
-    return os_init_platform();
-}
-void
-vm_free_platform (void)
-{
-    os_free_platform();
-}
-nu_status_t
 vm_init (vm_t *vm, const vm_config_t *config, void *userdata)
 {
     nu_memset(vm, 0, sizeof(*vm));
