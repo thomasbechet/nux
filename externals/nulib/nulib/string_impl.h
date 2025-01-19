@@ -1,9 +1,9 @@
 #ifndef NU_STRING_IMPL_H
 #define NU_STRING_IMPL_H
 
-#include <nulib/string.h>
-#include <nulib/memory.h>
-#include <nulib/assert.h>
+#include "string.h"
+#include "memory.h"
+#include "assert.h"
 
 #ifdef NU_STDLIB
 #include <stdlib.h>

@@ -1,7 +1,7 @@
 #ifndef VM_H
 #define VM_H
 
-#include <nulib.h>
+#include <nulib/nulib.h>
 
 /////////////////
 ///    CPU    ///

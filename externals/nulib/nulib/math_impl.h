@@ -1,9 +1,9 @@
 #ifndef NU_MATH_IMPL_H
 #define NU_MATH_IMPL_H
 
-#include <nulib/math.h>
-#include <nulib/memory.h>
-#include <nulib/assert.h>
+#include "math.h"
+#include "memory.h"
+#include "assert.h"
 
 #ifdef NU_STDLIB
 #include <math.h>

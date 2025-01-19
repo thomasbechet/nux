@@ -1,7 +1,6 @@
 #ifndef SDK_H
 #define SDK_H
 
-#include <nulib.h>
 #include <native/core/vm.h>
 
 #define SDK_NAME_MAX 256

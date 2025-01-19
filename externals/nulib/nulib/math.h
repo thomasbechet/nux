@@ -1,8 +1,8 @@
 #ifndef NU_MATH_H
 #define NU_MATH_H
 
-#include <nulib/types.h>
-#include <nulib/platform.h>
+#include "platform.h"
+#include "types.h"
 
 #define NU_V2_FMT     "%lf %lf"
 #define NU_V2_ARGS(v) (v)->x, (v)->y

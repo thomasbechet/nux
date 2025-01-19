@@ -1,15 +1,15 @@
 #ifndef NU_MEMORY_IMPL_H
 #define NU_MEMORY_IMPL_H
 
-#include <nulib/types.h>
-#include <nulib/assert.h>
-#include <nulib/platform.h>
+#include "types.h"
+#include "assert.h"
+#include "platform.h"
 
 nu_int_t
 nu_memcmp (const void *p0, const void *p1, nu_size_t n)
 {
-    const nu_byte_t *b0 = p0;
-    const nu_byte_t *b1 = p1;
+    const nu_byte_t *b0 = (const nu_byte_t *)p0;
+    const nu_byte_t *b1 = (const nu_byte_t *)p1;
     while (n-- > 0)
     {
         if (*b0++ != *b1++)
@@ -48,7 +48,7 @@ void
 nu_memswp (void *a, void *b, nu_size_t n)
 {
     nu_byte_t *a_swap = (nu_byte_t *)a, *b_swap = (nu_byte_t *)b;
-    nu_byte_t *a_end = a + n;
+    nu_byte_t *a_end = (nu_byte_t *)a + n;
 
     while (a_swap < a_end)
     {

@@ -6,7 +6,7 @@ OUTPUT=sdk/templates_data.h
 printf "#ifndef SDK_TEMPLATES_DATA_H\n" > $OUTPUT
 printf "#define SDK_TEMPLATES_DATA_H\n" >> $OUTPUT
 
-printf "#include <nulib.h>\n" >> $OUTPUT
+printf "#include <nulib/nulib.h>\n" >> $OUTPUT
 printf "typedef struct
 {const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } sdk_template_file_t;\n" >> $OUTPUT
 
@@ -14,8 +14,7 @@ shopt -s dotglob # Iter hidden files
 
 for TEMPLATE in $TEMPLATES/*; do
     LANG=$(basename $TEMPLATE)
-    echo $LANG
-    echo $TEMPLATE
+    echo "language: $LANG ($TEMPLATE)"
     for FILE in $TEMPLATE/* $TEMPLATE/**/*; do
         echo $FILE
         if [ ! -f $FILE ]; then

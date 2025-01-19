@@ -1,8 +1,8 @@
 #ifndef NU_IO_H
 #define NU_IO_H
 
-#include <nulib/types.h>
-#include <nulib/string.h>
+#include "string.h"
+#include "types.h"
 
 NU_API nu_status_t nu_load_bytes(nu_sv_t    filename,
                                  nu_byte_t *data,

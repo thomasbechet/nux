@@ -1,7 +1,7 @@
 #ifndef NU_IO_IMPL_H
 #define NU_IO_IMPL_H
 
-#include <nulib/io.h>
+#include "io.h"
 
 #ifdef NU_PLATFORM_UNIX
 #include <string.h>
@@ -29,6 +29,9 @@ mkpath_p (nu_sv_t path)
         *p = '/';
     }
     return NU_SUCCESS;
+#else
+    (void)path;
+    return NU_FAILURE;
 #endif
 }
 nu_status_t
@@ -89,6 +92,9 @@ nu_isdir (nu_sv_t path)
         return NU_FALSE;
     }
     return S_ISDIR(statbuf.st_mode);
+#else
+    (void)path;
+    return NU_FALSE;
 #endif
 }
 

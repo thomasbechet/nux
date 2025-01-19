@@ -1,8 +1,8 @@
 #ifndef NU_MEMORY_H
 #define NU_MEMORY_H
 
-#include <nulib/platform.h>
-#include <nulib/types.h>
+#include "platform.h"
+#include "types.h"
 
 #define NU_MEM_1K   (1 << 10)
 #define NU_MEM_2K   (1 << 11)

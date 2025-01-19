@@ -1,6 +1,6 @@
 #ifndef SDK_TEMPLATES_DATA_H
 #define SDK_TEMPLATES_DATA_H
-#include <nulib.h>
+#include <nulib/nulib.h>
 typedef struct
 {const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } sdk_template_file_t;
 static const nu_byte_t template_c__gitignore_data[] = {

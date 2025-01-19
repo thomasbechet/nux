@@ -50,7 +50,6 @@
 #define NU_API_EXPORT
 #define NU_API_IMPORT
 #define NU_ALIGN(X)
-#pragma warning Unknown linkage directive import / export semantics.
 
 #endif
 

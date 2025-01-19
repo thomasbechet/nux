@@ -1,12 +1,12 @@
 #!/bin/bash
 
-SHADERS=runtimes/native/platform/shaders
-OUTPUT=runtimes/native/platform/shaders_data.h
+SHADERS=runtimes/native/shaders
+OUTPUT=runtimes/native/shaders_data.h
 
-printf "#ifndef VM_SHADERS_DATA_H\n" > $OUTPUT
-printf "#define VM_SHADERS_DATA_H\n" >> $OUTPUT
+printf "#ifndef SHADERS_DATA_H\n" > $OUTPUT
+printf "#define SHADERS_DATA_H\n" >> $OUTPUT
 
-printf "#include <nulib.h>\n" >> $OUTPUT
+printf "#include <nulib/nulib.h>\n" >> $OUTPUT
 
 for file in $SHADERS/*; do
     name="shader_$(basename $file | tr '.' '_')" 
