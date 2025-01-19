@@ -1,5 +1,5 @@
-#ifndef VM_PLATFORM_H
-#define VM_PLATFORM_H
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 #include "vm.h"
 

@@ -9,8 +9,6 @@ typedef struct
     nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
 } cmd_entry_t;
 
-static nu_log_level_t verbose_level;
-
 void
 cli_log (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
