@@ -1,6 +1,6 @@
 #include "window.h"
 
-#include <core/vm.h>
+#include "core/vm.h"
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define RGFW_EXPORT
@@ -9,33 +9,33 @@
 
 typedef enum
 {
-    NU_VIEWPORT_FIXED,
-    NU_VIEWPORT_FIXED_BEST_FIT,
-    NU_VIEWPORT_STRETCH_KEEP_ASPECT,
-    NU_VIEWPORT_STRETCH,
-} nu_viewport_mode_t;
+    VIEWPORT_FIXED,
+    VIEWPORT_FIXED_BEST_FIT,
+    VIEWPORT_STRETCH_KEEP_ASPECT,
+    VIEWPORT_STRETCH,
+} viewport_mode_t;
 
 typedef struct
 {
-    nu_viewport_mode_t mode;
-    nu_f32_t           scale_factor;
-    nu_v2u_t           screen;
-    nu_b2i_t           extent;
-    nu_b2i_t           viewport;
-} nu_viewport_t;
+    viewport_mode_t mode;
+    nu_f32_t        scale_factor;
+    nu_v2u_t        screen;
+    nu_b2i_t        extent;
+    nu_b2i_t        viewport;
+} viewport_t;
 
 static struct
 {
-    nu_bool_t     close_requested;
-    nu_bool_t     fullscreen;
-    nu_bool_t     switch_fullscreen;
-    nu_viewport_t viewport;
-    RGFW_rect     previous_rect;
-    RGFW_window  *win;
+    nu_bool_t    close_requested;
+    nu_bool_t    fullscreen;
+    nu_bool_t    switch_fullscreen;
+    viewport_t   viewport;
+    RGFW_rect    previous_rect;
+    RGFW_window *win;
 } window;
 
 static void
-update_viewport (nu_viewport_t *v)
+update_viewport (viewport_t *v)
 {
     nu_v2_t global_pos  = nu_v2(v->extent.min.x, v->extent.min.y);
     nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(v->extent));
@@ -45,12 +45,12 @@ update_viewport (nu_viewport_t *v)
     nu_v2_t size = NU_V2_ZEROS;
     switch (v->mode)
     {
-        case NU_VIEWPORT_FIXED: {
+        case VIEWPORT_FIXED: {
             size = nu_v2((nu_f32_t)v->screen.x * v->scale_factor,
                          (nu_f32_t)v->screen.y * v->scale_factor);
         };
         break;
-        case NU_VIEWPORT_FIXED_BEST_FIT: {
+        case VIEWPORT_FIXED_BEST_FIT: {
             nu_f32_t w_factor = global_size.x / (nu_f32_t)v->screen.x;
             nu_f32_t h_factor = global_size.y / (nu_f32_t)v->screen.y;
             nu_f32_t min = NU_MAX(1.0f, nu_floor(NU_MIN(w_factor, h_factor)));
@@ -58,7 +58,7 @@ update_viewport (nu_viewport_t *v)
             size.y       = v->screen.y * min;
         }
         break;
-        case NU_VIEWPORT_STRETCH_KEEP_ASPECT: {
+        case VIEWPORT_STRETCH_KEEP_ASPECT: {
             if (global_size.x / global_size.y >= aspect_ratio)
             {
                 size.x = nu_floor(global_size.y * aspect_ratio);
@@ -71,7 +71,7 @@ update_viewport (nu_viewport_t *v)
             }
         }
         break;
-        case NU_VIEWPORT_STRETCH:
+        case VIEWPORT_STRETCH:
             size = global_size;
             break;
     }
@@ -100,7 +100,7 @@ window_init (void)
     RGFW_window_swapInterval(window.win, 1);
 
     // Initialize viewport
-    window.viewport.mode     = NU_VIEWPORT_STRETCH_KEEP_ASPECT;
+    window.viewport.mode     = VIEWPORT_STRETCH_KEEP_ASPECT;
     window.viewport.screen   = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
     window.viewport.extent   = nu_b2i_xywh(0, 0, width, height);
     window.viewport.viewport = nu_b2i_xywh(0, 0, width, height);

@@ -2,8 +2,7 @@
 #include "window.h"
 #include "renderer.h"
 #include "wasm.h"
-
-#include <core/vm.h>
+#include "core/vm.h"
 
 static nu_byte_t global_heap[NU_MEM_32M];
 

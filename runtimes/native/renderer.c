@@ -2,8 +2,8 @@
 
 #include "shaders_data.h"
 #include "logger.h"
+#include "core/platform.h"
 
-#include <core/platform.h>
 #include <glad/gl.h>
 #define RGFW_IMPORT
 #include <rgfw/RGFW.h>

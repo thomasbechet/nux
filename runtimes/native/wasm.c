@@ -1,9 +1,9 @@
 #include "wasm.h"
 
 #include "logger.h"
+#include "core/gpu.h"
+#include "core/iop.h"
 
-#include <core/gpu.h>
-#include <core/iop.h>
 #include <wasm_export.h>
 
 #define VM_START_CALLBACK  "start"

@@ -77,21 +77,21 @@ iop_load_full (vm_t *vm, const nu_char_t *name)
                 NU_ASSERT(header.length <= VM_IO_MEM_SIZE);
                 NU_ASSERT(os_iop_read(vm, vm->iop.heap, header.length));
                 os_gpu_write_texture(vm,
-                                 header.target.texture.slot,
-                                 header.target.texture.x,
-                                 header.target.texture.y,
-                                 header.target.texture.w,
-                                 header.target.texture.h,
-                                 vm->iop.heap);
+                                     header.target.texture.slot,
+                                     header.target.texture.x,
+                                     header.target.texture.y,
+                                     header.target.texture.w,
+                                     header.target.texture.h,
+                                     vm->iop.heap);
             }
             break;
             case VM_CHUNK_MESH: {
                 NU_ASSERT(header.length <= VM_IO_MEM_SIZE);
                 NU_ASSERT(os_iop_read(vm, vm->iop.heap, header.length));
                 os_gpu_write_vertex(vm,
-                                header.target.mesh.first,
-                                header.target.mesh.count,
-                                vm->iop.heap);
+                                    header.target.mesh.first,
+                                    header.target.mesh.count,
+                                    vm->iop.heap);
             }
             break;
             default:

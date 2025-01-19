@@ -1,6 +1,6 @@
 #include "logger.h"
 
-#include <core/vm.h>
+#include "core/vm.h"
 
 static runtime_log_callback_t logger;
 

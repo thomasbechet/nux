@@ -1,4 +1,4 @@
-#include <core/platform.h>
+#include "core/platform.h"
 
 static struct
 {

@@ -33,8 +33,8 @@ set (WAMR_BUILD_REF_TYPES 1) # Prevent wamr error for wasi
 include (${CMAKE_SOURCE_DIR}/externals/wamr/build-scripts/runtime_lib.cmake)
 
 file(GLOB CORE_SOURCES core/*.c)
-file(GLOB PLATFORM_SOURCES platform/*.c)
-add_library(${PROJECT_NAME} ${CORE_SOURCES} ${PLATFORM_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE})
+file(GLOB RUNTIME_SOURCES *.c)
+add_library(${PROJECT_NAME} ${CORE_SOURCES} ${RUNTIME_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE})
 
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
@@ -46,4 +46,3 @@ if (WIN32)
 endif (WIN32)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/include)
-include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)
