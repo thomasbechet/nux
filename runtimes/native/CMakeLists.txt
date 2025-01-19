@@ -1,4 +1,4 @@
-project(vmcore LANGUAGES C)
+project(vmnative LANGUAGES C)
 
 set (WAMR_BUILD_PLATFORM "linux")
 set (WAMR_BUILD_TARGET "X86_64")
@@ -35,10 +35,18 @@ set (BH_FREE wasm_free)
 
 include (${CMAKE_SOURCE_DIR}/externals/wamr/build-scripts/runtime_lib.cmake)
 
-file(GLOB VMCORE_SOURCES *.c)
-add_library(${PROJECT_NAME} ${VMCORE_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE}) 
-target_link_libraries(${PROJECT_NAME} m)
+file(GLOB SOURCES *.c)
+file(GLOB PLATFORM_SOURCES platform/*.c)
+add_library(${PROJECT_NAME} ${SOURCES} ${PLATFORM_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE})
 
+set(OpenGL_GL_PREFERENCE GLVND)
+find_package(OpenGL REQUIRED)
+if (UNIX)
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} Xrandr X11 dl pthread m)
+endif (UNIX)
+if (WIN32)
+    target_link_libraries(${PROJECT_NAME} ${OPENGL_LIBRARIES} m)
+endif (WIN32)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/runtimes)

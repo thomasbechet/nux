@@ -1,6 +1,5 @@
 #include "commands.h"
 
-#include <vmcore/config.h>
 #include <argparse/argparse.h>
 #include <parson/parson.h>
 #include <sdk.h>

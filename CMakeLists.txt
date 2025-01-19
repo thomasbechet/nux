@@ -24,7 +24,6 @@ enable_c_compiler_flag_if_supported("-Wno-unused-function")
 enable_c_compiler_flag_if_supported("-Wno-unused-parameter")
 enable_c_compiler_flag_if_supported("-Wno-unused-variable")
 
-add_subdirectory(runtimes/vmcore)
-add_subdirectory(runtimes/vmnative)
+add_subdirectory(runtimes/native)
 add_subdirectory(sdk)
 add_subdirectory(cli)

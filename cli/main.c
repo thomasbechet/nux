@@ -1,7 +1,6 @@
 #include "commands.h"
 
 #include <argparse/argparse.h>
-#include <vmnative/runtime.h>
 #include <sdk.h>
 
 typedef struct
@@ -54,7 +53,6 @@ main (int argc, const nu_char_t *argv[])
         OPT_END(),
     };
 
-    vmn_set_log_callback(cli_log);
     sdk_set_log_callback(cli_log);
 
     argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);

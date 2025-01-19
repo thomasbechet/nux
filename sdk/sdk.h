@@ -2,7 +2,7 @@
 #define SDK_H
 
 #include <nulib.h>
-#include <vmcore/config.h>
+#include <native/vm.h>
 
 #define SDK_NAME_MAX 256
 

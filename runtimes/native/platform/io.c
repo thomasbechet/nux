@@ -1,6 +1,6 @@
-#include <vmcore/platform.h>
+#include "io.h"
 
-#include "runtime.h"
+#include "../iop.h"
 
 static struct
 {
@@ -27,14 +27,7 @@ os_read (void *user, void *p, nu_size_t n)
     return fread(p, n, 1, _io.file);
 }
 void
-os_vlog (void *user, nu_log_level_t level, const nu_char_t *fmt, va_list args)
-{
-    (void)user;
-    vmn_vlog(level, fmt, args);
-}
-void
 os_trace (void *user, const nu_char_t *s, nu_size_t n)
 {
-    (void)user;
-    vmn_log(NU_LOG_INFO, "trace: %*.s", n, s);
+    iop_log(user, NU_LOG_INFO, "trace: %*.s", n, s);
 }

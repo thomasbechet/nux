@@ -1,6 +1,5 @@
 #include "window.h"
 
-#include <vmcore/vm.h>
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define RGFW_EXPORT
@@ -32,7 +31,7 @@ static struct
     nu_viewport_t viewport;
     RGFW_rect     previous_rect;
     RGFW_window  *win;
-} _window;
+} window;
 
 static void
 update_viewport (nu_viewport_t *v)
@@ -83,56 +82,56 @@ update_viewport (nu_viewport_t *v)
 }
 
 nu_status_t
-vmn_window_init (void)
+window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = VMN_WINDOW_WIDTH;
-    const nu_int_t height = VMN_WINDOW_HEIGHT;
+    const nu_int_t width  = VM_WINDOW_WIDTH;
+    const nu_int_t height = VM_WINDOW_HEIGHT;
 
     // Initialize values
-    _window.close_requested   = NU_FALSE;
-    _window.fullscreen        = NU_FALSE;
-    _window.switch_fullscreen = NU_FALSE;
+    window.close_requested   = NU_FALSE;
+    window.fullscreen        = NU_FALSE;
+    window.switch_fullscreen = NU_FALSE;
 
     // Create window
-    _window.win
+    window.win
         = RGFW_createWindow("nux", RGFW_RECT(0, 0, width, height), RGFW_CENTER);
-    RGFW_window_swapInterval(_window.win, 1);
+    RGFW_window_swapInterval(window.win, 1);
 
     // Initialize viewport
-    _window.viewport.mode     = NU_VIEWPORT_STRETCH_KEEP_ASPECT;
-    _window.viewport.screen   = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
-    _window.viewport.extent   = nu_b2i_xywh(0, 0, width, height);
-    _window.viewport.viewport = nu_b2i_xywh(0, 0, width, height);
-    update_viewport(&_window.viewport);
+    window.viewport.mode     = NU_VIEWPORT_STRETCH_KEEP_ASPECT;
+    window.viewport.screen   = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
+    window.viewport.extent   = nu_b2i_xywh(0, 0, width, height);
+    window.viewport.viewport = nu_b2i_xywh(0, 0, width, height);
+    update_viewport(&window.viewport);
 
     // Bind callbacks
-    RGFW_window_makeCurrent_OpenGL(_window.win);
-    RGFW_window_makeCurrent(_window.win);
+    RGFW_window_makeCurrent_OpenGL(window.win);
+    RGFW_window_makeCurrent(window.win);
     // RGFW_setWindowResizeCallback(nu__window_size_callback);
 
     return NU_SUCCESS;
 }
 void
-vmn_window_free (void)
+window_free (void)
 {
-    RGFW_window_close(_window.win);
+    RGFW_window_close(window.win);
 }
 void
-vmn_window_poll_events (void)
+_window_poll_events (void)
 {
-    if (_window.win)
+    if (window.win)
     {
         // Check close requested
-        if (RGFW_window_shouldClose(_window.win))
+        if (RGFW_window_shouldClose(window.win))
         {
-            _window.close_requested = NU_TRUE;
+            window.close_requested = NU_TRUE;
         }
 
         // Process events
-        while (RGFW_window_checkEvent(_window.win))
+        while (RGFW_window_checkEvent(window.win))
         {
-            switch (_window.win->event.type)
+            switch (window.win->event.type)
             {
                 case RGFW_mousePosChanged:
                     // nu__mouse_position_callback(_ctx.platform.win,
@@ -151,9 +150,9 @@ vmn_window_poll_events (void)
                     //                  _ctx.platform.win->event.keyName,
                     //                  NU_FALSE,
                     //                  NU_FALSE);
-                    if (_window.win->event.keyCode == RGFW_Escape)
+                    if (window.win->event.keyCode == RGFW_Escape)
                     {
-                        _window.close_requested = NU_TRUE;
+                        window.close_requested = NU_TRUE;
                     }
                     break;
                 case RGFW_mouseButtonPressed:
@@ -176,42 +175,42 @@ vmn_window_poll_events (void)
         }
 
         // Check fullscreen button
-        if (_window.switch_fullscreen)
+        if (window.switch_fullscreen)
         {
-            if (_window.fullscreen)
+            if (window.fullscreen)
             {
-                RGFW_window_resize(_window.win,
-                                   RGFW_AREA(_window.previous_rect.w,
-                                             _window.previous_rect.h));
-                RGFW_window_move(_window.win,
-                                 RGFW_POINT(_window.previous_rect.x,
-                                            _window.previous_rect.y));
-                RGFW_window_setBorder(_window.win, RGFW_TRUE);
+                RGFW_window_resize(
+                    window.win,
+                    RGFW_AREA(window.previous_rect.w, window.previous_rect.h));
+                RGFW_window_move(
+                    window.win,
+                    RGFW_POINT(window.previous_rect.x, window.previous_rect.y));
+                RGFW_window_setBorder(window.win, RGFW_TRUE);
                 // nu__window_size_callback(_ctx.platform.win,
                 //                          _ctx.platform.win->r);
             }
             else
             {
-                _window.previous_rect = _window.win->r;
-                RGFW_monitor mon      = RGFW_window_getMonitor(_window.win);
-                RGFW_window_setBorder(_window.win, RGFW_FALSE);
-                RGFW_window_resize(_window.win,
+                window.previous_rect = window.win->r;
+                RGFW_monitor mon     = RGFW_window_getMonitor(window.win);
+                RGFW_window_setBorder(window.win, RGFW_FALSE);
+                RGFW_window_resize(window.win,
                                    RGFW_AREA(mon.rect.w, mon.rect.h));
-                RGFW_window_move(_window.win,
+                RGFW_window_move(window.win,
                                  RGFW_POINT(mon.rect.x, mon.rect.y));
             }
-            _window.switch_fullscreen = NU_FALSE;
-            _window.fullscreen        = !_window.fullscreen;
+            window.switch_fullscreen = NU_FALSE;
+            window.fullscreen        = !window.fullscreen;
         }
     }
 }
 void
-vmn_window_swap_buffers (void)
+window_swap_buffers (void)
 {
-    RGFW_window_swapBuffers(_window.win);
+    RGFW_window_swapBuffers(window.win);
 }
 nu_bool_t
-vmn_window_close_requested (void)
+window_close_requested (void)
 {
-    return _window.close_requested;
+    return window.close_requested;
 }

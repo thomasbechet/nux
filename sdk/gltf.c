@@ -1,6 +1,6 @@
 #include "sdk.h"
 
-#include <vmcore/config.h>
+#include <native/vm.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 

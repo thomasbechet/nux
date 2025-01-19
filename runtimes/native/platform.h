@@ -3,14 +3,9 @@
 
 #include <nulib.h>
 
-void      os_mount(void *user, const nu_char_t *name);
-void      os_seek(void *user, nu_size_t n);
-nu_size_t os_read(void *user, void *p, nu_size_t n);
-void      os_vlog(void            *user,
-                  nu_log_level_t   level,
-                  const nu_char_t *fmt,
-                  va_list          args);
-void      os_trace(void *user, const nu_char_t *s, nu_size_t n);
+nu_status_t os_init_platform(void);
+void        os_free_platform(void);
+void       *os_malloc(void *user, nu_size_t n);
 
 void os_swap_buffer(void *user);
 void os_write_texture(void       *user,
@@ -23,5 +18,16 @@ void os_write_texture(void       *user,
 void os_write_vertex(void *user, nu_u32_t first, nu_u32_t count, const void *p);
 void os_bind_texture(void *user, nu_u32_t slot);
 void os_draw(void *user, nu_u32_t first, nu_u32_t count);
+
+void      os_mount(void *user, const nu_char_t *name);
+void      os_seek(void *user, nu_size_t n);
+nu_size_t os_read(void *user, void *p, nu_size_t n);
+void      os_vlog(void            *user,
+                  nu_log_level_t   level,
+                  const nu_char_t *fmt,
+                  va_list          args);
+
+nu_status_t os_load_wasm(void *user, nu_byte_t *buffer, nu_size_t buffer_size);
+nu_status_t os_update_wasm(void *user);
 
 #endif

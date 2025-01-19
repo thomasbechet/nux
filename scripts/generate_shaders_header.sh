@@ -1,10 +1,10 @@
 #!/bin/bash
 
-SHADERS=runtimes/vmnative/shaders
-OUTPUT=runtimes/vmnative/shaders_data.h
+SHADERS=runtimes/native/platform/shaders
+OUTPUT=runtimes/native/platform/shaders_data.h
 
-printf "#ifndef VMN_SHADERS_DATA_H\n" > $OUTPUT
-printf "#define VMN_SHADERS_DATA_H\n" >> $OUTPUT
+printf "#ifndef VM_SHADERS_DATA_H\n" > $OUTPUT
+printf "#define VM_SHADERS_DATA_H\n" >> $OUTPUT
 
 printf "#include <nulib.h>\n" >> $OUTPUT
 
