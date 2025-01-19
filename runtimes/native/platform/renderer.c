@@ -1,5 +1,6 @@
 #include "renderer.h"
 
+#include "../platform.h"
 #include "shaders_data.h"
 #include "logger.h"
 
@@ -235,7 +236,7 @@ renderer_render (void)
 }
 
 void
-os_write_texture (void       *user,
+os_write_texture (vm_t       *vm,
                   nu_u32_t    slot,
                   nu_u32_t    x,
                   nu_u32_t    y,
@@ -243,7 +244,6 @@ os_write_texture (void       *user,
                   nu_u32_t    h,
                   const void *p)
 {
-    (void)user;
     GLuint handle = renderer.textures[slot];
     if (!handle)
     {
@@ -277,9 +277,8 @@ os_write_texture (void       *user,
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 void
-os_write_vertex (void *user, nu_u32_t first, nu_u32_t count, const void *p)
+os_write_vertex (vm_t *vm, nu_u32_t first, nu_u32_t count, const void *p)
 {
-    (void)user;
     // const nu_f32_t *data = p;
     nu_f32_t *ptr = NU_NULL;
     // positions
@@ -313,15 +312,13 @@ os_write_vertex (void *user, nu_u32_t first, nu_u32_t count, const void *p)
     // TODO
 }
 void
-os_bind_texture (void *user, nu_u32_t slot)
+os_bind_texture (vm_t *vm, nu_u32_t slot)
 {
-    (void)user;
     (void)slot;
 }
 void
-os_draw (void *user, nu_u32_t first, nu_u32_t count)
+os_draw (vm_t *vm, nu_u32_t first, nu_u32_t count)
 {
-    (void)user;
     glUseProgram(renderer.unlit_shader);
     glBindVertexArray(renderer.vao);
     glDrawArrays(GL_TRIANGLES, first, count);

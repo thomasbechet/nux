@@ -1,4 +1,4 @@
-#include "commands.h"
+#include "cli.h"
 
 #include <argparse/argparse.h>
 #include <parson/parson.h>

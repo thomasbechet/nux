@@ -21,19 +21,19 @@ runtime_init (const runtime_info_t *info)
     vm_t        vm;
     vm_config_t config = VM_CONFIG_DEFAULT;
 
-    status = vm_init(&vm, &config, &vm);
+    status = vm_init(&vm, &config);
     NU_CHECK(status, goto cleanup3);
 
     nu_char_t name[NU_PATH_MAX];
     nu_sv_to_cstr(info->path, name, NU_PATH_MAX);
-    // status = vm_load(&vm, name);
+    status = vm_load(&vm, name);
     NU_CHECK(status, goto cleanup4);
 
     nu_bool_t running = NU_TRUE;
     while (running && !window_close_requested())
     {
         window_poll_events();
-        // vm_tick(&vm, &running);
+        vm_tick(&vm, &running);
         renderer_render();
         window_swap_buffers();
     }

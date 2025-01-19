@@ -123,19 +123,14 @@ typedef struct
 typedef struct vm
 {
     vm_config_t config;
-    void       *user;
     vm_gpu_t    gpu;
     vm_iop_t    iop;
     nu_bool_t   running;
 } vm_t;
 
-NU_API nu_status_t vm_init_platform(void);
-NU_API void        vm_free_platform(void);
-NU_API nu_status_t vm_init(vm_t *vm, const vm_config_t *config, void *user);
+NU_API nu_status_t vm_init(vm_t *vm, const vm_config_t *config);
 NU_API void        vm_free(vm_t *vm);
 NU_API nu_status_t vm_load(vm_t *vm, const nu_char_t *name);
 NU_API nu_status_t vm_tick(vm_t *vm, nu_bool_t *exit);
-
-void *vm_malloc(vm_t *vm, nu_size_t n);
 
 #endif

@@ -1,4 +1,4 @@
-#include "commands.h"
+#include "cli.h"
 
 #include <argparse/argparse.h>
 #include <native/runtime.h>
@@ -34,13 +34,18 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         path                = nu_sv_cstr(project.target_path);
         runtime_info_t info = {
             path,
+            cli_log,
         };
-        status = runtime_init(path);
+        status = runtime_init(&info);
         sdk_project_free(&project);
     }
     else
     {
-        status = runtime_init(path);
+        runtime_info_t info = {
+            path,
+            cli_log,
+        };
+        status = runtime_init(&info);
     }
     return status ? 0 : -1;
 }

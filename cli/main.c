@@ -1,4 +1,4 @@
-#include "commands.h"
+#include "cli.h"
 
 #include <argparse/argparse.h>
 #include <sdk.h>
@@ -11,7 +11,7 @@ typedef struct
 
 static nu_log_level_t verbose_level;
 
-static void
+void
 cli_log (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
     switch (level)

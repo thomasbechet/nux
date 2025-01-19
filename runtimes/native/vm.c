@@ -6,11 +6,10 @@
 #include "platform.h"
 
 nu_status_t
-vm_init (vm_t *vm, const vm_config_t *config, void *userdata)
+vm_init (vm_t *vm, const vm_config_t *config)
 {
     nu_memset(vm, 0, sizeof(*vm));
     vm->config = *config;
-    vm->user   = userdata;
 
     // Init units
     nu_status_t status;
@@ -39,10 +38,4 @@ vm_tick (vm_t *vm, nu_bool_t *exit)
     cpu_update(vm);
     gpu_render(vm);
     return NU_SUCCESS;
-}
-
-void *
-vm_malloc (vm_t *vm, nu_size_t n)
-{
-    return os_malloc(vm->user, n);
 }

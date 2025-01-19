@@ -56,7 +56,7 @@ static void
 native_trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    iop_log(vm, NU_LOG_INFO, "%.*s", n, s);
+    iop_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
 }
 
 void *
@@ -85,11 +85,10 @@ native_wasm_realloc (mem_alloc_usage_t usage,
 void
 native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
 {
-    iop_log(user,
-            NU_LOG_INFO,
-            "FREE %s %p",
-            usage == Alloc_For_Runtime ? "runtime" : "linear",
-            p);
+    logger_log(NU_LOG_INFO,
+               "FREE %s %p",
+               usage == Alloc_For_Runtime ? "runtime" : "linear",
+               p);
     free(p);
 }
 
@@ -151,10 +150,8 @@ wasm_free (void)
     wasm_runtime_destroy();
 }
 nu_status_t
-os_load_wasm (void *user, nu_byte_t *buffer, nu_size_t buffer_size)
+os_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
 {
-    vm_t *vm = user;
-
     // Load module
     nu_char_t error_buf[128];
     wasm.module
@@ -227,9 +224,8 @@ os_load_wasm (void *user, nu_byte_t *buffer, nu_size_t buffer_size)
     return NU_SUCCESS;
 }
 nu_status_t
-os_update_wasm (void *user)
+os_update_wasm (vm_t *vm)
 {
-    vm_t *vm = user;
     if (!wasm_runtime_call_wasm_a(
             wasm.env, wasm.update_callback, 0, NU_NULL, 0, NU_NULL))
     {
