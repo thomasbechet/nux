@@ -53,10 +53,16 @@ WASM_IMPORT("trace") void trace(const void *str, u32 n);
 //////////////////////////////////////////////////////////////////////////
 
 // Resources
+WASM_IMPORT("init_gpu_pool")
+void init_gpu_pool(u32 pool_index, u32 mem_size);
+WASM_IMPORT("free_gpu_pool")
+void free_gpu_pool(u32 pool_index);
+WASM_IMPORT("alloc_texture")
+void alloc_texture(
+    u32 texture_index, u32 pool_index, u32 w, u32 h, const void *p);
 WASM_IMPORT("write_texture")
-void write_texture(u32 slot, u32 x, u32 y, u32 w, u32 h, const void *p);
-WASM_IMPORT("write_vertex")
-void write_vertex(u32 first, u32 count, const void *p);
+void write_texture(
+    u32 texture_index, u32 x, u32 y, u32 w, u32 h, const void *p);
 
 // State
 WASM_IMPORT("bind_texture") void bind_texture(u32 slot);

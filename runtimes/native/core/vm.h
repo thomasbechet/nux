@@ -11,13 +11,13 @@ typedef struct
 {
     void     *buffer;
     nu_size_t buffer_size;
-} vm_cpu_t;
+} cpu_t;
 
 /////////////////
-///    IOP    ///
+///    IOU    ///
 /////////////////
 
-#define VM_IO_MEM_SIZE NU_MEM_1M
+#define IOU_MEM_SIZE NU_MEM_1M
 
 typedef enum
 {
@@ -65,7 +65,7 @@ typedef struct
 {
     vm_cart_header_t header;
     void            *heap;
-} vm_iop_t;
+} iou_t;
 
 /////////////////
 ///    GPU    ///
@@ -74,13 +74,14 @@ typedef struct
 #define VM_SCREEN_WIDTH  640
 #define VM_SCREEN_HEIGHT 400
 
-#define VM_TEXTURE_SIZE      1024
-#define VM_TEXTURE_DATA_SIZE (1024 * 1024 * 4)
-
 #define VM_VERTEX_POSITION_OFFSET 0
 #define VM_VERTEX_UV_OFFSET       3 * 4
 #define VM_VERTEX_SIZE_F32        5
 #define VM_VERTEX_SIZE            VM_VERTEX_SIZE_F32 * 4
+
+#define GPU_MAX_POOL    256
+#define GPU_MAX_TEXTURE 1024
+#define GPU_MAX_MESH    1024
 
 typedef struct
 {
@@ -91,13 +92,37 @@ typedef struct
     nu_m4_t  model;
     nu_u32_t mode;
     nu_u8_t *cmds;
-} vm_gpu_state_t;
+} gpu_state_t;
 
 typedef struct
 {
-    vm_gpu_state_t state;
-    nu_u8_t       *cmds;
-} vm_gpu_t;
+    nu_bool_t active;
+    nu_u32_t  size;
+    nu_u32_t  remaining;
+} gpu_pool_t;
+
+typedef struct
+{
+    nu_bool_t active;
+    nu_u8_t   pool_index;
+    nu_u16_t  width;
+    nu_u16_t  height;
+} gpu_texture_t;
+
+typedef struct
+{
+    nu_bool_t active;
+    nu_u8_t   pool_index;
+    nu_u16_t  count;
+} gpu_mesh_t;
+
+typedef struct
+{
+    gpu_pool_t    pools[GPU_MAX_POOL];
+    gpu_texture_t textures[GPU_MAX_TEXTURE];
+    gpu_mesh_t    meshes[GPU_MAX_MESH];
+    gpu_state_t   state;
+} gpu_t;
 
 /////////////////
 ///    VM     ///
@@ -108,14 +133,11 @@ typedef struct
 #define VM_CONFIG_DEFAULT                                        \
     (vm_config_t)                                                \
     {                                                            \
-        .gpu_texture_count = 4, .gpu_vertex_count = 1024,        \
         .mem_heap_size = NU_MEM_1M, .mem_stack_size = NU_MEM_64K \
     }
 
 typedef struct
 {
-    nu_u32_t gpu_texture_count;
-    nu_u32_t gpu_vertex_count;
     nu_u32_t mem_heap_size;
     nu_u32_t mem_stack_size;
 } vm_config_t;
@@ -123,8 +145,9 @@ typedef struct
 typedef struct vm
 {
     vm_config_t config;
-    vm_gpu_t    gpu;
-    vm_iop_t    iop;
+    cpu_t       cpu;
+    gpu_t       gpu;
+    iou_t       iou;
     nu_bool_t   running;
 } vm_t;
 

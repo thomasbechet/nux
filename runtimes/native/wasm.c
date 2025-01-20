@@ -2,12 +2,12 @@
 
 #include "logger.h"
 #include "core/gpu.h"
-#include "core/iop.h"
+#include "core/iou.h"
 
 #include <wasm_export.h>
 
-#define VM_START_CALLBACK  "start"
-#define VM_UPDATE_CALLBACK "update"
+#define START_CALLBACK  "start"
+#define UPDATE_CALLBACK "update"
 
 static struct
 {
@@ -17,6 +17,62 @@ static struct
     wasm_function_inst_t start_callback;
     wasm_function_inst_t update_callback;
 } wasm;
+
+void
+init_gpu_pool (wasm_exec_env_t env, nu_u32_t pool_index, nu_u32_t mem_size)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_init_pool(vm, pool_index, mem_size);
+}
+void
+free_gpu_pool (wasm_exec_env_t env, nu_u32_t pool_index)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_free_pool(vm, pool_index);
+}
+void
+alloc_texture (wasm_exec_env_t env,
+               nu_u32_t        texture_index,
+               nu_u32_t        pool_index,
+               nu_u32_t        w,
+               nu_u32_t        h,
+               const void     *p)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_alloc_texture(vm, texture_index, pool_index, w, h, p);
+}
+void
+write_texture (wasm_exec_env_t env,
+               nu_u32_t        texture_index,
+               nu_u32_t        x,
+               nu_u32_t        y,
+               nu_u32_t        w,
+               nu_u32_t        h,
+               const void     *p)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_write_texture(vm, texture_index, x, y, w, h, p);
+}
+void
+alloc_mesh (wasm_exec_env_t env,
+            nu_u32_t        mesh_index,
+            nu_u32_t        pool_index,
+            nu_u32_t        count,
+            const void     *p)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_alloc_mesh(vm, mesh_index, pool_index, count, p);
+}
+void
+write_mesh (wasm_exec_env_t env,
+            nu_u32_t        mesh_index,
+            nu_u32_t        first,
+            nu_u32_t        count,
+            const void     *p)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_write_mesh(vm, mesh_index, first, count, p);
+}
 
 static void
 native_write_texture (wasm_exec_env_t env,
@@ -30,33 +86,12 @@ native_write_texture (wasm_exec_env_t env,
     vm_t *vm = wasm_runtime_get_user_data(env);
     gpu_write_texture(vm, slot, x, y, w, h, p);
 }
-static void
-native_write_vertex (wasm_exec_env_t env,
-                     nu_u32_t        first,
-                     nu_u32_t        count,
-                     const void     *p)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_vertex(vm, first, count, p);
-}
-static void
-native_bind_texture (wasm_exec_env_t env, nu_u32_t slot)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_bind_texture(vm, slot);
-}
-static void
-native_draw (wasm_exec_env_t env, nu_u32_t first, nu_u32_t count)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw(vm, first, count);
-}
 
 static void
-native_trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
+trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    iop_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
+    iou_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
 }
 
 void *
@@ -92,12 +127,15 @@ native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
     free(p);
 }
 
-static NativeSymbol wasm_native_symbols[]
-    = { { "trace", native_trace, "(*i)", NU_NULL },
-        { "write_texture", native_write_texture, "(iiiii*)", NU_NULL },
-        { "write_vertex", native_write_texture, "(ii*)", NU_NULL },
-        { "bind_texture", native_bind_texture, "(i)", NU_NULL },
-        { "draw", native_draw, "(ii)", NU_NULL } };
+static NativeSymbol wasm_native_symbols[] = {
+    EXPORT_WASM_API_WITH_SIG(init_gpu_pool, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(free_gpu_pool, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_texture, "(iiii*)"),
+    EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iii*)"),
+    EXPORT_WASM_API_WITH_SIG(write_mesh, "(iii*)"),
+    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
+};
 
 nu_status_t
 wasm_init (void)
@@ -158,7 +196,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
         = wasm_runtime_load(buffer, buffer_size, error_buf, sizeof(error_buf));
     if (!wasm.module)
     {
-        iop_log(vm, NU_LOG_ERROR, "Load wasm module failed: %s", error_buf);
+        iou_log(vm, NU_LOG_ERROR, "Load wasm module failed: %s", error_buf);
         wasm_unload_cart(vm);
         return NU_FAILURE;
     }
@@ -173,7 +211,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
                                              sizeof(error_buf));
     if (!wasm.instance)
     {
-        iop_log(
+        iou_log(
             vm, NU_LOG_ERROR, "Instantiate wasm module failed: %s", error_buf);
         wasm_unload_cart(vm);
         return NU_FAILURE;
@@ -183,28 +221,28 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     wasm.env = wasm_runtime_create_exec_env(wasm.instance, init_stack_size);
     if (!wasm.env)
     {
-        iop_log(vm, NU_LOG_ERROR, "Create wasm execution environment failed");
+        iou_log(vm, NU_LOG_ERROR, "Create wasm execution environment failed");
     }
     wasm_runtime_set_user_data(wasm.env, vm);
 
     // Find entry point
     wasm.start_callback
-        = wasm_runtime_lookup_function(wasm.instance, VM_START_CALLBACK);
+        = wasm_runtime_lookup_function(wasm.instance, START_CALLBACK);
     if (!wasm.start_callback)
     {
-        iop_log(vm,
+        iou_log(vm,
                 NU_LOG_INFO,
-                "The " VM_START_CALLBACK " wasm function is not found");
+                "The " START_CALLBACK " wasm function is not found");
         wasm_unload_cart(vm);
         return NU_FAILURE;
     }
     wasm.update_callback
-        = wasm_runtime_lookup_function(wasm.instance, VM_UPDATE_CALLBACK);
+        = wasm_runtime_lookup_function(wasm.instance, UPDATE_CALLBACK);
     if (!wasm.update_callback)
     {
-        iop_log(vm,
+        iou_log(vm,
                 NU_LOG_INFO,
-                "The " VM_UPDATE_CALLBACK " wasm function is not found");
+                "The " UPDATE_CALLBACK " wasm function is not found");
         wasm_unload_cart(vm);
         return NU_FAILURE;
     }
@@ -213,9 +251,9 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     if (!wasm_runtime_call_wasm_a(
             wasm.env, wasm.start_callback, 0, NU_NULL, 0, NU_NULL))
     {
-        iop_log(vm,
+        iou_log(vm,
                 NU_LOG_ERROR,
-                "Call wasm function " VM_START_CALLBACK " failed: %s",
+                "Call wasm function " START_CALLBACK " failed: %s",
                 wasm_runtime_get_exception(wasm.instance));
         wasm_unload_cart(vm);
         return NU_FAILURE;
@@ -229,9 +267,9 @@ os_cpu_update_wasm (vm_t *vm)
     if (!wasm_runtime_call_wasm_a(
             wasm.env, wasm.update_callback, 0, NU_NULL, 0, NU_NULL))
     {
-        iop_log(vm,
+        iou_log(vm,
                 NU_LOG_ERROR,
-                "Call wasm function " VM_UPDATE_CALLBACK " failed: %s",
+                "Call wasm function " UPDATE_CALLBACK " failed: %s",
                 wasm_runtime_get_exception(wasm.instance));
         return NU_FAILURE;
     }

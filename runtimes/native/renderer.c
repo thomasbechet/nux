@@ -8,11 +8,10 @@
 #define RGFW_IMPORT
 #include <rgfw/RGFW.h>
 
-#define MAX_TEXTURE 256
-
 static struct
 {
-    GLuint textures[MAX_TEXTURE];
+    GLuint textures[GPU_MAX_TEXTURE];
+    GLuint meshes[GPU_MAX_MESH];
     GLuint vbo_positions;
     GLuint vbo_uvs;
     GLuint vbo_normals;
@@ -166,8 +165,10 @@ renderer_init (void)
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(message_callback, NU_NULL);
 
-    // Initialize textures
-    nu_memset(&renderer.textures, 0, sizeof(*renderer.textures) * MAX_TEXTURE);
+    // Initialize memory
+    nu_memset(
+        &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
+    nu_memset(&renderer.meshes, 0, sizeof(*renderer.meshes) * GPU_MAX_MESH);
 
     // Initialize vertices
     glGenBuffers(1, &renderer.vbo_positions);
@@ -216,7 +217,7 @@ void
 renderer_free (void)
 {
     glDeleteProgram(renderer.unlit_shader);
-    for (nu_size_t i = 0; i < MAX_TEXTURE; ++i)
+    for (nu_size_t i = 0; i < GPU_MAX_TEXTURE; ++i)
     {
         if (renderer.textures[i])
         {
@@ -236,48 +237,75 @@ renderer_render (void)
 }
 
 void
+os_gpu_draw (vm_t *vm, nu_u32_t first, nu_u32_t count)
+{
+    glUseProgram(renderer.unlit_shader);
+    glBindVertexArray(renderer.vao);
+    glDrawArrays(GL_TRIANGLES, first, count);
+    glBindVertexArray(0);
+}
+void os_gpu_draw(vm_t *vm, nu_u32_t first, nu_u32_t count);
+
+void
+os_gpu_init_texture (vm_t *vm, nu_u32_t texture_index, const void *p)
+{
+    GLuint handle;
+    glGenTextures(1, &handle);
+    glBindTexture(GL_TEXTURE_2D, handle);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 vm->gpu.textures[texture_index].width,
+                 vm->gpu.textures[texture_index].height,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 p);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    renderer.textures[texture_index] = handle;
+}
+void
+os_gpu_free_texture (vm_t *vm, nu_u32_t texture_index)
+{
+    glDeleteTextures(1, &renderer.textures[texture_index]);
+}
+void
 os_gpu_write_texture (vm_t       *vm,
-                      nu_u32_t    slot,
+                      nu_u32_t    texture_index,
                       nu_u32_t    x,
                       nu_u32_t    y,
                       nu_u32_t    w,
                       nu_u32_t    h,
                       const void *p)
 {
-    GLuint handle = renderer.textures[slot];
-    if (!handle)
-    {
-        // glGenTextures(1, &handle);
-        // glBindTexture(GL_TEXTURE_2D, handle);
-        // glTexImage2D(GL_TEXTURE_2D,
-        //              0,
-        //              GL_RGBA,
-        //              VM_TEXTURE_SIZE,
-        //              VM_TEXTURE_SIZE,
-        //              0,
-        //              GL_RGBA,
-        //              GL_UNSIGNED_BYTE,
-        //              NU_NULL);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-        // GL_CLAMP_TO_BORDER); glTexParameteri(GL_TEXTURE_2D,
-        // GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER); float borderColor[] =
-        // { 1.0f, 1.0f, 1.0f, 1.0f }; glTexParameterfv(GL_TEXTURE_2D,
-        // GL_TEXTURE_BORDER_COLOR, borderColor); glTexParameteri(GL_TEXTURE_2D,
-        // GL_TEXTURE_MIN_FILTER, GL_NEAREST); glTexParameteri(GL_TEXTURE_2D,
-        // GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        // // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        // // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        //
-        // glBindTexture(GL_TEXTURE_2D, 0);
-        // renderer.textures[slot] = handle;
-    }
-
+    GLuint handle = renderer.textures[texture_index];
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, p);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 void
-os_gpu_write_vertex (vm_t *vm, nu_u32_t first, nu_u32_t count, const void *p)
+os_gpu_init_mesh (vm_t *vm, nu_u32_t mesh_index, const void *p)
+{
+}
+void
+os_gpu_free_mesh (vm_t *vm, nu_u32_t mesh_index)
+{
+}
+void
+os_gpu_write_mesh (vm_t       *vm,
+                   nu_u32_t    mesh_index,
+                   nu_u32_t    first,
+                   nu_u32_t    count,
+                   const void *p)
 {
     // const nu_f32_t *data = p;
     nu_f32_t *ptr = NU_NULL;
@@ -310,17 +338,4 @@ os_gpu_write_vertex (vm_t *vm, nu_u32_t first, nu_u32_t count, const void *p)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     // normals
     // TODO
-}
-void
-os_gpu_bind_texture (vm_t *vm, nu_u32_t slot)
-{
-    (void)slot;
-}
-void
-os_gpu_draw (vm_t *vm, nu_u32_t first, nu_u32_t count)
-{
-    glUseProgram(renderer.unlit_shader);
-    glBindVertexArray(renderer.vao);
-    glDrawArrays(GL_TRIANGLES, first, count);
-    glBindVertexArray(0);
 }
