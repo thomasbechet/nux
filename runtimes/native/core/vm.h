@@ -21,11 +21,11 @@ typedef struct
 
 typedef enum
 {
-    VM_CHUNK_RAW     = 0,
-    VM_CHUNK_WASM    = 1,
-    VM_CHUNK_TEXTURE = 2,
-    VM_CHUNK_MESH    = 3,
-} vm_chunk_type_t;
+    CART_CHUNK_RAW     = 0,
+    CART_CHUNK_WASM    = 1,
+    CART_CHUNK_TEXTURE = 2,
+    CART_CHUNK_MESH    = 3,
+} cart_chunk_type_t;
 
 typedef union
 {
@@ -35,36 +35,34 @@ typedef union
     } raw;
     struct
     {
-        nu_u32_t slot;
-        nu_u32_t x;
-        nu_u32_t y;
-        nu_u32_t w;
-        nu_u32_t h;
+        nu_u32_t index;
+        nu_u16_t width;
+        nu_u16_t height;
     } texture;
     struct
     {
-        nu_u32_t first;
-        nu_u32_t count;
+        nu_u32_t index;
+        nu_u16_t count;
     } mesh;
-} vm_chunk_target_t;
+} cart_chunk_meta_t;
 
 typedef struct
 {
-    vm_chunk_type_t   type;
-    vm_chunk_target_t target;
+    cart_chunk_type_t type;
+    cart_chunk_meta_t meta;
     nu_u32_t          length;
-} vm_chunk_header_t;
+} cart_chunk_header_t;
 
 typedef struct
 {
     nu_u32_t version;
     nu_u32_t chunk_count;
-} vm_cart_header_t;
+} cart_header_t;
 
 typedef struct
 {
-    vm_cart_header_t header;
-    void            *heap;
+    cart_header_t header;
+    void         *heap;
 } iou_t;
 
 /////////////////

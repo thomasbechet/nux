@@ -10,17 +10,17 @@
 #define PROJECT_PREBUILD     "prebuild"
 #define PROJECT_CHUNK_TYPE   "type"
 #define PROJECT_CHUNK_SOURCE "source"
-#define PROJECT_CHUNK_TARGET "target"
+#define PROJECT_CHUNK_META   "meta"
 
 static const struct
 {
-    const nu_char_t *name;
-    vm_chunk_type_t  type;
+    const nu_char_t  *name;
+    cart_chunk_type_t type;
 } name_to_chunk_type[] = {
-    { "raw", VM_CHUNK_RAW },
-    { "wasm", VM_CHUNK_WASM },
-    { "texture", VM_CHUNK_TEXTURE },
-    { "mesh", VM_CHUNK_MESH },
+    { "raw", CART_CHUNK_RAW },
+    { "wasm", CART_CHUNK_WASM },
+    { "texture", CART_CHUNK_TEXTURE },
+    { "mesh", CART_CHUNK_MESH },
 };
 
 static void
@@ -38,31 +38,29 @@ parse_f32 (const JSON_Object *object, const nu_char_t *name)
     return json_object_get_number(object, name);
 }
 static void
-parse_target (const JSON_Object *jchunk,
-              vm_chunk_type_t    type,
-              vm_chunk_target_t *target)
+parse_meta (const JSON_Object *jchunk,
+            cart_chunk_type_t  type,
+            cart_chunk_meta_t *meta)
 {
-    const JSON_Object *jtarget
-        = json_object_get_object(jchunk, PROJECT_CHUNK_TARGET);
+    const JSON_Object *jmeta
+        = json_object_get_object(jchunk, PROJECT_CHUNK_META);
     switch (type)
     {
-        case VM_CHUNK_RAW: {
-            target->raw.addr = parse_f32(jtarget, "addr");
+        case CART_CHUNK_RAW: {
+            meta->raw.addr = parse_f32(jmeta, "addr");
         }
         break;
-        case VM_CHUNK_WASM:
+        case CART_CHUNK_WASM:
             break;
-        case VM_CHUNK_TEXTURE: {
-            target->texture.slot = parse_f32(jtarget, "slot");
-            target->texture.x    = parse_f32(jtarget, "x");
-            target->texture.y    = parse_f32(jtarget, "y");
-            target->texture.w    = parse_f32(jtarget, "w");
-            target->texture.h    = parse_f32(jtarget, "h");
+        case CART_CHUNK_TEXTURE: {
+            meta->texture.index  = parse_f32(jmeta, "index");
+            meta->texture.width  = parse_f32(jmeta, "width");
+            meta->texture.height = parse_f32(jmeta, "height");
         }
         break;
-        case VM_CHUNK_MESH: {
-            target->mesh.first = parse_f32(jtarget, "first");
-            target->mesh.count = parse_f32(jtarget, "count");
+        case CART_CHUNK_MESH: {
+            meta->mesh.index = parse_f32(jmeta, "index");
+            meta->mesh.count = parse_f32(jmeta, "count");
         }
         break;
     }
@@ -74,33 +72,31 @@ write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
     json_object_set_number(object, name, value);
 }
 static void
-write_target (JSON_Object             *chunk,
-              vm_chunk_type_t          type,
-              const vm_chunk_target_t *target)
+write_meta (JSON_Object             *chunk,
+            cart_chunk_type_t        type,
+            const cart_chunk_meta_t *meta)
 {
-    JSON_Value *jtargetv = json_value_init_object();
-    NU_ASSERT(jtargetv);
-    json_object_set_value(chunk, PROJECT_CHUNK_TARGET, jtargetv);
-    JSON_Object *jtarget = json_object(jtargetv);
+    JSON_Value *jmetav = json_value_init_object();
+    NU_ASSERT(jmetav);
+    json_object_set_value(chunk, PROJECT_CHUNK_META, jmetav);
+    JSON_Object *jmeta = json_object(jmetav);
     switch (type)
     {
-        case VM_CHUNK_RAW: {
-            write_f32(jtarget, "addr", target->raw.addr);
+        case CART_CHUNK_RAW: {
+            write_f32(jmeta, "addr", meta->raw.addr);
         }
         break;
-        case VM_CHUNK_WASM:
+        case CART_CHUNK_WASM:
             break;
-        case VM_CHUNK_TEXTURE: {
-            write_f32(jtarget, "slot", target->texture.slot);
-            write_f32(jtarget, "x", target->texture.x);
-            write_f32(jtarget, "y", target->texture.y);
-            write_f32(jtarget, "w", target->texture.w);
-            write_f32(jtarget, "h", target->texture.h);
+        case CART_CHUNK_TEXTURE: {
+            write_f32(jmeta, "slot", meta->texture.index);
+            write_f32(jmeta, "width", meta->texture.width);
+            write_f32(jmeta, "height", meta->texture.height);
         }
         break;
-        case VM_CHUNK_MESH: {
-            write_f32(jtarget, "first", target->mesh.first);
-            write_f32(jtarget, "count", target->mesh.count);
+        case CART_CHUNK_MESH: {
+            write_f32(jmeta, "index", meta->mesh.index);
+            write_f32(jmeta, "count", meta->mesh.count);
         }
         break;
     }
@@ -113,29 +109,27 @@ write_u32 (FILE *f, nu_u32_t v)
     NU_ASSERT(fwrite(&a, sizeof(a), 1, f));
 }
 static void
-write_chunk_header (FILE *f, vm_chunk_header_t *header)
+write_chunk_header (FILE *f, cart_chunk_header_t *header)
 {
     // type / length
     write_u32(f, header->type);
     write_u32(f, header->length);
-    // target
+    // meta
     switch (header->type)
     {
-        case VM_CHUNK_RAW: {
+        case CART_CHUNK_RAW: {
         }
         break;
-        case VM_CHUNK_WASM: {
+        case CART_CHUNK_WASM: {
         }
         break;
-        case VM_CHUNK_TEXTURE: {
-            write_u32(f, header->target.texture.slot);
-            write_u32(f, header->target.texture.x);
-            write_u32(f, header->target.texture.y);
-            write_u32(f, header->target.texture.w);
-            write_u32(f, header->target.texture.h);
+        case CART_CHUNK_TEXTURE: {
+            write_u32(f, header->meta.texture.index);
+            write_u32(f, header->meta.texture.width);
+            write_u32(f, header->meta.texture.height);
         }
         break;
-        case VM_CHUNK_MESH: {
+        case CART_CHUNK_MESH: {
         }
         break;
     }
@@ -231,9 +225,9 @@ sdk_build (const sdk_project_t *project)
         sdk_project_chunk_t *entry = project->chunks + i;
         switch (entry->header.type)
         {
-            case VM_CHUNK_RAW:
+            case CART_CHUNK_RAW:
                 break;
-            case VM_CHUNK_WASM: {
+            case CART_CHUNK_WASM: {
                 sdk_log(
                     NU_LOG_INFO, "Compiling wasm chunk %s", entry->source_path);
                 nu_size_t  size;
@@ -259,7 +253,7 @@ sdk_build (const sdk_project_t *project)
                 free(buffer);
             }
             break;
-            case VM_CHUNK_TEXTURE: {
+            case CART_CHUNK_TEXTURE: {
                 sdk_log(NU_LOG_INFO,
                         "Compiling texture chunk %s",
                         entry->source_path);
@@ -285,7 +279,7 @@ sdk_build (const sdk_project_t *project)
                 free(data);
             }
             break;
-            case VM_CHUNK_MESH: {
+            case CART_CHUNK_MESH: {
                 // // header
                 // write_chunk_header(f, entry, length);
                 // // destination
@@ -351,9 +345,9 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
             NU_ASSERT(source_string);
 
             // Check type
-            nu_sv_t         type_sv = nu_sv_cstr(type_string);
-            vm_chunk_type_t type;
-            nu_bool_t       found = NU_FALSE;
+            nu_sv_t           type_sv = nu_sv_cstr(type_string);
+            cart_chunk_type_t type;
+            nu_bool_t         found = NU_FALSE;
             for (nu_size_t j = 0;
                  j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
                  ++j)
@@ -375,8 +369,8 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
                           project->chunks[i].source_path,
                           NU_PATH_MAX);
 
-            // Parse target object
-            parse_target(jchunk, type, &project->chunks[i].header.target);
+            // Parse meta
+            parse_meta(jchunk, type, &project->chunks[i].header.meta);
         }
     }
 
@@ -445,10 +439,10 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
             json_object_set_string(
                 jchunk, PROJECT_CHUNK_SOURCE, project->chunks[i].source_path);
 
-            // Write chunk target
-            write_target(jchunk,
-                         project->chunks[i].header.type,
-                         &project->chunks[i].header.target);
+            // Write chunk meta
+            write_meta(jchunk,
+                       project->chunks[i].header.type,
+                       &project->chunks[i].header.meta);
         }
     }
 

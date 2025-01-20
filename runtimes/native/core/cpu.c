@@ -12,7 +12,7 @@ cpu_free (vm_t *vm)
 {
 }
 nu_status_t
-cpu_load (vm_t *vm, const vm_chunk_header_t *header)
+cpu_load (vm_t *vm, const cart_chunk_header_t *header)
 {
     // Load module data
     NU_ASSERT(header->length);

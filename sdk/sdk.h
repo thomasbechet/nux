@@ -7,7 +7,7 @@
 
 typedef struct
 {
-    vm_chunk_header_t header;
+    cart_chunk_header_t header;
     nu_char_t         source_path[NU_PATH_MAX];
 } sdk_project_chunk_t;
 

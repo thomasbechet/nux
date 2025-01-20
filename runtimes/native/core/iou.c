@@ -12,29 +12,27 @@ read_u32 (vm_t *vm)
     return nu_u32_le(v);
 }
 static nu_bool_t
-read_header (vm_t *vm, vm_chunk_header_t *header)
+read_header (vm_t *vm, cart_chunk_header_t *header)
 {
     header->type   = read_u32(vm);
     header->length = read_u32(vm);
     switch (header->type)
     {
-        case VM_CHUNK_RAW: {
-            header->target.raw.addr = read_u32(vm);
+        case CART_CHUNK_RAW: {
+            header->meta.raw.addr = read_u32(vm);
         }
         break;
-        case VM_CHUNK_WASM:
+        case CART_CHUNK_WASM:
             break;
-        case VM_CHUNK_TEXTURE: {
-            header->target.texture.slot = read_u32(vm);
-            header->target.texture.x    = read_u32(vm);
-            header->target.texture.y    = read_u32(vm);
-            header->target.texture.w    = read_u32(vm);
-            header->target.texture.h    = read_u32(vm);
+        case CART_CHUNK_TEXTURE: {
+            header->meta.texture.index  = read_u32(vm);
+            header->meta.texture.width  = read_u32(vm);
+            header->meta.texture.height = read_u32(vm);
         }
         break;
-        case VM_CHUNK_MESH: {
-            header->target.mesh.first = read_u32(vm);
-            header->target.mesh.count = read_u32(vm);
+        case CART_CHUNK_MESH: {
+            header->meta.mesh.index = read_u32(vm);
+            header->meta.mesh.count = read_u32(vm);
         }
         break;
     }
@@ -62,36 +60,36 @@ iou_load_full (vm_t *vm, const nu_char_t *name)
     // TODO: validate
 
     // Load chunks
-    os_iop_seek(vm, sizeof(vm_cart_header_t));
+    os_iop_seek(vm, sizeof(cart_header_t));
     for (nu_size_t i = 0; i < vm->iou.header.chunk_count; ++i)
     {
         // read chunk header
-        vm_chunk_header_t header;
+        cart_chunk_header_t header;
         NU_ASSERT(read_header(vm, &header));
         switch (header.type)
         {
-            case VM_CHUNK_WASM:
+            case CART_CHUNK_WASM:
                 NU_ASSERT(header.length <= IOU_MEM_SIZE);
                 cpu_load(vm, &header);
                 break;
-            case VM_CHUNK_TEXTURE: {
+            case CART_CHUNK_TEXTURE: {
                 NU_ASSERT(header.length <= IOU_MEM_SIZE);
                 NU_ASSERT(os_iop_read(vm, vm->iou.heap, header.length));
                 gpu_alloc_texture(vm,
-                                  header.target.texture.slot,
+                                  header.meta.texture.index,
                                   0,
-                                  header.target.texture.w,
-                                  header.target.texture.h,
+                                  header.meta.texture.width,
+                                  header.meta.texture.height,
                                   vm->iou.heap);
             }
             break;
-            case VM_CHUNK_MESH: {
+            case CART_CHUNK_MESH: {
                 NU_ASSERT(header.length <= IOU_MEM_SIZE);
                 NU_ASSERT(os_iop_read(vm, vm->iou.heap, header.length));
                 gpu_alloc_mesh(vm,
-                               header.target.mesh.first,
+                               header.meta.mesh.index,
                                0,
-                               header.target.mesh.count,
+                               header.meta.mesh.count,
                                vm->iou.heap);
             }
             break;
