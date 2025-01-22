@@ -3,8 +3,9 @@
 #include "platform.h"
 
 nu_status_t
-cpu_init (vm_t *vm)
+cpu_init (vm_t *vm, const vm_config_t *config)
 {
+    vm->cpu.config = config->cpu;
     return NU_SUCCESS;
 }
 void

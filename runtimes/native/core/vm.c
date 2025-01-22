@@ -8,15 +8,14 @@ nu_status_t
 vm_init (vm_t *vm, const vm_config_t *config)
 {
     nu_memset(vm, 0, sizeof(*vm));
-    vm->config = *config;
 
     // Init units
     nu_status_t status;
     status = iou_init(vm);
     NU_CHECK(status, return NU_FAILURE);
-    status = cpu_init(vm);
+    status = cpu_init(vm, config);
     NU_CHECK(status, return NU_FAILURE);
-    status = gpu_init(vm);
+    status = gpu_init(vm, config);
     NU_CHECK(status, return NU_FAILURE);
 
     return NU_SUCCESS;

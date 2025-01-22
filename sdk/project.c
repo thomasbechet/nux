@@ -20,7 +20,7 @@ static const struct
     { "raw", CART_CHUNK_RAW },
     { "wasm", CART_CHUNK_WASM },
     { "texture", CART_CHUNK_TEXTURE },
-    { "mesh", CART_CHUNK_MESH },
+    { "vbuffer", CART_CHUNK_VBUFFER },
 };
 
 static void
@@ -53,14 +53,13 @@ parse_meta (const JSON_Object *jchunk,
         case CART_CHUNK_WASM:
             break;
         case CART_CHUNK_TEXTURE: {
-            meta->texture.index  = parse_f32(jmeta, "index");
-            meta->texture.width  = parse_f32(jmeta, "width");
-            meta->texture.height = parse_f32(jmeta, "height");
+            meta->texture.index = parse_f32(jmeta, "index");
+            meta->texture.size  = parse_f32(jmeta, "size");
         }
         break;
-        case CART_CHUNK_MESH: {
-            meta->mesh.index = parse_f32(jmeta, "index");
-            meta->mesh.count = parse_f32(jmeta, "count");
+        case CART_CHUNK_VBUFFER: {
+            meta->vbuffer.index = parse_f32(jmeta, "index");
+            meta->vbuffer.count = parse_f32(jmeta, "count");
         }
         break;
     }
@@ -90,13 +89,12 @@ write_meta (JSON_Object             *chunk,
             break;
         case CART_CHUNK_TEXTURE: {
             write_f32(jmeta, "slot", meta->texture.index);
-            write_f32(jmeta, "width", meta->texture.width);
-            write_f32(jmeta, "height", meta->texture.height);
+            write_f32(jmeta, "size", meta->texture.size);
         }
         break;
-        case CART_CHUNK_MESH: {
-            write_f32(jmeta, "index", meta->mesh.index);
-            write_f32(jmeta, "count", meta->mesh.count);
+        case CART_CHUNK_VBUFFER: {
+            write_f32(jmeta, "index", meta->vbuffer.index);
+            write_f32(jmeta, "count", meta->vbuffer.count);
         }
         break;
     }
@@ -125,11 +123,10 @@ write_chunk_header (FILE *f, cart_chunk_header_t *header)
         break;
         case CART_CHUNK_TEXTURE: {
             write_u32(f, header->meta.texture.index);
-            write_u32(f, header->meta.texture.width);
-            write_u32(f, header->meta.texture.height);
+            write_u32(f, header->meta.texture.size);
         }
         break;
-        case CART_CHUNK_MESH: {
+        case CART_CHUNK_VBUFFER: {
         }
         break;
     }
@@ -279,7 +276,7 @@ sdk_build (const sdk_project_t *project)
                 free(data);
             }
             break;
-            case CART_CHUNK_MESH: {
+            case CART_CHUNK_VBUFFER: {
                 // // header
                 // write_chunk_header(f, entry, length);
                 // // destination

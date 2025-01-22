@@ -52,17 +52,24 @@ WASM_IMPORT("trace") void trace(const void *str, u32 n);
 //////                              GPU                             //////
 //////////////////////////////////////////////////////////////////////////
 
+typedef enum
+{
+    TEXTURE64  = 0,
+    TEXTURE128 = 1,
+    TEXTURE256 = 2,
+    TEXTURE512 = 3,
+} gpu_texture_size_t;
+
 // Resources
-WASM_IMPORT("init_gpu_pool")
-void init_gpu_pool(u32 pool_index, u32 mem_size);
-WASM_IMPORT("free_gpu_pool")
-void free_gpu_pool(u32 pool_index);
 WASM_IMPORT("alloc_texture")
-void alloc_texture(
-    u32 texture_index, u32 pool_index, u32 w, u32 h, const void *p);
+void alloc_texture(u32 index, u32 size, const void *p);
+WASM_IMPORT("alloc_vbuffer")
+void alloc_vbuffer(u32 index, u32 count, const void *p);
+
 WASM_IMPORT("write_texture")
-void write_texture(
-    u32 texture_index, u32 x, u32 y, u32 w, u32 h, const void *p);
+void write_texture(u32 index, u32 x, u32 y, u32 w, u32 h, const void *p);
+WASM_IMPORT("write_vbuffer")
+void write_vbuffer(u32 index, u32 first, u32 count, const void *p);
 
 // State
 WASM_IMPORT("bind_texture") void bind_texture(u32 slot);

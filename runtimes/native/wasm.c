@@ -19,31 +19,17 @@ static struct
 } wasm;
 
 void
-init_gpu_pool (wasm_exec_env_t env, nu_u32_t pool_index, nu_u32_t mem_size)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_init_pool(vm, pool_index, mem_size);
-}
-void
-free_gpu_pool (wasm_exec_env_t env, nu_u32_t pool_index)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_free_pool(vm, pool_index);
-}
-void
 alloc_texture (wasm_exec_env_t env,
-               nu_u32_t        texture_index,
-               nu_u32_t        pool_index,
-               nu_u32_t        w,
-               nu_u32_t        h,
+               nu_u32_t        index,
+               nu_u32_t        size,
                const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_texture(vm, texture_index, pool_index, w, h, p);
+    gpu_alloc_texture(vm, index, size, p);
 }
 void
 write_texture (wasm_exec_env_t env,
-               nu_u32_t        texture_index,
+               nu_u32_t        index,
                nu_u32_t        x,
                nu_u32_t        y,
                nu_u32_t        w,
@@ -51,27 +37,26 @@ write_texture (wasm_exec_env_t env,
                const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_texture(vm, texture_index, x, y, w, h, p);
+    gpu_write_texture(vm, index, x, y, w, h, p);
 }
 void
-alloc_mesh (wasm_exec_env_t env,
-            nu_u32_t        mesh_index,
-            nu_u32_t        pool_index,
-            nu_u32_t        count,
-            const void     *p)
+alloc_vbuffer (wasm_exec_env_t env,
+               nu_u32_t        index,
+               nu_u32_t        count,
+               const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_mesh(vm, mesh_index, pool_index, count, p);
+    gpu_alloc_vbuffer(vm, index, count, p);
 }
 void
-write_mesh (wasm_exec_env_t env,
-            nu_u32_t        mesh_index,
-            nu_u32_t        first,
-            nu_u32_t        count,
-            const void     *p)
+write_vbuffer (wasm_exec_env_t env,
+               nu_u32_t        index,
+               nu_u32_t        first,
+               nu_u32_t        count,
+               const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_mesh(vm, mesh_index, first, count, p);
+    gpu_write_vbuffer(vm, index, first, count, p);
 }
 
 static void
@@ -128,12 +113,10 @@ native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
 }
 
 static NativeSymbol wasm_native_symbols[] = {
-    EXPORT_WASM_API_WITH_SIG(init_gpu_pool, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(free_gpu_pool, "(i)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_texture, "(iiii*)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii*)"),
     EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iii*)"),
-    EXPORT_WASM_API_WITH_SIG(write_mesh, "(iii*)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_vbuffer, "(ii*)"),
+    EXPORT_WASM_API_WITH_SIG(write_vbuffer, "(iii*)"),
     EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
 };
 
@@ -202,7 +185,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     }
 
     // Instantiate module
-    const nu_size_t init_stack_size = vm->config.mem_stack_size;
+    const nu_size_t init_stack_size = vm->cpu.config.mem_stack_size;
     const nu_size_t init_heap_size  = 0;
     wasm.instance                   = wasm_runtime_instantiate(wasm.module,
                                              init_stack_size,
