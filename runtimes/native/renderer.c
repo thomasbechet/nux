@@ -263,7 +263,7 @@ os_gpu_init (vm_t *vm)
     glGenVertexArrays(1, &renderer.vao);
     glBindVertexArray(renderer.vao);
 
-    // positions
+    // Positions
     glGenBuffers(1, &renderer.vbo_positions);
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_positions);
     glBufferData(GL_ARRAY_BUFFER,
@@ -275,18 +275,18 @@ os_gpu_init (vm_t *vm)
         0, 3, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V3_SIZE, (void *)0);
     glEnableVertexAttribArray(0);
 
-    glBindVertexArray(0);
-    // uvs
-    // glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_uvs);
-    // glBufferData(GL_ARRAY_BUFFER,
-    //              vm->gpu.config.max_vertex_count * NU_V2_SIZE
-    //                  * sizeof(nu_f32_t),
-    //              NU_NULL,
-    //              GL_DYNAMIC_DRAW);
-    // glVertexAttribPointer(
-    //     1, 2, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V2_SIZE, (void *)0);
-    // glEnableVertexAttribArray(1);
-    // normals
+    // UVs
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_uvs);
+    glBufferData(GL_ARRAY_BUFFER,
+                 vm->gpu.config.max_vertex_count * NU_V2_SIZE
+                     * sizeof(nu_f32_t),
+                 NU_NULL,
+                 GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(
+        1, 2, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V2_SIZE, (void *)0);
+    glEnableVertexAttribArray(1);
+
+    // Normals
     // TODO glBindBuffer(GL_ARRAY_BUFFER, _renderer.vbo_normals);
     // glBufferData(GL_ARRAY_BUFFER,
     //              vm->gpu.config.max_vertex_count * NU_V3_SIZE
@@ -296,7 +296,8 @@ os_gpu_init (vm_t *vm)
     // glVertexAttribPointer(
     //     2, 3, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V3_SIZE, (void *)0);
     // glEnableVertexAttribArray(2);
-    //
+
+    glBindVertexArray(0);
 }
 
 void
@@ -320,9 +321,6 @@ os_gpu_init_texture (vm_t *vm, nu_u32_t index, const void *p)
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
     glBindTexture(GL_TEXTURE_2D, 0);
     renderer.textures[index] = handle;
 }
@@ -367,10 +365,10 @@ os_gpu_write_mesh (
     const nu_f32_t *data = p;
     nu_f32_t       *ptr  = NU_NULL;
 
-    // compute vertex index in vbo
+    // Compute vertex index in vbo
     first = renderer.meshes[index].offset + first;
 
-    // positions
+    // Positions
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_positions);
     ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
@@ -384,21 +382,24 @@ os_gpu_write_mesh (
             = data[(first + i) * GPU_VERTEX_SIZE + 2];
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
-    // uvs
+
+    // UVs
     // glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_uvs);
     // ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     // NU_ASSERT(ptr);
     // for (nu_size_t i = 0; i < count; ++i)
     // {
     //     ptr[(first + i) * NU_V2_SIZE + 0]
-    //         = data[(first + i) * GPU_VERTEX_SIZE_F32 + 3];
+    //         = data[(first + i) * GPU_VERTEX_SIZE + 3];
     //     ptr[(first + i) * NU_V2_SIZE + 1]
-    //         = data[(first + i) * GPU_VERTEX_SIZE_F32 + 4];
+    //         = data[(first + i) * GPU_VERTEX_SIZE + 4];
     // }
     // glUnmapBuffer(GL_ARRAY_BUFFER);
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // normals
+
+    // Normals
     // TODO
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 void
 os_gpu_begin (vm_t *vm)
