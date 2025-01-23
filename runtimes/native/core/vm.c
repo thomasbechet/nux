@@ -33,7 +33,8 @@ vm_load (vm_t *vm, const nu_char_t *name)
 nu_status_t
 vm_tick (vm_t *vm, nu_bool_t *exit)
 {
+    gpu_begin(vm);
     cpu_update(vm);
-    gpu_render(vm);
+    gpu_end(vm);
     return NU_SUCCESS;
 }

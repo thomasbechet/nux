@@ -74,6 +74,13 @@ typedef enum
     PRIMITIVE_POINTS    = 2,
 } gpu_primitive_t;
 
+typedef enum
+{
+    TRANSFORM_MODEL      = 0,
+    TRANSFORM_PROJECTION = 1,
+    TRANSFORM_VIEW       = 2,
+} gpu_transform_t;
+
 // Resources
 WASM_IMPORT("alloc_texture")
 void alloc_texture(u32 index, u32 texture_size, const void *p);
@@ -85,15 +92,12 @@ void alloc_mesh(u32 index, u32 count, u32 primitive, u32 flags, const void *p);
 WASM_IMPORT("write_mesh")
 void write_mesh(u32 index, u32 first, u32 count, const void *p);
 
+WASM_IMPORT("set_transform")
+void set_transform(u32 transform, const f32 *m);
 WASM_IMPORT("draw_mesh")
 void draw_mesh(u32 index, const f32 *m);
 WASM_IMPORT("draw_submesh")
 void draw_submesh(u32 index, u32 first, u32 count, const f32 *m);
-
-WASM_IMPORT("screen_width")
-u32 screen_width(void);
-WASM_IMPORT("screen_height")
-u32 screen_height(void);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

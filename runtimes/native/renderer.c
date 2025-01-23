@@ -8,9 +8,15 @@
 #define RGFW_IMPORT
 #include <rgfw/RGFW.h>
 
+typedef struct
+{
+    nu_u32_t offset;
+} mesh_t;
+
 static struct
 {
     GLuint textures[GPU_MAX_TEXTURE];
+    mesh_t meshes[GPU_MAX_MESH];
     GLuint vbo_positions;
     GLuint vbo_uvs;
     GLuint vbo_normals;
@@ -81,7 +87,7 @@ message_callback (GLenum        source,
                        message);
             break;
     }
-    // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
+    NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
 }
 static nu_status_t
 compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
@@ -165,6 +171,8 @@ renderer_init (void)
     glDebugMessageCallback(message_callback, NU_NULL);
 
     // Compile shaders
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
     status = compile_program(
         shader_unlit_vert, shader_unlit_frag, &renderer.unlit_shader);
     NU_CHECK(status, goto cleanup0);
@@ -191,12 +199,6 @@ renderer_free (void)
         // glDeleteBuffers(1, &_renderer.vbo_normals);
     }
 }
-void
-renderer_render (void)
-{
-    glClearColor(1, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
 
 void
 os_gpu_init (vm_t *vm)
@@ -205,13 +207,15 @@ os_gpu_init (vm_t *vm)
     nu_memset(
         &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
 
+    glUseProgram(renderer.unlit_shader);
+
     // Initialize vertices
-    glGenBuffers(1, &renderer.vbo_positions);
-    glGenBuffers(1, &renderer.vbo_uvs);
-    glGenBuffers(1, &renderer.vbo_normals);
+    // glGenBuffers(1, &renderer.vbo_normals);
     glGenVertexArrays(1, &renderer.vao);
     glBindVertexArray(renderer.vao);
+
     // positions
+    glGenBuffers(1, &renderer.vbo_positions);
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_positions);
     glBufferData(GL_ARRAY_BUFFER,
                  vm->gpu.config.max_vertex_count * NU_V3_SIZE
@@ -221,16 +225,18 @@ os_gpu_init (vm_t *vm)
     glVertexAttribPointer(
         0, 3, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V3_SIZE, (void *)0);
     glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
     // uvs
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_uvs);
-    glBufferData(GL_ARRAY_BUFFER,
-                 vm->gpu.config.max_vertex_count * NU_V2_SIZE
-                     * sizeof(nu_f32_t),
-                 NU_NULL,
-                 GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(
-        1, 2, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V2_SIZE, (void *)0);
-    glEnableVertexAttribArray(1);
+    // glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_uvs);
+    // glBufferData(GL_ARRAY_BUFFER,
+    //              vm->gpu.config.max_vertex_count * NU_V2_SIZE
+    //                  * sizeof(nu_f32_t),
+    //              NU_NULL,
+    //              GL_DYNAMIC_DRAW);
+    // glVertexAttribPointer(
+    //     1, 2, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V2_SIZE, (void *)0);
+    // glEnableVertexAttribArray(1);
     // normals
     // TODO glBindBuffer(GL_ARRAY_BUFFER, _renderer.vbo_normals);
     // glBufferData(GL_ARRAY_BUFFER,
@@ -241,14 +247,7 @@ os_gpu_init (vm_t *vm)
     // glVertexAttribPointer(
     //     2, 3, GL_FLOAT, GL_FALSE, sizeof(nu_f32_t) * NU_V3_SIZE, (void *)0);
     // glEnableVertexAttribArray(2);
-}
-void
-os_gpu_draw (vm_t *vm, nu_u32_t first, nu_u32_t count)
-{
-    glUseProgram(renderer.unlit_shader);
-    glBindVertexArray(renderer.vao);
-    glDrawArrays(GL_TRIANGLES, first, count);
-    glBindVertexArray(0);
+    //
 }
 
 void
@@ -299,15 +298,20 @@ os_gpu_write_texture (vm_t       *vm,
 }
 
 void
-os_gpu_init_vbuffer (vm_t *vm, nu_u32_t index, const void *p)
+os_gpu_init_mesh (vm_t *vm, nu_u32_t index, const void *p)
+{
+    renderer.meshes[index].offset = 0;
+    if (p)
+    {
+        os_gpu_write_mesh(vm, index, 0, vm->gpu.meshes[index].count, p);
+    }
+}
+void
+os_gpu_free_mesh (vm_t *vm, nu_u32_t index)
 {
 }
 void
-os_gpu_free_vbuffer (vm_t *vm, nu_u32_t index)
-{
-}
-void
-os_gpu_write_vbuffer (
+os_gpu_write_mesh (
     vm_t *vm, nu_u32_t index, nu_u32_t first, nu_u32_t count, const void *p)
 {
     const nu_f32_t *data = p;
@@ -319,26 +323,89 @@ os_gpu_write_vbuffer (
     for (nu_size_t i = 0; i < count; ++i)
     {
         ptr[(first + i) * NU_V3_SIZE + 0]
-            = data[(first + i) * VM_VERTEX_SIZE_F32 + 0];
+            = data[(first + i) * GPU_VERTEX_SIZE + 0];
         ptr[(first + i) * NU_V3_SIZE + 1]
-            = data[(first + i) * VM_VERTEX_SIZE_F32 + 1];
+            = data[(first + i) * GPU_VERTEX_SIZE + 1];
         ptr[(first + i) * NU_V3_SIZE + 2]
-            = data[(first + i) * VM_VERTEX_SIZE_F32 + 2];
+            = data[(first + i) * GPU_VERTEX_SIZE + 2];
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
     // uvs
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_uvs);
-    ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    NU_ASSERT(ptr);
-    for (nu_size_t i = 0; i < count; ++i)
-    {
-        ptr[(first + i) * NU_V2_SIZE + 0]
-            = data[(first + i) * VM_VERTEX_SIZE_F32 + 3];
-        ptr[(first + i) * NU_V2_SIZE + 1]
-            = data[(first + i) * VM_VERTEX_SIZE_F32 + 4];
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    // glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_uvs);
+    // ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    // NU_ASSERT(ptr);
+    // for (nu_size_t i = 0; i < count; ++i)
+    // {
+    //     ptr[(first + i) * NU_V2_SIZE + 0]
+    //         = data[(first + i) * GPU_VERTEX_SIZE_F32 + 3];
+    //     ptr[(first + i) * NU_V2_SIZE + 1]
+    //         = data[(first + i) * GPU_VERTEX_SIZE_F32 + 4];
+    // }
+    // glUnmapBuffer(GL_ARRAY_BUFFER);
+    // glBindBuffer(GL_ARRAY_BUFFER, 0);
     // normals
     // TODO
+}
+void
+os_gpu_begin (vm_t *vm)
+{
+    glUseProgram(renderer.unlit_shader);
+
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_CULL_FACE);
+    // glDepthMask(GL_TRUE);
+    // glDepthFunc(GL_LESS);
+    // glFrontFace(GL_CCW);
+    // glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // nu_v2u_t viewport_size = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
+    // glUniform2uiv(glGetUniformLocation(renderer.unlit_shader,
+    // "viewport_size"),
+    //               1,
+    //               viewport_size.data);
+
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
+void
+os_gpu_end (vm_t *vm)
+{
+}
+void
+os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
+{
+    switch (transform)
+    {
+        case GPU_TRANSFORM_MODEL: {
+            glUniformMatrix4fv(
+                glGetUniformLocation(renderer.unlit_shader, "model"),
+                1,
+                GL_FALSE,
+                vm->gpu.state.model.data);
+        }
+        break;
+        case GPU_TRANSFORM_PROJECTION:
+        case GPU_TRANSFORM_VIEW: {
+            nu_m4_t view_projection
+                = nu_m4_mul(vm->gpu.state.projection, vm->gpu.state.view);
+            glUniformMatrix4fv(
+                glGetUniformLocation(renderer.unlit_shader, "view_projection"),
+                1,
+                GL_FALSE,
+                view_projection.data);
+        }
+        break;
+    }
+}
+void
+os_gpu_draw_submesh (vm_t           *vm,
+                     nu_u32_t        mesh,
+                     nu_u32_t        first,
+                     nu_u32_t        count,
+                     const nu_f32_t *transform)
+{
+    glBindVertexArray(renderer.vao);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
 }

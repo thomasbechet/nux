@@ -12,16 +12,11 @@
 #define PROJECT_CHUNK_SOURCE "source"
 #define PROJECT_CHUNK_META   "meta"
 
-static const struct
-{
-    const nu_char_t  *name;
-    cart_chunk_type_t type;
-} name_to_chunk_type[] = {
-    { "raw", CART_CHUNK_RAW },
-    { "wasm", CART_CHUNK_WASM },
-    { "texture", CART_CHUNK_TEXTURE },
-    { "vbuffer", CART_CHUNK_VBUFFER },
-};
+static NU_ENUM_MAP(cart_chunk_type_map,
+                   NU_ENUM_NAME(CART_CHUNK_RAW, "raw"),
+                   NU_ENUM_NAME(CART_CHUNK_MESH, "mesh"),
+                   NU_ENUM_NAME(CART_CHUNK_WASM, "wasm"),
+                   NU_ENUM_NAME(CART_CHUNK_TEXTURE, "texture"));
 
 static void
 project_init (sdk_project_t *project, nu_sv_t path)
@@ -57,9 +52,9 @@ parse_meta (const JSON_Object *jchunk,
             meta->texture.size  = parse_f32(jmeta, "size");
         }
         break;
-        case CART_CHUNK_VBUFFER: {
-            meta->vbuffer.index = parse_f32(jmeta, "index");
-            meta->vbuffer.count = parse_f32(jmeta, "count");
+        case CART_CHUNK_MESH: {
+            meta->mesh.index = parse_f32(jmeta, "index");
+            meta->mesh.count = parse_f32(jmeta, "count");
         }
         break;
     }
@@ -92,9 +87,9 @@ write_meta (JSON_Object             *chunk,
             write_f32(jmeta, "size", meta->texture.size);
         }
         break;
-        case CART_CHUNK_VBUFFER: {
-            write_f32(jmeta, "index", meta->vbuffer.index);
-            write_f32(jmeta, "count", meta->vbuffer.count);
+        case CART_CHUNK_MESH: {
+            write_f32(jmeta, "index", meta->mesh.index);
+            write_f32(jmeta, "count", meta->mesh.count);
         }
         break;
     }
@@ -126,7 +121,7 @@ write_chunk_header (FILE *f, cart_chunk_header_t *header)
             write_u32(f, header->meta.texture.size);
         }
         break;
-        case CART_CHUNK_VBUFFER: {
+        case CART_CHUNK_MESH: {
         }
         break;
     }
@@ -276,7 +271,7 @@ sdk_build (const sdk_project_t *project)
                 free(data);
             }
             break;
-            case CART_CHUNK_VBUFFER: {
+            case CART_CHUNK_MESH: {
                 // // header
                 // write_chunk_header(f, entry, length);
                 // // destination
@@ -342,19 +337,9 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
             NU_ASSERT(source_string);
 
             // Check type
-            nu_sv_t           type_sv = nu_sv_cstr(type_string);
-            cart_chunk_type_t type;
-            nu_bool_t         found = NU_FALSE;
-            for (nu_size_t j = 0;
-                 j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
-                 ++j)
-            {
-                if (nu_sv_eq(nu_sv_cstr(name_to_chunk_type[j].name), type_sv))
-                {
-                    type  = name_to_chunk_type[j].type;
-                    found = NU_TRUE;
-                }
-            }
+            nu_bool_t         found;
+            cart_chunk_type_t type = nu_sv_to_enum(
+                nu_sv_cstr(type_string), cart_chunk_type_map, &found);
             if (!found)
             {
                 sdk_log(NU_LOG_ERROR, "Invalid chunk type %s", type_string);
@@ -416,20 +401,8 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
             JSON_Object *jchunk = json_object(jchunkv);
 
             // Type
-            const nu_char_t *type_str = NU_NULL;
-            nu_bool_t        found    = NU_FALSE;
-            for (nu_size_t j = 0;
-                 j < NU_ARRAY_SIZE(name_to_chunk_type) && !found;
-                 ++j)
-            {
-                if (name_to_chunk_type[j].type
-                    == project->chunks[i].header.type)
-                {
-                    type_str = name_to_chunk_type[j].name;
-                    found    = NU_TRUE;
-                }
-            }
-            NU_ASSERT(found);
+            const nu_char_t *type_str = nu_enum_to_cstr(
+                project->chunks[i].header.type, cart_chunk_type_map);
             json_object_set_string(jchunk, PROJECT_CHUNK_TYPE, type_str);
 
             // Source

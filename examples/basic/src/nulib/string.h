@@ -17,38 +17,11 @@
 #define NU_SV_FMT       "%.*s"
 #define NU_SV_ARGS(str) (int)str.size, str.data
 
-#define NU_ENUM_MAP(mapname, ...) \
-    nu_enum_name_map_t mapname[]  \
-        = { __VA_ARGS__, { .v = NU_NULL, .s = NU_NULL } };
-#define NU_ENUM_NAME(enumval, name) \
-    {                               \
-        .v = enumval, .s = name     \
-    }
-
-#define NU_SV_TO_ENUM(sv, penum, map, found)                 \
-    {                                                        \
-        (found) = NU_FALSE;                                  \
-        for (nu_size_t i = 0; i < NU_ARRAY_SIZE((map)); ++i) \
-        {                                                    \
-            if (nu_sv_eq(nu_sv_cstr((map)[i].s), sv))        \
-            {                                                \
-                *(penum) = (map)[i].e;                       \
-                found    = NU_TRUE;                          \
-            }                                                \
-        }                                                    \
-    }
-
 typedef struct
 {
     const nu_char_t *data; // might not be null-terminated
     nu_size_t        size;
 } nu_sv_t;
-
-typedef struct
-{
-    nu_u32_t         v;
-    const nu_char_t *s;
-} nu_enum_name_map_t;
 
 NU_API nu_size_t nu_strlen(const nu_char_t *s);
 
@@ -79,11 +52,5 @@ NU_API nu_sv_t nu_path_concat(nu_char_t *buf,
                               nu_size_t  n,
                               nu_sv_t    p1,
                               nu_sv_t    p2);
-
-NU_API const nu_char_t *nu_enum_to_cstr(nu_u32_t                  v,
-                                        const nu_enum_name_map_t *map);
-NU_API nu_u32_t         nu_sv_to_enum(nu_sv_t                   sv,
-                                      const nu_enum_name_map_t *map,
-                                      nu_bool_t                *found);
 
 #endif

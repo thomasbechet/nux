@@ -6,8 +6,6 @@
 void *os_malloc(vm_t *vm, nu_size_t n);
 
 void os_gpu_init(vm_t *vm);
-void os_gpu_draw(vm_t *vm, nu_u32_t first, nu_u32_t count);
-
 void os_gpu_init_texture(vm_t *vm, nu_u32_t index, const void *p);
 void os_gpu_free_texture(vm_t *vm, nu_u32_t index);
 void os_gpu_write_texture(vm_t       *vm,
@@ -17,11 +15,18 @@ void os_gpu_write_texture(vm_t       *vm,
                           nu_u32_t    w,
                           nu_u32_t    h,
                           const void *p);
-
-void os_gpu_init_vbuffer(vm_t *vm, nu_u32_t index, const void *p);
-void os_gpu_free_vbuffer(vm_t *vm, nu_u32_t index);
-void os_gpu_write_vbuffer(
+void os_gpu_init_mesh(vm_t *vm, nu_u32_t index, const void *p);
+void os_gpu_free_mesh(vm_t *vm, nu_u32_t index);
+void os_gpu_write_mesh(
     vm_t *vm, nu_u32_t index, nu_u32_t first, nu_u32_t count, const void *p);
+void os_gpu_begin(vm_t *vm);
+void os_gpu_end(vm_t *vm);
+void os_gpu_set_transform(vm_t *vm, gpu_transform_t transform);
+void os_gpu_draw_submesh(vm_t           *vm,
+                         nu_u32_t        mesh,
+                         nu_u32_t        first,
+                         nu_u32_t        count,
+                         const nu_f32_t *transform);
 
 void      os_iop_mount(vm_t *vm, const nu_char_t *name);
 void      os_iop_seek(vm_t *vm, nu_size_t n);

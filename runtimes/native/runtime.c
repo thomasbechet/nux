@@ -34,7 +34,6 @@ runtime_init (const runtime_info_t *info)
     {
         window_poll_events();
         vm_tick(&vm, &running);
-        renderer_render();
         window_swap_buffers();
     }
 

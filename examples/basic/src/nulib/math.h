@@ -266,7 +266,6 @@ NU_API nu_m3_t nu_m3_translate(nu_v2_t v);
 NU_API nu_m3_t nu_m3_scale(nu_v2_t v);
 NU_API nu_m3_t nu_m3_mul(nu_m3_t a, nu_m3_t b);
 
-NU_API nu_m4_t nu_m4(const nu_f32_t *p);
 NU_API nu_m4_t nu_m4_zero(void);
 NU_API nu_m4_t nu_m4_identity(void);
 NU_API nu_m4_t nu_m4_translate(nu_v3_t v);

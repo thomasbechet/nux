@@ -27,21 +27,41 @@ typedef struct
 #define VM_SCREEN_WIDTH  640
 #define VM_SCREEN_HEIGHT 400
 
-#define VM_VERTEX_POSITION_OFFSET 0
-#define VM_VERTEX_UV_OFFSET       3 * 4
-#define VM_VERTEX_SIZE_F32        5
-#define VM_VERTEX_SIZE            VM_VERTEX_SIZE_F32 * 4
+#define GPU_VERTEX_POSITION_OFFSET 0
+// #define GPU_VERTEX_UV_OFFSET       3 * 4
+#define GPU_VERTEX_SIZE 3
 
 #define GPU_MAX_TEXTURE 1024
-#define GPU_MAX_VBUFFER 1024
+#define GPU_MAX_MESH    1024
 
 typedef enum
 {
-    GPU_TEXTURE64  = 0,
-    GPU_TEXTURE128 = 1,
-    GPU_TEXTURE256 = 2,
-    GPU_TEXTURE512 = 3,
+    GPU_TEX64  = 0,
+    GPU_TEX128 = 1,
+    GPU_TEX256 = 2,
+    GPU_TEX512 = 3,
 } gpu_texture_size_t;
+
+typedef enum
+{
+    GPU_VERTEX_POSTIION = 1 << 0,
+    GPU_VERTEX_UV       = 1 << 1,
+    GPU_VERTEX_COLOR    = 1 << 2,
+} gpu_vertex_flags_t;
+
+typedef enum
+{
+    GPU_PRIMITIVE_TRIANGLES = 0,
+    GPU_PRIMITIVE_LINES     = 1,
+    GPU_PRIMITIVE_POINTS    = 2,
+} gpu_primitive_t;
+
+typedef enum
+{
+    GPU_TRANSFORM_MODEL      = 0,
+    GPU_TRANSFORM_PROJECTION = 1,
+    GPU_TRANSFORM_VIEW       = 2,
+} gpu_transform_t;
 
 typedef struct
 {
@@ -52,12 +72,11 @@ typedef struct
 typedef struct
 {
     nu_u32_t texture;
-    nu_u32_t buffer;
     nu_v4u_t scissor;
     nu_v4u_t viewport;
     nu_m4_t  model;
-    nu_u32_t mode;
-    nu_u8_t *cmds;
+    nu_m4_t  view;
+    nu_m4_t  projection;
 } gpu_state_t;
 
 typedef struct
@@ -68,16 +87,18 @@ typedef struct
 
 typedef struct
 {
-    nu_bool_t active;
-    nu_u32_t  count;
-} gpu_vbuffer_t;
+    nu_bool_t          active;
+    nu_u32_t           count;
+    gpu_primitive_t    primitive;
+    gpu_vertex_flags_t flags;
+} gpu_mesh_t;
 
 typedef struct
 {
     gpu_state_t   state;
     gpu_config_t  config;
     gpu_texture_t textures[GPU_MAX_TEXTURE];
-    gpu_vbuffer_t vbuffers[GPU_MAX_VBUFFER];
+    gpu_mesh_t    meshes[GPU_MAX_MESH];
 } gpu_t;
 
 /////////////////
@@ -91,7 +112,7 @@ typedef enum
     CART_CHUNK_RAW     = 0,
     CART_CHUNK_WASM    = 1,
     CART_CHUNK_TEXTURE = 2,
-    CART_CHUNK_VBUFFER = 3,
+    CART_CHUNK_MESH    = 3,
 } cart_chunk_type_t;
 
 typedef union
@@ -107,9 +128,11 @@ typedef union
     } texture;
     struct
     {
-        nu_u32_t index;
-        nu_u16_t count;
-    } vbuffer;
+        nu_u32_t           index;
+        nu_u16_t           count;
+        gpu_primitive_t    primitive;
+        gpu_vertex_flags_t flags;
+    } mesh;
 } cart_chunk_meta_t;
 
 typedef struct
@@ -137,10 +160,11 @@ typedef struct
 
 #define VM_RUNTIME_VERSION "0.0.1"
 
-#define VM_CONFIG_DEFAULT                                                \
-    (vm_config_t)                                                        \
-    {                                                                    \
-        .cpu.mem_heap_size = NU_MEM_1M, .cpu.mem_stack_size = NU_MEM_64K \
+#define VM_CONFIG_DEFAULT                                                 \
+    (vm_config_t)                                                         \
+    {                                                                     \
+        .cpu.mem_heap_size = NU_MEM_1M, .cpu.mem_stack_size = NU_MEM_64K, \
+        .gpu.max_vertex_count = 1024,                                     \
     }
 
 typedef struct

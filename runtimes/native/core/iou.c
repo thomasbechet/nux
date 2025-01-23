@@ -29,9 +29,11 @@ read_header (vm_t *vm, cart_chunk_header_t *header)
             header->meta.texture.size  = read_u32(vm);
         }
         break;
-        case CART_CHUNK_VBUFFER: {
-            header->meta.vbuffer.index = read_u32(vm);
-            header->meta.vbuffer.count = read_u32(vm);
+        case CART_CHUNK_MESH: {
+            header->meta.mesh.index     = read_u32(vm);
+            header->meta.mesh.count     = read_u32(vm);
+            header->meta.mesh.primitive = read_u32(vm);
+            header->meta.mesh.flags     = read_u32(vm);
         }
         break;
     }
@@ -80,12 +82,14 @@ iou_load_full (vm_t *vm, const nu_char_t *name)
                                   vm->iou.heap);
             }
             break;
-            case CART_CHUNK_VBUFFER: {
+            case CART_CHUNK_MESH: {
                 NU_ASSERT(header.length <= IOU_MEM_SIZE);
                 NU_ASSERT(os_iop_read(vm, vm->iou.heap, header.length));
-                gpu_alloc_vbuffer(vm,
-                               header.meta.vbuffer.index,
-                               header.meta.vbuffer.count,
+                gpu_alloc_mesh(vm,
+                               header.meta.mesh.index,
+                               header.meta.mesh.count,
+                               header.meta.mesh.primitive,
+                               header.meta.mesh.flags,
                                vm->iou.heap);
             }
             break;

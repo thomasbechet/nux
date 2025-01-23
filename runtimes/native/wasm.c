@@ -18,7 +18,13 @@ static struct
     wasm_function_inst_t update_callback;
 } wasm;
 
-void
+static void
+trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    iou_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
+}
+static void
 alloc_texture (wasm_exec_env_t env,
                nu_u32_t        index,
                nu_u32_t        size,
@@ -27,7 +33,7 @@ alloc_texture (wasm_exec_env_t env,
     vm_t *vm = wasm_runtime_get_user_data(env);
     gpu_alloc_texture(vm, index, size, p);
 }
-void
+static void
 write_texture (wasm_exec_env_t env,
                nu_u32_t        index,
                nu_u32_t        x,
@@ -39,85 +45,92 @@ write_texture (wasm_exec_env_t env,
     vm_t *vm = wasm_runtime_get_user_data(env);
     gpu_write_texture(vm, index, x, y, w, h, p);
 }
-void
-alloc_vbuffer (wasm_exec_env_t env,
-               nu_u32_t        index,
-               nu_u32_t        count,
-               const void     *p)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_vbuffer(vm, index, count, p);
-}
-void
-write_vbuffer (wasm_exec_env_t env,
-               nu_u32_t        index,
-               nu_u32_t        first,
-               nu_u32_t        count,
-               const void     *p)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_vbuffer(vm, index, first, count, p);
-}
-
 static void
-native_write_texture (wasm_exec_env_t env,
-                      nu_u32_t        slot,
-                      nu_u32_t        x,
-                      nu_u32_t        y,
-                      nu_u32_t        w,
-                      nu_u32_t        h,
-                      const void     *p)
+alloc_mesh (wasm_exec_env_t env,
+            nu_u32_t        index,
+            nu_u32_t        count,
+            nu_u32_t        primitive,
+            nu_u32_t        flags,
+            const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_texture(vm, slot, x, y, w, h, p);
+    gpu_alloc_mesh(vm, index, count, primitive, flags, p);
 }
-
 static void
-trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
+write_mesh (wasm_exec_env_t env,
+            nu_u32_t        index,
+            nu_u32_t        first,
+            nu_u32_t        count,
+            const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    iou_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
+    gpu_write_mesh(vm, index, first, count, p);
+}
+static void
+draw_mesh (wasm_exec_env_t env, nu_u32_t mesh, const nu_f32_t *transform)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_draw_mesh(vm, mesh, transform);
+}
+static void
+set_transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_set_transform(vm, transform, m);
+}
+static void
+draw_submesh (wasm_exec_env_t env,
+              nu_u32_t        mesh,
+              nu_u32_t        first,
+              nu_u32_t        count,
+              const nu_f32_t *transform)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_draw_submesh(vm, mesh, first, count, transform);
 }
 
-void *
+static void *
 native_wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
 {
-    logger_log(NU_LOG_INFO,
-               "MALLOC %s %lu",
-               usage == Alloc_For_Runtime ? "runtime" : "linear",
-               n);
+    // logger_log(NU_LOG_INFO,
+    //            "MALLOC %s %lu",
+    //            usage == Alloc_For_Runtime ? "runtime" : "linear",
+    //            n);
     // return vm_malloc(user, n);
     return malloc(n);
 }
-void *
+static void *
 native_wasm_realloc (mem_alloc_usage_t usage,
                      nu_bool_t         full_size_mmapped,
                      void             *user,
                      void             *p,
                      nu_u32_t          n)
 {
-    logger_log(NU_LOG_INFO,
-               "REALLOC %s %u",
-               usage == Alloc_For_Runtime ? "runtime" : "linear",
-               n);
+    // logger_log(NU_LOG_INFO,
+    //            "REALLOC %s %u",
+    //            usage == Alloc_For_Runtime ? "runtime" : "linear",
+    //            n);
     return realloc(p, n);
 }
 void
 native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
 {
-    logger_log(NU_LOG_INFO,
-               "FREE %s %p",
-               usage == Alloc_For_Runtime ? "runtime" : "linear",
-               p);
+    // logger_log(NU_LOG_INFO,
+    //            "FREE %s %p",
+    //            usage == Alloc_For_Runtime ? "runtime" : "linear",
+    //            p);
     free(p);
 }
 
 static NativeSymbol wasm_native_symbols[] = {
+    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
     EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii*)"),
     EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_vbuffer, "(ii*)"),
-    EXPORT_WASM_API_WITH_SIG(write_vbuffer, "(iii*)"),
-    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii*)"),
+    EXPORT_WASM_API_WITH_SIG(write_mesh, "(iii*)"),
+    EXPORT_WASM_API_WITH_SIG(set_transform, "(i*)"),
+    EXPORT_WASM_API_WITH_SIG(draw_mesh, "(i*)"),
+    EXPORT_WASM_API_WITH_SIG(draw_submesh, "(iii*)"),
 };
 
 nu_status_t
@@ -139,7 +152,8 @@ wasm_init (void)
 
     init_args.max_thread_num = 1;
 
-    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+    wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
 
     if (!wasm_runtime_full_init(&init_args))
     {

@@ -2,9 +2,10 @@
 #define WINDOW_H
 
 #include <nulib/nulib.h>
+#include "core/vm.h"
 
-#define WINDOW_WIDTH  500
-#define WINDOW_HEIGHT 500
+#define WINDOW_WIDTH  VM_SCREEN_WIDTH
+#define WINDOW_HEIGHT VM_SCREEN_HEIGHT
 
 nu_status_t window_init(void);
 void        window_free(void);
