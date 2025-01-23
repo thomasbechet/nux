@@ -81,13 +81,20 @@ update_viewport (viewport_t *v)
     vpos         = nu_v2_add(vpos, global_pos);
     v->viewport  = nu_b2i_xywh(vpos.x, vpos.y, size.x, size.y);
 }
+static void
+resize_callback (RGFW_window *w, RGFW_rect r)
+{
+    window.viewport.extent
+        = nu_b2i_resize(window.viewport.extent, nu_v2u(r.w, r.h));
+    update_viewport(&window.viewport);
+}
 
 nu_status_t
 window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = WINDOW_WIDTH;
-    const nu_int_t height = WINDOW_HEIGHT;
+    const nu_int_t width  = 1600;
+    const nu_int_t height = 900;
 
     // Initialize values
     window.close_requested   = NU_FALSE;
@@ -109,7 +116,7 @@ window_init (void)
     // Bind callbacks
     RGFW_window_makeCurrent_OpenGL(window.win);
     RGFW_window_makeCurrent(window.win);
-    // RGFW_setWindowResizeCallback(nu__window_size_callback);
+    RGFW_setWindowResizeCallback(resize_callback);
 
     return NU_SUCCESS;
 }
@@ -169,8 +176,7 @@ window_poll_events (void)
                     //                           NU_FALSE);
                     break;
                 case RGFW_windowResized:
-                    // nu__window_size_callback(_ctx.platform.win,
-                    //                          _ctx.platform.win->r);
+                    resize_callback(window.win, window.win->r);
                     break;
             }
         }
@@ -187,8 +193,7 @@ window_poll_events (void)
                     window.win,
                     RGFW_POINT(window.previous_rect.x, window.previous_rect.y));
                 RGFW_window_setBorder(window.win, RGFW_TRUE);
-                // nu__window_size_callback(_ctx.platform.win,
-                //                          _ctx.platform.win->r);
+                resize_callback(window.win, window.win->r);
             }
             else
             {
@@ -214,4 +219,9 @@ nu_bool_t
 window_close_requested (void)
 {
     return window.close_requested;
+}
+nu_b2i_t
+window_get_render_viewport (void)
+{
+    return window.viewport.viewport;
 }

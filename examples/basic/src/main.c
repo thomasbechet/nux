@@ -43,5 +43,5 @@ update (void)
     set_transform(TRANSFORM_MODEL, m.data);
     set_transform(TRANSFORM_VIEW, v.data);
     set_transform(TRANSFORM_PROJECTION, p.data);
-    draw_mesh(0, m.data);
+    draw_mesh(0);
 }

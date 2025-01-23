@@ -131,28 +131,24 @@ gpu_set_transform (vm_t *vm, gpu_transform_t transform, const nu_f32_t *m)
         case GPU_TRANSFORM_MODEL:
             vm->gpu.state.model = nu_m4(m);
             break;
-        case GPU_TRANSFORM_PROJECTION:
-            vm->gpu.state.projection = nu_m4(m);
-            break;
         case GPU_TRANSFORM_VIEW:
             vm->gpu.state.view = nu_m4(m);
+            break;
+        case GPU_TRANSFORM_PROJECTION:
+            vm->gpu.state.projection = nu_m4(m);
             break;
     }
     os_gpu_set_transform(vm, transform);
 }
 void
-gpu_draw_mesh (vm_t *vm, nu_u32_t mesh, const nu_f32_t *transform)
+gpu_draw_mesh (vm_t *vm, nu_u32_t mesh)
 {
     check_mesh(vm, mesh);
-    gpu_draw_submesh(vm, mesh, 0, vm->gpu.meshes[mesh].count, transform);
+    gpu_draw_submesh(vm, mesh, 0, vm->gpu.meshes[mesh].count);
 }
 void
-gpu_draw_submesh (vm_t           *vm,
-                  nu_u32_t        mesh,
-                  nu_u32_t        first,
-                  nu_u32_t        count,
-                  const nu_f32_t *transform)
+gpu_draw_submesh (vm_t *vm, nu_u32_t mesh, nu_u32_t first, nu_u32_t count)
 {
     check_mesh(vm, mesh);
-    os_gpu_draw_submesh(vm, mesh, first, count, transform);
+    os_gpu_draw_submesh(vm, mesh, first, count);
 }

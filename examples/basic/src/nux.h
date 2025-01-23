@@ -77,8 +77,8 @@ typedef enum
 typedef enum
 {
     TRANSFORM_MODEL      = 0,
-    TRANSFORM_PROJECTION = 1,
-    TRANSFORM_VIEW       = 2,
+    TRANSFORM_VIEW       = 1,
+    TRANSFORM_PROJECTION = 2,
 } gpu_transform_t;
 
 // Resources
@@ -95,9 +95,14 @@ void write_mesh(u32 index, u32 first, u32 count, const void *p);
 WASM_IMPORT("set_transform")
 void set_transform(u32 transform, const f32 *m);
 WASM_IMPORT("draw_mesh")
-void draw_mesh(u32 index, const f32 *m);
+void draw_mesh(u32 index);
 WASM_IMPORT("draw_submesh")
-void draw_submesh(u32 index, u32 first, u32 count, const f32 *m);
+void draw_submesh(u32 index, u32 first, u32 count);
+
+WASM_IMPORT("screen_width")
+u32 screen_width(void);
+WASM_IMPORT("screen_height")
+u32 screen_height(void);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

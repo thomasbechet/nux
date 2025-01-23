@@ -67,26 +67,25 @@ write_mesh (wasm_exec_env_t env,
     gpu_write_mesh(vm, index, first, count, p);
 }
 static void
-draw_mesh (wasm_exec_env_t env, nu_u32_t mesh, const nu_f32_t *transform)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_mesh(vm, mesh, transform);
-}
-static void
 set_transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     gpu_set_transform(vm, transform, m);
 }
 static void
+draw_mesh (wasm_exec_env_t env, nu_u32_t mesh)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_draw_mesh(vm, mesh);
+}
+static void
 draw_submesh (wasm_exec_env_t env,
               nu_u32_t        mesh,
               nu_u32_t        first,
-              nu_u32_t        count,
-              const nu_f32_t *transform)
+              nu_u32_t        count)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_submesh(vm, mesh, first, count, transform);
+    gpu_draw_submesh(vm, mesh, first, count);
 }
 
 static void *
@@ -129,8 +128,8 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii*)"),
     EXPORT_WASM_API_WITH_SIG(write_mesh, "(iii*)"),
     EXPORT_WASM_API_WITH_SIG(set_transform, "(i*)"),
-    EXPORT_WASM_API_WITH_SIG(draw_mesh, "(i*)"),
-    EXPORT_WASM_API_WITH_SIG(draw_submesh, "(iii*)"),
+    EXPORT_WASM_API_WITH_SIG(draw_mesh, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(draw_submesh, "(iii)"),
 };
 
 nu_status_t

@@ -24,8 +24,12 @@ typedef struct
 ///    GPU    ///
 /////////////////
 
-#define VM_SCREEN_WIDTH  640
-#define VM_SCREEN_HEIGHT 400
+// #define VM_SCREEN_WIDTH  640
+// #define VM_SCREEN_HEIGHT 400
+// #define VM_SCREEN_WIDTH  512
+// #define VM_SCREEN_HEIGHT 288
+#define VM_SCREEN_WIDTH  320
+#define VM_SCREEN_HEIGHT 200
 
 #define GPU_VERTEX_POSITION_OFFSET 0
 // #define GPU_VERTEX_UV_OFFSET       3 * 4
@@ -59,8 +63,8 @@ typedef enum
 typedef enum
 {
     GPU_TRANSFORM_MODEL      = 0,
-    GPU_TRANSFORM_PROJECTION = 1,
-    GPU_TRANSFORM_VIEW       = 2,
+    GPU_TRANSFORM_VIEW       = 1,
+    GPU_TRANSFORM_PROJECTION = 2,
 } gpu_transform_t;
 
 typedef struct

@@ -30,11 +30,7 @@ void gpu_write_mesh(
     vm_t *vm, nu_u32_t index, nu_u32_t first, nu_u32_t count, const void *p);
 
 void gpu_set_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
-void gpu_draw_mesh(vm_t *vm, nu_u32_t mesh, const nu_f32_t *transform);
-void gpu_draw_submesh(vm_t           *vm,
-                      nu_u32_t        mesh,
-                      nu_u32_t        first,
-                      nu_u32_t        count,
-                      const nu_f32_t *transform);
+void gpu_draw_mesh(vm_t *vm, nu_u32_t mesh);
+void gpu_draw_submesh(vm_t *vm, nu_u32_t mesh, nu_u32_t first, nu_u32_t count);
 
 #endif

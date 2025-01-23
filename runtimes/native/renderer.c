@@ -2,6 +2,7 @@
 
 #include "shaders_data.h"
 #include "logger.h"
+#include "window.h"
 #include "core/platform.h"
 
 #include <glad/gl.h>
@@ -15,13 +16,17 @@ typedef struct
 
 static struct
 {
-    GLuint textures[GPU_MAX_TEXTURE];
-    mesh_t meshes[GPU_MAX_MESH];
-    GLuint vbo_positions;
-    GLuint vbo_uvs;
-    GLuint vbo_normals;
-    GLuint vao;
-    GLuint unlit_shader;
+    GLuint   textures[GPU_MAX_TEXTURE];
+    mesh_t   meshes[GPU_MAX_MESH];
+    nu_u32_t vbo_offset;
+    GLuint   vbo_positions;
+    GLuint   vbo_uvs;
+    GLuint   vbo_normals;
+    GLuint   vao;
+    GLuint   unlit_program;
+    GLuint   screen_blit_program;
+    GLuint   surface_fbo;
+    GLuint   surface_texture;
 } renderer;
 
 static const GLchar *
@@ -172,18 +177,64 @@ renderer_init (void)
 
     // Compile shaders
     glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
     status = compile_program(
-        shader_unlit_vert, shader_unlit_frag, &renderer.unlit_shader);
+        shader_unlit_vert, shader_unlit_frag, &renderer.unlit_program);
     NU_CHECK(status, goto cleanup0);
 
+    glEnableVertexAttribArray(0);
+    status = compile_program(shader_screen_blit_vert,
+                             shader_screen_blit_frag,
+                             &renderer.screen_blit_program);
+    NU_CHECK(status, goto cleanup0);
+
+    // Create render target
+    glGenTextures(1, &renderer.surface_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_SRGB,
+                 VM_SCREEN_WIDTH,
+                 VM_SCREEN_HEIGHT,
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glGenFramebuffers(1, &renderer.surface_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D,
+                           renderer.surface_texture,
+                           0);
+    // glFramebufferTexture2D(GL_FRAMEBUFFER,
+    //                        GL_DEPTH_STENCIL_ATTACHMENT,
+    //                        GL_TEXTURE_2D,
+    //                        target->depth,
+    //                        0);
+    NU_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER)
+              == GL_FRAMEBUFFER_COMPLETE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    return status;
+
 cleanup0:
+    renderer_free();
     return status;
 }
 void
 renderer_free (void)
 {
-    glDeleteProgram(renderer.unlit_shader);
+    if (renderer.unlit_program)
+    {
+        glDeleteProgram(renderer.unlit_program);
+    }
+    if (renderer.screen_blit_program)
+    {
+        glDeleteProgram(renderer.screen_blit_program);
+    }
     for (nu_size_t i = 0; i < GPU_MAX_TEXTURE; ++i)
     {
         if (renderer.textures[i])
@@ -207,10 +258,8 @@ os_gpu_init (vm_t *vm)
     nu_memset(
         &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
 
-    glUseProgram(renderer.unlit_shader);
-
     // Initialize vertices
-    // glGenBuffers(1, &renderer.vbo_normals);
+    renderer.vbo_offset = 0;
     glGenVertexArrays(1, &renderer.vao);
     glBindVertexArray(renderer.vao);
 
@@ -300,7 +349,8 @@ os_gpu_write_texture (vm_t       *vm,
 void
 os_gpu_init_mesh (vm_t *vm, nu_u32_t index, const void *p)
 {
-    renderer.meshes[index].offset = 0;
+    renderer.meshes[index].offset = renderer.vbo_offset;
+    renderer.vbo_offset += vm->gpu.meshes[index].count;
     if (p)
     {
         os_gpu_write_mesh(vm, index, 0, vm->gpu.meshes[index].count, p);
@@ -316,6 +366,10 @@ os_gpu_write_mesh (
 {
     const nu_f32_t *data = p;
     nu_f32_t       *ptr  = NU_NULL;
+
+    // compute vertex index in vbo
+    first = renderer.meshes[index].offset + first;
+
     // positions
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo_positions);
     ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
@@ -349,7 +403,7 @@ os_gpu_write_mesh (
 void
 os_gpu_begin (vm_t *vm)
 {
-    glUseProgram(renderer.unlit_shader);
+    glUseProgram(renderer.unlit_program);
 
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -359,18 +413,38 @@ os_gpu_begin (vm_t *vm)
     // glCullFace(GL_BACK);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    // nu_v2u_t viewport_size = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
-    // glUniform2uiv(glGetUniformLocation(renderer.unlit_shader,
-    // "viewport_size"),
-    //               1,
-    //               viewport_size.data);
+    // Render on surface framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
+    glViewport(0, 0, VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
 
+    // Clear color
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    nu_v2u_t size = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
+    glUniform2uiv(glGetUniformLocation(renderer.unlit_program, "viewport_size"),
+                  1,
+                  size.data);
 }
 void
 os_gpu_end (vm_t *vm)
 {
+    // Blit surface
+    glDisable(GL_DEPTH_TEST);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glEnable(GL_FRAMEBUFFER_SRGB);
+    nu_v4_t clear
+        = nu_color_to_vec4(nu_color_to_linear(nu_color(25, 27, 43, 255)));
+    glUseProgram(renderer.screen_blit_program);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    nu_b2i_t viewport = window_get_render_viewport();
+    nu_v2u_t size     = nu_b2i_size(viewport);
+    glViewport(viewport.min.x, viewport.min.y, size.x, size.y);
+    glClearColor(clear.x, clear.y, clear.z, clear.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glUseProgram(0);
 }
 void
 os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
@@ -379,7 +453,7 @@ os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
     {
         case GPU_TRANSFORM_MODEL: {
             glUniformMatrix4fv(
-                glGetUniformLocation(renderer.unlit_shader, "model"),
+                glGetUniformLocation(renderer.unlit_program, "model"),
                 1,
                 GL_FALSE,
                 vm->gpu.state.model.data);
@@ -390,7 +464,7 @@ os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
             nu_m4_t view_projection
                 = nu_m4_mul(vm->gpu.state.projection, vm->gpu.state.view);
             glUniformMatrix4fv(
-                glGetUniformLocation(renderer.unlit_shader, "view_projection"),
+                glGetUniformLocation(renderer.unlit_program, "view_projection"),
                 1,
                 GL_FALSE,
                 view_projection.data);
@@ -399,13 +473,10 @@ os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
     }
 }
 void
-os_gpu_draw_submesh (vm_t           *vm,
-                     nu_u32_t        mesh,
-                     nu_u32_t        first,
-                     nu_u32_t        count,
-                     const nu_f32_t *transform)
+os_gpu_draw_submesh (vm_t *vm, nu_u32_t mesh, nu_u32_t first, nu_u32_t count)
 {
+    nu_u32_t offset = renderer.meshes[mesh].offset;
     glBindVertexArray(renderer.vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, offset + first, count);
     glBindVertexArray(0);
 }
