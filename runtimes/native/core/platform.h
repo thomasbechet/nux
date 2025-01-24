@@ -17,8 +17,12 @@ void os_gpu_write_texture(vm_t       *vm,
                           const void *p);
 void os_gpu_init_mesh(vm_t *vm, nu_u32_t index, const void *p);
 void os_gpu_free_mesh(vm_t *vm, nu_u32_t index);
-void os_gpu_write_mesh(
-    vm_t *vm, nu_u32_t index, nu_u32_t first, nu_u32_t count, const void *p);
+void os_gpu_write_mesh(vm_t                  *vm,
+                       nu_u32_t               index,
+                       gpu_vertex_attribute_t attributes,
+                       nu_u32_t               first,
+                       nu_u32_t               count,
+                       const void            *p);
 void os_gpu_begin(vm_t *vm);
 void os_gpu_end(vm_t *vm);
 void os_gpu_set_transform(vm_t *vm, gpu_transform_t transform);

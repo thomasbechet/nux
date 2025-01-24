@@ -88,9 +88,10 @@ WASM_IMPORT("write_texture")
 void write_texture(u32 index, u32 x, u32 y, u32 w, u32 h, const void *p);
 
 WASM_IMPORT("alloc_mesh")
-void alloc_mesh(u32 index, u32 count, u32 primitive, u32 flags, const void *p);
+void alloc_mesh(
+    u32 index, u32 count, u32 primitive, u32 attributes, const void *p);
 WASM_IMPORT("write_mesh")
-void write_mesh(u32 index, u32 first, u32 count, const void *p);
+void write_mesh(u32 index, u32 attributes, u32 first, u32 count, const void *p);
 
 WASM_IMPORT("set_transform")
 void set_transform(u32 transform, const f32 *m);

@@ -31,10 +31,6 @@ typedef struct
 #define VM_SCREEN_WIDTH  320
 #define VM_SCREEN_HEIGHT 200
 
-#define GPU_VERTEX_POSITION_OFFSET 0
-// #define GPU_VERTEX_UV_OFFSET       3 * 4
-#define GPU_VERTEX_SIZE 3
-
 #define GPU_MAX_TEXTURE 1024
 #define GPU_MAX_MESH    1024
 
@@ -51,7 +47,7 @@ typedef enum
     GPU_VERTEX_POSTIION = 1 << 0,
     GPU_VERTEX_UV       = 1 << 1,
     GPU_VERTEX_COLOR    = 1 << 2,
-} gpu_vertex_flags_t;
+} gpu_vertex_attribute_t;
 
 typedef enum
 {
@@ -91,10 +87,10 @@ typedef struct
 
 typedef struct
 {
-    nu_bool_t          active;
-    nu_u32_t           count;
-    gpu_primitive_t    primitive;
-    gpu_vertex_flags_t flags;
+    nu_bool_t              active;
+    nu_u32_t               count;
+    gpu_primitive_t        primitive;
+    gpu_vertex_attribute_t attributes;
 } gpu_mesh_t;
 
 typedef struct
@@ -132,10 +128,10 @@ typedef union
     } texture;
     struct
     {
-        nu_u32_t           index;
-        nu_u16_t           count;
-        gpu_primitive_t    primitive;
-        gpu_vertex_flags_t flags;
+        nu_u32_t               index;
+        nu_u16_t               count;
+        gpu_primitive_t        primitive;
+        gpu_vertex_attribute_t flags;
     } mesh;
 } cart_chunk_meta_t;
 

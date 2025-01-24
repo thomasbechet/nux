@@ -24,11 +24,18 @@ start (void)
     println("%d", *(p0 + size - 1));
     free(p0);
 
-    const nu_v3_t vertices[]
-        = { nu_v3(-0.5, 0, 0), nu_v3(0.5, 0, 0), nu_v3(0, 0.75, 0) };
+    const nu_f32_t vertices[] = { -0.5, 0,    0, 0, 0, 1, 0, 0, //
+                                  0.5,  0,    0, 0, 1, 0, 1, 0, //
+                                  0,    0.75, 0, 1, 0, 0, 0, 1 };
 
     // alloc_texture(0, TEXTURE64, NU_NULL);
-    alloc_mesh(0, 3, PRIMITIVE_TRIANGLES, VERTEX_POSTIION, vertices);
+    alloc_mesh(0,
+               3,
+               PRIMITIVE_TRIANGLES,
+               VERTEX_POSTIION | VERTEX_UV | VERTEX_COLOR,
+               vertices);
+    const nu_f32_t colors[] = { 1, 1, 0, 1, 1, 1, 1, 1, 1 };
+    write_mesh(0, VERTEX_COLOR, 0, 3, colors);
 }
 
 static nu_f32_t rotation = 0.0f;

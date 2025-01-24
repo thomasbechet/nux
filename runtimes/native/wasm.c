@@ -59,12 +59,13 @@ alloc_mesh (wasm_exec_env_t env,
 static void
 write_mesh (wasm_exec_env_t env,
             nu_u32_t        index,
+            nu_u32_t        attributes,
             nu_u32_t        first,
             nu_u32_t        count,
             const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_mesh(vm, index, first, count, p);
+    gpu_write_mesh(vm, index, attributes, first, count, p);
 }
 static void
 set_transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
@@ -105,19 +106,11 @@ native_wasm_realloc (mem_alloc_usage_t usage,
                      void             *p,
                      nu_u32_t          n)
 {
-    // logger_log(NU_LOG_INFO,
-    //            "REALLOC %s %u",
-    //            usage == Alloc_For_Runtime ? "runtime" : "linear",
-    //            n);
     return realloc(p, n);
 }
 void
 native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
 {
-    // logger_log(NU_LOG_INFO,
-    //            "FREE %s %p",
-    //            usage == Alloc_For_Runtime ? "runtime" : "linear",
-    //            p);
     free(p);
 }
 
@@ -126,7 +119,7 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii*)"),
     EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii*)"),
-    EXPORT_WASM_API_WITH_SIG(write_mesh, "(iii*)"),
+    EXPORT_WASM_API_WITH_SIG(write_mesh, "(iiii*)"),
     EXPORT_WASM_API_WITH_SIG(set_transform, "(i*)"),
     EXPORT_WASM_API_WITH_SIG(draw_mesh, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw_submesh, "(iii)"),

@@ -96,12 +96,12 @@ gpu_write_texture (vm_t       *vm,
     os_gpu_write_texture(vm, index, x, y, w, h, p);
 }
 void
-gpu_alloc_mesh (vm_t              *vm,
-                nu_u32_t           index,
-                nu_u32_t           count,
-                gpu_primitive_t    primitive,
-                gpu_vertex_flags_t flags,
-                const void        *p)
+gpu_alloc_mesh (vm_t                  *vm,
+                nu_u32_t               index,
+                nu_u32_t               count,
+                gpu_primitive_t        primitive,
+                gpu_vertex_attribute_t attributes,
+                const void            *p)
 {
     if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].active)
     {
@@ -109,18 +109,22 @@ gpu_alloc_mesh (vm_t              *vm,
             vm, NU_LOG_ERROR, "Mesh %d already allocated or invalid", index);
         return;
     }
-    vm->gpu.meshes[index].active    = NU_TRUE;
-    vm->gpu.meshes[index].count     = count;
-    vm->gpu.meshes[index].primitive = primitive;
-    vm->gpu.meshes[index].flags     = flags;
+    vm->gpu.meshes[index].active     = NU_TRUE;
+    vm->gpu.meshes[index].count      = count;
+    vm->gpu.meshes[index].primitive  = primitive;
+    vm->gpu.meshes[index].attributes = attributes;
     os_gpu_init_mesh(vm, index, p);
 }
 void
-gpu_write_mesh (
-    vm_t *vm, nu_u32_t index, nu_u32_t first, nu_u32_t count, const void *p)
+gpu_write_mesh (vm_t                  *vm,
+                nu_u32_t               index,
+                gpu_vertex_attribute_t attributes,
+                nu_u32_t               first,
+                nu_u32_t               count,
+                const void            *p)
 {
     check_mesh(vm, index);
-    os_gpu_write_mesh(vm, index, first, count, p);
+    os_gpu_write_mesh(vm, index, attributes, first, count, p);
 }
 
 void
