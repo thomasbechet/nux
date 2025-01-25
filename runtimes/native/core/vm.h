@@ -33,7 +33,7 @@ typedef struct
 
 #define GPU_MAX_TEXTURE 1024
 #define GPU_MAX_MESH    1024
-#define GPU_MAX_NODE    1024
+#define GPU_MAX_MODEL   1024
 
 typedef enum
 {
@@ -68,11 +68,11 @@ typedef struct
 {
     nu_u32_t max_vertex_count;
     nu_u32_t max_texture_counts[4];
+    nu_u32_t max_node_count;
 } gpu_config_t;
 
 typedef struct
 {
-    nu_u32_t texture;
     nu_v4u_t scissor;
     nu_v4u_t viewport;
     nu_m4_t  model;
@@ -99,7 +99,8 @@ typedef struct
     nu_u32_t mesh;
     nu_u32_t texture;
     nu_m4_t  transform;
-} gpu_node_t;
+    nu_u32_t next;
+} gpu_model_t;
 
 typedef struct
 {
@@ -107,7 +108,7 @@ typedef struct
     gpu_config_t  config;
     gpu_texture_t textures[GPU_MAX_TEXTURE];
     gpu_mesh_t    meshes[GPU_MAX_MESH];
-    gpu_node_t    nodes[GPU_MAX_NODE];
+    gpu_model_t   models[GPU_MAX_MODEL];
 } gpu_t;
 
 /////////////////
@@ -125,36 +126,34 @@ typedef enum
     CART_CHUNK_MODEL   = 4,
 } cart_chunk_type_t;
 
-typedef union
-{
-    struct
-    {
-        nu_u32_t addr;
-    } raw;
-    struct
-    {
-        nu_u32_t           index;
-        gpu_texture_size_t size;
-    } texture;
-    struct
-    {
-        nu_u32_t               index;
-        nu_u16_t               count;
-        gpu_primitive_t        primitive;
-        gpu_vertex_attribute_t flags;
-    } mesh;
-    struct
-    {
-        nu_u32_t node_first;
-        nu_u32_t node_count;
-    } model;
-} cart_chunk_meta_t;
-
 typedef struct
 {
     cart_chunk_type_t type;
-    cart_chunk_meta_t meta;
     nu_u32_t          length;
+    union
+    {
+        struct
+        {
+            nu_u32_t addr;
+        } raw;
+        struct
+        {
+            nu_u32_t           index;
+            gpu_texture_size_t size;
+        } texture;
+        struct
+        {
+            nu_u32_t               index;
+            nu_u16_t               count;
+            gpu_primitive_t        primitive;
+            gpu_vertex_attribute_t flags;
+        } mesh;
+        struct
+        {
+            nu_u32_t index; // index of first model
+            nu_u32_t count; // number of submodels (including itself)
+        } model;
+    };
 } cart_chunk_header_t;
 
 typedef struct

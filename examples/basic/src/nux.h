@@ -92,28 +92,17 @@ void alloc_mesh(
 WASM_IMPORT("write_mesh")
 void write_mesh(u32 index, u32 attributes, u32 first, u32 count, const void *p);
 
-WASM_IMPORT("set_node_mesh")
-void set_node_mesh(u32 index, u32 mesh);
-WASM_IMPORT("set_node_texture")
-void set_node_texture(u32 index, u32 texture);
-WASM_IMPORT("set_node_transform")
-void set_node_transform(u32 index, const f32 *m);
+WASM_IMPORT("set_model_mesh")
+void set_model_mesh(u32 index, u32 mesh);
+WASM_IMPORT("set_model_texture")
+void set_model_texture(u32 index, u32 texture);
+WASM_IMPORT("set_model_transform")
+void set_model_transform(u32 index, const f32 *m);
 
 WASM_IMPORT("set_transform")
 void set_transform(u32 transform, const f32 *m);
-WASM_IMPORT("set_texture")
-void set_texture(u32 index);
-WASM_IMPORT("draw_mesh")
-void draw_mesh(u32 index);
-WASM_IMPORT("draw_submesh")
-void draw_submesh(u32 index, u32 first, u32 count);
-WASM_IMPORT("draw_nodes")
-void draw_nodes(u32 first, u32 count);
-
-WASM_IMPORT("screen_width")
-u32 screen_width(void);
-WASM_IMPORT("screen_height")
-u32 screen_height(void);
+WASM_IMPORT("draw_model")
+void draw_model(u32 model);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

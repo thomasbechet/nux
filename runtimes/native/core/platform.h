@@ -26,12 +26,7 @@ void os_gpu_write_mesh(vm_t                  *vm,
 void os_gpu_begin(vm_t *vm);
 void os_gpu_end(vm_t *vm);
 void os_gpu_set_transform(vm_t *vm, gpu_transform_t transform);
-void os_gpu_set_texture(vm_t *vm, nu_u32_t index);
-void os_gpu_draw_submesh(vm_t    *vm,
-                         nu_u32_t mesh,
-                         nu_u32_t first,
-                         nu_u32_t count);
-void os_gpu_draw_nodes(vm_t *vm, nu_u32_t first, nu_u32_t count);
+void os_gpu_draw_model(vm_t *vm, nu_u32_t index);
 
 void      os_iop_mount(vm_t *vm, const nu_char_t *name);
 void      os_iop_seek(vm_t *vm, nu_size_t n);

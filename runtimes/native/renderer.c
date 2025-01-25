@@ -483,14 +483,8 @@ os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
 {
     switch (transform)
     {
-        case GPU_TRANSFORM_MODEL: {
-            glUniformMatrix4fv(
-                glGetUniformLocation(renderer.unlit_program, "model"),
-                1,
-                GL_FALSE,
-                vm->gpu.state.model.data);
-        }
-        break;
+        case GPU_TRANSFORM_MODEL:
+            break;
         case GPU_TRANSFORM_PROJECTION:
         case GPU_TRANSFORM_VIEW: {
             nu_m4_t view_projection
@@ -505,32 +499,24 @@ os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
     }
 }
 void
-os_gpu_set_texture (vm_t *vm, nu_u32_t index)
+os_gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer.textures[index]);
-}
-void
-os_gpu_draw_submesh (vm_t *vm, nu_u32_t mesh, nu_u32_t first, nu_u32_t count)
-{
-    nu_u32_t offset = renderer.meshes[mesh].offset;
-    glBindVertexArray(renderer.vao);
-    glDrawArrays(GL_TRIANGLES, offset + first, count);
-    glBindVertexArray(0);
-}
-void
-os_gpu_draw_nodes (vm_t *vm, nu_u32_t first, nu_u32_t count)
-{
-    nu_m4_t previous_transform = vm->gpu.state.model;
-    for (nu_u32_t i = first; i < first + count; ++i)
+    nu_u32_t current = index;
+    while (current != (nu_u32_t)-1)
     {
-        const gpu_node_t *node = vm->gpu.nodes + i;
-        vm->gpu.state.model    = nu_m4_mul(previous_transform, node->transform);
-        os_gpu_set_transform(vm, GPU_TRANSFORM_MODEL);
-        os_gpu_set_texture(vm, node->texture);
-        os_gpu_draw_submesh(
-            vm, node->mesh, 0, vm->gpu.meshes[node->mesh].count);
+        const gpu_model_t *model = vm->gpu.models + current;
+        nu_m4_t transform = nu_m4_mul(vm->gpu.state.model, model->transform);
+        glUniformMatrix4fv(
+            glGetUniformLocation(renderer.unlit_program, "model"),
+            1,
+            GL_FALSE,
+            transform.data);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, renderer.textures[model->texture]);
+        nu_u32_t offset = renderer.meshes[model->mesh].offset;
+        glBindVertexArray(renderer.vao);
+        glDrawArrays(GL_TRIANGLES, offset, vm->gpu.meshes[model->mesh].count);
+        glBindVertexArray(0);
+        current = model->next;
     }
-    vm->gpu.state.model = previous_transform;
-    os_gpu_set_transform(vm, GPU_TRANSFORM_MODEL);
 }

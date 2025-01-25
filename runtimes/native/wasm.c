@@ -69,22 +69,28 @@ write_mesh (wasm_exec_env_t env,
 }
 
 static void
-set_node_mesh (wasm_exec_env_t env, nu_u32_t index, nu_u32_t mesh)
+set_model_mesh (wasm_exec_env_t env, nu_u32_t index, nu_u32_t mesh)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_node_mesh(vm, index, mesh);
+    gpu_set_model_mesh(vm, index, mesh);
 }
 static void
-set_node_texture (wasm_exec_env_t env, nu_u32_t index, nu_u32_t texture)
+set_model_texture (wasm_exec_env_t env, nu_u32_t index, nu_u32_t texture)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_node_texture(vm, index, texture);
+    gpu_set_model_texture(vm, index, texture);
 }
 static void
-set_node_transform (wasm_exec_env_t env, nu_u32_t index, const nu_f32_t *m)
+set_model_transform (wasm_exec_env_t env, nu_u32_t index, const nu_f32_t *m)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_node_transform(vm, index, m);
+    gpu_set_model_transform(vm, index, m);
+}
+static void
+set_model_next (wasm_exec_env_t env, nu_u32_t index, nu_u32_t next)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_set_model_next(vm, index, next);
 }
 
 static void
@@ -94,31 +100,10 @@ set_transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
     gpu_set_transform(vm, transform, m);
 }
 static void
-set_texture (wasm_exec_env_t env, nu_u32_t index)
+draw_model (wasm_exec_env_t env, nu_u32_t index)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_texture(vm, index);
-}
-static void
-draw_mesh (wasm_exec_env_t env, nu_u32_t mesh)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_mesh(vm, mesh);
-}
-static void
-draw_submesh (wasm_exec_env_t env,
-              nu_u32_t        mesh,
-              nu_u32_t        first,
-              nu_u32_t        count)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_submesh(vm, mesh, first, count);
-}
-static void
-draw_nodes (wasm_exec_env_t env, nu_u32_t first, nu_u32_t count)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_nodes(vm, first, count);
+    gpu_draw_model(vm, index);
 }
 
 static void *
@@ -152,14 +137,12 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii*)"),
     EXPORT_WASM_API_WITH_SIG(write_mesh, "(iiii*)"),
-    EXPORT_WASM_API_WITH_SIG(set_node_mesh, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(set_node_texture, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(set_node_transform, "(i*)"),
+    EXPORT_WASM_API_WITH_SIG(set_model_mesh, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(set_model_texture, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(set_model_transform, "(i*)"),
+    EXPORT_WASM_API_WITH_SIG(set_model_next, "(ii)"),
     EXPORT_WASM_API_WITH_SIG(set_transform, "(i*)"),
-    EXPORT_WASM_API_WITH_SIG(set_texture, "(i)"),
-    EXPORT_WASM_API_WITH_SIG(draw_mesh, "(i)"),
-    EXPORT_WASM_API_WITH_SIG(draw_submesh, "(iii)"),
-    EXPORT_WASM_API_WITH_SIG(draw_nodes, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
 };
 
 nu_status_t

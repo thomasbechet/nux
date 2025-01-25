@@ -14,15 +14,17 @@ gpu_init (vm_t *vm, const vm_config_t *config)
     {
         vm->gpu.meshes[i].active = NU_FALSE;
     }
-    for (nu_size_t i = 0; i < GPU_MAX_NODE; ++i)
+    for (nu_size_t i = 0; i < GPU_MAX_MODEL; ++i)
     {
-        vm->gpu.nodes[i].transform = nu_m4_identity();
+        vm->gpu.models[i].texture   = -1;
+        vm->gpu.models[i].mesh      = -1;
+        vm->gpu.models[i].transform = nu_m4_identity();
+        vm->gpu.models[i].next      = -1;
     }
     vm->gpu.config           = config->gpu;
     vm->gpu.state.model      = nu_m4_identity();
     vm->gpu.state.view       = nu_m4_identity();
     vm->gpu.state.projection = nu_m4_identity();
-    vm->gpu.state.texture    = -1;
     os_gpu_init(vm);
     return NU_SUCCESS;
 }
@@ -79,11 +81,11 @@ check_texture (vm_t *vm, nu_u32_t index)
     }
 }
 static void
-check_node (vm_t *vm, nu_u32_t index)
+check_model (vm_t *vm, nu_u32_t index)
 {
-    if (index >= GPU_MAX_NODE)
+    if (index >= GPU_MAX_MODEL)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive node %d", index);
+        iou_log(vm, NU_LOG_ERROR, "Invalid model %d", index);
     }
 }
 
@@ -152,22 +154,28 @@ gpu_write_mesh (vm_t                  *vm,
 }
 
 void
-gpu_set_node_mesh (vm_t *vm, nu_u32_t index, nu_u32_t mesh)
+gpu_set_model_mesh (vm_t *vm, nu_u32_t index, nu_u32_t mesh)
 {
-    check_node(vm, index);
-    vm->gpu.nodes[index].mesh = mesh;
+    check_model(vm, index);
+    vm->gpu.models[index].mesh = mesh;
 }
 void
-gpu_set_node_texture (vm_t *vm, nu_u32_t index, nu_u32_t texture)
+gpu_set_model_texture (vm_t *vm, nu_u32_t index, nu_u32_t texture)
 {
-    check_node(vm, index);
-    vm->gpu.nodes[index].texture = texture;
+    check_model(vm, index);
+    vm->gpu.models[index].texture = texture;
 }
 void
-gpu_set_node_transform (vm_t *vm, nu_u32_t index, const nu_f32_t *m)
+gpu_set_model_transform (vm_t *vm, nu_u32_t index, const nu_f32_t *m)
 {
-    check_node(vm, index);
-    vm->gpu.nodes[index].transform = nu_m4(m);
+    check_model(vm, index);
+    vm->gpu.models[index].transform = nu_m4(m);
+}
+void
+gpu_set_model_next (vm_t *vm, nu_u32_t index, nu_u32_t next)
+{
+    check_model(vm, index);
+    vm->gpu.models[index].next = next;
 }
 
 void
@@ -188,29 +196,8 @@ gpu_set_transform (vm_t *vm, gpu_transform_t transform, const nu_f32_t *m)
     os_gpu_set_transform(vm, transform);
 }
 void
-gpu_set_texture (vm_t *vm, nu_u32_t index)
+gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
-    check_texture(vm, index);
-    os_gpu_set_texture(vm, index);
-}
-void
-gpu_draw_mesh (vm_t *vm, nu_u32_t mesh)
-{
-    check_mesh(vm, mesh);
-    gpu_draw_submesh(vm, mesh, 0, vm->gpu.meshes[mesh].count);
-}
-void
-gpu_draw_submesh (vm_t *vm, nu_u32_t mesh, nu_u32_t first, nu_u32_t count)
-{
-    check_mesh(vm, mesh);
-    os_gpu_draw_submesh(vm, mesh, first, count);
-}
-void
-gpu_draw_nodes (vm_t *vm, nu_u32_t first, nu_u32_t count)
-{
-    for (nu_u32_t i = first; i < (first + count); ++i)
-    {
-        check_node(vm, i);
-    }
-    os_gpu_draw_nodes(vm, first, count);
+    check_model(vm, index);
+    os_gpu_draw_model(vm, index);
 }
