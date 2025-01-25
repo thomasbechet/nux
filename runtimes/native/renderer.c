@@ -505,6 +505,12 @@ os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
     }
 }
 void
+os_gpu_set_texture (vm_t *vm, nu_u32_t index)
+{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer.textures[index]);
+}
+void
 os_gpu_draw_submesh (vm_t *vm, nu_u32_t mesh, nu_u32_t first, nu_u32_t count)
 {
     nu_u32_t offset = renderer.meshes[mesh].offset;

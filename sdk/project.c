@@ -10,7 +10,6 @@
 #define PROJECT_PREBUILD     "prebuild"
 #define PROJECT_CHUNK_TYPE   "type"
 #define PROJECT_CHUNK_SOURCE "source"
-#define PROJECT_CHUNK_META   "meta"
 
 static NU_ENUM_MAP(cart_chunk_type_map,
                    NU_ENUM_NAME(CART_CHUNK_RAW, "raw"),
@@ -33,28 +32,26 @@ parse_f32 (const JSON_Object *object, const nu_char_t *name)
     return json_object_get_number(object, name);
 }
 static void
-parse_meta (const JSON_Object *jchunk,
-            cart_chunk_type_t  type,
-            cart_chunk_meta_t *meta)
+parse_per_type (const JSON_Object *jchunk,
+                cart_chunk_type_t  type,
+                cart_chunk_meta_t *meta)
 {
-    const JSON_Object *jmeta
-        = json_object_get_object(jchunk, PROJECT_CHUNK_META);
     switch (type)
     {
         case CART_CHUNK_RAW: {
-            meta->raw.addr = parse_f32(jmeta, "addr");
+            meta->raw.addr = parse_f32(jchunk, "addr");
         }
         break;
         case CART_CHUNK_WASM:
             break;
         case CART_CHUNK_TEXTURE: {
-            meta->texture.index = parse_f32(jmeta, "index");
-            meta->texture.size  = parse_f32(jmeta, "size");
+            meta->texture.index = parse_f32(jchunk, "index");
+            meta->texture.size  = parse_f32(jchunk, "size");
         }
         break;
         case CART_CHUNK_MESH: {
-            meta->mesh.index = parse_f32(jmeta, "index");
-            meta->mesh.count = parse_f32(jmeta, "count");
+            meta->mesh.index = parse_f32(jchunk, "index");
+            meta->mesh.count = parse_f32(jchunk, "count");
         }
         break;
     }
@@ -66,30 +63,26 @@ write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
     json_object_set_number(object, name, value);
 }
 static void
-write_meta (JSON_Object             *chunk,
-            cart_chunk_type_t        type,
-            const cart_chunk_meta_t *meta)
+write_per_type (JSON_Object             *chunk,
+                cart_chunk_type_t        type,
+                const cart_chunk_meta_t *meta)
 {
-    JSON_Value *jmetav = json_value_init_object();
-    NU_ASSERT(jmetav);
-    json_object_set_value(chunk, PROJECT_CHUNK_META, jmetav);
-    JSON_Object *jmeta = json_object(jmetav);
     switch (type)
     {
         case CART_CHUNK_RAW: {
-            write_f32(jmeta, "addr", meta->raw.addr);
+            write_f32(chunk, "addr", meta->raw.addr);
         }
         break;
         case CART_CHUNK_WASM:
             break;
         case CART_CHUNK_TEXTURE: {
-            write_f32(jmeta, "slot", meta->texture.index);
-            write_f32(jmeta, "size", meta->texture.size);
+            write_f32(chunk, "index", meta->texture.index);
+            write_f32(chunk, "size", meta->texture.size);
         }
         break;
         case CART_CHUNK_MESH: {
-            write_f32(jmeta, "index", meta->mesh.index);
-            write_f32(jmeta, "count", meta->mesh.count);
+            write_f32(chunk, "index", meta->mesh.index);
+            write_f32(chunk, "count", meta->mesh.count);
         }
         break;
     }
@@ -352,7 +345,7 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
                           NU_PATH_MAX);
 
             // Parse meta
-            parse_meta(jchunk, type, &project->chunks[i].header.meta);
+            parse_per_type(jchunk, type, &project->chunks[i].header.meta);
         }
     }
 
@@ -410,9 +403,9 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
                 jchunk, PROJECT_CHUNK_SOURCE, project->chunks[i].source_path);
 
             // Write chunk meta
-            write_meta(jchunk,
-                       project->chunks[i].header.type,
-                       &project->chunks[i].header.meta);
+            write_per_type(jchunk,
+                           project->chunks[i].header.type,
+                           &project->chunks[i].header.meta);
         }
     }
 

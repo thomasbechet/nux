@@ -45,7 +45,7 @@ static const nu_sv_t shader_unlit_frag = NU_SV(
     "\n"
     "out vec4 frag_color;\n"
     "\n"
-    "// uniform sampler2D texture0;\n"
+    "uniform sampler2D texture0;\n"
     "\n"
     "in VS_OUT {\n"
     "    vec2 uv;\n"
@@ -54,8 +54,7 @@ static const nu_sv_t shader_unlit_frag = NU_SV(
     "\n"
     "void main()\n"
     "{\n"
-    "    // frag_color = texture(texture0, fs_in.uv);\n"
-    "    frag_color = vec4(fs_in.color, 1);\n"
+    "    frag_color = texture(texture0, fs_in.uv) * vec4(fs_in.color, 1);\n"
     "}\n");
 static const nu_sv_t shader_unlit_vert = NU_SV(
     "#version 330 core\n"

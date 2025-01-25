@@ -5,6 +5,12 @@
 		{
 			"type": "wasm",
 			"source": "build/cart.wasm"
-		}
+		},
+        {
+            "type": "texture",
+            "source": "assets/Horror_Brick_01-128x128.png",
+            "index": 0,
+            "size": 1
+        }
 	]
 }

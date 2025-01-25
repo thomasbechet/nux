@@ -27,6 +27,7 @@ read_header (vm_t *vm, cart_chunk_header_t *header)
         case CART_CHUNK_TEXTURE: {
             header->meta.texture.index = read_u32(vm);
             header->meta.texture.size  = read_u32(vm);
+            NU_ASSERT(header->length == 128 * 128 * 4);
         }
         break;
         case CART_CHUNK_MESH: {

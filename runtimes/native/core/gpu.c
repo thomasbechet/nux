@@ -62,6 +62,14 @@ check_mesh (vm_t *vm, nu_u32_t index)
         iou_log(vm, NU_LOG_ERROR, "Invalid or inactive mesh %d", index);
     }
 }
+static void
+check_texture (vm_t *vm, nu_u32_t index)
+{
+    if (index >= GPU_MAX_TEXTURE || !vm->gpu.textures[index].active)
+    {
+        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive texture %d", index);
+    }
+}
 
 void
 gpu_alloc_texture (vm_t              *vm,
@@ -143,6 +151,12 @@ gpu_set_transform (vm_t *vm, gpu_transform_t transform, const nu_f32_t *m)
             break;
     }
     os_gpu_set_transform(vm, transform);
+}
+void
+gpu_set_texture (vm_t *vm, nu_u32_t index)
+{
+    check_texture(vm, index);
+    os_gpu_set_texture(vm, index);
 }
 void
 gpu_draw_mesh (vm_t *vm, nu_u32_t mesh)

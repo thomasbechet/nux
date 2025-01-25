@@ -34,7 +34,7 @@ start (void)
                PRIMITIVE_TRIANGLES,
                VERTEX_POSTIION | VERTEX_UV | VERTEX_COLOR,
                vertices);
-    const nu_f32_t colors[] = { 1, 1, 0, 1, 1, 1, 1, 1, 1 };
+    const nu_f32_t colors[] = { 1, 0, 0, 1, 1, 1, 1, 1, 1 };
     write_mesh(0, VERTEX_COLOR, 0, 3, colors);
 }
 
@@ -50,5 +50,6 @@ update (void)
     set_transform(TRANSFORM_MODEL, m.data);
     set_transform(TRANSFORM_VIEW, v.data);
     set_transform(TRANSFORM_PROJECTION, p.data);
+    set_texture(0);
     draw_mesh(0);
 }

@@ -74,6 +74,12 @@ set_transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
     gpu_set_transform(vm, transform, m);
 }
 static void
+set_texture (wasm_exec_env_t env, nu_u32_t index)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_set_texture(vm, index);
+}
+static void
 draw_mesh (wasm_exec_env_t env, nu_u32_t mesh)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
@@ -121,6 +127,7 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii*)"),
     EXPORT_WASM_API_WITH_SIG(write_mesh, "(iiii*)"),
     EXPORT_WASM_API_WITH_SIG(set_transform, "(i*)"),
+    EXPORT_WASM_API_WITH_SIG(set_texture, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw_mesh, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw_submesh, "(iii)"),
 };

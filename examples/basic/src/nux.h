@@ -95,6 +95,8 @@ void write_mesh(u32 index, u32 attributes, u32 first, u32 count, const void *p);
 
 WASM_IMPORT("set_transform")
 void set_transform(u32 transform, const f32 *m);
+WASM_IMPORT("set_texture")
+void set_texture(u32 index);
 WASM_IMPORT("draw_mesh")
 void draw_mesh(u32 index);
 WASM_IMPORT("draw_submesh")
