@@ -15,7 +15,8 @@ static NU_ENUM_MAP(cart_chunk_type_map,
                    NU_ENUM_NAME(CART_CHUNK_RAW, "raw"),
                    NU_ENUM_NAME(CART_CHUNK_MESH, "mesh"),
                    NU_ENUM_NAME(CART_CHUNK_WASM, "wasm"),
-                   NU_ENUM_NAME(CART_CHUNK_TEXTURE, "texture"));
+                   NU_ENUM_NAME(CART_CHUNK_TEXTURE, "texture"),
+                   NU_ENUM_NAME(CART_CHUNK_MODEL, "model"));
 
 static void
 project_init (sdk_project_t *project, nu_sv_t path)
@@ -54,6 +55,11 @@ parse_per_type (const JSON_Object *jchunk,
             meta->mesh.count = parse_f32(jchunk, "count");
         }
         break;
+        case CART_CHUNK_MODEL: {
+            meta->model.node_first = parse_f32(jchunk, "first");
+            meta->model.node_count = parse_f32(jchunk, "count");
+        }
+        break;
     }
 }
 
@@ -83,6 +89,11 @@ write_per_type (JSON_Object             *chunk,
         case CART_CHUNK_MESH: {
             write_f32(chunk, "index", meta->mesh.index);
             write_f32(chunk, "count", meta->mesh.count);
+        }
+        break;
+        case CART_CHUNK_MODEL: {
+            write_f32(chunk, "first", meta->model.node_first);
+            write_f32(chunk, "count", meta->model.node_count);
         }
         break;
     }
@@ -115,6 +126,11 @@ write_chunk_header (FILE *f, cart_chunk_header_t *header)
         }
         break;
         case CART_CHUNK_MESH: {
+        }
+        break;
+        case CART_CHUNK_MODEL: {
+            write_u32(f, header->meta.model.node_first);
+            write_u32(f, header->meta.model.node_count);
         }
         break;
     }
@@ -271,6 +287,9 @@ sdk_build (const sdk_project_t *project)
                 // write_u32(f, entry->dst.mesh.first);
                 // // data
                 // NU_ASSERT(fwrite(output, length, 1, f));
+            }
+            break;
+            case CART_CHUNK_MODEL: {
             }
             break;
         }

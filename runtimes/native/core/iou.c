@@ -37,6 +37,9 @@ read_header (vm_t *vm, cart_chunk_header_t *header)
             header->meta.mesh.flags     = read_u32(vm);
         }
         break;
+        case CART_CHUNK_MODEL: {
+        }
+        break;
     }
     return NU_TRUE;
 }

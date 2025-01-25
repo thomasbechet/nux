@@ -122,6 +122,7 @@ typedef enum
     CART_CHUNK_WASM    = 1,
     CART_CHUNK_TEXTURE = 2,
     CART_CHUNK_MESH    = 3,
+    CART_CHUNK_MODEL   = 4,
 } cart_chunk_type_t;
 
 typedef union
@@ -142,6 +143,11 @@ typedef union
         gpu_primitive_t        primitive;
         gpu_vertex_attribute_t flags;
     } mesh;
+    struct
+    {
+        nu_u32_t node_first;
+        nu_u32_t node_count;
+    } model;
 } cart_chunk_meta_t;
 
 typedef struct

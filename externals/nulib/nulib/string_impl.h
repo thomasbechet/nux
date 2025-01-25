@@ -190,7 +190,7 @@ nu_sv_to_enum (nu_sv_t sv, const nu_enum_name_map_t *map, nu_bool_t *found)
 {
     *found                            = NU_FALSE;
     const nu_enum_name_map_t *current = map;
-    while (map->s)
+    while (current->s)
     {
         if (nu_sv_eq(nu_sv_cstr(current->s), sv))
         {

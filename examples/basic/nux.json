@@ -11,6 +11,11 @@
             "source": "assets/Horror_Brick_01-128x128.png",
             "index": 0,
             "size": 1
+        },
+        {
+            "type": "model",
+            "source": "assets/ariane6.glb",
+            "first": 0
         }
 	]
 }
