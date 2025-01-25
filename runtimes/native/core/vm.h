@@ -33,6 +33,7 @@ typedef struct
 
 #define GPU_MAX_TEXTURE 1024
 #define GPU_MAX_MESH    1024
+#define GPU_MAX_NODE    1024
 
 typedef enum
 {
@@ -95,10 +96,18 @@ typedef struct
 
 typedef struct
 {
+    nu_u32_t mesh;
+    nu_u32_t texture;
+    nu_m4_t  transform;
+} gpu_node_t;
+
+typedef struct
+{
     gpu_state_t   state;
     gpu_config_t  config;
     gpu_texture_t textures[GPU_MAX_TEXTURE];
     gpu_mesh_t    meshes[GPU_MAX_MESH];
+    gpu_node_t    nodes[GPU_MAX_NODE];
 } gpu_t;
 
 /////////////////

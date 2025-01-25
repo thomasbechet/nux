@@ -518,3 +518,19 @@ os_gpu_draw_submesh (vm_t *vm, nu_u32_t mesh, nu_u32_t first, nu_u32_t count)
     glDrawArrays(GL_TRIANGLES, offset + first, count);
     glBindVertexArray(0);
 }
+void
+os_gpu_draw_nodes (vm_t *vm, nu_u32_t first, nu_u32_t count)
+{
+    nu_m4_t previous_transform = vm->gpu.state.model;
+    for (nu_u32_t i = first; i < first + count; ++i)
+    {
+        const gpu_node_t *node = vm->gpu.nodes + i;
+        vm->gpu.state.model    = nu_m4_mul(previous_transform, node->transform);
+        os_gpu_set_transform(vm, GPU_TRANSFORM_MODEL);
+        os_gpu_set_texture(vm, node->texture);
+        os_gpu_draw_submesh(
+            vm, node->mesh, 0, vm->gpu.meshes[node->mesh].count);
+    }
+    vm->gpu.state.model = previous_transform;
+    os_gpu_set_transform(vm, GPU_TRANSFORM_MODEL);
+}

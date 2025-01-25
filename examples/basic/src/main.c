@@ -43,12 +43,17 @@ void
 update (void)
 {
     rotation += 0.01;
+
+    set_node_mesh(0, 0);
+    set_node_texture(0, 0);
+
     nu_m4_t v = nu_lookat(nu_v3(1, 1, -1), nu_v3(0, 0.25, 0), NU_V3_UP);
     nu_m4_t p = nu_perspective(nu_radian(50.0), 640.0 / 400.0, 0.01, 100);
-    nu_m4_t m = nu_m4_rotate_y(rotation);
+    nu_m4_t m = nu_m4_translate(nu_v3(0, 0.5, 0));
+    set_node_transform(0, m.data);
+    m = nu_m4_rotate_y(rotation);
     set_transform(TRANSFORM_MODEL, m.data);
     set_transform(TRANSFORM_VIEW, v.data);
     set_transform(TRANSFORM_PROJECTION, p.data);
-    set_texture(0);
-    draw_mesh(0);
+    draw_nodes(0, 1);
 }
