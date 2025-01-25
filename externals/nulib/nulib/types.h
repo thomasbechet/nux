@@ -57,25 +57,25 @@
 #define NU_V4_ZEROS nu_vec4(0, 0, 0, 0)
 
 // TODO: use stdint types
-typedef unsigned char  nu_u8_t;
-typedef signed char    nu_i8_t;
-typedef unsigned short nu_u16_t;
-typedef signed short   nu_i16_t;
-typedef int            nu_i32_t;
-typedef unsigned int   nu_u32_t;
-typedef long           nu_i64_t;
-typedef unsigned long  nu_u64_t;
-typedef float          nu_f32_t;
-typedef double         nu_f64_t;
+typedef uint8_t  nu_u8_t;
+typedef int8_t   nu_i8_t;
+typedef uint16_t nu_u16_t;
+typedef int16_t  nu_i16_t;
+typedef int32_t  nu_i32_t;
+typedef uint32_t nu_u32_t;
+typedef int64_t  nu_i64_t;
+typedef uint64_t nu_u64_t;
+typedef float    nu_f32_t;
+typedef double   nu_f64_t;
 
-typedef int           nu_bool_t;
-typedef nu_i32_t      nu_int_t;
-typedef unsigned long nu_size_t;
-typedef intptr_t      nu_intptr_t;
-typedef nu_u8_t       nu_byte_t;
-typedef int           nu_word_t;
-typedef char          nu_char_t;
-typedef nu_i32_t      nu_wchar_t;
+typedef int      nu_bool_t;
+typedef nu_i32_t nu_int_t;
+typedef size_t   nu_size_t;
+typedef intptr_t nu_intptr_t;
+typedef nu_u8_t  nu_byte_t;
+typedef int      nu_word_t;
+typedef char     nu_char_t;
+typedef nu_i32_t nu_wchar_t;
 
 typedef enum
 {

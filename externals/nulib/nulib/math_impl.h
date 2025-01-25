@@ -608,7 +608,7 @@ nu_m4_t
 nu_m4 (const nu_f32_t *p)
 {
     nu_m4_t m;
-    nu_memcpy(m.data, p, NU_M4_SIZE * sizeof(*p));
+    nu_memcpy(m.data, p, sizeof(*p) * NU_M4_SIZE);
     return m;
 }
 nu_m4_t

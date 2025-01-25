@@ -66,8 +66,6 @@ static const nu_sv_t shader_unlit_vert = NU_SV(
     "uniform uvec2 viewport_size;\n"
     "uniform mat4 model;\n"
     "uniform mat4 view_projection;\n"
-    "// uniform mat3 uv_transform;\n"
-    "// uniform sampler2D texture0;\n"
     "\n"
     "out VS_OUT {\n"
     "    vec2 uv;\n"
@@ -88,10 +86,7 @@ static const nu_sv_t shader_unlit_vert = NU_SV(
     "    vec4 position = view_projection * model * vec4(in_position, 1);\n"
     "    gl_Position = snap_vertex(position);\n"
     "\n"
-    "    // vs_out.uv = (uv_transform * vec3(in_uv, 1)).xy;\n"
     "    vs_out.uv = in_uv;\n"
     "    vs_out.color = in_color;\n"
-    "\n"
-    "    // gl_Position = vec4(in_position, 1);\n"
     "}\n");
 #endif

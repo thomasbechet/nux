@@ -605,6 +605,13 @@ nu_m3_mul (nu_m3_t a, nu_m3_t b)
 }
 
 nu_m4_t
+nu_m4 (const nu_f32_t *p)
+{
+    nu_m4_t m;
+    nu_memcpy(m.data, p, sizeof(*p) * NU_M4_SIZE);
+    return m;
+}
+nu_m4_t
 nu_m4_zero (void)
 {
     nu_m4_t m;

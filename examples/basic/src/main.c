@@ -1,5 +1,4 @@
 #include "nux.h"
-#include <stdio.h>
 #define NU_IMPLEMENTATION
 #include "nulib.h"
 

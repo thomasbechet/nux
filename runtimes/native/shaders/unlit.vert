@@ -7,8 +7,6 @@ layout(location = 2) in vec3 in_color;
 uniform uvec2 viewport_size;
 uniform mat4 model;
 uniform mat4 view_projection;
-// uniform mat3 uv_transform;
-// uniform sampler2D texture0;
 
 out VS_OUT {
     vec2 uv;
@@ -29,9 +27,6 @@ void main()
     vec4 position = view_projection * model * vec4(in_position, 1);
     gl_Position = snap_vertex(position);
 
-    // vs_out.uv = (uv_transform * vec3(in_uv, 1)).xy;
     vs_out.uv = in_uv;
     vs_out.color = in_color;
-
-    // gl_Position = vec4(in_position, 1);
 }

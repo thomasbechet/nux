@@ -178,7 +178,7 @@ sdk_build (const sdk_project_t *project)
     if (nu_strlen(project->prebuild))
     {
         sdk_log(
-            NU_LOG_INFO, "Executing prebuild command: %s", project->prebuild);
+            NU_LOG_INFO, "Executing prebuild command : %s", project->prebuild);
 #ifdef NU_PLATFORM_UNIX
         system(project->prebuild);
 #endif
@@ -208,13 +208,16 @@ sdk_build (const sdk_project_t *project)
     for (nu_size_t i = 0; i < project->chunks_count; ++i)
     {
         sdk_project_chunk_t *entry = project->chunks + i;
+        sdk_log(NU_LOG_INFO,
+                "[%d] %s : %s",
+                i,
+                nu_enum_to_cstr(entry->header.type, cart_chunk_type_map),
+                entry->source_path);
         switch (entry->header.type)
         {
             case CART_CHUNK_RAW:
                 break;
             case CART_CHUNK_WASM: {
-                sdk_log(
-                    NU_LOG_INFO, "Compiling wasm chunk %s", entry->source_path);
                 nu_size_t  size;
                 nu_byte_t *buffer;
                 if (!nu_load_bytes(
@@ -239,9 +242,6 @@ sdk_build (const sdk_project_t *project)
             }
             break;
             case CART_CHUNK_TEXTURE: {
-                sdk_log(NU_LOG_INFO,
-                        "Compiling texture chunk %s",
-                        entry->source_path);
                 nu_v2u_t   size;
                 nu_byte_t *data
                     = sdk_load_image(nu_sv_cstr(entry->source_path), &size);
