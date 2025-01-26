@@ -98,8 +98,9 @@ typedef struct
 {
     nu_u32_t mesh;
     nu_u32_t texture;
-    nu_m4_t  transform;
-    nu_u32_t next;
+    nu_u32_t child;
+    nu_u32_t sibling;
+    nu_m4_t  local_to_parent;
 } gpu_model_t;
 
 typedef struct

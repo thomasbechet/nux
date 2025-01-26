@@ -15,6 +15,7 @@
         {
             "type": "model",
             "source": "assets/ariane6.glb",
+            "index": 0,
             "first": 0
         }
 	]

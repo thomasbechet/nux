@@ -16,10 +16,11 @@ gpu_init (vm_t *vm, const vm_config_t *config)
     }
     for (nu_size_t i = 0; i < GPU_MAX_MODEL; ++i)
     {
-        vm->gpu.models[i].texture   = -1;
-        vm->gpu.models[i].mesh      = -1;
-        vm->gpu.models[i].transform = nu_m4_identity();
-        vm->gpu.models[i].next      = -1;
+        vm->gpu.models[i].texture         = -1;
+        vm->gpu.models[i].mesh            = -1;
+        vm->gpu.models[i].child           = -1;
+        vm->gpu.models[i].sibling         = -1;
+        vm->gpu.models[i].local_to_parent = nu_m4_identity();
     }
     vm->gpu.config           = config->gpu;
     vm->gpu.state.model      = nu_m4_identity();
@@ -169,13 +170,17 @@ void
 gpu_set_model_transform (vm_t *vm, nu_u32_t index, const nu_f32_t *m)
 {
     check_model(vm, index);
-    vm->gpu.models[index].transform = nu_m4(m);
+    vm->gpu.models[index].local_to_parent = nu_m4(m);
 }
 void
-gpu_set_model_next (vm_t *vm, nu_u32_t index, nu_u32_t next)
+gpu_set_model_parent (vm_t *vm, nu_u32_t index, nu_u32_t parent)
 {
     check_model(vm, index);
-    vm->gpu.models[index].next = next;
+    check_model(vm, parent);
+    gpu_model_t *p = vm->gpu.models + parent;
+    gpu_model_t *m = vm->gpu.models + index;
+    m->sibling     = p->child;
+    p->child       = index;
 }
 
 void

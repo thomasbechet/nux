@@ -129,7 +129,7 @@ iou_load_full (vm_t *vm, const nu_char_t *name)
                     gpu_set_model_transform(vm, index, transform.data);
                     if (m != header.model.count - 1)
                     {
-                        gpu_set_model_next(vm, index, index + 1);
+                        gpu_set_model_parent(vm, index, index + 1);
                     }
                 }
             }

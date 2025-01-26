@@ -499,24 +499,32 @@ os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
     }
 }
 void
+draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
+{
+    // draw model
+    const gpu_model_t *model = vm->gpu.models + index;
+    transform                = nu_m4_mul(transform, model->local_to_parent);
+    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
+                       1,
+                       GL_FALSE,
+                       transform.data);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer.textures[model->texture]);
+    nu_u32_t offset = renderer.meshes[model->mesh].offset;
+    glBindVertexArray(renderer.vao);
+    glDrawArrays(GL_TRIANGLES, offset, vm->gpu.meshes[model->mesh].count);
+    glBindVertexArray(0);
+
+    // draw childs
+    nu_u32_t child = model->child;
+    while (child != (nu_u32_t)-1)
+    {
+        draw_model(vm, child, transform);
+        child = vm->gpu.models[child].sibling;
+    }
+}
+void
 os_gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
-    nu_u32_t current = index;
-    while (current != (nu_u32_t)-1)
-    {
-        const gpu_model_t *model = vm->gpu.models + current;
-        nu_m4_t transform = nu_m4_mul(vm->gpu.state.model, model->transform);
-        glUniformMatrix4fv(
-            glGetUniformLocation(renderer.unlit_program, "model"),
-            1,
-            GL_FALSE,
-            transform.data);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, renderer.textures[model->texture]);
-        nu_u32_t offset = renderer.meshes[model->mesh].offset;
-        glBindVertexArray(renderer.vao);
-        glDrawArrays(GL_TRIANGLES, offset, vm->gpu.meshes[model->mesh].count);
-        glBindVertexArray(0);
-        current = model->next;
-    }
+    draw_model(vm, index, vm->gpu.state.model);
 }
