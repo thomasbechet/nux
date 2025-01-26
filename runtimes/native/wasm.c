@@ -261,7 +261,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
 nu_status_t
 os_cpu_call_event (vm_t *vm, cpu_event_t event)
 {
-    wasm_function_inst_t callback;
+    wasm_function_inst_t callback      = NU_NULL;
     const nu_char_t     *callback_name = NU_NULL;
     switch (event)
     {

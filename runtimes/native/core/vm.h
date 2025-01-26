@@ -43,10 +43,10 @@ typedef struct
 
 typedef enum
 {
-    GPU_TEX64  = 0,
-    GPU_TEX128 = 1,
-    GPU_TEX256 = 2,
-    GPU_TEX512 = 3,
+    GPU_TEXTURE64  = 0,
+    GPU_TEXTURE128 = 1,
+    GPU_TEXTURE256 = 2,
+    GPU_TEXTURE512 = 3,
 } gpu_texture_size_t;
 
 typedef enum

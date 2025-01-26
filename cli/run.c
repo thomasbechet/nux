@@ -2,7 +2,9 @@
 
 #include <argparse/argparse.h>
 #include <native/runtime.h>
+#ifdef NUX_BUILD_SDK
 #include <sdk.h>
+#endif
 
 nu_u32_t
 cli_command_run (nu_u32_t argc, const nu_char_t **argv)
@@ -24,6 +26,7 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         path = nu_sv_cstr(argv[0]);
     }
     nu_status_t status = NU_SUCCESS;
+#ifdef NUX_BUILD_SDK
     if (nu_isdir(path))
     {
         sdk_project_t project;
@@ -38,14 +41,13 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         };
         status = runtime_init(&info);
         sdk_project_free(&project);
+        return status ? 0 : -1;
     }
-    else
-    {
-        runtime_info_t info = {
-            path,
-            cli_log,
-        };
-        status = runtime_init(&info);
-    }
+#endif
+    runtime_info_t info = {
+        path,
+        cli_log,
+    };
+    status = runtime_init(&info);
     return status ? 0 : -1;
 }

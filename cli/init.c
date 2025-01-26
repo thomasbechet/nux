@@ -1,5 +1,7 @@
 #include "cli.h"
 
+#ifdef NUX_BUILD_SDK
+
 #include <argparse/argparse.h>
 #include <sdk.h>
 
@@ -31,3 +33,5 @@ cli_command_init (nu_u32_t argc, const nu_char_t **argv)
                                 lang ? nu_sv_cstr(lang) : nu_sv_null());
     return status ? 0 : -1;
 }
+
+#endif

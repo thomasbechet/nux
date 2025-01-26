@@ -24,5 +24,7 @@ enable_c_compiler_flag_if_supported("-Wno-unused-parameter")
 enable_c_compiler_flag_if_supported("-Wno-unused-variable")
 
 add_subdirectory(runtimes/native)
+if (NUX_BUILD_SDK)
 add_subdirectory(sdk)
+endif ()
 add_subdirectory(cli)

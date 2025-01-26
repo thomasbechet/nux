@@ -1,7 +1,10 @@
 #include "cli.h"
 
 #include <argparse/argparse.h>
+#include <native/core/vm.h>
+#ifdef NUX_BUILD_SDK
 #include <sdk.h>
+#endif
 
 typedef struct
 {
@@ -41,8 +44,10 @@ main (int argc, const nu_char_t *argv[])
         NULL,
     };
     cmd_entry_t commands[] = {
+#ifdef NUX_BUILD_SDK
         { NU_SV("init"), cli_command_init },
         { NU_SV("build"), cli_command_build },
+#endif
         { NU_SV("run"), cli_command_run },
     };
     struct argparse_option options[] = {
@@ -51,14 +56,18 @@ main (int argc, const nu_char_t *argv[])
         OPT_END(),
     };
 
+#ifdef NUX_BUILD_SDK
     sdk_set_log_callback(cli_log);
+#endif
 
     argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);
     argparse_describe(&argparse,
                       "\nNUX is fantasy retro console",
                       "\nCOMMANDS\n"
+#ifdef NUX_BUILD_SDK
                       "\n    init    Create a new nux project"
                       "\n    build   Compile a project to cartridge"
+#endif
                       "\n    run     Run a cartridge");
     argc = argparse_parse(&argparse, argc, argv);
     if (version)
