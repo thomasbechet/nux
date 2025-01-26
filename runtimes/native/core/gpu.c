@@ -51,10 +51,6 @@ gpu_free (vm_t *vm)
     return NU_SUCCESS;
 }
 void
-gpu_render (vm_t *vm)
-{
-}
-void
 gpu_begin (vm_t *vm)
 {
     os_gpu_begin(vm);
@@ -63,6 +59,51 @@ void
 gpu_end (vm_t *vm)
 {
     os_gpu_end(vm);
+}
+
+nu_status_t
+gpu_load_texture (vm_t *vm, const cart_chunk_header_t *header)
+{
+    nu_u32_t index, size;
+    NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &size), return NU_FAILURE);
+    iou_log(vm, NU_LOG_INFO, "- index: %d", index);
+    iou_log(vm, NU_LOG_INFO, "- size: %d", size);
+    // TODO: validate size
+    nu_size_t data_length = (64 << size) * (64 << size) * 4;
+    NU_CHECK(iou_read(vm, vm->iou.heap, data_length), return NU_FAILURE);
+    gpu_alloc_texture(vm, index, size, vm->iou.heap);
+    return NU_SUCCESS;
+}
+nu_status_t
+gpu_load_mesh (vm_t *vm, const cart_chunk_header_t *header)
+{
+    nu_u32_t index, count, primitive, flags;
+    NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &count), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &primitive), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &flags), return NU_FAILURE);
+    iou_log(vm, NU_LOG_INFO, "Loading mesh index %d", index);
+    NU_ASSERT(
+        os_iou_read(vm, vm->iou.heap, header->length - sizeof(nu_u32_t) * 4));
+    gpu_alloc_mesh(vm, index, count, primitive, flags, vm->iou.heap);
+    return NU_SUCCESS;
+}
+nu_status_t
+gpu_load_model (vm_t *vm, const cart_chunk_header_t *header)
+{
+    nu_u32_t index, mesh, texture, parent;
+    nu_m4_t  transform;
+    NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &mesh), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &texture), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &parent), return NU_FAILURE);
+    NU_CHECK(iou_read_m4(vm, &transform), return NU_FAILURE);
+    gpu_set_model_mesh(vm, index, mesh);
+    gpu_set_model_texture(vm, index, texture);
+    gpu_set_model_transform(vm, index, transform.data);
+    gpu_set_model_parent(vm, index, parent);
+    return NU_SUCCESS;
 }
 
 static void

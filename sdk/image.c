@@ -10,23 +10,68 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
 
-nu_byte_t *
-sdk_load_image (nu_sv_t path, nu_v2u_t *size)
+nu_status_t
+sdk_image_load (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    nu_i32_t  w, h, n;
-    nu_char_t fn[NU_PATH_MAX];
-    nu_sv_to_cstr(path, fn, NU_PATH_MAX);
-    nu_byte_t *img = stbi_load(fn, &w, &h, &n, STBI_rgb_alpha);
-    NU_ASSERT(img);
-    nu_v2u_t  target_size = nu_v2u(128, 128);
-    nu_u32_t  target_comp = 4;
-    nu_size_t length
+    NU_CHECK(json_parse_u32(jasset, "index", &asset->image.target_index),
+             return NU_FAILURE);
+    NU_CHECK(json_parse_u32(jasset, "size", &asset->image.target_size),
+             return NU_FAILURE);
+    return NU_SUCCESS;
+}
+nu_status_t
+sdk_image_save (sdk_project_asset_t *asset, JSON_Object *jasset)
+{
+    NU_CHECK(json_write_u32(jasset, "index", asset->image.target_index),
+             return NU_FAILURE);
+    NU_CHECK(json_write_u32(jasset, "size", asset->image.target_size),
+             return NU_FAILURE);
+    return NU_SUCCESS;
+}
+nu_status_t
+sdk_image_compile (sdk_project_asset_t *asset, FILE *f)
+{
+    const nu_v2u_t target_size = nu_v2u(128, 128);
+    const nu_u32_t target_comp = 4;
+
+    // Load image
+    nu_status_t status = NU_SUCCESS;
+    nu_i32_t    w, h, n;
+    nu_byte_t  *img = stbi_load(asset->source_path, &w, &h, &n, STBI_rgb_alpha);
+    if (!img)
+    {
+        sdk_log(
+            NU_LOG_ERROR, "Failed to load image file %s", asset->source_path);
+    }
+    nu_size_t data_size
         = sizeof(nu_byte_t) * target_size.x * target_size.y * target_comp;
-    nu_byte_t *output = malloc(length);
-    NU_ASSERT(output);
-    NU_ASSERT(stbir_resize_uint8(
-        img, w, h, 0, output, target_size.x, target_size.y, 0, target_comp));
+    nu_byte_t *data = malloc(data_size);
+    NU_CHECK(data, goto cleanup0);
+    if (!stbir_resize_uint8(
+            img, w, h, 0, data, target_size.x, target_size.y, 0, target_comp))
+    {
+        sdk_log(NU_LOG_ERROR, "Failed to resize image %s", asset->source_path);
+        goto cleanup1;
+    }
+
+    // Write cart
+    status = cart_write_chunk_header(
+        f, CART_CHUNK_TEXTURE, data_size + sizeof(nu_u32_t) * 2);
+    NU_CHECK(status, goto cleanup1);
+    status = cart_write_u32(f, asset->image.target_index);
+    NU_CHECK(status, goto cleanup1);
+    status = cart_write_u32(f, asset->image.target_size);
+    NU_CHECK(status, goto cleanup1);
+    status = cart_write(f, data, data_size);
+    NU_CHECK(status, goto cleanup1);
+
+cleanup1:
+    free(data);
+cleanup0:
     stbi_image_free(img);
-    *size = target_size;
-    return output;
+    return status;
+}
+void
+sdk_image_free (sdk_project_asset_t *asset)
+{
 }

@@ -6,7 +6,13 @@
 /////////////////
 ///    CPU    ///
 /////////////////
-///
+
+typedef enum
+{
+    CPU_EVENT_START,
+    CPU_EVENT_UPDATE,
+} cpu_event_t;
+
 typedef struct
 {
     nu_u32_t mem_heap_size;
@@ -131,30 +137,6 @@ typedef struct
 {
     cart_chunk_type_t type;
     nu_u32_t          length;
-    union
-    {
-        struct
-        {
-            nu_u32_t addr;
-        } raw;
-        struct
-        {
-            nu_u32_t           index;
-            gpu_texture_size_t size;
-        } texture;
-        struct
-        {
-            nu_u32_t               index;
-            nu_u16_t               count;
-            gpu_primitive_t        primitive;
-            gpu_vertex_attribute_t flags;
-        } mesh;
-        struct
-        {
-            nu_u32_t index; // index of first model
-            nu_u32_t count; // number of submodels (including itself)
-        } model;
-    };
 } cart_chunk_header_t;
 
 typedef struct

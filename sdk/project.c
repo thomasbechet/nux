@@ -1,15 +1,14 @@
 #include "sdk.h"
 
 #include "templates_data.h"
-#include <parson/parson.h>
 
 #define PROJECT_CART_DEFAULT "cart.bin"
 #define PROJECT_JSON         "nux.json"
 #define PROJECT_TARGET       "target"
-#define PROJECT_CHUNKS       "chunks"
 #define PROJECT_PREBUILD     "prebuild"
-#define PROJECT_CHUNK_TYPE   "type"
-#define PROJECT_CHUNK_SOURCE "source"
+#define PROJECT_ASSETS       "assets"
+#define PROJECT_ASSET_TYPE   "type"
+#define PROJECT_ASSET_SOURCE "source"
 
 static NU_ENUM_MAP(cart_chunk_type_map,
                    NU_ENUM_NAME(CART_CHUNK_RAW, "raw"),
@@ -18,122 +17,16 @@ static NU_ENUM_MAP(cart_chunk_type_map,
                    NU_ENUM_NAME(CART_CHUNK_TEXTURE, "texture"),
                    NU_ENUM_NAME(CART_CHUNK_MODEL, "model"));
 
+static NU_ENUM_MAP(asset_type_map,
+                   NU_ENUM_NAME(SDK_ASSET_WASM, "wasm"),
+                   NU_ENUM_NAME(SDK_ASSET_IMAGE, "image"));
+
 static void
 project_init (sdk_project_t *project, nu_sv_t path)
 {
     nu_memset(project, 0, sizeof(*project));
     nu_path_concat(
         project->target_path, NU_PATH_MAX, path, NU_SV(PROJECT_CART_DEFAULT));
-}
-
-static nu_f32_t
-parse_f32 (const JSON_Object *object, const nu_char_t *name)
-{
-    NU_ASSERT(object && name);
-    return json_object_get_number(object, name);
-}
-static void
-parse_per_type (const JSON_Object   *jchunk,
-                cart_chunk_type_t    type,
-                cart_chunk_header_t *header)
-{
-    switch (type)
-    {
-        case CART_CHUNK_RAW: {
-            header->raw.addr = parse_f32(jchunk, "addr");
-        }
-        break;
-        case CART_CHUNK_WASM:
-            break;
-        case CART_CHUNK_TEXTURE: {
-            header->texture.index = parse_f32(jchunk, "index");
-            header->texture.size  = parse_f32(jchunk, "size");
-        }
-        break;
-        case CART_CHUNK_MESH: {
-            header->mesh.index = parse_f32(jchunk, "index");
-            header->mesh.count = parse_f32(jchunk, "count");
-        }
-        break;
-        case CART_CHUNK_MODEL: {
-            header->model.index = parse_f32(jchunk, "index");
-            header->model.count = parse_f32(jchunk, "count");
-        }
-        break;
-    }
-}
-
-static void
-write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
-{
-    json_object_set_number(object, name, value);
-}
-static void
-write_per_type (JSON_Object               *chunk,
-                cart_chunk_type_t          type,
-                const cart_chunk_header_t *header)
-{
-    switch (type)
-    {
-        case CART_CHUNK_RAW: {
-            write_f32(chunk, "addr", header->raw.addr);
-        }
-        break;
-        case CART_CHUNK_WASM:
-            break;
-        case CART_CHUNK_TEXTURE: {
-            write_f32(chunk, "index", header->texture.index);
-            write_f32(chunk, "size", header->texture.size);
-        }
-        break;
-        case CART_CHUNK_MESH: {
-            write_f32(chunk, "index", header->mesh.index);
-            write_f32(chunk, "count", header->mesh.count);
-        }
-        break;
-        case CART_CHUNK_MODEL: {
-            write_f32(chunk, "index", header->model.index);
-            write_f32(chunk, "count", header->model.count);
-        }
-        break;
-    }
-}
-
-static void
-write_u32 (FILE *f, nu_u32_t v)
-{
-    nu_u32_t a = nu_u32_le(v);
-    NU_ASSERT(fwrite(&a, sizeof(a), 1, f));
-}
-static void
-write_chunk_header (FILE *f, cart_chunk_header_t *header)
-{
-    // type / length
-    write_u32(f, header->type);
-    write_u32(f, header->length);
-    // meta
-    switch (header->type)
-    {
-        case CART_CHUNK_RAW: {
-        }
-        break;
-        case CART_CHUNK_WASM: {
-        }
-        break;
-        case CART_CHUNK_TEXTURE: {
-            write_u32(f, header->texture.index);
-            write_u32(f, header->texture.size);
-        }
-        break;
-        case CART_CHUNK_MESH: {
-        }
-        break;
-        case CART_CHUNK_MODEL: {
-            write_u32(f, header->model.index);
-            write_u32(f, header->model.count);
-        }
-        break;
-    }
 }
 
 nu_status_t
@@ -187,9 +80,10 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
     return status;
 }
 nu_status_t
-sdk_build (const sdk_project_t *project)
+sdk_compile (const sdk_project_t *project)
 {
     nu_status_t status = NU_SUCCESS;
+
     // Execute prebuild command
     if (nu_strlen(project->prebuild))
     {
@@ -214,91 +108,42 @@ sdk_build (const sdk_project_t *project)
         sdk_log(NU_LOG_INFO, "Compiling cartridge %s...", project->target_path);
     }
 
+    if (project->assets_count == 0)
+    {
+        sdk_log(NU_LOG_WARNING, "Compiling project with no assets");
+    }
+
     // Write header
     const nu_u32_t version = 100;
-    NU_ASSERT(fwrite(&version, sizeof(version), 1, f));
-    const nu_u32_t chunk_count = project->chunks_count;
-    NU_ASSERT(fwrite(&chunk_count, sizeof(chunk_count), 1, f));
+    NU_CHECK(cart_write_u32(f, version), goto cleanup0);
+    NU_CHECK(cart_write_u32(f, project->assets_count), goto cleanup0);
 
-    // Compile entries
-    for (nu_size_t i = 0; i < project->chunks_count; ++i)
+    // Compile assets
+    for (nu_size_t i = 0; i < project->assets_count; ++i)
     {
-        sdk_project_chunk_t *entry = project->chunks + i;
-        nu_f32_t             percent
-            = (nu_f32_t)i / (nu_f32_t)project->chunks_count * 100.0;
+        sdk_project_asset_t *asset = project->assets + i;
+
+        nu_f32_t percent
+            = (nu_f32_t)i / (nu_f32_t)project->assets_count * 100.0;
         sdk_log(NU_LOG_INFO,
                 "[% 3d%][%d] %s : %s",
                 (nu_u32_t)percent,
                 i,
-                nu_enum_to_cstr(entry->header.type, cart_chunk_type_map),
-                entry->source_path);
-        switch (entry->header.type)
+                nu_enum_to_cstr(asset->type, asset_type_map),
+                asset->source_path);
+
+        switch (asset->type)
         {
-            case CART_CHUNK_RAW:
+            case SDK_ASSET_WASM:
+                NU_CHECK(sdk_wasm_compile(asset, f), goto cleanup0);
                 break;
-            case CART_CHUNK_WASM: {
-                nu_size_t  size;
-                nu_byte_t *buffer;
-                if (!nu_load_bytes(
-                        nu_sv_cstr(entry->source_path), NU_NULL, &size))
-                {
-                    sdk_log(NU_LOG_ERROR,
-                            "Failed to load wasm file %s",
-                            entry->source_path);
-                    status = NU_FAILURE;
-                    goto cleanup0;
-                }
-                buffer = malloc(size);
-                NU_ASSERT(buffer);
-                NU_ASSERT(nu_load_bytes(
-                    nu_sv_cstr(entry->source_path), buffer, &size));
-                // header
-                entry->header.length = size;
-                write_chunk_header(f, &entry->header);
-                // data
-                NU_ASSERT(fwrite(buffer, size, 1, f));
-                free(buffer);
-            }
-            break;
-            case CART_CHUNK_TEXTURE: {
-                nu_v2u_t   size;
-                nu_byte_t *data
-                    = sdk_load_image(nu_sv_cstr(entry->source_path), &size);
-                if (!data)
-                {
-                    sdk_log(NU_LOG_ERROR,
-                            "Failed to load texture file %s",
-                            entry->source_path);
-                    status = NU_FAILURE;
-                    goto cleanup0;
-                }
-                nu_size_t length = sizeof(nu_byte_t) * size.x * size.y * 4;
-
-                // header
-                entry->header.length = length;
-                write_chunk_header(f, &entry->header);
-                // data
-                NU_ASSERT(fwrite(data, length, 1, f));
-
-                free(data);
-            }
-            break;
-            case CART_CHUNK_MESH: {
-                // // header
-                // write_chunk_header(f, entry, length);
-                // // destination
-                // write_u32(f, entry->dst.mesh.first);
-                // // data
-                // NU_ASSERT(fwrite(output, length, 1, f));
-            }
-            break;
-            case CART_CHUNK_MODEL: {
-            }
-            break;
+            case SDK_ASSET_IMAGE:
+                NU_CHECK(sdk_image_compile(asset, f), goto cleanup0);
+                break;
         }
     }
 
-    sdk_log(NU_LOG_INFO, "Compilation success.");
+    sdk_log(NU_LOG_INFO, "Compilation success");
 
 cleanup0:
     fclose(f);
@@ -312,6 +157,7 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
     // Parse file
     nu_char_t json_path[NU_PATH_MAX];
     nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
+    sdk_log(NU_LOG_INFO, "Loading project file %s", json_path);
     JSON_Value *jrootv = json_parse_file(json_path);
     if (!jrootv)
     {
@@ -329,45 +175,54 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
         goto cleanup0;
     }
 
-    // Entries
-    JSON_Array *jchunks = json_object_get_array(jroot, PROJECT_CHUNKS);
-    if (jchunks)
+    // Assets
+    JSON_Array *jassets = json_object_get_array(jroot, PROJECT_ASSETS);
+    if (jassets)
     {
-        project->chunks_count = json_array_get_count(jchunks);
-        if (project->chunks_count)
+        project->assets_count = json_array_get_count(jassets);
+        if (project->assets_count)
         {
-            project->chunks
-                = malloc(sizeof(*project->chunks) * project->chunks_count);
-            NU_ASSERT(project->chunks);
+            project->assets
+                = malloc(sizeof(*project->assets) * project->assets_count);
+            NU_ASSERT(project->assets);
         }
-        for (nu_size_t i = 0; i < project->chunks_count; ++i)
+        for (nu_size_t i = 0; i < project->assets_count; ++i)
         {
-            JSON_Object *jchunk = json_array_get_object(jchunks, i);
-            // Check fields
+            sdk_project_asset_t *asset  = project->assets + i;
+            JSON_Object         *jasset = json_array_get_object(jassets, i);
+
+            // Parse type and source
             const nu_char_t *type_string
-                = json_object_get_string(jchunk, PROJECT_CHUNK_TYPE);
+                = json_object_get_string(jasset, PROJECT_ASSET_TYPE);
             NU_ASSERT(type_string);
             const nu_char_t *source_string
-                = json_object_get_string(jchunk, PROJECT_CHUNK_SOURCE);
+                = json_object_get_string(jasset, PROJECT_ASSET_SOURCE);
             NU_ASSERT(source_string);
 
             // Check type
-            nu_bool_t         found;
-            cart_chunk_type_t type = nu_sv_to_enum(
-                nu_sv_cstr(type_string), cart_chunk_type_map, &found);
+            nu_bool_t        found;
+            sdk_asset_type_t type = nu_sv_to_enum(
+                nu_sv_cstr(type_string), asset_type_map, &found);
             if (!found)
             {
-                sdk_log(NU_LOG_ERROR, "Invalid chunk type %s", type_string);
+                sdk_log(NU_LOG_ERROR, "Invalid asset type %s", type_string);
                 status = NU_FAILURE;
                 goto cleanup0;
             }
-            project->chunks[i].header.type = type;
-            nu_sv_to_cstr(nu_sv_cstr(source_string),
-                          project->chunks[i].source_path,
-                          NU_PATH_MAX);
+            project->assets[i].type = type;
+            nu_sv_to_cstr(
+                nu_sv_cstr(source_string), asset->source_path, NU_PATH_MAX);
 
-            // Parse meta
-            parse_per_type(jchunk, type, &project->chunks[i].header);
+            // Parse asset
+            switch (type)
+            {
+                case SDK_ASSET_WASM:
+                    NU_CHECK(sdk_wasm_load(asset, jasset), goto cleanup0);
+                    break;
+                case SDK_ASSET_IMAGE:
+                    NU_CHECK(sdk_image_load(asset, jasset), goto cleanup0);
+                    break;
+            }
         }
     }
 
@@ -400,34 +255,42 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
     // Target
     json_object_set_string(jroot, PROJECT_TARGET, project->target_path);
 
-    // Chunks
+    // Assets
     if (nu_strlen(project->target_path))
     {
-        JSON_Value *jchunksv = json_value_init_array();
-        NU_CHECK(jchunksv, goto cleanup1);
-        json_object_set_value(jroot, PROJECT_CHUNKS, jchunksv);
-        JSON_Array *jchunks = json_array(jchunksv);
+        JSON_Value *jassetsv = json_value_init_array();
+        NU_CHECK(jassetsv, goto cleanup1);
+        json_object_set_value(jroot, PROJECT_ASSETS, jassetsv);
+        JSON_Array *jassets = json_array(jassetsv);
 
-        for (nu_size_t i = 0; i < project->chunks_count; ++i)
+        for (nu_size_t i = 0; i < project->assets_count; ++i)
         {
-            JSON_Value *jchunkv = json_value_init_object();
-            NU_CHECK(jchunkv, goto cleanup1);
-            json_array_append_value(jchunks, jchunkv);
-            JSON_Object *jchunk = json_object(jchunkv);
+            sdk_project_asset_t *asset = project->assets + i;
+
+            JSON_Value *jassetv = json_value_init_object();
+            NU_CHECK(jassetv, goto cleanup1);
+            json_array_append_value(jassets, jassetv);
+            JSON_Object *jasset = json_object(jassetv);
 
             // Type
-            const nu_char_t *type_str = nu_enum_to_cstr(
-                project->chunks[i].header.type, cart_chunk_type_map);
-            json_object_set_string(jchunk, PROJECT_CHUNK_TYPE, type_str);
+            const nu_char_t *type_str
+                = nu_enum_to_cstr(asset->type, asset_type_map);
+            json_object_set_string(jasset, PROJECT_ASSET_TYPE, type_str);
 
             // Source
             json_object_set_string(
-                jchunk, PROJECT_CHUNK_SOURCE, project->chunks[i].source_path);
+                jasset, PROJECT_ASSET_SOURCE, project->assets[i].source_path);
 
-            // Write chunk meta
-            write_per_type(jchunk,
-                           project->chunks[i].header.type,
-                           &project->chunks[i].header);
+            // Save asset
+            switch (asset->type)
+            {
+                case SDK_ASSET_WASM:
+                    NU_CHECK(sdk_wasm_save(asset, jasset), goto cleanup1);
+                    break;
+                case SDK_ASSET_IMAGE:
+                    NU_CHECK(sdk_image_save(asset, jasset), goto cleanup1);
+                    break;
+            }
         }
     }
 
@@ -456,9 +319,9 @@ cleanup0:
 void
 sdk_project_free (sdk_project_t *project)
 {
-    if (project->chunks)
+    if (project->assets)
     {
-        NU_ASSERT(project->chunks_count);
-        free(project->chunks);
+        NU_ASSERT(project->assets_count);
+        free(project->assets);
     }
 }

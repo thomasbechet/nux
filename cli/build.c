@@ -32,7 +32,7 @@ cli_command_build (nu_u32_t argc, const nu_char_t **argv)
     nu_status_t   status;
     status = sdk_project_load(&project, path_sv);
     NU_CHECK(status, goto cleanup0);
-    status = sdk_build(&project);
+    status = sdk_compile(&project);
     NU_CHECK(status, goto cleanup1);
 cleanup1:
     sdk_project_free(&project);

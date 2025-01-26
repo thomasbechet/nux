@@ -256,29 +256,31 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
         return NU_FAILURE;
     }
 
-    // pass 4 elements for function arguments
-    if (!wasm_runtime_call_wasm_a(
-            wasm.env, wasm.start_callback, 0, NU_NULL, 0, NU_NULL))
-    {
-        iou_log(vm,
-                NU_LOG_ERROR,
-                "Call wasm function " START_CALLBACK " failed: %s",
-                wasm_runtime_get_exception(wasm.instance));
-        wasm_unload_cart(vm);
-        return NU_FAILURE;
-    }
-
     return NU_SUCCESS;
 }
 nu_status_t
-os_cpu_update_wasm (vm_t *vm)
+os_cpu_call_event (vm_t *vm, cpu_event_t event)
 {
-    if (!wasm_runtime_call_wasm_a(
-            wasm.env, wasm.update_callback, 0, NU_NULL, 0, NU_NULL))
+    wasm_function_inst_t callback;
+    const nu_char_t     *callback_name = NU_NULL;
+    switch (event)
+    {
+        case CPU_EVENT_START:
+            callback      = wasm.start_callback;
+            callback_name = START_CALLBACK;
+            break;
+        case CPU_EVENT_UPDATE:
+            callback      = wasm.update_callback;
+            callback_name = UPDATE_CALLBACK;
+            break;
+    }
+    NU_ASSERT(callback_name);
+    if (!wasm_runtime_call_wasm_a(wasm.env, callback, 0, NU_NULL, 0, NU_NULL))
     {
         iou_log(vm,
                 NU_LOG_ERROR,
-                "Call wasm function " UPDATE_CALLBACK " failed: %s",
+                "Call wasm function %s failed: %s",
+                callback_name,
                 wasm_runtime_get_exception(wasm.instance));
         return NU_FAILURE;
     }

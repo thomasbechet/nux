@@ -28,17 +28,17 @@ void os_gpu_end(vm_t *vm);
 void os_gpu_set_transform(vm_t *vm, gpu_transform_t transform);
 void os_gpu_draw_model(vm_t *vm, nu_u32_t index);
 
-void      os_iop_mount(vm_t *vm, const nu_char_t *name);
-void      os_iop_seek(vm_t *vm, nu_size_t n);
-nu_size_t os_iop_read(vm_t *vm, void *p, nu_size_t n);
-void      os_iop_vlog(vm_t            *vm,
-                      nu_log_level_t   level,
-                      const nu_char_t *fmt,
-                      va_list          args);
+nu_status_t os_iou_mount(vm_t *vm, const nu_char_t *name);
+nu_status_t os_iou_seek(vm_t *vm, nu_size_t n);
+nu_size_t   os_iou_read(vm_t *vm, void *p, nu_size_t n);
+void        os_iou_vlog(vm_t            *vm,
+                        nu_log_level_t   level,
+                        const nu_char_t *fmt,
+                        va_list          args);
 
 nu_status_t os_cpu_load_wasm(vm_t      *vm,
                              nu_byte_t *buffer,
                              nu_size_t  buffer_size);
-nu_status_t os_cpu_update_wasm(vm_t *vm);
+nu_status_t os_cpu_call_event(vm_t *vm, cpu_event_t event);
 
 #endif

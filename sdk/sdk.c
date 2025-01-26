@@ -24,3 +24,61 @@ sdk_log (nu_log_level_t level, const nu_char_t *fmt, ...)
     sdk_vlog(level, fmt, args);
     va_end(args);
 }
+
+nu_status_t
+json_parse_f32 (const JSON_Object *object, const nu_char_t *name, nu_f32_t *v)
+{
+    NU_ASSERT(object && name);
+    *v = json_object_get_number(object, name);
+    return NU_SUCCESS;
+}
+nu_status_t
+json_write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
+{
+    json_object_set_number(object, name, value);
+    return NU_SUCCESS;
+}
+nu_status_t
+json_parse_u32 (const JSON_Object *object, const nu_char_t *name, nu_u32_t *v)
+{
+    nu_f32_t value;
+    NU_CHECK(json_parse_f32(object, name, &value), return NU_FAILURE);
+    *v = value;
+    return NU_SUCCESS;
+}
+nu_status_t
+json_write_u32 (JSON_Object *object, const nu_char_t *name, nu_u32_t value)
+{
+    json_write_f32(object, name, value);
+    return NU_SUCCESS;
+}
+
+nu_status_t
+cart_write (FILE *f, void *p, nu_size_t n)
+{
+    NU_CHECK(fwrite(p, n, 1, f) == 1, return NU_FAILURE);
+    return NU_SUCCESS;
+}
+nu_status_t
+cart_write_u32 (FILE *f, nu_u32_t v)
+{
+    nu_u32_t a = nu_u32_le(v);
+    NU_CHECK(fwrite(&a, sizeof(a), 1, f) == 1, return NU_FAILURE);
+    return NU_SUCCESS;
+}
+nu_status_t
+cart_write_m4 (FILE *f, nu_m4_t v)
+{
+    for (nu_size_t i = 0; i < NU_M4_SIZE; ++i)
+    {
+        NU_CHECK(cart_write_u32(f, v.data[i]), return NU_FAILURE);
+    }
+    return NU_SUCCESS;
+}
+nu_status_t
+cart_write_chunk_header (FILE *f, cart_chunk_type_t type, nu_u32_t length)
+{
+    NU_CHECK(cart_write_u32(f, type), return NU_FAILURE);
+    NU_CHECK(cart_write_u32(f, length), return NU_FAILURE);
+    return NU_SUCCESS;
+}

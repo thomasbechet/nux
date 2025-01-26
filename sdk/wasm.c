@@ -1,0 +1,43 @@
+#include "sdk.h"
+
+nu_status_t
+sdk_wasm_load (sdk_project_asset_t *asset, JSON_Object *jasset)
+{
+    return NU_SUCCESS;
+}
+nu_status_t
+sdk_wasm_save (sdk_project_asset_t *asset, JSON_Object *jasset)
+{
+    return NU_SUCCESS;
+}
+nu_status_t
+sdk_wasm_compile (sdk_project_asset_t *asset, FILE *f)
+{
+    // Load wasm buffer
+    nu_size_t   size;
+    nu_byte_t  *buffer;
+    nu_status_t status = NU_SUCCESS;
+    if (!nu_load_bytes(nu_sv_cstr(asset->source_path), NU_NULL, &size))
+    {
+        sdk_log(
+            NU_LOG_ERROR, "Failed to load wasm file %s", asset->source_path);
+        return NU_FAILURE;
+    }
+    buffer = malloc(size);
+    NU_CHECK(buffer, return NU_FAILURE);
+    NU_ASSERT(nu_load_bytes(nu_sv_cstr(asset->source_path), buffer, &size));
+
+    // Write cart
+    status = cart_write_chunk_header(f, CART_CHUNK_WASM, size);
+    NU_CHECK(status, goto cleanup0);
+    status = cart_write(f, buffer, size);
+    NU_CHECK(status, goto cleanup0);
+
+cleanup0:
+    free(buffer);
+    return status;
+}
+void
+sdk_wasm_free (sdk_project_asset_t *asset)
+{
+}

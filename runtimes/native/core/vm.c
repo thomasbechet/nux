@@ -28,13 +28,15 @@ vm_free (vm_t *vm)
 nu_status_t
 vm_load (vm_t *vm, const nu_char_t *name)
 {
-    return iou_load_full(vm, name);
+    NU_CHECK(iou_load_cart(vm, name), return NU_FAILURE);
+    NU_CHECK(cpu_call_event(vm, CPU_EVENT_START), return NU_FAILURE);
+    return NU_SUCCESS;
 }
 nu_status_t
 vm_tick (vm_t *vm, nu_bool_t *exit)
 {
     gpu_begin(vm);
-    cpu_update(vm);
+    cpu_call_event(vm, CPU_EVENT_UPDATE);
     gpu_end(vm);
     return NU_SUCCESS;
 }
