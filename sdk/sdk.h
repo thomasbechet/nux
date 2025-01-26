@@ -10,12 +10,14 @@ typedef enum
 {
     SDK_ASSET_WASM,
     SDK_ASSET_IMAGE,
+    SDK_ASSET_MODEL,
 } sdk_asset_type_t;
 
 typedef struct
 {
     sdk_asset_type_t type;
     nu_char_t        source_path[NU_PATH_MAX];
+    nu_bool_t        ignore;
     union
     {
         struct
@@ -23,6 +25,10 @@ typedef struct
             nu_u32_t           target_index;
             gpu_texture_size_t target_size;
         } image;
+        struct
+        {
+            nu_u32_t target_index;
+        } model;
     };
 } sdk_project_asset_t;
 
@@ -53,14 +59,18 @@ NU_API nu_status_t sdk_wasm_load(sdk_project_asset_t *asset,
 NU_API nu_status_t sdk_wasm_save(sdk_project_asset_t *asset,
                                  JSON_Object         *jasset);
 NU_API nu_status_t sdk_wasm_compile(sdk_project_asset_t *asset, FILE *f);
-NU_API void        sdk_wasm_free(sdk_project_asset_t *asset);
 
 NU_API nu_status_t sdk_image_load(sdk_project_asset_t *asset,
                                   JSON_Object         *jasset);
 NU_API nu_status_t sdk_image_save(sdk_project_asset_t *asset,
                                   JSON_Object         *jasset);
 NU_API nu_status_t sdk_image_compile(sdk_project_asset_t *asset, FILE *f);
-NU_API void        sdk_image_free(sdk_project_asset_t *asset);
+
+NU_API nu_status_t sdk_model_load(sdk_project_asset_t *asset,
+                                  JSON_Object         *jasset);
+NU_API nu_status_t sdk_model_save(sdk_project_asset_t *asset,
+                                  JSON_Object         *jasset);
+NU_API nu_status_t sdk_model_compile(sdk_project_asset_t *asset, FILE *f);
 
 NU_API nu_status_t json_parse_f32(const JSON_Object *object,
                                   const nu_char_t   *name,

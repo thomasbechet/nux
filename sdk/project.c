@@ -9,6 +9,7 @@
 #define PROJECT_ASSETS       "assets"
 #define PROJECT_ASSET_TYPE   "type"
 #define PROJECT_ASSET_SOURCE "source"
+#define PROJECT_ASSET_IGNORE "ignore"
 
 static NU_ENUM_MAP(cart_chunk_type_map,
                    NU_ENUM_NAME(CART_CHUNK_RAW, "raw"),
@@ -19,7 +20,8 @@ static NU_ENUM_MAP(cart_chunk_type_map,
 
 static NU_ENUM_MAP(asset_type_map,
                    NU_ENUM_NAME(SDK_ASSET_WASM, "wasm"),
-                   NU_ENUM_NAME(SDK_ASSET_IMAGE, "image"));
+                   NU_ENUM_NAME(SDK_ASSET_IMAGE, "image"),
+                   NU_ENUM_NAME(SDK_ASSET_MODEL, "model"));
 
 static void
 project_init (sdk_project_t *project, nu_sv_t path)
@@ -105,7 +107,7 @@ sdk_compile (const sdk_project_t *project)
     }
     else
     {
-        sdk_log(NU_LOG_INFO, "Compiling cartridge %s...", project->target_path);
+        sdk_log(NU_LOG_INFO, "Compiling cartridge %s", project->target_path);
     }
 
     if (project->assets_count == 0)
@@ -116,7 +118,15 @@ sdk_compile (const sdk_project_t *project)
     // Write header
     const nu_u32_t version = 100;
     NU_CHECK(cart_write_u32(f, version), goto cleanup0);
-    NU_CHECK(cart_write_u32(f, project->assets_count), goto cleanup0);
+    nu_size_t asset_count = project->assets_count;
+    for (nu_size_t i = 0; i < project->assets_count; ++i)
+    {
+        if (project->assets[i].ignore)
+        {
+            --asset_count;
+        }
+    }
+    NU_CHECK(cart_write_u32(f, asset_count), goto cleanup0);
 
     // Compile assets
     for (nu_size_t i = 0; i < project->assets_count; ++i)
@@ -125,12 +135,23 @@ sdk_compile (const sdk_project_t *project)
 
         nu_f32_t percent
             = (nu_f32_t)i / (nu_f32_t)project->assets_count * 100.0;
+        const nu_char_t *ignored = "";
+        if (asset->ignore)
+        {
+            ignored = "(ignored) ";
+        }
         sdk_log(NU_LOG_INFO,
-                "[% 3d%][%d] %s : %s",
+                "[% 3d%][%d] %s%s : %s",
                 (nu_u32_t)percent,
                 i,
+                ignored,
                 nu_enum_to_cstr(asset->type, asset_type_map),
                 asset->source_path);
+
+        if (asset->ignore)
+        {
+            continue;
+        }
 
         switch (asset->type)
         {
@@ -139,6 +160,9 @@ sdk_compile (const sdk_project_t *project)
                 break;
             case SDK_ASSET_IMAGE:
                 NU_CHECK(sdk_image_compile(asset, f), goto cleanup0);
+                break;
+            case SDK_ASSET_MODEL:
+                NU_CHECK(sdk_model_compile(asset, f), goto cleanup0);
                 break;
         }
     }
@@ -185,6 +209,9 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
             project->assets
                 = malloc(sizeof(*project->assets) * project->assets_count);
             NU_ASSERT(project->assets);
+            nu_memset(project->assets,
+                      0,
+                      sizeof(*project->assets) * project->assets_count);
         }
         for (nu_size_t i = 0; i < project->assets_count; ++i)
         {
@@ -198,6 +225,11 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
             const nu_char_t *source_string
                 = json_object_get_string(jasset, PROJECT_ASSET_SOURCE);
             NU_ASSERT(source_string);
+            int ignore = json_object_get_boolean(jasset, PROJECT_ASSET_IGNORE);
+            if (ignore != -1)
+            {
+                asset->ignore = ignore;
+            }
 
             // Check type
             nu_bool_t        found;
@@ -221,6 +253,9 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
                     break;
                 case SDK_ASSET_IMAGE:
                     NU_CHECK(sdk_image_load(asset, jasset), goto cleanup0);
+                    break;
+                case SDK_ASSET_MODEL:
+                    NU_CHECK(sdk_model_load(asset, jasset), goto cleanup0);
                     break;
             }
         }
@@ -281,6 +316,10 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
             json_object_set_string(
                 jasset, PROJECT_ASSET_SOURCE, project->assets[i].source_path);
 
+            // Ignore
+            json_object_set_boolean(
+                jasset, PROJECT_ASSET_IGNORE, project->assets[i].ignore);
+
             // Save asset
             switch (asset->type)
             {
@@ -289,6 +328,9 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
                     break;
                 case SDK_ASSET_IMAGE:
                     NU_CHECK(sdk_image_save(asset, jasset), goto cleanup1);
+                    break;
+                case SDK_ASSET_MODEL:
+                    NU_CHECK(sdk_model_save(asset, jasset), goto cleanup1);
                     break;
             }
         }

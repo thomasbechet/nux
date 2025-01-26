@@ -43,8 +43,13 @@ iou_load_cart (vm_t *vm, const nu_char_t *name)
     {
         // read chunk header
         cart_chunk_header_t header;
-        NU_CHECK(iou_read_u32(vm, &header.type), return NU_FAILURE);
-        NU_CHECK(iou_read_u32(vm, &header.length), return NU_FAILURE);
+        status &= iou_read_u32(vm, &header.type);
+        status &= iou_read_u32(vm, &header.length);
+        if (!status)
+        {
+            iou_log(vm, NU_LOG_ERROR, "Failed to read chunk header %d", i);
+            return NU_FAILURE;
+        }
 
         iou_log(vm,
                 NU_LOG_INFO,

@@ -71,7 +71,3 @@ cleanup0:
     stbi_image_free(img);
     return status;
 }
-void
-sdk_image_free (sdk_project_asset_t *asset)
-{
-}

@@ -200,3 +200,23 @@ project_load_gltf (const nu_byte_t *path, nu_size_t *size)
     cgltf_free(data);
     return NU_NULL;
 }
+
+nu_status_t
+sdk_model_load (sdk_project_asset_t *asset, JSON_Object *jasset)
+{
+    NU_CHECK(json_parse_u32(jasset, "index", &asset->model.target_index),
+             return NU_FAILURE);
+    return NU_SUCCESS;
+}
+nu_status_t
+sdk_model_save (sdk_project_asset_t *asset, JSON_Object *jasset)
+{
+    NU_CHECK(json_write_u32(jasset, "index", asset->model.target_index),
+             return NU_FAILURE);
+    return NU_SUCCESS;
+}
+nu_status_t
+sdk_model_compile (sdk_project_asset_t *asset, FILE *f)
+{
+    return NU_SUCCESS;
+}

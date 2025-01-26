@@ -37,7 +37,3 @@ cleanup0:
     free(buffer);
     return status;
 }
-void
-sdk_wasm_free (sdk_project_asset_t *asset)
-{
-}
