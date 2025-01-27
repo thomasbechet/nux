@@ -30,12 +30,12 @@ typedef struct
 ///    GPU    ///
 /////////////////
 
-// #define VM_SCREEN_WIDTH  640
-// #define VM_SCREEN_HEIGHT 400
-// #define VM_SCREEN_WIDTH  512
-// #define VM_SCREEN_HEIGHT 288
-#define VM_SCREEN_WIDTH  320
-#define VM_SCREEN_HEIGHT 200
+// #define GPU_SCREEN_WIDTH  640
+// #define GPU_SCREEN_HEIGHT 400
+#define GPU_SCREEN_WIDTH  512
+#define GPU_SCREEN_HEIGHT 288
+// #define GPU_SCREEN_WIDTH  320
+// #define GPU_SCREEN_HEIGHT 200
 
 #define GPU_MAX_TEXTURE 1024
 #define GPU_MAX_MESH    1024
@@ -123,6 +123,7 @@ typedef struct
 /////////////////
 
 #define IOU_MEM_SIZE                 NU_MEM_1M
+#define CART_CHUNK_MESH_HEADER_SIZE  sizeof(nu_u32_t) * 4
 #define CART_CHUNK_MODEL_HEADER_SIZE sizeof(nu_u32_t) * 4 + sizeof(nu_m4_t)
 
 typedef enum
@@ -143,7 +144,6 @@ typedef struct
 typedef struct
 {
     nu_u32_t version;
-    nu_u32_t chunk_count;
 } cart_header_t;
 
 typedef struct
@@ -162,7 +162,7 @@ typedef struct
     (vm_config_t)                                                         \
     {                                                                     \
         .cpu.mem_heap_size = NU_MEM_1M, .cpu.mem_stack_size = NU_MEM_64K, \
-        .gpu.max_vertex_count = 1024,                                     \
+        .gpu.max_vertex_count = 32000,                                    \
     }
 
 typedef struct

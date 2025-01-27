@@ -78,15 +78,20 @@ gpu_load_texture (vm_t *vm, const cart_chunk_header_t *header)
 nu_status_t
 gpu_load_mesh (vm_t *vm, const cart_chunk_header_t *header)
 {
-    nu_u32_t index, count, primitive, flags;
+    nu_u32_t index, count, primitive, attributes;
     NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &count), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &primitive), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &flags), return NU_FAILURE);
-    iou_log(vm, NU_LOG_INFO, "Loading mesh index %d", index);
+    NU_CHECK(iou_read_u32(vm, &attributes), return NU_FAILURE);
+    iou_log(vm, NU_LOG_INFO, "- index %d", index);
+    iou_log(vm, NU_LOG_INFO, "- count %d", count);
+    iou_log(vm, NU_LOG_INFO, "- primitive %d", primitive);
+    iou_log(vm, NU_LOG_INFO, "- attributes %x", attributes);
     NU_ASSERT(
-        os_iou_read(vm, vm->iou.heap, header->length - sizeof(nu_u32_t) * 4));
-    gpu_alloc_mesh(vm, index, count, primitive, flags, vm->iou.heap);
+        os_iou_read(vm,
+                    vm->iou.heap,
+                    gpu_vertex_size(attributes) * count * sizeof(nu_f32_t)));
+    gpu_alloc_mesh(vm, index, count, primitive, attributes, vm->iou.heap);
     return NU_SUCCESS;
 }
 nu_status_t
@@ -99,6 +104,10 @@ gpu_load_model (vm_t *vm, const cart_chunk_header_t *header)
     NU_CHECK(iou_read_u32(vm, &texture), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &parent), return NU_FAILURE);
     NU_CHECK(iou_read_m4(vm, &transform), return NU_FAILURE);
+    iou_log(vm, NU_LOG_INFO, "- index %d", index);
+    iou_log(vm, NU_LOG_INFO, "- mesh %d", mesh);
+    iou_log(vm, NU_LOG_INFO, "- texture %d", texture);
+    iou_log(vm, NU_LOG_INFO, "- parent %d", parent);
     gpu_set_model_mesh(vm, index, mesh);
     gpu_set_model_texture(vm, index, texture);
     gpu_set_model_transform(vm, index, transform.data);
@@ -217,11 +226,14 @@ void
 gpu_set_model_parent (vm_t *vm, nu_u32_t index, nu_u32_t parent)
 {
     check_model(vm, index);
-    check_model(vm, parent);
-    gpu_model_t *p = vm->gpu.models + parent;
     gpu_model_t *m = vm->gpu.models + index;
-    m->sibling     = p->child;
-    p->child       = index;
+    if (parent != (nu_u32_t)-1)
+    {
+        check_model(vm, parent);
+        gpu_model_t *p = vm->gpu.models + parent;
+        m->sibling     = p->child;
+        p->child       = index;
+    }
 }
 
 void
@@ -249,7 +261,7 @@ gpu_draw_model (vm_t *vm, nu_u32_t index)
 }
 
 nu_size_t
-gpu_vertex_stride (gpu_vertex_attribute_t attributes)
+gpu_vertex_size (gpu_vertex_attribute_t attributes)
 {
     size_t vertex_stride = 0;
     vertex_stride += attributes & GPU_VERTEX_POSTIION ? NU_V3_SIZE : 0;
@@ -258,8 +270,8 @@ gpu_vertex_stride (gpu_vertex_attribute_t attributes)
     return vertex_stride;
 }
 nu_size_t
-gpu_vertex_attribute_offset (gpu_vertex_attribute_t attributes,
-                             gpu_vertex_attribute_t attribute)
+gpu_vertex_offset (gpu_vertex_attribute_t attributes,
+                   gpu_vertex_attribute_t attribute)
 {
     NU_ASSERT(attribute & attributes);
     nu_size_t offset = 0;

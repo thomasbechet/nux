@@ -87,6 +87,9 @@ NU_API nu_status_t json_write_u32(JSON_Object     *object,
 
 NU_API nu_status_t cart_write(FILE *f, void *p, nu_size_t n);
 NU_API nu_status_t cart_write_u32(FILE *f, nu_u32_t v);
+NU_API nu_status_t cart_write_f32(FILE *f, nu_f32_t v);
+NU_API nu_status_t cart_write_v2(FILE *f, nu_v2_t v);
+NU_API nu_status_t cart_write_v3(FILE *f, nu_v3_t v);
 NU_API nu_status_t cart_write_m4(FILE *f, nu_m4_t v);
 NU_API nu_status_t cart_write_chunk_header(FILE             *f,
                                            cart_chunk_type_t type,

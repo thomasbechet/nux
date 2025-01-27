@@ -118,15 +118,6 @@ sdk_compile (const sdk_project_t *project)
     // Write header
     const nu_u32_t version = 100;
     NU_CHECK(cart_write_u32(f, version), goto cleanup0);
-    nu_size_t asset_count = project->assets_count;
-    for (nu_size_t i = 0; i < project->assets_count; ++i)
-    {
-        if (project->assets[i].ignore)
-        {
-            --asset_count;
-        }
-    }
-    NU_CHECK(cart_write_u32(f, asset_count), goto cleanup0);
 
     // Compile assets
     for (nu_size_t i = 0; i < project->assets_count; ++i)

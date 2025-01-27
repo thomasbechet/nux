@@ -34,18 +34,15 @@ iou_load_cart (vm_t *vm, const nu_char_t *name)
     NU_CHECK(os_iou_seek(vm, 0), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &vm->iou.header.version), return NU_FAILURE);
     // TODO: validate
-    NU_CHECK(iou_read_u32(vm, &vm->iou.header.chunk_count), return NU_FAILURE);
-    // TODO: validate
 
     // Load chunks
     os_iou_seek(vm, sizeof(cart_header_t));
-    for (nu_size_t i = 0; i < vm->iou.header.chunk_count; ++i)
+    cart_chunk_header_t header;
+    nu_u32_t            i = 0;
+    while (iou_read_u32(vm, &header.type))
     {
         // read chunk header
-        cart_chunk_header_t header;
-        status &= iou_read_u32(vm, &header.type);
-        status &= iou_read_u32(vm, &header.length);
-        if (!status)
+        if (!iou_read_u32(vm, &header.length))
         {
             iou_log(vm, NU_LOG_ERROR, "Failed to read chunk header %d", i);
             return NU_FAILURE;
@@ -81,6 +78,7 @@ iou_load_cart (vm_t *vm, const nu_char_t *name)
             iou_log(vm, NU_LOG_ERROR, "Failed to load chunk %d");
             return NU_FAILURE;
         }
+        ++i;
     }
 
     iou_log(vm, NU_LOG_INFO, "Cartridge sucessfully loaded", name);

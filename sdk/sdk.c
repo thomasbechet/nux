@@ -67,11 +67,36 @@ cart_write_u32 (FILE *f, nu_u32_t v)
     return NU_SUCCESS;
 }
 nu_status_t
+cart_write_f32 (FILE *f, nu_f32_t v)
+{
+    nu_u32_t value;
+    nu_memcpy(&value, &v, sizeof(nu_f32_t));
+    return cart_write_u32(f, value);
+}
+nu_status_t
+cart_write_v2 (FILE *f, nu_v2_t v)
+{
+    for (nu_size_t i = 0; i < NU_V2_SIZE; ++i)
+    {
+        NU_CHECK(cart_write_f32(f, v.data[i]), return NU_FAILURE);
+    }
+    return NU_SUCCESS;
+}
+nu_status_t
+cart_write_v3 (FILE *f, nu_v3_t v)
+{
+    for (nu_size_t i = 0; i < NU_V3_SIZE; ++i)
+    {
+        NU_CHECK(cart_write_f32(f, v.data[i]), return NU_FAILURE);
+    }
+    return NU_SUCCESS;
+}
+nu_status_t
 cart_write_m4 (FILE *f, nu_m4_t v)
 {
     for (nu_size_t i = 0; i < NU_M4_SIZE; ++i)
     {
-        NU_CHECK(cart_write_u32(f, v.data[i]), return NU_FAILURE);
+        NU_CHECK(cart_write_f32(f, v.data[i]), return NU_FAILURE);
     }
     return NU_SUCCESS;
 }

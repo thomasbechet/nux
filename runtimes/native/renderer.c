@@ -23,6 +23,7 @@ typedef struct
 static struct
 {
     GLuint   textures[GPU_MAX_TEXTURE];
+    GLuint   white_texture;
     mesh_t   meshes[GPU_MAX_MESH];
     nu_u32_t vbo_offset;
     GLuint   vbo;
@@ -31,6 +32,7 @@ static struct
     GLuint   screen_blit_program;
     GLuint   surface_fbo;
     GLuint   surface_texture;
+    GLuint   surface_depth;
 } renderer;
 
 static const GLchar *
@@ -197,14 +199,28 @@ renderer_init (void)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_SRGB,
-                 VM_SCREEN_WIDTH,
-                 VM_SCREEN_HEIGHT,
+                 GPU_SCREEN_WIDTH,
+                 GPU_SCREEN_HEIGHT,
                  0,
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
                  NU_NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenTextures(1, &renderer.surface_depth);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface_depth);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_DEPTH24_STENCIL8,
+                 GPU_SCREEN_WIDTH,
+                 GPU_SCREEN_HEIGHT,
+                 0,
+                 GL_DEPTH_STENCIL,
+                 GL_UNSIGNED_INT_24_8,
+                 NU_NULL);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenFramebuffers(1, &renderer.surface_fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
@@ -213,14 +229,29 @@ renderer_init (void)
                            GL_TEXTURE_2D,
                            renderer.surface_texture,
                            0);
-    // glFramebufferTexture2D(GL_FRAMEBUFFER,
-    //                        GL_DEPTH_STENCIL_ATTACHMENT,
-    //                        GL_TEXTURE_2D,
-    //                        target->depth,
-    //                        0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_DEPTH_STENCIL_ATTACHMENT,
+                           GL_TEXTURE_2D,
+                           renderer.surface_depth,
+                           0);
     NU_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER)
               == GL_FRAMEBUFFER_COMPLETE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Create white texture
+    glGenTextures(1, &renderer.white_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
+    nu_color_t white = NU_COLOR_WHITE;
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 1,
+                 1,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 &white.rgba);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
     return status;
 
@@ -251,6 +282,10 @@ renderer_free (void)
         glDeleteVertexArrays(1, &renderer.vao);
         glDeleteVertexArrays(1, &renderer.vbo);
     }
+    glDeleteTextures(1, &renderer.white_texture);
+    glDeleteTextures(1, &renderer.surface_texture);
+    glDeleteTextures(1, &renderer.surface_depth);
+    glDeleteFramebuffers(1, &renderer.surface_fbo);
 }
 
 void
@@ -342,6 +377,20 @@ os_gpu_init_mesh (vm_t *vm, nu_u32_t index, const void *p)
 {
     renderer.meshes[index].offset = renderer.vbo_offset;
     renderer.vbo_offset += vm->gpu.meshes[index].count;
+    // Initialize colors to white
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
+    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(ptr);
+    for (nu_size_t i = 0; i < vm->gpu.meshes[index].count; ++i)
+    {
+        nu_size_t vbo_offset = (renderer.meshes[index].offset + i) * VERTEX_SIZE
+                               + VERTEX_COLOR_OFFSET;
+        ptr[vbo_offset + 0] = 1;
+        ptr[vbo_offset + 1] = 1;
+        ptr[vbo_offset + 2] = 1;
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    // Write default value
     if (p)
     {
         os_gpu_write_mesh(vm,
@@ -373,7 +422,7 @@ os_gpu_write_mesh (vm_t                  *vm,
     first = renderer.meshes[index].offset + first;
 
     // Compute user vertex stride
-    size_t vertex_stride = gpu_vertex_stride(write_attributes);
+    size_t vertex_stride = gpu_vertex_size(write_attributes);
 
     // Update VBO
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
@@ -435,23 +484,24 @@ os_gpu_begin (vm_t *vm)
 {
     glUseProgram(renderer.unlit_program);
 
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    // glDepthMask(GL_TRUE);
-    // glDepthFunc(GL_LESS);
-    // glFrontFace(GL_CCW);
-    // glCullFace(GL_BACK);
+    // glDisable(GL_DEPTH_TEST);
+    // glDisable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Render on surface framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
-    glViewport(0, 0, VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
+    glViewport(0, 0, GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
 
     // Clear color
     glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    nu_v2u_t size = nu_v2u(VM_SCREEN_WIDTH, VM_SCREEN_HEIGHT);
+    nu_v2u_t size = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
     glUniform2uiv(glGetUniformLocation(renderer.unlit_program, "viewport_size"),
                   1,
                   size.data);
@@ -501,13 +551,20 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
 {
     // draw model
     const gpu_model_t *model = vm->gpu.models + index;
-    transform                = nu_m4_mul(transform, model->local_to_parent);
+    if (model->mesh == (nu_u32_t)-1)
+    {
+        return;
+    }
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D,
+                  (model->texture != (nu_u32_t)-1)
+                      ? renderer.textures[model->texture]
+                      : renderer.white_texture);
+    transform = nu_m4_mul(transform, model->local_to_parent);
     glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
                        1,
                        GL_FALSE,
                        transform.data);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer.textures[model->texture]);
     nu_u32_t offset = renderer.meshes[model->mesh].offset;
     glBindVertexArray(renderer.vao);
     glDrawArrays(GL_TRIANGLES, offset, vm->gpu.meshes[model->mesh].count);

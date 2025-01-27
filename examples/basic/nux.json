@@ -13,7 +13,6 @@
             "size": 1
         },
         {
-            "ignore": true,
             "type": "model",
             "source": "assets/ariane6.glb",
             "index": 0
