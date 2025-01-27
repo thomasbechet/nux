@@ -1,23 +1,17 @@
 #include "sdk.h"
 
 #include <native/core/vm.h>
+#include <native/core/gpu.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 
-// static void
-// emplace_index (nu_f32_t      *vertices,
-//                const nu_v3_t *positions,
-//                const nu_v2_t *uvs,
-//                nu_u16_t       index)
-// {
-//     const nu_v3_t *pos                       = positions + index;
-//     const nu_v2_t *uv                        = uvs ? uvs + index : NU_NULL;
-//     vertices[VM_VERTEX_SIZE_F32 * index + 0] = pos->x;
-//     vertices[VM_VERTEX_SIZE_F32 * index + 1] = pos->y;
-//     vertices[VM_VERTEX_SIZE_F32 * index + 2] = pos->z;
-//     vertices[VM_VERTEX_SIZE_F32 * index + VM_VERTEX_UV_OFFSET + 0] = uv->x;
-//     vertices[VM_VERTEX_SIZE_F32 * index + VM_VERTEX_UV_OFFSET + 1] = uv->y;
-// }
+static void
+emplace_index (nu_f32_t      *vertices,
+               const nu_v3_t *positions,
+               const nu_v2_t *uvs,
+               nu_u16_t       index)
+{
+}
 #define EMPLACE_VERTEX(index_type)                                \
     index_type *indices                                           \
         = (index_type *)(data + view->offset + accessor->offset); \
@@ -25,114 +19,170 @@
     {                                                             \
         emplace_index(vertices, positions, uvs, indices[i]);      \
     }
-// static nu_f32_t *
-// load_mesh (const cgltf_mesh *mesh, nu_size_t *size)
-// {
-//     printf("loading mesh: %s", mesh->name);
-//
-//     // compute vertex count
-//     *size = 0;
-//     for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
-//     {
-//         cgltf_primitive *primitive = mesh->primitives + p;
-//         cgltf_accessor  *accessor  = primitive->indices;
-//         *size += accessor->count;
-//     }
-//     nu_f32_t *vertices = malloc(VM_VERTEX_SIZE * (*size));
-//     NU_ASSERT(vertices);
-//
-//     // fill buffer
-//     for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
-//     {
-//         cgltf_primitive *primitive = mesh->primitives + p;
-//
-//         // Access attributes
-//         const nu_v3_t *positions = NU_NULL;
-//         const nu_v2_t *uvs       = NU_NULL;
-//         for (nu_size_t a = 0; a < primitive->attributes_count; ++a)
-//         {
-//             cgltf_attribute   *attribute = primitive->attributes + a;
-//             cgltf_accessor    *accessor  = attribute->data;
-//             cgltf_buffer_view *view      = accessor->buffer_view;
-//             nu_byte_t         *data      = (nu_byte_t *)view->buffer->data;
-//             switch (attribute->type)
-//             {
-//                 case cgltf_attribute_type_position:
-//                     positions
-//                         = (nu_v3_t *)(data + accessor->offset +
-//                         view->offset);
-//                     break;
-//                 case cgltf_attribute_type_texcoord:
-//                     uvs = (nu_v2_t *)(data + accessor->offset +
-//                     view->offset); break;
-//                 default:
-//                     break;
-//             }
-//         }
-//
-//         // Build vertex buffer
-//         {
-//             cgltf_accessor    *accessor     = primitive->indices;
-//             cgltf_buffer_view *view         = accessor->buffer_view;
-//             nu_byte_t         *data         = (nu_byte_t
-//             *)view->buffer->data; nu_size_t          indice_count =
-//             accessor->count;
-//
-//             nu_f32_t *vertices = malloc(VM_VERTEX_SIZE * indice_count);
-//             *size              = indice_count;
-//             NU_ASSERT(vertices);
-//
-//             // Push vertices
-//             switch (accessor->component_type)
-//             {
-//                 case cgltf_component_type_r_8:
-//                 case cgltf_component_type_r_8u: {
-//                     EMPLACE_VERTEX(nu_u8_t)
-//                 }
-//                 break;
-//                 case cgltf_component_type_r_16:
-//                 case cgltf_component_type_r_16u: {
-//                     EMPLACE_VERTEX(nu_u16_t)
-//                 }
-//                 break;
-//                 case cgltf_component_type_r_32f:
-//                 case cgltf_component_type_r_32u: {
-//                     EMPLACE_VERTEX(nu_u32_t)
-//                 }
-//                 break;
-//                 default:
-//                     break;
-//             }
-//         }
-//     }
-//
-//     return vertices;
-// }
-nu_f32_t *
-project_load_gltf (const nu_byte_t *path, nu_size_t *size)
+static nu_f32_t *
+load_mesh (const cgltf_mesh *mesh, nu_size_t *size)
 {
-    (void)size;
+    printf("loading mesh: %s", mesh->name);
+
+    // Compute vertex count
+    *size = 0;
+    for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
+    {
+        cgltf_primitive *primitive = mesh->primitives + p;
+        cgltf_accessor  *accessor  = primitive->indices;
+        *size += accessor->count;
+    }
+
+    // Fill buffer
+    for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
+    {
+        cgltf_primitive *primitive = mesh->primitives + p;
+
+        // Access attributes
+        const nu_v3_t *positions = NU_NULL;
+        const nu_v2_t *uvs       = NU_NULL;
+        for (nu_size_t a = 0; a < primitive->attributes_count; ++a)
+        {
+            cgltf_attribute   *attribute = primitive->attributes + a;
+            cgltf_accessor    *accessor  = attribute->data;
+            cgltf_buffer_view *view      = accessor->buffer_view;
+            nu_byte_t         *data      = (nu_byte_t *)view->buffer->data;
+            switch (attribute->type)
+            {
+                case cgltf_attribute_type_position:
+                    positions
+                        = (nu_v3_t *)(data + accessor->offset + view->offset);
+                    break;
+                case cgltf_attribute_type_texcoord:
+                    uvs = (nu_v2_t *)(data + accessor->offset + view->offset);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // Build vertex attributes
+        gpu_vertex_attribute_t attributes = 0;
+        if (positions)
+        {
+            attributes |= GPU_VERTEX_POSTIION;
+        }
+        if (uvs)
+        {
+            attributes |= GPU_VERTEX_UV;
+        }
+
+        // Build vertex buffer
+        {
+            cgltf_accessor    *accessor     = primitive->indices;
+            cgltf_buffer_view *view         = accessor->buffer_view;
+            nu_byte_t         *data         = (nu_byte_t *)view->buffer->data;
+            nu_size_t          indice_count = accessor->count;
+
+            nu_f32_t *vertices
+                = malloc(gpu_vertex_stride(attributes) * indice_count);
+            *size = indice_count;
+            NU_ASSERT(vertices);
+
+            // Push vertices
+            for (nu_size_t i = 0; i < indice_count; ++i)
+            {
+                nu_u32_t index = -1;
+                switch (accessor->component_type)
+                {
+                    case cgltf_component_type_r_8:
+                    case cgltf_component_type_r_8u: {
+                        index = ((nu_u8_t *)(data + view->offset
+                                             + accessor->offset))[i];
+                    }
+                    break;
+                    case cgltf_component_type_r_16:
+                    case cgltf_component_type_r_16u: {
+                        index = ((nu_u16_t *)(data + view->offset
+                                              + accessor->offset))[i];
+                    }
+                    break;
+                    case cgltf_component_type_r_32f:
+                    case cgltf_component_type_r_32u: {
+                        index = ((nu_u32_t *)(data + view->offset
+                                              + accessor->offset))[i];
+                    }
+                    break;
+                    default:
+                        break;
+                }
+                NU_ASSERT(index != (nu_u32_t)-1);
+
+                const nu_v3_t *pos = positions + index;
+                const nu_v2_t *uv  = uvs ? uvs + index : NU_NULL;
+                // vertices[VM_VERTEX_SIZE_F32 * index + 0] = pos->x;
+                // vertices[VM_VERTEX_SIZE_F32 * index + 1] = pos->y;
+                // vertices[VM_VERTEX_SIZE_F32 * index + 2] = pos->z;
+                // vertices[VM_VERTEX_SIZE_F32 * index + VM_VERTEX_UV_OFFSET +
+                // 0]
+                //     = uv->x;
+                // vertices[VM_VERTEX_SIZE_F32 * index + VM_VERTEX_UV_OFFSET +
+                // 1]
+                //     = uv->y;
+            }
+        }
+    }
+
+    return NU_NULL;
+}
+
+nu_status_t
+sdk_model_load (sdk_project_asset_t *asset, JSON_Object *jasset)
+{
+    NU_CHECK(json_parse_u32(jasset, "index", &asset->model.target_index),
+             return NU_FAILURE);
+    return NU_SUCCESS;
+}
+nu_status_t
+sdk_model_save (sdk_project_asset_t *asset, JSON_Object *jasset)
+{
+    NU_CHECK(json_write_u32(jasset, "index", asset->model.target_index),
+             return NU_FAILURE);
+    return NU_SUCCESS;
+}
+
+nu_status_t
+sdk_model_compile (sdk_project_asset_t *asset, FILE *f)
+{
+    typedef struct
+    {
+        void    *cgltf_ptr;
+        nu_u32_t index;
+    } resource_t;
+
+#define MAX_RESOURCE 128
     cgltf_options options;
+    cgltf_result  result;
+    resource_t    resources[MAX_RESOURCE];
+    cgltf_data   *data   = NU_NULL;
+    nu_status_t   status = NU_SUCCESS;
     nu_memset(&options, 0, sizeof(options));
-    cgltf_data  *data = NU_NULL;
-    cgltf_result result;
+    nu_memset(resources, 0, sizeof(resources));
 
     // Parse file and load buffers
-    result = cgltf_parse_file(&options, (char *)path, &data);
+    result = cgltf_parse_file(&options, asset->source_path, &data);
     if (result != cgltf_result_success)
     {
-        return NU_NULL;
+        sdk_log(
+            NU_LOG_ERROR, "Failed to load gltf file %s", asset->source_path);
+        return NU_FAILURE;
     }
-    result = cgltf_load_buffers(&options, data, (char *)path);
+    result = cgltf_load_buffers(&options, data, asset->source_path);
     if (result != cgltf_result_success)
     {
-        return NU_NULL;
+        sdk_log(
+            NU_LOG_ERROR, "Failed to load gltf buffers %s", asset->source_path);
+        return NU_FAILURE;
     }
 
     // Load resources
     for (nu_size_t i = 0; i < data->meshes_count; ++i)
     {
-        // error = nu__load_mesh(loader, data->meshes + i);
     }
 
     // Load scenes and nodes
@@ -171,52 +221,45 @@ project_load_gltf (const nu_byte_t *path, nu_size_t *size)
                                 transform);
             }
 
-            // if (node->mesh)
-            // {
-            //     // Find mesh
-            //     {
-            //         for (nu_size_t i = 0; i < loader->resources.size; ++i)
-            //         {
-            //             if (loader->resources.data[i].ptr == node->mesh)
-            //             {
-            //                 mesh = loader->resources.data[i].handle;
-            //                 break;
-            //             }
-            //         }
-            //         if (!mesh)
-            //         {
-            //             return NU_NULL;
-            //         }
-            //     }
-            //
-            //     // Set node
-            //     nu_model_set(model, n, mesh, material, transform);
-            // }
+            if (node->mesh)
+            {
+                // Find mesh
+                nu_u32_t mesh = -1;
+                for (nu_size_t i = 0; i < MAX_RESOURCE; ++i)
+                {
+                    if (resources[i].cgltf_ptr == node->mesh)
+                    {
+                        mesh = resources[i].index;
+                        break;
+                    }
+                }
+                if (!mesh)
+                {
+                    sdk_log(NU_LOG_ERROR,
+                            "Mesh not found for model %s",
+                            node->name);
+                    status = NU_FAILURE;
+                    goto cleanup0;
+                }
+
+                // Write model chunk
+                NU_CHECK(cart_write_chunk_header(
+                             f, CART_CHUNK_MODEL, CART_CHUNK_MODEL_HEADER_SIZE),
+                         goto cleanup0);
+                NU_CHECK(cart_write_u32(f, asset->model.target_index),
+                         goto cleanup0);
+                NU_CHECK(cart_write_u32(f, mesh), goto cleanup0);
+                NU_CHECK(cart_write_u32(f, 0), goto cleanup0);
+                NU_CHECK(cart_write_u32(f, 0), goto cleanup0);
+                NU_CHECK(cart_write_m4(f, transform), goto cleanup0);
+                sdk_log(NU_LOG_INFO, "- index: %d", asset->model.target_index);
+            }
         }
 
         break; // TODO: support multiple scene
     }
 
+cleanup0:
     cgltf_free(data);
-    return NU_NULL;
-}
-
-nu_status_t
-sdk_model_load (sdk_project_asset_t *asset, JSON_Object *jasset)
-{
-    NU_CHECK(json_parse_u32(jasset, "index", &asset->model.target_index),
-             return NU_FAILURE);
-    return NU_SUCCESS;
-}
-nu_status_t
-sdk_model_save (sdk_project_asset_t *asset, JSON_Object *jasset)
-{
-    NU_CHECK(json_write_u32(jasset, "index", asset->model.target_index),
-             return NU_FAILURE);
-    return NU_SUCCESS;
-}
-nu_status_t
-sdk_model_compile (sdk_project_asset_t *asset, FILE *f)
-{
-    return NU_SUCCESS;
+    return status;
 }

@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "window.h"
 #include "core/platform.h"
+#include "core/gpu.h"
 
 #include <glad/gl.h>
 #define RGFW_IMPORT
@@ -372,10 +373,7 @@ os_gpu_write_mesh (vm_t                  *vm,
     first = renderer.meshes[index].offset + first;
 
     // Compute user vertex stride
-    size_t vertex_stride = 0;
-    vertex_stride += write_attributes & GPU_VERTEX_POSTIION ? NU_V3_SIZE : 0;
-    vertex_stride += write_attributes & GPU_VERTEX_UV ? NU_V2_SIZE : 0;
-    vertex_stride += write_attributes & GPU_VERTEX_COLOR ? NU_V3_SIZE : 0;
+    size_t vertex_stride = gpu_vertex_stride(write_attributes);
 
     // Update VBO
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);

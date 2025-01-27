@@ -45,4 +45,8 @@ void gpu_set_model_parent(vm_t *vm, nu_u32_t index, nu_u32_t parent);
 void gpu_set_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
 void gpu_draw_model(vm_t *vm, nu_u32_t index);
 
+nu_size_t gpu_vertex_stride(gpu_vertex_attribute_t attributes);
+nu_size_t gpu_vertex_attribute_offset(gpu_vertex_attribute_t attributes,
+                                      gpu_vertex_attribute_t attribute);
+
 #endif

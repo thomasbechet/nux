@@ -247,3 +247,45 @@ gpu_draw_model (vm_t *vm, nu_u32_t index)
     check_model(vm, index);
     os_gpu_draw_model(vm, index);
 }
+
+nu_size_t
+gpu_vertex_stride (gpu_vertex_attribute_t attributes)
+{
+    size_t vertex_stride = 0;
+    vertex_stride += attributes & GPU_VERTEX_POSTIION ? NU_V3_SIZE : 0;
+    vertex_stride += attributes & GPU_VERTEX_UV ? NU_V2_SIZE : 0;
+    vertex_stride += attributes & GPU_VERTEX_COLOR ? NU_V3_SIZE : 0;
+    return vertex_stride;
+}
+nu_size_t
+gpu_vertex_attribute_offset (gpu_vertex_attribute_t attributes,
+                             gpu_vertex_attribute_t attribute)
+{
+    NU_ASSERT(attribute & attributes);
+    nu_size_t offset = 0;
+    if (attributes & GPU_VERTEX_POSTIION)
+    {
+        if (attribute == GPU_VERTEX_POSTIION)
+        {
+            return offset;
+        }
+        offset += NU_V3_SIZE;
+    }
+    if (attributes & GPU_VERTEX_UV)
+    {
+        if (attribute == GPU_VERTEX_UV)
+        {
+            return offset;
+        }
+        offset += NU_V2_SIZE;
+    }
+    if (attributes & GPU_VERTEX_COLOR)
+    {
+        if (attribute == GPU_VERTEX_COLOR)
+        {
+            return offset;
+        }
+        offset += NU_V2_SIZE;
+    }
+    return offset;
+}
