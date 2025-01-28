@@ -76,7 +76,7 @@ reserve_memory (vm_t *vm, nu_u32_t size)
 }
 
 nu_status_t
-gpu_init (vm_t *vm, const vm_config_t *config)
+gpu_init (vm_t *vm, const gpu_config_t *config)
 {
     for (nu_size_t i = 0; i < GPU_MAX_POOL; ++i)
     {
@@ -98,8 +98,8 @@ gpu_init (vm_t *vm, const vm_config_t *config)
         vm->gpu.models[i].sibling         = -1;
         vm->gpu.models[i].local_to_parent = nu_m4_identity();
     }
-    vm->gpu.config           = config->gpu;
-    vm->gpu.vram_remaining   = config->gpu.vram_capacity;
+    vm->gpu.config           = *config;
+    vm->gpu.vram_remaining   = config->vram_capacity;
     vm->gpu.state.pool       = GPU_GLOBAL_POOL;
     vm->gpu.state.model      = nu_m4_identity();
     vm->gpu.state.view       = nu_m4_identity();

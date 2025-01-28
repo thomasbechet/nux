@@ -1,9 +1,113 @@
 #ifndef GPU_H
 #define GPU_H
 
-#include "vm.h"
+#include "shared.h"
+#include "iou.h"
 
-nu_status_t gpu_init(vm_t *vm, const vm_config_t *config);
+/////////////////
+///    GPU    ///
+/////////////////
+
+// #define GPU_SCREEN_WIDTH  640
+// #define GPU_SCREEN_HEIGHT 400
+#define GPU_SCREEN_WIDTH  512
+#define GPU_SCREEN_HEIGHT 288
+// #define GPU_SCREEN_WIDTH  320
+// #define GPU_SCREEN_HEIGHT 200
+
+#define GPU_MAX_POOL    32
+#define GPU_MAX_TEXTURE 1024
+#define GPU_MAX_MESH    1024
+#define GPU_MAX_MODEL   1024
+
+#define GPU_GLOBAL_POOL (nu_u32_t)(-1)
+
+typedef enum
+{
+    GPU_TEXTURE64  = 0,
+    GPU_TEXTURE128 = 1,
+    GPU_TEXTURE256 = 2,
+    GPU_TEXTURE512 = 3,
+} gpu_texture_size_t;
+
+typedef enum
+{
+    GPU_VERTEX_POSTIION = 1 << 0,
+    GPU_VERTEX_UV       = 1 << 1,
+    GPU_VERTEX_COLOR    = 1 << 2,
+} gpu_vertex_attribute_t;
+
+typedef enum
+{
+    GPU_PRIMITIVE_TRIANGLES = 0,
+    GPU_PRIMITIVE_LINES     = 1,
+    GPU_PRIMITIVE_POINTS    = 2,
+} gpu_primitive_t;
+
+typedef enum
+{
+    GPU_TRANSFORM_MODEL      = 0,
+    GPU_TRANSFORM_VIEW       = 1,
+    GPU_TRANSFORM_PROJECTION = 2,
+} gpu_transform_t;
+
+typedef struct
+{
+    nu_u32_t vram_capacity;
+} gpu_config_t;
+
+typedef struct
+{
+    nu_v4u_t scissor;
+    nu_v4u_t viewport;
+    nu_m4_t  model;
+    nu_m4_t  view;
+    nu_m4_t  projection;
+    nu_u32_t pool;
+} gpu_state_t;
+
+typedef struct
+{
+    nu_bool_t active;
+    nu_u32_t  size;
+    nu_u32_t  remaining;
+} gpu_pool_t;
+
+typedef struct
+{
+    nu_bool_t          active;
+    gpu_texture_size_t size;
+} gpu_texture_t;
+
+typedef struct
+{
+    nu_bool_t              active;
+    nu_u32_t               count;
+    gpu_primitive_t        primitive;
+    gpu_vertex_attribute_t attributes;
+} gpu_mesh_t;
+
+typedef struct
+{
+    nu_u32_t mesh;
+    nu_u32_t texture;
+    nu_u32_t child;
+    nu_u32_t sibling;
+    nu_m4_t  local_to_parent;
+} gpu_model_t;
+
+typedef struct
+{
+    nu_u32_t      vram_remaining;
+    gpu_state_t   state;
+    gpu_config_t  config;
+    gpu_pool_t    pools[GPU_MAX_POOL];
+    gpu_texture_t textures[GPU_MAX_TEXTURE];
+    gpu_mesh_t    meshes[GPU_MAX_MESH];
+    gpu_model_t   models[GPU_MAX_MODEL];
+} gpu_t;
+
+nu_status_t gpu_init(vm_t *vm, const gpu_config_t *config);
 nu_status_t gpu_free(vm_t *vm);
 void        gpu_begin(vm_t *vm);
 void        gpu_end(vm_t *vm);

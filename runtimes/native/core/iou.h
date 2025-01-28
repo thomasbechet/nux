@@ -1,7 +1,41 @@
 #ifndef IOU_H
 #define IOU_H
 
-#include "vm.h"
+#include "shared.h"
+
+/////////////////
+///    IOU    ///
+/////////////////
+
+#define IOU_MEM_SIZE                 NU_MEM_1M
+#define CART_CHUNK_MESH_HEADER_SIZE  sizeof(nu_u32_t) * 4
+#define CART_CHUNK_MODEL_HEADER_SIZE sizeof(nu_u32_t) * 4 + sizeof(nu_m4_t)
+
+typedef enum
+{
+    CART_CHUNK_RAW     = 0,
+    CART_CHUNK_WASM    = 1,
+    CART_CHUNK_TEXTURE = 2,
+    CART_CHUNK_MESH    = 3,
+    CART_CHUNK_MODEL   = 4,
+} cart_chunk_type_t;
+
+typedef struct
+{
+    cart_chunk_type_t type;
+    nu_u32_t          length;
+} cart_chunk_header_t;
+
+typedef struct
+{
+    nu_u32_t version;
+} cart_header_t;
+
+typedef struct
+{
+    cart_header_t header;
+    void         *heap;
+} iou_t;
 
 nu_status_t iou_init(vm_t *vm);
 nu_status_t iou_load_cart(vm_t *vm, const nu_char_t *name);
