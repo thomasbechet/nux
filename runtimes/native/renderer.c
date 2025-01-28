@@ -14,6 +14,7 @@
 #define VERTEX_UV_OFFSET       3
 #define VERTEX_COLOR_OFFSET    5
 #define VERTEX_SIZE            8
+#define VERTEX_INIT_SIZE       NU_MEM_32K
 
 typedef struct
 {
@@ -305,7 +306,7 @@ os_gpu_init (vm_t *vm)
     glGenBuffers(1, &renderer.vbo);
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
     glBufferData(GL_ARRAY_BUFFER,
-                 vm->gpu.config.max_vertex_count * vertex_size,
+                 VERTEX_INIT_SIZE * vertex_size,
                  NU_NULL,
                  GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_size, (void *)0);
@@ -329,7 +330,7 @@ os_gpu_init (vm_t *vm)
 }
 
 void
-os_gpu_init_texture (vm_t *vm, nu_u32_t index, const void *p)
+os_gpu_init_texture (vm_t *vm, nu_u32_t index)
 {
     GLuint handle;
     glGenTextures(1, &handle);
@@ -342,7 +343,7 @@ os_gpu_init_texture (vm_t *vm, nu_u32_t index, const void *p)
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
-                 p);
+                 NU_NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -358,13 +359,13 @@ os_gpu_free_texture (vm_t *vm, nu_u32_t index)
     glDeleteTextures(1, &renderer.textures[index]);
 }
 void
-os_gpu_write_texture (vm_t       *vm,
-                      nu_u32_t    index,
-                      nu_u32_t    x,
-                      nu_u32_t    y,
-                      nu_u32_t    w,
-                      nu_u32_t    h,
-                      const void *p)
+os_gpu_update_texture (vm_t       *vm,
+                       nu_u32_t    index,
+                       nu_u32_t    x,
+                       nu_u32_t    y,
+                       nu_u32_t    w,
+                       nu_u32_t    h,
+                       const void *p)
 {
     GLuint handle = renderer.textures[index];
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -373,7 +374,7 @@ os_gpu_write_texture (vm_t       *vm,
 }
 
 void
-os_gpu_init_mesh (vm_t *vm, nu_u32_t index, const void *p)
+os_gpu_init_mesh (vm_t *vm, nu_u32_t index)
 {
     renderer.meshes[index].offset = renderer.vbo_offset;
     renderer.vbo_offset += vm->gpu.meshes[index].count;
@@ -390,28 +391,18 @@ os_gpu_init_mesh (vm_t *vm, nu_u32_t index, const void *p)
         ptr[vbo_offset + 2] = 1;
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
-    // Write default value
-    if (p)
-    {
-        os_gpu_write_mesh(vm,
-                          index,
-                          vm->gpu.meshes[index].attributes,
-                          0,
-                          vm->gpu.meshes[index].count,
-                          p);
-    }
 }
 void
 os_gpu_free_mesh (vm_t *vm, nu_u32_t index)
 {
 }
 void
-os_gpu_write_mesh (vm_t                  *vm,
-                   nu_u32_t               index,
-                   gpu_vertex_attribute_t write_attributes,
-                   nu_u32_t               first,
-                   nu_u32_t               count,
-                   const void            *p)
+os_gpu_update_mesh (vm_t                  *vm,
+                    nu_u32_t               index,
+                    gpu_vertex_attribute_t write_attributes,
+                    nu_u32_t               first,
+                    nu_u32_t               count,
+                    const void            *p)
 {
     const nu_f32_t              *data = p;
     nu_f32_t                    *ptr  = NU_NULL;
@@ -527,7 +518,7 @@ os_gpu_end (vm_t *vm)
     glUseProgram(0);
 }
 void
-os_gpu_set_transform (vm_t *vm, gpu_transform_t transform)
+os_gpu_push_transform (vm_t *vm, gpu_transform_t transform)
 {
     switch (transform)
     {

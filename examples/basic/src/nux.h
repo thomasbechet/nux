@@ -101,8 +101,8 @@ void set_model_transform(u32 index, const f32 *m);
 WASM_IMPORT("set_model_parent")
 void set_model_parent(u32 index, u32 parent);
 
-WASM_IMPORT("set_transform")
-void set_transform(u32 transform, const f32 *m);
+WASM_IMPORT("push_transform")
+void push_transform(u32 transform, const f32 *m);
 WASM_IMPORT("draw_model")
 void draw_model(u32 model);
 

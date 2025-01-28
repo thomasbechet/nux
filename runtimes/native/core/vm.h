@@ -37,9 +37,12 @@ typedef struct
 // #define GPU_SCREEN_WIDTH  320
 // #define GPU_SCREEN_HEIGHT 200
 
+#define GPU_MAX_POOL    32
 #define GPU_MAX_TEXTURE 1024
 #define GPU_MAX_MESH    1024
 #define GPU_MAX_MODEL   1024
+
+#define GPU_GLOBAL_POOL (nu_u32_t)(-1)
 
 typedef enum
 {
@@ -72,9 +75,7 @@ typedef enum
 
 typedef struct
 {
-    nu_u32_t max_vertex_count;
-    nu_u32_t max_texture_counts[4];
-    nu_u32_t max_node_count;
+    nu_u32_t vram_capacity;
 } gpu_config_t;
 
 typedef struct
@@ -84,7 +85,15 @@ typedef struct
     nu_m4_t  model;
     nu_m4_t  view;
     nu_m4_t  projection;
+    nu_u32_t pool;
 } gpu_state_t;
+
+typedef struct
+{
+    nu_bool_t active;
+    nu_u32_t  size;
+    nu_u32_t  remaining;
+} gpu_pool_t;
 
 typedef struct
 {
@@ -111,8 +120,10 @@ typedef struct
 
 typedef struct
 {
+    nu_u32_t      vram_remaining;
     gpu_state_t   state;
     gpu_config_t  config;
+    gpu_pool_t    pools[GPU_MAX_POOL];
     gpu_texture_t textures[GPU_MAX_TEXTURE];
     gpu_mesh_t    meshes[GPU_MAX_MESH];
     gpu_model_t   models[GPU_MAX_MODEL];
@@ -162,7 +173,7 @@ typedef struct
     (vm_config_t)                                                         \
     {                                                                     \
         .cpu.mem_heap_size = NU_MEM_1M, .cpu.mem_stack_size = NU_MEM_64K, \
-        .gpu.max_vertex_count = 32000,                                    \
+        .gpu.vram_capacity = NU_MEM_8M,                                   \
     }
 
 typedef struct

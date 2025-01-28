@@ -57,8 +57,8 @@ update (void)
     m              = nu_m4_rotate_y(rotation);
     nu_f32_t scale = 0.5 + ((1 + nu_sin(rotation)) * 0.5) * 0.75;
     m              = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
-    set_transform(TRANSFORM_MODEL, m.data);
-    set_transform(TRANSFORM_VIEW, v.data);
-    set_transform(TRANSFORM_PROJECTION, p.data);
+    push_transform(TRANSFORM_MODEL, m.data);
+    push_transform(TRANSFORM_VIEW, v.data);
+    push_transform(TRANSFORM_PROJECTION, p.data);
     draw_model(0);
 }
