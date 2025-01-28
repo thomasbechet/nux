@@ -24,14 +24,14 @@ cli_log (nu_log_level_t level, const nu_char_t *fmt, va_list args)
             fprintf(stdout, "\x1B[32mINFO\x1B[0m ");
             break;
         case NU_LOG_WARNING:
-            fprintf(stdout, "\033[0;33mWARN\x1B[0m ");
+            fprintf(stdout, "\033[0;33mWARN ");
             break;
         case NU_LOG_ERROR:
-            fprintf(stdout, "\x1B[31mERROR\x1B[0m ");
+            fprintf(stdout, "\x1B[31mERROR ");
             break;
     }
     vfprintf(stdout, fmt, args);
-    fprintf(stdout, "\n");
+    fprintf(stdout, "\x1B[0m\n");
 }
 
 int

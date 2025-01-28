@@ -47,7 +47,7 @@ static nu_f32_t rotation = 0.0f;
 void
 update (void)
 {
-    rotation += 0.1;
+    rotation += 0.03;
 
     nu_m4_t m = nu_m4_translate(nu_v3(0, -5, 0));
     set_model_transform(0, m.data);

@@ -90,9 +90,17 @@ sdk_compile (const sdk_project_t *project)
     if (nu_strlen(project->prebuild))
     {
         sdk_log(
-            NU_LOG_INFO, "Executing prebuild command : %s", project->prebuild);
+            NU_LOG_INFO, "Executing prebuild command '%s'", project->prebuild);
 #ifdef NU_PLATFORM_UNIX
-        system(project->prebuild);
+        nu_int_t errcode = system(project->prebuild);
+        if (errcode)
+        {
+            sdk_log(NU_LOG_ERROR,
+                    "Prebuild command '%s' was not executed sucessfully "
+                    "(errocode %d)",
+                    project->prebuild,
+                    errcode);
+        }
 #endif
     }
 
