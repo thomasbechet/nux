@@ -98,7 +98,7 @@ NU_API nu_status_t json_write_u32(JSON_Object     *object,
                                   const nu_char_t *name,
                                   nu_u32_t         value);
 
-NU_API nu_status_t cart_write(sdk_project_t *proj, void *p, nu_size_t n);
+NU_API nu_status_t cart_write(sdk_project_t *proj, const void *p, nu_size_t n);
 NU_API nu_status_t cart_write_u32(sdk_project_t *proj, nu_u32_t v);
 NU_API nu_status_t cart_write_f32(sdk_project_t *proj, nu_f32_t v);
 NU_API nu_status_t cart_write_v2(sdk_project_t *proj, nu_v2_t v);
@@ -107,5 +107,14 @@ NU_API nu_status_t cart_write_m4(sdk_project_t *proj, nu_m4_t v);
 NU_API nu_status_t cart_write_chunk_header(sdk_project_t    *proj,
                                            cart_chunk_type_t type,
                                            nu_u32_t          length);
+NU_API nu_status_t cart_write_texture(sdk_project_t     *proj,
+                                    nu_u32_t           index,
+                                    gpu_texture_size_t size,
+                                    const nu_byte_t   *data);
+
+NU_API nu_status_t image_resize(nu_v2u_t           source_size,
+                                const nu_byte_t   *source_data,
+                                gpu_texture_size_t target_size,
+                                nu_byte_t         *target_data);
 
 #endif

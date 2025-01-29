@@ -73,7 +73,7 @@ json_write_u32 (JSON_Object *object, const nu_char_t *name, nu_u32_t value)
 }
 
 nu_status_t
-cart_write (sdk_project_t *proj, void *p, nu_size_t n)
+cart_write (sdk_project_t *proj, const void *p, nu_size_t n)
 {
     NU_CHECK(fwrite(p, n, 1, proj->f) == 1, return NU_FAILURE);
     return NU_SUCCESS;
