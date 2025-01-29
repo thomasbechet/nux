@@ -92,14 +92,11 @@ void alloc_mesh(
 WASM_IMPORT("write_mesh")
 void write_mesh(u32 index, u32 attributes, u32 first, u32 count, const void *p);
 
-WASM_IMPORT("set_model_mesh")
-void set_model_mesh(u32 index, u32 mesh);
-WASM_IMPORT("set_model_texture")
-void set_model_texture(u32 index, u32 texture);
-WASM_IMPORT("set_model_transform")
-void set_model_transform(u32 index, const f32 *m);
-WASM_IMPORT("set_model_parent")
-void set_model_parent(u32 index, u32 parent);
+WASM_IMPORT("alloc_model")
+void alloc_model(u32 index, u32 node_count);
+WASM_IMPORT("update_model")
+void update_model(
+    u32 index, u32 node_index, u32 mesh, u32 texture, const f32 *transform);
 
 WASM_IMPORT("push_transform")
 void push_transform(u32 transform, const f32 *m);

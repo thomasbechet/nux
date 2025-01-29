@@ -82,9 +82,14 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
     return status;
 }
 nu_status_t
-sdk_compile (const sdk_project_t *project)
+sdk_compile (sdk_project_t *project)
 {
     nu_status_t status = NU_SUCCESS;
+
+    // Prepare compilation context
+    project->next_mesh_index    = 0;
+    project->next_texture_index = 0;
+    project->next_model_index   = 0;
 
     // Execute prebuild command
     if (nu_strlen(project->prebuild))
@@ -105,8 +110,8 @@ sdk_compile (const sdk_project_t *project)
     }
 
     // Open cart
-    FILE *f = fopen(project->target_path, "wb");
-    if (!f)
+    project->f = fopen(project->target_path, "wb");
+    if (!project->f)
     {
         sdk_log(NU_LOG_ERROR,
                 "Failed to create cartridge file %s",
@@ -125,7 +130,7 @@ sdk_compile (const sdk_project_t *project)
 
     // Write header
     const nu_u32_t version = 100;
-    NU_CHECK(cart_write_u32(f, version), goto cleanup0);
+    NU_CHECK(cart_write_u32(project, version), goto cleanup0);
 
     // Compile assets
     for (nu_size_t i = 0; i < project->assets_count; ++i)
@@ -155,13 +160,13 @@ sdk_compile (const sdk_project_t *project)
         switch (asset->type)
         {
             case SDK_ASSET_WASM:
-                NU_CHECK(sdk_wasm_compile(asset, f), goto cleanup0);
+                NU_CHECK(sdk_wasm_compile(project, asset), goto cleanup0);
                 break;
             case SDK_ASSET_IMAGE:
-                NU_CHECK(sdk_image_compile(asset, f), goto cleanup0);
+                NU_CHECK(sdk_image_compile(project, asset), goto cleanup0);
                 break;
             case SDK_ASSET_MODEL:
-                NU_CHECK(sdk_model_compile(asset, f), goto cleanup0);
+                NU_CHECK(sdk_model_compile(project, asset), goto cleanup0);
                 break;
         }
     }
@@ -169,7 +174,7 @@ sdk_compile (const sdk_project_t *project)
     sdk_log(NU_LOG_INFO, "Compilation success");
 
 cleanup0:
-    fclose(f);
+    fclose(project->f);
     return status;
 }
 nu_status_t

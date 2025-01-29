@@ -16,6 +16,11 @@
             "type": "model",
             "source": "assets/ariane6.glb",
             "index": 0
+        },
+        {
+            "type": "model",
+            "source": "assets/industrial.glb",
+            "index": 1 
         }
 	]
 }

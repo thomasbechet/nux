@@ -6,7 +6,7 @@
 #include <cgltf/cgltf.h>
 
 static nu_status_t
-compile_mesh (const cgltf_mesh *mesh, nu_u32_t index, FILE *f)
+compile_mesh (const cgltf_mesh *mesh, nu_u32_t index, sdk_project_t *proj)
 {
     sdk_log(NU_LOG_INFO, "- Loading mesh '%s'", mesh->name);
 
@@ -56,16 +56,17 @@ compile_mesh (const cgltf_mesh *mesh, nu_u32_t index, FILE *f)
 
         // Write header
         nu_size_t vertex_size = gpu_vertex_size(attributes);
-        NU_CHECK(cart_write_chunk_header(f,
+        NU_CHECK(cart_write_chunk_header(proj,
                                          CART_CHUNK_MESH,
                                          CART_CHUNK_MESH_HEADER_SIZE
                                              + vertex_size * indice_count
                                                    * sizeof(nu_f32_t)),
                  return NU_FAILURE);
-        NU_CHECK(cart_write_u32(f, index), return NU_FAILURE);
-        NU_CHECK(cart_write_u32(f, indice_count), return NU_FAILURE);
-        NU_CHECK(cart_write_u32(f, GPU_PRIMITIVE_TRIANGLES), return NU_FAILURE);
-        NU_CHECK(cart_write_u32(f, attributes), return NU_FAILURE);
+        NU_CHECK(cart_write_u32(proj, index), return NU_FAILURE);
+        NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
+        NU_CHECK(cart_write_u32(proj, GPU_PRIMITIVE_TRIANGLES),
+                 return NU_FAILURE);
+        NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
 
         // Write vertices
         for (nu_size_t i = 0; i < indice_count; ++i)
@@ -98,11 +99,11 @@ compile_mesh (const cgltf_mesh *mesh, nu_u32_t index, FILE *f)
 
             if (attributes & GPU_VERTEX_POSTIION)
             {
-                cart_write_v3(f, positions[index]);
+                cart_write_v3(proj, positions[index]);
             }
             if (attributes & GPU_VERTEX_UV)
             {
-                cart_write_v2(f, uvs[index]);
+                cart_write_v2(proj, uvs[index]);
             }
         }
     }
@@ -126,7 +127,7 @@ sdk_model_save (sdk_project_asset_t *asset, JSON_Object *jasset)
 }
 
 nu_status_t
-sdk_model_compile (sdk_project_asset_t *asset, FILE *f)
+sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 {
     typedef struct
     {
@@ -163,8 +164,10 @@ sdk_model_compile (sdk_project_asset_t *asset, FILE *f)
     // Load resources
     for (nu_size_t i = 0; i < data->meshes_count; ++i)
     {
-        NU_CHECK(compile_mesh(data->meshes + i, i, f), goto cleanup0);
-        resources[resources_count].index     = i;
+        nu_u32_t mesh_index = sdk_next_mesh_index(proj);
+        NU_CHECK(compile_mesh(data->meshes + i, mesh_index, proj),
+                 goto cleanup0);
+        resources[resources_count].index     = mesh_index;
         resources[resources_count].cgltf_ptr = data->meshes + i;
         ++resources_count;
     }
@@ -173,6 +176,17 @@ sdk_model_compile (sdk_project_asset_t *asset, FILE *f)
     for (nu_size_t s = 0; s < data->scenes_count; ++s)
     {
         cgltf_scene *scene = data->scenes + s;
+
+        // Write model
+        NU_CHECK(cart_write_chunk_header(proj,
+                                         CART_CHUNK_MODEL,
+                                         scene->nodes_count
+                                                 * sizeof(gpu_model_node_t)
+                                             + sizeof(nu_u32_t) * 2),
+                 goto cleanup0);
+        NU_CHECK(cart_write_u32(proj, asset->model.target_index),
+                 goto cleanup0);
+        NU_CHECK(cart_write_u32(proj, scene->nodes_count), goto cleanup0);
 
         // Create model
         for (nu_size_t n = 0; n < scene->nodes_count; ++n)
@@ -226,17 +240,11 @@ sdk_model_compile (sdk_project_asset_t *asset, FILE *f)
                     goto cleanup0;
                 }
 
-                // Write model chunk
-                nu_u32_t parent = n ? asset->model.target_index : (nu_u32_t)-1;
-                NU_CHECK(cart_write_chunk_header(
-                             f, CART_CHUNK_MODEL, CART_CHUNK_MODEL_HEADER_SIZE),
-                         goto cleanup0);
-                NU_CHECK(cart_write_u32(f, asset->model.target_index + n),
-                         goto cleanup0);
-                NU_CHECK(cart_write_u32(f, mesh), goto cleanup0);
-                NU_CHECK(cart_write_u32(f, -1), goto cleanup0);
-                NU_CHECK(cart_write_u32(f, parent), goto cleanup0);
-                NU_CHECK(cart_write_m4(f, transform), goto cleanup0);
+                // Write model node
+                NU_CHECK(cart_write_u32(proj, mesh), goto cleanup0);
+                NU_CHECK(cart_write_u32(proj, -1), goto cleanup0);
+                NU_CHECK(cart_write_u32(proj, -1), goto cleanup0);
+                NU_CHECK(cart_write_m4(proj, transform), goto cleanup0);
             }
         }
 

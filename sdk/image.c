@@ -29,7 +29,7 @@ sdk_image_save (sdk_project_asset_t *asset, JSON_Object *jasset)
     return NU_SUCCESS;
 }
 nu_status_t
-sdk_image_compile (sdk_project_asset_t *asset, FILE *f)
+sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 {
     const nu_v2u_t target_size = nu_v2u(128, 128);
     const nu_u32_t target_comp = 4;
@@ -56,13 +56,13 @@ sdk_image_compile (sdk_project_asset_t *asset, FILE *f)
 
     // Write cart
     status = cart_write_chunk_header(
-        f, CART_CHUNK_TEXTURE, data_size + sizeof(nu_u32_t) * 2);
+        proj, CART_CHUNK_TEXTURE, data_size + sizeof(nu_u32_t) * 2);
     NU_CHECK(status, goto cleanup1);
-    status = cart_write_u32(f, asset->image.target_index);
+    status = cart_write_u32(proj, asset->image.target_index);
     NU_CHECK(status, goto cleanup1);
-    status = cart_write_u32(f, asset->image.target_size);
+    status = cart_write_u32(proj, asset->image.target_size);
     NU_CHECK(status, goto cleanup1);
-    status = cart_write(f, data, data_size);
+    status = cart_write(proj, data, data_size);
     NU_CHECK(status, goto cleanup1);
 
 cleanup1:

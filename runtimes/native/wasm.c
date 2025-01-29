@@ -65,28 +65,22 @@ update_mesh (wasm_exec_env_t env,
 }
 
 static void
-set_model_mesh (wasm_exec_env_t env, nu_u32_t index, nu_u32_t mesh)
+alloc_model (wasm_exec_env_t env, nu_u32_t index, nu_u32_t node_count)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_model_mesh(vm, index, mesh);
+    gpu_alloc_model(vm, index, node_count);
 }
 static void
-set_model_texture (wasm_exec_env_t env, nu_u32_t index, nu_u32_t texture)
+update_model (wasm_exec_env_t env,
+              nu_u32_t        index,
+              nu_u32_t        node_index,
+              nu_u32_t        mesh,
+              nu_u32_t        texture,
+              nu_u32_t        parent,
+              const nu_f32_t *transform)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_model_texture(vm, index, texture);
-}
-static void
-set_model_transform (wasm_exec_env_t env, nu_u32_t index, const nu_f32_t *m)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_model_transform(vm, index, m);
-}
-static void
-set_model_parent (wasm_exec_env_t env, nu_u32_t index, nu_u32_t parent)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_model_parent(vm, index, parent);
+    gpu_update_model(vm, index, node_index, mesh, texture, parent, transform);
 }
 
 static void
@@ -133,10 +127,8 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),
     EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
-    EXPORT_WASM_API_WITH_SIG(set_model_mesh, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(set_model_texture, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(set_model_transform, "(i*)"),
-    EXPORT_WASM_API_WITH_SIG(set_model_parent, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_model, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
     EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
 };

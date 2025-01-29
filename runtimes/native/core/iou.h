@@ -7,9 +7,8 @@
 ///    IOU    ///
 /////////////////
 
-#define IOU_MEM_SIZE                 NU_MEM_1M
-#define CART_CHUNK_MESH_HEADER_SIZE  sizeof(nu_u32_t) * 4
-#define CART_CHUNK_MODEL_HEADER_SIZE sizeof(nu_u32_t) * 4 + sizeof(nu_m4_t)
+#define IOU_MEM_SIZE                NU_MEM_1M
+#define CART_CHUNK_MESH_HEADER_SIZE sizeof(nu_u32_t) * 4
 
 typedef enum
 {

@@ -89,12 +89,17 @@ typedef struct
 
 typedef struct
 {
-    nu_u32_t mesh;
-    nu_u32_t texture;
-    nu_u32_t child;
-    nu_u32_t sibling;
-    nu_m4_t  local_to_parent;
+    nu_bool_t active;
+    nu_u32_t  node_count;
 } gpu_model_t;
+
+typedef struct
+{
+    nu_u32_t texture;
+    nu_u32_t mesh;
+    nu_m4_t  local_to_parent;
+    nu_u32_t parent;
+} gpu_model_node_t;
 
 typedef struct
 {
@@ -143,16 +148,19 @@ nu_status_t gpu_update_mesh(vm_t                  *vm,
                             nu_u32_t               count,
                             const void            *p);
 
-nu_status_t gpu_set_model_mesh(vm_t *vm, nu_u32_t index, nu_u32_t mesh);
-nu_status_t gpu_set_model_texture(vm_t *vm, nu_u32_t index, nu_u32_t texture);
-nu_status_t gpu_set_model_transform(vm_t           *vm,
-                                    nu_u32_t        index,
-                                    const nu_f32_t *m);
-nu_status_t gpu_set_model_parent(vm_t *vm, nu_u32_t index, nu_u32_t parent);
+nu_status_t gpu_alloc_model(vm_t *vm, nu_u32_t index, nu_u32_t node_count);
+nu_status_t gpu_update_model(vm_t           *vm,
+                             nu_u32_t        index,
+                             nu_u32_t        node_index,
+                             nu_u32_t        mesh,
+                             nu_u32_t        texture,
+                             nu_u32_t        parent,
+                             const nu_f32_t *transform);
 
 void gpu_push_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
 void gpu_draw_model(vm_t *vm, nu_u32_t index);
 
+nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);
 nu_u32_t gpu_vertex_size(gpu_vertex_attribute_t attributes);
 nu_u32_t gpu_vertex_offset(gpu_vertex_attribute_t attributes,
                            gpu_vertex_attribute_t attribute);

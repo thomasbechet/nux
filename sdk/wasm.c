@@ -11,7 +11,7 @@ sdk_wasm_save (sdk_project_asset_t *asset, JSON_Object *jasset)
     return NU_SUCCESS;
 }
 nu_status_t
-sdk_wasm_compile (sdk_project_asset_t *asset, FILE *f)
+sdk_wasm_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 {
     // Load wasm buffer
     nu_size_t   size;
@@ -28,9 +28,9 @@ sdk_wasm_compile (sdk_project_asset_t *asset, FILE *f)
     NU_ASSERT(nu_load_bytes(nu_sv_cstr(asset->source_path), buffer, &size));
 
     // Write cart
-    status = cart_write_chunk_header(f, CART_CHUNK_WASM, size);
+    status = cart_write_chunk_header(proj, CART_CHUNK_WASM, size);
     NU_CHECK(status, goto cleanup0);
-    status = cart_write(f, buffer, size);
+    status = cart_write(proj, buffer, size);
     NU_CHECK(status, goto cleanup0);
 
 cleanup0:

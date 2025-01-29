@@ -35,11 +35,6 @@ start (void)
     //            vertices);
     // const nu_f32_t colors[] = { 1, 0, 0, 1, 1, 1, 1, 1, 1 };
     // write_mesh(0, VERTEX_COLOR, 0, 3, colors);
-
-    for (int i = 0; i < 5; ++i)
-    {
-        set_model_texture(i, 0);
-    }
 }
 
 static nu_f32_t rotation = 0.0f;
@@ -47,18 +42,17 @@ static nu_f32_t rotation = 0.0f;
 void
 update (void)
 {
-    rotation += 0.03;
+    rotation += 0.01;
 
     nu_m4_t m = nu_m4_translate(nu_v3(0, -5, 0));
-    set_model_transform(0, m.data);
 
-    nu_m4_t v      = nu_lookat(nu_v3(50, 3, 0), nu_v3(0, 15, 0), NU_V3_UP);
-    nu_m4_t p      = nu_perspective(nu_radian(50.0), 640.0 / 400.0, 0.01, 100);
+    nu_m4_t v      = nu_lookat(nu_v3(50, 30, 0), nu_v3(0, 0, 0), NU_V3_UP);
+    nu_m4_t p      = nu_perspective(nu_radian(70.0), 640.0 / 400.0, 0.01, 500);
     m              = nu_m4_rotate_y(rotation);
     nu_f32_t scale = 0.5 + ((1 + nu_sin(rotation)) * 0.5) * 0.75;
     m              = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     push_transform(TRANSFORM_MODEL, m.data);
     push_transform(TRANSFORM_VIEW, v.data);
     push_transform(TRANSFORM_PROJECTION, p.data);
-    draw_model(0);
+    draw_model(1);
 }

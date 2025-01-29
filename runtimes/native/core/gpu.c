@@ -92,11 +92,7 @@ gpu_init (vm_t *vm, const gpu_config_t *config)
     }
     for (nu_size_t i = 0; i < GPU_MAX_MODEL; ++i)
     {
-        vm->gpu.models[i].texture         = -1;
-        vm->gpu.models[i].mesh            = -1;
-        vm->gpu.models[i].child           = -1;
-        vm->gpu.models[i].sibling         = -1;
-        vm->gpu.models[i].local_to_parent = nu_m4_identity();
+        vm->gpu.models[i].active = NU_FALSE;
     }
     vm->gpu.config           = *config;
     vm->gpu.vram_remaining   = config->vram_capacity;
@@ -178,21 +174,32 @@ gpu_load_mesh (vm_t *vm, const cart_chunk_header_t *header)
 nu_status_t
 gpu_load_model (vm_t *vm, const cart_chunk_header_t *header)
 {
-    nu_u32_t index, mesh, texture, parent;
-    nu_m4_t  transform;
+    nu_u32_t index, node_count;
     NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &mesh), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &texture), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &parent), return NU_FAILURE);
-    NU_CHECK(iou_read_m4(vm, &transform), return NU_FAILURE);
+    NU_CHECK(iou_read_u32(vm, &node_count), return NU_FAILURE);
+    NU_CHECK(gpu_alloc_model(vm, index, node_count), return NU_FAILURE);
     iou_log(vm, NU_LOG_INFO, "- index %d", index);
-    iou_log(vm, NU_LOG_INFO, "- mesh %d", mesh);
-    iou_log(vm, NU_LOG_INFO, "- texture %d", texture);
-    iou_log(vm, NU_LOG_INFO, "- parent %d", parent);
-    gpu_set_model_mesh(vm, index, mesh);
-    gpu_set_model_texture(vm, index, texture);
-    gpu_set_model_transform(vm, index, transform.data);
-    gpu_set_model_parent(vm, index, parent);
+    iou_log(vm, NU_LOG_INFO, "- node_count %d", node_count);
+    for (nu_size_t i = 0; i < node_count; ++i)
+    {
+        nu_u32_t mesh, texture, parent;
+        nu_m4_t  transform;
+        NU_CHECK(iou_read_u32(vm, &mesh), return NU_FAILURE);
+        NU_CHECK(iou_read_u32(vm, &texture), return NU_FAILURE);
+        NU_CHECK(iou_read_u32(vm, &parent), return NU_FAILURE);
+        NU_CHECK(iou_read_m4(vm, &transform), return NU_FAILURE);
+        iou_log(vm,
+                NU_LOG_INFO,
+                "- node %d [mesh:%d,texture:%d,parent:%d]",
+                i,
+                mesh,
+                texture,
+                parent);
+        NU_CHECK(gpu_update_model(
+                     vm, index, i, mesh, texture, parent, transform.data),
+                 return NU_FAILURE);
+    }
+
     return NU_SUCCESS;
 }
 
@@ -271,6 +278,8 @@ gpu_alloc_mesh (vm_t                  *vm,
             vm, NU_LOG_ERROR, "Mesh %d already allocated or invalid", index);
         return NU_FAILURE;
     }
+    NU_CHECK(reserve_memory(vm, gpu_vertex_memsize(attributes, count)),
+             return NU_FAILURE);
     vm->gpu.meshes[index].active     = NU_TRUE;
     vm->gpu.meshes[index].count      = count;
     vm->gpu.meshes[index].primitive  = primitive;
@@ -292,38 +301,40 @@ gpu_update_mesh (vm_t                  *vm,
 }
 
 nu_status_t
-gpu_set_model_mesh (vm_t *vm, nu_u32_t index, nu_u32_t mesh)
+gpu_alloc_model (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
 {
-    NU_CHECK(check_model(vm, index), return NU_FAILURE);
-    vm->gpu.models[index].mesh = mesh;
-    return NU_SUCCESS;
-}
-nu_status_t
-gpu_set_model_texture (vm_t *vm, nu_u32_t index, nu_u32_t texture)
-{
-    NU_CHECK(check_model(vm, index), return NU_FAILURE);
-    vm->gpu.models[index].texture = texture;
-    return NU_SUCCESS;
-}
-nu_status_t
-gpu_set_model_transform (vm_t *vm, nu_u32_t index, const nu_f32_t *m)
-{
-    NU_CHECK(check_model(vm, index), return NU_FAILURE);
-    vm->gpu.models[index].local_to_parent = nu_m4(m);
-    return NU_SUCCESS;
-}
-nu_status_t
-gpu_set_model_parent (vm_t *vm, nu_u32_t index, nu_u32_t parent)
-{
-    NU_CHECK(check_model(vm, index), return NU_FAILURE);
-    gpu_model_t *m = vm->gpu.models + index;
-    if (parent != (nu_u32_t)-1)
+    if (index >= GPU_MAX_MODEL || vm->gpu.models[index].active)
     {
-        check_model(vm, parent);
-        gpu_model_t *p = vm->gpu.models + parent;
-        m->sibling     = p->child;
-        p->child       = index;
+        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive model %d", index);
+        return NU_FAILURE;
     }
+    nu_u32_t memsize = node_count * sizeof(gpu_model_node_t);
+    NU_CHECK(reserve_memory(vm, memsize), return NU_FAILURE);
+    vm->gpu.models[index].active     = NU_TRUE;
+    vm->gpu.models[index].node_count = node_count;
+    os_gpu_init_model(vm, index);
+    return NU_SUCCESS;
+}
+nu_status_t
+gpu_update_model (vm_t           *vm,
+                  nu_u32_t        index,
+                  nu_u32_t        node_index,
+                  nu_u32_t        mesh,
+                  nu_u32_t        texture,
+                  nu_u32_t        parent,
+                  const nu_f32_t *transform)
+{
+    NU_CHECK(check_model(vm, index), return NU_FAILURE);
+    if (node_index >= vm->gpu.models[index].node_count)
+    {
+        iou_log(vm, NU_LOG_ERROR, "Invalid model node index %d", node_index);
+        return NU_FAILURE;
+    }
+    gpu_model_node_t node = { .texture         = texture,
+                              .mesh            = mesh,
+                              .parent          = parent,
+                              .local_to_parent = nu_m4(transform) };
+    os_gpu_update_model(vm, index, node_index, &node);
     return NU_SUCCESS;
 }
 
@@ -347,10 +358,15 @@ gpu_push_transform (vm_t *vm, gpu_transform_t transform, const nu_f32_t *m)
 void
 gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
-    check_model(vm, index);
+    NU_CHECK(check_model(vm, index), return);
     os_gpu_draw_model(vm, index);
 }
 
+nu_u32_t
+gpu_vertex_memsize (gpu_vertex_attribute_t attributes, nu_u32_t count)
+{
+    return gpu_vertex_size(attributes) * sizeof(nu_f32_t) * count;
+}
 nu_u32_t
 gpu_vertex_size (gpu_vertex_attribute_t attributes)
 {

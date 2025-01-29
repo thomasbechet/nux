@@ -23,6 +23,12 @@ void os_gpu_update_mesh(vm_t                  *vm,
                         nu_u32_t               first,
                         nu_u32_t               count,
                         const void            *p);
+void os_gpu_init_model(vm_t *vm, nu_u32_t index);
+void os_gpu_free_model(vm_t *vm, nu_u32_t index);
+void os_gpu_update_model(vm_t                   *vm,
+                         nu_u32_t                index,
+                         nu_u32_t                node_index,
+                         const gpu_model_node_t *node);
 void os_gpu_begin(vm_t *vm);
 void os_gpu_end(vm_t *vm);
 void os_gpu_push_transform(vm_t *vm, gpu_transform_t transform);

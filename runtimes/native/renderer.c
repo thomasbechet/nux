@@ -15,25 +15,34 @@
 #define VERTEX_COLOR_OFFSET    5
 #define VERTEX_SIZE            8
 #define VERTEX_INIT_SIZE       NU_MEM_32K
+#define NODE_INIT_SIZE         1024
 
 typedef struct
 {
     nu_u32_t offset;
 } mesh_t;
 
+typedef struct
+{
+    nu_u32_t first_node;
+} model_t;
+
 static struct
 {
-    GLuint   textures[GPU_MAX_TEXTURE];
-    GLuint   white_texture;
-    mesh_t   meshes[GPU_MAX_MESH];
-    nu_u32_t vbo_offset;
-    GLuint   vbo;
-    GLuint   vao;
-    GLuint   unlit_program;
-    GLuint   screen_blit_program;
-    GLuint   surface_fbo;
-    GLuint   surface_texture;
-    GLuint   surface_depth;
+    GLuint           textures[GPU_MAX_TEXTURE];
+    GLuint           white_texture;
+    mesh_t           meshes[GPU_MAX_MESH];
+    gpu_model_node_t nodes[NODE_INIT_SIZE];
+    nu_u32_t         nodes_next;
+    model_t          models[GPU_MAX_MODEL];
+    nu_u32_t         vbo_offset;
+    GLuint           vbo;
+    GLuint           vao;
+    GLuint           unlit_program;
+    GLuint           screen_blit_program;
+    GLuint           surface_fbo;
+    GLuint           surface_texture;
+    GLuint           surface_depth;
 } renderer;
 
 static const GLchar *
@@ -296,6 +305,8 @@ os_gpu_init (vm_t *vm)
     nu_memset(
         &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
 
+    renderer.nodes_next = 0;
+
     // Initialize vertices
     renderer.vbo_offset = 0;
     glGenVertexArrays(1, &renderer.vao);
@@ -471,6 +482,35 @@ os_gpu_update_mesh (vm_t                  *vm,
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 void
+os_gpu_init_model (vm_t *vm, nu_u32_t index)
+{
+    gpu_model_t *model = vm->gpu.models + index;
+    NU_ASSERT(model->node_count + renderer.nodes_next < NODE_INIT_SIZE);
+    renderer.models[index].first_node = renderer.nodes_next;
+    for (nu_size_t i = 0; i < model->node_count; ++i)
+    {
+        gpu_model_node_t *node
+            = renderer.nodes + i + renderer.models[index].first_node;
+        node->texture         = -1;
+        node->mesh            = -1;
+        node->parent          = -1;
+        node->local_to_parent = nu_m4_identity();
+    }
+    renderer.nodes_next += model->node_count;
+}
+void
+os_gpu_free_model (vm_t *vm, nu_u32_t index)
+{
+}
+void
+os_gpu_update_model (vm_t                   *vm,
+                     nu_u32_t                index,
+                     nu_u32_t                node_index,
+                     const gpu_model_node_t *node)
+{
+    renderer.nodes[renderer.models[index].first_node + node_index] = *node;
+}
+void
 os_gpu_begin (vm_t *vm)
 {
     glUseProgram(renderer.unlit_program);
@@ -540,33 +580,36 @@ os_gpu_push_transform (vm_t *vm, gpu_transform_t transform)
 void
 draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
 {
-    // draw model
     const gpu_model_t *model = vm->gpu.models + index;
-    if (model->mesh == (nu_u32_t)-1)
+    for (nu_size_t i = 0; i < model->node_count; ++i)
     {
-        return;
-    }
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D,
-                  (model->texture != (nu_u32_t)-1)
-                      ? renderer.textures[model->texture]
-                      : renderer.white_texture);
-    transform = nu_m4_mul(transform, model->local_to_parent);
-    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
-                       1,
-                       GL_FALSE,
-                       transform.data);
-    nu_u32_t offset = renderer.meshes[model->mesh].offset;
-    glBindVertexArray(renderer.vao);
-    glDrawArrays(GL_TRIANGLES, offset, vm->gpu.meshes[model->mesh].count);
-    glBindVertexArray(0);
-
-    // draw childs
-    nu_u32_t child = model->child;
-    while (child != (nu_u32_t)-1)
-    {
-        draw_model(vm, child, transform);
-        child = vm->gpu.models[child].sibling;
+        gpu_model_node_t *node
+            = renderer.nodes + renderer.models[index].first_node + i;
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,
+                      (node->texture != (nu_u32_t)-1)
+                          ? renderer.textures[node->texture]
+                          : renderer.white_texture);
+        nu_m4_t  global_transform = node->local_to_parent;
+        nu_u32_t parent           = node->parent;
+        while (parent != (nu_u32_t)-1)
+        {
+            gpu_model_node_t *parent_node
+                = renderer.nodes + renderer.models[index].first_node + parent;
+            global_transform = nu_m4_mul(parent_node->local_to_parent,
+                                         node->local_to_parent);
+            parent           = parent_node->parent;
+        }
+        global_transform = nu_m4_mul(transform, global_transform);
+        glUniformMatrix4fv(
+            glGetUniformLocation(renderer.unlit_program, "model"),
+            1,
+            GL_FALSE,
+            global_transform.data);
+        nu_u32_t offset = renderer.meshes[node->mesh].offset;
+        glBindVertexArray(renderer.vao);
+        glDrawArrays(GL_TRIANGLES, offset, vm->gpu.meshes[node->mesh].count);
+        glBindVertexArray(0);
     }
 }
 void
