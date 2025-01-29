@@ -18,6 +18,8 @@ vm_init (vm_t *vm, const vm_config_t *config)
     status = gpu_init(vm, &config->gpu);
     NU_CHECK(status, return NU_FAILURE);
 
+    vm->running = NU_TRUE;
+
     return NU_SUCCESS;
 }
 void
@@ -33,8 +35,9 @@ vm_load (vm_t *vm, const nu_char_t *name)
     return NU_SUCCESS;
 }
 nu_status_t
-vm_tick (vm_t *vm, nu_bool_t *exit)
+vm_tick (vm_t *vm)
 {
+    iou_update(vm);
     gpu_begin(vm);
     cpu_call_event(vm, CPU_EVENT_UPDATE);
     gpu_end(vm);

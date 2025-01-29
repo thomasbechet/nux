@@ -29,11 +29,10 @@ runtime_init (const runtime_info_t *info)
     status = vm_load(&vm, name);
     NU_CHECK(status, goto cleanup4);
 
-    nu_bool_t running = NU_TRUE;
-    while (running && !window_close_requested())
+    while (vm.running && !window_close_requested())
     {
         window_poll_events();
-        vm_tick(&vm, &running);
+        vm_tick(&vm);
         window_swap_buffers();
     }
 

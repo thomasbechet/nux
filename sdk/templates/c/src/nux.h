@@ -107,15 +107,21 @@ void draw_model(u32 model);
 //////                            CARTRIDGE                         //////
 //////////////////////////////////////////////////////////////////////////
 
-// Load raw data from cart
-WASM_IMPORT("load") void load(u32 chunk);
-// Load raw data from cart with overrided destination
-// @chunk chunk index
-// @dst   destination (slot for gpu, addr for memory...)
-WASM_IMPORT("loadd") void loadd(u32 chunk, u32 dst);
-
 //////////////////////////////////////////////////////////////////////////
 //////                            CONTROLLER                        //////
 //////////////////////////////////////////////////////////////////////////
+
+typedef enum
+{
+    BUTTON_A = 1 << 0,
+    BUTTON_X = 1 << 1,
+    BUTTON_Y = 1 << 2,
+    BUTTON_B = 1 << 3,
+} button_t;
+
+WASM_IMPORT("button")
+u32 button(u32 player);
+WASM_IMPORT("analog")
+f32 analog(u32 player, u32 axis);
 
 #endif

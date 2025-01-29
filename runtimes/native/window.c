@@ -32,6 +32,7 @@ static struct
     viewport_t   viewport;
     RGFW_rect    previous_rect;
     RGFW_window *win;
+    nu_u32_t     button;
 } window;
 
 static void
@@ -151,6 +152,23 @@ window_poll_events (void)
                     //                  _ctx.platform.win->event.keyName,
                     //                  NU_FALSE,
                     //                  NU_TRUE);
+                    switch (window.win->event.keyCode)
+                    {
+                        case RGFW_w:
+                            window.button |= CONTROLLER_BUTTON_Y;
+                            break;
+                        case RGFW_s:
+                            window.button |= CONTROLLER_BUTTON_A;
+                            break;
+                        case RGFW_a:
+                            window.button |= CONTROLLER_BUTTON_X;
+                            break;
+                        case RGFW_d:
+                            window.button |= CONTROLLER_BUTTON_B;
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 case RGFW_keyReleased:
                     // nu__key_callback(_ctx.platform.win,
@@ -161,6 +179,23 @@ window_poll_events (void)
                     if (window.win->event.keyCode == RGFW_Escape)
                     {
                         window.close_requested = NU_TRUE;
+                    }
+                    switch (window.win->event.keyCode)
+                    {
+                        case RGFW_w:
+                            window.button &= ~CONTROLLER_BUTTON_Y;
+                            break;
+                        case RGFW_s:
+                            window.button &= ~CONTROLLER_BUTTON_A;
+                            break;
+                        case RGFW_a:
+                            window.button &= ~CONTROLLER_BUTTON_X;
+                            break;
+                        case RGFW_d:
+                            window.button &= ~CONTROLLER_BUTTON_B;
+                            break;
+                        default:
+                            break;
                     }
                     break;
                 case RGFW_mouseButtonPressed:
@@ -224,4 +259,10 @@ nu_b2i_t
 window_get_render_viewport (void)
 {
     return window.viewport.viewport;
+}
+
+void
+os_iou_update_controllers (vm_t *vm)
+{
+    vm->iou.buttons[0] = window.button;
 }

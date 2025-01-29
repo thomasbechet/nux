@@ -9,6 +9,7 @@
 
 #define IOU_MEM_SIZE                NU_MEM_1M
 #define CART_CHUNK_MESH_HEADER_SIZE sizeof(nu_u32_t) * 4
+#define CONTROLLER_MAX_PLAYER       4
 
 typedef enum
 {
@@ -30,13 +31,23 @@ typedef struct
     nu_u32_t version;
 } cart_header_t;
 
+typedef enum
+{
+    CONTROLLER_BUTTON_A = 1 << 0,
+    CONTROLLER_BUTTON_X = 1 << 1,
+    CONTROLLER_BUTTON_Y = 1 << 2,
+    CONTROLLER_BUTTON_B = 1 << 3,
+} controller_button_t;
+
 typedef struct
 {
     cart_header_t header;
     void         *heap;
+    nu_u32_t      buttons[CONTROLLER_MAX_PLAYER];
 } iou_t;
 
 nu_status_t iou_init(vm_t *vm);
+void        iou_update(vm_t *vm);
 nu_status_t iou_load_cart(vm_t *vm, const nu_char_t *name);
 nu_size_t   iou_read(vm_t *vm, void *p, nu_size_t n);
 nu_status_t iou_read_u32(vm_t *vm, nu_u32_t *v);
@@ -48,5 +59,7 @@ void iou_vlog(vm_t            *vm,
               nu_log_level_t   level,
               const nu_char_t *fmt,
               va_list          args);
+
+nu_u32_t iou_button(vm_t *vm, nu_u32_t player);
 
 #endif

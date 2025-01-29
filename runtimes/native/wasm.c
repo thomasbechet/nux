@@ -96,6 +96,13 @@ draw_model (wasm_exec_env_t env, nu_u32_t index)
     gpu_draw_model(vm, index);
 }
 
+static nu_u32_t
+button (wasm_exec_env_t env, nu_u32_t player)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return iou_button(vm, player);
+}
+
 static void *
 native_wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
 {
@@ -131,6 +138,7 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
     EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
 };
 
 nu_status_t

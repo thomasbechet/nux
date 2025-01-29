@@ -41,6 +41,7 @@ void        os_iou_vlog(vm_t            *vm,
                         nu_log_level_t   level,
                         const nu_char_t *fmt,
                         va_list          args);
+void        os_iou_update_controllers(vm_t *vm);
 
 nu_status_t os_cpu_load_wasm(vm_t      *vm,
                              nu_byte_t *buffer,

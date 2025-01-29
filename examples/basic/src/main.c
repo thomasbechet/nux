@@ -2,6 +2,8 @@
 #define NU_IMPLEMENTATION
 #include "nulib.h"
 
+static nu_v3_t pos;
+
 void
 println (nu_char_t *fmt, ...)
 {
@@ -23,6 +25,8 @@ start (void)
     println("%d", *(p0 + size - 1));
     free(p0);
 
+    pos = NU_V3_ZEROS;
+
     // const nu_f32_t vertices[] = { -0.5, 0,    0, 0, 0, 1, 0, 0, //
     //                               0.5,  0,    0, 0, 1, 0, 1, 0, //
     //                               0,    0.75, 0, 1, 0, 0, 0, 1 };
@@ -39,14 +43,21 @@ start (void)
 
 static nu_f32_t rotation = 0.0f;
 
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)                                      \
+    ((byte) & 0x80 ? '1' : '0'), ((byte) & 0x40 ? '1' : '0'),     \
+        ((byte) & 0x20 ? '1' : '0'), ((byte) & 0x10 ? '1' : '0'), \
+        ((byte) & 0x08 ? '1' : '0'), ((byte) & 0x04 ? '1' : '0'), \
+        ((byte) & 0x02 ? '1' : '0'), ((byte) & 0x01 ? '1' : '0')
+
 void
 update (void)
 {
-    rotation += 0.005;
+    // rotation += 0.005;
 
     nu_m4_t m = nu_m4_translate(nu_v3(0, -5, 0));
 
-    nu_m4_t v = nu_lookat(nu_v3(50, 30, 0), nu_v3(0, 0, 0), NU_V3_UP);
+    nu_m4_t v = nu_lookat(pos, nu_v3_add(pos, NU_V3_FORWARD), NU_V3_UP);
     nu_m4_t p = nu_perspective(nu_radian(70.0), 640.0 / 400.0, 0.01, 500);
     m         = nu_m4_rotate_y(rotation);
     // nu_f32_t scale = 0.5 + ((1 + nu_sin(rotation)) * 0.5) * 0.75;
@@ -56,4 +67,23 @@ update (void)
     push_transform(TRANSFORM_VIEW, v.data);
     push_transform(TRANSFORM_PROJECTION, p.data);
     draw_model(1);
+
+    if (button(0) & BUTTON_Y)
+    {
+        pos.z -= 0.3;
+    }
+    if (button(0) & BUTTON_A)
+    {
+        pos.z += 0.3;
+    }
+    if (button(0) & BUTTON_B)
+    {
+        pos.x += 0.3;
+    }
+    if (button(0) & BUTTON_X)
+    {
+        pos.x -= 0.3;
+    }
+
+    println(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
 }

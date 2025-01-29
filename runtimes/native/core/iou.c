@@ -14,9 +14,15 @@ static NU_ENUM_MAP(cart_chunk_type_map,
 nu_status_t
 iou_init (vm_t *vm)
 {
+    nu_memset(vm->iou.buttons, 0, sizeof(vm->iou.buttons));
     vm->iou.heap = os_malloc(vm, IOU_MEM_SIZE);
     NU_ASSERT(vm->iou.heap);
     return NU_SUCCESS;
+}
+void
+iou_update (vm_t *vm)
+{
+    os_iou_update_controllers(vm);
 }
 nu_status_t
 iou_load_cart (vm_t *vm, const nu_char_t *name)
@@ -126,4 +132,14 @@ void
 iou_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
     os_iou_vlog(vm, level, fmt, args);
+}
+
+nu_u32_t
+iou_button (vm_t *vm, nu_u32_t player)
+{
+    if (player >= CONTROLLER_MAX_PLAYER)
+    {
+        return 0;
+    }
+    return vm->iou.buttons[player];
 }
