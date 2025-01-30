@@ -105,6 +105,7 @@ sdk_compile (sdk_project_t *project)
                     "(errocode %d)",
                     project->prebuild,
                     errcode);
+            return NU_FAILURE;
         }
 #endif
     }

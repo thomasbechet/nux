@@ -166,6 +166,12 @@ window_poll_events (void)
                         case RGFW_d:
                             window.button |= CONTROLLER_BUTTON_B;
                             break;
+                        case RGFW_q:
+                            window.button |= CONTROLLER_BUTTON_LB;
+                            break;
+                        case RGFW_e:
+                            window.button |= CONTROLLER_BUTTON_RB;
+                            break;
                         default:
                             break;
                     }
@@ -193,6 +199,12 @@ window_poll_events (void)
                             break;
                         case RGFW_d:
                             window.button &= ~CONTROLLER_BUTTON_B;
+                            break;
+                        case RGFW_q:
+                            window.button &= ~CONTROLLER_BUTTON_LB;
+                            break;
+                        case RGFW_e:
+                            window.button &= ~CONTROLLER_BUTTON_RB;
                             break;
                         default:
                             break;

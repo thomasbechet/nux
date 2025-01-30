@@ -117,6 +117,9 @@ typedef enum
     BUTTON_X = 1 << 1,
     BUTTON_Y = 1 << 2,
     BUTTON_B = 1 << 3,
+
+    BUTTON_LB = 1 << 4,
+    BUTTON_RB = 1 << 5,
 } button_t;
 
 WASM_IMPORT("button")

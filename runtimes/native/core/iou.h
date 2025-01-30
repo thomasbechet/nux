@@ -33,10 +33,12 @@ typedef struct
 
 typedef enum
 {
-    CONTROLLER_BUTTON_A = 1 << 0,
-    CONTROLLER_BUTTON_X = 1 << 1,
-    CONTROLLER_BUTTON_Y = 1 << 2,
-    CONTROLLER_BUTTON_B = 1 << 3,
+    CONTROLLER_BUTTON_A  = 1 << 0,
+    CONTROLLER_BUTTON_X  = 1 << 1,
+    CONTROLLER_BUTTON_Y  = 1 << 2,
+    CONTROLLER_BUTTON_B  = 1 << 3,
+    CONTROLLER_BUTTON_LB = 1 << 4,
+    CONTROLLER_BUTTON_RB = 1 << 5,
 } controller_button_t;
 
 typedef struct
