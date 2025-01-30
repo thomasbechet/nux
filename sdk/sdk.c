@@ -34,7 +34,31 @@ sdk_next_mesh_index (sdk_project_t *proj)
 nu_u32_t
 sdk_next_texture_index (sdk_project_t *proj)
 {
-    nu_u32_t index = proj->next_texture_index++;
+    nu_u32_t  index = proj->next_texture_index++;
+    nu_bool_t found = NU_TRUE;
+    while (found)
+    {
+        found = NU_FALSE;
+        for (nu_size_t i = 0; i < proj->assets_count; ++i)
+        {
+            switch (proj->assets[i].type)
+            {
+                case SDK_ASSET_IMAGE:
+                    if (proj->assets[i].image.target_index == index)
+                    {
+                        break;
+                        found = NU_TRUE;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        if (found)
+        {
+            index = proj->next_texture_index++;
+        }
+    }
     return index;
 }
 nu_u32_t
