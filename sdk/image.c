@@ -34,9 +34,9 @@ image_resize (nu_v2u_t           source_size,
 }
 nu_status_t
 cart_write_texture (sdk_project_t     *proj,
-                  nu_u32_t           index,
-                  gpu_texture_size_t size,
-                  const nu_byte_t   *data)
+                    nu_u32_t           index,
+                    gpu_texture_size_t size,
+                    const nu_byte_t   *data)
 {
     nu_status_t status;
     nu_u32_t    data_size = gpu_texture_memsize(size);
@@ -82,10 +82,10 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         sdk_log(
             NU_LOG_ERROR, "Failed to load image file %s", asset->source_path);
     }
-    nu_size_t  data_size = gpu_texture_memsize(GPU_TEXTURE128);
+    nu_size_t  data_size = gpu_texture_memsize(GPU_TEXTURE256);
     nu_byte_t *data      = malloc(data_size);
     NU_CHECK(data, goto cleanup0);
-    NU_CHECK(image_resize(nu_v2u(w, h), img, GPU_TEXTURE128, data),
+    NU_CHECK(image_resize(nu_v2u(w, h), img, GPU_TEXTURE256, data),
              goto cleanup1);
 
     // Write cart

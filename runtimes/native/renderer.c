@@ -14,8 +14,8 @@
 #define VERTEX_UV_OFFSET       3
 #define VERTEX_COLOR_OFFSET    5
 #define VERTEX_SIZE            8
-#define VERTEX_INIT_SIZE       NU_MEM_32K
-#define NODE_INIT_SIZE         1024
+#define VERTEX_INIT_SIZE       NU_MEM_1M
+#define NODE_INIT_SIZE         2048
 
 typedef struct
 {
@@ -556,6 +556,7 @@ os_gpu_end (vm_t *vm)
     glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glUseProgram(0);
+    glDisable(GL_FRAMEBUFFER_SRGB);
 }
 void
 os_gpu_push_transform (vm_t *vm, gpu_transform_t transform)

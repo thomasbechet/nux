@@ -170,7 +170,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         nu_u32_t index;
     } resource_t;
 
-#define MAX_RESOURCE 128
+#define MAX_RESOURCE 512
     cgltf_options options;
     cgltf_result  result;
     resource_t    resources[MAX_RESOURCE];
@@ -200,13 +200,17 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     for (nu_size_t i = 0; i < data->meshes_count; ++i)
     {
         cgltf_mesh *mesh = data->meshes + i;
-        sdk_log(NU_LOG_INFO, "- Loading mesh '%s'", mesh->name);
         for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
         {
             nu_u32_t mesh_index = sdk_next_mesh_index(proj);
             NU_CHECK(
                 compile_primitive_mesh(mesh->primitives + p, mesh_index, proj),
                 goto cleanup0);
+            sdk_log(NU_LOG_INFO,
+                    "- Loading mesh '%s' primitive %d index %d",
+                    mesh->name,
+                    p,
+                    mesh_index);
             resources[resources_count].index     = mesh_index;
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             ++resources_count;
@@ -263,7 +267,6 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         for (nu_size_t n = 0; n < scene->nodes_count; ++n)
         {
             cgltf_node *node = scene->nodes[n];
-            sdk_log(NU_LOG_INFO, "- Loading node %s", node->name);
 
             nu_m4_t transform = nu_m4_identity();
             if (node->has_scale)
@@ -339,6 +342,12 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                 "Texture not found for model %s, using default",
                                 node->name);
                     }
+
+                    sdk_log(NU_LOG_INFO,
+                            "- Loading node %s mesh %d texture %d",
+                            node->name,
+                            mesh,
+                            texture);
 
                     // Write model node
                     NU_CHECK(cart_write_u32(proj, mesh), goto cleanup0);
