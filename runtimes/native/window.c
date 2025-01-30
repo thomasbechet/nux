@@ -33,6 +33,7 @@ static struct
     RGFW_rect    previous_rect;
     RGFW_window *win;
     nu_u32_t     button;
+    nu_f32_t     axis[CONTROLLER_AXIS_MAX];
 } window;
 
 static void
@@ -143,15 +144,8 @@ window_poll_events (void)
             switch (window.win->event.type)
             {
                 case RGFW_mousePosChanged:
-                    // nu__mouse_position_callback(_ctx.platform.win,
-                    //                             _ctx.platform.win->event.point);
                     break;
                 case RGFW_keyPressed:
-                    // nu__key_callback(_ctx.platform.win,
-                    //                  _ctx.platform.win->event.keyCode,
-                    //                  _ctx.platform.win->event.keyName,
-                    //                  NU_FALSE,
-                    //                  NU_TRUE);
                     switch (window.win->event.keyCode)
                     {
                         case RGFW_w:
@@ -166,22 +160,29 @@ window_poll_events (void)
                         case RGFW_d:
                             window.button |= CONTROLLER_BUTTON_B;
                             break;
-                        case RGFW_q:
+                        case RGFW_z:
                             window.button |= CONTROLLER_BUTTON_LB;
                             break;
-                        case RGFW_e:
+                        case RGFW_x:
                             window.button |= CONTROLLER_BUTTON_RB;
+                            break;
+                        case RGFW_h:
+                            window.axis[CONTROLLER_AXIS_RIGHTX] = -1;
+                            break;
+                        case RGFW_l:
+                            window.axis[CONTROLLER_AXIS_RIGHTX] = 1;
+                            break;
+                        case RGFW_j:
+                            window.axis[CONTROLLER_AXIS_RIGHTY] = 1;
+                            break;
+                        case RGFW_k:
+                            window.axis[CONTROLLER_AXIS_RIGHTY] = -1;
                             break;
                         default:
                             break;
                     }
                     break;
                 case RGFW_keyReleased:
-                    // nu__key_callback(_ctx.platform.win,
-                    //                  _ctx.platform.win->event.keyCode,
-                    //                  _ctx.platform.win->event.keyName,
-                    //                  NU_FALSE,
-                    //                  NU_FALSE);
                     if (window.win->event.keyCode == RGFW_Escape)
                     {
                         window.close_requested = NU_TRUE;
@@ -200,11 +201,19 @@ window_poll_events (void)
                         case RGFW_d:
                             window.button &= ~CONTROLLER_BUTTON_B;
                             break;
-                        case RGFW_q:
+                        case RGFW_z:
                             window.button &= ~CONTROLLER_BUTTON_LB;
                             break;
-                        case RGFW_e:
+                        case RGFW_x:
                             window.button &= ~CONTROLLER_BUTTON_RB;
+                            break;
+                        case RGFW_h:
+                        case RGFW_l:
+                            window.axis[CONTROLLER_AXIS_RIGHTX] = 0;
+                            break;
+                        case RGFW_j:
+                        case RGFW_k:
+                            window.axis[CONTROLLER_AXIS_RIGHTY] = 0;
                             break;
                         default:
                             break;
@@ -277,4 +286,5 @@ void
 os_iou_update_controllers (vm_t *vm)
 {
     vm->iou.buttons[0] = window.button;
+    nu_memcpy(vm->iou.axis[0], window.axis, sizeof(window.axis));
 }

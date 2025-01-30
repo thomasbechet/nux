@@ -102,6 +102,12 @@ button (wasm_exec_env_t env, nu_u32_t player)
     vm_t *vm = wasm_runtime_get_user_data(env);
     return iou_button(vm, player);
 }
+static nu_f32_t
+axis (wasm_exec_env_t env, nu_u32_t player, nu_u32_t axis)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return iou_axis(vm, player, axis);
+}
 
 static void *
 native_wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
@@ -139,6 +145,7 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
     EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
     EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
+    EXPORT_WASM_API_WITH_SIG(axis, "(ii)f"),
 };
 
 nu_status_t

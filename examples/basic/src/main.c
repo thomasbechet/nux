@@ -36,13 +36,14 @@ init_debug_camera (void)
     controller.mode = CONTROLLER_FREEFLY_ALIGNED;
 
     controller.fov   = 90;
-    controller.speed = 20;
+    controller.speed = 50;
 }
 
 void
 debug_camera (nu_f32_t dt)
 {
-    nu_v3_t look = NU_V3_ZEROS;
+    nu_v3_t look
+        = nu_v3(axis(0, AXIS_RIGHTX) * 100, axis(0, AXIS_RIGHTY) * 100, 0);
 
     nu_v3_t move = NU_V3_ZEROS;
     if (button(0) & BUTTON_Y)
@@ -158,7 +159,7 @@ debug_camera (nu_f32_t dt)
     }
 
     // Apply drag
-    force = nu_v3_add(force, nu_v3_muls(controller.vel, -0.5));
+    force = nu_v3_add(force, nu_v3_muls(controller.vel, -0.3));
 
     // Integrate
     controller.pos

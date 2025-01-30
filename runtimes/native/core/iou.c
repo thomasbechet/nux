@@ -143,3 +143,12 @@ iou_button (vm_t *vm, nu_u32_t player)
     }
     return vm->iou.buttons[player];
 }
+nu_f32_t
+iou_axis (vm_t *vm, nu_u32_t player, controller_axis_t axis)
+{
+    if (player >= CONTROLLER_MAX_PLAYER)
+    {
+        return 0;
+    }
+    return vm->iou.axis[player][axis];
+}

@@ -41,11 +41,21 @@ typedef enum
     CONTROLLER_BUTTON_RB = 1 << 5,
 } controller_button_t;
 
+typedef enum
+{
+    CONTROLLER_AXIS_LEFTX  = 0,
+    CONTROLLER_AXIS_LEFTY  = 1,
+    CONTROLLER_AXIS_RIGHTX = 2,
+    CONTROLLER_AXIS_RIGHTY = 3,
+    CONTROLLER_AXIS_MAX    = 4
+} controller_axis_t;
+
 typedef struct
 {
     cart_header_t header;
     void         *heap;
     nu_u32_t      buttons[CONTROLLER_MAX_PLAYER];
+    nu_f32_t      axis[CONTROLLER_MAX_PLAYER][CONTROLLER_AXIS_MAX];
 } iou_t;
 
 nu_status_t iou_init(vm_t *vm);
@@ -63,5 +73,6 @@ void iou_vlog(vm_t            *vm,
               va_list          args);
 
 nu_u32_t iou_button(vm_t *vm, nu_u32_t player);
+nu_f32_t iou_axis(vm_t *vm, nu_u32_t player, controller_axis_t axis);
 
 #endif

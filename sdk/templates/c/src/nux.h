@@ -113,15 +113,25 @@ void draw_model(u32 model);
 
 typedef enum
 {
-    BUTTON_A = 1 << 0,
-    BUTTON_X = 1 << 1,
-    BUTTON_Y = 1 << 2,
-    BUTTON_B = 1 << 3,
+    BUTTON_A  = 1 << 0,
+    BUTTON_X  = 1 << 1,
+    BUTTON_Y  = 1 << 2,
+    BUTTON_B  = 1 << 3,
+    BUTTON_LB = 1 << 4,
+    BUTTON_RB = 1 << 5,
 } button_t;
+
+typedef enum
+{
+    AXIS_LEFTX  = 0,
+    AXIS_LEFTY  = 1,
+    AXIS_RIGHTX = 2,
+    AXIS_RIGHTY = 3,
+} axis_t;
 
 WASM_IMPORT("button")
 u32 button(u32 player);
-WASM_IMPORT("analog")
-f32 analog(u32 player, u32 axis);
+WASM_IMPORT("axis")
+f32 axis(u32 player, u32 axis);
 
 #endif
