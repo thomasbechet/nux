@@ -11,8 +11,6 @@ compile_texture (const cgltf_texture *texture,
                  nu_u32_t             index,
                  sdk_project_t       *proj)
 {
-    const gpu_texture_size_t target_size = GPU_TEXTURE128;
-
     nu_status_t status = NU_FAILURE;
 
     // Load image buffer
@@ -29,6 +27,11 @@ compile_texture (const cgltf_texture *texture,
         sdk_log(NU_LOG_ERROR, "Failed to load image '%s'", texture->name);
         return NU_FAILURE;
     }
+
+    // Find nearest texture size
+    nu_u32_t target_size = nu_upper_power_of_two(NU_MAX(w, h));
+
+    sdk_log(NU_LOG_INFO, "texture %s %d %d", texture->name, w, h);
 
     // Resize image
     nu_byte_t *resized = malloc(gpu_texture_memsize(target_size));
@@ -79,7 +82,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     gpu_vertex_attribute_t attributes = 0;
     if (positions)
     {
-        attributes |= GPU_VERTEX_POSTIION;
+        attributes |= GPU_VERTEX_POSITION;
     }
     if (uvs)
     {
@@ -133,7 +136,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
         }
         NU_ASSERT(index != (nu_u32_t)-1);
 
-        if (attributes & GPU_VERTEX_POSTIION)
+        if (attributes & GPU_VERTEX_POSITION)
         {
             cart_write_v3(proj, positions[index]);
         }

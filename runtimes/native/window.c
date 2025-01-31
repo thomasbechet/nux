@@ -187,6 +187,10 @@ window_poll_events (void)
                     {
                         window.close_requested = NU_TRUE;
                     }
+                    if (window.win->event.keyCode == RGFW_p)
+                    {
+                        window.switch_fullscreen = NU_TRUE;
+                    }
                     switch (window.win->event.keyCode)
                     {
                         case RGFW_w:

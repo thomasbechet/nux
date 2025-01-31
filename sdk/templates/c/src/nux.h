@@ -52,13 +52,13 @@ WASM_IMPORT("trace") void trace(const void *str, u32 n);
 //////                              GPU                             //////
 //////////////////////////////////////////////////////////////////////////
 
-typedef enum
-{
-    TEXTURE64  = 0,
-    TEXTURE128 = 1,
-    TEXTURE256 = 2,
-    TEXTURE512 = 3,
-} gpu_texture_size_t;
+// typedef enum
+// {
+//     TEXTURE64  = 0,
+//     TEXTURE128 = 1,
+//     TEXTURE256 = 2,
+//     TEXTURE512 = 3,
+// } gpu_texture_size_t;
 
 typedef enum
 {

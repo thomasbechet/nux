@@ -23,19 +23,15 @@
 
 #define GPU_GLOBAL_POOL (nu_u32_t)(-1)
 
-typedef enum
-{
-    GPU_TEXTURE64  = 0,
-    GPU_TEXTURE128 = 1,
-    GPU_TEXTURE256 = 2,
-    GPU_TEXTURE512 = 3,
-} gpu_texture_size_t;
+#define GPU_MIN_TEXTURE_SIZE 32
+#define GPU_MAX_TEXTURE_SIZE 512
 
 typedef enum
 {
-    GPU_VERTEX_POSTIION = 1 << 0,
+    GPU_VERTEX_POSITION = 1 << 0,
     GPU_VERTEX_UV       = 1 << 1,
     GPU_VERTEX_COLOR    = 1 << 2,
+    GPU_VERTEX_INDICES  = 1 << 3,
 } gpu_vertex_attribute_t;
 
 typedef enum
@@ -76,8 +72,8 @@ typedef struct
 
 typedef struct
 {
-    nu_bool_t          active;
-    gpu_texture_size_t size;
+    nu_bool_t active;
+    nu_u32_t  size;
 } gpu_texture_t;
 
 typedef struct
@@ -126,9 +122,7 @@ nu_status_t gpu_alloc_pool(vm_t *vm, nu_u32_t index, nu_u32_t size);
 nu_status_t gpu_bind_pool(vm_t *vm, nu_u32_t index);
 nu_status_t gpu_clear_pool(vm_t *vm, nu_u32_t index);
 
-nu_status_t gpu_alloc_texture(vm_t              *vm,
-                              nu_u32_t           index,
-                              gpu_texture_size_t size);
+nu_status_t gpu_alloc_texture(vm_t *vm, nu_u32_t index, nu_u32_t size);
 nu_status_t gpu_update_texture(vm_t       *vm,
                                nu_u32_t    index,
                                nu_u32_t    x,
@@ -165,7 +159,6 @@ nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);
 nu_u32_t gpu_vertex_size(gpu_vertex_attribute_t attributes);
 nu_u32_t gpu_vertex_offset(gpu_vertex_attribute_t attributes,
                            gpu_vertex_attribute_t attribute);
-nu_u32_t gpu_texture_memsize(gpu_texture_size_t size);
-nu_u32_t gpu_texture_width(gpu_texture_size_t size);
+nu_u32_t gpu_texture_memsize(nu_u32_t size);
 
 #endif

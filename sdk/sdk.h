@@ -22,8 +22,8 @@ typedef struct
     {
         struct
         {
-            nu_u32_t           target_index;
-            gpu_texture_size_t target_size;
+            nu_u32_t target_index;
+            nu_u32_t target_size;
         } image;
         struct
         {
@@ -107,14 +107,14 @@ NU_API nu_status_t cart_write_m4(sdk_project_t *proj, nu_m4_t v);
 NU_API nu_status_t cart_write_chunk_header(sdk_project_t    *proj,
                                            cart_chunk_type_t type,
                                            nu_u32_t          length);
-NU_API nu_status_t cart_write_texture(sdk_project_t     *proj,
-                                    nu_u32_t           index,
-                                    gpu_texture_size_t size,
-                                    const nu_byte_t   *data);
+NU_API nu_status_t cart_write_texture(sdk_project_t   *proj,
+                                      nu_u32_t         index,
+                                      nu_u32_t         size,
+                                      const nu_byte_t *data);
 
-NU_API nu_status_t image_resize(nu_v2u_t           source_size,
-                                const nu_byte_t   *source_data,
-                                gpu_texture_size_t target_size,
-                                nu_byte_t         *target_data);
+NU_API nu_status_t image_resize(nu_v2u_t         source_size,
+                                const nu_byte_t *source_data,
+                                nu_u32_t         target_size,
+                                nu_byte_t       *target_data);
 
 #endif

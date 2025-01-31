@@ -349,8 +349,8 @@ os_gpu_init_texture (vm_t *vm, nu_u32_t index)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGBA,
-                 64 << vm->gpu.textures[index].size,
-                 64 << vm->gpu.textures[index].size,
+                 vm->gpu.textures[index].size,
+                 vm->gpu.textures[index].size,
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_BYTE,
@@ -431,9 +431,9 @@ os_gpu_update_mesh (vm_t                  *vm,
     ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
     nu_size_t write_attribute_offset = 0;
-    if (write_attributes & GPU_VERTEX_POSTIION)
+    if (write_attributes & GPU_VERTEX_POSITION)
     {
-        if (mesh_attributes & GPU_VERTEX_POSTIION)
+        if (mesh_attributes & GPU_VERTEX_POSITION)
         {
             for (nu_size_t i = 0; i < count; ++i)
             {

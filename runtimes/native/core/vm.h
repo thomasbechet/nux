@@ -8,7 +8,11 @@
 ///    VM     ///
 /////////////////
 
-#define VM_RUNTIME_VERSION "0.0.1"
+#ifdef NUX_BUILD_SDK
+#define VM_RUNTIME_VERSION "0.0.1 (with sdk tools)"
+#else
+#define VM_RUNTIME_VERSION "0.0.1 (no sdk tools)"
+#endif
 
 #define VM_CONFIG_DEFAULT                                                 \
     (vm_config_t)                                                         \

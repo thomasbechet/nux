@@ -248,6 +248,9 @@ update (void)
     debug_camera(0.02);
     draw_model(0);
     draw_model(1);
+    m = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
+    push_transform(TRANSFORM_MODEL, m.data);
+    draw_model(1);
 
     // println(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
 }
