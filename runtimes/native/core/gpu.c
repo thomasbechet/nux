@@ -141,8 +141,7 @@ gpu_load_texture (vm_t *vm, const cart_chunk_header_t *header)
     nu_u32_t index, size;
     NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &size), return NU_FAILURE);
-    iou_log(vm, NU_LOG_INFO, "- index: %d", index);
-    iou_log(vm, NU_LOG_INFO, "- size: %d", size);
+    iou_log(vm, NU_LOG_INFO, "texture[%d] size:%d", index, size);
     // TODO: validate size
     nu_u32_t  width       = (64 << size);
     nu_size_t data_length = width * width * 4;
@@ -159,10 +158,13 @@ gpu_load_mesh (vm_t *vm, const cart_chunk_header_t *header)
     NU_CHECK(iou_read_u32(vm, &count), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &primitive), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &attributes), return NU_FAILURE);
-    iou_log(vm, NU_LOG_INFO, "- index %d", index);
-    iou_log(vm, NU_LOG_INFO, "- count %d", count);
-    iou_log(vm, NU_LOG_INFO, "- primitive %d", primitive);
-    iou_log(vm, NU_LOG_INFO, "- attributes %x", attributes);
+    iou_log(vm,
+            NU_LOG_INFO,
+            "mesh[%d] count:%d, primitive:%d, attribute:%d",
+            index,
+            count,
+            primitive,
+            attributes);
     NU_ASSERT(
         os_iou_read(vm,
                     vm->iou.heap,
@@ -178,8 +180,7 @@ gpu_load_model (vm_t *vm, const cart_chunk_header_t *header)
     NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
     NU_CHECK(iou_read_u32(vm, &node_count), return NU_FAILURE);
     NU_CHECK(gpu_alloc_model(vm, index, node_count), return NU_FAILURE);
-    iou_log(vm, NU_LOG_INFO, "- index %d", index);
-    iou_log(vm, NU_LOG_INFO, "- node_count %d", node_count);
+    iou_log(vm, NU_LOG_INFO, "model[%d] node_count:%d", index, node_count);
     for (nu_size_t i = 0; i < node_count; ++i)
     {
         nu_u32_t mesh, texture, parent;
@@ -190,7 +191,7 @@ gpu_load_model (vm_t *vm, const cart_chunk_header_t *header)
         NU_CHECK(iou_read_m4(vm, &transform), return NU_FAILURE);
         iou_log(vm,
                 NU_LOG_INFO,
-                "- node %d [mesh:%d,texture:%d,parent:%d]",
+                "   node:%d,mesh:%d,texture:%d,parent:%d",
                 i,
                 mesh,
                 texture,

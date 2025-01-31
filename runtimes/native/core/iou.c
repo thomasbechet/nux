@@ -54,13 +54,6 @@ iou_load_cart (vm_t *vm, const nu_char_t *name)
             return NU_FAILURE;
         }
 
-        iou_log(vm,
-                NU_LOG_INFO,
-                "[%d] type: '%s', length: %d bytes",
-                i,
-                nu_enum_to_cstr(header.type, cart_chunk_type_map),
-                header.length);
-
         // read chunk
         switch (header.type)
         {

@@ -246,7 +246,7 @@ update (void)
     m = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     push_transform(TRANSFORM_MODEL, m.data);
     debug_camera(0.02);
-    // draw_model(0);
+    draw_model(0);
     draw_model(1);
 
     // println(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
