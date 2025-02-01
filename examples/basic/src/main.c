@@ -40,7 +40,7 @@ init_debug_camera (void)
 }
 
 void
-debug_camera (nu_f32_t dt)
+debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
 {
     nu_v3_t look
         = nu_v3(axis(0, AXIS_RIGHTX) * 100, axis(0, AXIS_RIGHTY) * 100, 0);
@@ -170,6 +170,10 @@ debug_camera (nu_f32_t dt)
     nu_v3_t new_vel
         = nu_v3_add(controller.vel,
                     nu_v3_muls(nu_v3_add(controller.acc, new_acc), 0.5 * dt));
+    if (nu_v3_norm(new_vel) < 0.1)
+    {
+        new_vel = NU_V3_ZEROS;
+    }
     controller.acc = new_acc;
     controller.vel = new_vel;
 
@@ -182,6 +186,11 @@ debug_camera (nu_f32_t dt)
     nu_m4_t projection
         = nu_perspective(nu_radian(70.0), 640.0 / 400.0, 0.01, 500);
     push_transform(TRANSFORM_PROJECTION, projection.data);
+
+    if (out_pos)
+    {
+        *out_pos = pos;
+    }
 }
 
 static nu_v3_t pos;
@@ -245,12 +254,21 @@ update (void)
     // nu_f32_t scale = 0.5 + ((1 + nu_sin(rotation)) * 0.5) * 0.75;
     m = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     push_transform(TRANSFORM_MODEL, m.data);
-    debug_camera(0.02);
+    nu_v3_t pos;
+    debug_camera(0.02, &pos);
     draw_model(0);
     draw_model(1);
     m = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
     push_transform(TRANSFORM_MODEL, m.data);
     draw_model(1);
+
+    char buf[256];
+    sprintf(buf, "x: %lf", pos.x);
+    draw_text(10, 10, buf);
+    sprintf(buf, "y: %lf", pos.y);
+    draw_text(10, 20, buf);
+    sprintf(buf, "z: %lf", pos.z);
+    draw_text(10, 30, buf);
 
     // println(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
 }

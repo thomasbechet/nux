@@ -154,6 +154,7 @@ nu_status_t gpu_update_model(vm_t           *vm,
 
 void gpu_push_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
 void gpu_draw_model(vm_t *vm, nu_u32_t index);
+void gpu_draw_text(vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text);
 
 nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);
 nu_u32_t gpu_vertex_size(gpu_vertex_attribute_t attributes);

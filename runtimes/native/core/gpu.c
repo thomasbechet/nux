@@ -371,6 +371,11 @@ gpu_draw_model (vm_t *vm, nu_u32_t index)
     NU_CHECK(check_model(vm, index), return);
     os_gpu_draw_model(vm, index);
 }
+void
+gpu_draw_text (vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text)
+{
+    os_gpu_draw_text(vm, x, y, text, nu_strlen(text));
+}
 
 nu_u32_t
 gpu_vertex_memsize (gpu_vertex_attribute_t attributes, nu_u32_t count)

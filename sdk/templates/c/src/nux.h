@@ -52,14 +52,6 @@ WASM_IMPORT("trace") void trace(const void *str, u32 n);
 //////                              GPU                             //////
 //////////////////////////////////////////////////////////////////////////
 
-// typedef enum
-// {
-//     TEXTURE64  = 0,
-//     TEXTURE128 = 1,
-//     TEXTURE256 = 2,
-//     TEXTURE512 = 3,
-// } gpu_texture_size_t;
-
 typedef enum
 {
     VERTEX_POSTIION = 1 << 0,
@@ -102,6 +94,8 @@ WASM_IMPORT("push_transform")
 void push_transform(u32 transform, const f32 *m);
 WASM_IMPORT("draw_model")
 void draw_model(u32 model);
+WASM_IMPORT("draw_text")
+void draw_text(u32 x, u32 y, const void *text);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

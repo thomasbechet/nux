@@ -18,7 +18,7 @@
     (vm_config_t)                                                         \
     {                                                                     \
         .cpu.mem_heap_size = NU_MEM_1M, .cpu.mem_stack_size = NU_MEM_64K, \
-        .gpu.vram_capacity = NU_MEM_8M,                                   \
+        .gpu.vram_capacity = NU_MEM_16M,                                  \
     }
 
 typedef struct
