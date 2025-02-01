@@ -1,6 +1,6 @@
 #include "gpu.h"
 
-#include "iou.h"
+#include "vm.h"
 #include "platform.h"
 
 static nu_status_t
@@ -8,7 +8,7 @@ check_pool (vm_t *vm, nu_u32_t index)
 {
     if (index >= GPU_MAX_POOL || !vm->gpu.pools[index].active)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive pool %d", index);
+        vm_log(vm, NU_LOG_ERROR, "Invalid or inactive pool %d", index);
         return NU_FAILURE;
     }
     return NU_SUCCESS;
@@ -18,7 +18,7 @@ check_mesh (vm_t *vm, nu_u32_t index)
 {
     if (index >= GPU_MAX_MESH || !vm->gpu.meshes[index].active)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive mesh %d", index);
+        vm_log(vm, NU_LOG_ERROR, "Invalid or inactive mesh %d", index);
         return NU_FAILURE;
     }
     return NU_SUCCESS;
@@ -28,7 +28,7 @@ check_texture (vm_t *vm, nu_u32_t index)
 {
     if (index >= GPU_MAX_TEXTURE || !vm->gpu.textures[index].active)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive texture %d", index);
+        vm_log(vm, NU_LOG_ERROR, "Invalid or inactive texture %d", index);
         return NU_FAILURE;
     }
     return NU_SUCCESS;
@@ -38,7 +38,7 @@ check_model (vm_t *vm, nu_u32_t index)
 {
     if (index >= GPU_MAX_MODEL)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid model %d", index);
+        vm_log(vm, NU_LOG_ERROR, "Invalid model %d", index);
         return NU_FAILURE;
     }
     return NU_SUCCESS;
@@ -50,10 +50,10 @@ reserve_memory (vm_t *vm, nu_u32_t size)
     {
         if (vm->gpu.vram_remaining < size)
         {
-            iou_log(vm,
-                    NU_LOG_ERROR,
-                    "GPU out of global memory (requested %d)",
-                    size);
+            vm_log(vm,
+                   NU_LOG_ERROR,
+                   "GPU out of global memory (requested %d)",
+                   size);
             return NU_FAILURE;
         }
         vm->gpu.vram_remaining -= size;
@@ -63,11 +63,11 @@ reserve_memory (vm_t *vm, nu_u32_t size)
         gpu_pool_t *pool = vm->gpu.pools + vm->gpu.state.pool;
         if (pool->remaining < size)
         {
-            iou_log(vm,
-                    NU_LOG_ERROR,
-                    "GPU out of memory (requested %d on pool %d)",
-                    size,
-                    vm->gpu.state.pool);
+            vm_log(vm,
+                   NU_LOG_ERROR,
+                   "GPU out of memory (requested %d on pool %d)",
+                   size,
+                   vm->gpu.state.pool);
             return NU_FAILURE;
         }
         pool->remaining -= size;
@@ -139,62 +139,63 @@ nu_status_t
 gpu_load_texture (vm_t *vm, const cart_chunk_header_t *header)
 {
     nu_u32_t index, size;
-    NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &size), return NU_FAILURE);
-    iou_log(vm, NU_LOG_INFO, "texture[%d] size:%d", index, size);
+    NU_CHECK(cart_read_u32(vm, &index), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &size), return NU_FAILURE);
+    vm_log(vm, NU_LOG_INFO, "texture[%d] size:%d", index, size);
     // TODO: validate size
     nu_size_t data_length = gpu_texture_memsize(size);
-    NU_CHECK(iou_read(vm, vm->iou.heap, data_length), return NU_FAILURE);
+    NU_CHECK(cart_read(vm, vm->bootloader.heap, data_length),
+             return NU_FAILURE);
     gpu_alloc_texture(vm, index, size);
-    gpu_update_texture(vm, index, 0, 0, size, size, vm->iou.heap);
+    gpu_update_texture(vm, index, 0, 0, size, size, vm->bootloader.heap);
     return NU_SUCCESS;
 }
 nu_status_t
 gpu_load_mesh (vm_t *vm, const cart_chunk_header_t *header)
 {
     nu_u32_t index, count, primitive, attributes;
-    NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &count), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &primitive), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &attributes), return NU_FAILURE);
-    iou_log(vm,
-            NU_LOG_INFO,
-            "mesh[%d] count:%d, primitive:%d, attribute:%d",
-            index,
-            count,
-            primitive,
-            attributes);
+    NU_CHECK(cart_read_u32(vm, &index), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &count), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &primitive), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &attributes), return NU_FAILURE);
+    vm_log(vm,
+           NU_LOG_INFO,
+           "mesh[%d] count:%d, primitive:%d, attribute:%d",
+           index,
+           count,
+           primitive,
+           attributes);
     NU_ASSERT(
-        os_iou_read(vm,
-                    vm->iou.heap,
-                    gpu_vertex_size(attributes) * count * sizeof(nu_f32_t)));
+        os_cart_read(vm,
+                     vm->bootloader.heap,
+                     gpu_vertex_size(attributes) * count * sizeof(nu_f32_t)));
     gpu_alloc_mesh(vm, index, count, primitive, attributes);
-    gpu_update_mesh(vm, index, attributes, 0, count, vm->iou.heap);
+    gpu_update_mesh(vm, index, attributes, 0, count, vm->bootloader.heap);
     return NU_SUCCESS;
 }
 nu_status_t
 gpu_load_model (vm_t *vm, const cart_chunk_header_t *header)
 {
     nu_u32_t index, node_count;
-    NU_CHECK(iou_read_u32(vm, &index), return NU_FAILURE);
-    NU_CHECK(iou_read_u32(vm, &node_count), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &index), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &node_count), return NU_FAILURE);
     NU_CHECK(gpu_alloc_model(vm, index, node_count), return NU_FAILURE);
-    iou_log(vm, NU_LOG_INFO, "model[%d] node_count:%d", index, node_count);
+    vm_log(vm, NU_LOG_INFO, "model[%d] node_count:%d", index, node_count);
     for (nu_size_t i = 0; i < node_count; ++i)
     {
         nu_u32_t mesh, texture, parent;
         nu_m4_t  transform;
-        NU_CHECK(iou_read_u32(vm, &mesh), return NU_FAILURE);
-        NU_CHECK(iou_read_u32(vm, &texture), return NU_FAILURE);
-        NU_CHECK(iou_read_u32(vm, &parent), return NU_FAILURE);
-        NU_CHECK(iou_read_m4(vm, &transform), return NU_FAILURE);
-        iou_log(vm,
-                NU_LOG_INFO,
-                "   node:%d, mesh:%d, texture:%d, parent:%d",
-                i,
-                mesh,
-                texture,
-                parent);
+        NU_CHECK(cart_read_u32(vm, &mesh), return NU_FAILURE);
+        NU_CHECK(cart_read_u32(vm, &texture), return NU_FAILURE);
+        NU_CHECK(cart_read_u32(vm, &parent), return NU_FAILURE);
+        NU_CHECK(cart_read_m4(vm, &transform), return NU_FAILURE);
+        vm_log(vm,
+               NU_LOG_INFO,
+               "   node:%d, mesh:%d, texture:%d, parent:%d",
+               i,
+               mesh,
+               texture,
+               parent);
         NU_CHECK(gpu_update_model(
                      vm, index, i, mesh, texture, parent, transform.data),
                  return NU_FAILURE);
@@ -208,8 +209,7 @@ gpu_alloc_pool (vm_t *vm, nu_u32_t index, nu_u32_t size)
 {
     if (index >= GPU_MAX_POOL || vm->gpu.pools[index].active)
     {
-        iou_log(
-            vm, NU_LOG_ERROR, "Pool %d already allocated or invalid", index);
+        vm_log(vm, NU_LOG_ERROR, "Pool %d already allocated or invalid", index);
         return NU_FAILURE;
     }
     NU_CHECK(reserve_memory(vm, size), return NU_FAILURE);
@@ -238,18 +238,18 @@ gpu_alloc_texture (vm_t *vm, nu_u32_t index, nu_u32_t size)
 {
     if (index >= GPU_MAX_TEXTURE || vm->gpu.textures[index].active)
     {
-        iou_log(
+        vm_log(
             vm, NU_LOG_ERROR, "Texture %d already allocated or invalid", index);
         return NU_FAILURE;
     }
     if (size < GPU_MIN_TEXTURE_SIZE || size > GPU_MAX_TEXTURE_SIZE)
     {
-        iou_log(vm,
-                NU_LOG_ERROR,
-                "Invalid texture size %d (min %d max %d)",
-                GPU_MIN_TEXTURE_SIZE,
-                GPU_MAX_TEXTURE_SIZE,
-                size);
+        vm_log(vm,
+               NU_LOG_ERROR,
+               "Invalid texture size %d (min %d max %d)",
+               GPU_MIN_TEXTURE_SIZE,
+               GPU_MAX_TEXTURE_SIZE,
+               size);
         return NU_FAILURE;
     }
     NU_CHECK(reserve_memory(vm, gpu_texture_memsize(size)), return NU_FAILURE);
@@ -269,7 +269,7 @@ gpu_update_texture (vm_t       *vm,
 {
     if (index >= GPU_MAX_TEXTURE || !vm->gpu.textures[index].active)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive texture %d", index);
+        vm_log(vm, NU_LOG_ERROR, "Invalid or inactive texture %d", index);
         return NU_FAILURE;
     }
     os_gpu_update_texture(vm, index, x, y, w, h, p);
@@ -284,8 +284,7 @@ gpu_alloc_mesh (vm_t                  *vm,
 {
     if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].active)
     {
-        iou_log(
-            vm, NU_LOG_ERROR, "Mesh %d already allocated or invalid", index);
+        vm_log(vm, NU_LOG_ERROR, "Mesh %d already allocated or invalid", index);
         return NU_FAILURE;
     }
     NU_CHECK(reserve_memory(vm, gpu_vertex_memsize(attributes, count)),
@@ -315,7 +314,7 @@ gpu_alloc_model (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
 {
     if (index >= GPU_MAX_MODEL || vm->gpu.models[index].active)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid or inactive model %d", index);
+        vm_log(vm, NU_LOG_ERROR, "Invalid or inactive model %d", index);
         return NU_FAILURE;
     }
     nu_u32_t memsize = node_count * sizeof(gpu_model_node_t);
@@ -337,7 +336,7 @@ gpu_update_model (vm_t           *vm,
     NU_CHECK(check_model(vm, index), return NU_FAILURE);
     if (node_index >= vm->gpu.models[index].node_count)
     {
-        iou_log(vm, NU_LOG_ERROR, "Invalid model node index %d", node_index);
+        vm_log(vm, NU_LOG_ERROR, "Invalid model node index %d", node_index);
         return NU_FAILURE;
     }
     gpu_model_node_t node = { .texture         = texture,

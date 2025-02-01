@@ -1,7 +1,9 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "vm.h"
+#include "shared.h"
+#include "gpu.h"
+#include "cpu.h"
 
 void *os_malloc(vm_t *vm, nu_size_t n);
 
@@ -36,14 +38,14 @@ void os_gpu_draw_model(vm_t *vm, nu_u32_t index);
 void os_gpu_draw_text(
     vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text, nu_u32_t len);
 
-nu_status_t os_iou_mount(vm_t *vm, const nu_char_t *name);
-nu_status_t os_iou_seek(vm_t *vm, nu_size_t n);
-nu_size_t   os_iou_read(vm_t *vm, void *p, nu_size_t n);
-void        os_iou_vlog(vm_t            *vm,
-                        nu_log_level_t   level,
-                        const nu_char_t *fmt,
-                        va_list          args);
-void        os_iou_update_controllers(vm_t *vm);
+nu_status_t os_cart_mount(vm_t *vm, const nu_char_t *name);
+nu_status_t os_cart_seek(vm_t *vm, nu_size_t n);
+nu_size_t   os_cart_read(vm_t *vm, void *p, nu_size_t n);
+void        os_vlog(vm_t            *vm,
+                    nu_log_level_t   level,
+                    const nu_char_t *fmt,
+                    va_list          args);
+void        os_gpad_update(vm_t *vm);
 
 nu_status_t os_cpu_load_wasm(vm_t      *vm,
                              nu_byte_t *buffer,

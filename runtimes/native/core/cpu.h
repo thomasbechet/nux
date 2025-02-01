@@ -2,7 +2,7 @@
 #define CPU_H
 
 #include "shared.h"
-#include "iou.h"
+#include "cartridge.h"
 
 /////////////////
 ///    CPU    ///

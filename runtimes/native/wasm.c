@@ -2,7 +2,7 @@
 
 #include "logger.h"
 #include "core/gpu.h"
-#include "core/iou.h"
+#include "core/gamepad.h"
 
 #include <wasm_export.h>
 
@@ -22,7 +22,7 @@ static void
 trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    iou_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
+    vm_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
 }
 static void
 alloc_texture (wasm_exec_env_t env, nu_u32_t index, nu_u32_t size)
@@ -106,13 +106,13 @@ static nu_u32_t
 button (wasm_exec_env_t env, nu_u32_t player)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return iou_button(vm, player);
+    return gpad_button(vm, player);
 }
 static nu_f32_t
 axis (wasm_exec_env_t env, nu_u32_t player, nu_u32_t axis)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return iou_axis(vm, player, axis);
+    return gpad_axis(vm, player, axis);
 }
 
 static void *
@@ -215,7 +215,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
         = wasm_runtime_load(buffer, buffer_size, error_buf, sizeof(error_buf));
     if (!wasm.module)
     {
-        iou_log(vm, NU_LOG_ERROR, "Load wasm module failed: %s", error_buf);
+        vm_log(vm, NU_LOG_ERROR, "Load wasm module failed: %s", error_buf);
         wasm_unload_cart(vm);
         return NU_FAILURE;
     }
@@ -230,7 +230,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
                                              sizeof(error_buf));
     if (!wasm.instance)
     {
-        iou_log(
+        vm_log(
             vm, NU_LOG_ERROR, "Instantiate wasm module failed: %s", error_buf);
         wasm_unload_cart(vm);
         return NU_FAILURE;
@@ -240,7 +240,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     wasm.env = wasm_runtime_create_exec_env(wasm.instance, init_stack_size);
     if (!wasm.env)
     {
-        iou_log(vm, NU_LOG_ERROR, "Create wasm execution environment failed");
+        vm_log(vm, NU_LOG_ERROR, "Create wasm execution environment failed");
     }
     wasm_runtime_set_user_data(wasm.env, vm);
 
@@ -249,9 +249,9 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
         = wasm_runtime_lookup_function(wasm.instance, START_CALLBACK);
     if (!wasm.start_callback)
     {
-        iou_log(vm,
-                NU_LOG_INFO,
-                "The " START_CALLBACK " wasm function is not found");
+        vm_log(vm,
+               NU_LOG_INFO,
+               "The " START_CALLBACK " wasm function is not found");
         wasm_unload_cart(vm);
         return NU_FAILURE;
     }
@@ -259,9 +259,9 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
         = wasm_runtime_lookup_function(wasm.instance, UPDATE_CALLBACK);
     if (!wasm.update_callback)
     {
-        iou_log(vm,
-                NU_LOG_INFO,
-                "The " UPDATE_CALLBACK " wasm function is not found");
+        vm_log(vm,
+               NU_LOG_INFO,
+               "The " UPDATE_CALLBACK " wasm function is not found");
         wasm_unload_cart(vm);
         return NU_FAILURE;
     }
@@ -287,11 +287,11 @@ os_cpu_call_event (vm_t *vm, cpu_event_t event)
     NU_ASSERT(callback_name);
     if (!wasm_runtime_call_wasm_a(wasm.env, callback, 0, NU_NULL, 0, NU_NULL))
     {
-        iou_log(vm,
-                NU_LOG_ERROR,
-                "Call wasm function %s failed: %s",
-                callback_name,
-                wasm_runtime_get_exception(wasm.instance));
+        vm_log(vm,
+               NU_LOG_ERROR,
+               "Call wasm function %s failed: %s",
+               callback_name,
+               wasm_runtime_get_exception(wasm.instance));
         return NU_FAILURE;
     }
     return NU_SUCCESS;

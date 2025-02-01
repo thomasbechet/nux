@@ -6,6 +6,7 @@
 #include "window.h"
 #include "core/platform.h"
 #include "core/gpu.h"
+#include "core/vm.h"
 
 #include <glad/gl.h>
 #define RGFW_IMPORT

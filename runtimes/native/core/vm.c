@@ -1,8 +1,8 @@
 #include "vm.h"
 
-#include "iou.h"
 #include "cpu.h"
 #include "gpu.h"
+#include "platform.h"
 
 nu_status_t
 vm_init (vm_t *vm, const vm_config_t *config)
@@ -11,11 +11,13 @@ vm_init (vm_t *vm, const vm_config_t *config)
 
     // Init units
     nu_status_t status;
-    status = iou_init(vm);
+    status = boot_init(vm);
     NU_CHECK(status, return NU_FAILURE);
     status = cpu_init(vm, &config->cpu);
     NU_CHECK(status, return NU_FAILURE);
     status = gpu_init(vm, &config->gpu);
+    NU_CHECK(status, return NU_FAILURE);
+    status = gpad_init(vm);
     NU_CHECK(status, return NU_FAILURE);
 
     vm->running = NU_TRUE;
@@ -30,16 +32,30 @@ vm_free (vm_t *vm)
 nu_status_t
 vm_load (vm_t *vm, const nu_char_t *name)
 {
-    NU_CHECK(iou_load_cart(vm, name), return NU_FAILURE);
+    NU_CHECK(boot_load_cart(vm, name), return NU_FAILURE);
     NU_CHECK(cpu_call_event(vm, CPU_EVENT_START), return NU_FAILURE);
     return NU_SUCCESS;
 }
 nu_status_t
 vm_tick (vm_t *vm)
 {
-    iou_update(vm);
+    gpad_update(vm);
     gpu_begin(vm);
     cpu_call_event(vm, CPU_EVENT_UPDATE);
     gpu_end(vm);
     return NU_SUCCESS;
+}
+
+void
+vm_log (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vm_vlog(vm, level, fmt, args);
+    va_end(args);
+}
+void
+vm_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
+{
+    os_vlog(vm, level, fmt, args);
 }

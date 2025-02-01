@@ -2,7 +2,7 @@
 #define GPU_H
 
 #include "shared.h"
-#include "iou.h"
+#include "cartridge.h"
 
 /////////////////
 ///    GPU    ///
