@@ -1,5 +1,6 @@
 #include "bootloader.h"
 
+#include "cartridge.h"
 #include "vm.h"
 #include "platform.h"
 
@@ -102,37 +103,6 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
 
     return NU_SUCCESS;
 }
-static nu_status_t
-read_chunk_entry (vm_t *vm, cart_chunk_entry_t *entry)
-{
-    NU_CHECK(cart_read_u32(vm, &entry->type), return NU_FAILURE);
-    NU_CHECK(cart_read_u32(vm, &entry->offset), return NU_FAILURE);
-    NU_CHECK(cart_read_u32(vm, &entry->length), return NU_FAILURE);
-    switch (entry->type)
-    {
-        case CART_CHUNK_RAW:
-        case CART_CHUNK_WASM: {
-            // Padding
-            nu_u32_t dummy;
-            NU_CHECK(cart_read_u32(vm, &dummy), return NU_FAILURE);
-            break;
-        }
-        break;
-        case CART_CHUNK_TEXTURE:
-            NU_CHECK(cart_read_u32(vm, &entry->extra.texture.index),
-                     return NU_FAILURE);
-            break;
-        case CART_CHUNK_MESH:
-            NU_CHECK(cart_read_u32(vm, &entry->extra.mesh.index),
-                     return NU_FAILURE);
-            break;
-        case CART_CHUNK_MODEL:
-            NU_CHECK(cart_read_u32(vm, &entry->extra.model.index),
-                     return NU_FAILURE);
-            break;
-    }
-    return NU_SUCCESS;
-}
 
 nu_status_t
 boot_init (vm_t *vm)
@@ -155,11 +125,13 @@ boot_load_cart (vm_t *vm, const nu_char_t *name)
         return NU_FAILURE;
     }
     NU_CHECK(os_cart_seek(vm, 0), return NU_FAILURE);
-    NU_CHECK(cart_read_u32(vm, &vm->bootloader.header.version),
+
+    nu_byte_t header_data[CART_HEADER_SIZE];
+    NU_CHECK(cart_read(vm, header_data, sizeof(header_data))
+                 == sizeof(header_data),
              return NU_FAILURE);
-    NU_CHECK(cart_read_u32(vm, &vm->bootloader.header.chunk_count),
+    NU_CHECK(cart_parse_header(header_data, &vm->bootloader.header),
              return NU_FAILURE);
-    // TODO: validate
 
     nu_u32_t data_offset
         = CART_HEADER_SIZE
@@ -173,7 +145,12 @@ boot_load_cart (vm_t *vm, const nu_char_t *name)
 
         // Read entry
         cart_chunk_entry_t entry;
-        if (!read_chunk_entry(vm, &entry))
+        nu_byte_t          entry_data[CART_CHUNK_ENTRY_SIZE];
+        NU_CHECK(cart_read(vm, entry_data, sizeof(entry_data))
+                     == sizeof(entry_data),
+                 return NU_FAILURE);
+
+        if (!cart_parse_entries(entry_data, 1, &entry))
         {
             vm_log(vm, NU_LOG_ERROR, "Failed to read chunk entry %d", i);
             return NU_FAILURE;

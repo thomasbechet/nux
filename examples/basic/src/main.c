@@ -263,12 +263,13 @@ update (void)
     draw_model(1);
 
     char buf[256];
-    sprintf(buf, "x: %lf", pos.x);
+    sprintf(buf, "x: %.2lf", pos.x);
     draw_text(10, 10, buf);
-    sprintf(buf, "y: %lf", pos.y);
+    sprintf(buf, "y: %.2lf", pos.y);
     draw_text(10, 20, buf);
-    sprintf(buf, "z: %lf", pos.z);
+    sprintf(buf, "z: %.2lf", pos.z);
     draw_text(10, 30, buf);
 
-    // println(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
+    sprintf(buf, "c: " BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
+    draw_text(10, 40, buf);
 }

@@ -1,3 +1,4 @@
+#include "native/core/cartridge.h"
 #include "sdk.h"
 
 #include "templates_data.h"
@@ -170,6 +171,13 @@ sdk_compile (sdk_project_t *project)
                 NU_CHECK(sdk_model_compile(project, asset), goto cleanup0);
                 break;
         }
+    }
+
+    // End last chunk entry
+    if (project->current_entry)
+    {
+        project->current_entry->length
+            = project->data_size - project->current_entry->offset;
     }
 
     // Open cart
@@ -454,10 +462,10 @@ sdk_begin_entry (sdk_project_t *proj, cart_chunk_type_t type)
     {
         proj->current_entry->length
             = proj->data_size - proj->current_entry->offset;
-        sdk_log(NU_LOG_INFO,
-                "[END ENTRY %s length %d]",
-                nu_enum_to_cstr(proj->current_entry->type, cart_chunk_type_map),
-                proj->current_entry->length);
+        // sdk_log(NU_LOG_INFO,
+        //         "[END ENTRY %s length %d]",
+        //         nu_enum_to_cstr(proj->current_entry->type,
+        //         cart_chunk_type_map), proj->current_entry->length);
         proj->current_entry = NU_NULL;
     }
     NU_ASSERT(proj->entries);
@@ -474,9 +482,93 @@ sdk_begin_entry (sdk_project_t *proj, cart_chunk_type_t type)
     proj->current_entry->type   = type;
     proj->current_entry->offset = proj->data_size;
     proj->current_entry->length = 0;
-    sdk_log(NU_LOG_INFO,
-            "[BEGIN ENTRY %s offset %d]",
-            nu_enum_to_cstr(entry->type, cart_chunk_type_map),
-            proj->current_entry->offset);
+    // sdk_log(NU_LOG_INFO,
+    //         "[BEGIN ENTRY %s offset %d]",
+    //         nu_enum_to_cstr(entry->type, cart_chunk_type_map),
+    //         proj->current_entry->offset);
     return entry;
+}
+typedef struct
+{
+    nu_u32_t           index;
+    cart_chunk_entry_t data;
+} indexed_entry_t;
+static int
+chunk_entry_cmp (const void *a, const void *b)
+{
+    const indexed_entry_t *ea = a;
+    const indexed_entry_t *eb = b;
+    return eb->data.length - ea->data.length;
+}
+nu_status_t
+sdk_dump (nu_sv_t path)
+{
+    nu_size_t   size;
+    nu_status_t status = nu_load_bytes(path, NU_NULL, &size);
+    if (!status)
+    {
+        sdk_log(NU_LOG_ERROR, "Failed to load " NU_SV_FMT, NU_SV_ARGS(path));
+        return NU_FAILURE;
+    }
+
+    nu_byte_t *data = malloc(size);
+    NU_ASSERT(data);
+    status = nu_load_bytes(path, data, &size);
+    NU_CHECK(status, goto cleanup0);
+
+    cart_header_t header;
+    status = cart_parse_header(data, &header);
+    NU_CHECK(status, goto cleanup0);
+
+    indexed_entry_t *entries = malloc(header.chunk_count * sizeof(*entries));
+    NU_ASSERT(entries);
+    nu_byte_t *entry_data = data + CART_HEADER_SIZE;
+    for (nu_size_t i = 0; i < header.chunk_count; ++i)
+    {
+        NU_CHECK(cart_parse_entries(entry_data + i * CART_CHUNK_ENTRY_SIZE,
+                                    1,
+                                    &entries[i].data),
+                 goto cleanup1);
+        entries[i].index = i;
+    }
+
+    qsort(entries, header.chunk_count, sizeof(*entries), chunk_entry_cmp);
+
+    nu_u32_t total_chunk_length = 0;
+    for (nu_size_t i = 0; i < header.chunk_count; ++i)
+    {
+        const cart_chunk_entry_t *entry = &entries[i].data;
+        total_chunk_length += entry->length;
+    }
+
+    printf("Cartridge info:\n\n");
+    printf("    %-18s %d\n", "Version", header.version);
+    printf("    %-18s %d bytes\n", "Size", (nu_u32_t)size);
+    printf("    %-18s %d\n", "Chunk count", header.version);
+    printf("    %-18s %d bytes\n\n", "Chunk total size", total_chunk_length);
+
+    printf("Chunk table:\n\n");
+    printf("     %-8s %-8s %-8s %-8s %-8s\n",
+           "Index",
+           "Type",
+           "Offset",
+           "Length",
+           "Usage");
+    printf("   ---------------------------------------------\n");
+    for (nu_size_t i = 0; i < header.chunk_count; ++i)
+    {
+        const indexed_entry_t *entry = entries + i;
+        printf("     %-8d %-8s %-8x %-8d %-8.4lf\n",
+               entry->index,
+               nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
+               entry->data.offset,
+               entry->data.length,
+               (nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_length);
+    }
+
+cleanup1:
+    free(entries);
+cleanup0:
+    free(data);
+    return status;
 }

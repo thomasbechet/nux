@@ -50,4 +50,9 @@ nu_status_t cart_read_u32(vm_t *vm, nu_u32_t *v);
 nu_status_t cart_read_f32(vm_t *vm, nu_f32_t *v);
 nu_status_t cart_read_m4(vm_t *vm, nu_m4_t *v);
 
+nu_status_t cart_parse_header(const void *data, cart_header_t *header);
+nu_status_t cart_parse_entries(const void         *data,
+                               nu_u32_t            count,
+                               cart_chunk_entry_t *entries);
+
 #endif

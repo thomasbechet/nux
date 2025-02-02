@@ -47,6 +47,7 @@ main (int argc, const nu_char_t *argv[])
 #ifdef NUX_BUILD_SDK
         { NU_SV("init"), cli_command_init },
         { NU_SV("build"), cli_command_build },
+        { NU_SV("dump"), cli_command_dump },
 #endif
         { NU_SV("run"), cli_command_run },
     };
@@ -67,6 +68,7 @@ main (int argc, const nu_char_t *argv[])
 #ifdef NUX_BUILD_SDK
                       "\n    init    Create a new nux project"
                       "\n    build   Compile a project to cartridge"
+                      "\n    dump    Print information about cartridge"
 #endif
                       "\n    run     Run a cartridge");
     argc = argparse_parse(&argparse, argc, argv);

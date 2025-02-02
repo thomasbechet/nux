@@ -39,6 +39,13 @@ nu_log2 (nu_size_t n)
     return result;
 }
 nu_f32_t
+nu_log10 (nu_f32_t x)
+{
+#ifdef NU_STDLIB
+    return log10f(x);
+#endif
+}
+nu_f32_t
 nu_fabs (nu_f32_t f)
 {
 #ifdef NU_STDLIB

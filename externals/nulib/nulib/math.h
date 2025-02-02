@@ -193,6 +193,7 @@ typedef struct
 NU_API nu_bool_t nu_is_power_of_two(nu_size_t n);
 NU_API nu_u32_t  nu_upper_power_of_two(nu_u32_t v);
 NU_API nu_size_t nu_log2(nu_size_t n);
+NU_API nu_f32_t  nu_log10(nu_f32_t x);
 NU_API nu_f32_t  nu_fabs(nu_f32_t f);
 NU_API nu_f32_t  nu_floor(nu_f32_t f);
 NU_API nu_f32_t  nu_radian(nu_f32_t d);
