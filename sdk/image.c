@@ -37,16 +37,12 @@ cart_write_texture (sdk_project_t   *proj,
                     nu_u32_t         size,
                     const nu_byte_t *data)
 {
+    cart_chunk_entry_t *entry  = sdk_begin_entry(proj, CART_CHUNK_TEXTURE);
+    entry->extra.texture.index = index;
     nu_status_t status;
-    nu_u32_t    data_size = gpu_texture_memsize(size);
-    status                = cart_write_chunk_header(
-        proj, CART_CHUNK_TEXTURE, data_size + sizeof(nu_u32_t) * 2);
-    NU_CHECK(status, return NU_FAILURE);
-    status = cart_write_u32(proj, index);
-    NU_CHECK(status, return NU_FAILURE);
     status = cart_write_u32(proj, size);
     NU_CHECK(status, return NU_FAILURE);
-    status = cart_write(proj, data, data_size);
+    status = cart_write(proj, data, gpu_texture_memsize(size));
     NU_CHECK(status, return NU_FAILURE);
     return NU_SUCCESS;
 }
@@ -77,11 +73,10 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     // Load image
     nu_status_t status = NU_SUCCESS;
     nu_i32_t    w, h, n;
-    nu_byte_t  *img = stbi_load(asset->source_path, &w, &h, &n, STBI_rgb_alpha);
+    nu_byte_t  *img = stbi_load(asset->source, &w, &h, &n, STBI_rgb_alpha);
     if (!img)
     {
-        sdk_log(
-            NU_LOG_ERROR, "Failed to load image file %s", asset->source_path);
+        sdk_log(NU_LOG_ERROR, "Failed to load image file %s", asset->source);
     }
     nu_size_t  data_size = gpu_texture_memsize(target_size);
     nu_byte_t *data      = malloc(data_size);

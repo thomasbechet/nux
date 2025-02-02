@@ -95,14 +95,9 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t          indice_count = accessor->count;
 
     // Write header
-    nu_size_t vertex_size = gpu_vertex_size(attributes);
-    NU_CHECK(cart_write_chunk_header(proj,
-                                     CART_CHUNK_MESH,
-                                     CART_CHUNK_MESH_HEADER_SIZE
-                                         + vertex_size * indice_count
-                                               * sizeof(nu_f32_t)),
-             return NU_FAILURE);
-    NU_CHECK(cart_write_u32(proj, index), return NU_FAILURE);
+    cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_MESH);
+    entry->extra.mesh.index   = index;
+    nu_size_t vertex_size     = gpu_vertex_size(attributes);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, GPU_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
@@ -184,18 +179,16 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     nu_memset(resources, 0, sizeof(resources));
 
     // Parse file and load buffers
-    result = cgltf_parse_file(&options, asset->source_path, &data);
+    result = cgltf_parse_file(&options, asset->source, &data);
     if (result != cgltf_result_success)
     {
-        sdk_log(
-            NU_LOG_ERROR, "Failed to load gltf file %s", asset->source_path);
+        sdk_log(NU_LOG_ERROR, "Failed to load gltf file %s", asset->source);
         return NU_FAILURE;
     }
-    result = cgltf_load_buffers(&options, data, asset->source_path);
+    result = cgltf_load_buffers(&options, data, asset->source);
     if (result != cgltf_result_success)
     {
-        sdk_log(
-            NU_LOG_ERROR, "Failed to load gltf buffers %s", asset->source_path);
+        sdk_log(NU_LOG_ERROR, "Failed to load gltf buffers %s", asset->source);
         return NU_FAILURE;
     }
 
@@ -257,13 +250,8 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
 
         // Write model
-        NU_CHECK(cart_write_chunk_header(proj,
-                                         CART_CHUNK_MODEL,
-                                         node_count * sizeof(gpu_model_node_t)
-                                             + sizeof(nu_u32_t) * 2),
-                 goto cleanup0);
-        NU_CHECK(cart_write_u32(proj, asset->model.target_index),
-                 goto cleanup0);
+        cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_MODEL);
+        entry->extra.model.index  = asset->model.target_index;
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
         // Create model

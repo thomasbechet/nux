@@ -97,15 +97,21 @@ json_write_u32 (JSON_Object *object, const nu_char_t *name, nu_u32_t value)
 nu_status_t
 cart_write (sdk_project_t *proj, const void *p, nu_size_t n)
 {
-    NU_CHECK(fwrite(p, n, 1, proj->f) == 1, return NU_FAILURE);
+    if (proj->data_size + n > proj->data_capa)
+    {
+        proj->data_capa *= 2;
+        proj->data = realloc(proj->data, proj->data_capa);
+        NU_ASSERT(proj->data);
+    }
+    nu_memcpy(proj->data + proj->data_size, p, n);
+    proj->data_size += n;
     return NU_SUCCESS;
 }
 nu_status_t
 cart_write_u32 (sdk_project_t *proj, nu_u32_t v)
 {
     nu_u32_t a = nu_u32_le(v);
-    NU_CHECK(fwrite(&a, sizeof(a), 1, proj->f) == 1, return NU_FAILURE);
-    return NU_SUCCESS;
+    return cart_write(proj, &a, sizeof(a));
 }
 nu_status_t
 cart_write_f32 (sdk_project_t *proj, nu_f32_t v)
@@ -139,14 +145,5 @@ cart_write_m4 (sdk_project_t *proj, nu_m4_t v)
     {
         NU_CHECK(cart_write_f32(proj, v.data[i]), return NU_FAILURE);
     }
-    return NU_SUCCESS;
-}
-nu_status_t
-cart_write_chunk_header (sdk_project_t    *proj,
-                         cart_chunk_type_t type,
-                         nu_u32_t          length)
-{
-    NU_CHECK(cart_write_u32(proj, type), return NU_FAILURE);
-    NU_CHECK(cart_write_u32(proj, length), return NU_FAILURE);
     return NU_SUCCESS;
 }

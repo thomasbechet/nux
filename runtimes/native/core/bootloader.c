@@ -10,6 +10,130 @@ static NU_ENUM_MAP(cart_chunk_type_map,
                    NU_ENUM_NAME(CART_CHUNK_TEXTURE, "texture"),
                    NU_ENUM_NAME(CART_CHUNK_MODEL, "model"));
 
+static nu_status_t
+load_wasm (vm_t *vm, const cart_chunk_entry_t *entry)
+{
+    // Load module data
+    NU_ASSERT(entry->length);
+    nu_byte_t *buffer = os_malloc(vm, entry->length);
+    NU_ASSERT(buffer);
+    NU_ASSERT(os_cart_read(vm, buffer, entry->length));
+    NU_ASSERT(os_cpu_load_wasm(vm, buffer, entry->length));
+    return NU_SUCCESS;
+}
+static nu_status_t
+load_texture (vm_t *vm, const cart_chunk_entry_t *entry)
+{
+    nu_u32_t size;
+    NU_CHECK(cart_read_u32(vm, &size), return NU_FAILURE);
+    vm_log(vm,
+           NU_LOG_INFO,
+           "texture index:%d, size:%d",
+           entry->extra.texture.index,
+           size);
+    // TODO: validate size
+    nu_size_t data_length = gpu_texture_memsize(size);
+    NU_CHECK(cart_read(vm, vm->bootloader.heap, data_length),
+             return NU_FAILURE);
+    gpu_alloc_texture(vm, entry->extra.texture.index, size);
+    gpu_update_texture(
+        vm, entry->extra.texture.index, 0, 0, size, size, vm->bootloader.heap);
+    return NU_SUCCESS;
+}
+static nu_status_t
+load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
+{
+    nu_u32_t count, primitive, attributes;
+    NU_CHECK(cart_read_u32(vm, &count), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &primitive), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &attributes), return NU_FAILURE);
+    vm_log(vm,
+           NU_LOG_INFO,
+           "mesh index:%d, count:%d, primitive:%d, attribute:%d",
+           entry->extra.mesh.index,
+           count,
+           primitive,
+           attributes);
+    NU_ASSERT(
+        os_cart_read(vm,
+                     vm->bootloader.heap,
+                     gpu_vertex_size(attributes) * count * sizeof(nu_f32_t)));
+    gpu_alloc_mesh(vm, entry->extra.mesh.index, count, primitive, attributes);
+    gpu_update_mesh(
+        vm, entry->extra.mesh.index, attributes, 0, count, vm->bootloader.heap);
+    return NU_SUCCESS;
+}
+static nu_status_t
+load_model (vm_t *vm, const cart_chunk_entry_t *entry)
+{
+    nu_u32_t node_count;
+    NU_CHECK(cart_read_u32(vm, &node_count), return NU_FAILURE);
+    NU_CHECK(gpu_alloc_model(vm, entry->extra.model.index, node_count),
+             return NU_FAILURE);
+    vm_log(vm,
+           NU_LOG_INFO,
+           "model index:%d, node_count:%d",
+           entry->extra.model.index,
+           node_count);
+    for (nu_size_t i = 0; i < node_count; ++i)
+    {
+        nu_u32_t mesh, texture, parent;
+        nu_m4_t  transform;
+        NU_CHECK(cart_read_u32(vm, &mesh), return NU_FAILURE);
+        NU_CHECK(cart_read_u32(vm, &texture), return NU_FAILURE);
+        NU_CHECK(cart_read_u32(vm, &parent), return NU_FAILURE);
+        NU_CHECK(cart_read_m4(vm, &transform), return NU_FAILURE);
+        vm_log(vm,
+               NU_LOG_INFO,
+               "   node:%d, mesh:%d, texture:%d, parent:%d",
+               i,
+               mesh,
+               texture,
+               parent);
+        NU_CHECK(gpu_update_model(vm,
+                                  entry->extra.model.index,
+                                  i,
+                                  mesh,
+                                  texture,
+                                  parent,
+                                  transform.data),
+                 return NU_FAILURE);
+    }
+
+    return NU_SUCCESS;
+}
+static nu_status_t
+read_chunk_entry (vm_t *vm, cart_chunk_entry_t *entry)
+{
+    NU_CHECK(cart_read_u32(vm, &entry->type), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &entry->offset), return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &entry->length), return NU_FAILURE);
+    switch (entry->type)
+    {
+        case CART_CHUNK_RAW:
+        case CART_CHUNK_WASM: {
+            // Padding
+            nu_u32_t dummy;
+            NU_CHECK(cart_read_u32(vm, &dummy), return NU_FAILURE);
+            break;
+        }
+        break;
+        case CART_CHUNK_TEXTURE:
+            NU_CHECK(cart_read_u32(vm, &entry->extra.texture.index),
+                     return NU_FAILURE);
+            break;
+        case CART_CHUNK_MESH:
+            NU_CHECK(cart_read_u32(vm, &entry->extra.mesh.index),
+                     return NU_FAILURE);
+            break;
+        case CART_CHUNK_MODEL:
+            NU_CHECK(cart_read_u32(vm, &entry->extra.model.index),
+                     return NU_FAILURE);
+            break;
+    }
+    return NU_SUCCESS;
+}
+
 nu_status_t
 boot_init (vm_t *vm)
 {
@@ -17,7 +141,6 @@ boot_init (vm_t *vm)
     NU_ASSERT(vm->bootloader.heap);
     return NU_SUCCESS;
 }
-
 nu_status_t
 boot_load_cart (vm_t *vm, const nu_char_t *name)
 {
@@ -34,37 +157,47 @@ boot_load_cart (vm_t *vm, const nu_char_t *name)
     NU_CHECK(os_cart_seek(vm, 0), return NU_FAILURE);
     NU_CHECK(cart_read_u32(vm, &vm->bootloader.header.version),
              return NU_FAILURE);
+    NU_CHECK(cart_read_u32(vm, &vm->bootloader.header.chunk_count),
+             return NU_FAILURE);
     // TODO: validate
 
+    nu_u32_t data_offset
+        = CART_HEADER_SIZE
+          + CART_CHUNK_ENTRY_SIZE * vm->bootloader.header.chunk_count;
+
     // Load chunks
-    os_cart_seek(vm, sizeof(cart_header_t));
-    cart_chunk_header_t header;
-    nu_u32_t            i = 0;
-    while (cart_read_u32(vm, &header.type))
+    for (nu_u32_t i = 0; i < vm->bootloader.header.chunk_count; ++i)
     {
-        // read chunk header
-        if (!cart_read_u32(vm, &header.length))
+        // Seek to entry
+        os_cart_seek(vm, CART_HEADER_SIZE + CART_CHUNK_ENTRY_SIZE * i);
+
+        // Read entry
+        cart_chunk_entry_t entry;
+        if (!read_chunk_entry(vm, &entry))
         {
-            vm_log(vm, NU_LOG_ERROR, "Failed to read chunk header %d", i);
+            vm_log(vm, NU_LOG_ERROR, "Failed to read chunk entry %d", i);
             return NU_FAILURE;
         }
 
-        // read chunk
-        switch (header.type)
+        // Seek to chunk
+        os_cart_seek(vm, data_offset + entry.offset);
+
+        // Read chunk
+        switch (entry.type)
         {
             case CART_CHUNK_RAW:
                 break;
             case CART_CHUNK_WASM:
-                status = cpu_load_wasm(vm, &header);
+                status = load_wasm(vm, &entry);
                 break;
             case CART_CHUNK_TEXTURE:
-                status = gpu_load_texture(vm, &header);
+                status = load_texture(vm, &entry);
                 break;
             case CART_CHUNK_MESH:
-                status = gpu_load_mesh(vm, &header);
+                status = load_mesh(vm, &entry);
                 break;
             case CART_CHUNK_MODEL:
-                status = gpu_load_model(vm, &header);
+                status = load_model(vm, &entry);
                 break;
         }
         if (!status)
@@ -72,7 +205,6 @@ boot_load_cart (vm_t *vm, const nu_char_t *name)
             vm_log(vm, NU_LOG_ERROR, "Failed to load chunk %d");
             return NU_FAILURE;
         }
-        ++i;
     }
 
     vm_log(vm, NU_LOG_INFO, "Cartridge sucessfully loaded", name);

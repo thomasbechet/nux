@@ -114,10 +114,6 @@ nu_status_t gpu_free(vm_t *vm);
 void        gpu_begin(vm_t *vm);
 void        gpu_end(vm_t *vm);
 
-nu_status_t gpu_load_texture(vm_t *vm, const cart_chunk_header_t *header);
-nu_status_t gpu_load_mesh(vm_t *vm, const cart_chunk_header_t *header);
-nu_status_t gpu_load_model(vm_t *vm, const cart_chunk_header_t *header);
-
 nu_status_t gpu_alloc_pool(vm_t *vm, nu_u32_t index, nu_u32_t size);
 nu_status_t gpu_bind_pool(vm_t *vm, nu_u32_t index);
 nu_status_t gpu_clear_pool(vm_t *vm, nu_u32_t index);

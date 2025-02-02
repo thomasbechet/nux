@@ -90,6 +90,24 @@ sdk_compile (sdk_project_t *project)
     project->next_mesh_index    = 0;
     project->next_texture_index = 0;
     project->next_model_index   = 0;
+    if (!project->entries)
+    {
+        project->entries
+            = malloc(SDK_INIT_ENTRY_CAPA * sizeof(*project->entries));
+        NU_ASSERT(project->entries);
+        project->entries_capa = SDK_INIT_ENTRY_CAPA;
+    }
+    nu_memset(
+        project->entries, 0, project->entries_capa * sizeof(*project->entries));
+    project->entries_size = 0;
+    if (!project->data)
+    {
+        project->data = malloc(SDK_INIT_DATA_CAPA);
+        NU_ASSERT(project->data);
+        project->data_capa = SDK_INIT_DATA_CAPA;
+    }
+    nu_memset(project->data, 0, project->data_capa);
+    project->data_size = 0;
 
     // Execute prebuild command
     if (nu_strlen(project->prebuild))
@@ -110,28 +128,10 @@ sdk_compile (sdk_project_t *project)
 #endif
     }
 
-    // Open cart
-    project->f = fopen(project->target_path, "wb");
-    if (!project->f)
-    {
-        sdk_log(NU_LOG_ERROR,
-                "Failed to create cartridge file %s",
-                project->target_path);
-        return NU_FAILURE;
-    }
-    else
-    {
-        sdk_log(NU_LOG_INFO, "Compiling cartridge %s", project->target_path);
-    }
-
     if (project->assets_count == 0)
     {
         sdk_log(NU_LOG_WARNING, "Compiling project with no assets");
     }
-
-    // Write header
-    const nu_u32_t version = 100;
-    NU_CHECK(cart_write_u32(project, version), goto cleanup0);
 
     // Compile assets
     for (nu_size_t i = 0; i < project->assets_count; ++i)
@@ -151,7 +151,7 @@ sdk_compile (sdk_project_t *project)
                 i,
                 ignored,
                 nu_enum_to_cstr(asset->type, asset_type_map),
-                asset->source_path);
+                asset->source);
 
         if (asset->ignore)
         {
@@ -172,10 +172,77 @@ sdk_compile (sdk_project_t *project)
         }
     }
 
+    // Open cart
+    FILE *f = fopen(project->target_path, "wb");
+    if (!f)
+    {
+        sdk_log(NU_LOG_ERROR,
+                "Failed to create cartridge file %s",
+                project->target_path);
+        return NU_FAILURE;
+    }
+    else
+    {
+        sdk_log(NU_LOG_INFO, "Compiling cartridge %s", project->target_path);
+    }
+
+    // Write header
+    const nu_u32_t version = 100;
+    NU_CHECK(fwrite(&version, sizeof(version), 1, f) == 1, goto cleanup1);
+    NU_CHECK(fwrite(&project->entries_size, sizeof(project->entries_size), 1, f)
+                 == 1,
+             goto cleanup1);
+
+    // Write chunk table
+    for (nu_size_t i = 0; i < project->entries_size; ++i)
+    {
+        const cart_chunk_entry_t *entry = project->entries + i;
+        nu_u32_t                  type  = entry->type;
+        NU_CHECK(fwrite(&type, sizeof(type), 1, f) == 1, return NU_FAILURE);
+        NU_CHECK(fwrite(&entry->offset, sizeof(entry->offset), 1, f) == 1,
+                 return NU_FAILURE);
+        NU_CHECK(fwrite(&entry->length, sizeof(entry->length), 1, f) == 1,
+                 return NU_FAILURE);
+        switch (entry->type)
+        {
+            case CART_CHUNK_RAW:
+            case CART_CHUNK_WASM: {
+                nu_u32_t index = 0; // Padding
+                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
+                         return NU_FAILURE);
+            }
+            break;
+            case CART_CHUNK_TEXTURE: {
+                nu_u32_t index = entry->extra.texture.index;
+                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
+                         return NU_FAILURE);
+            }
+            break;
+            case CART_CHUNK_MESH: {
+                nu_u32_t index = entry->extra.mesh.index;
+                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
+                         return NU_FAILURE);
+            }
+            break;
+            case CART_CHUNK_MODEL: {
+                nu_u32_t index = entry->extra.model.index;
+                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
+                         return NU_FAILURE);
+            }
+            break;
+        }
+    }
+
+    // Write data
+    NU_CHECK(fwrite(project->data, project->data_size, 1, f) == 1,
+             goto cleanup1);
+
     sdk_log(NU_LOG_INFO, "Compilation success");
 
+cleanup1:
+    fclose(f);
+
 cleanup0:
-    fclose(project->f);
     return status;
 }
 nu_status_t
@@ -248,7 +315,7 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
             }
             project->assets[i].type = type;
             nu_sv_to_cstr(
-                nu_sv_cstr(source_string), asset->source_path, NU_PATH_MAX);
+                nu_sv_cstr(source_string), asset->source, NU_PATH_MAX);
 
             // Parse asset
             switch (type)
@@ -319,7 +386,7 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
 
             // Source
             json_object_set_string(
-                jasset, PROJECT_ASSET_SOURCE, project->assets[i].source_path);
+                jasset, PROJECT_ASSET_SOURCE, project->assets[i].source);
 
             // Ignore
             json_object_set_boolean(
@@ -368,7 +435,48 @@ sdk_project_free (sdk_project_t *project)
 {
     if (project->assets)
     {
-        NU_ASSERT(project->assets_count);
         free(project->assets);
     }
+    if (project->entries)
+    {
+        free(project->entries);
+    }
+    if (project->data)
+    {
+        free(project->data);
+    }
+}
+
+cart_chunk_entry_t *
+sdk_begin_entry (sdk_project_t *proj, cart_chunk_type_t type)
+{
+    if (proj->current_entry)
+    {
+        proj->current_entry->length
+            = proj->data_size - proj->current_entry->offset;
+        sdk_log(NU_LOG_INFO,
+                "[END ENTRY %s length %d]",
+                nu_enum_to_cstr(proj->current_entry->type, cart_chunk_type_map),
+                proj->current_entry->length);
+        proj->current_entry = NU_NULL;
+    }
+    NU_ASSERT(proj->entries);
+    if (proj->entries_size >= proj->entries_capa)
+    {
+        proj->entries_capa *= 2;
+        proj->entries = realloc(proj->entries,
+                                proj->entries_capa * sizeof(*proj->entries));
+        NU_ASSERT(proj->entries);
+    }
+    cart_chunk_entry_t *entry = proj->entries + proj->entries_size;
+    ++proj->entries_size;
+    proj->current_entry         = entry;
+    proj->current_entry->type   = type;
+    proj->current_entry->offset = proj->data_size;
+    proj->current_entry->length = 0;
+    sdk_log(NU_LOG_INFO,
+            "[BEGIN ENTRY %s offset %d]",
+            nu_enum_to_cstr(entry->type, cart_chunk_type_map),
+            proj->current_entry->offset);
+    return entry;
 }
