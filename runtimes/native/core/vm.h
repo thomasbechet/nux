@@ -6,6 +6,10 @@
 #include "bootloader.h"
 #include "gamepad.h"
 
+#define VM_VERSION_MAJOR 0
+#define VM_VERSION_MINOR 0
+#define VM_VERSION_PATCH 1
+
 #ifdef NUX_BUILD_SDK
 #define VM_RUNTIME_VERSION "0.0.1 (with sdk tools)"
 #else
