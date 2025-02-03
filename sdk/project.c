@@ -501,7 +501,7 @@ chunk_entry_cmp (const void *a, const void *b)
     return eb->data.length - ea->data.length;
 }
 nu_status_t
-sdk_dump (nu_sv_t path)
+sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
 {
     nu_size_t   size;
     nu_status_t status = nu_load_bytes(path, NU_NULL, &size);
@@ -532,7 +532,10 @@ sdk_dump (nu_sv_t path)
         entries[i].index = i;
     }
 
-    qsort(entries, header.chunk_count, sizeof(*entries), chunk_entry_cmp);
+    if (sort)
+    {
+        qsort(entries, header.chunk_count, sizeof(*entries), chunk_entry_cmp);
+    }
 
     nu_u32_t total_chunk_length = 0;
     for (nu_size_t i = 0; i < header.chunk_count; ++i)
@@ -547,23 +550,45 @@ sdk_dump (nu_sv_t path)
     printf("    %-18s %d\n", "Chunk count", header.version);
     printf("    %-18s %d bytes\n\n", "Chunk total size", total_chunk_length);
 
-    printf("Chunk table:\n\n");
-    printf("     %-8s %-8s %-8s %-8s %-8s\n",
-           "Index",
-           "Type",
-           "Offset",
-           "Length",
-           "Usage");
-    printf("   ---------------------------------------------\n");
-    for (nu_size_t i = 0; i < header.chunk_count; ++i)
+    if (display_table)
     {
-        const indexed_entry_t *entry = entries + i;
-        printf("     %-8d %-8s %-8x %-8d %-8.4lf\n",
-               entry->index,
-               nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
-               entry->data.offset,
-               entry->data.length,
-               (nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_length);
+        printf("Chunk table:\n\n");
+        printf("     %-8s %-8s %-8s %-8s %-8s %-8s\n",
+               "Index",
+               "Type",
+               "Offset",
+               "Length",
+               "Usage",
+               "Extra");
+        printf("   ------------------------------------------------------\n");
+        nu_u32_t display_entry = num ? num : (nu_u32_t)-1;
+        for (nu_size_t i = 0; i < header.chunk_count && i < display_entry; ++i)
+        {
+            const indexed_entry_t *entry = entries + i;
+            nu_u32_t               extra = -1;
+            switch (entry->data.type)
+            {
+                case CART_CHUNK_RAW:
+                case CART_CHUNK_WASM:
+                    break;
+                case CART_CHUNK_TEXTURE:
+                    extra = entry->data.extra.texture.index;
+                    break;
+                case CART_CHUNK_MESH:
+                    extra = entry->data.extra.mesh.index;
+                    break;
+                case CART_CHUNK_MODEL:
+                    extra = entry->data.extra.model.index;
+                    break;
+            }
+            printf("     %-8d %-8s %-8x %-8d %-8.4lf %-8d\n",
+                   entry->index,
+                   nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
+                   entry->data.offset,
+                   entry->data.length,
+                   (nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_length,
+                   extra);
+        }
     }
 
 cleanup1:

@@ -28,10 +28,15 @@ compile_texture (const cgltf_texture *texture,
         return NU_FAILURE;
     }
 
+    sdk_log(NU_LOG_INFO,
+            "- Loading texture '%s' w %d h %d index %d",
+            texture->name,
+            w,
+            h,
+            index);
+
     // Find nearest texture size
     nu_u32_t target_size = nu_upper_power_of_two(NU_MAX(w, h));
-
-    sdk_log(NU_LOG_INFO, "texture %s %d %d", texture->name, w, h);
 
     // Resize image
     nu_byte_t *resized = malloc(gpu_texture_memsize(target_size));
@@ -222,7 +227,6 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                 = material->pbr_metallic_roughness.base_color_texture.texture;
             if (texture)
             {
-                sdk_log(NU_LOG_INFO, "- Loading texture '%s'", texture->name);
                 nu_u32_t texture_index = sdk_next_texture_index(proj);
                 NU_CHECK(compile_texture(texture, texture_index, proj),
                          goto cleanup0);
