@@ -208,7 +208,16 @@ gpu_update_texture (vm_t       *vm,
                     nu_u32_t    h,
                     const void *p)
 {
-    nu_byte_t *data = texture_data(vm, index);
+    nu_byte_t     *data    = texture_data(vm, index);
+    gpu_texture_t *texture = vm->gpu.textures + index;
+    NU_ASSERT(x + w <= texture->size);
+    NU_ASSERT(y + h <= texture->size);
+    for (nu_size_t i = 0; i < h; ++i)
+    {
+        nu_byte_t *row = data + texture->size * (y + i) + x;
+        nu_byte_t *src = ((nu_byte_t *)p) + w * i;
+        nu_memcpy(row, src, w);
+    }
     os_gpu_update_texture(vm, index, x, y, w, h, p);
     return NU_SUCCESS;
 }

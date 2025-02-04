@@ -4,8 +4,6 @@
 #include "wasm.h"
 #include "core/vm.h"
 
-static nu_byte_t global_heap[NU_MEM_32M];
-
 nu_status_t
 runtime_init (const runtime_info_t *info)
 {
@@ -19,7 +17,8 @@ runtime_init (const runtime_info_t *info)
     NU_CHECK(status, goto cleanup2);
 
     vm_t        vm;
-    vm_config_t config = VM_CONFIG_DEFAULT;
+    vm_config_t config;
+    vm_config_default(&config);
 
     status = vm_init(&vm, &config);
     NU_CHECK(status, goto cleanup3);

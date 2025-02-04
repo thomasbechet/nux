@@ -17,9 +17,10 @@ typedef struct
 
 typedef struct
 {
-    cpu_config_t config;
-    void        *buffer;
-    nu_size_t    buffer_size;
+    nu_u32_t  mem_heap_size;
+    nu_u32_t  mem_stack_size;
+    void     *buffer;
+    nu_size_t buffer_size;
 } cpu_t;
 
 nu_status_t cpu_init(vm_t *vm, const cpu_config_t *config);

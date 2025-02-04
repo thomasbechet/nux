@@ -221,7 +221,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     }
 
     // Instantiate module
-    const nu_size_t init_stack_size = vm->cpu.config.mem_stack_size;
+    const nu_size_t init_stack_size = vm->cpu.mem_stack_size;
     const nu_size_t init_heap_size  = 0;
     wasm.instance                   = wasm_runtime_instantiate(wasm.module,
                                              init_stack_size,

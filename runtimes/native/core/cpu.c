@@ -5,7 +5,8 @@
 nu_status_t
 cpu_init (vm_t *vm, const cpu_config_t *config)
 {
-    vm->cpu.config = *config;
+    vm->cpu.mem_heap_size  = config->mem_heap_size;
+    vm->cpu.mem_stack_size = config->mem_stack_size;
     return NU_SUCCESS;
 }
 void

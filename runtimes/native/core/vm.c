@@ -45,6 +45,30 @@ vm_tick (vm_t *vm)
     gpu_end(vm);
     return NU_SUCCESS;
 }
+void
+vm_save_state (const vm_t *vm, void *buf)
+{
+    nu_byte_t *p = buf;
+    nu_memcpy(vm->gpu.vram, p, vm->gpu.vram_capa);
+    p += vm->gpu.vram_capa;
+}
+nu_status_t
+vm_load_state (vm_t *vm, const void *buf)
+{
+    return NU_SUCCESS;
+}
+void
+vm_config_default (vm_config_t *config)
+{
+    config->cpu.mem_heap_size  = NU_MEM_1M;
+    config->cpu.mem_stack_size = NU_MEM_64K;
+    config->gpu.vram_capacity  = NU_MEM_16M;
+}
+nu_size_t
+vm_config_state_memsize (const vm_config_t *config)
+{
+    return config->gpu.vram_capacity;
+}
 
 void
 vm_log (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, ...)
