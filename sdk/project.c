@@ -2,6 +2,7 @@
 #include "sdk.h"
 
 #include "templates_data.h"
+#include <stdio.h>
 
 #define PROJECT_CART_DEFAULT "cart.bin"
 #define PROJECT_JSON         "nux.json"
@@ -540,40 +541,32 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     nu_u32_t total_chunk_size   = 0;
     nu_u32_t total_texture_size = 0;
     nu_u32_t total_mesh_size    = 0;
+    nu_u32_t chunk_sizes[5]     = { 0 };
     for (nu_size_t i = 0; i < header.chunk_count; ++i)
     {
         const cart_chunk_entry_t *entry = &entries[i].data;
         total_chunk_size += entry->length;
-        switch (entry->type)
-        {
-            case CART_CHUNK_RAW:
-                break;
-            case CART_CHUNK_WASM:
-                break;
-            case CART_CHUNK_TEXTURE:
-                total_texture_size += entry->length;
-                break;
-            case CART_CHUNK_MESH:
-                total_mesh_size += entry->length;
-                break;
-            case CART_CHUNK_MODEL:
-                break;
-        }
+        chunk_sizes[entry->type] += entry->length;
     }
 
     printf("Cartridge info:\n\n");
-    printf("    %-18s %d\n", "Version", header.version);
-    printf("    %-18s %d bytes\n", "Size", (nu_u32_t)size);
-    printf("    %-18s %d\n", "Chunk count", header.version);
-    printf("    %-18s %d bytes\n", "Chunk total size", total_chunk_size);
-    printf("    %-18s %d bytes (%.2lf%%)\n",
-           "Texture total size",
-           total_texture_size,
-           ((nu_f32_t)total_texture_size / (nu_f32_t)total_chunk_size) * 100);
-    printf("    %-18s %d bytes (%.2lf%%)\n\n",
-           "Mesh total size",
-           total_mesh_size,
-           ((nu_f32_t)total_mesh_size / (nu_f32_t)total_chunk_size) * 100);
+    printf("    %-18s %-8d\n", "Version", header.version);
+    printf("    %-18s %-8d\n", "Chunk count", header.version);
+    printf("    %-18s %-8d bytes\n", "Total size", (nu_u32_t)size);
+    printf("    %-18s %-8d bytes\n", "Total chunk size", total_chunk_size);
+    for (nu_size_t i = 0; i < NU_ARRAY_SIZE(chunk_sizes); ++i)
+    {
+        nu_char_t buf[32];
+        snprintf(buf,
+                 sizeof(buf),
+                 "Total %s size",
+                 nu_enum_to_cstr(i, cart_chunk_type_map));
+        printf("    %-18s %-8d bytes (%.2lf%%)\n",
+               buf,
+               chunk_sizes[i],
+               ((nu_f32_t)chunk_sizes[i] / (nu_f32_t)total_chunk_size) * 100);
+    }
+    printf("\n");
 
     if (display_table)
     {
@@ -606,13 +599,18 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                     extra = entry->data.extra.model.index;
                     break;
             }
-            printf("     %-8d %-8s %-8x %-8d %-8.2lf %-8d\n",
+            nu_char_t buf[32];
+            snprintf(buf,
+                     sizeof(buf),
+                     "%.2lf%%",
+                     ((nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_size)
+                         * 100);
+            printf("     %-8d %-8s %-8x %-8d %-8s %-8d\n",
                    entry->index,
                    nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
                    entry->data.offset,
                    entry->data.length,
-                   ((nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_size)
-                       * 100,
+                   buf,
                    extra);
         }
     }
