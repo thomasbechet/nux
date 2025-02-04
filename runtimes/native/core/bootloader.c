@@ -55,10 +55,8 @@ load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
            count,
            primitive,
            attributes);
-    NU_ASSERT(
-        os_cart_read(vm,
-                     vm->bootloader.heap,
-                     gpu_vertex_size(attributes) * count * sizeof(nu_f32_t)));
+    NU_ASSERT(os_cart_read(
+        vm, vm->bootloader.heap, gpu_vertex_memsize(attributes, count)));
     gpu_alloc_mesh(vm, entry->extra.mesh.index, count, primitive, attributes);
     gpu_update_mesh(
         vm, entry->extra.mesh.index, attributes, 0, count, vm->bootloader.heap);

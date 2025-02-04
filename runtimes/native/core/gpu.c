@@ -6,73 +6,67 @@
 static nu_status_t
 check_pool (vm_t *vm, nu_u32_t index)
 {
-    if (index >= GPU_MAX_POOL || !vm->gpu.pools[index].active)
+    if (index >= GPU_MAX_POOL || vm->gpu.pools[index].addr == GPU_ADDR_NULL)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid or inactive pool %d", index);
         return NU_FAILURE;
     }
     return NU_SUCCESS;
 }
-static nu_status_t
-check_mesh (vm_t *vm, nu_u32_t index)
+static void *
+mesh_data (vm_t *vm, nu_u32_t index)
 {
-    if (index >= GPU_MAX_MESH || !vm->gpu.meshes[index].active)
+    if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].addr == GPU_ADDR_NULL)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid or inactive mesh %d", index);
-        return NU_FAILURE;
+        return NU_NULL;
     }
-    return NU_SUCCESS;
+    return vm->gpu.vram + vm->gpu.meshes[index].addr;
 }
-static nu_status_t
-check_texture (vm_t *vm, nu_u32_t index)
+static void *
+texture_data (vm_t *vm, nu_u32_t index)
 {
-    if (index >= GPU_MAX_TEXTURE || !vm->gpu.textures[index].active)
+    if (index >= GPU_MAX_TEXTURE
+        || vm->gpu.textures[index].addr == GPU_ADDR_NULL)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid or inactive texture %d", index);
-        return NU_FAILURE;
+        return NU_NULL;
     }
-    return NU_SUCCESS;
+    return vm->gpu.vram + vm->gpu.textures[index].addr;
 }
-static nu_status_t
-check_model (vm_t *vm, nu_u32_t index)
+static void *
+model_data (vm_t *vm, nu_u32_t index)
 {
     if (index >= GPU_MAX_MODEL)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid model %d", index);
-        return NU_FAILURE;
+        return NU_NULL;
     }
-    return NU_SUCCESS;
+    return vm->gpu.vram + vm->gpu.models[index].addr;
 }
-static nu_status_t
-reserve_memory (vm_t *vm, nu_u32_t size)
+static gpu_addr_t
+pool_malloc (vm_t *vm, nu_u32_t n)
 {
     if (vm->gpu.state.pool == GPU_GLOBAL_POOL)
     {
-        if (vm->gpu.vram_remaining < size)
-        {
-            vm_log(vm,
-                   NU_LOG_ERROR,
-                   "GPU out of global memory (requested %d)",
-                   size);
-            return NU_FAILURE;
-        }
-        vm->gpu.vram_remaining -= size;
+        return gpu_malloc(vm, n);
     }
     else
     {
         gpu_pool_t *pool = vm->gpu.pools + vm->gpu.state.pool;
-        if (pool->remaining < size)
+        if (pool->size + n >= pool->capa)
         {
             vm_log(vm,
                    NU_LOG_ERROR,
-                   "GPU out of memory (requested %d on pool %d)",
-                   size,
+                   "out of pool memory (requested %d on pool %d)",
+                   n,
                    vm->gpu.state.pool);
-            return NU_FAILURE;
+            return GPU_ADDR_NULL;
         }
-        pool->remaining -= size;
+        gpu_addr_t addr = pool->addr + pool->size;
+        pool->size += n;
+        return addr;
     }
-    return NU_SUCCESS;
 }
 
 nu_status_t
@@ -80,22 +74,24 @@ gpu_init (vm_t *vm, const gpu_config_t *config)
 {
     for (nu_size_t i = 0; i < GPU_MAX_POOL; ++i)
     {
-        vm->gpu.pools[i].active = NU_FALSE;
+        vm->gpu.pools[i].addr = GPU_ADDR_NULL;
     }
     for (nu_size_t i = 0; i < GPU_MAX_TEXTURE; ++i)
     {
-        vm->gpu.textures[i].active = NU_FALSE;
+        vm->gpu.textures[i].addr = GPU_ADDR_NULL;
     }
     for (nu_size_t i = 0; i < GPU_MAX_MESH; ++i)
     {
-        vm->gpu.meshes[i].active = NU_FALSE;
+        vm->gpu.meshes[i].addr = GPU_ADDR_NULL;
     }
     for (nu_size_t i = 0; i < GPU_MAX_MODEL; ++i)
     {
-        vm->gpu.models[i].active = NU_FALSE;
+        vm->gpu.models[i].addr = GPU_ADDR_NULL;
     }
-    vm->gpu.config           = *config;
-    vm->gpu.vram_remaining   = config->vram_capacity;
+    vm->gpu.vram = os_malloc(vm, config->vram_capacity);
+    NU_ASSERT(vm->gpu.vram);
+    vm->gpu.vram_capa        = config->vram_capacity;
+    vm->gpu.vram_size        = 0;
     vm->gpu.state.pool       = GPU_GLOBAL_POOL;
     vm->gpu.state.model      = nu_m4_identity();
     vm->gpu.state.view       = nu_m4_identity();
@@ -108,18 +104,18 @@ gpu_free (vm_t *vm)
 {
     for (nu_size_t i = 0; i < GPU_MAX_TEXTURE; ++i)
     {
-        if (vm->gpu.textures[i].active)
+        if (vm->gpu.textures[i].addr != GPU_ADDR_NULL)
         {
             os_gpu_free_texture(vm, i);
-            vm->gpu.textures[i].active = NU_FALSE;
+            vm->gpu.textures[i].addr = GPU_ADDR_NULL;
         }
     }
     for (nu_size_t i = 0; i < GPU_MAX_MESH; ++i)
     {
-        if (vm->gpu.meshes[i].active)
+        if (vm->gpu.meshes[i].addr != GPU_ADDR_NULL)
         {
             os_gpu_free_mesh(vm, i);
-            vm->gpu.meshes[i].active = NU_FALSE;
+            vm->gpu.meshes[i].addr = GPU_ADDR_NULL;
         }
     }
     return NU_SUCCESS;
@@ -134,19 +130,31 @@ gpu_end (vm_t *vm)
 {
     os_gpu_end(vm);
 }
+gpu_addr_t
+gpu_malloc (vm_t *vm, nu_u32_t n)
+{
+    if (vm->gpu.vram_size + n >= vm->gpu.vram_capa)
+    {
+        vm_log(vm, NU_LOG_ERROR, "out of gpu memory");
+        return NU_NULL;
+    }
+    gpu_addr_t addr = vm->gpu.vram_size;
+    vm->gpu.vram_size += n;
+    return addr;
+}
 
 nu_status_t
 gpu_alloc_pool (vm_t *vm, nu_u32_t index, nu_u32_t size)
 {
-    if (index >= GPU_MAX_POOL || vm->gpu.pools[index].active)
+    if (index >= GPU_MAX_POOL || vm->gpu.pools[index].addr != GPU_ADDR_NULL)
     {
         vm_log(vm, NU_LOG_ERROR, "Pool %d already allocated or invalid", index);
         return NU_FAILURE;
     }
-    NU_CHECK(reserve_memory(vm, size), return NU_FAILURE);
-    vm->gpu.pools[index].active    = NU_TRUE;
-    vm->gpu.pools[index].size      = size;
-    vm->gpu.pools[index].remaining = size;
+    gpu_addr_t addr           = pool_malloc(vm, size);
+    vm->gpu.pools[index].addr = addr;
+    vm->gpu.pools[index].size = 0;
+    vm->gpu.pools[index].capa = size;
     return NU_SUCCESS;
 }
 nu_status_t
@@ -167,7 +175,8 @@ gpu_clear_pool (vm_t *vm, nu_u32_t index)
 nu_status_t
 gpu_alloc_texture (vm_t *vm, nu_u32_t index, nu_u32_t size)
 {
-    if (index >= GPU_MAX_TEXTURE || vm->gpu.textures[index].active)
+    if (index >= GPU_MAX_TEXTURE
+        || vm->gpu.textures[index].addr != GPU_ADDR_NULL)
     {
         vm_log(
             vm, NU_LOG_ERROR, "Texture %d already allocated or invalid", index);
@@ -183,9 +192,10 @@ gpu_alloc_texture (vm_t *vm, nu_u32_t index, nu_u32_t size)
                size);
         return NU_FAILURE;
     }
-    NU_CHECK(reserve_memory(vm, gpu_texture_memsize(size)), return NU_FAILURE);
-    vm->gpu.textures[index].active = NU_TRUE;
-    vm->gpu.textures[index].size   = size;
+    gpu_addr_t addr = pool_malloc(vm, gpu_texture_memsize(size));
+    NU_CHECK(addr != GPU_ADDR_NULL, return NU_FAILURE);
+    vm->gpu.textures[index].addr = addr;
+    vm->gpu.textures[index].size = size;
     os_gpu_init_texture(vm, index);
     return NU_SUCCESS;
 }
@@ -198,11 +208,7 @@ gpu_update_texture (vm_t       *vm,
                     nu_u32_t    h,
                     const void *p)
 {
-    if (index >= GPU_MAX_TEXTURE || !vm->gpu.textures[index].active)
-    {
-        vm_log(vm, NU_LOG_ERROR, "Invalid or inactive texture %d", index);
-        return NU_FAILURE;
-    }
+    nu_byte_t *data = texture_data(vm, index);
     os_gpu_update_texture(vm, index, x, y, w, h, p);
     return NU_SUCCESS;
 }
@@ -213,17 +219,18 @@ gpu_alloc_mesh (vm_t                  *vm,
                 gpu_primitive_t        primitive,
                 gpu_vertex_attribute_t attributes)
 {
-    if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].active)
+    if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].addr != GPU_ADDR_NULL)
     {
         vm_log(vm, NU_LOG_ERROR, "Mesh %d already allocated or invalid", index);
         return NU_FAILURE;
     }
-    NU_CHECK(reserve_memory(vm, gpu_vertex_memsize(attributes, count)),
-             return NU_FAILURE);
-    vm->gpu.meshes[index].active     = NU_TRUE;
+    gpu_addr_t addr = pool_malloc(vm, gpu_vertex_memsize(attributes, count));
+    NU_CHECK(addr != GPU_ADDR_NULL, return NU_FAILURE);
+    vm->gpu.meshes[index].addr       = addr;
     vm->gpu.meshes[index].count      = count;
     vm->gpu.meshes[index].primitive  = primitive;
     vm->gpu.meshes[index].attributes = attributes;
+    nu_memset(mesh_data(vm, index), 0, gpu_vertex_memsize(attributes, count));
     os_gpu_init_mesh(vm, index);
     return NU_SUCCESS;
 }
@@ -235,22 +242,73 @@ gpu_update_mesh (vm_t                  *vm,
                  nu_u32_t               count,
                  const void            *p)
 {
-    NU_CHECK(check_mesh(vm, index), return NU_FAILURE);
-    os_gpu_update_mesh(vm, index, attributes, first, count, p);
+    nu_f32_t *ptr = mesh_data(vm, index);
+    NU_CHECK(ptr, return NU_FAILURE);
+    gpu_mesh_t     *mesh = vm->gpu.meshes + index;
+    const nu_f32_t *data = p;
+    if (attributes & GPU_VERTEX_POSITION
+        && mesh->attributes & GPU_VERTEX_POSITION)
+    {
+        nu_u32_t src_offset
+            = gpu_vertex_offset(attributes, GPU_VERTEX_POSITION, count);
+        nu_u32_t dst_offset = gpu_vertex_offset(
+            mesh->attributes, GPU_VERTEX_POSITION, mesh->count);
+        for (nu_size_t i = 0; i < count; ++i)
+        {
+            ptr[dst_offset + (first + i) * 3 + 0]
+                = data[src_offset + i * 3 + 0];
+            ptr[dst_offset + (first + i) * 3 + 1]
+                = data[src_offset + i * 3 + 1];
+            ptr[dst_offset + (first + i) * 3 + 2]
+                = data[src_offset + i * 3 + 2];
+        }
+    }
+    if (attributes & GPU_VERTEX_UV && mesh->attributes & GPU_VERTEX_UV)
+    {
+        nu_u32_t src_offset
+            = gpu_vertex_offset(attributes, GPU_VERTEX_UV, count);
+        nu_u32_t dst_offset
+            = gpu_vertex_offset(mesh->attributes, GPU_VERTEX_UV, mesh->count);
+        for (nu_size_t i = 0; i < count; ++i)
+        {
+            ptr[dst_offset + (first + i) * 2 + 0]
+                = data[src_offset + i * 2 + 0];
+            ptr[dst_offset + (first + i) * 2 + 1]
+                = data[src_offset + i * 2 + 1];
+        }
+    }
+    if (attributes & GPU_VERTEX_COLOR && mesh->attributes & GPU_VERTEX_COLOR)
+    {
+        nu_u32_t src_offset
+            = gpu_vertex_offset(attributes, GPU_VERTEX_COLOR, count);
+        nu_u32_t dst_offset = gpu_vertex_offset(
+            mesh->attributes, GPU_VERTEX_COLOR, mesh->count);
+        for (nu_size_t i = 0; i < count; ++i)
+        {
+            ptr[dst_offset + (first + i) * 3 + 0]
+                = data[src_offset + i * 3 + 0];
+            ptr[dst_offset + (first + i) * 3 + 1]
+                = data[src_offset + i * 3 + 1];
+            ptr[dst_offset + (first + i) * 3 + 2]
+                = data[src_offset + i * 3 + 2];
+        }
+    }
+    os_gpu_update_mesh(vm, index, attributes, first, count);
     return NU_SUCCESS;
 }
 
 nu_status_t
 gpu_alloc_model (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
 {
-    if (index >= GPU_MAX_MODEL || vm->gpu.models[index].active)
+    if (index >= GPU_MAX_MODEL || vm->gpu.models[index].addr != GPU_ADDR_NULL)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid or inactive model %d", index);
         return NU_FAILURE;
     }
-    nu_u32_t memsize = node_count * sizeof(gpu_model_node_t);
-    NU_CHECK(reserve_memory(vm, memsize), return NU_FAILURE);
-    vm->gpu.models[index].active     = NU_TRUE;
+    nu_u32_t   memsize = node_count * sizeof(gpu_model_node_t);
+    gpu_addr_t addr    = pool_malloc(vm, memsize);
+    NU_CHECK(addr != GPU_ADDR_NULL, return NU_FAILURE);
+    vm->gpu.models[index].addr       = addr;
     vm->gpu.models[index].node_count = node_count;
     os_gpu_init_model(vm, index);
     return NU_SUCCESS;
@@ -264,7 +322,7 @@ gpu_update_model (vm_t           *vm,
                   nu_u32_t        parent,
                   const nu_f32_t *transform)
 {
-    NU_CHECK(check_model(vm, index), return NU_FAILURE);
+    NU_CHECK(model_data(vm, index), return NU_FAILURE);
     if (node_index >= vm->gpu.models[index].node_count)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid model node index %d", node_index);
@@ -298,7 +356,7 @@ gpu_push_transform (vm_t *vm, gpu_transform_t transform, const nu_f32_t *m)
 void
 gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
-    NU_CHECK(check_model(vm, index), return);
+    NU_CHECK(model_data(vm, index), return);
     os_gpu_draw_model(vm, index);
 }
 void
@@ -308,22 +366,32 @@ gpu_draw_text (vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text)
 }
 
 nu_u32_t
-gpu_vertex_memsize (gpu_vertex_attribute_t attributes, nu_u32_t count)
+gpu_texture_memsize (nu_u32_t size)
 {
-    return gpu_vertex_size(attributes) * sizeof(nu_f32_t) * count;
+    return size * size * 4;
 }
 nu_u32_t
-gpu_vertex_size (gpu_vertex_attribute_t attributes)
+gpu_vertex_memsize (gpu_vertex_attribute_t attributes, nu_u32_t count)
 {
-    nu_u32_t vertex_stride = 0;
-    vertex_stride += attributes & GPU_VERTEX_POSITION ? NU_V3_SIZE : 0;
-    vertex_stride += attributes & GPU_VERTEX_UV ? NU_V2_SIZE : 0;
-    vertex_stride += attributes & GPU_VERTEX_COLOR ? NU_V3_SIZE : 0;
-    return vertex_stride;
+    nu_u32_t size = 0;
+    if (attributes & GPU_VERTEX_POSITION)
+    {
+        size += NU_V3_SIZE * count;
+    }
+    if (attributes & GPU_VERTEX_UV)
+    {
+        size += NU_V2_SIZE * count;
+    }
+    if (attributes & GPU_VERTEX_COLOR)
+    {
+        size += NU_V3_SIZE * count;
+    }
+    return size * sizeof(nu_f32_t);
 }
 nu_u32_t
 gpu_vertex_offset (gpu_vertex_attribute_t attributes,
-                   gpu_vertex_attribute_t attribute)
+                   gpu_vertex_attribute_t attribute,
+                   nu_u32_t               count)
 {
     NU_ASSERT(attribute & attributes);
     nu_u32_t offset = 0;
@@ -333,7 +401,7 @@ gpu_vertex_offset (gpu_vertex_attribute_t attributes,
         {
             return offset;
         }
-        offset += NU_V3_SIZE;
+        offset += NU_V3_SIZE * count;
     }
     if (attributes & GPU_VERTEX_UV)
     {
@@ -341,7 +409,7 @@ gpu_vertex_offset (gpu_vertex_attribute_t attributes,
         {
             return offset;
         }
-        offset += NU_V2_SIZE;
+        offset += NU_V2_SIZE * count;
     }
     if (attributes & GPU_VERTEX_COLOR)
     {
@@ -349,12 +417,7 @@ gpu_vertex_offset (gpu_vertex_attribute_t attributes,
         {
             return offset;
         }
-        offset += NU_V2_SIZE;
+        offset += NU_V3_SIZE * count;
     }
     return offset;
-}
-nu_u32_t
-gpu_texture_memsize (nu_u32_t size)
-{
-    return size * size * 4;
 }

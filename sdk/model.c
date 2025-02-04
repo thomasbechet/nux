@@ -56,6 +56,35 @@ cleanup0:
     stbi_image_free(img);
     return NU_SUCCESS;
 }
+static nu_u32_t
+buffer_index (cgltf_accessor *accessor, nu_size_t i)
+{
+    cgltf_buffer_view *view  = accessor->buffer_view;
+    nu_byte_t         *data  = (nu_byte_t *)view->buffer->data;
+    nu_u32_t           index = -1;
+    switch (accessor->component_type)
+    {
+        case cgltf_component_type_r_8:
+        case cgltf_component_type_r_8u: {
+            index = ((nu_u8_t *)(data + view->offset + accessor->offset))[i];
+        }
+        break;
+        case cgltf_component_type_r_16:
+        case cgltf_component_type_r_16u: {
+            index = ((nu_u16_t *)(data + view->offset + accessor->offset))[i];
+        }
+        break;
+        case cgltf_component_type_r_32f:
+        case cgltf_component_type_r_32u: {
+            index = ((nu_u32_t *)(data + view->offset + accessor->offset))[i];
+        }
+        break;
+        default:
+            break;
+    }
+    NU_ASSERT(index != (nu_u32_t)-1);
+    return index;
+}
 static nu_status_t
 compile_primitive_mesh (const cgltf_primitive *primitive,
                         nu_u32_t               index,
@@ -94,55 +123,29 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
         attributes |= GPU_VERTEX_UV;
     }
 
-    cgltf_accessor    *accessor     = primitive->indices;
-    cgltf_buffer_view *view         = accessor->buffer_view;
-    nu_byte_t         *data         = (nu_byte_t *)view->buffer->data;
-    nu_size_t          indice_count = accessor->count;
+    cgltf_accessor *accessor     = primitive->indices;
+    nu_size_t       indice_count = accessor->count;
 
     // Write header
     cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_MESH);
     entry->extra.mesh.index   = index;
-    nu_size_t vertex_size     = gpu_vertex_size(attributes);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, GPU_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
 
     // Write vertices
-    for (nu_size_t i = 0; i < indice_count; ++i)
+    if (attributes & GPU_VERTEX_POSITION)
     {
-        nu_u32_t index = -1;
-        switch (accessor->component_type)
+        for (nu_size_t i = 0; i < indice_count; ++i)
         {
-            case cgltf_component_type_r_8:
-            case cgltf_component_type_r_8u: {
-                index
-                    = ((nu_u8_t *)(data + view->offset + accessor->offset))[i];
-            }
-            break;
-            case cgltf_component_type_r_16:
-            case cgltf_component_type_r_16u: {
-                index
-                    = ((nu_u16_t *)(data + view->offset + accessor->offset))[i];
-            }
-            break;
-            case cgltf_component_type_r_32f:
-            case cgltf_component_type_r_32u: {
-                index
-                    = ((nu_u32_t *)(data + view->offset + accessor->offset))[i];
-            }
-            break;
-            default:
-                break;
+            cart_write_v3(proj, positions[buffer_index(accessor, i)]);
         }
-        NU_ASSERT(index != (nu_u32_t)-1);
-
-        if (attributes & GPU_VERTEX_POSITION)
+    }
+    if (attributes & GPU_VERTEX_UV)
+    {
+        for (nu_size_t i = 0; i < indice_count; ++i)
         {
-            cart_write_v3(proj, positions[index]);
-        }
-        if (attributes & GPU_VERTEX_UV)
-        {
-            cart_write_v2(proj, uvs[index]);
+            cart_write_v2(proj, uvs[buffer_index(accessor, i)]);
         }
     }
 

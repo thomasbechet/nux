@@ -21,10 +21,14 @@
 #define GPU_MAX_MESH    1024
 #define GPU_MAX_MODEL   1024
 
-#define GPU_GLOBAL_POOL (nu_u32_t)(-1)
+#define GPU_GLOBAL_POOL (gpu_index_t)(-1)
 
 #define GPU_MIN_TEXTURE_SIZE 32
 #define GPU_MAX_TEXTURE_SIZE 512
+#define GPU_ADDR_NULL        (gpu_addr_t)(-1)
+
+typedef nu_i32_t gpu_index_t;
+typedef nu_i32_t gpu_addr_t;
 
 typedef enum
 {
@@ -55,30 +59,32 @@ typedef struct
 
 typedef struct
 {
-    nu_v4u_t scissor;
-    nu_v4u_t viewport;
-    nu_m4_t  model;
-    nu_m4_t  view;
-    nu_m4_t  projection;
-    nu_u32_t pool;
+    nu_v4u_t    scissor;
+    nu_v4u_t    viewport;
+    nu_m4_t     model;
+    nu_m4_t     view;
+    nu_m4_t     projection;
+    gpu_index_t pool;
 } gpu_state_t;
 
 typedef struct
 {
-    nu_bool_t active;
-    nu_u32_t  size;
-    nu_u32_t  remaining;
+    nu_u32_t   size;
+    nu_u32_t   capa;
+    gpu_addr_t addr;
 } gpu_pool_t;
 
 typedef struct
 {
-    nu_bool_t active;
-    nu_u32_t  size;
+    nu_u32_t    size;
+    gpu_index_t pool;
+    gpu_addr_t  addr;
 } gpu_texture_t;
 
 typedef struct
 {
-    nu_bool_t              active;
+    gpu_index_t            pool;
+    gpu_addr_t             addr;
     nu_u32_t               count;
     gpu_primitive_t        primitive;
     gpu_vertex_attribute_t attributes;
@@ -86,23 +92,25 @@ typedef struct
 
 typedef struct
 {
-    nu_bool_t active;
-    nu_u32_t  node_count;
+    gpu_index_t pool;
+    gpu_addr_t  addr;
+    nu_u32_t    node_count;
 } gpu_model_t;
 
 typedef struct
 {
-    nu_u32_t texture;
-    nu_u32_t mesh;
-    nu_m4_t  local_to_parent;
-    nu_u32_t parent;
+    gpu_index_t texture;
+    gpu_index_t mesh;
+    nu_m4_t     local_to_parent;
+    gpu_index_t parent;
 } gpu_model_node_t;
 
 typedef struct
 {
-    nu_u32_t      vram_remaining;
+    nu_byte_t    *vram;
+    nu_u32_t      vram_size;
+    nu_u32_t      vram_capa;
     gpu_state_t   state;
-    gpu_config_t  config;
     gpu_pool_t    pools[GPU_MAX_POOL];
     gpu_texture_t textures[GPU_MAX_TEXTURE];
     gpu_mesh_t    meshes[GPU_MAX_MESH];
@@ -113,6 +121,7 @@ nu_status_t gpu_init(vm_t *vm, const gpu_config_t *config);
 nu_status_t gpu_free(vm_t *vm);
 void        gpu_begin(vm_t *vm);
 void        gpu_end(vm_t *vm);
+gpu_addr_t  gpu_malloc(vm_t *vm, nu_u32_t n);
 
 nu_status_t gpu_alloc_pool(vm_t *vm, nu_u32_t index, nu_u32_t size);
 nu_status_t gpu_bind_pool(vm_t *vm, nu_u32_t index);
@@ -152,10 +161,10 @@ void gpu_push_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
 void gpu_draw_model(vm_t *vm, nu_u32_t index);
 void gpu_draw_text(vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text);
 
-nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);
-nu_u32_t gpu_vertex_size(gpu_vertex_attribute_t attributes);
-nu_u32_t gpu_vertex_offset(gpu_vertex_attribute_t attributes,
-                           gpu_vertex_attribute_t attribute);
 nu_u32_t gpu_texture_memsize(nu_u32_t size);
+nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);
+nu_u32_t gpu_vertex_offset(gpu_vertex_attribute_t attributes,
+                           gpu_vertex_attribute_t attribute,
+                           nu_u32_t               count);
 
 #endif

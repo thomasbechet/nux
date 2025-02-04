@@ -602,71 +602,66 @@ os_gpu_update_mesh (vm_t                  *vm,
                     nu_u32_t               index,
                     gpu_vertex_attribute_t write_attributes,
                     nu_u32_t               first,
-                    nu_u32_t               count,
-                    const void            *p)
+                    nu_u32_t               count)
 {
-    const nu_f32_t              *data = p;
-    nu_f32_t                    *ptr  = NU_NULL;
-    const gpu_vertex_attribute_t mesh_attributes
-        = vm->gpu.meshes[index].attributes;
+    const gpu_mesh_t *mesh = vm->gpu.meshes + index;
 
     // Compute vertex index in vbo
     first = renderer.meshes[index].offset + first;
 
-    // Compute user vertex stride
-    size_t vertex_stride = gpu_vertex_size(write_attributes);
-
     // Update VBO
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
-    ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
-    nu_size_t write_attribute_offset = 0;
-    if (write_attributes & GPU_VERTEX_POSITION)
+
+    if (mesh->attributes & GPU_VERTEX_POSITION)
     {
-        if (mesh_attributes & GPU_VERTEX_POSITION)
+        const nu_f32_t *data
+            = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
+                                 + gpu_vertex_offset(mesh->attributes,
+                                                     GPU_VERTEX_POSITION,
+                                                     mesh->count)
+                                       * sizeof(nu_f32_t));
+        for (nu_size_t i = 0; i < mesh->count; ++i)
         {
-            for (nu_size_t i = 0; i < count; ++i)
-            {
-                nu_size_t offset = vertex_stride * i;
-                nu_size_t vbo_offset
-                    = (first + i) * VERTEX_SIZE + VERTEX_POSITION_OFFSET;
-                ptr[vbo_offset + 0] = data[offset + write_attribute_offset + 0];
-                ptr[vbo_offset + 1] = data[offset + write_attribute_offset + 1];
-                ptr[vbo_offset + 2] = data[offset + write_attribute_offset + 2];
-            }
+            nu_size_t vbo_offset
+                = (first + i) * VERTEX_SIZE + VERTEX_POSITION_OFFSET;
+            ptr[vbo_offset + 0] = data[i * 3 + 0];
+            ptr[vbo_offset + 1] = data[i * 3 + 1];
+            ptr[vbo_offset + 2] = data[i * 3 + 2];
         }
-        write_attribute_offset += NU_V3_SIZE;
     }
-    if (write_attributes & GPU_VERTEX_UV)
+    if (mesh->attributes & GPU_VERTEX_UV)
     {
-        if (mesh_attributes & GPU_VERTEX_UV)
+        const nu_f32_t *data
+            = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
+                                 + gpu_vertex_offset(mesh->attributes,
+                                                     GPU_VERTEX_UV,
+                                                     mesh->count)
+                                       * sizeof(nu_f32_t));
+        for (nu_size_t i = 0; i < mesh->count; ++i)
         {
-            for (nu_size_t i = 0; i < count; ++i)
-            {
-                nu_size_t offset = vertex_stride * i;
-                nu_size_t vbo_offset
-                    = (first + i) * VERTEX_SIZE + VERTEX_UV_OFFSET;
-                ptr[vbo_offset + 0] = data[offset + write_attribute_offset + 0];
-                ptr[vbo_offset + 1] = data[offset + write_attribute_offset + 1];
-            }
+            nu_size_t vbo_offset = (first + i) * VERTEX_SIZE + VERTEX_UV_OFFSET;
+            ptr[vbo_offset + 0]  = data[i * 2 + 0];
+            ptr[vbo_offset + 1]  = data[i * 2 + 1];
         }
-        write_attribute_offset += NU_V2_SIZE;
     }
-    if (write_attributes & GPU_VERTEX_COLOR)
+    if (mesh->attributes & GPU_VERTEX_COLOR)
     {
-        if (mesh_attributes & GPU_VERTEX_COLOR)
+        const nu_f32_t *data
+            = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
+                                 + gpu_vertex_offset(mesh->attributes,
+                                                     GPU_VERTEX_COLOR,
+                                                     mesh->count)
+                                       * sizeof(nu_f32_t));
+        for (nu_size_t i = 0; i < mesh->count; ++i)
         {
-            for (nu_size_t i = 0; i < count; ++i)
-            {
-                nu_size_t offset = vertex_stride * i;
-                nu_size_t vbo_offset
-                    = (first + i) * VERTEX_SIZE + VERTEX_COLOR_OFFSET;
-                ptr[vbo_offset + 0] = data[offset + write_attribute_offset + 0];
-                ptr[vbo_offset + 1] = data[offset + write_attribute_offset + 1];
-                ptr[vbo_offset + 2] = data[offset + write_attribute_offset + 2];
-            }
+            nu_size_t vbo_offset
+                = (first + i) * VERTEX_SIZE + VERTEX_COLOR_OFFSET;
+            ptr[vbo_offset + 0] = data[i * 3 + 0];
+            ptr[vbo_offset + 1] = data[i * 3 + 1];
+            ptr[vbo_offset + 2] = data[i * 3 + 2];
         }
-        write_attribute_offset += NU_V3_SIZE;
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -785,9 +780,8 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
             = renderer.nodes + renderer.models[index].first_node + i;
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,
-                      (node->texture != (nu_u32_t)-1)
-                          ? renderer.textures[node->texture]
-                          : renderer.white_texture);
+                      (node->texture != -1) ? renderer.textures[node->texture]
+                                            : renderer.white_texture);
         nu_m4_t  global_transform = node->local_to_parent;
         nu_u32_t parent           = node->parent;
         while (parent != (nu_u32_t)-1)
