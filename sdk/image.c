@@ -79,7 +79,7 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         sdk_log(NU_LOG_ERROR, "Failed to load image file %s", asset->source);
     }
     nu_size_t  data_size = gpu_texture_memsize(target_size);
-    nu_byte_t *data      = malloc(data_size);
+    nu_byte_t *data      = sdk_malloc(data_size);
     NU_CHECK(data, goto cleanup0);
     NU_CHECK(image_resize(nu_v2u(w, h), img, target_size, data), goto cleanup1);
 
@@ -90,7 +90,7 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         goto cleanup1);
 
 cleanup1:
-    free(data);
+    sdk_free(data);
 cleanup0:
     stbi_image_free(img);
     return status;

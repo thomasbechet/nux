@@ -39,7 +39,7 @@ compile_texture (const cgltf_texture *texture,
     nu_u32_t target_size = nu_upper_power_of_two(NU_MAX(w, h));
 
     // Resize image
-    nu_byte_t *resized = malloc(gpu_texture_memsize(target_size));
+    nu_byte_t *resized = sdk_malloc(gpu_texture_memsize(target_size));
     NU_ASSERT(resized);
     if (!image_resize(nu_v2u(w, h), img, target_size, resized))
     {

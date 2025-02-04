@@ -37,8 +37,9 @@ NU_API nu_status_t vm_load(vm_t *vm, const nu_char_t *name);
 NU_API nu_status_t vm_tick(vm_t *vm);
 NU_API void        vm_save_state(const vm_t *vm, void *buf);
 NU_API nu_status_t vm_load_state(vm_t *vm, const void *buf);
-NU_API void        vm_config_default(vm_config_t *config);
-NU_API nu_size_t   vm_config_state_memsize(const vm_config_t *config);
+
+NU_API void      vm_config_default(vm_config_t *config);
+NU_API nu_size_t vm_config_state_memsize(const vm_config_t *config);
 
 void vm_log(vm_t *vm, nu_log_level_t level, const nu_char_t *format, ...);
 void vm_vlog(vm_t            *vm,

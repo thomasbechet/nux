@@ -15,4 +15,7 @@ typedef struct
 
 NU_API nu_status_t runtime_init(const runtime_info_t *info);
 
+void *runtime_malloc(nu_size_t n);
+void  runtime_free(void *p);
+
 #endif

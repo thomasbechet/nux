@@ -95,7 +95,7 @@ sdk_compile (sdk_project_t *project)
     if (!project->entries)
     {
         project->entries
-            = malloc(SDK_INIT_ENTRY_CAPA * sizeof(*project->entries));
+            = sdk_malloc(SDK_INIT_ENTRY_CAPA * sizeof(*project->entries));
         NU_ASSERT(project->entries);
         project->entries_capa = SDK_INIT_ENTRY_CAPA;
     }
@@ -104,7 +104,7 @@ sdk_compile (sdk_project_t *project)
     project->entries_size = 0;
     if (!project->data)
     {
-        project->data = malloc(SDK_INIT_DATA_CAPA);
+        project->data = sdk_malloc(SDK_INIT_DATA_CAPA);
         NU_ASSERT(project->data);
         project->data_capa = SDK_INIT_DATA_CAPA;
     }
@@ -288,7 +288,7 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
         if (project->assets_count)
         {
             project->assets
-                = malloc(sizeof(*project->assets) * project->assets_count);
+                = sdk_malloc(sizeof(*project->assets) * project->assets_count);
             NU_ASSERT(project->assets);
             nu_memset(project->assets,
                       0,
@@ -444,15 +444,15 @@ sdk_project_free (sdk_project_t *project)
 {
     if (project->assets)
     {
-        free(project->assets);
+        sdk_free(project->assets);
     }
     if (project->entries)
     {
-        free(project->entries);
+        sdk_free(project->entries);
     }
     if (project->data)
     {
-        free(project->data);
+        sdk_free(project->data);
     }
 }
 
@@ -512,7 +512,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
         return NU_FAILURE;
     }
 
-    nu_byte_t *data = malloc(size);
+    nu_byte_t *data = sdk_malloc(size);
     NU_ASSERT(data);
     status = nu_load_bytes(path, data, &size);
     NU_CHECK(status, goto cleanup0);
@@ -521,7 +521,8 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     status = cart_parse_header(data, &header);
     NU_CHECK(status, goto cleanup0);
 
-    indexed_entry_t *entries = malloc(header.chunk_count * sizeof(*entries));
+    indexed_entry_t *entries
+        = sdk_malloc(header.chunk_count * sizeof(*entries));
     NU_ASSERT(entries);
     nu_byte_t *entry_data = data + CART_HEADER_SIZE;
     for (nu_size_t i = 0; i < header.chunk_count; ++i)
@@ -616,8 +617,8 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     }
 
 cleanup1:
-    free(entries);
+    sdk_free(entries);
 cleanup0:
-    free(data);
+    sdk_free(data);
     return status;
 }

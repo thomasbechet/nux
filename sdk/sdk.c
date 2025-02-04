@@ -24,6 +24,16 @@ sdk_log (nu_log_level_t level, const nu_char_t *fmt, ...)
     sdk_vlog(level, fmt, args);
     va_end(args);
 }
+void *
+sdk_malloc (nu_size_t n)
+{
+    return malloc(n);
+}
+void
+sdk_free (void *p)
+{
+    free(p);
+}
 
 nu_u32_t
 sdk_next_mesh_index (sdk_project_t *proj)

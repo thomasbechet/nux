@@ -49,14 +49,18 @@ void
 vm_save_state (const vm_t *vm, void *buf)
 {
     nu_byte_t *p = buf;
-    nu_memcpy(vm->gpu.vram, p, vm->gpu.vram_capa);
+    nu_memcpy(p, vm->gpu.vram, vm->gpu.vram_capa);
     p += vm->gpu.vram_capa;
 }
 nu_status_t
 vm_load_state (vm_t *vm, const void *buf)
 {
+    const nu_byte_t *p = buf;
+    nu_memcpy(vm->gpu.vram, p, vm->gpu.vram_capa);
+    // TODO: update backend
     return NU_SUCCESS;
 }
+
 void
 vm_config_default (vm_config_t *config)
 {

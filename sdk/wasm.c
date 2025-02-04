@@ -22,7 +22,7 @@ sdk_wasm_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         sdk_log(NU_LOG_ERROR, "Failed to load wasm file %s", asset->source);
         return NU_FAILURE;
     }
-    buffer = malloc(size);
+    buffer = sdk_malloc(size);
     NU_CHECK(buffer, return NU_FAILURE);
     NU_ASSERT(nu_load_bytes(nu_sv_cstr(asset->source), buffer, &size));
 
@@ -32,6 +32,6 @@ sdk_wasm_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     NU_CHECK(status, goto cleanup0);
 
 cleanup0:
-    free(buffer);
+    sdk_free(buffer);
     return status;
 }

@@ -59,9 +59,11 @@ typedef void (*sdk_log_callback_t)(nu_log_level_t   level,
                                    const nu_char_t *fmt,
                                    va_list          args);
 
-NU_API void sdk_set_log_callback(sdk_log_callback_t callback);
-NU_API void sdk_vlog(nu_log_level_t level, const nu_char_t *fmt, va_list args);
-NU_API void sdk_log(nu_log_level_t level, const nu_char_t *fmt, ...);
+NU_API void  sdk_set_log_callback(sdk_log_callback_t callback);
+NU_API void  sdk_vlog(nu_log_level_t level, const nu_char_t *fmt, va_list args);
+NU_API void  sdk_log(nu_log_level_t level, const nu_char_t *fmt, ...);
+NU_API void *sdk_malloc(nu_size_t n);
+NU_API void  sdk_free(void *p);
 
 NU_API nu_status_t sdk_generate_template(nu_sv_t path, nu_sv_t lang);
 NU_API nu_status_t sdk_compile(sdk_project_t *project);

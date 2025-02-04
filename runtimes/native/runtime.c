@@ -46,3 +46,14 @@ cleanup1:
 cleanup0:
     return status;
 }
+
+void *
+runtime_malloc (nu_size_t n)
+{
+    return malloc(n);
+}
+void
+runtime_free (void *p)
+{
+    free(p);
+}
