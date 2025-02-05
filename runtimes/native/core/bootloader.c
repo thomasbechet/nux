@@ -34,11 +34,11 @@ load_texture (vm_t *vm, const cart_chunk_entry_t *entry)
            size);
     // TODO: validate size
     nu_size_t data_length = gpu_texture_memsize(size);
-    NU_CHECK(cart_read(vm, vm->bootloader.heap, data_length),
-             return NU_FAILURE);
     gpu_alloc_texture(vm, entry->extra.texture.index, size);
-    gpu_update_texture(
-        vm, entry->extra.texture.index, 0, 0, size, size, vm->bootloader.heap);
+    gpu_texture_t *texture = vm->gpu.textures + entry->extra.texture.index;
+    NU_CHECK(cart_read(vm, vm->gpu.vram + texture->addr, data_length),
+             return NU_FAILURE);
+    os_gpu_update_texture(vm, entry->extra.texture.index);
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -55,11 +55,11 @@ load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
            count,
            primitive,
            attributes);
-    NU_ASSERT(os_cart_read(
-        vm, vm->bootloader.heap, gpu_vertex_memsize(attributes, count)));
     gpu_alloc_mesh(vm, entry->extra.mesh.index, count, primitive, attributes);
-    gpu_update_mesh(
-        vm, entry->extra.mesh.index, attributes, 0, count, vm->bootloader.heap);
+    gpu_mesh_t *mesh = vm->gpu.meshes + entry->extra.mesh.index;
+    NU_ASSERT(os_cart_read(
+        vm, vm->gpu.vram + mesh->addr, gpu_vertex_memsize(attributes, count)));
+    os_gpu_update_mesh(vm, entry->extra.mesh.index);
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -103,13 +103,6 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
 }
 
 nu_status_t
-boot_init (vm_t *vm)
-{
-    vm->bootloader.heap = os_malloc(vm, BOOT_MEM_SIZE);
-    NU_ASSERT(vm->bootloader.heap);
-    return NU_SUCCESS;
-}
-nu_status_t
 boot_load_cart (vm_t *vm, const nu_char_t *name)
 {
     nu_status_t status = NU_SUCCESS;
@@ -128,15 +121,14 @@ boot_load_cart (vm_t *vm, const nu_char_t *name)
     NU_CHECK(cart_read(vm, header_data, sizeof(header_data))
                  == sizeof(header_data),
              return NU_FAILURE);
-    NU_CHECK(cart_parse_header(header_data, &vm->bootloader.header),
-             return NU_FAILURE);
+    cart_header_t header;
+    NU_CHECK(cart_parse_header(header_data, &header), return NU_FAILURE);
 
     nu_u32_t data_offset
-        = CART_HEADER_SIZE
-          + CART_CHUNK_ENTRY_SIZE * vm->bootloader.header.chunk_count;
+        = CART_HEADER_SIZE + CART_CHUNK_ENTRY_SIZE * header.chunk_count;
 
     // Load chunks
-    for (nu_u32_t i = 0; i < vm->bootloader.header.chunk_count; ++i)
+    for (nu_u32_t i = 0; i < header.chunk_count; ++i)
     {
         // Seek to entry
         os_cart_seek(vm, CART_HEADER_SIZE + CART_CHUNK_ENTRY_SIZE * i);

@@ -119,8 +119,8 @@ typedef struct
 
 nu_status_t gpu_init(vm_t *vm, const gpu_config_t *config);
 nu_status_t gpu_free(vm_t *vm);
-void        gpu_begin(vm_t *vm);
-void        gpu_end(vm_t *vm);
+void        gpu_begin_frame(vm_t *vm);
+void        gpu_end_frame(vm_t *vm);
 gpu_addr_t  gpu_malloc(vm_t *vm, nu_u32_t n);
 
 nu_status_t gpu_alloc_pool(vm_t *vm, nu_u32_t index, nu_u32_t size);

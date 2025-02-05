@@ -209,12 +209,12 @@ println (nu_char_t *fmt, ...)
 void
 start (void)
 {
-    const nu_size_t size = NU_MEM_32M;
-    nu_byte_t      *p0   = malloc(size);
-    *(p0 + size - 1)     = 123;
-    println("%p", p0);
-    println("%d", *(p0 + size - 1));
-    free(p0);
+    // const nu_size_t size = NU_MEM_32M;
+    // nu_byte_t      *p0   = malloc(size);
+    // *(p0 + size - 1)     = 123;
+    // println("%p", p0);
+    // println("%d", *(p0 + size - 1));
+    // free(p0);
 
     pos = NU_V3_ZEROS;
 
@@ -230,6 +230,9 @@ start (void)
     //            vertices);
     // const nu_f32_t colors[] = { 1, 0, 0, 1, 1, 1, 1, 1, 1 };
     // write_mesh(0, VERTEX_COLOR, 0, 3, colors);
+
+    void *p = malloc(NU_MEM_32M);
+    println("%p", p);
 
     init_debug_camera();
 }

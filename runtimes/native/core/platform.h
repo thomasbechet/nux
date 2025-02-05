@@ -10,28 +10,18 @@ void *os_malloc(vm_t *vm, nu_size_t n);
 void os_gpu_init(vm_t *vm);
 void os_gpu_init_texture(vm_t *vm, nu_u32_t index);
 void os_gpu_free_texture(vm_t *vm, nu_u32_t index);
-void os_gpu_update_texture(vm_t       *vm,
-                           nu_u32_t    index,
-                           nu_u32_t    x,
-                           nu_u32_t    y,
-                           nu_u32_t    w,
-                           nu_u32_t    h,
-                           const void *p);
+void os_gpu_update_texture(vm_t *vm, nu_u32_t index);
 void os_gpu_init_mesh(vm_t *vm, nu_u32_t index);
 void os_gpu_free_mesh(vm_t *vm, nu_u32_t index);
-void os_gpu_update_mesh(vm_t                  *vm,
-                        nu_u32_t               index,
-                        gpu_vertex_attribute_t attributes,
-                        nu_u32_t               first,
-                        nu_u32_t               count);
+void os_gpu_update_mesh(vm_t *vm, nu_u32_t index);
 void os_gpu_init_model(vm_t *vm, nu_u32_t index);
 void os_gpu_free_model(vm_t *vm, nu_u32_t index);
 void os_gpu_update_model(vm_t                   *vm,
                          nu_u32_t                index,
                          nu_u32_t                node_index,
                          const gpu_model_node_t *node);
-void os_gpu_begin(vm_t *vm);
-void os_gpu_end(vm_t *vm);
+void os_gpu_begin_frame(vm_t *vm);
+void os_gpu_end_frame(vm_t *vm);
 void os_gpu_push_transform(vm_t *vm, gpu_transform_t transform);
 void os_gpu_draw_model(vm_t *vm, nu_u32_t index);
 void os_gpu_draw_text(

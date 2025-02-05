@@ -121,14 +121,14 @@ gpu_free (vm_t *vm)
     return NU_SUCCESS;
 }
 void
-gpu_begin (vm_t *vm)
+gpu_begin_frame (vm_t *vm)
 {
-    os_gpu_begin(vm);
+    os_gpu_begin_frame(vm);
 }
 void
-gpu_end (vm_t *vm)
+gpu_end_frame (vm_t *vm)
 {
-    os_gpu_end(vm);
+    os_gpu_end_frame(vm);
 }
 gpu_addr_t
 gpu_malloc (vm_t *vm, nu_u32_t n)
@@ -218,7 +218,7 @@ gpu_update_texture (vm_t       *vm,
         nu_byte_t *src = ((nu_byte_t *)p) + w * i;
         nu_memcpy(row, src, w);
     }
-    os_gpu_update_texture(vm, index, x, y, w, h, p);
+    os_gpu_update_texture(vm, index);
     return NU_SUCCESS;
 }
 nu_status_t
@@ -302,7 +302,7 @@ gpu_update_mesh (vm_t                  *vm,
                 = data[src_offset + i * 3 + 2];
         }
     }
-    os_gpu_update_mesh(vm, index, attributes, first, count);
+    os_gpu_update_mesh(vm, index);
     return NU_SUCCESS;
 }
 

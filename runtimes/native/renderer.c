@@ -560,17 +560,20 @@ os_gpu_free_texture (vm_t *vm, nu_u32_t index)
     glDeleteTextures(1, &renderer.textures[index]);
 }
 void
-os_gpu_update_texture (vm_t       *vm,
-                       nu_u32_t    index,
-                       nu_u32_t    x,
-                       nu_u32_t    y,
-                       nu_u32_t    w,
-                       nu_u32_t    h,
-                       const void *p)
+os_gpu_update_texture (vm_t *vm, nu_u32_t index)
 {
-    GLuint handle = renderer.textures[index];
+    gpu_texture_t *texture = vm->gpu.textures + index;
+    GLuint         handle  = renderer.textures[index];
     glBindTexture(GL_TEXTURE_2D, handle);
-    glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, p);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    texture->size,
+                    texture->size,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    vm->gpu.vram + texture->addr);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -598,16 +601,12 @@ os_gpu_free_mesh (vm_t *vm, nu_u32_t index)
 {
 }
 void
-os_gpu_update_mesh (vm_t                  *vm,
-                    nu_u32_t               index,
-                    gpu_vertex_attribute_t write_attributes,
-                    nu_u32_t               first,
-                    nu_u32_t               count)
+os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
 {
     const gpu_mesh_t *mesh = vm->gpu.meshes + index;
 
     // Compute vertex index in vbo
-    first = renderer.meshes[index].offset + first;
+    nu_size_t first = renderer.meshes[index].offset;
 
     // Update VBO
     glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
@@ -696,7 +695,7 @@ os_gpu_update_model (vm_t                   *vm,
     renderer.nodes[renderer.models[index].first_node + node_index] = *node;
 }
 void
-os_gpu_begin (vm_t *vm)
+os_gpu_begin_frame (vm_t *vm)
 {
     renderer.blit_count = 0;
 
@@ -707,7 +706,7 @@ os_gpu_begin (vm_t *vm)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void
-os_gpu_end (vm_t *vm)
+os_gpu_end_frame (vm_t *vm)
 {
     // Clear window
     nu_v4_t clear

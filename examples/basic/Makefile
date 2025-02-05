@@ -16,7 +16,7 @@ else
 	CFLAGS += -DNDEBUG -Oz -flto
 endif
 
-LDFLAGS = -Wl,--no-entry,--export=start,--export=update,--allow-undefined
+LDFLAGS = -Wl,--no-entry,--export=start,--export=update,--allow-undefined,--initial-memory=67108864
 ifeq ($(DEBUG), 1)
 	LDFLAGS += -Wl,--export-all,--no-gc-sections
 else

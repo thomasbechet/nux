@@ -3,7 +3,6 @@
 
 #include "gpu.h"
 #include "cpu.h"
-#include "bootloader.h"
 #include "gamepad.h"
 
 #define VM_VERSION_MAJOR 0
@@ -24,19 +23,18 @@ typedef struct
 
 struct vm
 {
-    cpu_t        cpu;
-    gpu_t        gpu;
-    bootloader_t bootloader;
-    gamepad_t    gamepad;
-    nu_bool_t    running;
+    cpu_t     cpu;
+    gpu_t     gpu;
+    gamepad_t gamepad;
+    nu_bool_t running;
 };
 
 NU_API nu_status_t vm_init(vm_t *vm, const vm_config_t *config);
 NU_API void        vm_free(vm_t *vm);
 NU_API nu_status_t vm_load(vm_t *vm, const nu_char_t *name);
 NU_API nu_status_t vm_tick(vm_t *vm);
-NU_API void        vm_save_state(const vm_t *vm, void *buf);
-NU_API nu_status_t vm_load_state(vm_t *vm, const void *buf);
+NU_API void        vm_save_state(const vm_t *vm, void *state);
+NU_API nu_status_t vm_load_state(vm_t *vm, const void *state);
 
 NU_API void      vm_config_default(vm_config_t *config);
 NU_API nu_size_t vm_config_state_memsize(const vm_config_t *config);

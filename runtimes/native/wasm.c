@@ -16,6 +16,7 @@ static struct
     wasm_exec_env_t      env;
     wasm_function_inst_t start_callback;
     wasm_function_inst_t update_callback;
+    vm_t                *active_vm;
 } wasm;
 
 static void
@@ -114,16 +115,24 @@ axis (wasm_exec_env_t env, nu_u32_t player, nu_u32_t axis)
     vm_t *vm = wasm_runtime_get_user_data(env);
     return gpad_axis(vm, player, axis);
 }
+static void *
+custom_malloc (wasm_exec_env_t env, nu_u32_t n)
+{
+    printf("malloc %d\n", n);
+    return NU_NULL;
+}
 
 static void *
 native_wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
 {
-    // logger_log(NU_LOG_INFO,
-    //            "MALLOC %s %lu",
-    //            usage == Alloc_For_Runtime ? "runtime" : "linear",
-    //            n);
-    // return vm_malloc(user, n);
-    return malloc(n);
+    switch (usage)
+    {
+        case Alloc_For_Runtime:
+            return malloc(n);
+        case Alloc_For_LinearMemory:
+            return cpu_malloc(wasm.active_vm, n);
+    }
+    return NU_NULL;
 }
 static void *
 native_wasm_realloc (mem_alloc_usage_t usage,
@@ -132,28 +141,35 @@ native_wasm_realloc (mem_alloc_usage_t usage,
                      void             *p,
                      nu_u32_t          n)
 {
-    return realloc(p, n);
+    if (usage == Alloc_For_Runtime)
+    {
+        return realloc(p, n);
+    }
+    return NU_NULL;
 }
 void
 native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
 {
-    free(p);
+    if (usage == Alloc_For_Runtime)
+    {
+        free(p);
+    }
 }
 
-static NativeSymbol wasm_native_symbols[] = {
-    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),
-    EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_model, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
-    EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
-    EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
-    EXPORT_WASM_API_WITH_SIG(draw_text, "(ii*)"),
-    EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
-    EXPORT_WASM_API_WITH_SIG(axis, "(ii)f"),
-};
+static NativeSymbol wasm_native_symbols[]
+    = { EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
+        EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
+        EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),
+        EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
+        EXPORT_WASM_API_WITH_SIG(alloc_model, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
+        EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(draw_text, "(ii*)"),
+        EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
+        EXPORT_WASM_API_WITH_SIG(axis, "(ii)f"),
+        { "malloc", (void *)custom_malloc, "(i)*", NULL } };
 
 nu_status_t
 wasm_init (void)
@@ -174,8 +190,8 @@ wasm_init (void)
 
     init_args.max_thread_num = 1;
 
-    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
-    wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
+    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
 
     if (!wasm_runtime_full_init(&init_args))
     {
@@ -221,13 +237,10 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     }
 
     // Instantiate module
-    const nu_size_t init_stack_size = vm->cpu.mem_stack_size;
-    const nu_size_t init_heap_size  = 0;
-    wasm.instance                   = wasm_runtime_instantiate(wasm.module,
-                                             init_stack_size,
-                                             init_heap_size,
-                                             error_buf,
-                                             sizeof(error_buf));
+    const nu_size_t init_stack_size = NU_MEM_16K;
+    wasm.active_vm                  = vm;
+    wasm.instance                   = wasm_runtime_instantiate(
+        wasm.module, init_stack_size, 0, error_buf, sizeof(error_buf));
     if (!wasm.instance)
     {
         vm_log(
