@@ -196,7 +196,7 @@ sdk_compile (sdk_project_t *project)
     }
 
     // Write header
-    const nu_u32_t version = VM_VERSION_NUMBER;
+    const nu_u32_t version = VM_VERSION;
     NU_CHECK(fwrite(&version, sizeof(version), 1, f) == 1, goto cleanup1);
     NU_CHECK(fwrite(&project->entries_size, sizeof(project->entries_size), 1, f)
                  == 1,
@@ -551,21 +551,29 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     }
 
     printf("Cartridge info:\n\n");
-    printf("    %-18s %-8d\n", "Version", header.version);
-    printf("    %-18s %-8d\n", "Chunk count", header.version);
+    printf("    %-18s %d.%d.%d\n",
+           "Version",
+           VM_VERSION_MAJOR(header.version),
+           VM_VERSION_MINOR(header.version),
+           VM_VERSION_PATCH(header.version));
+    printf("    %-18s %-8d\n", "Chunk count", header.chunk_count);
     printf("    %-18s %-8d bytes\n", "Total size", (nu_u32_t)size);
     printf("    %-18s %-8d bytes\n", "Total chunk size", total_chunk_size);
     for (nu_size_t i = 0; i < NU_ARRAY_SIZE(chunk_sizes); ++i)
     {
-        nu_char_t buf[32];
-        snprintf(buf,
-                 sizeof(buf),
-                 "Total %s size",
-                 nu_enum_to_cstr(i, cart_chunk_type_map));
-        printf("    %-18s %-8d bytes (%.2lf%%)\n",
-               buf,
-               chunk_sizes[i],
-               ((nu_f32_t)chunk_sizes[i] / (nu_f32_t)total_chunk_size) * 100);
+        if (chunk_sizes[i])
+        {
+            nu_char_t buf[32];
+            snprintf(buf,
+                     sizeof(buf),
+                     "Total %s size",
+                     nu_enum_to_cstr(i, cart_chunk_type_map));
+            printf("    %-18s %-8d bytes (%.2lf%%)\n",
+                   buf,
+                   chunk_sizes[i],
+                   ((nu_f32_t)chunk_sizes[i] / (nu_f32_t)total_chunk_size)
+                       * 100);
+        }
     }
     printf("\n");
 
@@ -600,19 +608,28 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                     extra = entry->data.extra.model.index;
                     break;
             }
+            nu_char_t extra_buf[8];
+            if (extra == (nu_u32_t)-1)
+            {
+                nu_memcpy(extra_buf, "", 2);
+            }
+            else
+            {
+                snprintf(extra_buf, sizeof(extra_buf), "%d", extra);
+            }
             nu_char_t buf[32];
             snprintf(buf,
                      sizeof(buf),
                      "%.2lf%%",
                      ((nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_size)
                          * 100);
-            printf("     %-8d %-8s %-8x %-8d %-8s %-8d\n",
+            printf("     %-8d %-8s %-8x %-8d %-8s %-8s\n",
                    entry->index,
                    nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
                    entry->data.offset,
                    entry->data.length,
                    buf,
-                   extra);
+                   extra_buf);
         }
     }
 

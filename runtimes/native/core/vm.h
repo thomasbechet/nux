@@ -5,22 +5,11 @@
 #include "cpu.h"
 #include "gamepad.h"
 
-#define VM_VERSION_MAJOR 0
-#define VM_VERSION_MINOR 0
-#define VM_VERSION_PATCH 1
-
-#define VM_VERSION_NUMBER \
-    (VM_VERSION_MAJOR << 16 | VM_VERSION_MINOR << 8 | VM_VERSION_PATCH)
-
-#define VM_VERSION                 \
-    NU_STRINGIFY(VM_VERSION_MAJOR) \
-    "." NU_STRINGIFY(VM_VERSION_MINOR) "." NU_STRINGIFY(VM_VERSION_PATCH)
-
-#ifdef NUX_BUILD_SDK
-#define VM_RUNTIME_VERSION VM_VERSION " (with sdk tools)"
-#else
-#define VM_RUNTIME_VERSION VM_VERSION " (no sdk tools)"
-#endif
+#define VM_VERSION_MAJOR(num)          ((num >> 16) & 0xFF)
+#define VM_VERSION_MINOR(num)          ((num >> 8) & 0xFF)
+#define VM_VERSION_PATCH(num)          (num & 0xFF)
+#define VM_VERSION_MAKE(maj, min, pat) (maj << 16 | min << 8 | pat)
+#define VM_VERSION                     VM_VERSION_MAKE(0, 0, 1)
 
 typedef struct
 {
