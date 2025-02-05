@@ -64,6 +64,7 @@ typedef struct
     nu_m4_t     model;
     nu_m4_t     view;
     nu_m4_t     projection;
+    nu_v2u_t    cursor;
     gpu_index_t pool;
 } gpu_state_t;
 
@@ -158,8 +159,12 @@ nu_status_t gpu_update_model(vm_t           *vm,
                              const nu_f32_t *transform);
 
 void gpu_push_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
+void gpu_push_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
 void gpu_draw_model(vm_t *vm, nu_u32_t index);
-void gpu_draw_text(vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text);
+void gpu_draw_text(vm_t *vm, const void *text);
+void gpu_draw_print(vm_t *vm, const void *text);
+void gpu_draw_blit(
+    vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
 
 nu_u32_t gpu_texture_memsize(nu_u32_t size);
 nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);

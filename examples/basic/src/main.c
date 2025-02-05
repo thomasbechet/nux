@@ -259,7 +259,7 @@ update (void)
     push_transform(TRANSFORM_MODEL, m.data);
     nu_v3_t pos;
     debug_camera(0.02, &pos);
-    draw_model(0);
+    // draw_model(0);
     draw_model(1);
     m = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
     push_transform(TRANSFORM_MODEL, m.data);
@@ -267,12 +267,15 @@ update (void)
 
     char buf[256];
     sprintf(buf, "x: %.2lf", pos.x);
-    draw_text(10, 10, buf);
+    push_cursor(10, 10);
+    draw_print(buf);
     sprintf(buf, "y: %.2lf", pos.y);
-    draw_text(10, 20, buf);
+    draw_print(buf);
     sprintf(buf, "z: %.2lf", pos.z);
-    draw_text(10, 30, buf);
+    draw_print(buf);
 
     sprintf(buf, "c: " BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
-    draw_text(10, 40, buf);
+    draw_print(buf);
+
+    draw_blit(1, 0, 0, 128, 128);
 }

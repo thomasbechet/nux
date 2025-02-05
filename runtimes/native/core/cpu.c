@@ -28,7 +28,6 @@ cpu_malloc (vm_t *vm, nu_u32_t n)
         vm_log(vm, NU_LOG_ERROR, "out of cpu memory");
         return NU_NULL;
     }
-    vm_log(vm, NU_LOG_INFO, "ram alloc %d", n);
     void *p = vm->cpu.ram + vm->cpu.ram_size;
     vm->cpu.ram_size += n;
     return p;

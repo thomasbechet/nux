@@ -92,10 +92,16 @@ void update_model(
 
 WASM_IMPORT("push_transform")
 void push_transform(u32 transform, const f32 *m);
+WASM_IMPORT("push_cursor")
+void push_cursor(u32 x, u32 y);
 WASM_IMPORT("draw_model")
 void draw_model(u32 model);
 WASM_IMPORT("draw_text")
-void draw_text(u32 x, u32 y, const void *text);
+void draw_text(const void *text);
+WASM_IMPORT("draw_print")
+void draw_print(const void *text);
+WASM_IMPORT("draw_blit")
+void draw_blit(u32 index, u32 x, u32 y, u32 w, u32 h);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

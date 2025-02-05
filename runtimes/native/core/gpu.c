@@ -96,6 +96,7 @@ gpu_init (vm_t *vm, const gpu_config_t *config)
     vm->gpu.state.model      = nu_m4_identity();
     vm->gpu.state.view       = nu_m4_identity();
     vm->gpu.state.projection = nu_m4_identity();
+    vm->gpu.state.cursor     = NU_V2U_ZEROS;
     os_gpu_init(vm);
     return NU_SUCCESS;
 }
@@ -363,15 +364,32 @@ gpu_push_transform (vm_t *vm, gpu_transform_t transform, const nu_f32_t *m)
     os_gpu_push_transform(vm, transform);
 }
 void
+gpu_push_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
+{
+    vm->gpu.state.cursor = nu_v2u(x, y);
+}
+void
 gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
     NU_CHECK(model_data(vm, index), return);
     os_gpu_draw_model(vm, index);
 }
 void
-gpu_draw_text (vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text)
+gpu_draw_text (vm_t *vm, const void *text)
 {
-    os_gpu_draw_text(vm, x, y, text, nu_strlen(text));
+    os_gpu_draw_text(vm, text, nu_strlen(text));
+}
+void
+gpu_draw_print (vm_t *vm, const void *text)
+{
+    gpu_draw_text(vm, text);
+    vm->gpu.state.cursor.y += 9;
+}
+void
+gpu_draw_blit (
+    vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
+{
+    os_gpu_draw_blit(vm, index, x, y, w, h);
 }
 
 nu_u32_t

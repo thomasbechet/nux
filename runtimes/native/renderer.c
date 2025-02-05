@@ -811,27 +811,53 @@ os_gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
     draw_model(vm, index, vm->gpu.state.model);
 }
+static void
+blit (GLuint texture, nu_size_t first, nu_size_t count)
+{
+    glUseProgram(renderer.canvas_blit_program);
+
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    nu_v2u_t size = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
+    glUniform2uiv(
+        glGetUniformLocation(renderer.canvas_blit_program, "viewport_size"),
+        1,
+        size.data);
+    glBindVertexArray(renderer.blit_vao);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, count, first);
+
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glUseProgram(0);
+}
 void
-os_gpu_draw_text (
-    vm_t *vm, nu_u32_t x, nu_u32_t y, const void *text, nu_u32_t len)
+os_gpu_draw_text (vm_t *vm, const void *text, nu_u32_t len)
 {
     // Transfer buffer
     glBindBuffer(GL_ARRAY_BUFFER, renderer.blit_vbo);
     blit_t *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(blits);
     nu_size_t blit_start = renderer.blit_count;
+    nu_v2u_t  pos        = vm->gpu.state.cursor;
 
     const font_t *font = &renderer.font;
     nu_sv_t       sv   = nu_sv_cstr(text);
-    nu_b2i_t extent = nu_b2i_xywh(x, y, font->glyph_size.x, font->glyph_size.y);
-    nu_size_t  it   = 0;
+    nu_b2i_t      extent
+        = nu_b2i_xywh(pos.x, pos.y, font->glyph_size.x, font->glyph_size.y);
+    nu_size_t  it = 0;
     nu_wchar_t c;
     while (nu_sv_next(sv, &it, &c))
     {
         if (c == '\n')
         {
             extent = nu_b2i_moveto(
-                extent, nu_v2i(x, extent.min.y + font->glyph_size.y));
+                extent, nu_v2i(pos.x, extent.min.y + font->glyph_size.y));
             continue;
         }
         if (c < font->min_char || c > font->max_char)
@@ -861,27 +887,20 @@ os_gpu_draw_text (
     // Draw blits
     if (renderer.blit_count - blit_start)
     {
-        glUseProgram(renderer.canvas_blit_program);
-
-        glDisable(GL_DEPTH_TEST);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        nu_v2u_t size = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
-        glUniform2uiv(
-            glGetUniformLocation(renderer.canvas_blit_program, "viewport_size"),
-            1,
-            size.data);
-        glBindVertexArray(renderer.blit_vao);
-
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, font->texture);
-        glDrawArraysInstancedBaseInstance(
-            GL_TRIANGLES, 0, 6, renderer.blit_count - blit_start, blit_start);
-
-        glBindVertexArray(0);
-        glDisable(GL_BLEND);
-        glEnable(GL_DEPTH_TEST);
-        glUseProgram(0);
+        blit(font->texture, blit_start, renderer.blit_count - blit_start);
     }
+}
+void
+os_gpu_draw_blit (
+    vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
+{
+    nu_v2u_t pos   = vm->gpu.state.cursor;
+    blit_t  *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(renderer.blit_count < MAX_BLIT_COUNT);
+    blit_t *b = blits + renderer.blit_count++;
+    b->pos    = ((nu_u32_t)pos.y << 16) | (nu_u32_t)pos.x;
+    b->tex    = (y << 16) | x;
+    b->size   = (h << 16) | w;
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    blit(renderer.textures[index], renderer.blit_count - 1, 1);
 }

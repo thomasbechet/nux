@@ -196,7 +196,7 @@ sdk_compile (sdk_project_t *project)
     }
 
     // Write header
-    const nu_u32_t version = 100;
+    const nu_u32_t version = VM_VERSION_NUMBER;
     NU_CHECK(fwrite(&version, sizeof(version), 1, f) == 1, goto cleanup1);
     NU_CHECK(fwrite(&project->entries_size, sizeof(project->entries_size), 1, f)
                  == 1,

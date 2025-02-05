@@ -91,16 +91,39 @@ push_transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
     gpu_push_transform(vm, transform, m);
 }
 static void
+push_cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_push_cursor(vm, x, y);
+}
+static void
 draw_model (wasm_exec_env_t env, nu_u32_t index)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     gpu_draw_model(vm, index);
 }
 static void
-draw_text (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y, const void *text)
+draw_text (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_text(vm, x, y, text);
+    gpu_draw_text(vm, text);
+}
+static void
+draw_print (wasm_exec_env_t env, const void *text)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_draw_print(vm, text);
+}
+static void
+draw_blit (wasm_exec_env_t env,
+           nu_u32_t        index,
+           nu_u32_t        x,
+           nu_u32_t        y,
+           nu_u32_t        w,
+           nu_u32_t        h)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_draw_blit(vm, index, x, y, w, h);
 }
 
 static nu_u32_t
@@ -114,12 +137,6 @@ axis (wasm_exec_env_t env, nu_u32_t player, nu_u32_t axis)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     return gpad_axis(vm, player, axis);
-}
-static void *
-custom_malloc (wasm_exec_env_t env, nu_u32_t n)
-{
-    printf("malloc %d\n", n);
-    return NU_NULL;
 }
 
 static void *
@@ -156,20 +173,23 @@ native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
     }
 }
 
-static NativeSymbol wasm_native_symbols[]
-    = { EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
-        EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii)"),
-        EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
-        EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),
-        EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
-        EXPORT_WASM_API_WITH_SIG(alloc_model, "(ii)"),
-        EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
-        EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
-        EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(draw_text, "(ii*)"),
-        EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
-        EXPORT_WASM_API_WITH_SIG(axis, "(ii)f"),
-        { "malloc", (void *)custom_malloc, "(i)*", NULL } };
+static NativeSymbol wasm_native_symbols[] = {
+    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),
+    EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
+    EXPORT_WASM_API_WITH_SIG(alloc_model, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
+    EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
+    EXPORT_WASM_API_WITH_SIG(push_cursor, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(draw_text, "(*)"),
+    EXPORT_WASM_API_WITH_SIG(draw_print, "(*)"),
+    EXPORT_WASM_API_WITH_SIG(draw_blit, "(iiiii)"),
+    EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
+    EXPORT_WASM_API_WITH_SIG(axis, "(ii)f"),
+};
 
 nu_status_t
 wasm_init (void)

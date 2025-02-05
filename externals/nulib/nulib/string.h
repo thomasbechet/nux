@@ -8,6 +8,9 @@
 
 #define NU_PATH_MAX 256
 
+#define NU_STRINGIFY(X)  NU_STRINGIFY_(X)
+#define NU_STRINGIFY_(X) #X
+
 #define NU_SV(str)                                     \
     (nu_sv_t)                                          \
     {                                                  \

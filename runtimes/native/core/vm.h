@@ -9,10 +9,17 @@
 #define VM_VERSION_MINOR 0
 #define VM_VERSION_PATCH 1
 
+#define VM_VERSION_NUMBER \
+    (VM_VERSION_MAJOR << 16 | VM_VERSION_MINOR << 8 | VM_VERSION_PATCH)
+
+#define VM_VERSION                 \
+    NU_STRINGIFY(VM_VERSION_MAJOR) \
+    "." NU_STRINGIFY(VM_VERSION_MINOR) "." NU_STRINGIFY(VM_VERSION_PATCH)
+
 #ifdef NUX_BUILD_SDK
-#define VM_RUNTIME_VERSION "0.0.1 (with sdk tools)"
+#define VM_RUNTIME_VERSION VM_VERSION " (with sdk tools)"
 #else
-#define VM_RUNTIME_VERSION "0.0.1 (no sdk tools)"
+#define VM_RUNTIME_VERSION VM_VERSION " (no sdk tools)"
 #endif
 
 typedef struct
