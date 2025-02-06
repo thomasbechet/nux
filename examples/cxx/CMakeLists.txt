@@ -1,0 +1,8 @@
+cmake_minimum_required(VERSION 3.10.0)
+set(CMAKE_C_COMPILER_WORKS ON)
+set(CMAKE_CXX_COMPILER_WORKS ON)
+set (CMAKE_TOOLCHAIN_FILE ${WASI_SDK_PATH}/share/cmake/wasi-sdk.cmake)
+set(CMAKE_SYSROOT ${WASI_SDK_PREFIX}/share/wasi-sysroot)
+project(cxx LANGUAGES CXX)
+file(GLOB SOURCES *.cpp)
+add_executable(${PROJECT_NAME} ${SOURCES})

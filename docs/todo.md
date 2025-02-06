@@ -4,3 +4,5 @@
 [x] - blit api
 [ ] - C++ template project
 [ ] - CMake template project
+[ ] - Draw primitives
+[ ] - Draw fog effect

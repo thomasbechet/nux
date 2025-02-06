@@ -1,0 +1,6 @@
+package nux:api;
+
+interface nux {
+  get-position: func() -> u32;
+  set-position: func(pos: u32);
+}

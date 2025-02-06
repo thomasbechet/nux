@@ -551,14 +551,14 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     }
 
     printf("Cartridge info:\n\n");
-    printf("    %-18s %d.%d.%d\n",
+    printf("     %-18s %d.%d.%d\n",
            "Version",
            VM_VERSION_MAJOR(header.version),
            VM_VERSION_MINOR(header.version),
            VM_VERSION_PATCH(header.version));
-    printf("    %-18s %-8d\n", "Chunk count", header.chunk_count);
-    printf("    %-18s %-8d bytes\n", "Total size", (nu_u32_t)size);
-    printf("    %-18s %-8d bytes\n", "Total chunk size", total_chunk_size);
+    printf("     %-18s %-8d\n", "Chunk count", header.chunk_count);
+    printf("     %-18s %-8d bytes\n", "Total size", (nu_u32_t)size);
+    printf("     %-18s %-8d bytes\n", "Total chunk size", total_chunk_size);
     for (nu_size_t i = 0; i < NU_ARRAY_SIZE(chunk_sizes); ++i)
     {
         if (chunk_sizes[i])
@@ -568,7 +568,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                      sizeof(buf),
                      "Total %s size",
                      nu_enum_to_cstr(i, cart_chunk_type_map));
-            printf("    %-18s %-8d bytes (%.2lf%%)\n",
+            printf("     %-18s %-8d bytes (%.2lf%%)\n",
                    buf,
                    chunk_sizes[i],
                    ((nu_f32_t)chunk_sizes[i] / (nu_f32_t)total_chunk_size)
