@@ -1,0 +1,10 @@
+{
+	"target": "cart.bin",
+	"prebuild": "make",
+	"assets": [
+		{
+			"type": "wasm",
+			"source": "build/cart.wasm"
+		}
+	]
+}

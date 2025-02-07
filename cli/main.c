@@ -75,12 +75,12 @@ main (int argc, const nu_char_t *argv[])
     if (version)
     {
 #ifdef NUX_BUILD_SDK
-        printf("nux runtime %d.%d.%d (with sdk)\n",
+        printf("nux runtime v%d.%d.%d (with sdk)\n",
                VM_VERSION_MAJOR(VM_VERSION),
                VM_VERSION_MINOR(VM_VERSION),
                VM_VERSION_PATCH(VM_VERSION));
 #else
-        printf("nux runtime %d.%d.%d (no sdk)\n",
+        printf("nux runtime v%d.%d.%d (no sdk)\n",
                VM_VERSION_MAJOR(VM_VERSION),
                VM_VERSION_MINOR(VM_VERSION),
                VM_VERSION_PATCH(VM_VERSION));

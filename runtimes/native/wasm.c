@@ -283,7 +283,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     if (!wasm.start_callback)
     {
         vm_log(vm,
-               NU_LOG_INFO,
+               NU_LOG_ERROR,
                "The " START_CALLBACK " wasm function is not found");
         wasm_unload_cart(vm);
         return NU_FAILURE;
@@ -293,7 +293,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     if (!wasm.update_callback)
     {
         vm_log(vm,
-               NU_LOG_INFO,
+               NU_LOG_ERROR,
                "The " UPDATE_CALLBACK " wasm function is not found");
         wasm_unload_cart(vm);
         return NU_FAILURE;

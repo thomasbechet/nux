@@ -18,8 +18,8 @@ load_wasm (vm_t *vm, const cart_chunk_entry_t *entry)
     NU_ASSERT(entry->length);
     nu_byte_t *buffer = os_malloc(vm, entry->length);
     NU_ASSERT(buffer);
-    NU_ASSERT(os_cart_read(vm, buffer, entry->length));
-    NU_ASSERT(os_cpu_load_wasm(vm, buffer, entry->length));
+    NU_CHECK(os_cart_read(vm, buffer, entry->length), return NU_FAILURE);
+    NU_CHECK(os_cpu_load_wasm(vm, buffer, entry->length), return NU_FAILURE);
     return NU_SUCCESS;
 }
 static nu_status_t

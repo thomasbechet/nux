@@ -141,7 +141,7 @@ sdk_compile (sdk_project_t *project)
         sdk_project_asset_t *asset = project->assets + i;
 
         nu_f32_t percent
-            = (nu_f32_t)i / (nu_f32_t)project->assets_count * 100.0;
+            = (nu_f32_t)(i + 1) / (nu_f32_t)project->assets_count * 100.0;
         const nu_char_t *ignored = "";
         if (asset->ignore)
         {
