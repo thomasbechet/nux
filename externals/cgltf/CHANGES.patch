@@ -1,0 +1,13 @@
+diff --git a/externals/cgltf/cgltf.h b/externals/cgltf/cgltf.h
+index a02f148d..d80564ac 100644
+--- a/externals/cgltf/cgltf.h
++++ b/externals/cgltf/cgltf.h
+@@ -6767,7 +6767,7 @@ static int cgltf_fixup_pointers(cgltf_data* data)
+ 
+ 			if (data->scenes[i].nodes[j]->parent)
+ 			{
+-				return CGLTF_ERROR_JSON;
++				// return CGLTF_ERROR_JSON;
+ 			}
+ 		}
+ 	}

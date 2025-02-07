@@ -6767,7 +6767,7 @@ static int cgltf_fixup_pointers(cgltf_data* data)
 
 			if (data->scenes[i].nodes[j]->parent)
 			{
-				return CGLTF_ERROR_JSON;
+				// return CGLTF_ERROR_JSON;
 			}
 		}
 	}

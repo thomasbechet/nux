@@ -2,6 +2,7 @@
 
 #include <native/core/vm.h>
 #include <native/core/gpu.h>
+#define CGLTF_VALIDATE_ENABLE_ASSERTS 1
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 #include <stb/stb_image.h>
@@ -113,6 +114,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     }
 
     // Build vertex attributes
+    nu_v3_t                base_color = NU_V3_ONES;
     gpu_vertex_attribute_t attributes = 0;
     if (positions)
     {
@@ -121,6 +123,17 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     if (uvs)
     {
         attributes |= GPU_VERTEX_UV;
+    }
+    if (primitive->material && primitive->material->has_pbr_metallic_roughness)
+    {
+        if (!primitive->material->pbr_metallic_roughness.base_color_texture
+                 .texture)
+        {
+            cgltf_float *color
+                = primitive->material->pbr_metallic_roughness.base_color_factor;
+            base_color = nu_v3(color[0], color[1], color[2]);
+            attributes |= GPU_VERTEX_COLOR;
+        }
     }
 
     cgltf_accessor *accessor     = primitive->indices;
@@ -146,6 +159,14 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
         for (nu_size_t i = 0; i < indice_count; ++i)
         {
             cart_write_v2(proj, uvs[buffer_index(accessor, i)]);
+        }
+    }
+    if (attributes & GPU_VERTEX_COLOR)
+    {
+        for (nu_size_t i = 0; i < indice_count; ++i)
+        {
+            sdk_log(NU_LOG_INFO, "PRINT " NU_V3_FMT, NU_V3_ARGS(&base_color));
+            cart_write_v3(proj, base_color);
         }
     }
 
@@ -190,7 +211,10 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     result = cgltf_parse_file(&options, asset->source, &data);
     if (result != cgltf_result_success)
     {
-        sdk_log(NU_LOG_ERROR, "Failed to load gltf file %s", asset->source);
+        sdk_log(NU_LOG_ERROR,
+                "Failed to load gltf file %s (code %d)",
+                asset->source,
+                result);
         return NU_FAILURE;
     }
     result = cgltf_load_buffers(&options, data, asset->source);
@@ -220,23 +244,34 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
             ++resources_count;
         }
     }
+
     // Load base color textures
     for (nu_size_t i = 0; i < data->materials_count; ++i)
     {
         cgltf_material *material = data->materials + i;
+        cgltf_texture  *texture  = NU_NULL;
         if (material->has_pbr_metallic_roughness)
         {
-            cgltf_texture *texture
+            texture
                 = material->pbr_metallic_roughness.base_color_texture.texture;
-            if (texture)
-            {
-                nu_u32_t texture_index = sdk_next_texture_index(proj);
-                NU_CHECK(compile_texture(texture, texture_index, proj),
-                         goto cleanup0);
-                resources[resources_count].index     = texture_index;
-                resources[resources_count].cgltf_ptr = texture;
-                ++resources_count;
-            }
+        }
+        else if (material->has_diffuse_transmission)
+        {
+            texture = material->diffuse_transmission
+                          .diffuse_transmission_texture.texture;
+        }
+        else if (material->emissive_texture.texture)
+        {
+            texture = material->emissive_texture.texture;
+        }
+        if (texture)
+        {
+            nu_u32_t texture_index = sdk_next_texture_index(proj);
+            NU_CHECK(compile_texture(texture, texture_index, proj),
+                     goto cleanup0);
+            resources[resources_count].index     = texture_index;
+            resources[resources_count].cgltf_ptr = texture;
+            ++resources_count;
         }
     }
 

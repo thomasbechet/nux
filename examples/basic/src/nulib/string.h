@@ -8,6 +8,9 @@
 
 #define NU_PATH_MAX 256
 
+#define NU_STRINGIFY(X)  NU_STRINGIFY_(X)
+#define NU_STRINGIFY_(X) #X
+
 #define NU_SV(str)                                     \
     (nu_sv_t)                                          \
     {                                                  \
@@ -20,7 +23,10 @@
 #define NU_ENUM_MAP(mapname, ...) \
     nu_enum_name_map_t mapname[]  \
         = { __VA_ARGS__, { .v = NU_NULL, .s = NU_NULL } };
-#define NU_ENUM_NAME(enumval, name) { .v = enumval, .s = name }
+#define NU_ENUM_NAME(enumval, name) \
+    {                               \
+        .v = enumval, .s = name     \
+    }
 
 #define NU_SV_TO_ENUM(sv, penum, map, found)                 \
     {                                                        \

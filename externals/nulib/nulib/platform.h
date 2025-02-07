@@ -55,8 +55,13 @@
 
 #define NU_API NU_API_EXPORT
 
+#ifdef NU_CXX
+#include <bit>
+#define NU_BIG_ENDIAN (std::endian::native == std::endian::big)
+#else
 #define NU_BIG_ENDIAN (!*(unsigned char *)&(uint16_t) { 1 })
-#define NU_UNUSED(x)  (void)x
+#endif
+#define NU_UNUSED(x) (void)x
 
 #ifdef NU_CXX
 #define NU_VOID_CAST(type, expr) (static_cast<decltype(type)>(expr))
