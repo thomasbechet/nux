@@ -38,11 +38,31 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
 {
     nu_status_t status = NU_SUCCESS;
 
+    // Detect existing project
+    {
+        nu_char_t json_path[NU_PATH_MAX];
+        nu_sv_t   project_path
+            = nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
+        nu_size_t size;
+        if (nu_load_bytes(project_path, NU_NULL, &size) == NU_SUCCESS)
+        {
+            sdk_log(NU_LOG_ERROR,
+                    "Directory '" NU_SV_FMT "' already contains a " PROJECT_JSON
+                    " file",
+                    NU_SV_ARGS(path));
+            return NU_FAILURE;
+        }
+    }
+
     // Find lang
     sdk_template_file_t *template_file = NU_NULL;
     if (nu_sv_eq(lang, NU_SV("c")))
     {
         template_file = template_c_files;
+    }
+    else if (nu_sv_eq(lang, NU_SV("cxx")))
+    {
+        template_file = template_cxx_files;
     }
     else if (nu_sv_eq(lang, NU_SV("rust")))
     {

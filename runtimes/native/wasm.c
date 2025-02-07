@@ -23,7 +23,7 @@ static void
 trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    vm_log(vm, NU_LOG_INFO, "trace: %.*s", n, s);
+    vm_log(vm, NU_LOG_INFO, "%.*s", n, s);
 }
 static void
 alloc_texture (wasm_exec_env_t env, nu_u32_t index, nu_u32_t size)
@@ -210,8 +210,8 @@ wasm_init (void)
 
     init_args.max_thread_num = 1;
 
-    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
-    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
+    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+    wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
 
     if (!wasm_runtime_full_init(&init_args))
     {

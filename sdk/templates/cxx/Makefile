@@ -4,16 +4,16 @@ endif
 
 DEBUG = 1
 
-CC = "$(WASI_SDK_PATH)/bin/clang" --sysroot="$(WASI_SDK_PATH)/share/wasi-sysroot"
+CXX = "$(WASI_SDK_PATH)/bin/clang" --sysroot="$(WASI_SDK_PATH)/share/wasi-sysroot"
 
 WASM_OPT = wasm-opt
 WASM_OPT_FLAGS = -Oz --zero-filled-memory --strip-producers --enable-bulk-memory
 
-CFLAGS = -W -Wall -Wextra -Wno-unused -MMD -MP -fno-exceptions -mbulk-memory -Isrc
+CXXFLAGS = -W -Wall -Wextra -Wno-unused -MMD -MP -fno-exceptions -mbulk-memory -Isrc
 ifeq ($(DEBUG), 1)
-	CFLAGS += -DDEBUG -O0 -g
+	CXXFLAGS += -DDEBUG -O0 -g
 else
-	CFLAGS += -DNDEBUG -Oz -flto
+	CXXFLAGS += -DNDEBUG -Oz -flto
 endif
 
 LDFLAGS = -Wl,--no-entry,--export=start,--export=update,--allow-undefined,--initial-memory=67108864
@@ -46,7 +46,7 @@ endif
 all: build/cart.wasm
 
 build/cart.wasm: $(OBJECTS)
-	$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
+	$(CXX) -o $@ $(OBJECTS) $(LDFLAGS)
 ifneq ($(DEBUG), 1)
 ifeq (, $(shell command -v $(WASM_OPT)))
 	@echo Tip: $(WASM_OPT) was not found. Install it from binaryen for smaller builds!
@@ -57,7 +57,7 @@ endif
 
 build/%.o: src/%.cpp
 	@$(MKDIR_BUILD)
-	$(CC) -c $< -o $@ $(CFLAGS)
+	$(CXX) -c $< -o $@ $(CXXFLAGS)
 
 .PHONY: clean
 clean:

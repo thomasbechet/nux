@@ -20,6 +20,7 @@ load_wasm (vm_t *vm, const cart_chunk_entry_t *entry)
     NU_ASSERT(buffer);
     NU_CHECK(os_cart_read(vm, buffer, entry->length), return NU_FAILURE);
     NU_CHECK(os_cpu_load_wasm(vm, buffer, entry->length), return NU_FAILURE);
+    vm->cpu.loaded = NU_TRUE;
     return NU_SUCCESS;
 }
 static nu_status_t

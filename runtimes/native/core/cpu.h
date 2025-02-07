@@ -19,6 +19,7 @@ typedef struct
     nu_byte_t *ram;
     nu_u32_t   ram_capa;
     nu_u32_t   ram_size;
+    nu_bool_t  loaded;
 } cpu_t;
 
 nu_status_t cpu_init(vm_t *vm, const cpu_config_t *config);

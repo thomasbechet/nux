@@ -1,6 +1,11 @@
 #ifndef NUX_H
 #define NUX_H
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 //////////////////////////////////////////////////////////////////////////
 //////                          Core Types                          //////
 //////////////////////////////////////////////////////////////////////////
@@ -133,5 +138,9 @@ WASM_IMPORT("button")
 u32 button(u32 player);
 WASM_IMPORT("axis")
 f32 axis(u32 player, u32 axis);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
