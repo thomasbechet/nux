@@ -63,7 +63,7 @@ vm_load_state (vm_t *vm, const void *state)
 void
 vm_config_default (vm_config_t *config)
 {
-    config->cpu.ram_capacity  = NU_MEM_64M;
+    config->cpu.ram_capacity  = NU_MEM_256M;
     config->gpu.vram_capacity = NU_MEM_32M;
 }
 nu_size_t

@@ -83,6 +83,7 @@ IndentGotoLabels: true
 IndentPPDirectives: None
 IndentWidth:     4
 IndentWrappedFunctionNames: false
+IndentExternBlock: false 
 InsertBraces: true
 JavaScriptQuotes: Leave
 JavaScriptWrapImports: true
