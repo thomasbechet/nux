@@ -702,7 +702,8 @@ os_gpu_begin_frame (vm_t *vm)
     // Render on surface framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
     glViewport(0, 0, GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
-    glClearColor(0, 0, 0, 1);
+    nu_f32_t c = 0.6;
+    glClearColor(c, c, c, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void
@@ -866,8 +867,6 @@ os_gpu_draw_text (vm_t *vm, const void *text, nu_u32_t len)
         }
         nu_size_t gi         = c - font->min_char;
         nu_b2i_t  tex_extent = font->glyphs[gi];
-
-        // blit(extent, tex_extent, font->texture);
 
         nu_v2i_t pos = extent.min;
         nu_v2u_t tex = nu_v2u(tex_extent.min.x, tex_extent.min.y);

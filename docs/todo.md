@@ -2,8 +2,7 @@
 
 [x] Macros for nux vm version
 [x] Blit api
-[ ] C++ template project
-[ ] CMake template project
+[x] C++ template project
 [ ] Draw primitives
 [ ] Draw fog effect
 [ ] Model animation

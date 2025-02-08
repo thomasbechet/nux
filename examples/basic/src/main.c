@@ -87,5 +87,5 @@ update (void)
     sprintf(buf, "c: " BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
     draw_print(buf);
 
-    draw_blit(1, 0, 0, 128, 128);
+    // draw_blit(1, 0, 0, 128, 128);
 }

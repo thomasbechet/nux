@@ -2,7 +2,6 @@
 
 #include <native/core/vm.h>
 #include <native/core/gpu.h>
-#define CGLTF_VALIDATE_ENABLE_ASSERTS 1
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 #include <stb/stb_image.h>
@@ -165,7 +164,6 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     {
         for (nu_size_t i = 0; i < indice_count; ++i)
         {
-            sdk_log(NU_LOG_INFO, "PRINT " NU_V3_FMT, NU_V3_ARGS(&base_color));
             cart_write_v3(proj, base_color);
         }
     }
