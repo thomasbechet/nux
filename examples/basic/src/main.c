@@ -50,12 +50,13 @@ update (void)
     time += 0.02;
     // clear(0xffffffff);
 
-    clear(0);
-    fogdensity(0);
-    nu_u32_t c = nu_color_from_vec4(nu_v4(0.5, 0.5, 0.5, 1)).rgba;
+    nu_u32_t c = nu_color_from_vec4(nu_v4(0.7, 0.7, 0.7, 1)).rgba;
+    clear(c);
+    fogdensity(1);
     clear(c);
     fogcolor(c);
-    // fogrange(1, 50);
+    nu_f32_t near = 40 + nu_sin(time) * 20.0;
+    fogrange(near, near + 0.1);
 
     nu_f32_t scale = 1.5;
     nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));

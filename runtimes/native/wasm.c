@@ -95,7 +95,7 @@ cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
     api_cursor(vm, x, y);
 }
 static void
-fogcolor (wasm_exec_env_t env, nu_f32_t color)
+fogcolor (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     api_fogcolor(vm, color);

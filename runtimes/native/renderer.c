@@ -49,12 +49,13 @@ typedef struct
 
 typedef struct
 {
-    nu_m4_t  view_projection;
-    nu_v4_t  fog_color;
-    nu_v2u_t viewport_size;
-    nu_f32_t fog_density;
-    nu_f32_t fog_near;
-    nu_f32_t fog_far;
+    nu_m4_t  view;          // 0
+    nu_m4_t  projection;    // 64
+    nu_v4_t  fog_color;     // 128
+    nu_v2u_t viewport_size; // 144
+    nu_f32_t fog_density;   // 152
+    nu_f32_t fog_near;      // 156
+    nu_f32_t fog_far;       // 160
 } ubo_t;
 
 static struct
@@ -765,13 +766,13 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Update ubo
+    renderer.ubo.view          = vm->gpu.state.view;
+    renderer.ubo.projection    = vm->gpu.state.projection;
+    renderer.ubo.fog_color     = nu_color_to_vec4(vm->gpu.state.fog_color);
     renderer.ubo.viewport_size = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
-    renderer.ubo.view_projection
-        = nu_m4_mul(vm->gpu.state.projection, vm->gpu.state.view);
-    renderer.ubo.fog_density = vm->gpu.state.fog_density;
-    renderer.ubo.fog_color   = nu_color_to_vec4(vm->gpu.state.fog_color);
-    renderer.ubo.fog_near    = vm->gpu.state.fog_near;
-    renderer.ubo.fog_far     = vm->gpu.state.fog_far;
+    renderer.ubo.fog_density   = vm->gpu.state.fog_density;
+    renderer.ubo.fog_near      = vm->gpu.state.fog_near;
+    renderer.ubo.fog_far       = vm->gpu.state.fog_far;
     glBindBuffer(GL_UNIFORM_BUFFER, renderer.ubo_buffer);
     glBufferData(
         GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
