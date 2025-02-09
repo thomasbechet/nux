@@ -117,6 +117,8 @@ WASM_IMPORT("fogcolor")
 void fogcolor(u32 color);
 WASM_IMPORT("fogdensity")
 void fogdensity(f32 density);
+WASM_IMPORT("fogrange")
+void fogrange(f32 near, f32 far);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

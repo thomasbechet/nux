@@ -228,8 +228,8 @@ nu_status_t
 api_allocmesh (vm_t                  *vm,
                nu_u32_t               index,
                nu_u32_t               count,
-               gpu_primitive_t        primitive,
-               gpu_vertex_attribute_t attributes)
+               api_primitive_t        primitive,
+               api_vertex_attribute_t attributes)
 {
     if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].addr != GPU_ADDR_NULL)
     {
@@ -249,7 +249,7 @@ api_allocmesh (vm_t                  *vm,
 nu_status_t
 api_writemesh (vm_t                  *vm,
                nu_u32_t               index,
-               gpu_vertex_attribute_t attributes,
+               api_vertex_attribute_t attributes,
                nu_u32_t               first,
                nu_u32_t               count,
                const void            *p)
@@ -258,13 +258,13 @@ api_writemesh (vm_t                  *vm,
     NU_CHECK(ptr, return NU_FAILURE);
     gpu_mesh_t     *mesh = vm->gpu.meshes + index;
     const nu_f32_t *data = p;
-    if (attributes & GPU_VERTEX_POSITION
-        && mesh->attributes & GPU_VERTEX_POSITION)
+    if (attributes & API_VERTEX_POSITION
+        && mesh->attributes & API_VERTEX_POSITION)
     {
         nu_u32_t src_offset
-            = gpu_vertex_offset(attributes, GPU_VERTEX_POSITION, count);
+            = gpu_vertex_offset(attributes, API_VERTEX_POSITION, count);
         nu_u32_t dst_offset = gpu_vertex_offset(
-            mesh->attributes, GPU_VERTEX_POSITION, mesh->count);
+            mesh->attributes, API_VERTEX_POSITION, mesh->count);
         for (nu_size_t i = 0; i < count; ++i)
         {
             ptr[dst_offset + (first + i) * 3 + 0]
@@ -275,12 +275,12 @@ api_writemesh (vm_t                  *vm,
                 = data[src_offset + i * 3 + 2];
         }
     }
-    if (attributes & GPU_VERTEX_UV && mesh->attributes & GPU_VERTEX_UV)
+    if (attributes & API_VERTEX_UV && mesh->attributes & API_VERTEX_UV)
     {
         nu_u32_t src_offset
-            = gpu_vertex_offset(attributes, GPU_VERTEX_UV, count);
+            = gpu_vertex_offset(attributes, API_VERTEX_UV, count);
         nu_u32_t dst_offset
-            = gpu_vertex_offset(mesh->attributes, GPU_VERTEX_UV, mesh->count);
+            = gpu_vertex_offset(mesh->attributes, API_VERTEX_UV, mesh->count);
         for (nu_size_t i = 0; i < count; ++i)
         {
             ptr[dst_offset + (first + i) * 2 + 0]
@@ -289,12 +289,12 @@ api_writemesh (vm_t                  *vm,
                 = data[src_offset + i * 2 + 1];
         }
     }
-    if (attributes & GPU_VERTEX_COLOR && mesh->attributes & GPU_VERTEX_COLOR)
+    if (attributes & API_VERTEX_COLOR && mesh->attributes & API_VERTEX_COLOR)
     {
         nu_u32_t src_offset
-            = gpu_vertex_offset(attributes, GPU_VERTEX_COLOR, count);
+            = gpu_vertex_offset(attributes, API_VERTEX_COLOR, count);
         nu_u32_t dst_offset = gpu_vertex_offset(
-            mesh->attributes, GPU_VERTEX_COLOR, mesh->count);
+            mesh->attributes, API_VERTEX_COLOR, mesh->count);
         for (nu_size_t i = 0; i < count; ++i)
         {
             ptr[dst_offset + (first + i) * 3 + 0]
@@ -349,21 +349,20 @@ api_writemodel (vm_t           *vm,
 }
 
 void
-api_transform (vm_t *vm, gpu_transform_t transform, const nu_f32_t *m)
+api_transform (vm_t *vm, api_transform_t transform, const nu_f32_t *m)
 {
     switch (transform)
     {
-        case GPU_TRANSFORM_MODEL:
+        case API_TRANSFORM_MODEL:
             vm->gpu.state.model = nu_m4(m);
             break;
-        case GPU_TRANSFORM_VIEW:
+        case API_TRANSFORM_VIEW:
             vm->gpu.state.view = nu_m4(m);
             break;
-        case GPU_TRANSFORM_PROJECTION:
+        case API_TRANSFORM_PROJECTION:
             vm->gpu.state.projection = nu_m4(m);
             break;
     }
-    os_gpu_push_transform(vm, transform);
 }
 void
 api_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
@@ -378,7 +377,13 @@ api_fogcolor (vm_t *vm, nu_u32_t color)
 void
 api_fogdensity (vm_t *vm, nu_f32_t density)
 {
-    vm->gpu.state.fog_density = density;
+    vm->gpu.state.fog_density = nu_fabs(density);
+}
+void
+api_fogrange (vm_t *vm, nu_f32_t near, nu_f32_t far)
+{
+    vm->gpu.state.fog_near = nu_fabs(near);
+    vm->gpu.state.fog_far  = NU_MAX(vm->gpu.state.fog_near, far);
 }
 void
 api_clear (vm_t *vm, nu_u32_t color)
@@ -415,49 +420,49 @@ gpu_texture_memsize (nu_u32_t size)
     return size * size * 4;
 }
 nu_u32_t
-gpu_vertex_memsize (gpu_vertex_attribute_t attributes, nu_u32_t count)
+gpu_vertex_memsize (api_vertex_attribute_t attributes, nu_u32_t count)
 {
     nu_u32_t size = 0;
-    if (attributes & GPU_VERTEX_POSITION)
+    if (attributes & API_VERTEX_POSITION)
     {
         size += NU_V3_SIZE * count;
     }
-    if (attributes & GPU_VERTEX_UV)
+    if (attributes & API_VERTEX_UV)
     {
         size += NU_V2_SIZE * count;
     }
-    if (attributes & GPU_VERTEX_COLOR)
+    if (attributes & API_VERTEX_COLOR)
     {
         size += NU_V3_SIZE * count;
     }
     return size * sizeof(nu_f32_t);
 }
 nu_u32_t
-gpu_vertex_offset (gpu_vertex_attribute_t attributes,
-                   gpu_vertex_attribute_t attribute,
+gpu_vertex_offset (api_vertex_attribute_t attributes,
+                   api_vertex_attribute_t attribute,
                    nu_u32_t               count)
 {
     NU_ASSERT(attribute & attributes);
     nu_u32_t offset = 0;
-    if (attributes & GPU_VERTEX_POSITION)
+    if (attributes & API_VERTEX_POSITION)
     {
-        if (attribute == GPU_VERTEX_POSITION)
+        if (attribute == API_VERTEX_POSITION)
         {
             return offset;
         }
         offset += NU_V3_SIZE * count;
     }
-    if (attributes & GPU_VERTEX_UV)
+    if (attributes & API_VERTEX_UV)
     {
-        if (attribute == GPU_VERTEX_UV)
+        if (attribute == API_VERTEX_UV)
         {
             return offset;
         }
         offset += NU_V2_SIZE * count;
     }
-    if (attributes & GPU_VERTEX_COLOR)
+    if (attributes & API_VERTEX_COLOR)
     {
-        if (attribute == GPU_VERTEX_COLOR)
+        if (attribute == API_VERTEX_COLOR)
         {
             return offset;
         }

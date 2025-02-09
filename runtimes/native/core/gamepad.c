@@ -25,7 +25,7 @@ api_button (vm_t *vm, nu_u32_t player)
     return vm->gamepad.buttons[player];
 }
 nu_f32_t
-api_axis (vm_t *vm, nu_u32_t player, gamepad_axis_t axis)
+api_axis (vm_t *vm, nu_u32_t player, api_axis_t axis)
 {
     if (player >= MAX_PLAYER)
     {

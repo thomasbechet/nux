@@ -18,9 +18,9 @@ static struct
 } controller;
 
 void
-init_debug_camera (void)
+init_debug_camera (nu_v3_t pos)
 {
-    controller.pos   = NU_V3_ZEROS;
+    controller.pos   = pos;
     controller.vel   = NU_V3_ZEROS;
     controller.acc   = NU_V3_ZEROS;
     controller.rot   = nu_q4_identity();

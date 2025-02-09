@@ -53,6 +53,8 @@ typedef struct
     nu_v4_t  fog_color;
     nu_v2u_t viewport_size;
     nu_f32_t fog_density;
+    nu_f32_t fog_near;
+    nu_f32_t fog_far;
 } ubo_t;
 
 static struct
@@ -633,12 +635,12 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
     nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
 
-    if (mesh->attributes & GPU_VERTEX_POSITION)
+    if (mesh->attributes & API_VERTEX_POSITION)
     {
         const nu_f32_t *data
             = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
                                  + gpu_vertex_offset(mesh->attributes,
-                                                     GPU_VERTEX_POSITION,
+                                                     API_VERTEX_POSITION,
                                                      mesh->count)
                                        * sizeof(nu_f32_t));
         for (nu_size_t i = 0; i < mesh->count; ++i)
@@ -650,12 +652,12 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
             ptr[vbo_offset + 2] = data[i * 3 + 2];
         }
     }
-    if (mesh->attributes & GPU_VERTEX_UV)
+    if (mesh->attributes & API_VERTEX_UV)
     {
         const nu_f32_t *data
             = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
                                  + gpu_vertex_offset(mesh->attributes,
-                                                     GPU_VERTEX_UV,
+                                                     API_VERTEX_UV,
                                                      mesh->count)
                                        * sizeof(nu_f32_t));
         for (nu_size_t i = 0; i < mesh->count; ++i)
@@ -665,12 +667,12 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
             ptr[vbo_offset + 1]  = data[i * 2 + 1];
         }
     }
-    if (mesh->attributes & GPU_VERTEX_COLOR)
+    if (mesh->attributes & API_VERTEX_COLOR)
     {
         const nu_f32_t *data
             = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
                                  + gpu_vertex_offset(mesh->attributes,
-                                                     GPU_VERTEX_COLOR,
+                                                     API_VERTEX_COLOR,
                                                      mesh->count)
                                        * sizeof(nu_f32_t));
         for (nu_size_t i = 0; i < mesh->count; ++i)
@@ -751,10 +753,6 @@ os_gpu_end_frame (vm_t *vm)
     glUseProgram(0);
 }
 void
-os_gpu_push_transform (vm_t *vm, gpu_transform_t transform)
-{
-}
-void
 draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
 {
     // Setup GL states
@@ -772,6 +770,8 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
         = nu_m4_mul(vm->gpu.state.projection, vm->gpu.state.view);
     renderer.ubo.fog_density = vm->gpu.state.fog_density;
     renderer.ubo.fog_color   = nu_color_to_vec4(vm->gpu.state.fog_color);
+    renderer.ubo.fog_near    = vm->gpu.state.fog_near;
+    renderer.ubo.fog_far     = vm->gpu.state.fog_far;
     glBindBuffer(GL_UNIFORM_BUFFER, renderer.ubo_buffer);
     glBufferData(
         GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);

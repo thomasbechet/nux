@@ -46,6 +46,8 @@ typedef struct
     gpu_index_t pool;
     nu_color_t  fog_color;
     nu_f32_t    fog_density;
+    nu_f32_t    fog_near;
+    nu_f32_t    fog_far;
 } gpu_state_t;
 
 typedef struct
@@ -67,8 +69,8 @@ typedef struct
     gpu_index_t            pool;
     gpu_addr_t             addr;
     nu_u32_t               count;
-    gpu_primitive_t        primitive;
-    gpu_vertex_attribute_t attributes;
+    api_primitive_t        primitive;
+    api_vertex_attribute_t attributes;
 } gpu_mesh_t;
 
 typedef struct
@@ -105,9 +107,9 @@ void        gpu_end_frame(vm_t *vm);
 gpu_addr_t  gpu_malloc(vm_t *vm, nu_u32_t n);
 
 nu_u32_t gpu_texture_memsize(nu_u32_t size);
-nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);
-nu_u32_t gpu_vertex_offset(gpu_vertex_attribute_t attributes,
-                           gpu_vertex_attribute_t attribute,
+nu_u32_t gpu_vertex_memsize(api_vertex_attribute_t attributes, nu_u32_t count);
+nu_u32_t gpu_vertex_offset(api_vertex_attribute_t attributes,
+                           api_vertex_attribute_t attribute,
                            nu_u32_t               count);
 
 #endif

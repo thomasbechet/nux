@@ -9,6 +9,8 @@ layout(std140) uniform UBO {
     vec4 fog_color;
     uvec2 viewport_size;
     float fog_density;
+    float fog_near;
+    float fog_far;
 };
 
 uniform mat4 model;

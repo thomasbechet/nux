@@ -107,6 +107,12 @@ fogdensity (wasm_exec_env_t env, nu_f32_t density)
     api_fogdensity(vm, density);
 }
 static void
+fogrange (wasm_exec_env_t env, nu_f32_t near, nu_f32_t far)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    api_fogrange(vm, near, far);
+}
+static void
 clear (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
@@ -201,6 +207,7 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(cursor, "(ii)"),
     EXPORT_WASM_API_WITH_SIG(fogcolor, "(i)"),
     EXPORT_WASM_API_WITH_SIG(fogdensity, "(f)"),
+    EXPORT_WASM_API_WITH_SIG(fogrange, "(ff)"),
     EXPORT_WASM_API_WITH_SIG(clear, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw, "(i)"),
     EXPORT_WASM_API_WITH_SIG(text, "(*)"),

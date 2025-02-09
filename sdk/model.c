@@ -114,14 +114,14 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
 
     // Build vertex attributes
     nu_v3_t                base_color = NU_V3_ONES;
-    gpu_vertex_attribute_t attributes = 0;
+    api_vertex_attribute_t attributes = 0;
     if (positions)
     {
-        attributes |= GPU_VERTEX_POSITION;
+        attributes |= API_VERTEX_POSITION;
     }
     if (uvs)
     {
-        attributes |= GPU_VERTEX_UV;
+        attributes |= API_VERTEX_UV;
     }
     if (primitive->material && primitive->material->has_pbr_metallic_roughness)
     {
@@ -131,7 +131,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
             cgltf_float *color
                 = primitive->material->pbr_metallic_roughness.base_color_factor;
             base_color = nu_v3(color[0], color[1], color[2]);
-            attributes |= GPU_VERTEX_COLOR;
+            attributes |= API_VERTEX_COLOR;
         }
     }
 
@@ -142,25 +142,25 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_MESH);
     entry->extra.mesh.index   = index;
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
-    NU_CHECK(cart_write_u32(proj, GPU_PRIMITIVE_TRIANGLES), return NU_FAILURE);
+    NU_CHECK(cart_write_u32(proj, API_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
 
     // Write vertices
-    if (attributes & GPU_VERTEX_POSITION)
+    if (attributes & API_VERTEX_POSITION)
     {
         for (nu_size_t i = 0; i < indice_count; ++i)
         {
             cart_write_v3(proj, positions[buffer_index(accessor, i)]);
         }
     }
-    if (attributes & GPU_VERTEX_UV)
+    if (attributes & API_VERTEX_UV)
     {
         for (nu_size_t i = 0; i < indice_count; ++i)
         {
             cart_write_v2(proj, uvs[buffer_index(accessor, i)]);
         }
     }
-    if (attributes & GPU_VERTEX_COLOR)
+    if (attributes & API_VERTEX_COLOR)
     {
         for (nu_size_t i = 0; i < indice_count; ++i)
         {

@@ -19,13 +19,6 @@ println (nu_char_t *fmt, ...)
 void
 start (void)
 {
-    // const nu_size_t size = NU_MEM_32M;
-    // nu_byte_t      *p0   = malloc(size);
-    // *(p0 + size - 1)     = 123;
-    // println("%p", p0);
-    // println("%d", *(p0 + size - 1));
-    // free(p0);
-
     pos = NU_V3_ZEROS;
 
     // const nu_f32_t vertices[] = { -0.5, 0,    0, 0, 0, 1, 0, 0, //
@@ -44,7 +37,7 @@ start (void)
     void *p = malloc(NU_MEM_32M);
     println("%p", p);
 
-    init_debug_camera();
+    init_debug_camera(nu_v3(0, 10, 0));
 }
 
 static nu_f32_t rotation = 0.0f;
@@ -55,15 +48,19 @@ update (void)
 {
     // rotation += 0.005;
     time += 0.02;
-    clear(0xffffffff);
+    // clear(0xffffffff);
 
-    fogdensity(1 + nu_cos(time * 0.1));
+    clear(0);
+    fogdensity(0);
+    nu_u32_t c = nu_color_from_vec4(nu_v4(0.5, 0.5, 0.5, 1)).rgba;
+    clear(c);
+    fogcolor(c);
+    // fogrange(1, 50);
 
     nu_f32_t scale = 1.5;
     nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));
     m              = nu_m4_rotate_y(rotation);
-    // nu_f32_t scale = 0.5 + ((1 + nu_sin(rotation)) * 0.5) * 0.75;
-    m = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
+    m              = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     transform(TRANSFORM_MODEL, m.data);
     nu_v3_t pos;
     debug_camera(0.02, &pos);

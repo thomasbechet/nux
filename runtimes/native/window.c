@@ -33,7 +33,7 @@ static struct
     RGFW_rect    previous_rect;
     RGFW_window *win;
     nu_u32_t     button;
-    nu_f32_t     axis[GAMEPAD_AXIS_MAX];
+    nu_f32_t     axis[API_AXIS_MAX];
 } window;
 
 static void
@@ -149,34 +149,34 @@ window_poll_events (void)
                     switch (window.win->event.keyCode)
                     {
                         case RGFW_w:
-                            window.button |= GAMEPAD_BUTTON_Y;
+                            window.button |= API_BUTTON_Y;
                             break;
                         case RGFW_s:
-                            window.button |= GAMEPAD_BUTTON_A;
+                            window.button |= API_BUTTON_A;
                             break;
                         case RGFW_a:
-                            window.button |= GAMEPAD_BUTTON_X;
+                            window.button |= API_BUTTON_X;
                             break;
                         case RGFW_d:
-                            window.button |= GAMEPAD_BUTTON_B;
+                            window.button |= API_BUTTON_B;
                             break;
                         case RGFW_z:
-                            window.button |= GAMEPAD_BUTTON_LB;
+                            window.button |= API_BUTTON_LB;
                             break;
                         case RGFW_x:
-                            window.button |= GAMEPAD_BUTTON_RB;
+                            window.button |= API_BUTTON_RB;
                             break;
                         case RGFW_h:
-                            window.axis[GAMEPAD_AXIS_RIGHTX] = -1;
+                            window.axis[API_AXIS_RIGHTX] = -1;
                             break;
                         case RGFW_l:
-                            window.axis[GAMEPAD_AXIS_RIGHTX] = 1;
+                            window.axis[API_AXIS_RIGHTX] = 1;
                             break;
                         case RGFW_j:
-                            window.axis[GAMEPAD_AXIS_RIGHTY] = 1;
+                            window.axis[API_AXIS_RIGHTY] = 1;
                             break;
                         case RGFW_k:
-                            window.axis[GAMEPAD_AXIS_RIGHTY] = -1;
+                            window.axis[API_AXIS_RIGHTY] = -1;
                             break;
                         default:
                             break;
@@ -194,30 +194,30 @@ window_poll_events (void)
                     switch (window.win->event.keyCode)
                     {
                         case RGFW_w:
-                            window.button &= ~GAMEPAD_BUTTON_Y;
+                            window.button &= ~API_BUTTON_Y;
                             break;
                         case RGFW_s:
-                            window.button &= ~GAMEPAD_BUTTON_A;
+                            window.button &= ~API_BUTTON_A;
                             break;
                         case RGFW_a:
-                            window.button &= ~GAMEPAD_BUTTON_X;
+                            window.button &= ~API_BUTTON_X;
                             break;
                         case RGFW_d:
-                            window.button &= ~GAMEPAD_BUTTON_B;
+                            window.button &= ~API_BUTTON_B;
                             break;
                         case RGFW_z:
-                            window.button &= ~GAMEPAD_BUTTON_LB;
+                            window.button &= ~API_BUTTON_LB;
                             break;
                         case RGFW_x:
-                            window.button &= ~GAMEPAD_BUTTON_RB;
+                            window.button &= ~API_BUTTON_RB;
                             break;
                         case RGFW_h:
                         case RGFW_l:
-                            window.axis[GAMEPAD_AXIS_RIGHTX] = 0;
+                            window.axis[API_AXIS_RIGHTX] = 0;
                             break;
                         case RGFW_j:
                         case RGFW_k:
-                            window.axis[GAMEPAD_AXIS_RIGHTY] = 0;
+                            window.axis[API_AXIS_RIGHTY] = 0;
                             break;
                         default:
                             break;
