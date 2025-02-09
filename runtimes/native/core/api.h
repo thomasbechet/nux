@@ -70,6 +70,13 @@ void api_fogdensity(vm_t *vm, nu_f32_t density);
 void api_fogrange(vm_t *vm, nu_f32_t near, nu_f32_t far);
 void api_clear(vm_t *vm, nu_u32_t color);
 void api_draw(vm_t *vm, nu_u32_t index);
+void api_drawb(vm_t    *vm,
+               nu_f32_t x,
+               nu_f32_t y,
+               nu_f32_t z,
+               nu_f32_t sx,
+               nu_f32_t sy,
+               nu_f32_t sz);
 void api_text(vm_t *vm, const void *text);
 void api_print(vm_t *vm, const void *text);
 void api_blit(
