@@ -176,10 +176,10 @@ debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
     nu_v3_t up      = nu_v3_normalize(nu_q4_mulv3(controller.rot, NU_V3_UP));
 
     nu_m4_t view = nu_lookat(pos, nu_v3_add(pos, forward), up);
-    push_transform(TRANSFORM_VIEW, view.data);
+    transform(TRANSFORM_VIEW, view.data);
     nu_m4_t projection
         = nu_perspective(nu_radian(70.0), 640.0 / 400.0, 0.01, 500);
-    push_transform(TRANSFORM_PROJECTION, projection.data);
+    transform(TRANSFORM_PROJECTION, projection.data);
 
     if (out_pos)
     {

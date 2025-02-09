@@ -45,13 +45,12 @@ typedef double   f64;
 //////                            MODULE                            //////
 //////////////////////////////////////////////////////////////////////////
 
-// Module start callback
-WASM_EXPORT("start") void start();
-// Module update callback
-WASM_EXPORT("update") void update();
-
-// Trace a message to the runtime (UTF-8 format)
-WASM_IMPORT("trace") void trace(const void *str, u32 n);
+WASM_EXPORT("start")
+void start();
+WASM_EXPORT("update")
+void update();
+WASM_IMPORT("trace")
+void trace(const void *s);
 
 //////////////////////////////////////////////////////////////////////////
 //////                              GPU                             //////
@@ -78,35 +77,38 @@ typedef enum
     TRANSFORM_PROJECTION = 2,
 } gpu_transform_t;
 
-WASM_IMPORT("alloc_texture")
-void alloc_texture(u32 index, u32 texture_size, const void *p);
-WASM_IMPORT("write_texture")
-void write_texture(u32 index, u32 x, u32 y, u32 w, u32 h, const void *p);
+WASM_IMPORT("allocgpool")
+void allocgpool(u32 idx, u32 size);
+WASM_IMPORT("gpool")
+void gpool(u32 idx);
 
-WASM_IMPORT("alloc_mesh")
-void alloc_mesh(
-    u32 index, u32 count, u32 primitive, u32 attributes, const void *p);
-WASM_IMPORT("write_mesh")
-void write_mesh(u32 index, u32 attributes, u32 first, u32 count, const void *p);
+WASM_IMPORT("alloctex")
+void alloctex(u32 idx, u32 size, const void *p);
+WASM_IMPORT("writetex")
+void writetex(u32 idx, u32 x, u32 y, u32 w, u32 h, const void *p);
 
-WASM_IMPORT("alloc_model")
-void alloc_model(u32 index, u32 node_count);
-WASM_IMPORT("update_model")
-void update_model(
-    u32 index, u32 node_index, u32 mesh, u32 texture, const f32 *transform);
+WASM_IMPORT("allocmesh")
+void allocmesh(u32 idx, u32 count, u32 primitive, u32 attribs, const void *p);
+WASM_IMPORT("writemesh")
+void writemesh(u32 idx, u32 attribs, u32 first, u32 count, const void *p);
 
-WASM_IMPORT("push_transform")
-void push_transform(u32 transform, const f32 *m);
-WASM_IMPORT("push_cursor")
-void push_cursor(u32 x, u32 y);
-WASM_IMPORT("draw_model")
-void draw_model(u32 model);
-WASM_IMPORT("draw_text")
-void draw_text(const void *text);
-WASM_IMPORT("draw_print")
-void draw_print(const void *text);
-WASM_IMPORT("draw_blit")
-void draw_blit(u32 index, u32 x, u32 y, u32 w, u32 h);
+WASM_IMPORT("allocmodel")
+void allocmodel(u32 idx, u32 count);
+WASM_IMPORT("writemodel")
+void writemodel(u32 idx, u32 node, u32 mesh, u32 texture, const f32 *transform);
+
+WASM_IMPORT("transform")
+void transform(u32 transform, const f32 *m);
+WASM_IMPORT("cursor")
+void cursor(u32 x, u32 y);
+WASM_IMPORT("draw")
+void draw(u32 model);
+WASM_IMPORT("text")
+void text(const void *text);
+WASM_IMPORT("print")
+void print(const void *text);
+WASM_IMPORT("blit")
+void blit(u32 idx, u32 x, u32 y, u32 w, u32 h);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

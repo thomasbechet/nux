@@ -11,8 +11,8 @@ println (nu_char_t *fmt, ...)
     va_list args;
     va_start(args, fmt);
     nu_char_t buf[256];
-    nu_u32_t  n = vsnprintf(buf, sizeof(buf), fmt, args);
-    trace(buf, n);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    trace(buf);
     va_end(args);
 }
 
@@ -66,26 +66,26 @@ update (void)
     m              = nu_m4_rotate_y(rotation);
     // nu_f32_t scale = 0.5 + ((1 + nu_sin(rotation)) * 0.5) * 0.75;
     m = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
-    push_transform(TRANSFORM_MODEL, m.data);
+    transform(TRANSFORM_MODEL, m.data);
     nu_v3_t pos;
     debug_camera(0.02, &pos);
     // draw_model(0);
-    draw_model(1);
+    draw(1);
     m = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
-    push_transform(TRANSFORM_MODEL, m.data);
-    draw_model(1);
+    transform(TRANSFORM_MODEL, m.data);
+    draw(1);
 
     char buf[256];
     sprintf(buf, "x: %.2lf", pos.x);
-    push_cursor(10, 10);
-    draw_print(buf);
+    cursor(10, 10);
+    print(buf);
     sprintf(buf, "y: %.2lf", pos.y);
-    draw_print(buf);
+    print(buf);
     sprintf(buf, "z: %.2lf", pos.z);
-    draw_print(buf);
+    print(buf);
 
     sprintf(buf, "c: " BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
-    draw_print(buf);
+    print(buf);
 
-    // draw_blit(1, 0, 0, 128, 128);
+    // blit(1, 0, 0, 128, 128);
 }

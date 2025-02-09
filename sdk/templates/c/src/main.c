@@ -3,7 +3,7 @@
 void
 start (void)
 {
-    trace("Hello World !", 13);
+    trace("Hello World !");
 }
 
 void

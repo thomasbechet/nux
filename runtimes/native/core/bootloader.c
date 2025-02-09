@@ -90,13 +90,13 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
                mesh,
                texture,
                parent);
-        NU_CHECK(gpu_update_model(vm,
-                                  entry->extra.model.index,
-                                  i,
-                                  mesh,
-                                  texture,
-                                  parent,
-                                  transform.data),
+        NU_CHECK(gpu_write_model(vm,
+                                 entry->extra.model.index,
+                                 i,
+                                 mesh,
+                                 texture,
+                                 parent,
+                                 transform.data),
                  return NU_FAILURE);
     }
 

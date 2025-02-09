@@ -125,42 +125,42 @@ void        gpu_end_frame(vm_t *vm);
 gpu_addr_t  gpu_malloc(vm_t *vm, nu_u32_t n);
 
 nu_status_t gpu_alloc_pool(vm_t *vm, nu_u32_t index, nu_u32_t size);
-nu_status_t gpu_bind_pool(vm_t *vm, nu_u32_t index);
+nu_status_t gpu_set_pool(vm_t *vm, nu_u32_t index);
 nu_status_t gpu_clear_pool(vm_t *vm, nu_u32_t index);
 
 nu_status_t gpu_alloc_texture(vm_t *vm, nu_u32_t index, nu_u32_t size);
-nu_status_t gpu_update_texture(vm_t       *vm,
-                               nu_u32_t    index,
-                               nu_u32_t    x,
-                               nu_u32_t    y,
-                               nu_u32_t    w,
-                               nu_u32_t    h,
-                               const void *p);
+nu_status_t gpu_write_texture(vm_t       *vm,
+                              nu_u32_t    index,
+                              nu_u32_t    x,
+                              nu_u32_t    y,
+                              nu_u32_t    w,
+                              nu_u32_t    h,
+                              const void *p);
 
 nu_status_t gpu_alloc_mesh(vm_t                  *vm,
                            nu_u32_t               index,
                            nu_u32_t               count,
                            gpu_primitive_t        primitive,
                            gpu_vertex_attribute_t attributes);
-nu_status_t gpu_update_mesh(vm_t                  *vm,
-                            nu_u32_t               index,
-                            gpu_vertex_attribute_t attributes,
-                            nu_u32_t               first,
-                            nu_u32_t               count,
-                            const void            *p);
+nu_status_t gpu_write_mesh(vm_t                  *vm,
+                           nu_u32_t               index,
+                           gpu_vertex_attribute_t attributes,
+                           nu_u32_t               first,
+                           nu_u32_t               count,
+                           const void            *p);
 
 nu_status_t gpu_alloc_model(vm_t *vm, nu_u32_t index, nu_u32_t node_count);
-nu_status_t gpu_update_model(vm_t           *vm,
-                             nu_u32_t        index,
-                             nu_u32_t        node_index,
-                             nu_u32_t        mesh,
-                             nu_u32_t        texture,
-                             nu_u32_t        parent,
-                             const nu_f32_t *transform);
+nu_status_t gpu_write_model(vm_t           *vm,
+                            nu_u32_t        index,
+                            nu_u32_t        node_index,
+                            nu_u32_t        mesh,
+                            nu_u32_t        texture,
+                            nu_u32_t        parent,
+                            const nu_f32_t *transform);
 
-void gpu_push_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
-void gpu_push_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
-void gpu_draw_model(vm_t *vm, nu_u32_t index);
+void gpu_set_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
+void gpu_set_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
+void gpu_draw(vm_t *vm, nu_u32_t index);
 void gpu_draw_text(vm_t *vm, const void *text);
 void gpu_draw_print(vm_t *vm, const void *text);
 void gpu_draw_blit(

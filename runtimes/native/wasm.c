@@ -20,110 +20,110 @@ static struct
 } wasm;
 
 static void
-trace (wasm_exec_env_t env, const void *s, nu_u32_t n)
+trace (wasm_exec_env_t env, const void *s)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    vm_log(vm, NU_LOG_INFO, "%.*s", n, s);
+    vm_log(vm, NU_LOG_INFO, s);
 }
 static void
-alloc_texture (wasm_exec_env_t env, nu_u32_t index, nu_u32_t size)
+alloctex (wasm_exec_env_t env, nu_u32_t idx, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_texture(vm, index, size);
+    gpu_alloc_texture(vm, idx, size);
 }
 static void
-update_texture (wasm_exec_env_t env,
-                nu_u32_t        index,
-                nu_u32_t        x,
-                nu_u32_t        y,
-                nu_u32_t        w,
-                nu_u32_t        h,
-                const void     *p)
+writetex (wasm_exec_env_t env,
+          nu_u32_t        idx,
+          nu_u32_t        x,
+          nu_u32_t        y,
+          nu_u32_t        w,
+          nu_u32_t        h,
+          const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_update_texture(vm, index, x, y, w, h, p);
+    gpu_write_texture(vm, idx, x, y, w, h, p);
 }
 static void
-alloc_mesh (wasm_exec_env_t env,
-            nu_u32_t        index,
-            nu_u32_t        count,
-            nu_u32_t        primitive,
-            nu_u32_t        flags)
+allocmesh (wasm_exec_env_t env,
+           nu_u32_t        idx,
+           nu_u32_t        count,
+           nu_u32_t        primitive,
+           nu_u32_t        attribs)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_mesh(vm, index, count, primitive, flags);
+    gpu_alloc_mesh(vm, idx, count, primitive, attribs);
 }
 static void
-update_mesh (wasm_exec_env_t env,
-             nu_u32_t        index,
-             nu_u32_t        attributes,
-             nu_u32_t        first,
-             nu_u32_t        count,
-             const void     *p)
+writemesh (wasm_exec_env_t env,
+           nu_u32_t        idx,
+           nu_u32_t        attribs,
+           nu_u32_t        first,
+           nu_u32_t        count,
+           const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_update_mesh(vm, index, attributes, first, count, p);
-}
-
-static void
-alloc_model (wasm_exec_env_t env, nu_u32_t index, nu_u32_t node_count)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_model(vm, index, node_count);
-}
-static void
-update_model (wasm_exec_env_t env,
-              nu_u32_t        index,
-              nu_u32_t        node_index,
-              nu_u32_t        mesh,
-              nu_u32_t        texture,
-              nu_u32_t        parent,
-              const nu_f32_t *transform)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_update_model(vm, index, node_index, mesh, texture, parent, transform);
+    gpu_write_mesh(vm, idx, attribs, first, count, p);
 }
 
 static void
-push_transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
+allocmodel (wasm_exec_env_t env, nu_u32_t idx, nu_u32_t count)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_push_transform(vm, transform, m);
+    gpu_alloc_model(vm, idx, count);
 }
 static void
-push_cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
+writemodel (wasm_exec_env_t env,
+            nu_u32_t        idx,
+            nu_u32_t        node,
+            nu_u32_t        mesh,
+            nu_u32_t        texture,
+            nu_u32_t        parent,
+            const nu_f32_t *transform)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_push_cursor(vm, x, y);
+    gpu_write_model(vm, idx, node, mesh, texture, parent, transform);
 }
+
 static void
-draw_model (wasm_exec_env_t env, nu_u32_t index)
+transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_model(vm, index);
+    gpu_set_transform(vm, transform, m);
 }
 static void
-draw_text (wasm_exec_env_t env, const void *text)
+cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_set_cursor(vm, x, y);
+}
+static void
+draw (wasm_exec_env_t env, nu_u32_t model)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_draw(vm, model);
+}
+static void
+text (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     gpu_draw_text(vm, text);
 }
 static void
-draw_print (wasm_exec_env_t env, const void *text)
+print (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     gpu_draw_print(vm, text);
 }
 static void
-draw_blit (wasm_exec_env_t env,
-           nu_u32_t        index,
-           nu_u32_t        x,
-           nu_u32_t        y,
-           nu_u32_t        w,
-           nu_u32_t        h)
+blit (wasm_exec_env_t env,
+      nu_u32_t        idx,
+      nu_u32_t        x,
+      nu_u32_t        y,
+      nu_u32_t        w,
+      nu_u32_t        h)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_blit(vm, index, x, y, w, h);
+    gpu_draw_blit(vm, idx, x, y, w, h);
 }
 
 static nu_u32_t
@@ -174,19 +174,19 @@ native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
 }
 
 static NativeSymbol wasm_native_symbols[] = {
-    EXPORT_WASM_API_WITH_SIG(trace, "(*i)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),
-    EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
-    EXPORT_WASM_API_WITH_SIG(alloc_model, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
-    EXPORT_WASM_API_WITH_SIG(push_transform, "(i*)"),
-    EXPORT_WASM_API_WITH_SIG(push_cursor, "(ii)"),
-    EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
-    EXPORT_WASM_API_WITH_SIG(draw_text, "(*)"),
-    EXPORT_WASM_API_WITH_SIG(draw_print, "(*)"),
-    EXPORT_WASM_API_WITH_SIG(draw_blit, "(iiiii)"),
+    EXPORT_WASM_API_WITH_SIG(trace, "(*)"),
+    EXPORT_WASM_API_WITH_SIG(alloctex, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(writetex, "(iiiii*)"),
+    EXPORT_WASM_API_WITH_SIG(allocmesh, "(iiii)"),
+    EXPORT_WASM_API_WITH_SIG(writemesh, "(iiii*)"),
+    EXPORT_WASM_API_WITH_SIG(allocmodel, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(writemodel, "(iiiii*)"),
+    EXPORT_WASM_API_WITH_SIG(transform, "(i*)"),
+    EXPORT_WASM_API_WITH_SIG(cursor, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(draw, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(text, "(*)"),
+    EXPORT_WASM_API_WITH_SIG(print, "(*)"),
+    EXPORT_WASM_API_WITH_SIG(blit, "(iiiii)"),
     EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
     EXPORT_WASM_API_WITH_SIG(axis, "(ii)f"),
 };
