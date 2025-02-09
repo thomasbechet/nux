@@ -82,33 +82,41 @@ void allocgpool(u32 idx, u32 size);
 WASM_IMPORT("gpool")
 void gpool(u32 idx);
 
-WASM_IMPORT("alloc_texture")
+WASM_IMPORT("alloctex")
 void alloctex(u32 idx, u32 size, const void *p);
-WASM_IMPORT("write_texture")
+WASM_IMPORT("writetex")
 void writetex(u32 idx, u32 x, u32 y, u32 w, u32 h, const void *p);
 
-WASM_IMPORT("alloc_mesh")
+WASM_IMPORT("allocmesh")
 void allocmesh(u32 idx, u32 count, u32 primitive, u32 attribs, const void *p);
-WASM_IMPORT("write_mesh")
+WASM_IMPORT("writemesh")
 void writemesh(u32 idx, u32 attribs, u32 first, u32 count, const void *p);
 
-WASM_IMPORT("alloc_model")
+WASM_IMPORT("allocmodel")
 void allocmodel(u32 idx, u32 count);
-WASM_IMPORT("update_model")
+WASM_IMPORT("writemodel")
 void writemodel(u32 idx, u32 node, u32 mesh, u32 texture, const f32 *transform);
 
-WASM_IMPORT("push_transform")
+WASM_IMPORT("transform")
 void transform(u32 transform, const f32 *m);
-WASM_IMPORT("push_cursor")
+WASM_IMPORT("cursor")
 void cursor(u32 x, u32 y);
-WASM_IMPORT("draw_model")
+WASM_IMPORT("clear")
+void clear(u32 color);
+WASM_IMPORT("draw")
 void draw(u32 model);
-WASM_IMPORT("draw_text")
+WASM_IMPORT("text")
 void text(const void *text);
-WASM_IMPORT("draw_print")
+WASM_IMPORT("print")
 void print(const void *text);
-WASM_IMPORT("draw_blit")
+WASM_IMPORT("blit")
 void blit(u32 idx, u32 x, u32 y, u32 w, u32 h);
+WASM_IMPORT("fogmode")
+void fogmode(u32 mode);
+WASM_IMPORT("fogcolor")
+void fogcolor(u32 color);
+WASM_IMPORT("fogdensity")
+void fogdensity(f32 density);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

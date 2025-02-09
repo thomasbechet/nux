@@ -965,6 +965,13 @@ nu_color_from_vec4 (nu_v4_t v)
                     (nu_u8_t)(v.z * 255.0),
                     (nu_u8_t)(v.w * 255.0));
 }
+nu_color_t
+nu_color_from_u32 (nu_u32_t rgba)
+{
+    nu_color_t c;
+    c.rgba = rgba;
+    return c;
+}
 static nu_f32_t
 nu__color_to_srgb (nu_f32_t x)
 {

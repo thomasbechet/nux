@@ -90,13 +90,15 @@ gpu_init (vm_t *vm, const gpu_config_t *config)
     }
     vm->gpu.vram = os_malloc(vm, config->vram_capacity);
     NU_ASSERT(vm->gpu.vram);
-    vm->gpu.vram_capa        = config->vram_capacity;
-    vm->gpu.vram_size        = 0;
-    vm->gpu.state.pool       = GPU_GLOBAL_POOL;
-    vm->gpu.state.model      = nu_m4_identity();
-    vm->gpu.state.view       = nu_m4_identity();
-    vm->gpu.state.projection = nu_m4_identity();
-    vm->gpu.state.cursor     = NU_V2U_ZEROS;
+    vm->gpu.vram_capa         = config->vram_capacity;
+    vm->gpu.vram_size         = 0;
+    vm->gpu.state.pool        = GPU_GLOBAL_POOL;
+    vm->gpu.state.model       = nu_m4_identity();
+    vm->gpu.state.view        = nu_m4_identity();
+    vm->gpu.state.projection  = nu_m4_identity();
+    vm->gpu.state.cursor      = NU_V2U_ZEROS;
+    vm->gpu.state.fog_color   = NU_COLOR_WHITE;
+    vm->gpu.state.fog_density = 0;
     os_gpu_init(vm);
     return NU_SUCCESS;
 }
@@ -367,6 +369,21 @@ void
 gpu_set_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
 {
     vm->gpu.state.cursor = nu_v2u(x, y);
+}
+void
+gpu_set_fog_color (vm_t *vm, nu_u32_t color)
+{
+    vm->gpu.state.fog_color = nu_color_from_u32(color);
+}
+void
+gpu_set_fog_density (vm_t *vm, nu_f32_t density)
+{
+    vm->gpu.state.fog_density = density;
+}
+void
+gpu_clear (vm_t *vm, nu_u32_t color)
+{
+    os_gpu_clear(vm, color);
 }
 void
 gpu_draw (vm_t *vm, nu_u32_t index)

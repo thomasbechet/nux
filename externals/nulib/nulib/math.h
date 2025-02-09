@@ -320,6 +320,7 @@ NU_API nu_v3_t nu_triangle_normal(nu_v3_t p0, nu_v3_t p1, nu_v3_t p2);
 NU_API nu_color_t nu_color(nu_u8_t r, nu_u8_t g, nu_u8_t b, nu_u8_t a);
 NU_API nu_v4_t    nu_color_to_vec4(nu_color_t c);
 NU_API nu_color_t nu_color_from_vec4(nu_v4_t v);
+NU_API nu_color_t nu_color_from_u32(nu_u32_t rgba);
 NU_API nu_color_t nu_color_to_srgb(nu_color_t c);
 NU_API nu_color_t nu_color_to_linear(nu_color_t c);
 

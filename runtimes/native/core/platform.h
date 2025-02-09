@@ -23,6 +23,7 @@ void os_gpu_update_model(vm_t                   *vm,
 void os_gpu_begin_frame(vm_t *vm);
 void os_gpu_end_frame(vm_t *vm);
 void os_gpu_push_transform(vm_t *vm, gpu_transform_t transform);
+void os_gpu_clear(vm_t *vm, nu_u32_t color);
 void os_gpu_draw_model(vm_t *vm, nu_u32_t index);
 void os_gpu_draw_text(vm_t *vm, const void *text, nu_u32_t len);
 void os_gpu_draw_blit(

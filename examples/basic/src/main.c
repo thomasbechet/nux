@@ -49,17 +49,13 @@ start (void)
 
 static nu_f32_t rotation = 0.0f;
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY(byte)                                      \
-    ((byte) & 0x80 ? '1' : '0'), ((byte) & 0x40 ? '1' : '0'),     \
-        ((byte) & 0x20 ? '1' : '0'), ((byte) & 0x10 ? '1' : '0'), \
-        ((byte) & 0x08 ? '1' : '0'), ((byte) & 0x04 ? '1' : '0'), \
-        ((byte) & 0x02 ? '1' : '0'), ((byte) & 0x01 ? '1' : '0')
-
 void
 update (void)
 {
     // rotation += 0.005;
+    clear(0xffffffff);
+
+    fogdensity(2);
 
     nu_f32_t scale = 1.5;
     nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));
@@ -84,8 +80,5 @@ update (void)
     sprintf(buf, "z: %.2lf", pos.z);
     print(buf);
 
-    sprintf(buf, "c: " BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(button(0)));
-    print(buf);
-
-    // blit(1, 0, 0, 128, 128);
+    blit(1, 0, 0, 128, 128);
 }

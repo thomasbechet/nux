@@ -97,6 +97,24 @@ cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
     gpu_set_cursor(vm, x, y);
 }
 static void
+fogcolor (wasm_exec_env_t env, nu_f32_t color)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_set_fog_color(vm, color);
+}
+static void
+fogdensity (wasm_exec_env_t env, nu_f32_t density)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_set_fog_density(vm, density);
+}
+static void
+clear (wasm_exec_env_t env, nu_u32_t color)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    gpu_clear(vm, color);
+}
+static void
 draw (wasm_exec_env_t env, nu_u32_t model)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
@@ -183,6 +201,9 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(writemodel, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(transform, "(i*)"),
     EXPORT_WASM_API_WITH_SIG(cursor, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(fogcolor, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(fogdensity, "(f)"),
+    EXPORT_WASM_API_WITH_SIG(clear, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw, "(i)"),
     EXPORT_WASM_API_WITH_SIG(text, "(*)"),
     EXPORT_WASM_API_WITH_SIG(print, "(*)"),

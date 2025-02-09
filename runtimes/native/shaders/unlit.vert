@@ -4,9 +4,14 @@ layout(location = 0) in vec3 in_position;
 layout(location = 1) in vec2 in_uv;
 layout(location = 2) in vec3 in_color;
 
-uniform uvec2 viewport_size;
+layout(std140) uniform UBO {
+    mat4 view_projection;
+    vec4 fog_color;
+    uvec2 viewport_size;
+    float fog_density;
+};
+
 uniform mat4 model;
-uniform mat4 view_projection;
 
 out VS_OUT {
     vec2 uv;

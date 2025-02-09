@@ -66,6 +66,8 @@ typedef struct
     nu_m4_t     projection;
     nu_v2u_t    cursor;
     gpu_index_t pool;
+    nu_color_t  fog_color;
+    nu_f32_t    fog_density;
 } gpu_state_t;
 
 typedef struct
@@ -160,6 +162,9 @@ nu_status_t gpu_write_model(vm_t           *vm,
 
 void gpu_set_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
 void gpu_set_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
+void gpu_set_fog_color(vm_t *vm, nu_u32_t color);
+void gpu_set_fog_density(vm_t *vm, nu_f32_t density);
+void gpu_clear(vm_t *vm, nu_u32_t color);
 void gpu_draw(vm_t *vm, nu_u32_t index);
 void gpu_draw_text(vm_t *vm, const void *text);
 void gpu_draw_print(vm_t *vm, const void *text);

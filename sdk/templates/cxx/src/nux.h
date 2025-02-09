@@ -101,6 +101,8 @@ WASM_IMPORT("transform")
 void transform(u32 transform, const f32 *m);
 WASM_IMPORT("cursor")
 void cursor(u32 x, u32 y);
+WASM_IMPORT("clear")
+void clear(u32 color);
 WASM_IMPORT("draw")
 void draw(u32 model);
 WASM_IMPORT("text")
@@ -109,6 +111,12 @@ WASM_IMPORT("print")
 void print(const void *text);
 WASM_IMPORT("blit")
 void blit(u32 idx, u32 x, u32 y, u32 w, u32 h);
+WASM_IMPORT("fogmode")
+void fogmode(u32 mode);
+WASM_IMPORT("fogcolor")
+void fogcolor(u32 color);
+WASM_IMPORT("fogdensity")
+void fogdensity(f32 density);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////

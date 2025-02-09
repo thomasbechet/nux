@@ -47,6 +47,14 @@ typedef struct
     nu_u32_t size;
 } blit_t;
 
+typedef struct
+{
+    nu_m4_t  view_projection;
+    nu_v4_t  fog_color;
+    nu_v2u_t viewport_size;
+    nu_f32_t fog_density;
+} ubo_t;
+
 static struct
 {
     GLuint           textures[GPU_MAX_TEXTURE];
@@ -62,6 +70,8 @@ static struct
     nu_u32_t         vbo_offset;
     GLuint           vbo;
     GLuint           vao;
+    GLuint           ubo_buffer;
+    ubo_t            ubo;
     GLuint           unlit_program;
     GLuint           screen_blit_program;
     GLuint           canvas_blit_program;
@@ -413,6 +423,16 @@ renderer_init (void)
               == GL_FRAMEBUFFER_COMPLETE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // Create state ubo
+    glGenBuffers(1, &renderer.ubo_buffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, renderer.ubo_buffer);
+    glBufferData(GL_UNIFORM_BUFFER, sizeof(ubo_t), NULL, GL_STATIC_DRAW);
+    glUniformBlockBinding(renderer.unlit_program,
+                          glGetUniformBlockIndex(renderer.unlit_program, "UBO"),
+                          1);
+    glBindBufferBase(GL_UNIFORM_BUFFER, 1, renderer.ubo_buffer);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
     // Create white texture
     glGenTextures(1, &renderer.white_texture);
     glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
@@ -702,8 +722,7 @@ os_gpu_begin_frame (vm_t *vm)
     // Render on surface framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
     glViewport(0, 0, GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
-    nu_f32_t c = 0.6;
-    glClearColor(c, c, c, 1);
+    glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void
@@ -734,17 +753,6 @@ os_gpu_end_frame (vm_t *vm)
 void
 os_gpu_push_transform (vm_t *vm, gpu_transform_t transform)
 {
-    glUseProgram(renderer.unlit_program);
-    switch (transform)
-    {
-        case GPU_TRANSFORM_MODEL:
-            break;
-        case GPU_TRANSFORM_PROJECTION:
-        case GPU_TRANSFORM_VIEW: {
-        }
-        break;
-    }
-    glUseProgram(0);
 }
 void
 draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
@@ -758,19 +766,16 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
     glCullFace(GL_BACK);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    // Push constants
-    nu_v2u_t size = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
-    glUniform2uiv(glGetUniformLocation(renderer.unlit_program, "viewport_size"),
-                  1,
-                  size.data);
-
-    nu_m4_t view_projection
+    // Update ubo
+    renderer.ubo.viewport_size = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
+    renderer.ubo.view_projection
         = nu_m4_mul(vm->gpu.state.projection, vm->gpu.state.view);
-    glUniformMatrix4fv(
-        glGetUniformLocation(renderer.unlit_program, "view_projection"),
-        1,
-        GL_FALSE,
-        view_projection.data);
+    renderer.ubo.fog_density = vm->gpu.state.fog_density;
+    renderer.ubo.fog_color   = nu_color_to_vec4(vm->gpu.state.fog_color);
+    glBindBuffer(GL_UNIFORM_BUFFER, renderer.ubo_buffer);
+    glBufferData(
+        GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
     // Draw model
     const gpu_model_t *model = vm->gpu.models + index;
@@ -806,6 +811,13 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
 
     // Reset state
     glUseProgram(0);
+}
+void
+os_gpu_clear (vm_t *vm, nu_u32_t color)
+{
+    nu_v4_t c = nu_color_to_vec4(nu_color_from_u32(color));
+    glClearColor(c.x, c.y, c.z, c.w);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void
 os_gpu_draw_model (vm_t *vm, nu_u32_t index)
