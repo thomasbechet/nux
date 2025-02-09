@@ -1,7 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "shared.h"
+#include "api.h"
 #include "gpu.h"
 #include "cpu.h"
 

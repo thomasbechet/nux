@@ -1,7 +1,7 @@
 #ifndef CARTRIDGE_H
 #define CARTRIDGE_H
 
-#include "shared.h"
+#include "api.h"
 
 #define CART_CHUNK_ENTRY_SIZE sizeof(nu_u32_t) * 4
 #define CART_HEADER_SIZE      sizeof(cart_header_t)

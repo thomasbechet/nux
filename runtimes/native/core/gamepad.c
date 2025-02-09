@@ -16,7 +16,7 @@ gpad_update (vm_t *vm)
 }
 
 nu_u32_t
-gpad_button (vm_t *vm, nu_u32_t player)
+api_button (vm_t *vm, nu_u32_t player)
 {
     if (player >= MAX_PLAYER)
     {
@@ -25,7 +25,7 @@ gpad_button (vm_t *vm, nu_u32_t player)
     return vm->gamepad.buttons[player];
 }
 nu_f32_t
-gpad_axis (vm_t *vm, nu_u32_t player, gamepad_axis_t axis)
+api_axis (vm_t *vm, nu_u32_t player, gamepad_axis_t axis)
 {
     if (player >= MAX_PLAYER)
     {

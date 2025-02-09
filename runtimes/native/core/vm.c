@@ -85,3 +85,9 @@ vm_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
     os_vlog(vm, level, fmt, args);
 }
+
+void
+api_trace (vm_t *vm, const nu_char_t *text)
+{
+    vm_log(vm, NU_LOG_INFO, text);
+}

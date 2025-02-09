@@ -48,14 +48,16 @@ start (void)
 }
 
 static nu_f32_t rotation = 0.0f;
+static nu_f32_t time     = 0;
 
 void
 update (void)
 {
     // rotation += 0.005;
+    time += 0.02;
     clear(0xffffffff);
 
-    fogdensity(2);
+    fogdensity(1 + nu_cos(time * 0.1));
 
     nu_f32_t scale = 1.5;
     nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));
@@ -80,5 +82,5 @@ update (void)
     sprintf(buf, "z: %.2lf", pos.z);
     print(buf);
 
-    blit(1, 0, 0, 128, 128);
+    // blit(1, 0, 0, 128, 128);
 }

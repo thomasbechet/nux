@@ -1,8 +1,6 @@
 #include "wasm.h"
 
 #include "logger.h"
-#include "core/gpu.h"
-#include "core/gamepad.h"
 
 #include <wasm_export.h>
 
@@ -23,13 +21,13 @@ static void
 trace (wasm_exec_env_t env, const void *s)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    vm_log(vm, NU_LOG_INFO, s);
+    api_trace(vm, s);
 }
 static void
 alloctex (wasm_exec_env_t env, nu_u32_t idx, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_texture(vm, idx, size);
+    api_alloctex(vm, idx, size);
 }
 static void
 writetex (wasm_exec_env_t env,
@@ -41,7 +39,7 @@ writetex (wasm_exec_env_t env,
           const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_texture(vm, idx, x, y, w, h, p);
+    api_writetex(vm, idx, x, y, w, h, p);
 }
 static void
 allocmesh (wasm_exec_env_t env,
@@ -51,7 +49,7 @@ allocmesh (wasm_exec_env_t env,
            nu_u32_t        attribs)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_mesh(vm, idx, count, primitive, attribs);
+    api_allocmesh(vm, idx, count, primitive, attribs);
 }
 static void
 writemesh (wasm_exec_env_t env,
@@ -62,14 +60,14 @@ writemesh (wasm_exec_env_t env,
            const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_mesh(vm, idx, attribs, first, count, p);
+    api_writemesh(vm, idx, attribs, first, count, p);
 }
 
 static void
 allocmodel (wasm_exec_env_t env, nu_u32_t idx, nu_u32_t count)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_alloc_model(vm, idx, count);
+    api_allocmodel(vm, idx, count);
 }
 static void
 writemodel (wasm_exec_env_t env,
@@ -81,56 +79,56 @@ writemodel (wasm_exec_env_t env,
             const nu_f32_t *transform)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_write_model(vm, idx, node, mesh, texture, parent, transform);
+    api_writemodel(vm, idx, node, mesh, texture, parent, transform);
 }
 
 static void
 transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_transform(vm, transform, m);
+    api_transform(vm, transform, m);
 }
 static void
 cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_cursor(vm, x, y);
+    api_cursor(vm, x, y);
 }
 static void
 fogcolor (wasm_exec_env_t env, nu_f32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_fog_color(vm, color);
+    api_fogcolor(vm, color);
 }
 static void
 fogdensity (wasm_exec_env_t env, nu_f32_t density)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_set_fog_density(vm, density);
+    api_fogdensity(vm, density);
 }
 static void
 clear (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_clear(vm, color);
+    api_clear(vm, color);
 }
 static void
 draw (wasm_exec_env_t env, nu_u32_t model)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw(vm, model);
+    api_draw(vm, model);
 }
 static void
 text (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_text(vm, text);
+    api_text(vm, text);
 }
 static void
 print (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_print(vm, text);
+    api_print(vm, text);
 }
 static void
 blit (wasm_exec_env_t env,
@@ -141,20 +139,20 @@ blit (wasm_exec_env_t env,
       nu_u32_t        h)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    gpu_draw_blit(vm, idx, x, y, w, h);
+    api_blit(vm, idx, x, y, w, h);
 }
 
 static nu_u32_t
 button (wasm_exec_env_t env, nu_u32_t player)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return gpad_button(vm, player);
+    return api_button(vm, player);
 }
 static nu_f32_t
 axis (wasm_exec_env_t env, nu_u32_t player, nu_u32_t axis)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return gpad_axis(vm, player, axis);
+    return api_axis(vm, player, axis);
 }
 
 static void *

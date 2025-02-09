@@ -1,7 +1,7 @@
 #ifndef GPU_H
 #define GPU_H
 
-#include "shared.h"
+#include "api.h"
 #include "cartridge.h"
 
 /////////////////
@@ -29,28 +29,6 @@
 
 typedef nu_i32_t gpu_index_t;
 typedef nu_i32_t gpu_addr_t;
-
-typedef enum
-{
-    GPU_VERTEX_POSITION = 1 << 0,
-    GPU_VERTEX_UV       = 1 << 1,
-    GPU_VERTEX_COLOR    = 1 << 2,
-    GPU_VERTEX_INDICES  = 1 << 3,
-} gpu_vertex_attribute_t;
-
-typedef enum
-{
-    GPU_PRIMITIVE_TRIANGLES = 0,
-    GPU_PRIMITIVE_LINES     = 1,
-    GPU_PRIMITIVE_POINTS    = 2,
-} gpu_primitive_t;
-
-typedef enum
-{
-    GPU_TRANSFORM_MODEL      = 0,
-    GPU_TRANSFORM_VIEW       = 1,
-    GPU_TRANSFORM_PROJECTION = 2,
-} gpu_transform_t;
 
 typedef struct
 {
@@ -125,51 +103,6 @@ nu_status_t gpu_free(vm_t *vm);
 void        gpu_begin_frame(vm_t *vm);
 void        gpu_end_frame(vm_t *vm);
 gpu_addr_t  gpu_malloc(vm_t *vm, nu_u32_t n);
-
-nu_status_t gpu_alloc_pool(vm_t *vm, nu_u32_t index, nu_u32_t size);
-nu_status_t gpu_set_pool(vm_t *vm, nu_u32_t index);
-nu_status_t gpu_clear_pool(vm_t *vm, nu_u32_t index);
-
-nu_status_t gpu_alloc_texture(vm_t *vm, nu_u32_t index, nu_u32_t size);
-nu_status_t gpu_write_texture(vm_t       *vm,
-                              nu_u32_t    index,
-                              nu_u32_t    x,
-                              nu_u32_t    y,
-                              nu_u32_t    w,
-                              nu_u32_t    h,
-                              const void *p);
-
-nu_status_t gpu_alloc_mesh(vm_t                  *vm,
-                           nu_u32_t               index,
-                           nu_u32_t               count,
-                           gpu_primitive_t        primitive,
-                           gpu_vertex_attribute_t attributes);
-nu_status_t gpu_write_mesh(vm_t                  *vm,
-                           nu_u32_t               index,
-                           gpu_vertex_attribute_t attributes,
-                           nu_u32_t               first,
-                           nu_u32_t               count,
-                           const void            *p);
-
-nu_status_t gpu_alloc_model(vm_t *vm, nu_u32_t index, nu_u32_t node_count);
-nu_status_t gpu_write_model(vm_t           *vm,
-                            nu_u32_t        index,
-                            nu_u32_t        node_index,
-                            nu_u32_t        mesh,
-                            nu_u32_t        texture,
-                            nu_u32_t        parent,
-                            const nu_f32_t *transform);
-
-void gpu_set_transform(vm_t *vm, gpu_transform_t transform, const nu_f32_t *m);
-void gpu_set_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
-void gpu_set_fog_color(vm_t *vm, nu_u32_t color);
-void gpu_set_fog_density(vm_t *vm, nu_f32_t density);
-void gpu_clear(vm_t *vm, nu_u32_t color);
-void gpu_draw(vm_t *vm, nu_u32_t index);
-void gpu_draw_text(vm_t *vm, const void *text);
-void gpu_draw_print(vm_t *vm, const void *text);
-void gpu_draw_blit(
-    vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
 
 nu_u32_t gpu_texture_memsize(nu_u32_t size);
 nu_u32_t gpu_vertex_memsize(gpu_vertex_attribute_t attributes, nu_u32_t count);
