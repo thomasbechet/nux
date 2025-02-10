@@ -107,6 +107,8 @@ WASM_IMPORT("color")
 void color(u32 color);
 WASM_IMPORT("draw")
 void draw(u32 model);
+WASM_IMPORT("drawc")
+void drawc(const f32 *c, const f32 *s);
 WASM_IMPORT("drawl")
 void drawl(const f32 *p, u32 n);
 WASM_IMPORT("drawls")

@@ -1,7 +1,7 @@
 {
 	"target": "cart.bin",
 	"prebuild": "make",
-	"chunks": [
+	"assets": [
 		{
 			"type": "wasm",
 			"source": "build/cart.wasm"

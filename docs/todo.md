@@ -4,9 +4,12 @@
 [x] Blit api
 [x] C++ template project
 [x] Draw fog effect
-[ ] Draw primitives
+[x] Draw primitives
 [ ] Model animation
 [ ] Fix 'Is a directory'
-[ ] Draw color
+[x] Draw color
 [ ] Remove os_gpu_init (probably useless)
 [ ] Check bounds for 2d rendering
+[ ] Scissor / Viewport commands
+[ ] Support transparency
+[ ] Indexed textures

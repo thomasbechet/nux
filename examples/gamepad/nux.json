@@ -1,0 +1,16 @@
+{
+	"target": "cart.bin",
+	"prebuild": "make",
+	"assets": [
+		{
+			"type": "wasm",
+			"source": "build/cart.wasm"
+		},
+        {
+            "type": "image",
+            "size": 256,
+            "source": "assets/gamepad.png",
+            "index": 0
+        }
+	]
+}

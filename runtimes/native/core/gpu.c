@@ -399,6 +399,11 @@ api_draw (vm_t *vm, nu_u32_t index)
     os_gpu_draw_model(vm, index);
 }
 void
+api_drawc (vm_t *vm, const nu_f32_t *p, const nu_f32_t *s)
+{
+    os_gpu_draw_cube(vm, p, s);
+}
+void
 api_drawl (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
 {
     os_gpu_draw_lines(vm, p, n, NU_FALSE);
@@ -423,6 +428,7 @@ void
 api_blit (
     vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
+    NU_CHECK(texture_data(vm, index), return);
     os_gpu_draw_blit(vm, index, x, y, w, h);
 }
 

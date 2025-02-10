@@ -866,10 +866,6 @@ os_gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
     draw_model(vm, index, vm->gpu.state.model);
 }
-void
-os_gpu_draw_cube (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
-{
-}
 static nu_u32_t
 push_im_positions (const nu_f32_t *positions, nu_u32_t count)
 {
@@ -890,6 +886,28 @@ push_im_positions (const nu_f32_t *positions, nu_u32_t count)
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     return offset;
+}
+void
+os_gpu_draw_cube (vm_t *vm, const nu_f32_t *pos, const nu_f32_t *size)
+{
+    nu_b3_t box = nu_b3(nu_v3(pos[0], pos[1], pos[2]),
+                        nu_v3(size[0], size[1], size[2]));
+
+    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
+    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
+    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
+    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
+
+    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
+    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
+    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
+    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
+
+    const nu_v3_t positions[]
+        = { v0, v1, v1, v2, v2, v3, v3, v0, v4, v5, v5, v6,
+            v6, v7, v7, v4, v0, v4, v1, v5, v2, v6, v3, v7 };
+
+    os_gpu_draw_lines(vm, (const nu_f32_t *)positions, 12 * 2, NU_FALSE);
 }
 void
 os_gpu_draw_lines (vm_t           *vm,
@@ -1003,8 +1021,9 @@ void
 os_gpu_draw_blit (
     vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
-    nu_v2u_t pos   = vm->gpu.state.cursor;
-    blit_t  *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    nu_v2u_t pos = vm->gpu.state.cursor;
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.blit_vbo);
+    blit_t *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(renderer.blit_count < MAX_BLIT_COUNT);
     blit_t *b = blits + renderer.blit_count++;
     b->pos    = ((nu_u32_t)pos.y << 16) | (nu_u32_t)pos.x;
