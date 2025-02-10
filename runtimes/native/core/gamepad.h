@@ -8,7 +8,7 @@
 typedef struct
 {
     nu_u32_t buttons[MAX_PLAYER];
-    nu_f32_t axis[MAX_PLAYER][API_AXIS_MAX];
+    nu_f32_t axis[MAX_PLAYER][API_AXIS_ENUM_MAX];
 } gamepad_t;
 
 nu_status_t gpad_init(vm_t *vm);

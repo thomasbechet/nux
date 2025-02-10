@@ -397,6 +397,16 @@ api_draw (vm_t *vm, nu_u32_t index)
     os_gpu_draw_model(vm, index);
 }
 void
+api_drawl (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
+{
+    os_gpu_draw_lines(vm, p, n, NU_FALSE);
+}
+void
+api_drawls (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
+{
+    os_gpu_draw_lines(vm, p, n, NU_TRUE);
+}
+void
 api_text (vm_t *vm, const void *text)
 {
     os_gpu_draw_text(vm, text, nu_strlen(text));

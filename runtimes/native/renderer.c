@@ -70,9 +70,13 @@ static struct
     nu_size_t        blit_count;
     GLuint           blit_vbo;
     GLuint           blit_vao;
-    nu_u32_t         vbo_offset;
-    GLuint           vbo;
-    GLuint           vao;
+    nu_u32_t         mesh_vbo_offset;
+    GLuint           mesh_vbo;
+    GLuint           mesh_vao;
+    nu_u32_t         im_vbo_offset;
+    GLuint           im_vbo;
+    GLuint           im_vao;
+    nu_bool_t        ubo_dirty;
     GLuint           ubo_buffer;
     ubo_t            ubo;
     GLuint           unlit_program;
@@ -492,10 +496,15 @@ renderer_free (void)
             glDeleteTextures(1, renderer.textures + i);
         }
     }
-    if (renderer.vao)
+    if (renderer.mesh_vao)
     {
-        glDeleteVertexArrays(1, &renderer.vao);
-        glDeleteVertexArrays(1, &renderer.vbo);
+        glDeleteVertexArrays(1, &renderer.mesh_vao);
+        glDeleteVertexArrays(1, &renderer.mesh_vbo);
+    }
+    if (renderer.im_vao)
+    {
+        glDeleteVertexArrays(1, &renderer.im_vao);
+        glDeleteVertexArrays(1, &renderer.im_vbo);
     }
     glDeleteTextures(1, &renderer.white_texture);
     glDeleteTextures(1, &renderer.surface_texture);
@@ -511,24 +520,16 @@ renderer_free (void)
     }
 }
 
-void
-os_gpu_init (vm_t *vm)
+static void
+gen_vertex_vbo (GLuint *vbo, GLuint *vao, nu_u32_t capacity)
 {
-    // Initialize memory
-    nu_memset(
-        &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
-
-    renderer.nodes_next = 0;
-
-    // Initialize vertices
-    renderer.vbo_offset = 0;
-    glGenVertexArrays(1, &renderer.vao);
-    glBindVertexArray(renderer.vao);
-
-    // VBO
     const nu_size_t vertex_size = VERTEX_SIZE * sizeof(nu_f32_t);
-    glGenBuffers(1, &renderer.vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
+
+    glGenVertexArrays(1, vao);
+    glBindVertexArray(*vao);
+
+    glGenBuffers(1, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
     glBufferData(GL_ARRAY_BUFFER,
                  VERTEX_INIT_SIZE * vertex_size,
                  NU_NULL,
@@ -550,7 +551,37 @@ os_gpu_init (vm_t *vm)
                           (void *)(VERTEX_COLOR_OFFSET * sizeof(nu_f32_t)));
     glEnableVertexAttribArray(2);
 
+    // Initialize colors to white
+    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(ptr);
+    for (nu_size_t i = 0; i < capacity; ++i)
+    {
+        nu_size_t vbo_offset = i * VERTEX_SIZE + VERTEX_COLOR_OFFSET;
+        ptr[vbo_offset + 0]  = 1;
+        ptr[vbo_offset + 1]  = 1;
+        ptr[vbo_offset + 2]  = 1;
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+}
+
+void
+os_gpu_init (vm_t *vm)
+{
+    // Initialize memory
+    nu_memset(
+        &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
+
+    renderer.nodes_next = 0;
+    renderer.ubo_dirty  = NU_TRUE;
+
+    // Mesh VBO
+    renderer.mesh_vbo_offset = 0;
+    gen_vertex_vbo(&renderer.mesh_vbo, &renderer.mesh_vao, VERTEX_INIT_SIZE);
+    renderer.im_vbo_offset = 0;
+    gen_vertex_vbo(&renderer.im_vbo, &renderer.im_vao, VERTEX_INIT_SIZE);
 }
 
 void
@@ -603,10 +634,10 @@ os_gpu_update_texture (vm_t *vm, nu_u32_t index)
 void
 os_gpu_init_mesh (vm_t *vm, nu_u32_t index)
 {
-    renderer.meshes[index].offset = renderer.vbo_offset;
-    renderer.vbo_offset += vm->gpu.meshes[index].count;
+    renderer.meshes[index].offset = renderer.mesh_vbo_offset;
+    renderer.mesh_vbo_offset += vm->gpu.meshes[index].count;
     // Initialize colors to white
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
     nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
     for (nu_size_t i = 0; i < vm->gpu.meshes[index].count; ++i)
@@ -632,7 +663,7 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
     nu_size_t first = renderer.meshes[index].offset;
 
     // Update VBO
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
     nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
 
@@ -720,7 +751,8 @@ os_gpu_update_model (vm_t                   *vm,
 void
 os_gpu_begin_frame (vm_t *vm)
 {
-    renderer.blit_count = 0;
+    renderer.blit_count    = 0;
+    renderer.im_vbo_offset = 0;
 
     // Render on surface framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
@@ -739,6 +771,7 @@ os_gpu_end_frame (vm_t *vm)
     glClearColor(clear.x, clear.y, clear.z, clear.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_FRAMEBUFFER_SRGB);
+
     // Blit surface
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(renderer.screen_blit_program);
@@ -753,18 +786,9 @@ os_gpu_end_frame (vm_t *vm)
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);
 }
-void
-draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
+static void
+update_ubo (vm_t *vm)
 {
-    // Setup GL states
-    glUseProgram(renderer.unlit_program);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
     // Update ubo
     renderer.ubo.view          = vm->gpu.state.view;
     renderer.ubo.projection    = vm->gpu.state.projection;
@@ -777,6 +801,21 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
     glBufferData(
         GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+void
+draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
+{
+    // Update ubo
+    update_ubo(vm);
+
+    // Setup GL states
+    glUseProgram(renderer.unlit_program);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw model
     const gpu_model_t *model = vm->gpu.models + index;
@@ -805,7 +844,7 @@ draw_model (vm_t *vm, nu_u32_t index, nu_m4_t transform)
             GL_FALSE,
             global_transform.data);
         nu_u32_t offset = renderer.meshes[node->mesh].offset;
-        glBindVertexArray(renderer.vao);
+        glBindVertexArray(renderer.mesh_vao);
         glDrawArrays(GL_TRIANGLES, offset, vm->gpu.meshes[node->mesh].count);
         glBindVertexArray(0);
     }
@@ -824,6 +863,62 @@ void
 os_gpu_draw_model (vm_t *vm, nu_u32_t index)
 {
     draw_model(vm, index, vm->gpu.state.model);
+}
+void
+os_gpu_draw_cube (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
+{
+}
+static nu_u32_t
+push_im_positions (const nu_f32_t *positions, nu_u32_t count)
+{
+    nu_u32_t offset = renderer.im_vbo_offset;
+    renderer.im_vbo_offset += count;
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
+    nu_f32_t *data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    data += offset * VERTEX_SIZE;
+    for (nu_size_t i = 0; i < count; ++i)
+    {
+        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 0]
+            = positions[i * 3 + 0];
+        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 1]
+            = positions[i * 3 + 1];
+        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 2]
+            = positions[i * 3 + 2];
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    return offset;
+}
+void
+os_gpu_draw_lines (vm_t           *vm,
+                   const nu_f32_t *points,
+                   nu_u32_t        count,
+                   nu_bool_t       linestrip)
+{
+    glUseProgram(renderer.unlit_program);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    update_ubo(vm);
+    nu_u32_t offset = push_im_positions(points, count);
+
+    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
+                       1,
+                       GL_FALSE,
+                       vm->gpu.state.model.data);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
+    glBindVertexArray(renderer.im_vao);
+    glDrawArrays(linestrip ? GL_LINE_STRIP : GL_LINES, offset, count);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUseProgram(0);
 }
 static void
 blit (GLuint texture, nu_size_t first, nu_size_t count)

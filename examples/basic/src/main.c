@@ -69,6 +69,20 @@ update (void)
     transform(TRANSFORM_MODEL, m.data);
     draw(1);
 
+    static nu_u32_t prev = 0;
+    // nu_bool_t pressed = button(0) ^ BUTTON_
+    prev = button(0);
+
+    const nu_size_t count = 1000;
+    nu_f32_t        points[count * 3];
+    for (nu_size_t i = 0; i < count; ++i)
+    {
+        points[i * 3 + 0] = nu_cos(i * 0.3);
+        points[i * 3 + 1] = i * 0.05 * (1 + nu_sin(time)) * 0.5;
+        points[i * 3 + 2] = nu_sin(i * 0.3);
+    }
+    drawl(points, count);
+
     char buf[256];
     sprintf(buf, "x: %.2lf", pos.x);
     cursor(10, 10);

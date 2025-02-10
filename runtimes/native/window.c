@@ -33,7 +33,7 @@ static struct
     RGFW_rect    previous_rect;
     RGFW_window *win;
     nu_u32_t     button;
-    nu_f32_t     axis[API_AXIS_MAX];
+    nu_f32_t     axis[API_AXIS_ENUM_MAX];
 } window;
 
 static void
@@ -126,6 +126,64 @@ void
 window_free (void)
 {
     RGFW_window_close(window.win);
+}
+static api_button_t
+key_to_button (nu_u32_t code)
+{
+    switch (code)
+    {
+        case RGFW_t:
+            return API_BUTTON_Y;
+        case RGFW_f:
+            return API_BUTTON_A;
+        case RGFW_g:
+            return API_BUTTON_X;
+        case RGFW_h:
+            return API_BUTTON_B;
+        case RGFW_q:
+            return API_BUTTON_LB;
+        case RGFW_e:
+            return API_BUTTON_RB;
+        case RGFW_x:
+            return API_BUTTON_START;
+        case RGFW_z:
+            return API_BUTTON_SELECT;
+    }
+    return -1;
+}
+static api_axis_t
+key_to_axis (nu_u32_t code, nu_f32_t *value)
+{
+    switch (code)
+    {
+        case RGFW_a:
+            *value = -1;
+            return API_AXIS_LEFTX;
+        case RGFW_d:
+            *value = 1;
+            return API_AXIS_LEFTX;
+        case RGFW_w:
+            *value = 1;
+            return API_AXIS_LEFTY;
+        case RGFW_s:
+            *value = -1;
+            return API_AXIS_LEFTY;
+        case RGFW_h:
+            *value = -1;
+            return API_AXIS_RIGHTX;
+        case RGFW_l:
+            *value = 1;
+            return API_AXIS_RIGHTX;
+        case RGFW_j:
+            *value = 1;
+            return API_AXIS_RIGHTY;
+        case RGFW_k:
+            *value = -1;
+            return API_AXIS_RIGHTY;
+        default:
+            break;
+    }
+    return -1;
 }
 void
 window_poll_events (void)

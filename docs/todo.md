@@ -8,3 +8,5 @@
 [ ] Model animation
 [ ] Fix 'Is a directory'
 [ ] Draw color
+[ ] Remove os_gpu_init (probably useless)
+[ ] Check bounds for 2d rendering

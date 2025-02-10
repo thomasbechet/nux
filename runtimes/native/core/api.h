@@ -70,13 +70,9 @@ void api_fogdensity(vm_t *vm, nu_f32_t density);
 void api_fogrange(vm_t *vm, nu_f32_t near, nu_f32_t far);
 void api_clear(vm_t *vm, nu_u32_t color);
 void api_draw(vm_t *vm, nu_u32_t index);
-void api_drawb(vm_t    *vm,
-               nu_f32_t x,
-               nu_f32_t y,
-               nu_f32_t z,
-               nu_f32_t sx,
-               nu_f32_t sy,
-               nu_f32_t sz);
+void api_drawc(vm_t *vm, const nu_f32_t *c, const nu_f32_t *s);
+void api_drawl(vm_t *vm, const nu_f32_t *p, nu_u32_t n);
+void api_drawls(vm_t *vm, const nu_f32_t *p, nu_u32_t n);
 void api_text(vm_t *vm, const void *text);
 void api_print(vm_t *vm, const void *text);
 void api_blit(
@@ -84,21 +80,35 @@ void api_blit(
 
 typedef enum
 {
-    API_BUTTON_A  = 1 << 0,
-    API_BUTTON_X  = 1 << 1,
-    API_BUTTON_Y  = 1 << 2,
-    API_BUTTON_B  = 1 << 3,
-    API_BUTTON_LB = 1 << 4,
-    API_BUTTON_RB = 1 << 5,
+    API_BUTTON_A = 1 << 0,
+    API_BUTTON_X = 1 << 1,
+    API_BUTTON_Y = 1 << 2,
+    API_BUTTON_B = 1 << 3,
+
+    API_BUTTON_UP    = 1 << 6,
+    API_BUTTON_DOWN  = 1 << 7,
+    API_BUTTON_LEFT  = 1 << 8,
+    API_BUTTON_RIGHT = 1 << 9,
+
+    API_BUTTON_LB = 1 << 10,
+    API_BUTTON_RB = 1 << 11,
+
+    API_BUTTON_START  = 1 << 12,
+    API_BUTTON_SELECT = 1 << 13,
 } api_button_t;
 
 typedef enum
 {
-    API_AXIS_LEFTX  = 0,
-    API_AXIS_LEFTY  = 1,
+    API_AXIS_LEFTX = 0,
+    API_AXIS_LEFTY = 1,
+
     API_AXIS_RIGHTX = 2,
     API_AXIS_RIGHTY = 3,
-    API_AXIS_MAX    = 4
+
+    API_AXIS_RT = 4,
+    API_AXIS_LT = 5,
+
+    API_AXIS_ENUM_MAX = 6
 } api_axis_t;
 
 nu_u32_t api_button(vm_t *vm, nu_u32_t player);

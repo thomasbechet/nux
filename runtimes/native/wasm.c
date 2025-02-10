@@ -125,6 +125,18 @@ draw (wasm_exec_env_t env, nu_u32_t model)
     api_draw(vm, model);
 }
 static void
+drawl (wasm_exec_env_t env, const nu_f32_t *p, nu_u32_t n)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    api_drawl(vm, p, n);
+}
+static void
+drawls (wasm_exec_env_t env, const nu_f32_t *p, nu_u32_t n)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    api_drawls(vm, p, n);
+}
+static void
 text (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
@@ -210,6 +222,7 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(fogrange, "(ff)"),
     EXPORT_WASM_API_WITH_SIG(clear, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(drawl, "(*i)"),
     EXPORT_WASM_API_WITH_SIG(text, "(*)"),
     EXPORT_WASM_API_WITH_SIG(print, "(*)"),
     EXPORT_WASM_API_WITH_SIG(blit, "(iiiii)"),
