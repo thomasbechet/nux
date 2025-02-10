@@ -39,31 +39,9 @@ debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
     nu_v3_t look
         = nu_v3(axis(0, AXIS_RIGHTX) * 100, axis(0, AXIS_RIGHTY) * 100, 0);
 
-    nu_v3_t move = NU_V3_ZEROS;
-    if (button(0) & BUTTON_Y)
-    {
-        move.z += 1;
-    }
-    if (button(0) & BUTTON_A)
-    {
-        move.z -= 1;
-    }
-    if (button(0) & BUTTON_B)
-    {
-        move.x += 1;
-    }
-    if (button(0) & BUTTON_X)
-    {
-        move.x -= 1;
-    }
-    if (button(0) & BUTTON_RB)
-    {
-        move.y += 1;
-    }
-    if (button(0) & BUTTON_LB)
-    {
-        move.y -= 1;
-    }
+    nu_v3_t move = nu_v3(axis(0, AXIS_LEFTX), 0, axis(0, AXIS_LEFTY));
+    move.y += button(0) & BUTTON_Y ? 1 : 0;
+    move.y -= button(0) & BUTTON_B ? 1 : 0;
     move = nu_v3_normalize(move);
 
     // Switch mode

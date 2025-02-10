@@ -132,22 +132,31 @@ key_to_button (nu_u32_t code)
 {
     switch (code)
     {
-        case RGFW_t:
-            return API_BUTTON_Y;
-        case RGFW_f:
-            return API_BUTTON_A;
+        // D-Pad
+        case RGFW_v:
+            return API_BUTTON_LEFT;
+        case RGFW_b:
+            return API_BUTTON_DOWN;
         case RGFW_g:
-            return API_BUTTON_X;
-        case RGFW_h:
-            return API_BUTTON_B;
+            return API_BUTTON_UP;
+        case RGFW_n:
+            return API_BUTTON_RIGHT;
+
+        // Triggers
+        case RGFW_e:
+            return API_BUTTON_LB;
         case RGFW_q:
             return API_BUTTON_LB;
-        case RGFW_e:
-            return API_BUTTON_RB;
+
+        // Action buttons
+        case RGFW_f:
+            return API_BUTTON_A;
+        case RGFW_r:
+            return API_BUTTON_B;
         case RGFW_x:
-            return API_BUTTON_START;
+            return API_BUTTON_Y;
         case RGFW_z:
-            return API_BUTTON_SELECT;
+            return API_BUTTON_X;
     }
     return -1;
 }
@@ -156,30 +165,34 @@ key_to_axis (nu_u32_t code, nu_f32_t *value)
 {
     switch (code)
     {
-        case RGFW_a:
-            *value = -1;
-            return API_AXIS_LEFTX;
-        case RGFW_d:
-            *value = 1;
-            return API_AXIS_LEFTX;
+        // Left Stick
         case RGFW_w:
             *value = 1;
             return API_AXIS_LEFTY;
+        case RGFW_a:
+            *value = -1;
+            return API_AXIS_LEFTX;
         case RGFW_s:
             *value = -1;
             return API_AXIS_LEFTY;
-        case RGFW_h:
-            *value = -1;
-            return API_AXIS_RIGHTX;
-        case RGFW_l:
+        case RGFW_d:
             *value = 1;
-            return API_AXIS_RIGHTX;
+            return API_AXIS_LEFTX;
+
+        // Right Stick
         case RGFW_j:
             *value = 1;
             return API_AXIS_RIGHTY;
+        case RGFW_h:
+            *value = -1;
+            return API_AXIS_RIGHTX;
         case RGFW_k:
             *value = -1;
             return API_AXIS_RIGHTY;
+        case RGFW_l:
+            *value = 1;
+            return API_AXIS_RIGHTX;
+
         default:
             break;
     }
@@ -203,44 +216,23 @@ window_poll_events (void)
             {
                 case RGFW_mousePosChanged:
                     break;
-                case RGFW_keyPressed:
-                    switch (window.win->event.keyCode)
+                case RGFW_keyPressed: {
+                    api_button_t button
+                        = key_to_button(window.win->event.keyCode);
+                    nu_f32_t   axvalue;
+                    api_axis_t axis
+                        = key_to_axis(window.win->event.keyCode, &axvalue);
+                    if (button != (api_button_t)-1)
                     {
-                        case RGFW_w:
-                            window.button |= API_BUTTON_Y;
-                            break;
-                        case RGFW_s:
-                            window.button |= API_BUTTON_A;
-                            break;
-                        case RGFW_a:
-                            window.button |= API_BUTTON_X;
-                            break;
-                        case RGFW_d:
-                            window.button |= API_BUTTON_B;
-                            break;
-                        case RGFW_z:
-                            window.button |= API_BUTTON_LB;
-                            break;
-                        case RGFW_x:
-                            window.button |= API_BUTTON_RB;
-                            break;
-                        case RGFW_h:
-                            window.axis[API_AXIS_RIGHTX] = -1;
-                            break;
-                        case RGFW_l:
-                            window.axis[API_AXIS_RIGHTX] = 1;
-                            break;
-                        case RGFW_j:
-                            window.axis[API_AXIS_RIGHTY] = 1;
-                            break;
-                        case RGFW_k:
-                            window.axis[API_AXIS_RIGHTY] = -1;
-                            break;
-                        default:
-                            break;
+                        window.button |= button;
                     }
-                    break;
-                case RGFW_keyReleased:
+                    if (axis != (api_axis_t)-1)
+                    {
+                        window.axis[axis] = axvalue;
+                    }
+                }
+                break;
+                case RGFW_keyReleased: {
                     if (window.win->event.keyCode == RGFW_Escape)
                     {
                         window.close_requested = NU_TRUE;
@@ -249,49 +241,24 @@ window_poll_events (void)
                     {
                         window.switch_fullscreen = NU_TRUE;
                     }
-                    switch (window.win->event.keyCode)
+                    api_button_t button
+                        = key_to_button(window.win->event.keyCode);
+                    nu_f32_t   axvalue;
+                    api_axis_t axis
+                        = key_to_axis(window.win->event.keyCode, &axvalue);
+                    if (button != (api_button_t)-1)
                     {
-                        case RGFW_w:
-                            window.button &= ~API_BUTTON_Y;
-                            break;
-                        case RGFW_s:
-                            window.button &= ~API_BUTTON_A;
-                            break;
-                        case RGFW_a:
-                            window.button &= ~API_BUTTON_X;
-                            break;
-                        case RGFW_d:
-                            window.button &= ~API_BUTTON_B;
-                            break;
-                        case RGFW_z:
-                            window.button &= ~API_BUTTON_LB;
-                            break;
-                        case RGFW_x:
-                            window.button &= ~API_BUTTON_RB;
-                            break;
-                        case RGFW_h:
-                        case RGFW_l:
-                            window.axis[API_AXIS_RIGHTX] = 0;
-                            break;
-                        case RGFW_j:
-                        case RGFW_k:
-                            window.axis[API_AXIS_RIGHTY] = 0;
-                            break;
-                        default:
-                            break;
+                        window.button &= ~button;
                     }
-                    break;
+                    if (axis != (api_axis_t)-1)
+                    {
+                        window.axis[axis] = 0;
+                    }
+                }
+                break;
                 case RGFW_mouseButtonPressed:
-                    // nu__mouse_button_callback(_ctx.platform.win,
-                    //                           _ctx.platform.win->event.button,
-                    //                           _ctx.platform.win->event.scroll,
-                    //                           NU_TRUE);
                     break;
                 case RGFW_mouseButtonReleased:
-                    // nu__mouse_button_callback(_ctx.platform.win,
-                    //                           _ctx.platform.win->event.button,
-                    //                           _ctx.platform.win->event.scroll,
-                    //                           NU_FALSE);
                     break;
                 case RGFW_windowResized:
                     resize_callback(window.win, window.win->r);

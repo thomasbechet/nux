@@ -95,28 +95,28 @@ cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
     api_cursor(vm, x, y);
 }
 static void
+fogparams (wasm_exec_env_t env, const nu_f32_t *params)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    api_fogparams(vm, params);
+}
+static void
 fogcolor (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     api_fogcolor(vm, color);
 }
 static void
-fogdensity (wasm_exec_env_t env, nu_f32_t density)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    api_fogdensity(vm, density);
-}
-static void
-fogrange (wasm_exec_env_t env, nu_f32_t near, nu_f32_t far)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    api_fogrange(vm, near, far);
-}
-static void
 clear (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     api_clear(vm, color);
+}
+static void
+color (wasm_exec_env_t env, nu_u32_t color)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    api_color(vm, color);
 }
 static void
 draw (wasm_exec_env_t env, nu_u32_t model)
@@ -217,10 +217,10 @@ static NativeSymbol wasm_native_symbols[] = {
     EXPORT_WASM_API_WITH_SIG(writemodel, "(iiiii*)"),
     EXPORT_WASM_API_WITH_SIG(transform, "(i*)"),
     EXPORT_WASM_API_WITH_SIG(cursor, "(ii)"),
+    EXPORT_WASM_API_WITH_SIG(fogparams, "(*)"),
     EXPORT_WASM_API_WITH_SIG(fogcolor, "(i)"),
-    EXPORT_WASM_API_WITH_SIG(fogdensity, "(f)"),
-    EXPORT_WASM_API_WITH_SIG(fogrange, "(ff)"),
     EXPORT_WASM_API_WITH_SIG(clear, "(i)"),
+    EXPORT_WASM_API_WITH_SIG(color, "(i)"),
     EXPORT_WASM_API_WITH_SIG(draw, "(i)"),
     EXPORT_WASM_API_WITH_SIG(drawl, "(*i)"),
     EXPORT_WASM_API_WITH_SIG(text, "(*)"),

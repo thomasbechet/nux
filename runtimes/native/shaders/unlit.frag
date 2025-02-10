@@ -7,6 +7,7 @@ uniform sampler2D texture0;
 layout(std140) uniform UBO {
     mat4 view;
     mat4 projection;
+    vec4 color;
     vec4 fog_color;
     uvec2 viewport_size;
     float fog_density;

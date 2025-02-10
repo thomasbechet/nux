@@ -50,11 +50,11 @@ update (void)
 
     nu_u32_t c = nu_color_from_vec4(nu_v4(0.7, 0.7, 0.7, 1)).rgba;
     clear(c);
-    fogdensity(1);
+    nu_f32_t       near  = 60 + nu_sin(time) * 10.0;
+    const nu_f32_t fog[] = { 1, near, near + 30 };
+    fogparams(fog);
     clear(c);
     fogcolor(c);
-    nu_f32_t near = 100 + nu_sin(time) * 10.0;
-    fogrange(near, near + 30);
 
     nu_f32_t scale = 1.5;
     nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));
@@ -81,7 +81,9 @@ update (void)
         points[i * 3 + 1] = i * 0.05 * (1 + nu_sin(time)) * 0.5;
         points[i * 3 + 2] = nu_sin(i * 0.3);
     }
+    color(0xFF0000FF);
     drawl(points, count);
+    color(0xFFFFFFFF);
 
     char buf[256];
     sprintf(buf, "x: %.2lf", pos.x);
@@ -95,6 +97,15 @@ update (void)
     print(buf);
     sprintf(buf, "t: %.2lf", time);
     print(buf);
+
+    sprintf(buf, "b: %d", button(0));
+    print(buf);
+
+    m = nu_m4_translate(nu_v3(10, 0, 0));
+    transform(TRANSFORM_MODEL, m.data);
+    color(0xf0f0f0ff);
+    draw(0);
+    color(0xFFFFFFFF);
 
     // blit(1, 0, 0, 128, 128);
 }

@@ -105,6 +105,7 @@ static const nu_sv_t shader_unlit_frag = NU_SV(
 "layout(std140) uniform UBO {\n"
 "    mat4 view;\n"
 "    mat4 projection;\n"
+"    vec4 color;\n"
 "    vec4 fog_color;\n"
 "    uvec2 viewport_size;\n"
 "    float fog_density;\n"
@@ -135,6 +136,7 @@ static const nu_sv_t shader_unlit_vert = NU_SV(
 "layout(std140) uniform UBO {\n"
 "    mat4 view;\n"
 "    mat4 projection;\n"
+"    vec4 color;\n"
 "    vec4 fog_color;\n"
 "    uvec2 viewport_size;\n"
 "    float fog_density;\n"
@@ -167,7 +169,7 @@ static const nu_sv_t shader_unlit_vert = NU_SV(
 "    gl_Position = snap_vertex(position);\n"
 "\n"
 "    vs_out.uv = in_uv;\n"
-"    vs_out.color = in_color;\n"
+"    vs_out.color = in_color * color.xyz;\n"
 "}\n"
 );
 #endif

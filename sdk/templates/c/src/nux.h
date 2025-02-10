@@ -103,6 +103,8 @@ WASM_IMPORT("cursor")
 void cursor(u32 x, u32 y);
 WASM_IMPORT("clear")
 void clear(u32 color);
+WASM_IMPORT("color")
+void color(u32 color);
 WASM_IMPORT("draw")
 void draw(u32 model);
 WASM_IMPORT("drawl")
@@ -115,14 +117,10 @@ WASM_IMPORT("print")
 void print(const void *text);
 WASM_IMPORT("blit")
 void blit(u32 idx, u32 x, u32 y, u32 w, u32 h);
-WASM_IMPORT("fogmode")
-void fogmode(u32 mode);
+WASM_IMPORT("fogparams")
+void fogparams(const f32 *params);
 WASM_IMPORT("fogcolor")
 void fogcolor(u32 color);
-WASM_IMPORT("fogdensity")
-void fogdensity(f32 density);
-WASM_IMPORT("fogrange")
-void fogrange(f32 near, f32 far);
 
 //////////////////////////////////////////////////////////////////////////
 //////                            CARTRIDGE                         //////
@@ -139,16 +137,13 @@ typedef enum
     BUTTON_Y = 1 << 2,
     BUTTON_B = 1 << 3,
 
-    BUTTON_UP    = 1 << 6,
-    BUTTON_DOWN  = 1 << 7,
-    BUTTON_LEFT  = 1 << 8,
-    BUTTON_RIGHT = 1 << 9,
+    BUTTON_UP    = 1 << 4,
+    BUTTON_DOWN  = 1 << 5,
+    BUTTON_LEFT  = 1 << 6,
+    BUTTON_RIGHT = 1 << 7,
 
-    BUTTON_LB = 1 << 10,
-    BUTTON_RB = 1 << 11,
-
-    BUTTON_START  = 1 << 12,
-    BUTTON_SELECT = 1 << 13,
+    BUTTON_LB = 1 << 8,
+    BUTTON_RB = 1 << 9,
 } button_t;
 
 typedef enum

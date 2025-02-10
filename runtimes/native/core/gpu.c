@@ -97,6 +97,7 @@ gpu_init (vm_t *vm, const gpu_config_t *config)
     vm->gpu.state.view        = nu_m4_identity();
     vm->gpu.state.projection  = nu_m4_identity();
     vm->gpu.state.cursor      = NU_V2U_ZEROS;
+    vm->gpu.state.color       = NU_COLOR_WHITE;
     vm->gpu.state.fog_color   = NU_COLOR_WHITE;
     vm->gpu.state.fog_density = 0;
     os_gpu_init(vm);
@@ -370,25 +371,26 @@ api_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
     vm->gpu.state.cursor = nu_v2u(x, y);
 }
 void
+api_fogparams (vm_t *vm, const nu_f32_t *params)
+{
+    vm->gpu.state.fog_density = nu_fabs(params[0]);
+    vm->gpu.state.fog_near    = nu_fabs(params[1]);
+    vm->gpu.state.fog_far     = NU_MAX(vm->gpu.state.fog_near, params[2]);
+}
+void
 api_fogcolor (vm_t *vm, nu_u32_t color)
 {
     vm->gpu.state.fog_color = nu_color_from_u32(color);
 }
 void
-api_fogdensity (vm_t *vm, nu_f32_t density)
-{
-    vm->gpu.state.fog_density = nu_fabs(density);
-}
-void
-api_fogrange (vm_t *vm, nu_f32_t near, nu_f32_t far)
-{
-    vm->gpu.state.fog_near = nu_fabs(near);
-    vm->gpu.state.fog_far  = NU_MAX(vm->gpu.state.fog_near, far);
-}
-void
 api_clear (vm_t *vm, nu_u32_t color)
 {
     os_gpu_clear(vm, color);
+}
+void
+api_color (vm_t *vm, nu_u32_t color)
+{
+    vm->gpu.state.color = nu_color_from_u32(color);
 }
 void
 api_draw (vm_t *vm, nu_u32_t index)

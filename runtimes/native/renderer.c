@@ -49,13 +49,14 @@ typedef struct
 
 typedef struct
 {
-    nu_m4_t  view;          // 0
-    nu_m4_t  projection;    // 64
-    nu_v4_t  fog_color;     // 128
-    nu_v2u_t viewport_size; // 144
-    nu_f32_t fog_density;   // 152
-    nu_f32_t fog_near;      // 156
-    nu_f32_t fog_far;       // 160
+    nu_m4_t  view;
+    nu_m4_t  projection;
+    nu_v4_t  color;
+    nu_v4_t  fog_color;
+    nu_v2u_t viewport_size;
+    nu_f32_t fog_density;
+    nu_f32_t fog_near;
+    nu_f32_t fog_far;
 } ubo_t;
 
 static struct
@@ -792,6 +793,7 @@ update_ubo (vm_t *vm)
     // Update ubo
     renderer.ubo.view          = vm->gpu.state.view;
     renderer.ubo.projection    = vm->gpu.state.projection;
+    renderer.ubo.color         = nu_color_to_vec4(vm->gpu.state.color);
     renderer.ubo.fog_color     = nu_color_to_vec4(vm->gpu.state.fog_color);
     renderer.ubo.viewport_size = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
     renderer.ubo.fog_density   = vm->gpu.state.fog_density;

@@ -7,6 +7,7 @@ layout(location = 2) in vec3 in_color;
 layout(std140) uniform UBO {
     mat4 view;
     mat4 projection;
+    vec4 color;
     vec4 fog_color;
     uvec2 viewport_size;
     float fog_density;
@@ -39,5 +40,5 @@ void main()
     gl_Position = snap_vertex(position);
 
     vs_out.uv = in_uv;
-    vs_out.color = in_color;
+    vs_out.color = in_color * color.xyz;
 }

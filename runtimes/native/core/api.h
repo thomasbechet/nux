@@ -65,10 +65,10 @@ nu_status_t api_writemodel(vm_t           *vm,
 
 void api_transform(vm_t *vm, api_transform_t transform, const nu_f32_t *m);
 void api_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
+void api_fogparams(vm_t *vm, const nu_f32_t *params);
 void api_fogcolor(vm_t *vm, nu_u32_t color);
-void api_fogdensity(vm_t *vm, nu_f32_t density);
-void api_fogrange(vm_t *vm, nu_f32_t near, nu_f32_t far);
 void api_clear(vm_t *vm, nu_u32_t color);
+void api_color(vm_t *vm, nu_u32_t color);
 void api_draw(vm_t *vm, nu_u32_t index);
 void api_drawc(vm_t *vm, const nu_f32_t *c, const nu_f32_t *s);
 void api_drawl(vm_t *vm, const nu_f32_t *p, nu_u32_t n);
@@ -85,16 +85,13 @@ typedef enum
     API_BUTTON_Y = 1 << 2,
     API_BUTTON_B = 1 << 3,
 
-    API_BUTTON_UP    = 1 << 6,
-    API_BUTTON_DOWN  = 1 << 7,
-    API_BUTTON_LEFT  = 1 << 8,
-    API_BUTTON_RIGHT = 1 << 9,
+    API_BUTTON_UP    = 1 << 4,
+    API_BUTTON_DOWN  = 1 << 5,
+    API_BUTTON_LEFT  = 1 << 6,
+    API_BUTTON_RIGHT = 1 << 7,
 
-    API_BUTTON_LB = 1 << 10,
-    API_BUTTON_RB = 1 << 11,
-
-    API_BUTTON_START  = 1 << 12,
-    API_BUTTON_SELECT = 1 << 13,
+    API_BUTTON_LB = 1 << 8,
+    API_BUTTON_RB = 1 << 9,
 } api_button_t;
 
 typedef enum

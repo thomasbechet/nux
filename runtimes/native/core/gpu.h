@@ -10,9 +10,16 @@
 
 // #define GPU_SCREEN_WIDTH  640
 // #define GPU_SCREEN_HEIGHT 400
+
 #define GPU_SCREEN_WIDTH  512
 #define GPU_SCREEN_HEIGHT 320
-// #define GPU_SCREEN_HEIGHT 448
+
+// #define GPU_SCREEN_WIDTH  480
+// #define GPU_SCREEN_HEIGHT 300 
+
+// #define GPU_SCREEN_WIDTH  360
+// #define GPU_SCREEN_HEIGHT 225
+
 // #define GPU_SCREEN_WIDTH  320
 // #define GPU_SCREEN_HEIGHT 200
 
@@ -48,6 +55,7 @@ typedef struct
     nu_f32_t    fog_density;
     nu_f32_t    fog_near;
     nu_f32_t    fog_far;
+    nu_color_t  color;
 } gpu_state_t;
 
 typedef struct
