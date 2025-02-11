@@ -68,7 +68,7 @@ sdk_image_save (sdk_project_asset_t *asset, JSON_Object *jasset)
 nu_status_t
 sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 {
-    const nu_u32_t target_size = 512;
+    const nu_u32_t target_size = asset->image.target_size;
 
     // Load image
     nu_status_t status = NU_SUCCESS;
