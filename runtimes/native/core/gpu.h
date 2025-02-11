@@ -1,7 +1,7 @@
 #ifndef GPU_H
 #define GPU_H
 
-#include "api.h"
+#include "syscall.h"
 #include "cartridge.h"
 
 /////////////////
@@ -77,8 +77,8 @@ typedef struct
     gpu_index_t            pool;
     gpu_addr_t             addr;
     nu_u32_t               count;
-    api_primitive_t        primitive;
-    api_vertex_attribute_t attributes;
+    sys_primitive_t        primitive;
+    sys_vertex_attribute_t attributes;
 } gpu_mesh_t;
 
 typedef struct
@@ -115,9 +115,9 @@ void        gpu_end_frame(vm_t *vm);
 gpu_addr_t  gpu_malloc(vm_t *vm, nu_u32_t n);
 
 nu_u32_t gpu_texture_memsize(nu_u32_t size);
-nu_u32_t gpu_vertex_memsize(api_vertex_attribute_t attributes, nu_u32_t count);
-nu_u32_t gpu_vertex_offset(api_vertex_attribute_t attributes,
-                           api_vertex_attribute_t attribute,
+nu_u32_t gpu_vertex_memsize(sys_vertex_attribute_t attributes, nu_u32_t count);
+nu_u32_t gpu_vertex_offset(sys_vertex_attribute_t attributes,
+                           sys_vertex_attribute_t attribute,
                            nu_u32_t               count);
 
 #endif

@@ -33,7 +33,7 @@ static struct
     RGFW_rect    previous_rect;
     RGFW_window *win;
     nu_u32_t     button;
-    nu_f32_t     axis[API_AXIS_ENUM_MAX];
+    nu_f32_t     axis[SYS_AXIS_ENUM_MAX];
 } window;
 
 static void
@@ -127,40 +127,40 @@ window_free (void)
 {
     RGFW_window_close(window.win);
 }
-static api_button_t
+static sys_button_t
 key_to_button (nu_u32_t code)
 {
     switch (code)
     {
         // D-Pad
         case RGFW_v:
-            return API_BUTTON_LEFT;
+            return SYS_BUTTON_LEFT;
         case RGFW_b:
-            return API_BUTTON_DOWN;
+            return SYS_BUTTON_DOWN;
         case RGFW_g:
-            return API_BUTTON_UP;
+            return SYS_BUTTON_UP;
         case RGFW_n:
-            return API_BUTTON_RIGHT;
+            return SYS_BUTTON_RIGHT;
 
         // Triggers
         case RGFW_e:
-            return API_BUTTON_LB;
+            return SYS_BUTTON_LB;
         case RGFW_q:
-            return API_BUTTON_LB;
+            return SYS_BUTTON_LB;
 
         // Action buttons
         case RGFW_f:
-            return API_BUTTON_A;
+            return SYS_BUTTON_A;
         case RGFW_r:
-            return API_BUTTON_B;
+            return SYS_BUTTON_B;
         case RGFW_x:
-            return API_BUTTON_Y;
+            return SYS_BUTTON_Y;
         case RGFW_z:
-            return API_BUTTON_X;
+            return SYS_BUTTON_X;
     }
     return -1;
 }
-static api_axis_t
+static sys_axis_t
 key_to_axis (nu_u32_t code, nu_f32_t *value)
 {
     switch (code)
@@ -168,30 +168,30 @@ key_to_axis (nu_u32_t code, nu_f32_t *value)
         // Left Stick
         case RGFW_w:
             *value = 1;
-            return API_AXIS_LEFTY;
+            return SYS_AXIS_LEFTY;
         case RGFW_a:
             *value = -1;
-            return API_AXIS_LEFTX;
+            return SYS_AXIS_LEFTX;
         case RGFW_s:
             *value = -1;
-            return API_AXIS_LEFTY;
+            return SYS_AXIS_LEFTY;
         case RGFW_d:
             *value = 1;
-            return API_AXIS_LEFTX;
+            return SYS_AXIS_LEFTX;
 
         // Right Stick
         case RGFW_j:
             *value = 1;
-            return API_AXIS_RIGHTY;
+            return SYS_AXIS_RIGHTY;
         case RGFW_h:
             *value = -1;
-            return API_AXIS_RIGHTX;
+            return SYS_AXIS_RIGHTX;
         case RGFW_k:
             *value = -1;
-            return API_AXIS_RIGHTY;
+            return SYS_AXIS_RIGHTY;
         case RGFW_l:
             *value = 1;
-            return API_AXIS_RIGHTX;
+            return SYS_AXIS_RIGHTX;
 
         default:
             break;
@@ -217,16 +217,16 @@ window_poll_events (void)
                 case RGFW_mousePosChanged:
                     break;
                 case RGFW_keyPressed: {
-                    api_button_t button
+                    sys_button_t button
                         = key_to_button(window.win->event.keyCode);
                     nu_f32_t   axvalue;
-                    api_axis_t axis
+                    sys_axis_t axis
                         = key_to_axis(window.win->event.keyCode, &axvalue);
-                    if (button != (api_button_t)-1)
+                    if (button != (sys_button_t)-1)
                     {
                         window.button |= button;
                     }
-                    if (axis != (api_axis_t)-1)
+                    if (axis != (sys_axis_t)-1)
                     {
                         window.axis[axis] = axvalue;
                     }
@@ -241,16 +241,16 @@ window_poll_events (void)
                     {
                         window.switch_fullscreen = NU_TRUE;
                     }
-                    api_button_t button
+                    sys_button_t button
                         = key_to_button(window.win->event.keyCode);
                     nu_f32_t   axvalue;
-                    api_axis_t axis
+                    sys_axis_t axis
                         = key_to_axis(window.win->event.keyCode, &axvalue);
-                    if (button != (api_button_t)-1)
+                    if (button != (sys_button_t)-1)
                     {
                         window.button &= ~button;
                     }
-                    if (axis != (api_axis_t)-1)
+                    if (axis != (sys_axis_t)-1)
                     {
                         window.axis[axis] = 0;
                     }

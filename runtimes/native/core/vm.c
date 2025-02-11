@@ -3,7 +3,7 @@
 #include "cpu.h"
 #include "gpu.h"
 #include "platform.h"
-#include "bootloader.h"
+#include "bios.h"
 
 nu_status_t
 vm_init (vm_t *vm, const vm_config_t *config)
@@ -31,7 +31,7 @@ vm_free (vm_t *vm)
 nu_status_t
 vm_load (vm_t *vm, const nu_char_t *name)
 {
-    NU_CHECK(boot_load_cart(vm, name), return NU_FAILURE);
+    NU_CHECK(bios_load_cart(vm, name), return NU_FAILURE);
     NU_CHECK(cpu_call_event(vm, CPU_EVENT_START), return NU_FAILURE);
     return NU_SUCCESS;
 }
@@ -87,7 +87,7 @@ vm_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
 }
 
 void
-api_trace (vm_t *vm, const nu_char_t *text)
+sys_trace (vm_t *vm, const nu_char_t *text)
 {
     vm_log(vm, NU_LOG_INFO, text);
 }

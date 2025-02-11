@@ -1,7 +1,7 @@
 #ifndef CPU_H
 #define CPU_H
 
-#include "api.h"
+#include "syscall.h"
 
 typedef enum
 {

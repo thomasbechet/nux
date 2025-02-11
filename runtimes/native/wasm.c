@@ -21,13 +21,13 @@ static void
 trace (wasm_exec_env_t env, const void *s)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_trace(vm, s);
+    sys_trace(vm, s);
 }
 static void
 alloctex (wasm_exec_env_t env, nu_u32_t idx, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_alloctex(vm, idx, size);
+    sys_alloctex(vm, idx, size);
 }
 static void
 writetex (wasm_exec_env_t env,
@@ -39,7 +39,7 @@ writetex (wasm_exec_env_t env,
           const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_writetex(vm, idx, x, y, w, h, p);
+    sys_writetex(vm, idx, x, y, w, h, p);
 }
 static void
 allocmesh (wasm_exec_env_t env,
@@ -49,7 +49,7 @@ allocmesh (wasm_exec_env_t env,
            nu_u32_t        attribs)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_allocmesh(vm, idx, count, primitive, attribs);
+    sys_allocmesh(vm, idx, count, primitive, attribs);
 }
 static void
 writemesh (wasm_exec_env_t env,
@@ -60,14 +60,14 @@ writemesh (wasm_exec_env_t env,
            const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_writemesh(vm, idx, attribs, first, count, p);
+    sys_writemesh(vm, idx, attribs, first, count, p);
 }
 
 static void
 allocmodel (wasm_exec_env_t env, nu_u32_t idx, nu_u32_t count)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_allocmodel(vm, idx, count);
+    sys_allocmodel(vm, idx, count);
 }
 static void
 writemodel (wasm_exec_env_t env,
@@ -79,80 +79,80 @@ writemodel (wasm_exec_env_t env,
             const nu_f32_t *transform)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_writemodel(vm, idx, node, mesh, texture, parent, transform);
+    sys_writemodel(vm, idx, node, mesh, texture, parent, transform);
 }
 
 static void
 transform (wasm_exec_env_t env, nu_u32_t transform, const nu_f32_t *m)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_transform(vm, transform, m);
+    sys_transform(vm, transform, m);
 }
 static void
 cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_cursor(vm, x, y);
+    sys_cursor(vm, x, y);
 }
 static void
 fogparams (wasm_exec_env_t env, const nu_f32_t *params)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_fogparams(vm, params);
+    sys_fogparams(vm, params);
 }
 static void
 fogcolor (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_fogcolor(vm, color);
+    sys_fogcolor(vm, color);
 }
 static void
 clear (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_clear(vm, color);
+    sys_clear(vm, color);
 }
 static void
 color (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_color(vm, color);
+    sys_color(vm, color);
 }
 static void
 draw (wasm_exec_env_t env, nu_u32_t model)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_draw(vm, model);
+    sys_draw(vm, model);
 }
 static void
 drawc (wasm_exec_env_t env, const nu_f32_t *p, const nu_f32_t *s)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_drawc(vm, p, s);
+    sys_drawc(vm, p, s);
 }
 static void
 drawl (wasm_exec_env_t env, const nu_f32_t *p, nu_u32_t n)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_drawl(vm, p, n);
+    sys_drawl(vm, p, n);
 }
 static void
 drawls (wasm_exec_env_t env, const nu_f32_t *p, nu_u32_t n)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_drawls(vm, p, n);
+    sys_drawls(vm, p, n);
 }
 static void
 text (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_text(vm, text);
+    sys_text(vm, text);
 }
 static void
 print (wasm_exec_env_t env, const void *text)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_print(vm, text);
+    sys_print(vm, text);
 }
 static void
 blit (wasm_exec_env_t env,
@@ -163,20 +163,20 @@ blit (wasm_exec_env_t env,
       nu_u32_t        h)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    api_blit(vm, idx, x, y, w, h);
+    sys_blit(vm, idx, x, y, w, h);
 }
 
 static nu_u32_t
 button (wasm_exec_env_t env, nu_u32_t player)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return api_button(vm, player);
+    return sys_button(vm, player);
 }
 static nu_f32_t
 axis (wasm_exec_env_t env, nu_u32_t player, nu_u32_t axis)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return api_axis(vm, player, axis);
+    return sys_axis(vm, player, axis);
 }
 
 static void *

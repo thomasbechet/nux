@@ -668,12 +668,12 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
     nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
 
-    if (mesh->attributes & API_VERTEX_POSITION)
+    if (mesh->attributes & SYS_VERTEX_POSITION)
     {
         const nu_f32_t *data
             = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
                                  + gpu_vertex_offset(mesh->attributes,
-                                                     API_VERTEX_POSITION,
+                                                     SYS_VERTEX_POSITION,
                                                      mesh->count)
                                        * sizeof(nu_f32_t));
         for (nu_size_t i = 0; i < mesh->count; ++i)
@@ -685,12 +685,12 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
             ptr[vbo_offset + 2] = data[i * 3 + 2];
         }
     }
-    if (mesh->attributes & API_VERTEX_UV)
+    if (mesh->attributes & SYS_VERTEX_UV)
     {
         const nu_f32_t *data
             = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
                                  + gpu_vertex_offset(mesh->attributes,
-                                                     API_VERTEX_UV,
+                                                     SYS_VERTEX_UV,
                                                      mesh->count)
                                        * sizeof(nu_f32_t));
         for (nu_size_t i = 0; i < mesh->count; ++i)
@@ -700,12 +700,12 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t index)
             ptr[vbo_offset + 1]  = data[i * 2 + 1];
         }
     }
-    if (mesh->attributes & API_VERTEX_COLOR)
+    if (mesh->attributes & SYS_VERTEX_COLOR)
     {
         const nu_f32_t *data
             = (const nu_f32_t *)(vm->gpu.vram + mesh->addr
                                  + gpu_vertex_offset(mesh->attributes,
-                                                     API_VERTEX_COLOR,
+                                                     SYS_VERTEX_COLOR,
                                                      mesh->count)
                                        * sizeof(nu_f32_t));
         for (nu_size_t i = 0; i < mesh->count; ++i)

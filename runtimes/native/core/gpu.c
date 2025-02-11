@@ -148,7 +148,7 @@ gpu_malloc (vm_t *vm, nu_u32_t n)
 }
 
 nu_status_t
-api_allocgpool (vm_t *vm, nu_u32_t index, nu_u32_t size)
+sys_allocgpool (vm_t *vm, nu_u32_t index, nu_u32_t size)
 {
     if (index >= GPU_MAX_POOL || vm->gpu.pools[index].addr != GPU_ADDR_NULL)
     {
@@ -162,14 +162,14 @@ api_allocgpool (vm_t *vm, nu_u32_t index, nu_u32_t size)
     return NU_SUCCESS;
 }
 nu_status_t
-api_gpool (vm_t *vm, nu_u32_t index)
+sys_gpool (vm_t *vm, nu_u32_t index)
 {
     NU_CHECK(check_pool(vm, index), return NU_FAILURE);
     vm->gpu.state.pool = index;
     return NU_SUCCESS;
 }
 nu_status_t
-api_cleargpool (vm_t *vm, nu_u32_t index)
+sys_cleargpool (vm_t *vm, nu_u32_t index)
 {
     NU_CHECK(check_pool(vm, index), return NU_FAILURE);
     vm->gpu.state.pool = index;
@@ -177,7 +177,7 @@ api_cleargpool (vm_t *vm, nu_u32_t index)
 }
 
 nu_status_t
-api_alloctex (vm_t *vm, nu_u32_t index, nu_u32_t size)
+sys_alloctex (vm_t *vm, nu_u32_t index, nu_u32_t size)
 {
     if (index >= GPU_MAX_TEXTURE
         || vm->gpu.textures[index].addr != GPU_ADDR_NULL)
@@ -204,7 +204,7 @@ api_alloctex (vm_t *vm, nu_u32_t index, nu_u32_t size)
     return NU_SUCCESS;
 }
 nu_status_t
-api_writetex (vm_t       *vm,
+sys_writetex (vm_t       *vm,
               nu_u32_t    index,
               nu_u32_t    x,
               nu_u32_t    y,
@@ -226,11 +226,11 @@ api_writetex (vm_t       *vm,
     return NU_SUCCESS;
 }
 nu_status_t
-api_allocmesh (vm_t                  *vm,
+sys_allocmesh (vm_t                  *vm,
                nu_u32_t               index,
                nu_u32_t               count,
-               api_primitive_t        primitive,
-               api_vertex_attribute_t attributes)
+               sys_primitive_t        primitive,
+               sys_vertex_attribute_t attributes)
 {
     if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].addr != GPU_ADDR_NULL)
     {
@@ -248,9 +248,9 @@ api_allocmesh (vm_t                  *vm,
     return NU_SUCCESS;
 }
 nu_status_t
-api_writemesh (vm_t                  *vm,
+sys_writemesh (vm_t                  *vm,
                nu_u32_t               index,
-               api_vertex_attribute_t attributes,
+               sys_vertex_attribute_t attributes,
                nu_u32_t               first,
                nu_u32_t               count,
                const void            *p)
@@ -259,13 +259,13 @@ api_writemesh (vm_t                  *vm,
     NU_CHECK(ptr, return NU_FAILURE);
     gpu_mesh_t     *mesh = vm->gpu.meshes + index;
     const nu_f32_t *data = p;
-    if (attributes & API_VERTEX_POSITION
-        && mesh->attributes & API_VERTEX_POSITION)
+    if (attributes & SYS_VERTEX_POSITION
+        && mesh->attributes & SYS_VERTEX_POSITION)
     {
         nu_u32_t src_offset
-            = gpu_vertex_offset(attributes, API_VERTEX_POSITION, count);
+            = gpu_vertex_offset(attributes, SYS_VERTEX_POSITION, count);
         nu_u32_t dst_offset = gpu_vertex_offset(
-            mesh->attributes, API_VERTEX_POSITION, mesh->count);
+            mesh->attributes, SYS_VERTEX_POSITION, mesh->count);
         for (nu_size_t i = 0; i < count; ++i)
         {
             ptr[dst_offset + (first + i) * 3 + 0]
@@ -276,12 +276,12 @@ api_writemesh (vm_t                  *vm,
                 = data[src_offset + i * 3 + 2];
         }
     }
-    if (attributes & API_VERTEX_UV && mesh->attributes & API_VERTEX_UV)
+    if (attributes & SYS_VERTEX_UV && mesh->attributes & SYS_VERTEX_UV)
     {
         nu_u32_t src_offset
-            = gpu_vertex_offset(attributes, API_VERTEX_UV, count);
+            = gpu_vertex_offset(attributes, SYS_VERTEX_UV, count);
         nu_u32_t dst_offset
-            = gpu_vertex_offset(mesh->attributes, API_VERTEX_UV, mesh->count);
+            = gpu_vertex_offset(mesh->attributes, SYS_VERTEX_UV, mesh->count);
         for (nu_size_t i = 0; i < count; ++i)
         {
             ptr[dst_offset + (first + i) * 2 + 0]
@@ -290,12 +290,12 @@ api_writemesh (vm_t                  *vm,
                 = data[src_offset + i * 2 + 1];
         }
     }
-    if (attributes & API_VERTEX_COLOR && mesh->attributes & API_VERTEX_COLOR)
+    if (attributes & SYS_VERTEX_COLOR && mesh->attributes & SYS_VERTEX_COLOR)
     {
         nu_u32_t src_offset
-            = gpu_vertex_offset(attributes, API_VERTEX_COLOR, count);
+            = gpu_vertex_offset(attributes, SYS_VERTEX_COLOR, count);
         nu_u32_t dst_offset = gpu_vertex_offset(
-            mesh->attributes, API_VERTEX_COLOR, mesh->count);
+            mesh->attributes, SYS_VERTEX_COLOR, mesh->count);
         for (nu_size_t i = 0; i < count; ++i)
         {
             ptr[dst_offset + (first + i) * 3 + 0]
@@ -311,7 +311,7 @@ api_writemesh (vm_t                  *vm,
 }
 
 nu_status_t
-api_allocmodel (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
+sys_allocmodel (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
 {
     if (index >= GPU_MAX_MODEL || vm->gpu.models[index].addr != GPU_ADDR_NULL)
     {
@@ -327,7 +327,7 @@ api_allocmodel (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
     return NU_SUCCESS;
 }
 nu_status_t
-api_writemodel (vm_t           *vm,
+sys_writemodel (vm_t           *vm,
                 nu_u32_t        index,
                 nu_u32_t        node_index,
                 nu_u32_t        mesh,
@@ -350,82 +350,82 @@ api_writemodel (vm_t           *vm,
 }
 
 void
-api_transform (vm_t *vm, api_transform_t transform, const nu_f32_t *m)
+sys_transform (vm_t *vm, sys_transform_t transform, const nu_f32_t *m)
 {
     switch (transform)
     {
-        case API_TRANSFORM_MODEL:
+        case SYS_TRANSFORM_MODEL:
             vm->gpu.state.model = nu_m4(m);
             break;
-        case API_TRANSFORM_VIEW:
+        case SYS_TRANSFORM_VIEW:
             vm->gpu.state.view = nu_m4(m);
             break;
-        case API_TRANSFORM_PROJECTION:
+        case SYS_TRANSFORM_PROJECTION:
             vm->gpu.state.projection = nu_m4(m);
             break;
     }
 }
 void
-api_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
+sys_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
 {
     vm->gpu.state.cursor = nu_v2u(x, y);
 }
 void
-api_fogparams (vm_t *vm, const nu_f32_t *params)
+sys_fogparams (vm_t *vm, const nu_f32_t *params)
 {
     vm->gpu.state.fog_density = nu_fabs(params[0]);
     vm->gpu.state.fog_near    = nu_fabs(params[1]);
     vm->gpu.state.fog_far     = NU_MAX(vm->gpu.state.fog_near, params[2]);
 }
 void
-api_fogcolor (vm_t *vm, nu_u32_t color)
+sys_fogcolor (vm_t *vm, nu_u32_t color)
 {
     vm->gpu.state.fog_color = nu_color_from_u32(color);
 }
 void
-api_clear (vm_t *vm, nu_u32_t color)
+sys_clear (vm_t *vm, nu_u32_t color)
 {
     os_gpu_clear(vm, color);
 }
 void
-api_color (vm_t *vm, nu_u32_t color)
+sys_color (vm_t *vm, nu_u32_t color)
 {
     vm->gpu.state.color = nu_color_from_u32(color);
 }
 void
-api_draw (vm_t *vm, nu_u32_t index)
+sys_draw (vm_t *vm, nu_u32_t index)
 {
     NU_CHECK(model_data(vm, index), return);
     os_gpu_draw_model(vm, index);
 }
 void
-api_drawc (vm_t *vm, const nu_f32_t *p, const nu_f32_t *s)
+sys_drawc (vm_t *vm, const nu_f32_t *p, const nu_f32_t *s)
 {
     os_gpu_draw_cube(vm, p, s);
 }
 void
-api_drawl (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
+sys_drawl (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
 {
     os_gpu_draw_lines(vm, p, n, NU_FALSE);
 }
 void
-api_drawls (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
+sys_drawls (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
 {
     os_gpu_draw_lines(vm, p, n, NU_TRUE);
 }
 void
-api_text (vm_t *vm, const void *text)
+sys_text (vm_t *vm, const void *text)
 {
     os_gpu_draw_text(vm, text, nu_strlen(text));
 }
 void
-api_print (vm_t *vm, const void *text)
+sys_print (vm_t *vm, const void *text)
 {
-    api_text(vm, text);
+    sys_text(vm, text);
     vm->gpu.state.cursor.y += 9;
 }
 void
-api_blit (
+sys_blit (
     vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
     NU_CHECK(texture_data(vm, index), return);
@@ -438,49 +438,49 @@ gpu_texture_memsize (nu_u32_t size)
     return size * size * 4;
 }
 nu_u32_t
-gpu_vertex_memsize (api_vertex_attribute_t attributes, nu_u32_t count)
+gpu_vertex_memsize (sys_vertex_attribute_t attributes, nu_u32_t count)
 {
     nu_u32_t size = 0;
-    if (attributes & API_VERTEX_POSITION)
+    if (attributes & SYS_VERTEX_POSITION)
     {
         size += NU_V3_SIZE * count;
     }
-    if (attributes & API_VERTEX_UV)
+    if (attributes & SYS_VERTEX_UV)
     {
         size += NU_V2_SIZE * count;
     }
-    if (attributes & API_VERTEX_COLOR)
+    if (attributes & SYS_VERTEX_COLOR)
     {
         size += NU_V3_SIZE * count;
     }
     return size * sizeof(nu_f32_t);
 }
 nu_u32_t
-gpu_vertex_offset (api_vertex_attribute_t attributes,
-                   api_vertex_attribute_t attribute,
+gpu_vertex_offset (sys_vertex_attribute_t attributes,
+                   sys_vertex_attribute_t attribute,
                    nu_u32_t               count)
 {
     NU_ASSERT(attribute & attributes);
     nu_u32_t offset = 0;
-    if (attributes & API_VERTEX_POSITION)
+    if (attributes & SYS_VERTEX_POSITION)
     {
-        if (attribute == API_VERTEX_POSITION)
+        if (attribute == SYS_VERTEX_POSITION)
         {
             return offset;
         }
         offset += NU_V3_SIZE * count;
     }
-    if (attributes & API_VERTEX_UV)
+    if (attributes & SYS_VERTEX_UV)
     {
-        if (attribute == API_VERTEX_UV)
+        if (attribute == SYS_VERTEX_UV)
         {
             return offset;
         }
         offset += NU_V2_SIZE * count;
     }
-    if (attributes & API_VERTEX_COLOR)
+    if (attributes & SYS_VERTEX_COLOR)
     {
-        if (attribute == API_VERTEX_COLOR)
+        if (attribute == SYS_VERTEX_COLOR)
         {
             return offset;
         }

@@ -1,7 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "api.h"
+#include "syscall.h"
 #include "gpu.h"
 #include "cpu.h"
 
