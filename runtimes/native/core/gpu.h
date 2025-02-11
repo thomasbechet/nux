@@ -15,7 +15,7 @@
 #define GPU_SCREEN_HEIGHT 320
 
 // #define GPU_SCREEN_WIDTH  480
-// #define GPU_SCREEN_HEIGHT 300 
+// #define GPU_SCREEN_HEIGHT 300
 
 // #define GPU_SCREEN_WIDTH  360
 // #define GPU_SCREEN_HEIGHT 225
