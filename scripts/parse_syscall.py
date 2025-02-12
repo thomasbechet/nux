@@ -2,6 +2,7 @@ from pycparser import c_ast, c_parser, c_generator, parse_file
 import argparse
 import sys
 import re
+from jinja2 import Environment, FileSystemLoader
 
 functions = []
 enums = []
@@ -38,7 +39,8 @@ def parse_function(node):
         arg.name = param.name
         if type(param.type) is c_ast.PtrDecl:
             arg.isptr = True
-            if param.type.quals:
+            # print(param)
+            if param.quals:
                 arg.isconst = True
             arg.typename = param.type.type.type.names[0]
         else:
@@ -86,4 +88,17 @@ if __name__ == "__main__":
     v.visit(ast)
     v = TypeDefVisitor()
     v.visit(ast)
+
+    typemap = {
+            "void": "void",
+            "nu_char_t": "void",
+            "nu_u32_t": "u32",
+            "nu_f32_t": "f32",
+            "nu_status_t": "void"
+    }
+
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template("nux.h.jinja")
+    print(template.render(functions=functions, enums=enums, typemap=typemap))
+
 
