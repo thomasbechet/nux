@@ -8,7 +8,7 @@
 [x] Draw color
 [ ] Gamepad example
 [ ] Model animation
-[ ] Fix 'Is a directory'
+[x] Fix 'Is a directory'
 [ ] Remove os_gpu_init (probably useless)
 [ ] Check bounds for 2d rendering
 [ ] Scissor / Viewport commands

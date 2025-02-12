@@ -1,5 +1,6 @@
 from PIL import Image, ImageFont, ImageDraw
 from bitarray import bitarray
+import subprocess
 import string
 import argparse
 import os
@@ -35,11 +36,15 @@ if __name__ == "__main__":
     
         draw.rectangle((0, 0, w, h), fill=(0, 0, 0, 0))
     
-    print("#ifndef FONT_DATA_H")
-    print("#define FONT_DATA_H")
-    print("#include <nulib/nulib.h>")
-    print("#define DEFAULT_FONT_DATA_WIDTH ", w);
-    print("#define DEFAULT_FONT_DATA_HEIGHT", h);
-    print("static const nu_byte_t default_font_data_chars[] = {", ','.join(['0x{:02x}'.format(x) for x in bytes(ascii, 'utf-8')]), "};")
-    print("static const nu_byte_t default_font_data[] = {", ','.join(['0x{:02x}'.format(x) for x in ba.tobytes()]), "};")
-    print("#endif")
+    output = "runtimes/native/fonts_data.h"
+    with open(os.path.join(args.rootdir, output), "w") as f:
+        print("#ifndef FONT_DATA_H", file=f)
+        print("#define FONT_DATA_H", file=f)
+        print("#include <nulib/nulib.h>", file=f)
+        print("#define DEFAULT_FONT_DATA_WIDTH ", w, file=f);
+        print("#define DEFAULT_FONT_DATA_HEIGHT", h, file=f);
+        print("static const nu_byte_t default_font_data_chars[] = {", ','.join(['0x{:02x}'.format(x) for x in bytes(ascii, 'utf-8')]), "};", file=f)
+        print("static const nu_byte_t default_font_data[] = {", ','.join(['0x{:02x}'.format(x) for x in ba.tobytes()]), "};", file=f)
+        print("#endif", file=f)
+        f.close()
+        subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
