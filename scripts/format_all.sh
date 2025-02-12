@@ -1,5 +1,11 @@
 #!/bin/bash
 
-find runtimes/ -regex '.*\(h\|c\)' -exec clang-format -i {} \;
-find examples/ -regex '.*\(h\|c\)' -exec clang-format -i {} \;
-find cli/ -regex '.*\(h\|c\)' -exec clang-format -i {} \;
+ROOT_DIR=$1
+if [[ ! -d $ROOT_DIR ]]; then
+    echo "Please provide a valid root dir."
+    exit 1
+fi
+
+find $ROOT_DIR/runtimes/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
+find $ROOT_DIR/examples/ -type f -regex '.*\(h\|c\)^' -exec clang-format -i {} \;
+find $ROOT_DIR/cli/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;

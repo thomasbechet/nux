@@ -1,7 +1,13 @@
 #!/bin/bash
 
-TEMPLATES=sdk/templates
-OUTPUT=sdk/templates_data.h
+ROOT_DIR=$1
+if [[ ! -d $ROOT_DIR ]]; then
+    echo "Please provide a valid root dir."
+    exit 1
+fi
+
+TEMPLATES=$ROOT_DIR/sdk/templates
+OUTPUT=$ROOT_DIR/sdk/templates_data.h
 
 printf "#ifndef SDK_TEMPLATES_DATA_H\n" > $OUTPUT
 printf "#define SDK_TEMPLATES_DATA_H\n" >> $OUTPUT

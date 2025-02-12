@@ -1,8 +1,11 @@
 from pycparser import c_ast, c_parser, c_generator, parse_file
+from jinja2 import Environment, FileSystemLoader
+import subprocess
 import argparse
+import shutil
 import sys
 import re
-from jinja2 import Environment, FileSystemLoader
+import os
 
 functions = []
 enums = []
@@ -39,7 +42,6 @@ def parse_function(node):
         arg.name = param.name
         if type(param.type) is c_ast.PtrDecl:
             arg.isptr = True
-            # print(param)
             if param.quals:
                 arg.isconst = True
             arg.typename = param.type.type.type.names[0]
@@ -69,10 +71,11 @@ class TypeDefVisitor(c_ast.NodeVisitor):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("syscall")
+    parser.add_argument("rootdir")
     args = parser.parse_args()
 
-    with open(args.syscall, 'r') as file:
+    syscall_header = os.path.join(args.rootdir, "runtimes/native/core/syscall.h")
+    with open(syscall_header, 'r') as file:
         src = file.read()
 
     prelude = """
@@ -89,16 +92,21 @@ if __name__ == "__main__":
     v = TypeDefVisitor()
     v.visit(ast)
 
-    typemap = {
-            "void": "void",
-            "nu_char_t": "void",
-            "nu_u32_t": "u32",
-            "nu_f32_t": "f32",
-            "nu_status_t": "void"
-    }
-
-    env = Environment(loader=FileSystemLoader('.'))
+    env = Environment(loader=FileSystemLoader(os.path.join(args.rootdir, "scripts/templates")))
+    # nux.h
     template = env.get_template("nux.h.jinja")
-    print(template.render(functions=functions, enums=enums, typemap=typemap))
+    r = template.render(functions=functions, enums=enums)
+    output = "sdk/templates/c/src/nux.h"
+    with open(os.path.join(args.rootdir, output), "w") as f:
+        f.write(r)
+        f.close()
+        subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
 
-
+    # wasm_native.h
+    template = env.get_template("wasm_native.h.jinja")
+    r = template.render(functions=functions, enums=enums)
+    output = "runtimes/native/wasm_native.h"
+    with open(os.path.join(args.rootdir, output), "w") as f:
+        f.write(r)
+        f.close()
+        subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)

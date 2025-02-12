@@ -1,6 +1,6 @@
 #include "camera.h"
 
-#include "nux.h"
+#include <nux.h>
 
 static struct
 {

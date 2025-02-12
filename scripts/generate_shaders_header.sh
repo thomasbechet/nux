@@ -1,7 +1,13 @@
 #!/bin/bash
 
-SHADERS=runtimes/native/shaders
-OUTPUT=runtimes/native/shaders_data.h
+ROOT_DIR=$1
+if [[ ! -d $ROOT_DIR ]]; then
+    echo "Please provide a valid root dir."
+    exit 1
+fi
+
+SHADERS=$ROOT_DIR/runtimes/native/shaders
+OUTPUT=$ROOT_DIR/runtimes/native/shaders_data.h
 
 printf "#ifndef SHADERS_DATA_H\n" > $OUTPUT
 printf "#define SHADERS_DATA_H\n" >> $OUTPUT

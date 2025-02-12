@@ -1,0 +1,41 @@
+#ifndef WASM_NATIVE_H
+#define WASM_NATIVE_H
+
+#include "core/vm.h"
+#include <wasm_export.h>
+{% set sigmap = {
+    "nu_u32_t": "i",
+    "nu_f32_t": "f",
+} %}
+{% for function in functions %}
+static {{ function.returntype }} 
+{{ function.name }}(wasm_exec_env_t env, {{ "" }}
+    {%- for arg in function.args -%}
+        {{ "const " if arg.isconst else "" }}{{ 
+            arg.typename }}{{ 
+            " *" if arg.isptr else " " }}{{ 
+            arg.name }}{{ 
+            ", " if not loop.last else "" }}
+    {%- endfor -%})
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    {{ "return " if function.returntype != "void" else "" }}sys_{{ function.name }}(vm, 
+        {%- for arg in function.args -%}
+            {{ arg.name }}{{ ", " if not loop.last else "" }}
+        {%- endfor -%}
+    );
+}
+{%- endfor %}
+
+static NativeSymbol wasm_native_symbols[] = {
+    {% for function in functions -%}
+    EXPORT_WASM_API_WITH_SIG({{ function.name }}, "(
+        {%- for arg in function.args -%}
+            {{ sigmap.get(arg.typename, "i") if not arg.isptr else "*" }}
+        {%- endfor -%}
+        ){{ sigmap[function.returntype] if function.returntype != "" else "" }}"){{
+        ", " if not loop.last else "" }}
+    {% endfor -%}
+};
+
+#endif
