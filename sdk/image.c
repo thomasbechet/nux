@@ -16,6 +16,12 @@ image_resize (nu_v2u_t         source_size,
               nu_u32_t         target_size,
               nu_byte_t       *target_data)
 {
+    if (source_size.x == source_size.y && source_size.x == target_size)
+    {
+        // No resize required, simply copy data
+        nu_memcpy(target_data, source_data, gpu_texture_memsize(target_size));
+        return NU_SUCCESS;
+    }
     if (!stbir_resize_uint8(source_data,
                             source_size.x,
                             source_size.y,

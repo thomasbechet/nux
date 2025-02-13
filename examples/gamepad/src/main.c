@@ -34,12 +34,12 @@ static nu_u32_t released[] = {
 };
 
 static void
-draw_button (button_t b, nu_u32_t x, nu_u32_t y)
+draw_button (nu_u32_t player, button_t b, nu_u32_t x, nu_u32_t y)
 {
     cursor(x, y);
     nu_u32_t        i = nu_log2(b);
     const nu_u32_t *map;
-    if (button(0) & b)
+    if (button(player) & b)
     {
         map = pressed;
     }
@@ -50,12 +50,12 @@ draw_button (button_t b, nu_u32_t x, nu_u32_t y)
     blitt(0, 16, map[i * 2 + 0], map[i * 2 + 1]);
 }
 static void
-draw_stick (nu_bool_t left, nu_u32_t x, nu_u32_t y)
+draw_stick (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
 {
-    nu_v2_t ax      = nu_v2(axis(0, left ? AXIS_LEFTX : AXIS_RIGHTX),
-                       axis(0, left ? AXIS_LEFTY : AXIS_RIGHTY));
+    nu_v2_t ax      = nu_v2(axis(player, left ? AXIS_LEFTX : AXIS_RIGHTX),
+                       axis(player, left ? AXIS_LEFTY : AXIS_RIGHTY));
     ax              = nu_v2_normalize(ax);
-    nu_f32_t offset = 5;
+    nu_f32_t offset = 3;
     nu_u32_t tx     = left ? 0 : 1;
     nu_u32_t ty     = 8;
     cursor(x, y);
@@ -64,14 +64,45 @@ draw_stick (nu_bool_t left, nu_u32_t x, nu_u32_t y)
     blitt(0, 16, tx, ty);
 }
 static void
-draw_trigger (nu_bool_t left, nu_u32_t x, nu_u32_t y)
+draw_trigger (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
 {
-    nu_f32_t ax     = axis(0, left ? AXIS_LT : AXIS_RT);
+    nu_f32_t ax     = axis(player, left ? AXIS_LT : AXIS_RT);
     nu_f32_t offset = 3;
     nu_u32_t tx     = 6;
     nu_u32_t ty     = left ? 4 : 5;
     cursor(x, y + offset * ax);
     blitt(0, 16, tx, ty);
+}
+static void
+draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)
+{
+
+    draw_stick(player, NU_TRUE, x - 50, y - 10);
+    draw_stick(player, NU_FALSE, x + 20, y + 20);
+
+    draw_trigger(player, NU_TRUE, x - 20, y - 40);
+    draw_trigger(player, NU_FALSE, x + 20, y - 40);
+
+    draw_button(player, BUTTON_LB, x - 20, y - 29);
+    draw_button(player, BUTTON_RB, x + 20, y - 29);
+
+    {
+        nu_v2u_t p      = nu_v2u(x - 20, y + 20);
+        nu_u32_t offset = 8;
+        draw_button(player, BUTTON_DOWN, p.x, p.y + offset);
+        draw_button(player, BUTTON_UP, p.x, p.y - offset);
+        draw_button(player, BUTTON_RIGHT, p.x + offset, p.y);
+        draw_button(player, BUTTON_LEFT, p.x - offset, p.y);
+    }
+
+    {
+        nu_v2u_t p      = nu_v2u(x + 50, y - 8);
+        nu_u32_t offset = 12;
+        draw_button(player, BUTTON_A, p.x, p.y + offset);
+        draw_button(player, BUTTON_Y, p.x, p.y - offset);
+        draw_button(player, BUTTON_B, p.x + offset, p.y);
+        draw_button(player, BUTTON_X, p.x - offset, p.y);
+    }
 }
 
 void
@@ -83,28 +114,6 @@ void
 update (void)
 {
     clear(NU_COLOR_GREY.rgba);
-    nu_v2u_t p = nu_v2u(100, 100);
-    nu_u32_t s = 12;
-    draw_button(BUTTON_A, p.x, p.y + s);
-    draw_button(BUTTON_Y, p.x, p.y - s);
-    draw_button(BUTTON_B, p.x + s, p.y);
-    draw_button(BUTTON_X, p.x - s, p.y);
-
-    p = nu_v2u(150, 100);
-    s = 8;
-    draw_button(BUTTON_DOWN, p.x, p.y + s);
-    draw_button(BUTTON_UP, p.x, p.y - s);
-    draw_button(BUTTON_RIGHT, p.x + s, p.y);
-    draw_button(BUTTON_LEFT, p.x - s, p.y);
-
-    p = nu_v2u(100, 50);
-    draw_button(BUTTON_LB, p.x, p.y);
-    p = nu_v2u(150, 50);
-    draw_button(BUTTON_RB, p.x, p.y);
-
-    draw_stick(NU_TRUE, 100, 150);
-    draw_stick(NU_FALSE, 150, 150);
-
-    draw_trigger(NU_TRUE, 100, 170);
-    draw_trigger(NU_FALSE, 150, 170);
+    draw_gamepad(0, 100, 100);
+    draw_gamepad(1, 100, 225);
 }

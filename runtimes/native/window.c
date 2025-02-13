@@ -133,13 +133,13 @@ key_to_button (nu_u32_t code)
     switch (code)
     {
         // D-Pad
-        case RGFW_v:
+        case RGFW_Left:
             return SYS_BUTTON_LEFT;
-        case RGFW_b:
+        case RGFW_Down:
             return SYS_BUTTON_DOWN;
-        case RGFW_g:
+        case RGFW_Up:
             return SYS_BUTTON_UP;
-        case RGFW_n:
+        case RGFW_Right:
             return SYS_BUTTON_RIGHT;
 
         // Triggers
@@ -263,6 +263,8 @@ window_poll_events (void)
                     }
                 }
                 break;
+                // case RGFW_gamepadButtonPressed:
+                //     break;
                 case RGFW_mouseButtonPressed:
                     break;
                 case RGFW_mouseButtonReleased:
