@@ -144,7 +144,7 @@ key_to_button (nu_u32_t code)
 
         // Triggers
         case RGFW_e:
-            return SYS_BUTTON_LB;
+            return SYS_BUTTON_RB;
         case RGFW_q:
             return SYS_BUTTON_LB;
 
@@ -181,17 +181,24 @@ key_to_axis (nu_u32_t code, nu_f32_t *value)
 
         // Right Stick
         case RGFW_j:
-            *value = 1;
+            *value = -1;
             return SYS_AXIS_RIGHTY;
         case RGFW_h:
             *value = -1;
             return SYS_AXIS_RIGHTX;
         case RGFW_k:
-            *value = -1;
+            *value = 1;
             return SYS_AXIS_RIGHTY;
         case RGFW_l:
             *value = 1;
             return SYS_AXIS_RIGHTX;
+
+        case RGFW_u:
+            *value = 1;
+            return SYS_AXIS_LT;
+        case RGFW_o:
+            *value = 1;
+            return SYS_AXIS_RT;
 
         default:
             break;

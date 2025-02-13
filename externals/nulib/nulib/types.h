@@ -13,15 +13,17 @@
 #define NU_NULL  0
 #define NU_NOOP
 
-#define NU_DEFAULT_ALIGN  16
-#define NU_COLOR_WHITE    nu_color(255, 255, 255, 0)
-#define NU_COLOR_BLACK    nu_color(0, 0, 0, 0)
-#define NU_COLOR_RED      nu_color(255, 0, 0, 0)
-#define NU_COLOR_GREEN    nu_color(0, 255, 0, 0)
-#define NU_COLOR_BLUE     nu_color(0, 0, 255, 0)
-#define NU_COLOR_BLUE_SKY nu_color(52, 181, 248, 0)
-#define NU_PI             3.14159265359
-#define NU_FLT_MAX        3.402823E+38
+#define NU_DEFAULT_ALIGN   16
+#define NU_COLOR_WHITE     nu_color(255, 255, 255, 0)
+#define NU_COLOR_GREY      nu_color(128, 128, 128, 0)
+#define NU_COLOR_BLACK     nu_color(0, 0, 0, 0)
+#define NU_COLOR_RED       nu_color(255, 0, 0, 0)
+#define NU_COLOR_GREEN     nu_color(0, 255, 0, 0)
+#define NU_COLOR_BLUE      nu_color(0, 0, 255, 0)
+#define NU_COLOR_BLUE_SKY  nu_color(52, 181, 248, 0)
+#define NU_COLOR_BLUE_DARK nu_color(25, 27, 43, 255)
+#define NU_PI              3.14159265359
+#define NU_FLT_MAX         3.402823E+38
 
 #define NU_MIN(a, b)          (((a) < (b)) ? (a) : (b))
 #define NU_MAX(a, b)          (((a) > (b)) ? (a) : (b))

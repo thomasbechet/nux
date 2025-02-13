@@ -204,15 +204,18 @@ NU_API nu_f32_t  nu_sin(nu_f32_t x);
 NU_API nu_f32_t  nu_tan(nu_f32_t x);
 NU_API nu_f32_t  nu_exp(nu_f32_t x);
 
-NU_API nu_v2_t nu_v2(nu_f32_t x, nu_f32_t y);
-NU_API nu_v2_t nu_v2_v2u(nu_v2u_t v);
-NU_API nu_v2_t nu_v2_add(nu_v2_t a, nu_v2_t b);
-NU_API nu_v2_t nu_v2_sub(nu_v2_t a, nu_v2_t b);
-NU_API nu_v2_t nu_v2_mul(nu_v2_t a, nu_v2_t b);
-NU_API nu_v2_t nu_v2_muls(nu_v2_t a, nu_f32_t s);
-NU_API nu_v2_t nu_v2_div(nu_v2_t a, nu_v2_t b);
-NU_API nu_v2_t nu_v2_divs(nu_v2_t a, nu_f32_t s);
-NU_API nu_v2_t nu_v2_floor(nu_v2_t a);
+NU_API nu_v2_t  nu_v2(nu_f32_t x, nu_f32_t y);
+NU_API nu_v2_t  nu_v2_v2u(nu_v2u_t v);
+NU_API nu_v2_t  nu_v2_add(nu_v2_t a, nu_v2_t b);
+NU_API nu_v2_t  nu_v2_sub(nu_v2_t a, nu_v2_t b);
+NU_API nu_v2_t  nu_v2_mul(nu_v2_t a, nu_v2_t b);
+NU_API nu_v2_t  nu_v2_muls(nu_v2_t a, nu_f32_t s);
+NU_API nu_v2_t  nu_v2_div(nu_v2_t a, nu_v2_t b);
+NU_API nu_v2_t  nu_v2_divs(nu_v2_t a, nu_f32_t s);
+NU_API nu_v2_t  nu_v2_floor(nu_v2_t a);
+NU_API nu_f32_t nu_v2_dot(nu_v2_t a, nu_v2_t b);
+NU_API nu_f32_t nu_v2_norm(nu_v2_t a);
+NU_API nu_v2_t  nu_v2_normalize(nu_v2_t v);
 
 NU_API nu_v3_t  nu_v3(nu_f32_t x, nu_f32_t y, nu_f32_t z);
 NU_API nu_v3_t  nu_v3s(nu_f32_t s);

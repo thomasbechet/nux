@@ -176,6 +176,29 @@ nu_v2_floor (nu_v2_t a)
     ret.y = nu_floor(a.y);
     return ret;
 }
+nu_f32_t
+nu_v2_dot (nu_v2_t a, nu_v2_t b)
+{
+    return a.x * b.x + a.y * b.y;
+}
+nu_f32_t
+nu_v2_norm (nu_v2_t a)
+{
+    return nu_sqrt(nu_v2_dot(a, a));
+}
+nu_v2_t
+nu_v2_normalize (nu_v2_t v)
+{
+    nu_f32_t norm = nu_v2_norm(v);
+    if (norm == 0)
+    {
+        return NU_V2_ZEROS;
+    }
+    nu_v2_t ret;
+    ret.x = v.x / norm;
+    ret.y = v.y / norm;
+    return ret;
+}
 
 nu_v3_t
 nu_v3 (nu_f32_t x, nu_f32_t y, nu_f32_t z)

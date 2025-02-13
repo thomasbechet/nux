@@ -111,7 +111,7 @@ debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
         }
         if (look.y != 0)
         {
-            controller.pitch += look.y * dt;
+            controller.pitch -= look.y * dt;
         }
         controller.pitch = NU_CLAMP(controller.pitch, -90.0, 90.0);
         controller.rot   = nu_q4_axis(NU_V3_UP, -nu_radian(controller.yaw));

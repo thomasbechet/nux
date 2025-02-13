@@ -6,9 +6,9 @@
 [x] Draw fog effect
 [x] Draw primitives
 [x] Draw color
+[x] Fix 'Is a directory'
 [ ] Gamepad example
 [ ] Model animation
-[x] Fix 'Is a directory'
 [ ] Remove os_gpu_init (probably useless)
 [ ] Check bounds for 2d rendering
 [ ] Scissor / Viewport commands
