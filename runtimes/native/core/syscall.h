@@ -1,7 +1,7 @@
 #ifndef SYSCALL_H
 #define SYSCALL_H
 
-#include <nulib/nulib.h>
+#include <nulib.h>
 
 typedef struct vm vm_t;
 

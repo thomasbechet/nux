@@ -1,6 +1,6 @@
 #ifndef FONT_DATA_H
 #define FONT_DATA_H
-#include <nulib/nulib.h>
+#include <nulib.h>
 #define DEFAULT_FONT_DATA_WIDTH  9
 #define DEFAULT_FONT_DATA_HEIGHT 8
 static const nu_byte_t default_font_data_chars[]

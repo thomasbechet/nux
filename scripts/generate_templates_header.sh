@@ -12,7 +12,7 @@ OUTPUT=$ROOT_DIR/sdk/templates_data.h
 printf "#ifndef SDK_TEMPLATES_DATA_H\n" > $OUTPUT
 printf "#define SDK_TEMPLATES_DATA_H\n" >> $OUTPUT
 
-printf "#include <nulib/nulib.h>\n" >> $OUTPUT
+printf "#include <nulib.h>\n" >> $OUTPUT
 printf "typedef struct
 {const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } sdk_template_file_t;\n" >> $OUTPUT
 

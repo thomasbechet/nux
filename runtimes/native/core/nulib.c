@@ -1,2 +1,2 @@
 #define NU_IMPLEMENTATION
-#include <nulib/nulib.h>
+#include <nulib.h>

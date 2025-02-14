@@ -1,7 +1,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
-#include <nulib/nulib.h>
+#include <nulib.h>
 
 typedef enum
 {
