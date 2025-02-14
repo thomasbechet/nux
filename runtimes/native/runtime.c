@@ -19,6 +19,8 @@ runtime_init (const runtime_info_t *info)
     vm_t        vm;
     vm_config_t config;
     vm_config_default(&config);
+    nu_byte_t *save_state = runtime_malloc(vm_config_state_memsize(&config));
+    NU_ASSERT(save_state);
 
     status = vm_init(&vm, &config);
     NU_CHECK(status, goto cleanup3);
@@ -28,11 +30,30 @@ runtime_init (const runtime_info_t *info)
     status = vm_load(&vm, name);
     NU_CHECK(status, goto cleanup4);
 
-    while (vm.running && !window_close_requested())
+    while (vm.running)
     {
         window_poll_events();
         vm_tick(&vm);
         window_swap_buffers();
+
+        window_command_t cmd;
+        while (window_poll_command(&cmd))
+        {
+            switch (cmd)
+            {
+                case COMMAND_EXIT:
+                    vm.running = NU_FALSE;
+                    break;
+                case COMMAND_SAVE_STATE:
+                    vm_log(&vm, NU_LOG_INFO, "SAVING STATE");
+                    vm_save_state(&vm, save_state);
+                    break;
+                case COMMAND_LOAD_STATE:
+                    vm_log(&vm, NU_LOG_INFO, "LOADING STATE");
+                    vm_load_state(&vm, save_state);
+                    break;
+            }
+        }
     }
 
 cleanup4:

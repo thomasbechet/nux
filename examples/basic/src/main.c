@@ -52,9 +52,9 @@ update (void)
     clear(c);
     nu_f32_t       near  = 100 + nu_sin(time) * 10.0;
     const nu_f32_t fog[] = { 1, near, near + 30 };
-    fogparams(fog);
+    fog_params(fog);
     clear(c);
-    fogcolor(c);
+    fog_color(c);
 
     nu_f32_t scale = 1.5;
     nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));
@@ -82,10 +82,10 @@ update (void)
         points[i * 3 + 2] = nu_sin(i * 0.3);
     }
     color(0xFF0000FF);
-    drawl(points, count);
+    draw_lines(points, count);
     const nu_f32_t center[] = { 0, 0, 0 };
     const nu_f32_t size[]   = { 1, 1, 1 };
-    drawc(center, size);
+    draw_cube(center, size);
     color(0xFFFFFFFF);
 
     char buf[256];

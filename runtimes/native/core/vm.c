@@ -5,6 +5,8 @@
 #include "platform.h"
 #include "bios.h"
 
+#include <string.h>
+
 nu_status_t
 vm_init (vm_t *vm, const vm_config_t *config)
 {
@@ -47,29 +49,36 @@ vm_tick (vm_t *vm)
 void
 vm_save_state (const vm_t *vm, void *state)
 {
+    // TODO: optimize nu_memcpy
     nu_byte_t *p = state;
-    nu_memcpy(p, vm->gpu.vram, vm->gpu.vram_capa);
+    memcpy(p, vm->gpu.vram, vm->gpu.vram_capa);
     p += vm->gpu.vram_capa;
+    memcpy(p, vm->cpu.ram, vm->cpu.ram_capa);
+    p += vm->cpu.ram_capa;
 }
 nu_status_t
 vm_load_state (vm_t *vm, const void *state)
 {
     const nu_byte_t *p = state;
-    nu_memcpy(vm->gpu.vram, p, vm->gpu.vram_capa);
+    memcpy(vm->gpu.vram, p, vm->gpu.vram_capa);
+    p += vm->gpu.vram_capa;
+    memcpy(vm->cpu.ram, p, vm->cpu.ram_capa);
+    p += vm->cpu.ram_capa;
     // TODO: update backend
+    gpu_reload_state(vm);
     return NU_SUCCESS;
 }
 
 void
 vm_config_default (vm_config_t *config)
 {
-    config->cpu.ram_capacity  = NU_MEM_256M;
+    config->cpu.ram_capacity  = NU_MEM_128M;
     config->gpu.vram_capacity = NU_MEM_32M;
 }
 nu_size_t
 vm_config_state_memsize (const vm_config_t *config)
 {
-    return config->gpu.vram_capacity;
+    return config->gpu.vram_capacity + config->cpu.ram_capacity;
 }
 
 void

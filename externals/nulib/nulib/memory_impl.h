@@ -38,7 +38,6 @@ nu_memcpy (void *dst, const void *src, nu_size_t n)
     nu_size_t        i;
     nu_byte_t       *u8_dst = (nu_byte_t *)dst;
     const nu_byte_t *u8_src = (const nu_byte_t *)src;
-
     for (i = 0; i < n; ++i)
     {
         u8_dst[i] = u8_src[i];

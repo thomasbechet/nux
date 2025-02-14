@@ -23,10 +23,11 @@
 // #define GPU_SCREEN_WIDTH  320
 // #define GPU_SCREEN_HEIGHT 200
 
-#define GPU_MAX_POOL    32
-#define GPU_MAX_TEXTURE 1024
-#define GPU_MAX_MESH    1024
-#define GPU_MAX_MODEL   1024
+#define GPU_MAX_POOL        32
+#define GPU_MAX_TEXTURE     1024
+#define GPU_MAX_MESH        1024
+#define GPU_MAX_MODEL       1024
+#define GPU_MAX_SPRITESHEET 256
 
 #define GPU_GLOBAL_POOL (gpu_index_t)(-1)
 
@@ -98,18 +99,29 @@ typedef struct
 
 typedef struct
 {
-    nu_byte_t    *vram;
-    nu_u32_t      vram_size;
-    nu_u32_t      vram_capa;
-    gpu_state_t   state;
-    gpu_pool_t    pools[GPU_MAX_POOL];
-    gpu_texture_t textures[GPU_MAX_TEXTURE];
-    gpu_mesh_t    meshes[GPU_MAX_MESH];
-    gpu_model_t   models[GPU_MAX_MODEL];
+    gpu_index_t texture;
+    nu_u32_t    row;
+    nu_u32_t    col;
+    nu_u32_t    fwidth;
+    nu_u32_t    fheight;
+} gpu_spritesheet_t;
+
+typedef struct
+{
+    nu_byte_t        *vram;
+    nu_u32_t          vram_size;
+    nu_u32_t          vram_capa;
+    gpu_state_t       state;
+    gpu_pool_t        pools[GPU_MAX_POOL];
+    gpu_texture_t     textures[GPU_MAX_TEXTURE];
+    gpu_mesh_t        meshes[GPU_MAX_MESH];
+    gpu_model_t       models[GPU_MAX_MODEL];
+    gpu_spritesheet_t spritesheets[GPU_MAX_SPRITESHEET];
 } gpu_t;
 
 nu_status_t gpu_init(vm_t *vm, const gpu_config_t *config);
 nu_status_t gpu_free(vm_t *vm);
+void        gpu_reload_state(vm_t *vm);
 void        gpu_begin_frame(vm_t *vm);
 void        gpu_end_frame(vm_t *vm);
 gpu_addr_t  gpu_malloc(vm_t *vm, nu_u32_t n);

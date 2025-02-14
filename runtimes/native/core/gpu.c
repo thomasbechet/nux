@@ -125,6 +125,28 @@ gpu_free (vm_t *vm)
     return NU_SUCCESS;
 }
 void
+gpu_reload_state (vm_t *vm)
+{
+    for (nu_size_t i = 0; i < GPU_MAX_TEXTURE; ++i)
+    {
+        if (vm->gpu.textures[i].addr != GPU_ADDR_NULL)
+        {
+            os_gpu_free_texture(vm, i);
+            os_gpu_init_texture(vm, i);
+            os_gpu_update_texture(vm, i);
+        }
+    }
+    for (nu_size_t i = 0; i < GPU_MAX_MESH; ++i)
+    {
+        if (vm->gpu.meshes[i].addr != GPU_ADDR_NULL)
+        {
+            os_gpu_free_mesh(vm, i);
+            os_gpu_init_mesh(vm, i);
+            os_gpu_update_mesh(vm, i);
+        }
+    }
+}
+void
 gpu_begin_frame (vm_t *vm)
 {
     os_gpu_begin_frame(vm);
@@ -177,7 +199,7 @@ sys_cleargpool (vm_t *vm, nu_u32_t index)
 }
 
 nu_status_t
-sys_alloctex (vm_t *vm, nu_u32_t index, nu_u32_t size)
+sys_set_texture (vm_t *vm, nu_u32_t index, nu_u32_t size)
 {
     if (index >= GPU_MAX_TEXTURE
         || vm->gpu.textures[index].addr != GPU_ADDR_NULL)
@@ -204,13 +226,13 @@ sys_alloctex (vm_t *vm, nu_u32_t index, nu_u32_t size)
     return NU_SUCCESS;
 }
 nu_status_t
-sys_writetex (vm_t       *vm,
-              nu_u32_t    index,
-              nu_u32_t    x,
-              nu_u32_t    y,
-              nu_u32_t    w,
-              nu_u32_t    h,
-              const void *p)
+sys_write_texture (vm_t       *vm,
+                   nu_u32_t    index,
+                   nu_u32_t    x,
+                   nu_u32_t    y,
+                   nu_u32_t    w,
+                   nu_u32_t    h,
+                   const void *p)
 {
     nu_byte_t     *data    = texture_data(vm, index);
     gpu_texture_t *texture = vm->gpu.textures + index;
@@ -226,11 +248,11 @@ sys_writetex (vm_t       *vm,
     return NU_SUCCESS;
 }
 nu_status_t
-sys_allocmesh (vm_t                  *vm,
-               nu_u32_t               index,
-               nu_u32_t               count,
-               sys_primitive_t        primitive,
-               sys_vertex_attribute_t attributes)
+sys_set_mesh (vm_t                  *vm,
+              nu_u32_t               index,
+              nu_u32_t               count,
+              sys_primitive_t        primitive,
+              sys_vertex_attribute_t attributes)
 {
     if (index >= GPU_MAX_MESH || vm->gpu.meshes[index].addr != GPU_ADDR_NULL)
     {
@@ -248,12 +270,12 @@ sys_allocmesh (vm_t                  *vm,
     return NU_SUCCESS;
 }
 nu_status_t
-sys_writemesh (vm_t                  *vm,
-               nu_u32_t               index,
-               sys_vertex_attribute_t attributes,
-               nu_u32_t               first,
-               nu_u32_t               count,
-               const void            *p)
+sys_write_mesh (vm_t                  *vm,
+                nu_u32_t               index,
+                sys_vertex_attribute_t attributes,
+                nu_u32_t               first,
+                nu_u32_t               count,
+                const void            *p)
 {
     nu_f32_t *ptr = mesh_data(vm, index);
     NU_CHECK(ptr, return NU_FAILURE);
@@ -311,7 +333,7 @@ sys_writemesh (vm_t                  *vm,
 }
 
 nu_status_t
-sys_allocmodel (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
+sys_set_model (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
 {
     if (index >= GPU_MAX_MODEL || vm->gpu.models[index].addr != GPU_ADDR_NULL)
     {
@@ -327,13 +349,13 @@ sys_allocmodel (vm_t *vm, nu_u32_t index, nu_u32_t node_count)
     return NU_SUCCESS;
 }
 nu_status_t
-sys_writemodel (vm_t           *vm,
-                nu_u32_t        index,
-                nu_u32_t        node_index,
-                nu_u32_t        mesh,
-                nu_u32_t        texture,
-                nu_u32_t        parent,
-                const nu_f32_t *transform)
+sys_write_model (vm_t           *vm,
+                 nu_u32_t        index,
+                 nu_u32_t        node_index,
+                 nu_u32_t        mesh,
+                 nu_u32_t        texture,
+                 nu_u32_t        parent,
+                 const nu_f32_t *transform)
 {
     NU_CHECK(model_data(vm, index), return NU_FAILURE);
     if (node_index >= vm->gpu.models[index].node_count)
@@ -371,14 +393,14 @@ sys_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
     vm->gpu.state.cursor = nu_v2u(x, y);
 }
 void
-sys_fogparams (vm_t *vm, const nu_f32_t *params)
+sys_fog_params (vm_t *vm, const nu_f32_t *params)
 {
     vm->gpu.state.fog_density = nu_fabs(params[0]);
     vm->gpu.state.fog_near    = nu_fabs(params[1]);
     vm->gpu.state.fog_far     = NU_MAX(vm->gpu.state.fog_near, params[2]);
 }
 void
-sys_fogcolor (vm_t *vm, nu_u32_t color)
+sys_fog_color (vm_t *vm, nu_u32_t color)
 {
     vm->gpu.state.fog_color = nu_color_from_u32(color);
 }
@@ -399,17 +421,17 @@ sys_draw (vm_t *vm, nu_u32_t index)
     os_gpu_draw_model(vm, index);
 }
 void
-sys_drawc (vm_t *vm, const nu_f32_t *p, const nu_f32_t *s)
+sys_draw_cube (vm_t *vm, const nu_f32_t *p, const nu_f32_t *s)
 {
     os_gpu_draw_cube(vm, p, s);
 }
 void
-sys_drawl (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
+sys_draw_lines (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
 {
     os_gpu_draw_lines(vm, p, n, NU_FALSE);
 }
 void
-sys_drawls (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
+sys_draw_linestrip (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
 {
     os_gpu_draw_lines(vm, p, n, NU_TRUE);
 }
@@ -430,6 +452,39 @@ sys_blit (
 {
     NU_CHECK(texture_data(vm, index), return);
     os_gpu_draw_blit(vm, index, x, y, w, h);
+}
+void
+sys_set_spritesheet (vm_t    *vm,
+                     nu_u32_t index,
+                     nu_u32_t texture,
+                     nu_u32_t row,
+                     nu_u32_t col,
+                     nu_u32_t fwidth,
+                     nu_u32_t fheight)
+{
+    if (index >= GPU_MAX_SPRITESHEET)
+    {
+        vm_log(vm, NU_LOG_ERROR, "Invalid spritesheet index %d", index);
+        return;
+    }
+    vm->gpu.spritesheets[index].texture = texture;
+    vm->gpu.spritesheets[index].row     = row;
+    vm->gpu.spritesheets[index].col     = col;
+    vm->gpu.spritesheets[index].fwidth  = fwidth;
+    vm->gpu.spritesheets[index].fheight = fheight;
+}
+void
+sys_sprite (vm_t *vm, nu_u32_t spritesheet, nu_u32_t sprite)
+{
+    if (spritesheet >= GPU_MAX_SPRITESHEET)
+    {
+        vm_log(vm, NU_LOG_ERROR, "Invalid spritesheet index %d", spritesheet);
+        return;
+    }
+    const gpu_spritesheet_t *ss = vm->gpu.spritesheets + spritesheet;
+    nu_u32_t                 x  = (sprite % ss->row) * ss->fwidth;
+    nu_u32_t                 y  = (sprite / ss->row) * ss->fheight;
+    os_gpu_draw_blit(vm, ss->texture, x, y, ss->fwidth, ss->fheight);
 }
 
 nu_u32_t

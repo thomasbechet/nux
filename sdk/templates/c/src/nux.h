@@ -113,45 +113,50 @@ WASM_EXPORT("gpool")
 void gpool(u32 index);
 WASM_EXPORT("cleargpool")
 void cleargpool(u32 index);
-WASM_EXPORT("alloctex")
-void alloctex(u32 idx, u32 size);
-WASM_EXPORT("writetex")
-void writetex(u32 idx, u32 x, u32 y, u32 w, u32 h, const void *p);
-WASM_EXPORT("allocmesh")
-void allocmesh(u32 idx, u32 count, u32 primitive, u32 attribs);
-WASM_EXPORT("writemesh")
-void writemesh(u32 idx, u32 attribs, u32 first, u32 count, const void *p);
-WASM_EXPORT("allocmodel")
-void allocmodel(u32 idx, u32 count);
-WASM_EXPORT("writemodel")
-void writemodel(
+WASM_EXPORT("set_texture")
+void set_texture(u32 idx, u32 size);
+WASM_EXPORT("write_texture")
+void write_texture(u32 idx, u32 x, u32 y, u32 w, u32 h, const void *p);
+WASM_EXPORT("set_mesh")
+void set_mesh(u32 idx, u32 count, u32 primitive, u32 attribs);
+WASM_EXPORT("write_mesh")
+void write_mesh(u32 idx, u32 attribs, u32 first, u32 count, const void *p);
+WASM_EXPORT("set_model")
+void set_model(u32 idx, u32 count);
+WASM_EXPORT("write_model")
+void write_model(
     u32 idx, u32 node, u32 mesh, u32 texture, u32 parent, const f32 *transform);
 WASM_EXPORT("transform")
 void transform(u32 transform, const f32 *m);
 WASM_EXPORT("cursor")
 void cursor(u32 x, u32 y);
-WASM_EXPORT("fogparams")
-void fogparams(const f32 *params);
-WASM_EXPORT("fogcolor")
-void fogcolor(u32 color);
+WASM_EXPORT("fog_params")
+void fog_params(const f32 *params);
+WASM_EXPORT("fog_color")
+void fog_color(u32 color);
 WASM_EXPORT("clear")
 void clear(u32 color);
 WASM_EXPORT("color")
 void color(u32 color);
 WASM_EXPORT("draw")
 void draw(u32 index);
-WASM_EXPORT("drawc")
-void drawc(const f32 *c, const f32 *s);
-WASM_EXPORT("drawl")
-void drawl(const f32 *p, u32 n);
-WASM_EXPORT("drawls")
-void drawls(const f32 *p, u32 n);
+WASM_EXPORT("draw_cube")
+void draw_cube(const f32 *c, const f32 *s);
+WASM_EXPORT("draw_lines")
+void draw_lines(const f32 *p, u32 n);
+WASM_EXPORT("draw_linestrip")
+void draw_linestrip(const f32 *p, u32 n);
 WASM_EXPORT("text")
 void text(const void *text);
 WASM_EXPORT("print")
 void print(const void *text);
 WASM_EXPORT("blit")
 void blit(u32 index, u32 x, u32 y, u32 w, u32 h);
+WASM_EXPORT("set_spritesheet")
+void set_spritesheet(
+    u32 index, u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
+WASM_EXPORT("sprite")
+void sprite(u32 spritesheet, u32 sprite);
 WASM_EXPORT("button")
 u32 button(u32 player);
 WASM_EXPORT("axis")

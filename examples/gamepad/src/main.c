@@ -2,12 +2,6 @@
 #define NU_IMPLEMENTATION
 #include <nulib.h>
 
-static void
-blitt (nu_u32_t idx, nu_u32_t ts, nu_u32_t x, nu_u32_t y)
-{
-    blit(idx, x * ts, y * ts, ts, ts);
-}
-
 static nu_u32_t pressed[] = {
     3, 1, // A
     3, 0, // Y
@@ -34,6 +28,11 @@ static nu_u32_t released[] = {
 };
 
 static void
+blitt (nu_u32_t x, nu_u32_t y)
+{
+    sprite(0, y * 10 + x);
+}
+static void
 draw_button (nu_u32_t player, button_t b, nu_u32_t x, nu_u32_t y)
 {
     cursor(x, y);
@@ -47,7 +46,7 @@ draw_button (nu_u32_t player, button_t b, nu_u32_t x, nu_u32_t y)
     {
         map = released;
     }
-    blitt(0, 16, map[i * 2 + 0], map[i * 2 + 1]);
+    blitt(map[i * 2 + 0], map[i * 2 + 1]);
 }
 static void
 draw_stick (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
@@ -59,9 +58,9 @@ draw_stick (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
     nu_u32_t tx     = left ? 0 : 1;
     nu_u32_t ty     = 8;
     cursor(x, y);
-    blitt(0, 16, 2, ty);
+    blitt(2, ty);
     cursor(x + offset * ax.x, y - offset * ax.y);
-    blitt(0, 16, tx, ty);
+    blitt(tx, ty);
 }
 static void
 draw_trigger (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
@@ -71,12 +70,11 @@ draw_trigger (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
     nu_u32_t tx     = 6;
     nu_u32_t ty     = left ? 4 : 5;
     cursor(x, y + offset * ax);
-    blitt(0, 16, tx, ty);
+    blitt(tx, ty);
 }
 static void
 draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)
 {
-
     draw_stick(player, NU_TRUE, x - 50, y - 10);
     draw_stick(player, NU_FALSE, x + 20, y + 20);
 
@@ -108,6 +106,7 @@ draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)
 void
 start (void)
 {
+    set_spritesheet(0, 0, 10, 9, 16, 16);
 }
 
 void

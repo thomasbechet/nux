@@ -35,7 +35,7 @@ load_texture (vm_t *vm, const cart_chunk_entry_t *entry)
            size);
     // TODO: validate size
     nu_size_t data_length = gpu_texture_memsize(size);
-    sys_alloctex(vm, entry->extra.texture.index, size);
+    sys_set_texture(vm, entry->extra.texture.index, size);
     gpu_texture_t *texture = vm->gpu.textures + entry->extra.texture.index;
     NU_CHECK(cart_read(vm, vm->gpu.vram + texture->addr, data_length),
              return NU_FAILURE);
@@ -56,7 +56,7 @@ load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
            count,
            primitive,
            attributes);
-    sys_allocmesh(vm, entry->extra.mesh.index, count, primitive, attributes);
+    sys_set_mesh(vm, entry->extra.mesh.index, count, primitive, attributes);
     gpu_mesh_t *mesh = vm->gpu.meshes + entry->extra.mesh.index;
     NU_ASSERT(os_cart_read(
         vm, vm->gpu.vram + mesh->addr, gpu_vertex_memsize(attributes, count)));
@@ -68,7 +68,7 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
 {
     nu_u32_t node_count;
     NU_CHECK(cart_read_u32(vm, &node_count), return NU_FAILURE);
-    NU_CHECK(sys_allocmodel(vm, entry->extra.model.index, node_count),
+    NU_CHECK(sys_set_model(vm, entry->extra.model.index, node_count),
              return NU_FAILURE);
     vm_log(vm,
            NU_LOG_INFO,
@@ -90,7 +90,7 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
                mesh,
                texture,
                parent);
-        NU_CHECK(sys_writemodel(vm,
+        NU_CHECK(sys_write_model(vm,
                                 entry->extra.model.index,
                                 i,
                                 mesh,

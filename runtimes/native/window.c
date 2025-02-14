@@ -7,6 +7,8 @@
 #define RGFW_IMPLEMENTATION
 #include <rgfw/RGFW.h>
 
+#define MAX_COMMAND 64
+
 typedef enum
 {
     VIEWPORT_FIXED,
@@ -26,14 +28,15 @@ typedef struct
 
 static struct
 {
-    nu_bool_t    close_requested;
-    nu_bool_t    fullscreen;
-    nu_bool_t    switch_fullscreen;
-    viewport_t   viewport;
-    RGFW_rect    previous_rect;
-    RGFW_window *win;
-    nu_u32_t     buttons[MAX_PLAYER];
-    nu_f32_t     axis[MAX_PLAYER][SYS_AXIS_ENUM_MAX];
+    nu_bool_t        fullscreen;
+    nu_bool_t        switch_fullscreen;
+    viewport_t       viewport;
+    RGFW_rect        previous_rect;
+    RGFW_window     *win;
+    nu_u32_t         buttons[MAX_PLAYER];
+    nu_f32_t         axis[MAX_PLAYER][SYS_AXIS_ENUM_MAX];
+    window_command_t cmds[MAX_COMMAND];
+    nu_size_t        cmds_count;
 } window;
 
 static void
@@ -99,9 +102,9 @@ window_init (void)
     const nu_int_t height = 900;
 
     // Initialize values
-    window.close_requested   = NU_FALSE;
     window.fullscreen        = NU_FALSE;
     window.switch_fullscreen = NU_FALSE;
+    window.cmds_count        = 0;
 
     // Create window
     window.win = RGFW_createWindow(
@@ -242,7 +245,7 @@ window_poll_events (void)
         // Check close requested
         if (RGFW_window_shouldClose(window.win))
         {
-            window.close_requested = NU_TRUE;
+            window.cmds[window.cmds_count++] = COMMAND_EXIT;
         }
 
         // Process events
@@ -270,11 +273,19 @@ window_poll_events (void)
                 case RGFW_keyReleased: {
                     if (window.win->event.key == RGFW_escape)
                     {
-                        window.close_requested = NU_TRUE;
+                        window.cmds[window.cmds_count++] = COMMAND_EXIT;
                     }
                     if (window.win->event.key == RGFW_p)
                     {
                         window.switch_fullscreen = NU_TRUE;
+                    }
+                    if (window.win->event.key == RGFW_t)
+                    {
+                        window.cmds[window.cmds_count++] = COMMAND_SAVE_STATE;
+                    }
+                    if (window.win->event.key == RGFW_y)
+                    {
+                        window.cmds[window.cmds_count++] = COMMAND_LOAD_STATE;
                     }
                     sys_button_t button = key_to_button(window.win->event.key);
                     nu_f32_t     axvalue;
@@ -312,12 +323,14 @@ window_poll_events (void)
                 case RGFW_gamepadConnected:
                     printf("Gamepad (%i) connected %s\n",
                            window.win->event.gamepad,
-                           RGFW_getGamepadName(window.win, window.win->event.gamepad));
+                           RGFW_getGamepadName(window.win,
+                                               window.win->event.gamepad));
                     break;
                 case RGFW_gamepadDisconnected:
                     printf("Gamepad (%i) disconnected %s\n",
                            window.win->event.gamepad,
-                           RGFW_getGamepadName(window.win, window.win->event.gamepad));
+                           RGFW_getGamepadName(window.win,
+                                               window.win->event.gamepad));
                     break;
 
                 case RGFW_mouseButtonPressed:
@@ -364,15 +377,20 @@ window_swap_buffers (void)
 {
     RGFW_window_swapBuffers(window.win);
 }
-nu_bool_t
-window_close_requested (void)
-{
-    return window.close_requested;
-}
 nu_b2i_t
 window_get_render_viewport (void)
 {
     return window.viewport.viewport;
+}
+nu_bool_t
+window_poll_command (window_command_t *cmd)
+{
+    if (!window.cmds_count)
+    {
+        return NU_FALSE;
+    }
+    *cmd = window.cmds[--window.cmds_count];
+    return NU_TRUE;
 }
 
 void
