@@ -32,8 +32,8 @@ static struct
     viewport_t   viewport;
     RGFW_rect    previous_rect;
     RGFW_window *win;
-    nu_u32_t     button;
-    nu_f32_t     axis[SYS_AXIS_ENUM_MAX];
+    nu_u32_t     buttons[MAX_PLAYER];
+    nu_f32_t     axis[MAX_PLAYER][SYS_AXIS_ENUM_MAX];
 } window;
 
 static void
@@ -104,8 +104,8 @@ window_init (void)
     window.switch_fullscreen = NU_FALSE;
 
     // Create window
-    window.win
-        = RGFW_createWindow("nux", RGFW_RECT(0, 0, width, height), RGFW_CENTER);
+    window.win = RGFW_createWindow(
+        "nux", RGFW_RECT(0, 0, width, height), RGFW_windowCenter);
     RGFW_window_swapInterval(window.win, 1);
 
     // Initialize viewport
@@ -133,13 +133,13 @@ key_to_button (nu_u32_t code)
     switch (code)
     {
         // D-Pad
-        case RGFW_Left:
+        case RGFW_left:
             return SYS_BUTTON_LEFT;
-        case RGFW_Down:
+        case RGFW_down:
             return SYS_BUTTON_DOWN;
-        case RGFW_Up:
+        case RGFW_up:
             return SYS_BUTTON_UP;
-        case RGFW_Right:
+        case RGFW_right:
             return SYS_BUTTON_RIGHT;
 
         // Triggers
@@ -205,6 +205,35 @@ key_to_axis (nu_u32_t code, nu_f32_t *value)
     }
     return -1;
 }
+static sys_button_t
+gamepad_to_button (nu_u32_t button)
+{
+    switch (button)
+    {
+        case RGFW_gamepadA:
+            return SYS_BUTTON_A;
+        case RGFW_gamepadX:
+            return SYS_BUTTON_X;
+        case RGFW_gamepadY:
+            return SYS_BUTTON_Y;
+        case RGFW_gamepadB:
+            return SYS_BUTTON_B;
+        case RGFW_gamepadUp:
+            return SYS_BUTTON_UP;
+        case RGFW_gamepadDown:
+            return SYS_BUTTON_DOWN;
+        case RGFW_gamepadLeft:
+            return SYS_BUTTON_LEFT;
+        case RGFW_gamepadRight:
+            return SYS_BUTTON_RIGHT;
+        case RGFW_gamepadL1:
+            return SYS_BUTTON_LB;
+        case RGFW_gamepadR1:
+            return SYS_BUTTON_RB;
+        default:
+            return -1;
+    }
+}
 void
 window_poll_events (void)
 {
@@ -224,47 +253,73 @@ window_poll_events (void)
                 case RGFW_mousePosChanged:
                     break;
                 case RGFW_keyPressed: {
-                    sys_button_t button
-                        = key_to_button(window.win->event.keyCode);
-                    nu_f32_t   axvalue;
-                    sys_axis_t axis
-                        = key_to_axis(window.win->event.keyCode, &axvalue);
+                    sys_button_t button = key_to_button(window.win->event.key);
+                    nu_f32_t     axvalue;
+                    sys_axis_t   axis
+                        = key_to_axis(window.win->event.key, &axvalue);
                     if (button != (sys_button_t)-1)
                     {
-                        window.button |= button;
+                        window.buttons[0] |= button;
                     }
                     if (axis != (sys_axis_t)-1)
                     {
-                        window.axis[axis] = axvalue;
+                        window.axis[0][axis] = axvalue;
                     }
                 }
                 break;
                 case RGFW_keyReleased: {
-                    if (window.win->event.keyCode == RGFW_Escape)
+                    if (window.win->event.key == RGFW_escape)
                     {
                         window.close_requested = NU_TRUE;
                     }
-                    if (window.win->event.keyCode == RGFW_p)
+                    if (window.win->event.key == RGFW_p)
                     {
                         window.switch_fullscreen = NU_TRUE;
                     }
-                    sys_button_t button
-                        = key_to_button(window.win->event.keyCode);
-                    nu_f32_t   axvalue;
-                    sys_axis_t axis
-                        = key_to_axis(window.win->event.keyCode, &axvalue);
+                    sys_button_t button = key_to_button(window.win->event.key);
+                    nu_f32_t     axvalue;
+                    sys_axis_t   axis
+                        = key_to_axis(window.win->event.key, &axvalue);
                     if (button != (sys_button_t)-1)
                     {
-                        window.button &= ~button;
+                        window.buttons[0] &= ~button;
                     }
                     if (axis != (sys_axis_t)-1)
                     {
-                        window.axis[axis] = 0;
+                        window.axis[0][axis] = 0;
                     }
                 }
                 break;
-                // case RGFW_gamepadButtonPressed:
-                //     break;
+                case RGFW_gamepadButtonPressed: {
+                    printf("%d\n", window.win->event.button);
+                    sys_button_t button
+                        = gamepad_to_button(window.win->event.button);
+                    if (button != (sys_button_t)-1)
+                    {
+                        window.buttons[1] |= button;
+                    }
+                }
+                break;
+                case RGFW_gamepadButtonReleased: {
+                    sys_button_t button
+                        = gamepad_to_button(window.win->event.button);
+                    if (button != (sys_button_t)-1)
+                    {
+                        window.buttons[1] &= ~button;
+                    }
+                }
+                break;
+                case RGFW_gamepadConnected:
+                    printf("Gamepad (%i) connected %s\n",
+                           window.win->event.gamepad,
+                           RGFW_getGamepadName(window.win, window.win->event.gamepad));
+                    break;
+                case RGFW_gamepadDisconnected:
+                    printf("Gamepad (%i) disconnected %s\n",
+                           window.win->event.gamepad,
+                           RGFW_getGamepadName(window.win, window.win->event.gamepad));
+                    break;
+
                 case RGFW_mouseButtonPressed:
                     break;
                 case RGFW_mouseButtonReleased:
@@ -323,6 +378,6 @@ window_get_render_viewport (void)
 void
 os_gpad_update (vm_t *vm)
 {
-    vm->gamepad.buttons[0] = window.button;
-    nu_memcpy(vm->gamepad.axis[0], window.axis, sizeof(window.axis));
+    nu_memcpy(vm->gamepad.buttons, window.buttons, sizeof(window.buttons));
+    nu_memcpy(vm->gamepad.axis, window.axis, sizeof(window.axis));
 }
