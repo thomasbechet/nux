@@ -7,10 +7,11 @@
 [x] Draw primitives
 [x] Draw color
 [x] Fix 'Is a directory'
-[ ] Gamepad example
-[ ] Model animation
+[~] Gamepad example
+[ ] Support transparency
 [ ] Remove os_gpu_init (probably useless)
+[ ] Model animation
 [ ] Check bounds for 2d rendering
 [ ] Scissor / Viewport commands
-[ ] Support transparency
 [ ] Indexed textures
+[ ] Save / Load GPU resources

@@ -98,8 +98,8 @@ nu_status_t
 window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = 1600;
-    const nu_int_t height = 900;
+    const nu_int_t width  = 1600 / 2;
+    const nu_int_t height = 900 / 2;
 
     // Initialize values
     window.fullscreen        = NU_FALSE;
@@ -107,8 +107,10 @@ window_init (void)
     window.cmds_count        = 0;
 
     // Create window
-    window.win = RGFW_createWindow(
-        "nux", RGFW_RECT(0, 0, width, height), RGFW_windowCenter);
+    RGFW_windowFlags flags = RGFW_windowCenter;
+    flags                  = 0;
+    window.win
+        = RGFW_createWindow("nux", RGFW_RECT(0, 0, width, height), flags);
     RGFW_window_swapInterval(window.win, 1);
 
     // Initialize viewport
@@ -209,7 +211,7 @@ key_to_axis (nu_u32_t code, nu_f32_t *value)
     return -1;
 }
 static sys_button_t
-gamepad_to_button (nu_u32_t button)
+gamepad_button_to_button (nu_u32_t button)
 {
     switch (button)
     {
@@ -302,9 +304,8 @@ window_poll_events (void)
                 }
                 break;
                 case RGFW_gamepadButtonPressed: {
-                    printf("%d\n", window.win->event.button);
                     sys_button_t button
-                        = gamepad_to_button(window.win->event.button);
+                        = gamepad_button_to_button(window.win->event.button);
                     if (button != (sys_button_t)-1)
                     {
                         window.buttons[1] |= button;
@@ -313,7 +314,7 @@ window_poll_events (void)
                 break;
                 case RGFW_gamepadButtonReleased: {
                     sys_button_t button
-                        = gamepad_to_button(window.win->event.button);
+                        = gamepad_button_to_button(window.win->event.button);
                     if (button != (sys_button_t)-1)
                     {
                         window.buttons[1] &= ~button;
@@ -369,6 +370,30 @@ window_poll_events (void)
             }
             window.switch_fullscreen = NU_FALSE;
             window.fullscreen        = !window.fullscreen;
+        }
+
+        // Update gamepad related axis
+        {
+            const nu_u32_t controller = 0;
+            const nu_u32_t player     = 1;
+            nu_v2_t        ax         = nu_v2(
+                RGFW_getGamepadAxis(window.win, controller, 0).x / 100.0,
+                RGFW_getGamepadAxis(window.win, controller, 0).y / 100.0);
+            if (nu_v2_norm(ax) < 0.3)
+            {
+                ax = NU_V2_ZEROS;
+            }
+            window.axis[player][SYS_AXIS_LEFTX] = ax.x;
+            window.axis[player][SYS_AXIS_LEFTY] = -ax.y;
+            ax = nu_v2(RGFW_getGamepadAxis(window.win, controller, 1).x / 100.0,
+                       RGFW_getGamepadAxis(window.win, controller, 1).y
+                           / 100.0);
+            if (nu_v2_norm(ax) < 0.1)
+            {
+                ax = NU_V2_ZEROS;
+            }
+            window.axis[player][SYS_AXIS_RIGHTX] = ax.x;
+            window.axis[player][SYS_AXIS_RIGHTY] = -ax.y;
         }
     }
 }

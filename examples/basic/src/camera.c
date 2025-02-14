@@ -4,6 +4,8 @@
 
 static struct
 {
+    nu_u32_t player;
+
     nu_v3_t  pos;
     nu_v3_t  vel;
     nu_v3_t  acc;
@@ -20,6 +22,8 @@ static struct
 void
 init_debug_camera (nu_v3_t pos)
 {
+    controller.player = 0;
+
     controller.pos   = pos;
     controller.vel   = NU_V3_ZEROS;
     controller.acc   = NU_V3_ZEROS;
@@ -36,12 +40,15 @@ init_debug_camera (nu_v3_t pos)
 void
 debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
 {
-    nu_v3_t look
-        = nu_v3(axis(0, AXIS_RIGHTX) * 100, axis(0, AXIS_RIGHTY) * 100, 0);
+    nu_v3_t look = nu_v3(axis(controller.player, AXIS_RIGHTX) * 100,
+                         axis(controller.player, AXIS_RIGHTY) * 100,
+                         0);
 
-    nu_v3_t move = nu_v3(axis(0, AXIS_LEFTX), 0, axis(0, AXIS_LEFTY));
-    move.y += button(0) & BUTTON_Y ? 1 : 0;
-    move.y -= button(0) & BUTTON_B ? 1 : 0;
+    nu_v3_t move = nu_v3(axis(controller.player, AXIS_LEFTX),
+                         0,
+                         axis(controller.player, AXIS_LEFTY));
+    move.y += button(controller.player) & BUTTON_Y ? 1 : 0;
+    move.y -= button(controller.player) & BUTTON_B ? 1 : 0;
     move = nu_v3_normalize(move);
 
     // Switch mode

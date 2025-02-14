@@ -51,8 +51,12 @@ draw_button (nu_u32_t player, button_t b, nu_u32_t x, nu_u32_t y)
 static void
 draw_stick (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
 {
-    nu_v2_t ax      = nu_v2(axis(player, left ? AXIS_LEFTX : AXIS_RIGHTX),
+    nu_v2_t ax = nu_v2(axis(player, left ? AXIS_LEFTX : AXIS_RIGHTX),
                        axis(player, left ? AXIS_LEFTY : AXIS_RIGHTY));
+    if (nu_v2_norm(ax) < 0.1)
+    {
+        ax = NU_V2_ZEROS;
+    }
     ax              = nu_v2_normalize(ax);
     nu_f32_t offset = 3;
     nu_u32_t tx     = left ? 0 : 1;
