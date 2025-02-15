@@ -1,6 +1,8 @@
 CompileFlags:
   Add: 
     - "-DNU_IMPLEMENTATION"
+    - "-DNUX_IMPLEMENTATION"
     - "-DNU_STDLIB"
     - "-I../../sdk/templates/c/src/"
-    - "-I../../include/"
+    - "-I../../externals/"
+    - "-I../../nuxlib/"

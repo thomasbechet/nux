@@ -4,4 +4,4 @@ CompileFlags:
     - "-DNU_STDLIB"
     - "-DNUX_BUILD_SDK"
     - "-I../../sdk/templates/c/src/"
-    - "-I../../include/"
+    - "-I../../nuxlib/"

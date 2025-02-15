@@ -1,7 +1,9 @@
 #include "nux.h"
 #define NU_IMPLEMENTATION
+#include <nulib/nulib.h>
 #define NUX_IMPLEMENTATION
 #include <nuxlib/freecam.h>
+#include <nuxlib/gamepad.h>
 
 static nu_v3_t pos;
 
@@ -19,6 +21,8 @@ println (nu_char_t *fmt, ...)
 void
 start (void)
 {
+    nux_setup_gamepad(0, 1);
+
     pos = NU_V3_ZEROS;
 
     // const nu_f32_t vertices[] = { -0.5, 0,    0, 0, 0, 1, 0, 0, //
@@ -37,7 +41,7 @@ start (void)
     void *p = malloc(NU_MEM_32M);
     println("%p", p);
 
-    init_debug_camera(nu_v3(0, 10, 0));
+    nux_init_debug_camera(nu_v3(0, 10, 0));
 }
 
 static nu_f32_t rotation = 0.0f;
@@ -62,7 +66,7 @@ update (void)
     m              = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     transform(TRANSFORM_MODEL, m.data);
     nu_v3_t pos;
-    debug_camera(0.02, &pos);
+    nux_debug_camera(0.02, &pos);
     // draw_model(0);
     draw(1);
     m = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
@@ -111,4 +115,6 @@ update (void)
     color(0xFFFFFFFF);
 
     // blit(1, 0, 0, 128, 128);
+    
+    nux_draw_gamepad(0, 60, 270);
 }

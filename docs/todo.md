@@ -15,3 +15,4 @@
 [ ] Scissor / Viewport commands
 [ ] Indexed textures
 [ ] Save / Load GPU resources
+[ ] Combine sdk and projects ?

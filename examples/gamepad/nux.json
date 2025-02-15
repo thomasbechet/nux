@@ -9,7 +9,7 @@
         {
             "type": "image",
             "size": 256,
-            "source": "assets/gamepad.png",
+            "source": "../../nuxlib/assets/gamepad.png",
             "index": 0
         }
 	]

@@ -83,6 +83,7 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     if (!img)
     {
         sdk_log(NU_LOG_ERROR, "Failed to load image file %s", asset->source);
+        return NU_FAILURE;
     }
     nu_size_t  data_size = gpu_texture_memsize(target_size);
     nu_byte_t *data      = sdk_malloc(data_size);

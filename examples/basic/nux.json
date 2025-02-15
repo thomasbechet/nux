@@ -21,6 +21,12 @@
             "type": "model",
             "source": "assets/industrial.glb",
             "index": 1 
+        },
+        {
+            "type": "image",
+            "size": 256,
+            "source": "../../nuxlib/assets/gamepad.png",
+            "index": 1 
         }
 	]
 }
