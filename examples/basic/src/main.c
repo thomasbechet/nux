@@ -4,48 +4,17 @@
 #define NUX_IMPLEMENTATION
 #include <nuxlib/freecam.h>
 #include <nuxlib/gamepad.h>
+#include <nuxlib/print.h>
 
-static nu_v3_t pos;
-
-void
-println (nu_char_t *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    nu_char_t buf[256];
-    vsnprintf(buf, sizeof(buf), fmt, args);
-    trace(buf);
-    va_end(args);
-}
+static nu_f32_t rotation = 0.0f;
+static nu_f32_t time     = 0;
 
 void
 start (void)
 {
     nux_setup_gamepad(0, 1);
-
-    pos = NU_V3_ZEROS;
-
-    // const nu_f32_t vertices[] = { -0.5, 0,    0, 0, 0, 1, 0, 0, //
-    //                               0.5,  0,    0, 0, 1, 0, 1, 0, //
-    //                               0,    0.75, 0, 1, 0, 0, 0, 1 };
-
-    // alloc_texture(0, TEXTURE64, NU_NULL);
-    // alloc_mesh(0,
-    //            3,
-    //            PRIMITIVE_TRIANGLES,
-    //            VERTEX_POSTIION | VERTEX_UV | VERTEX_COLOR,
-    //            vertices);
-    // const nu_f32_t colors[] = { 1, 0, 0, 1, 1, 1, 1, 1, 1 };
-    // write_mesh(0, VERTEX_COLOR, 0, 3, colors);
-
-    void *p = malloc(NU_MEM_32M);
-    println("%p", p);
-
     nux_init_debug_camera(nu_v3(0, 10, 0));
 }
-
-static nu_f32_t rotation = 0.0f;
-static nu_f32_t time     = 0;
 
 void
 update (void)
@@ -72,10 +41,6 @@ update (void)
     m = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
     transform(TRANSFORM_MODEL, m.data);
     draw(1);
-
-    static nu_u32_t prev = 0;
-    // nu_bool_t pressed = button(0) ^ BUTTON_
-    prev = button(0);
 
     const nu_size_t count = 1000;
     nu_f32_t        points[count * 3];
@@ -115,6 +80,6 @@ update (void)
     color(0xFFFFFFFF);
 
     // blit(1, 0, 0, 128, 128);
-    
+
     nux_draw_gamepad(0, 60, 270);
 }

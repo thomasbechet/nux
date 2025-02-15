@@ -1,7 +1,5 @@
-#ifndef NUX_GAMEPAD_IMPL_H
-#define NUX_GAMEPAD_IMPL_H
-
 #include "gamepad.h"
+
 #include <nux.h>
 
 static nu_u32_t nux__pressed[] = {
@@ -116,5 +114,3 @@ nux_draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)
         nux__draw_button(player, BUTTON_X, p.x - offset, p.y);
     }
 }
-
-#endif

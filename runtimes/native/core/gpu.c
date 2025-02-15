@@ -100,7 +100,6 @@ gpu_init (vm_t *vm, const gpu_config_t *config)
     vm->gpu.state.color       = NU_COLOR_WHITE;
     vm->gpu.state.fog_color   = NU_COLOR_WHITE;
     vm->gpu.state.fog_density = 0;
-    os_gpu_init(vm);
     return NU_SUCCESS;
 }
 nu_status_t

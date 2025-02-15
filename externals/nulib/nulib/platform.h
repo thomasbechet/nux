@@ -56,8 +56,7 @@
 #define NU_API NU_API_EXPORT
 
 #ifdef NU_CXX
-#include <bit>
-#define NU_BIG_ENDIAN (std::endian::native == std::endian::big)
+#define NU_BIG_ENDIAN (*(uint16_t *)"\0\xff" < 0x0100)
 #else
 #define NU_BIG_ENDIAN (!*(unsigned char *)&(uint16_t) { 1 })
 #endif

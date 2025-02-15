@@ -11,7 +11,6 @@ void  os_vlog(vm_t            *vm,
               const nu_char_t *fmt,
               va_list          args);
 
-void os_gpu_init(vm_t *vm);
 void os_gpu_init_texture(vm_t *vm, nu_u32_t index);
 void os_gpu_free_texture(vm_t *vm, nu_u32_t index);
 void os_gpu_update_texture(vm_t *vm, nu_u32_t index);

@@ -1,7 +1,5 @@
-#ifndef NUX_FREECAM_IMPL_H
-#define NUX_FREECAM_IMPL_H
-
 #include "freecam.h"
+
 #include <nux.h>
 
 static struct
@@ -173,5 +171,3 @@ nux_debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
         *out_pos = pos;
     }
 }
-
-#endif

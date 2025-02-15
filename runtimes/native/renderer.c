@@ -347,6 +347,52 @@ free_canvas (void)
 {
     // TODO:
 }
+static void
+gen_vertex_vbo (GLuint *vbo, GLuint *vao, nu_u32_t capacity)
+{
+    const nu_size_t vertex_size = VERTEX_SIZE * sizeof(nu_f32_t);
+
+    glGenVertexArrays(1, vao);
+    glBindVertexArray(*vao);
+
+    glGenBuffers(1, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+    glBufferData(GL_ARRAY_BUFFER,
+                 VERTEX_INIT_SIZE * vertex_size,
+                 NU_NULL,
+                 GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_size, (void *)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1,
+                          2,
+                          GL_FLOAT,
+                          GL_FALSE,
+                          vertex_size,
+                          (void *)(VERTEX_UV_OFFSET * sizeof(nu_f32_t)));
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2,
+                          3,
+                          GL_FLOAT,
+                          GL_FALSE,
+                          vertex_size,
+                          (void *)(VERTEX_COLOR_OFFSET * sizeof(nu_f32_t)));
+    glEnableVertexAttribArray(2);
+
+    // Initialize colors to white
+    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(ptr);
+    for (nu_size_t i = 0; i < capacity; ++i)
+    {
+        nu_size_t vbo_offset = i * VERTEX_SIZE + VERTEX_COLOR_OFFSET;
+        ptr[vbo_offset + 0]  = 1;
+        ptr[vbo_offset + 1]  = 1;
+        ptr[vbo_offset + 2]  = 1;
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+}
 nu_status_t
 renderer_init (void)
 {
@@ -462,6 +508,19 @@ renderer_init (void)
     // Create canvas resources
     init_canvas();
 
+    // Initialize memory
+    nu_memset(
+        &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
+
+    renderer.nodes_next = 0;
+    renderer.ubo_dirty  = NU_TRUE;
+
+    // Mesh VBO
+    renderer.mesh_vbo_offset = 0;
+    gen_vertex_vbo(&renderer.mesh_vbo, &renderer.mesh_vao, VERTEX_INIT_SIZE);
+    renderer.im_vbo_offset = 0;
+    gen_vertex_vbo(&renderer.im_vbo, &renderer.im_vao, VERTEX_INIT_SIZE);
+
     return status;
 
 cleanup0:
@@ -519,70 +578,6 @@ renderer_free (void)
     {
         free_canvas();
     }
-}
-
-static void
-gen_vertex_vbo (GLuint *vbo, GLuint *vao, nu_u32_t capacity)
-{
-    const nu_size_t vertex_size = VERTEX_SIZE * sizeof(nu_f32_t);
-
-    glGenVertexArrays(1, vao);
-    glBindVertexArray(*vao);
-
-    glGenBuffers(1, vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-    glBufferData(GL_ARRAY_BUFFER,
-                 VERTEX_INIT_SIZE * vertex_size,
-                 NU_NULL,
-                 GL_DYNAMIC_DRAW);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, vertex_size, (void *)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1,
-                          2,
-                          GL_FLOAT,
-                          GL_FALSE,
-                          vertex_size,
-                          (void *)(VERTEX_UV_OFFSET * sizeof(nu_f32_t)));
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(2,
-                          3,
-                          GL_FLOAT,
-                          GL_FALSE,
-                          vertex_size,
-                          (void *)(VERTEX_COLOR_OFFSET * sizeof(nu_f32_t)));
-    glEnableVertexAttribArray(2);
-
-    // Initialize colors to white
-    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    NU_ASSERT(ptr);
-    for (nu_size_t i = 0; i < capacity; ++i)
-    {
-        nu_size_t vbo_offset = i * VERTEX_SIZE + VERTEX_COLOR_OFFSET;
-        ptr[vbo_offset + 0]  = 1;
-        ptr[vbo_offset + 1]  = 1;
-        ptr[vbo_offset + 2]  = 1;
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-}
-
-void
-os_gpu_init (vm_t *vm)
-{
-    // Initialize memory
-    nu_memset(
-        &renderer.textures, 0, sizeof(*renderer.textures) * GPU_MAX_TEXTURE);
-
-    renderer.nodes_next = 0;
-    renderer.ubo_dirty  = NU_TRUE;
-
-    // Mesh VBO
-    renderer.mesh_vbo_offset = 0;
-    gen_vertex_vbo(&renderer.mesh_vbo, &renderer.mesh_vao, VERTEX_INIT_SIZE);
-    renderer.im_vbo_offset = 0;
-    gen_vertex_vbo(&renderer.im_vbo, &renderer.im_vao, VERTEX_INIT_SIZE);
 }
 
 void

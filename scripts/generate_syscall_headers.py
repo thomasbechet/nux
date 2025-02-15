@@ -96,11 +96,11 @@ if __name__ == "__main__":
     # nux.h
     template = env.get_template("nux.h.jinja")
     r = template.render(functions=functions, enums=enums)
-    output = "sdk/templates/c/src/nux.h"
-    with open(os.path.join(args.rootdir, output), "w") as f:
-        f.write(r)
-        f.close()
-        subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
+    for output in ["sdk/templates/c/src/nux.h", "sdk/templates/cxx/src/nux.h"]:
+        with open(os.path.join(args.rootdir, output), "w") as f:
+            f.write(r)
+            f.close()
+            subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
 
     # wasm_native.h
     template = env.get_template("wasm_native.h.jinja")
