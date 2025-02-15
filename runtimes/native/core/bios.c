@@ -91,12 +91,12 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
                texture,
                parent);
         NU_CHECK(sys_write_model(vm,
-                                entry->extra.model.index,
-                                i,
-                                mesh,
-                                texture,
-                                parent,
-                                transform.data),
+                                 entry->extra.model.index,
+                                 i,
+                                 mesh,
+                                 texture,
+                                 parent,
+                                 transform.data),
                  return NU_FAILURE);
     }
 

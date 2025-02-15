@@ -9,3 +9,4 @@ fi
 find $ROOT_DIR/runtimes/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
 find $ROOT_DIR/examples/ -type f -regex '.*\(h\|c\)^' -exec clang-format -i {} \;
 find $ROOT_DIR/cli/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
+find $ROOT_DIR/include/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;

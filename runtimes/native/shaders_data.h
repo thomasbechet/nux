@@ -1,6 +1,6 @@
 #ifndef SHADERS_DATA_H
 #define SHADERS_DATA_H
-#include <nulib.h>
+#include <nulib/nulib.h>
 static const nu_sv_t shader_canvas_blit_frag = NU_SV(
     "#version 330\n"
     "\n"

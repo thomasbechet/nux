@@ -32,7 +32,7 @@ set (WAMR_BUILD_REF_TYPES 1) # Prevent wamr error for wasi
 
 include (${CMAKE_SOURCE_DIR}/externals/wamr/build-scripts/runtime_lib.cmake)
 
-include_directories(${CMAKE_SOURCE_DIR}/nulib)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 
 file(GLOB CORE_SOURCES core/*.c)

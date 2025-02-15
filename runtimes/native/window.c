@@ -98,8 +98,8 @@ nu_status_t
 window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = 1600 / 2;
-    const nu_int_t height = 900 / 2;
+    const nu_int_t width  = 1280;
+    const nu_int_t height = 720;
 
     // Initialize values
     window.fullscreen        = NU_FALSE;

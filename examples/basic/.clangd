@@ -3,4 +3,4 @@ CompileFlags:
     - "-DNU_IMPLEMENTATION"
     - "-DNU_STDLIB"
     - "-I../../sdk/templates/c/src/"
-    - "-I../../externals/nulib/"
+    - "-I../../include/"

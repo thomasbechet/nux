@@ -12,7 +12,7 @@ OUTPUT=$ROOT_DIR/runtimes/native/shaders_data.h
 printf "#ifndef SHADERS_DATA_H\n" > $OUTPUT
 printf "#define SHADERS_DATA_H\n" >> $OUTPUT
 
-printf "#include <nulib.h>\n" >> $OUTPUT
+printf "#include <nulib/nulib.h>\n" >> $OUTPUT
 
 for file in $SHADERS/*; do
     name="shader_$(basename $file | tr '.' '_')" 

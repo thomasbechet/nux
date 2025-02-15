@@ -1,2 +1,7 @@
 CompileFlags:
-  Add: [ -DNU_IMPLEMENTATION, -DNU_STDLIB, -DNUX_BUILD_SDK ]
+  Add:
+    - "-DNU_IMPLEMENTATION"
+    - "-DNU_STDLIB"
+    - "-DNUX_BUILD_SDK"
+    - "-I../../sdk/templates/c/src/"
+    - "-I../../include/"

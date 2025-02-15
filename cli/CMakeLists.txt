@@ -6,7 +6,7 @@ add_executable(nux ${CLI_SOURCES} ${ARGPARSE_SOURCES})
 
 include_directories(${CMAKE_SOURCE_DIR}/runtimes)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
-include_directories(${CMAKE_SOURCE_DIR}/nulib)
+include_directories(${CMAKE_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/sdk)
 
 if (NUX_BUILD_SDK)

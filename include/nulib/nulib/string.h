@@ -23,10 +23,7 @@
 #define NU_ENUM_MAP(mapname, ...) \
     nu_enum_name_map_t mapname[]  \
         = { __VA_ARGS__, { .v = NU_NULL, .s = NU_NULL } };
-#define NU_ENUM_NAME(enumval, name) \
-    {                               \
-        .v = enumval, .s = name     \
-    }
+#define NU_ENUM_NAME(enumval, name) { .v = enumval, .s = name }
 
 #define NU_SV_TO_ENUM(sv, penum, map, found)                 \
     {                                                        \

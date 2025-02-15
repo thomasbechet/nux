@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include <nulib.h>
+#include <nulib/nulib.h>
 
 nu_status_t renderer_init(void);
 void        renderer_free(void);

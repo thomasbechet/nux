@@ -1,7 +1,7 @@
 #include "nux.h"
 #define NU_IMPLEMENTATION
-#include "nulib.h"
-#include "camera.h"
+#define NUX_IMPLEMENTATION
+#include <nuxlib/freecam.h>
 
 static nu_v3_t pos;
 

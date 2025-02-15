@@ -1,7 +1,7 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#include <nulib.h>
+#include <nulib/nulib.h>
 
 typedef void (*runtime_log_callback_t)(nu_log_level_t   level,
                                        const nu_char_t *fmt,

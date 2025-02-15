@@ -1,6 +1,6 @@
 #include <nux.h>
 #define NU_IMPLEMENTATION
-#include <nulib.h>
+#include <nulib/nulib.h>
 
 static nu_u32_t pressed[] = {
     3, 1, // A
