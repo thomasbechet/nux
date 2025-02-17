@@ -1,14 +1,14 @@
 #include "sdk.h"
 
 #include <native/core/vm.h>
-#include <native/core/gpu.h>
+#include <native/core/gfx.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 #include <stb/stb_image.h>
 
 static nu_status_t
 compile_texture (const cgltf_texture *texture,
-                 nu_u32_t             index,
+                 nu_u32_t             hash,
                  sdk_project_t       *proj)
 {
     nu_status_t status = NU_FAILURE;
@@ -28,18 +28,14 @@ compile_texture (const cgltf_texture *texture,
         return NU_FAILURE;
     }
 
-    sdk_log(NU_LOG_INFO,
-            "- Loading texture '%s' w %d h %d index %d",
-            texture->name,
-            w,
-            h,
-            index);
+    sdk_log(
+        NU_LOG_INFO, "- Loading texture '%s' w %d h %d", texture->name, w, h);
 
     // Find nearest texture size
     nu_u32_t target_size = nu_upper_power_of_two(NU_MAX(w, h));
 
     // Resize image
-    nu_byte_t *resized = sdk_malloc(gpu_texture_memsize(target_size));
+    nu_byte_t *resized = sdk_malloc(gfx_texture_memsize(target_size));
     NU_ASSERT(resized);
     if (!image_resize(nu_v2u(w, h), img, target_size, resized))
     {
@@ -49,7 +45,7 @@ compile_texture (const cgltf_texture *texture,
     }
 
     // Write image
-    status = cart_write_texture(proj, index, target_size, resized);
+    status = cart_write_texture(proj, hash, target_size, resized);
     NU_CHECK(status, goto cleanup0);
 
 cleanup0:
@@ -87,7 +83,7 @@ buffer_index (cgltf_accessor *accessor, nu_size_t i)
 }
 static nu_status_t
 compile_primitive_mesh (const cgltf_primitive *primitive,
-                        nu_u32_t               index,
+                        nu_u32_t               hash,
                         sdk_project_t         *proj)
 {
     // Access attributes
@@ -140,7 +136,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
 
     // Write header
     cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_MESH);
-    entry->extra.mesh.index   = index;
+    entry->hash               = hash;
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, SYS_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
@@ -174,15 +170,11 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
 nu_status_t
 sdk_model_load (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_parse_u32(jasset, "index", &asset->model.target_index),
-             return NU_FAILURE);
     return NU_SUCCESS;
 }
 nu_status_t
 sdk_model_save (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_write_u32(jasset, "index", asset->model.target_index),
-             return NU_FAILURE);
     return NU_SUCCESS;
 }
 
@@ -192,7 +184,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     typedef struct
     {
         void    *cgltf_ptr;
-        nu_u32_t index;
+        nu_u32_t hash;
     } resource_t;
 
 #define MAX_RESOURCE 512
@@ -228,16 +220,16 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         cgltf_mesh *mesh = data->meshes + i;
         for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nu_u32_t mesh_index = sdk_next_mesh_index(proj);
+            nu_u32_t mesh_hash = nu_pcg_u32(&proj->pcg);
             NU_CHECK(
-                compile_primitive_mesh(mesh->primitives + p, mesh_index, proj),
+                compile_primitive_mesh(mesh->primitives + p, mesh_hash, proj),
                 goto cleanup0);
             sdk_log(NU_LOG_INFO,
-                    "- Loading mesh '%s' primitive %d index %d",
+                    "- Loading mesh '%s' primitive %d hash %d",
                     mesh->name,
                     p,
-                    mesh_index);
-            resources[resources_count].index     = mesh_index;
+                    mesh_hash);
+            resources[resources_count].hash      = mesh_hash;
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             ++resources_count;
         }
@@ -264,10 +256,10 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
         if (texture)
         {
-            nu_u32_t texture_index = sdk_next_texture_index(proj);
-            NU_CHECK(compile_texture(texture, texture_index, proj),
+            nu_u32_t texture_hash = nu_pcg_u32(&proj->pcg);
+            NU_CHECK(compile_texture(texture, texture_hash, proj),
                      goto cleanup0);
-            resources[resources_count].index     = texture_index;
+            resources[resources_count].hash      = texture_hash;
             resources[resources_count].cgltf_ptr = texture;
             ++resources_count;
         }
@@ -291,7 +283,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
         // Write model
         cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_MODEL);
-        entry->extra.model.index  = asset->model.target_index;
+        entry->hash               = asset->hash;
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
         // Create model
@@ -331,16 +323,16 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     cgltf_primitive *primitive = node->mesh->primitives + p;
 
                     // Find mesh
-                    nu_u32_t mesh = -1;
+                    nu_u32_t mesh = 0;
                     for (nu_size_t i = 0; i < MAX_RESOURCE; ++i)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].index;
+                            mesh = resources[i].hash;
                             break;
                         }
                     }
-                    if (mesh == (nu_u32_t)-1)
+                    if (!mesh)
                     {
                         sdk_log(NU_LOG_ERROR,
                                 "Mesh primitive not found for model %s",
@@ -350,7 +342,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     }
 
                     // Find texture
-                    nu_u32_t texture = -1;
+                    nu_u32_t texture = 0;
                     if (primitive->material
                         && primitive->material->has_pbr_metallic_roughness
                         && primitive->material->pbr_metallic_roughness
@@ -362,12 +354,12 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].index;
+                                texture = resources[i].hash;
                                 break;
                             }
                         }
                     }
-                    if (texture == (nu_u32_t)-1)
+                    if (!texture)
                     {
                         sdk_log(NU_LOG_WARNING,
                                 "Texture not found for model %s, using default",

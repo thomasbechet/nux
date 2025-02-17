@@ -1041,20 +1041,29 @@ nu_color_to_linear (nu_color_t c)
     return nu_color_from_vec4(v);
 }
 
-nu_u32_t
-nu_pcg_u32 (nu_u64_t *state, nu_u64_t incr)
+nu_pcg_t
+nu_pcg (nu_u64_t state, nu_u64_t incr)
 {
-    nu_u64_t old_state  = *state;
-    *state              = old_state * 6364136223846793005 + (incr | 1);
+    nu_pcg_t pcg;
+    pcg.state = state;
+    pcg.incr  = incr;
+    nu_pcg_u32(&pcg); // Initialize first sample
+    return pcg;
+}
+nu_u32_t
+nu_pcg_u32 (nu_pcg_t *pcg)
+{
+    nu_u64_t old_state  = pcg->state;
+    pcg->state          = old_state * 6364136223846793005 + (pcg->incr | 1);
     nu_u64_t xorshifted = ((old_state >> 18) ^ old_state) >> 27;
     nu_u64_t rot        = old_state >> 59;
     return ((xorshifted >> rot) | (xorshifted << ((-rot & 31))));
 }
 nu_f32_t
-nu_pcg_f32 (nu_u64_t *state, nu_u64_t incr)
+nu_pcg_f32 (nu_pcg_t *pcg)
 {
     // generate uniformly distributed single precision number in [1, 2)
-    nu_u32_t next = (nu_pcg_u32(state, incr) >> 9) | 0x3f800000;
+    nu_u32_t next = (nu_pcg_u32(pcg) >> 9) | 0x3f800000;
     nu_f32_t flt;
     nu_memcpy(&flt, &next, sizeof(nu_f32_t));
     return flt - 1;

@@ -115,7 +115,7 @@ window_init (void)
 
     // Initialize viewport
     window.viewport.mode     = VIEWPORT_STRETCH_KEEP_ASPECT;
-    window.viewport.screen   = nu_v2u(GPU_SCREEN_WIDTH, GPU_SCREEN_HEIGHT);
+    window.viewport.screen   = nu_v2u(GFX_SCREEN_WIDTH, GFX_SCREEN_HEIGHT);
     window.viewport.extent   = nu_b2i_xywh(0, 0, width, height);
     window.viewport.viewport = nu_b2i_xywh(0, 0, width, height);
     update_viewport(&window.viewport);

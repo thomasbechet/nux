@@ -53,34 +53,12 @@ cart_parse_entries (const void         *data,
         cart_chunk_entry_t *entry = entries + i;
         entry->type               = nu_u32_le(*(nu_u32_t *)ptr);
         ptr += sizeof(nu_u32_t);
+        entry->hash = nu_u32_le(*(nu_u32_t *)ptr);
+        ptr += sizeof(nu_u32_t);
         entry->offset = nu_u32_le(*(nu_u32_t *)ptr);
         ptr += sizeof(nu_u32_t);
         entry->length = nu_u32_le(*(nu_u32_t *)ptr);
         ptr += sizeof(nu_u32_t);
-        switch (entry->type)
-        {
-            case CART_CHUNK_RAW:
-            case CART_CHUNK_WASM:
-                ptr += sizeof(nu_u32_t);
-                break;
-            case CART_CHUNK_TEXTURE: {
-                entry->extra.texture.index = nu_u32_le(*(nu_u32_t *)ptr);
-                ptr += sizeof(nu_u32_t);
-            }
-            break;
-            case CART_CHUNK_MESH: {
-                entry->extra.mesh.index = nu_u32_le(*(nu_u32_t *)ptr);
-                ptr += sizeof(nu_u32_t);
-            }
-            break;
-            case CART_CHUNK_MODEL: {
-                entry->extra.model.index = nu_u32_le(*(nu_u32_t *)ptr);
-                ptr += sizeof(nu_u32_t);
-            }
-            break;
-            default:
-                return NU_FAILURE;
-        }
     }
     return NU_SUCCESS;
 }

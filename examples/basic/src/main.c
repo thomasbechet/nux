@@ -12,7 +12,7 @@ static nu_f32_t time     = 0;
 void
 start (void)
 {
-    nux_setup_gamepad(0, 1);
+    nux_gamepad_setup();
     nux_init_debug_camera(nu_v3(0, 10, 0));
 }
 
@@ -37,10 +37,10 @@ update (void)
     nu_v3_t pos;
     nux_debug_camera(0.02, &pos);
     // draw_model(0);
-    draw(1);
+    draw(find("mindustrial"));
     m = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
     transform(TRANSFORM_MODEL, m.data);
-    draw(1);
+    draw(find("mindustrial"));
 
     const nu_size_t count = 1000;
     nu_f32_t        points[count * 3];
@@ -76,7 +76,7 @@ update (void)
     m = nu_m4_translate(nu_v3(10, 0, 0));
     transform(TRANSFORM_MODEL, m.data);
     color(NU_COLOR_BLUE.rgba);
-    draw(0);
+    draw(find("mariane6"));
     color(0xFFFFFFFF);
 
     // blit(1, 0, 0, 128, 128);

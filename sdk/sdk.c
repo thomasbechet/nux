@@ -35,47 +35,6 @@ sdk_free (void *p)
     free(p);
 }
 
-nu_u32_t
-sdk_next_mesh_index (sdk_project_t *proj)
-{
-    nu_u32_t index = proj->next_mesh_index++;
-    return index;
-}
-nu_u32_t
-sdk_next_texture_index (sdk_project_t *proj)
-{
-    for (;;)
-    {
-        nu_u32_t  index = proj->next_texture_index++;
-        nu_bool_t valid = NU_TRUE;
-        for (nu_size_t i = 0; i < proj->assets_count; ++i)
-        {
-            switch (proj->assets[i].type)
-            {
-                case SDK_ASSET_IMAGE:
-                    if (proj->assets[i].image.target_index == index)
-                    {
-                        valid = NU_FALSE;
-                        break;
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-        if (valid)
-        {
-            return index;
-        }
-    }
-}
-nu_u32_t
-sdk_next_model_index (sdk_project_t *proj)
-{
-    nu_u32_t index = proj->next_model_index++;
-    return index;
-}
-
 nu_status_t
 json_parse_f32 (const JSON_Object *object, const nu_char_t *name, nu_f32_t *v)
 {

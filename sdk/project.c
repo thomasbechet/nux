@@ -10,6 +10,8 @@
 #define PROJECT_PREBUILD     "prebuild"
 #define PROJECT_ASSETS       "assets"
 #define PROJECT_ASSET_TYPE   "type"
+#define PROJECT_ASSET_NAME   "name"
+#define PROJECT_ASSET_HASH   "hash"
 #define PROJECT_ASSET_SOURCE "source"
 #define PROJECT_ASSET_IGNORE "ignore"
 
@@ -31,6 +33,7 @@ project_init (sdk_project_t *project, nu_sv_t path)
     nu_memset(project, 0, sizeof(*project));
     nu_path_concat(
         project->target_path, NU_PATH_MAX, path, NU_SV(PROJECT_CART_DEFAULT));
+    project->pcg = nu_pcg(52873423, 12986124);
 }
 
 nu_status_t
@@ -109,9 +112,6 @@ sdk_compile (sdk_project_t *project)
     nu_status_t status = NU_SUCCESS;
 
     // Prepare compilation context
-    project->next_mesh_index    = 0;
-    project->next_texture_index = 0;
-    project->next_model_index   = 0;
     if (!project->entries)
     {
         project->entries
@@ -228,38 +228,12 @@ sdk_compile (sdk_project_t *project)
         const cart_chunk_entry_t *entry = project->entries + i;
         nu_u32_t                  type  = entry->type;
         NU_CHECK(fwrite(&type, sizeof(type), 1, f) == 1, return NU_FAILURE);
+        NU_CHECK(fwrite(&entry->hash, sizeof(entry->hash), 1, f) == 1,
+                 return NU_FAILURE);
         NU_CHECK(fwrite(&entry->offset, sizeof(entry->offset), 1, f) == 1,
                  return NU_FAILURE);
         NU_CHECK(fwrite(&entry->length, sizeof(entry->length), 1, f) == 1,
                  return NU_FAILURE);
-        switch (entry->type)
-        {
-            case CART_CHUNK_RAW:
-            case CART_CHUNK_WASM: {
-                nu_u32_t index = 0; // Padding
-                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
-                         return NU_FAILURE);
-            }
-            break;
-            case CART_CHUNK_TEXTURE: {
-                nu_u32_t index = entry->extra.texture.index;
-                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
-                         return NU_FAILURE);
-            }
-            break;
-            case CART_CHUNK_MESH: {
-                nu_u32_t index = entry->extra.mesh.index;
-                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
-                         return NU_FAILURE);
-            }
-            break;
-            case CART_CHUNK_MODEL: {
-                nu_u32_t index = entry->extra.model.index;
-                NU_CHECK(fwrite(&index, sizeof(index), 1, f) == 1,
-                         return NU_FAILURE);
-            }
-            break;
-        }
     }
 
     // Write data
@@ -319,13 +293,23 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
             sdk_project_asset_t *asset  = project->assets + i;
             JSON_Object         *jasset = json_array_get_object(jassets, i);
 
-            // Parse type and source
+            // Parse type
             const nu_char_t *type_string
                 = json_object_get_string(jasset, PROJECT_ASSET_TYPE);
             NU_ASSERT(type_string);
+
+            // Parse name / hash
+            const nu_char_t *name_string
+                = json_object_get_string(jasset, PROJECT_ASSET_NAME);
+            NU_ASSERT(name_string);
+            nu_u32_t hash = json_object_get_number(jasset, PROJECT_ASSET_HASH);
+
+            // Parse source
             const nu_char_t *source_string
                 = json_object_get_string(jasset, PROJECT_ASSET_SOURCE);
             NU_ASSERT(source_string);
+
+            // Parse ignore
             int ignore = json_object_get_boolean(jasset, PROJECT_ASSET_IGNORE);
             if (ignore != -1)
             {
@@ -343,6 +327,9 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
                 goto cleanup0;
             }
             project->assets[i].type = type;
+            project->assets[i].hash
+                = hash ? hash : nu_sv_hash(nu_sv_cstr(name_string));
+            nu_sv_to_cstr(nu_sv_cstr(name_string), asset->name, SDK_NAME_MAX);
             nu_sv_to_cstr(
                 nu_sv_cstr(source_string), asset->source, NU_PATH_MAX);
 
@@ -412,6 +399,12 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
             const nu_char_t *type_str
                 = nu_enum_to_cstr(asset->type, asset_type_map);
             json_object_set_string(jasset, PROJECT_ASSET_TYPE, type_str);
+
+            // Hash
+            json_object_set_number(jasset, PROJECT_ASSET_HASH, asset->hash);
+
+            // Name
+            json_object_set_string(jasset, PROJECT_ASSET_NAME, asset->name);
 
             // Source
             json_object_set_string(
@@ -612,44 +605,18 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
         for (nu_size_t i = 0; i < header.chunk_count && i < display_entry; ++i)
         {
             const indexed_entry_t *entry = entries + i;
-            nu_u32_t               extra = -1;
-            switch (entry->data.type)
-            {
-                case CART_CHUNK_RAW:
-                case CART_CHUNK_WASM:
-                    break;
-                case CART_CHUNK_TEXTURE:
-                    extra = entry->data.extra.texture.index;
-                    break;
-                case CART_CHUNK_MESH:
-                    extra = entry->data.extra.mesh.index;
-                    break;
-                case CART_CHUNK_MODEL:
-                    extra = entry->data.extra.model.index;
-                    break;
-            }
-            nu_char_t extra_buf[8];
-            if (extra == (nu_u32_t)-1)
-            {
-                nu_memcpy(extra_buf, "", 2);
-            }
-            else
-            {
-                snprintf(extra_buf, sizeof(extra_buf), "%d", extra);
-            }
-            nu_char_t buf[32];
+            nu_char_t              buf[32];
             snprintf(buf,
                      sizeof(buf),
                      "%.2lf%%",
                      ((nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_size)
                          * 100);
-            printf("     %-8d %-8s %-8x %-8d %-8s %-8s\n",
+            printf("     %-8d %-8s %-8x %-8d %-8s\n",
                    entry->index,
                    nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
                    entry->data.offset,
                    entry->data.length,
-                   buf,
-                   extra_buf);
+                   buf);
         }
     }
 

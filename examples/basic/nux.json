@@ -3,30 +3,31 @@
 	"prebuild": "make",
 	"assets": [
 		{
+            "name": "wmain",
 			"type": "wasm",
 			"source": "build/cart.wasm"
 		},
         {
+            "name": "thorror",
             "type": "image",
             "source": "assets/Horror_Brick_01-128x128.png",
-            "index": 0,
             "size": 128 
         },
         {
+            "name": "mariane6",
             "type": "model",
-            "source": "assets/ariane6.glb",
-            "index": 0
+            "source": "assets/ariane6.glb"
         },
         {
+            "name": "mindustrial",
             "type": "model",
-            "source": "assets/industrial.glb",
-            "index": 1 
+            "source": "assets/industrial.glb"
         },
         {
+            "name": "tgamepad",
             "type": "image",
             "size": 256,
-            "source": "../../nuxlib/assets/gamepad.png",
-            "index": 1 
+            "source": "../../nuxlib/assets/gamepad.png"
         }
 	]
 }

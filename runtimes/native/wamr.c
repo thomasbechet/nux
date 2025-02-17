@@ -1,4 +1,4 @@
-#include "wasm.h"
+#include "wamr.h"
 
 #include "logger.h"
 #include "wasm_native.h"
@@ -16,7 +16,7 @@ static struct
     wasm_function_inst_t start_callback;
     wasm_function_inst_t update_callback;
     vm_t                *active_vm;
-} wasm;
+} wamr;
 
 static void *
 native_wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
@@ -25,8 +25,11 @@ native_wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
     {
         case Alloc_For_Runtime:
             return malloc(n);
-        case Alloc_For_LinearMemory:
-            return cpu_malloc(wasm.active_vm, n);
+        case Alloc_For_LinearMemory: {
+            nu_u32_t addr = vm_malloc(wamr.active_vm, n);
+            NU_CHECK(addr != ADDR_INVALID, return NU_NULL);
+            return wamr.active_vm->mem + addr;
+        }
     }
     return NU_NULL;
 }
@@ -53,7 +56,7 @@ native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
 }
 
 nu_status_t
-wasm_init (void)
+wamr_init (void)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
@@ -85,21 +88,21 @@ wasm_init (void)
 static void
 wasm_unload_cart (vm_t *vm)
 {
-    if (wasm.env)
+    if (wamr.env)
     {
-        wasm_runtime_destroy_exec_env(wasm.env);
+        wasm_runtime_destroy_exec_env(wamr.env);
     }
-    if (wasm.instance)
+    if (wamr.instance)
     {
-        wasm_runtime_deinstantiate(wasm.instance);
+        wasm_runtime_deinstantiate(wamr.instance);
     }
-    if (wasm.module)
+    if (wamr.module)
     {
-        wasm_runtime_unload(wasm.module);
+        wasm_runtime_unload(wamr.module);
     }
 }
 void
-wasm_free (void)
+wamr_free (void)
 {
     wasm_runtime_destroy();
 }
@@ -108,9 +111,9 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
 {
     // Load module
     nu_char_t error_buf[128];
-    wasm.module
+    wamr.module
         = wasm_runtime_load(buffer, buffer_size, error_buf, sizeof(error_buf));
-    if (!wasm.module)
+    if (!wamr.module)
     {
         vm_log(vm, NU_LOG_ERROR, "Load wasm module failed: %s", error_buf);
         wasm_unload_cart(vm);
@@ -119,10 +122,10 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
 
     // Instantiate module
     const nu_size_t init_stack_size = NU_MEM_32K;
-    wasm.active_vm                  = vm;
-    wasm.instance                   = wasm_runtime_instantiate(
-        wasm.module, init_stack_size, 0, error_buf, sizeof(error_buf));
-    if (!wasm.instance)
+    wamr.active_vm                  = vm;
+    wamr.instance                   = wasm_runtime_instantiate(
+        wamr.module, init_stack_size, 0, error_buf, sizeof(error_buf));
+    if (!wamr.instance)
     {
         vm_log(
             vm, NU_LOG_ERROR, "Instantiate wasm module failed: %s", error_buf);
@@ -131,17 +134,17 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     }
 
     // Create execution env
-    wasm.env = wasm_runtime_create_exec_env(wasm.instance, init_stack_size);
-    if (!wasm.env)
+    wamr.env = wasm_runtime_create_exec_env(wamr.instance, init_stack_size);
+    if (!wamr.env)
     {
         vm_log(vm, NU_LOG_ERROR, "Create wasm execution environment failed");
     }
-    wasm_runtime_set_user_data(wasm.env, vm);
+    wasm_runtime_set_user_data(wamr.env, vm);
 
     // Find entry point
-    wasm.start_callback
-        = wasm_runtime_lookup_function(wasm.instance, START_CALLBACK);
-    if (!wasm.start_callback)
+    wamr.start_callback
+        = wasm_runtime_lookup_function(wamr.instance, START_CALLBACK);
+    if (!wamr.start_callback)
     {
         vm_log(vm,
                NU_LOG_ERROR,
@@ -149,9 +152,9 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
         wasm_unload_cart(vm);
         return NU_FAILURE;
     }
-    wasm.update_callback
-        = wasm_runtime_lookup_function(wasm.instance, UPDATE_CALLBACK);
-    if (!wasm.update_callback)
+    wamr.update_callback
+        = wasm_runtime_lookup_function(wamr.instance, UPDATE_CALLBACK);
+    if (!wamr.update_callback)
     {
         vm_log(vm,
                NU_LOG_ERROR,
@@ -163,29 +166,29 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     return NU_SUCCESS;
 }
 nu_status_t
-os_cpu_call_event (vm_t *vm, cpu_event_t event)
+os_cpu_call_event (vm_t *vm, wasm_event_t event)
 {
     wasm_function_inst_t callback      = NU_NULL;
     const nu_char_t     *callback_name = NU_NULL;
     switch (event)
     {
-        case CPU_EVENT_START:
-            callback      = wasm.start_callback;
+        case WASM_EVENT_START:
+            callback      = wamr.start_callback;
             callback_name = START_CALLBACK;
             break;
-        case CPU_EVENT_UPDATE:
-            callback      = wasm.update_callback;
+        case WASM_EVENT_UPDATE:
+            callback      = wamr.update_callback;
             callback_name = UPDATE_CALLBACK;
             break;
     }
     NU_ASSERT(callback_name);
-    if (!wasm_runtime_call_wasm_a(wasm.env, callback, 0, NU_NULL, 0, NU_NULL))
+    if (!wasm_runtime_call_wasm_a(wamr.env, callback, 0, NU_NULL, 0, NU_NULL))
     {
         vm_log(vm,
                NU_LOG_ERROR,
                "Call wasm function %s failed: %s",
                callback_name,
-               wasm_runtime_get_exception(wasm.instance));
+               wasm_runtime_get_exception(wamr.instance));
         return NU_FAILURE;
     }
     return NU_SUCCESS;

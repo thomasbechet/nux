@@ -59,39 +59,46 @@ typedef enum
 
 void sys_trace(vm_t *vm, const nu_char_t *text);
 
-nu_status_t sys_allocgpool(vm_t *vm, nu_u32_t index, nu_u32_t size);
-nu_status_t sys_gpool(vm_t *vm, nu_u32_t index);
-nu_status_t sys_cleargpool(vm_t *vm, nu_u32_t index);
+nu_u32_t sys_add_group(vm_t *vm, nu_u32_t size);
+void     sys_clear_group(vm_t *vm, nu_u32_t group);
+nu_u32_t sys_find(vm_t *vm, const nu_char_t *name);
+nu_u32_t sys_find_hash(vm_t *vm, nu_u32_t hash);
 
-nu_status_t sys_set_texture(vm_t *vm, nu_u32_t idx, nu_u32_t size);
+nu_u32_t    sys_add_texture(vm_t *vm, nu_u32_t size);
 nu_status_t sys_write_texture(vm_t       *vm,
-                              nu_u32_t    idx,
+                              nu_u32_t    id,
                               nu_u32_t    x,
                               nu_u32_t    y,
                               nu_u32_t    w,
                               nu_u32_t    h,
                               const void *p);
 
-nu_status_t sys_set_mesh(vm_t                  *vm,
-                         nu_u32_t               idx,
+nu_u32_t    sys_add_mesh(vm_t                  *vm,
                          nu_u32_t               count,
                          sys_primitive_t        primitive,
                          sys_vertex_attribute_t attribs);
 nu_status_t sys_write_mesh(vm_t                  *vm,
-                           nu_u32_t               idx,
+                           nu_u32_t               id,
                            sys_vertex_attribute_t attribs,
                            nu_u32_t               first,
                            nu_u32_t               count,
                            const void            *p);
 
-nu_status_t sys_set_model(vm_t *vm, nu_u32_t idx, nu_u32_t count);
+nu_u32_t    sys_add_model(vm_t *vm, nu_u32_t count);
 nu_status_t sys_write_model(vm_t           *vm,
-                            nu_u32_t        idx,
+                            nu_u32_t        id,
                             nu_u32_t        node,
                             nu_u32_t        mesh,
                             nu_u32_t        texture,
                             nu_u32_t        parent,
                             const nu_f32_t *transform);
+
+nu_u32_t sys_add_spritesheet(vm_t    *vm,
+                             nu_u32_t texture,
+                             nu_u32_t row,
+                             nu_u32_t col,
+                             nu_u32_t fwidth,
+                             nu_u32_t fheight);
 
 void sys_transform(vm_t *vm, sys_transform_t transform, const nu_f32_t *m);
 void sys_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
@@ -99,21 +106,14 @@ void sys_fog_params(vm_t *vm, const nu_f32_t *params);
 void sys_fog_color(vm_t *vm, nu_u32_t color);
 void sys_clear(vm_t *vm, nu_u32_t color);
 void sys_color(vm_t *vm, nu_u32_t color);
-void sys_draw(vm_t *vm, nu_u32_t index);
+void sys_draw(vm_t *vm, nu_u32_t id);
 void sys_draw_cube(vm_t *vm, const nu_f32_t *c, const nu_f32_t *s);
 void sys_draw_lines(vm_t *vm, const nu_f32_t *p, nu_u32_t n);
 void sys_draw_linestrip(vm_t *vm, const nu_f32_t *p, nu_u32_t n);
 void sys_text(vm_t *vm, const void *text);
 void sys_print(vm_t *vm, const void *text);
 void sys_blit(
-    vm_t *vm, nu_u32_t index, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
-void sys_set_spritesheet(vm_t    *vm,
-                         nu_u32_t index,
-                         nu_u32_t texture,
-                         nu_u32_t row,
-                         nu_u32_t col,
-                         nu_u32_t fwidth,
-                         nu_u32_t fheight);
+    vm_t *vm, nu_u32_t id, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
 void sys_sprite(vm_t *vm, nu_u32_t spritesheet, nu_u32_t sprite);
 
 nu_u32_t sys_button(vm_t *vm, nu_u32_t player);

@@ -27,10 +27,12 @@ static nu_u32_t nux__released[] = {
     6, 7, // RB
 };
 
+static nu_u32_t nux__gamepad_spriteheet;
+
 static void
 nux__blitt (nu_u32_t x, nu_u32_t y)
 {
-    sprite(0, y * 10 + x);
+    sprite(nux__gamepad_spriteheet, y * 10 + x);
 }
 static void
 nux__draw_button (nu_u32_t player, button_t b, nu_u32_t x, nu_u32_t y)
@@ -76,13 +78,12 @@ nux__draw_trigger (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
     cursor(x, y + offset * ax);
     nux__blitt(tx, ty);
 }
-static nu_u32_t nux__gamepad_spriteheet;
 
 void
-nux_setup_gamepad (nu_u32_t spritesheet, nu_u32_t texture)
+nux_gamepad_setup (void)
 {
-    nux__gamepad_spriteheet = spritesheet;
-    set_spritesheet(spritesheet, texture, 10, 9, 16, 16);
+    nu_u32_t texture_id     = find("tgamepad");
+    nux__gamepad_spriteheet = add_spritesheet(texture_id, 10, 9, 16, 16);
 }
 void
 nux_draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)

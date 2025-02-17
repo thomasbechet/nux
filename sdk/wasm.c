@@ -28,6 +28,7 @@ sdk_wasm_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
     // Write cart
     cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_WASM);
+    entry->hash               = asset->hash;
     status                    = cart_write(proj, buffer, size);
     NU_CHECK(status, goto cleanup0);
 

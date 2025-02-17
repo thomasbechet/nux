@@ -1,7 +1,7 @@
 #include "logger.h"
 #include "window.h"
 #include "renderer.h"
-#include "wasm.h"
+#include "wamr.h"
 #include "core/vm.h"
 
 nu_status_t
@@ -13,7 +13,7 @@ runtime_init (const runtime_info_t *info)
     NU_CHECK(status, goto cleanup0);
     status = renderer_init();
     NU_CHECK(status, goto cleanup1);
-    status = wasm_init();
+    status = wamr_init();
     NU_CHECK(status, goto cleanup2);
 
     vm_t        vm;
@@ -59,7 +59,7 @@ runtime_init (const runtime_info_t *info)
 cleanup4:
     vm_free(&vm);
 cleanup3:
-    wasm_free();
+    wamr_free();
 cleanup2:
     renderer_free();
 cleanup1:

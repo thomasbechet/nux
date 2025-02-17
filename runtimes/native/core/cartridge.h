@@ -15,28 +15,12 @@ typedef enum
     CART_CHUNK_MODEL   = 4,
 } cart_chunk_type_t;
 
-typedef union
-{
-    struct
-    {
-        nu_u32_t index;
-    } texture;
-    struct
-    {
-        nu_u32_t index;
-    } mesh;
-    struct
-    {
-        nu_u32_t index;
-    } model;
-} cart_chunk_extra_t;
-
 typedef struct
 {
-    cart_chunk_type_t  type;
-    nu_u32_t           offset;
-    nu_u32_t           length;
-    cart_chunk_extra_t extra;
+    cart_chunk_type_t type;
+    nu_u32_t          hash;
+    nu_u32_t          offset;
+    nu_u32_t          length;
 } cart_chunk_entry_t;
 
 typedef struct

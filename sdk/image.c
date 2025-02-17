@@ -19,7 +19,7 @@ image_resize (nu_v2u_t         source_size,
     if (source_size.x == source_size.y && source_size.x == target_size)
     {
         // No resize required, simply copy data
-        nu_memcpy(target_data, source_data, gpu_texture_memsize(target_size));
+        nu_memcpy(target_data, source_data, gfx_texture_memsize(target_size));
         return NU_SUCCESS;
     }
     if (!stbir_resize_uint8(source_data,
@@ -39,16 +39,16 @@ image_resize (nu_v2u_t         source_size,
 }
 nu_status_t
 cart_write_texture (sdk_project_t   *proj,
-                    nu_u32_t         index,
+                    nu_u32_t         hash,
                     nu_u32_t         size,
                     const nu_byte_t *data)
 {
-    cart_chunk_entry_t *entry  = sdk_begin_entry(proj, CART_CHUNK_TEXTURE);
-    entry->extra.texture.index = index;
+    cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_TEXTURE);
+    entry->hash               = hash;
     nu_status_t status;
     status = cart_write_u32(proj, size);
     NU_CHECK(status, return NU_FAILURE);
-    status = cart_write(proj, data, gpu_texture_memsize(size));
+    status = cart_write(proj, data, gfx_texture_memsize(size));
     NU_CHECK(status, return NU_FAILURE);
     return NU_SUCCESS;
 }
@@ -56,8 +56,6 @@ cart_write_texture (sdk_project_t   *proj,
 nu_status_t
 sdk_image_load (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_parse_u32(jasset, "index", &asset->image.target_index),
-             return NU_FAILURE);
     NU_CHECK(json_parse_u32(jasset, "size", &asset->image.target_size),
              return NU_FAILURE);
     return NU_SUCCESS;
@@ -65,8 +63,6 @@ sdk_image_load (sdk_project_asset_t *asset, JSON_Object *jasset)
 nu_status_t
 sdk_image_save (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_write_u32(jasset, "index", asset->image.target_index),
-             return NU_FAILURE);
     NU_CHECK(json_write_u32(jasset, "size", asset->image.target_size),
              return NU_FAILURE);
     return NU_SUCCESS;
@@ -85,15 +81,14 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         sdk_log(NU_LOG_ERROR, "Failed to load image file %s", asset->source);
         return NU_FAILURE;
     }
-    nu_size_t  data_size = gpu_texture_memsize(target_size);
+    nu_size_t  data_size = gfx_texture_memsize(target_size);
     nu_byte_t *data      = sdk_malloc(data_size);
     NU_CHECK(data, goto cleanup0);
     NU_CHECK(image_resize(nu_v2u(w, h), img, target_size, data), goto cleanup1);
 
     // Write cart
     NU_CHECK(
-        cart_write_texture(
-            proj, asset->image.target_index, asset->image.target_size, data),
+        cart_write_texture(proj, asset->hash, asset->image.target_size, data),
         goto cleanup1);
 
 cleanup1:

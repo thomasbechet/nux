@@ -20,7 +20,7 @@ load_wasm (vm_t *vm, const cart_chunk_entry_t *entry)
     NU_ASSERT(buffer);
     NU_CHECK(os_cart_read(vm, buffer, entry->length), return NU_FAILURE);
     NU_CHECK(os_cpu_load_wasm(vm, buffer, entry->length), return NU_FAILURE);
-    vm->cpu.loaded = NU_TRUE;
+    vm->wasm.loaded = NU_TRUE;
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -28,18 +28,16 @@ load_texture (vm_t *vm, const cart_chunk_entry_t *entry)
 {
     nu_u32_t size;
     NU_CHECK(cart_read_u32(vm, &size), return NU_FAILURE);
-    vm_log(vm,
-           NU_LOG_INFO,
-           "texture index:%d, size:%d",
-           entry->extra.texture.index,
-           size);
+    vm_log(vm, NU_LOG_INFO, "texture hash:0x%x, size:%d", entry->hash, size);
     // TODO: validate size
-    nu_size_t data_length = gpu_texture_memsize(size);
-    sys_set_texture(vm, entry->extra.texture.index, size);
-    gpu_texture_t *texture = vm->gpu.textures + entry->extra.texture.index;
-    NU_CHECK(cart_read(vm, vm->gpu.vram + texture->addr, data_length),
+    nu_size_t data_length = gfx_texture_memsize(size);
+    nu_u32_t  id          = sys_add_texture(vm, size);
+    NU_CHECK(id, return NU_FAILURE);
+    resource_t *res = vm->res + ID_TO_INDEX(id);
+    res->hash       = entry->hash;
+    NU_CHECK(cart_read(vm, vm->mem + res->texture.data, data_length),
              return NU_FAILURE);
-    os_gpu_update_texture(vm, entry->extra.texture.index);
+    os_gpu_update_texture(vm, id);
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -51,16 +49,18 @@ load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
     NU_CHECK(cart_read_u32(vm, &attributes), return NU_FAILURE);
     vm_log(vm,
            NU_LOG_INFO,
-           "mesh index:%d, count:%d, primitive:%d, attribute:%d",
-           entry->extra.mesh.index,
+           "mesh hash:0x%x, count:%d, primitive:%d, attribute:%d",
+           entry->hash,
            count,
            primitive,
            attributes);
-    sys_set_mesh(vm, entry->extra.mesh.index, count, primitive, attributes);
-    gpu_mesh_t *mesh = vm->gpu.meshes + entry->extra.mesh.index;
+    nu_u32_t id = sys_add_mesh(vm, count, primitive, attributes);
+    NU_CHECK(id, return NU_FAILURE);
+    resource_t *res = vm->res + ID_TO_INDEX(id);
+    res->hash       = entry->hash;
     NU_ASSERT(os_cart_read(
-        vm, vm->gpu.vram + mesh->addr, gpu_vertex_memsize(attributes, count)));
-    os_gpu_update_mesh(vm, entry->extra.mesh.index);
+        vm, vm->mem + res->mesh.data, gfx_vertex_memsize(attributes, count)));
+    os_gpu_update_mesh(vm, id);
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -68,12 +68,13 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
 {
     nu_u32_t node_count;
     NU_CHECK(cart_read_u32(vm, &node_count), return NU_FAILURE);
-    NU_CHECK(sys_set_model(vm, entry->extra.model.index, node_count),
-             return NU_FAILURE);
+    nu_u32_t id                   = sys_add_model(vm, node_count);
+    vm->res[ID_TO_INDEX(id)].hash = entry->hash;
+    NU_CHECK(id, return NU_FAILURE);
     vm_log(vm,
            NU_LOG_INFO,
-           "model index:%d, node_count:%d",
-           entry->extra.model.index,
+           "model hash:0x%x, node_count:%d",
+           entry->hash,
            node_count);
     for (nu_size_t i = 0; i < node_count; ++i)
     {
@@ -83,20 +84,31 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
         NU_CHECK(cart_read_u32(vm, &texture), return NU_FAILURE);
         NU_CHECK(cart_read_u32(vm, &parent), return NU_FAILURE);
         NU_CHECK(cart_read_m4(vm, &transform), return NU_FAILURE);
+        nu_u32_t mesh_id = sys_find_hash(vm, mesh);
+        if (!mesh_id)
+        {
+            vm_log(vm, NU_LOG_ERROR, "mesh 0x%x not found", mesh);
+            return NU_FAILURE;
+        }
+        nu_u32_t texture_id = 0;
+        if (texture)
+        {
+            texture_id = sys_find_hash(vm, texture);
+            if (!texture_id)
+            {
+                vm_log(vm, NU_LOG_ERROR, "texture 0x%x not found", texture);
+                return NU_FAILURE;
+            }
+        }
         vm_log(vm,
                NU_LOG_INFO,
-               "   node:%d, mesh:%d, texture:%d, parent:%d",
+               "   node:%d, mesh:0x%x, texture:0x%x, parent:%d",
                i,
                mesh,
                texture,
                parent);
-        NU_CHECK(sys_write_model(vm,
-                                 entry->extra.model.index,
-                                 i,
-                                 mesh,
-                                 texture,
-                                 parent,
-                                 transform.data),
+        NU_CHECK(sys_write_model(
+                     vm, id, i, mesh_id, texture_id, parent, transform.data),
                  return NU_FAILURE);
     }
 

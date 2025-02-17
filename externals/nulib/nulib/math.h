@@ -190,6 +190,12 @@ typedef struct
     nu_v3_t max;
 } nu_b3_t;
 
+typedef struct
+{
+    nu_u64_t state;
+    nu_u64_t incr;
+} nu_pcg_t;
+
 NU_API nu_bool_t nu_is_power_of_two(nu_size_t n);
 NU_API nu_u32_t  nu_upper_power_of_two(nu_u32_t v);
 NU_API nu_size_t nu_log2(nu_size_t n);
@@ -327,7 +333,8 @@ NU_API nu_color_t nu_color_from_u32(nu_u32_t rgba);
 NU_API nu_color_t nu_color_to_srgb(nu_color_t c);
 NU_API nu_color_t nu_color_to_linear(nu_color_t c);
 
-NU_API nu_u32_t nu_pcg_u32(nu_u64_t *state, nu_u64_t incr);
-NU_API nu_f32_t nu_pcg_f32(nu_u64_t *state, nu_u64_t incr);
+NU_API nu_pcg_t nu_pcg(nu_u64_t state, nu_u64_t incr);
+NU_API nu_u32_t nu_pcg_u32(nu_pcg_t *pcg);
+NU_API nu_f32_t nu_pcg_f32(nu_pcg_t *pcg);
 
 #endif
