@@ -4,13 +4,14 @@
 	"assets": [
 		{
 			"type": "wasm",
+            "name": "w_main",
 			"source": "build/cart.wasm"
 		},
         {
             "type": "image",
+            "name": "t_gamepad",
             "size": 256,
-            "source": "../../nuxlib/assets/gamepad.png",
-            "index": 0
+            "source": "../../nuxlib/assets/gamepad.png"
         }
 	]
 }

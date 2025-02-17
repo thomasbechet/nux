@@ -4,6 +4,7 @@
 	"chunks": [
 		{
 			"type": "wasm",
+            "name": "w_main",
 			"source": "target/wasm32-unknown-unknown/release/cart.wasm"
 		}
 	]

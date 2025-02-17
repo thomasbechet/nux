@@ -336,14 +336,12 @@ sys_print (vm_t *vm, const void *text)
 void
 sys_blit (vm_t *vm, nu_u32_t id, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
-    NU_ASSERT(id);
     NU_CHECK(id && vm->res[ID_TO_INDEX(id)].type == RES_TEXTURE, return);
     os_gpu_draw_blit(vm, id, x, y, w, h);
 }
 void
 sys_sprite (vm_t *vm, nu_u32_t spritesheet, nu_u32_t sprite)
 {
-    NU_ASSERT(spritesheet);
     NU_CHECK(spritesheet, return);
     resource_t *res = vm->res + ID_TO_INDEX(spritesheet);
     nu_u32_t    x   = (sprite % res->spritesheet.row) * res->spritesheet.fwidth;

@@ -249,7 +249,7 @@ cleanup0:
     return status;
 }
 nu_status_t
-sdk_project_load (sdk_project_t *project, nu_sv_t path)
+sdk_project_load (sdk_project_t *proj, nu_sv_t path)
 {
     nu_status_t status = NU_SUCCESS;
 
@@ -264,7 +264,7 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
         return NU_FAILURE;
     }
 
-    project_init(project, path);
+    project_init(proj, path);
 
     JSON_Object *jroot = json_object(jrootv);
     if (!jroot)
@@ -278,45 +278,24 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
     JSON_Array *jassets = json_object_get_array(jroot, PROJECT_ASSETS);
     if (jassets)
     {
-        project->assets_count = json_array_get_count(jassets);
-        if (project->assets_count)
+        proj->assets_count = json_array_get_count(jassets);
+        if (proj->assets_count)
         {
-            project->assets
-                = sdk_malloc(sizeof(*project->assets) * project->assets_count);
-            NU_ASSERT(project->assets);
-            nu_memset(project->assets,
-                      0,
-                      sizeof(*project->assets) * project->assets_count);
+            proj->assets
+                = sdk_malloc(sizeof(*proj->assets) * proj->assets_count);
+            NU_ASSERT(proj->assets);
+            nu_memset(
+                proj->assets, 0, sizeof(*proj->assets) * proj->assets_count);
         }
-        for (nu_size_t i = 0; i < project->assets_count; ++i)
+        for (nu_size_t i = 0; i < proj->assets_count; ++i)
         {
-            sdk_project_asset_t *asset  = project->assets + i;
+            sdk_project_asset_t *asset  = proj->assets + i;
             JSON_Object         *jasset = json_array_get_object(jassets, i);
 
             // Parse type
             const nu_char_t *type_string
                 = json_object_get_string(jasset, PROJECT_ASSET_TYPE);
             NU_ASSERT(type_string);
-
-            // Parse name / hash
-            const nu_char_t *name_string
-                = json_object_get_string(jasset, PROJECT_ASSET_NAME);
-            NU_ASSERT(name_string);
-            nu_u32_t hash = json_object_get_number(jasset, PROJECT_ASSET_HASH);
-
-            // Parse source
-            const nu_char_t *source_string
-                = json_object_get_string(jasset, PROJECT_ASSET_SOURCE);
-            NU_ASSERT(source_string);
-
-            // Parse ignore
-            int ignore = json_object_get_boolean(jasset, PROJECT_ASSET_IGNORE);
-            if (ignore != -1)
-            {
-                asset->ignore = ignore;
-            }
-
-            // Check type
             nu_bool_t        found;
             sdk_asset_type_t type = nu_sv_to_enum(
                 nu_sv_cstr(type_string), asset_type_map, &found);
@@ -326,12 +305,46 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
                 status = NU_FAILURE;
                 goto cleanup0;
             }
-            project->assets[i].type = type;
-            project->assets[i].hash
-                = hash ? hash : nu_sv_hash(nu_sv_cstr(name_string));
-            nu_sv_to_cstr(nu_sv_cstr(name_string), asset->name, SDK_NAME_MAX);
+            proj->assets[i].type = type;
+
+            // Parse name
+            const nu_char_t *name_string
+                = json_object_get_string(jasset, PROJECT_ASSET_NAME);
+            NU_ASSERT(name_string);
+            if (name_string)
+            {
+                nu_sv_to_cstr(
+                    nu_sv_cstr(name_string), asset->name, SDK_NAME_MAX);
+            }
+
+            // Parse hash
+            nu_u32_t hash = json_object_get_number(jasset, PROJECT_ASSET_HASH);
+            if (hash)
+            {
+                proj->assets[i].hash = hash;
+            }
+            else if (name_string)
+            {
+                proj->assets[i].hash = nu_sv_hash(nu_sv_cstr(name_string));
+            }
+            else
+            {
+                proj->assets[i].hash = nu_pcg_u32(&proj->pcg);
+            }
+
+            // Parse source
+            const nu_char_t *source_string
+                = json_object_get_string(jasset, PROJECT_ASSET_SOURCE);
+            NU_ASSERT(source_string);
             nu_sv_to_cstr(
                 nu_sv_cstr(source_string), asset->source, NU_PATH_MAX);
+
+            // Parse ignore
+            int ignore = json_object_get_boolean(jasset, PROJECT_ASSET_IGNORE);
+            if (ignore != -1)
+            {
+                asset->ignore = ignore;
+            }
 
             // Parse asset
             switch (type)
@@ -354,7 +367,7 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
         = json_object_get_string(jroot, PROJECT_PREBUILD);
     if (jprebuild)
     {
-        nu_sv_to_cstr(nu_sv_cstr(jprebuild), project->prebuild, SDK_NAME_MAX);
+        nu_sv_to_cstr(nu_sv_cstr(jprebuild), proj->prebuild, SDK_NAME_MAX);
     }
 
     json_value_free(jrootv);
@@ -362,7 +375,7 @@ sdk_project_load (sdk_project_t *project, nu_sv_t path)
 
 cleanup0:
     json_value_free(jrootv);
-    sdk_project_free(project);
+    sdk_project_free(proj);
     return status;
 }
 nu_status_t
