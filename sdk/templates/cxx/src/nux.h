@@ -119,23 +119,22 @@ WASM_EXPORT("add_group")
 u32 add_group(u32 size);
 WASM_EXPORT("clear_group")
 void clear_group(u32 group);
-WASM_EXPORT("find")
-u32 find(const void *name);
-WASM_EXPORT("add_texture")
-u32 add_texture(u32 size);
+WASM_EXPORT("alloc_texture")
+void alloc_texture(u32 id, u32 size);
 WASM_EXPORT("write_texture")
 void write_texture(u32 id, u32 x, u32 y, u32 w, u32 h, const void *p);
-WASM_EXPORT("add_mesh")
-u32 add_mesh(u32 count, u32 primitive, u32 attribs);
+WASM_EXPORT("alloc_mesh")
+void alloc_mesh(u32 id, u32 count, u32 primitive, u32 attribs);
 WASM_EXPORT("write_mesh")
 void write_mesh(u32 id, u32 attribs, u32 first, u32 count, const void *p);
-WASM_EXPORT("add_model")
-u32 add_model(u32 count);
+WASM_EXPORT("alloc_model")
+void alloc_model(u32 id, u32 count);
 WASM_EXPORT("write_model")
 void write_model(
     u32 id, u32 node, u32 mesh, u32 texture, u32 parent, const f32 *transform);
-WASM_EXPORT("add_spritesheet")
-u32 add_spritesheet(u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
+WASM_EXPORT("set_spritesheet")
+void set_spritesheet(
+    u32 id, u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
 WASM_EXPORT("transform")
 void transform(u32 transform, const f32 *m);
 WASM_EXPORT("cursor")

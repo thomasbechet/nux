@@ -28,17 +28,11 @@ clear_group (wasm_exec_env_t env, nu_u32_t group)
     vm_t *vm = wasm_runtime_get_user_data(env);
     sys_clear_group(vm, group);
 }
-static nu_u32_t
-find (wasm_exec_env_t env, const nu_char_t *name)
+static nu_status_t
+alloc_texture (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_find(vm, name);
-}
-static nu_u32_t
-add_texture (wasm_exec_env_t env, nu_u32_t size)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_add_texture(vm, size);
+    return sys_alloc_texture(vm, id, size);
 }
 static nu_status_t
 write_texture (wasm_exec_env_t env,
@@ -52,14 +46,15 @@ write_texture (wasm_exec_env_t env,
     vm_t *vm = wasm_runtime_get_user_data(env);
     return sys_write_texture(vm, id, x, y, w, h, p);
 }
-static nu_u32_t
-add_mesh (wasm_exec_env_t        env,
-          nu_u32_t               count,
-          sys_primitive_t        primitive,
-          sys_vertex_attribute_t attribs)
+static nu_status_t
+alloc_mesh (wasm_exec_env_t        env,
+            nu_u32_t               id,
+            nu_u32_t               count,
+            sys_primitive_t        primitive,
+            sys_vertex_attribute_t attribs)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_add_mesh(vm, count, primitive, attribs);
+    return sys_alloc_mesh(vm, id, count, primitive, attribs);
 }
 static nu_status_t
 write_mesh (wasm_exec_env_t        env,
@@ -72,11 +67,11 @@ write_mesh (wasm_exec_env_t        env,
     vm_t *vm = wasm_runtime_get_user_data(env);
     return sys_write_mesh(vm, id, attribs, first, count, p);
 }
-static nu_u32_t
-add_model (wasm_exec_env_t env, nu_u32_t count)
+static nu_status_t
+alloc_model (wasm_exec_env_t env, nu_u32_t id, nu_u32_t count)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_add_model(vm, count);
+    return sys_alloc_model(vm, id, count);
 }
 static nu_status_t
 write_model (wasm_exec_env_t env,
@@ -90,8 +85,9 @@ write_model (wasm_exec_env_t env,
     vm_t *vm = wasm_runtime_get_user_data(env);
     return sys_write_model(vm, id, node, mesh, texture, parent, transform);
 }
-static nu_u32_t
-add_spritesheet (wasm_exec_env_t env,
+static nu_status_t
+set_spritesheet (wasm_exec_env_t env,
+                 nu_u32_t        id,
                  nu_u32_t        texture,
                  nu_u32_t        row,
                  nu_u32_t        col,
@@ -99,7 +95,7 @@ add_spritesheet (wasm_exec_env_t env,
                  nu_u32_t        fheight)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_add_spritesheet(vm, texture, row, col, fwidth, fheight);
+    return sys_set_spritesheet(vm, id, texture, row, col, fwidth, fheight);
 }
 static void
 transform (wasm_exec_env_t env, sys_transform_t transform, const nu_f32_t *m)
@@ -208,14 +204,13 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(console_info, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(add_group, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(clear_group, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(find, "(*)i"),
-        EXPORT_WASM_API_WITH_SIG(add_texture, "(i)i"),
+        EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
-        EXPORT_WASM_API_WITH_SIG(add_mesh, "(iii)i"),
+        EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),
         EXPORT_WASM_API_WITH_SIG(write_mesh, "(iiii*)"),
-        EXPORT_WASM_API_WITH_SIG(add_model, "(i)i"),
+        EXPORT_WASM_API_WITH_SIG(alloc_model, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(write_model, "(iiiii*)"),
-        EXPORT_WASM_API_WITH_SIG(add_spritesheet, "(iiiii)i"),
+        EXPORT_WASM_API_WITH_SIG(set_spritesheet, "(iiiiii)"),
         EXPORT_WASM_API_WITH_SIG(transform, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(cursor, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(fog_params, "(*)"),

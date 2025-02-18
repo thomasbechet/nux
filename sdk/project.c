@@ -10,6 +10,7 @@
 #define PROJECT_PREBUILD     "prebuild"
 #define PROJECT_ASSETS       "assets"
 #define PROJECT_ASSET_TYPE   "type"
+#define PROJECT_ASSET_ID     "id"
 #define PROJECT_ASSET_SOURCE "source"
 #define PROJECT_ASSET_IGNORE "ignore"
 
@@ -128,6 +129,7 @@ sdk_compile (sdk_project_t *project)
     }
     nu_memset(project->data, 0, project->data_capa);
     project->data_size = 0;
+    project->next_id   = 1;
 
     // Execute prebuild command
     if (nu_strlen(project->prebuild))
@@ -184,7 +186,7 @@ sdk_compile (sdk_project_t *project)
                 NU_CHECK(sdk_wasm_compile(project, asset), goto cleanup0);
                 break;
             case SDK_ASSET_TEXTURE:
-                NU_CHECK(sdk_image_compile(project, asset), goto cleanup0);
+                NU_CHECK(sdk_texture_compile(project, asset), goto cleanup0);
                 break;
             case SDK_ASSET_MODEL:
                 NU_CHECK(sdk_model_compile(project, asset), goto cleanup0);
@@ -226,7 +228,7 @@ sdk_compile (sdk_project_t *project)
         const cart_chunk_entry_t *entry = project->entries + i;
         nu_u32_t                  type  = entry->type;
         NU_CHECK(fwrite(&type, sizeof(type), 1, f) == 1, return NU_FAILURE);
-        NU_CHECK(fwrite(entry->name, sizeof(entry->name), 1, f) == 1,
+        NU_CHECK(fwrite(&entry->id, sizeof(entry->id), 1, f) == 1,
                  return NU_FAILURE);
         NU_CHECK(fwrite(&entry->offset, sizeof(entry->offset), 1, f) == 1,
                  return NU_FAILURE);
@@ -316,6 +318,18 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             // Parse name
             nu_sv_to_cstr(nu_sv_cstr(name_string), asset->name, SDK_NAME_MAX);
 
+            // Parse id
+            proj->assets[i].id
+                = json_object_get_number(jasset, PROJECT_ASSET_ID);
+            if (!proj->assets[i].id)
+            {
+                sdk_log(NU_LOG_ERROR,
+                        "Invalid or missing asset id for '%s'",
+                        proj->assets[i].name);
+                status = NU_FAILURE;
+                goto cleanup0;
+            }
+
             // Parse source
             const nu_char_t *source_string
                 = json_object_get_string(jasset, PROJECT_ASSET_SOURCE);
@@ -337,11 +351,29 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
                     NU_CHECK(sdk_wasm_load(asset, jasset), goto cleanup0);
                     break;
                 case SDK_ASSET_TEXTURE:
-                    NU_CHECK(sdk_image_load(asset, jasset), goto cleanup0);
+                    NU_CHECK(sdk_texture_load(asset, jasset), goto cleanup0);
                     break;
                 case SDK_ASSET_MODEL:
                     NU_CHECK(sdk_model_load(asset, jasset), goto cleanup0);
                     break;
+            }
+        }
+    }
+
+    // Check id coherency
+    for (nu_u32_t i = 0; i < proj->assets_count; ++i)
+    {
+        for (nu_u32_t j = i + 1; j < proj->assets_count; ++j)
+        {
+            if (proj->assets[i].id == proj->assets[j].id)
+            {
+                sdk_log(NU_LOG_ERROR,
+                        "Conflict between asset id %u of '%s' and '%s'",
+                        proj->assets[i].id,
+                        proj->assets[i].name,
+                        proj->assets[j].name);
+                status = NU_FAILURE;
+                goto cleanup0;
             }
         }
     }
@@ -397,6 +429,9 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
                 = nu_enum_to_cstr(asset->type, asset_type_map);
             json_object_set_string(jasset, PROJECT_ASSET_TYPE, type_str);
 
+            // Id
+            json_object_set_number(jasset, PROJECT_ASSET_ID, asset->id);
+
             // Source
             json_object_set_string(
                 jasset, PROJECT_ASSET_SOURCE, project->assets[i].source);
@@ -412,7 +447,7 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
                     NU_CHECK(sdk_wasm_save(asset, jasset), goto cleanup1);
                     break;
                 case SDK_ASSET_TEXTURE:
-                    NU_CHECK(sdk_image_save(asset, jasset), goto cleanup1);
+                    NU_CHECK(sdk_texture_save(asset, jasset), goto cleanup1);
                     break;
                 case SDK_ASSET_MODEL:
                     NU_CHECK(sdk_model_save(asset, jasset), goto cleanup1);
@@ -461,18 +496,16 @@ sdk_project_free (sdk_project_t *project)
 }
 
 cart_chunk_entry_t *
-sdk_begin_entry (sdk_project_t    *proj,
-                 const nu_char_t  *name,
-                 cart_chunk_type_t type)
+sdk_begin_entry (sdk_project_t *proj, nu_u32_t id, cart_chunk_type_t type)
 {
     if (proj->current_entry)
     {
         proj->current_entry->length
             = proj->data_size - proj->current_entry->offset;
-        sdk_log(NU_LOG_INFO,
-                "[END ENTRY %s length %d]",
-                nu_enum_to_cstr(proj->current_entry->type,
-                cart_chunk_type_map), proj->current_entry->length);
+        // sdk_log(NU_LOG_INFO,
+        //         "[END ENTRY %s length %d]",
+        //         nu_enum_to_cstr(proj->current_entry->type,
+        //         cart_chunk_type_map), proj->current_entry->length);
         proj->current_entry = NU_NULL;
     }
     NU_ASSERT(proj->entries);
@@ -485,19 +518,36 @@ sdk_begin_entry (sdk_project_t    *proj,
     }
     cart_chunk_entry_t *entry = proj->entries + proj->entries_size;
     ++proj->entries_size;
-    proj->current_entry       = entry;
-    proj->current_entry->type = type;
-    nu_memset(proj->current_entry->name, 0, sizeof(proj->current_entry->name));
-    nu_sv_to_cstr(nu_sv_cstr(name),
-                  proj->current_entry->name,
-                  sizeof(proj->current_entry->name));
+    proj->current_entry         = entry;
+    proj->current_entry->type   = type;
+    proj->current_entry->id     = id;
     proj->current_entry->offset = proj->data_size;
     proj->current_entry->length = 0;
-    sdk_log(NU_LOG_INFO,
-            "[BEGIN ENTRY %s offset %d]",
-            nu_enum_to_cstr(entry->type, cart_chunk_type_map),
-            proj->current_entry->offset);
+    // sdk_log(NU_LOG_INFO,
+    //         "[BEGIN ENTRY %s offset %d]",
+    //         nu_enum_to_cstr(entry->type, cart_chunk_type_map),
+    //         proj->current_entry->offset);
     return entry;
+}
+nu_u32_t
+sdk_next_id (sdk_project_t *proj)
+{
+    nu_u32_t  id    = 0;
+    nu_bool_t found = NU_TRUE;
+    while (found)
+    {
+        id    = proj->next_id++;
+        found = NU_FALSE;
+        for (nu_u32_t i = 0; i < proj->assets_count; ++i)
+        {
+            if (proj->assets[i].id == id)
+            {
+                found = NU_TRUE;
+                break;
+            }
+        }
+    }
+    return id;
 }
 typedef struct
 {
@@ -590,9 +640,8 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     if (display_table)
     {
         printf("Chunk table:\n\n");
-        printf("     %-8s %-8s %-8s %-8s %-8s %-8s\n",
-               "Name",
-               "Hash",
+        printf("     %-8s %-8s %-8s %-8s %-8s\n",
+               "Id",
                "Type",
                "Offset",
                "Length",
@@ -609,9 +658,8 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                      "%.2lf%%",
                      ((nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_size)
                          * 100);
-            printf("     %-8s %-8X %-8s %-8x %-8d %-8s\n",
-                   entry->data.name,
-                   nu_sv_hash(nu_sv_cstr(entry->data.name)),
+            printf("     %-8u %-8s %-8x %-8d %-8s\n",
+                   entry->data.id,
                    nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
                    entry->data.offset,
                    entry->data.length,

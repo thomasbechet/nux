@@ -80,14 +80,17 @@ nux__draw_trigger (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
 }
 
 void
-nux_gamepad_setup (void)
+nux_gamepad_setup (nu_u32_t spritesheet, nu_u32_t texture)
 {
-    nu_u32_t texture_id     = find("tgamepad");
-    nux__gamepad_spriteheet = add_spritesheet(texture_id, 10, 9, 16, 16);
+    nux__gamepad_spriteheet = spritesheet;
+    set_spritesheet(spritesheet, texture, 10, 9, 16, 16);
 }
 void
 nux_draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)
 {
+    x -= 28;
+    y -= 8;
+
     nux__draw_stick(player, NU_TRUE, x - 50, y - 10);
     nux__draw_stick(player, NU_FALSE, x + 20, y + 20);
 

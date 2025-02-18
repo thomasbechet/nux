@@ -4,8 +4,7 @@
 #include "syscall.h"
 
 #define CART_HEADER_SIZE      sizeof(cart_header_t)
-#define CART_CHUNK_NAME_MAX   32
-#define CART_CHUNK_ENTRY_SIZE ((sizeof(nu_u32_t) * 3) + CART_CHUNK_NAME_MAX)
+#define CART_CHUNK_ENTRY_SIZE (sizeof(nu_u32_t) * 4)
 
 typedef enum
 {
@@ -19,7 +18,7 @@ typedef enum
 typedef struct
 {
     cart_chunk_type_t type;
-    nu_char_t         name[CART_CHUNK_NAME_MAX];
+    nu_u32_t          id;
     nu_u32_t          offset;
     nu_u32_t          length;
 } cart_chunk_entry_t;

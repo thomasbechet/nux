@@ -7,13 +7,12 @@
 void
 start (void)
 {
-    nux_setup_gamepad(0, 0);
+    nux_gamepad_setup(5, 2);
 }
 
 void
 update (void)
 {
     clear(NU_COLOR_GREY.rgba);
-    nux_draw_gamepad(0, 100, 100);
-    nux_draw_gamepad(1, 100, 225);
+    nux_draw_gamepad(0, 360 / 2, 240 / 2);
 }

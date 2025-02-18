@@ -1,17 +1,17 @@
 {
 	"target": "cart.bin",
 	"prebuild": "make",
-	"assets": [
-		{
+	"assets": {
+		"code": {
 			"type": "wasm",
-            "name": "w_main",
-			"source": "build/cart.wasm"
+			"source": "build/cart.wasm",
+            "id": 1
 		},
-        {
-            "type": "image",
-            "name": "t_gamepad",
+        "tgamepad": {
+            "type": "texture",
             "size": 256,
-            "source": "../../nuxlib/assets/gamepad.png"
+            "source": "../../nuxlib/assets/gamepad.png",
+            "id": 2
         }
-	]
+    }
 }

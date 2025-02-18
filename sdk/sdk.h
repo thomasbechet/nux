@@ -18,6 +18,7 @@ typedef enum
 typedef struct
 {
     sdk_asset_type_t type;
+    nu_u32_t         id;
     nu_char_t        name[SDK_NAME_MAX];
     nu_char_t        source[NU_PATH_MAX];
     nu_bool_t        ignore;
@@ -27,7 +28,7 @@ typedef struct
         struct
         {
             nu_u32_t target_size;
-        } image;
+        } texture;
     };
 } sdk_project_asset_t;
 
@@ -48,6 +49,7 @@ typedef struct
     nu_u32_t            data_capa;
     nu_u32_t            data_size;
     cart_chunk_entry_t *current_entry;
+    nu_u32_t            next_id;
 } sdk_project_t;
 
 typedef void (*sdk_log_callback_t)(nu_log_level_t   level,
@@ -71,18 +73,19 @@ NU_API nu_status_t sdk_project_save(const sdk_project_t *project, nu_sv_t path);
 NU_API void        sdk_project_free(sdk_project_t *project);
 
 cart_chunk_entry_t *sdk_begin_entry(sdk_project_t    *proj,
-                                    const nu_char_t  *name,
+                                    nu_u32_t          id,
                                     cart_chunk_type_t type);
+nu_u32_t            sdk_next_id(sdk_project_t *proj);
 
 nu_status_t sdk_wasm_load(sdk_project_asset_t *asset, JSON_Object *jasset);
 nu_status_t sdk_wasm_save(sdk_project_asset_t *asset, JSON_Object *jasset);
 nu_status_t sdk_wasm_compile(sdk_project_t       *project,
                              sdk_project_asset_t *asset);
 
-nu_status_t sdk_image_load(sdk_project_asset_t *asset, JSON_Object *jasset);
-nu_status_t sdk_image_save(sdk_project_asset_t *asset, JSON_Object *jasset);
-nu_status_t sdk_image_compile(sdk_project_t       *project,
-                              sdk_project_asset_t *asset);
+nu_status_t sdk_texture_load(sdk_project_asset_t *asset, JSON_Object *jasset);
+nu_status_t sdk_texture_save(sdk_project_asset_t *asset, JSON_Object *jasset);
+nu_status_t sdk_texture_compile(sdk_project_t       *project,
+                                sdk_project_asset_t *asset);
 
 nu_status_t sdk_model_load(sdk_project_asset_t *asset, JSON_Object *jasset);
 nu_status_t sdk_model_save(sdk_project_asset_t *asset, JSON_Object *jasset);
@@ -109,7 +112,7 @@ nu_status_t cart_write_v2(sdk_project_t *proj, nu_v2_t v);
 nu_status_t cart_write_v3(sdk_project_t *proj, nu_v3_t v);
 nu_status_t cart_write_m4(sdk_project_t *proj, nu_m4_t v);
 nu_status_t cart_write_texture(sdk_project_t   *proj,
-                               const nu_char_t *name,
+                               nu_u32_t         id,
                                nu_u32_t         size,
                                const nu_byte_t *data);
 

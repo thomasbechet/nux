@@ -580,8 +580,7 @@ renderer_free (void)
 void
 os_gpu_init_texture (vm_t *vm, nu_u32_t id)
 {
-    nu_u32_t    index = ID_TO_INDEX(id);
-    resource_t *res   = vm->res + index;
+    resource_t *res = vm->res + id;
     GLuint      handle;
     glGenTextures(1, &handle);
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -601,19 +600,18 @@ os_gpu_init_texture (vm_t *vm, nu_u32_t id)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
-    renderer.resources[index].texture = handle;
+    renderer.resources[id].texture = handle;
 }
 void
 os_gpu_free_texture (vm_t *vm, nu_u32_t id)
 {
-    glDeleteTextures(1, &renderer.resources[ID_TO_INDEX(id)].texture);
+    glDeleteTextures(1, &renderer.resources[id].texture);
 }
 void
 os_gpu_update_texture (vm_t *vm, nu_u32_t id)
 {
-    nu_u32_t    index  = ID_TO_INDEX(id);
-    resource_t *res    = vm->res + index;
-    GLuint      handle = renderer.resources[index].texture;
+    resource_t *res    = vm->res + id;
+    GLuint      handle = renderer.resources[id].texture;
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexSubImage2D(GL_TEXTURE_2D,
                     0,
@@ -630,17 +628,16 @@ os_gpu_update_texture (vm_t *vm, nu_u32_t id)
 void
 os_gpu_init_mesh (vm_t *vm, nu_u32_t id)
 {
-    nu_u32_t index                        = ID_TO_INDEX(id);
-    renderer.resources[index].mesh.offset = renderer.mesh_vbo_offset;
-    renderer.mesh_vbo_offset += vm->res[index].mesh.count;
+    renderer.resources[id].mesh.offset = renderer.mesh_vbo_offset;
+    renderer.mesh_vbo_offset += vm->res[id].mesh.count;
     // Initialize colors to white
     glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
     nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     NU_ASSERT(ptr);
-    for (nu_size_t i = 0; i < vm->res[index].mesh.count; ++i)
+    for (nu_size_t i = 0; i < vm->res[id].mesh.count; ++i)
     {
         nu_size_t vbo_offset
-            = (renderer.resources[index].mesh.offset + i) * VERTEX_SIZE
+            = (renderer.resources[id].mesh.offset + i) * VERTEX_SIZE
               + VERTEX_COLOR_OFFSET;
         ptr[vbo_offset + 0] = 1;
         ptr[vbo_offset + 1] = 1;
@@ -655,11 +652,10 @@ os_gpu_free_mesh (vm_t *vm, nu_u32_t id)
 void
 os_gpu_update_mesh (vm_t *vm, nu_u32_t id)
 {
-    nu_u32_t          index = ID_TO_INDEX(id);
-    const resource_t *res   = vm->res + index;
+    const resource_t *res = vm->res + id;
 
     // Compute vertex index in vbo
-    nu_size_t first = renderer.resources[index].mesh.offset;
+    nu_size_t first = renderer.resources[id].mesh.offset;
 
     // Update VBO
     glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
@@ -721,16 +717,15 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t id)
 void
 os_gpu_init_model (vm_t *vm, nu_u32_t id)
 {
-    nu_u32_t    index = ID_TO_INDEX(id);
-    resource_t *res   = vm->res + index;
+    resource_t *res = vm->res + id;
     NU_ASSERT(res->model.node_count + renderer.nodes_next < NODE_INIT_SIZE);
-    renderer.resources[index].model.first_node = renderer.nodes_next;
+    renderer.resources[id].model.first_node = renderer.nodes_next;
     for (nu_size_t i = 0; i < res->model.node_count; ++i)
     {
         gfx_model_node_t *node
-            = renderer.nodes + i + renderer.resources[index].model.first_node;
-        node->texture         = -1;
-        node->mesh            = -1;
+            = renderer.nodes + i + renderer.resources[id].model.first_node;
+        node->texture         = 0;
+        node->mesh            = 0;
         node->parent          = -1;
         node->local_to_parent = nu_m4_identity();
     }
@@ -746,8 +741,7 @@ os_gpu_update_model (vm_t                   *vm,
                      nu_u32_t                node_index,
                      const gfx_model_node_t *node)
 {
-    nu_u32_t index = ID_TO_INDEX(id);
-    renderer.nodes[renderer.resources[index].model.first_node + node_index]
+    renderer.nodes[renderer.resources[id].model.first_node + node_index]
         = *node;
 }
 void
@@ -808,8 +802,6 @@ update_ubo (vm_t *vm)
 void
 draw_model (vm_t *vm, nu_u32_t id, nu_m4_t transform)
 {
-    nu_u32_t index = ID_TO_INDEX(id);
-
     // Update ubo
     update_ubo(vm);
 
@@ -823,23 +815,21 @@ draw_model (vm_t *vm, nu_u32_t id, nu_m4_t transform)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw model
-    const resource_t *res = vm->res + index;
+    const resource_t *res = vm->res + id;
     for (nu_size_t i = 0; i < res->model.node_count; ++i)
     {
         gfx_model_node_t *node
-            = renderer.nodes + renderer.resources[index].model.first_node + i;
+            = renderer.nodes + renderer.resources[id].model.first_node + i;
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(
-            GL_TEXTURE_2D,
-            node->texture
-                ? renderer.resources[ID_TO_INDEX(node->texture)].texture
-                : renderer.white_texture);
+        glBindTexture(GL_TEXTURE_2D,
+                      node->texture ? renderer.resources[node->texture].texture
+                                    : renderer.white_texture);
         nu_m4_t  global_transform = node->local_to_parent;
         nu_u32_t parent           = node->parent;
         while (parent != (nu_u32_t)-1)
         {
             gfx_model_node_t *parent_node
-                = renderer.nodes + renderer.resources[index].model.first_node
+                = renderer.nodes + renderer.resources[id].model.first_node
                   + parent;
             global_transform = nu_m4_mul(parent_node->local_to_parent,
                                          node->local_to_parent);
@@ -851,11 +841,9 @@ draw_model (vm_t *vm, nu_u32_t id, nu_m4_t transform)
             1,
             GL_FALSE,
             global_transform.data);
-        nu_u32_t offset
-            = renderer.resources[ID_TO_INDEX(node->mesh)].mesh.offset;
+        nu_u32_t offset = renderer.resources[node->mesh].mesh.offset;
         glBindVertexArray(renderer.mesh_vao);
-        glDrawArrays(
-            GL_TRIANGLES, offset, vm->res[ID_TO_INDEX(node->mesh)].mesh.count);
+        glDrawArrays(GL_TRIANGLES, offset, vm->res[node->mesh].mesh.count);
         glBindVertexArray(0);
     }
 
@@ -1038,7 +1026,5 @@ os_gpu_draw_blit (
     b->tex    = (y << 16) | x;
     b->size   = (h << 16) | w;
     glUnmapBuffer(GL_ARRAY_BUFFER);
-    blit(renderer.resources[ID_TO_INDEX(id)].texture,
-         renderer.blit_count - 1,
-         1);
+    blit(renderer.resources[id].texture, renderer.blit_count - 1, 1);
 }

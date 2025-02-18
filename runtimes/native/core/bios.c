@@ -28,16 +28,14 @@ load_texture (vm_t *vm, const cart_chunk_entry_t *entry)
 {
     nu_u32_t size;
     NU_CHECK(cart_read_u32(vm, &size), return NU_FAILURE);
-    vm_log(vm, NU_LOG_INFO, "texture name:%s, size:%d", entry->name, size);
+    vm_log(vm, NU_LOG_DEBUG, "texture %u, size:%d", entry->id, size);
     // TODO: validate size
     nu_size_t data_length = gfx_texture_memsize(size);
-    nu_u32_t  id          = sys_add_texture(vm, size);
-    NU_CHECK(id, return NU_FAILURE);
-    resource_t *res = vm->res + ID_TO_INDEX(id);
-    res->hash       = nu_sv_hash(nu_sv_cstr(entry->name));
+    NU_CHECK(sys_alloc_texture(vm, entry->id, size), return NU_FAILURE);
+    resource_t *res = vm->res + entry->id;
     NU_CHECK(cart_read(vm, vm->mem + res->texture.data, data_length),
              return NU_FAILURE);
-    os_gpu_update_texture(vm, id);
+    os_gpu_update_texture(vm, entry->id);
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -48,19 +46,18 @@ load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
     NU_CHECK(cart_read_u32(vm, &primitive), return NU_FAILURE);
     NU_CHECK(cart_read_u32(vm, &attributes), return NU_FAILURE);
     vm_log(vm,
-           NU_LOG_INFO,
-           "mesh name:%s, count:%d, primitive:%d, attribute:%d",
-           entry->name,
+           NU_LOG_DEBUG,
+           "mesh %u, count:%d, primitive:%d, attribute:%d",
+           entry->id,
            count,
            primitive,
            attributes);
-    nu_u32_t id = sys_add_mesh(vm, count, primitive, attributes);
-    NU_CHECK(id, return NU_FAILURE);
-    resource_t *res = vm->res + ID_TO_INDEX(id);
-    res->hash       = nu_sv_hash(nu_sv_cstr(entry->name));
+    NU_CHECK(sys_alloc_mesh(vm, entry->id, count, primitive, attributes),
+             return NU_FAILURE);
+    resource_t *res = vm->res + entry->id;
     NU_ASSERT(os_cart_read(
         vm, vm->mem + res->mesh.data, gfx_vertex_memsize(attributes, count)));
-    os_gpu_update_mesh(vm, id);
+    os_gpu_update_mesh(vm, entry->id);
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -68,14 +65,8 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
 {
     nu_u32_t node_count;
     NU_CHECK(cart_read_u32(vm, &node_count), return NU_FAILURE);
-    nu_u32_t id                   = sys_add_model(vm, node_count);
-    vm->res[ID_TO_INDEX(id)].hash = nu_sv_hash(nu_sv_cstr(entry->name));
-    NU_CHECK(id, return NU_FAILURE);
-    vm_log(vm,
-           NU_LOG_INFO,
-           "model name:%s, node_count:%d",
-           entry->name,
-           node_count);
+    NU_CHECK(sys_alloc_model(vm, entry->id, node_count), return NU_FAILURE);
+    vm_log(vm, NU_LOG_DEBUG, "model %u, node_count:%d", entry->id, node_count);
     for (nu_size_t i = 0; i < node_count; ++i)
     {
         nu_u32_t mesh, texture, parent;
@@ -84,31 +75,15 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
         NU_CHECK(cart_read_u32(vm, &texture), return NU_FAILURE);
         NU_CHECK(cart_read_u32(vm, &parent), return NU_FAILURE);
         NU_CHECK(cart_read_m4(vm, &transform), return NU_FAILURE);
-        nu_u32_t mesh_id = vm_find_res(vm, mesh);
-        if (!mesh_id)
-        {
-            vm_log(vm, NU_LOG_ERROR, "mesh 0x%x not found", mesh);
-            return NU_FAILURE;
-        }
-        nu_u32_t texture_id = 0;
-        if (texture)
-        {
-            texture_id = vm_find_res(vm, texture);
-            if (!texture_id)
-            {
-                vm_log(vm, NU_LOG_ERROR, "texture 0x%x not found", texture);
-                return NU_FAILURE;
-            }
-        }
         vm_log(vm,
-               NU_LOG_INFO,
-               "   node:%d, mesh:0x%x, texture:0x%x, parent:%d",
+               NU_LOG_DEBUG,
+               "   node:%d, mesh:%u, texture:%u, parent:%d",
                i,
                mesh,
                texture,
                parent);
         NU_CHECK(sys_write_model(
-                     vm, id, i, mesh_id, texture_id, parent, transform.data),
+                     vm, entry->id, i, mesh, texture, parent, transform.data),
                  return NU_FAILURE);
     }
 

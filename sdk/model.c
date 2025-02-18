@@ -8,9 +8,7 @@
 #include <stb/stb_image.h>
 
 static nu_status_t
-compile_texture (const cgltf_texture *texture,
-                 const nu_char_t     *name,
-                 sdk_project_t       *proj)
+compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
 {
     nu_status_t status = NU_FAILURE;
 
@@ -30,7 +28,7 @@ compile_texture (const cgltf_texture *texture,
     }
 
     sdk_log(
-        NU_LOG_INFO, "- Loading texture '%s' w %d h %d", texture->name, w, h);
+        NU_LOG_DEBUG, "Loading texture '%s' w %d h %d", texture->name, w, h);
 
     // Find nearest texture size
     nu_u32_t target_size = nu_upper_power_of_two(NU_MAX(w, h));
@@ -51,7 +49,7 @@ compile_texture (const cgltf_texture *texture,
     }
 
     // Write image
-    status = cart_write_texture(proj, name, target_size, resized);
+    status = cart_write_texture(proj, id, target_size, resized);
     NU_CHECK(status, goto cleanup0);
 
 cleanup0:
@@ -89,7 +87,7 @@ buffer_index (cgltf_accessor *accessor, nu_size_t i)
 }
 static nu_status_t
 compile_primitive_mesh (const cgltf_primitive *primitive,
-                        const nu_char_t       *name,
+                        nu_u32_t               id,
                         sdk_project_t         *proj)
 {
     // Access attributes
@@ -141,7 +139,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t       indice_count = accessor->count;
 
     // Write header
-    cart_chunk_entry_t *entry = sdk_begin_entry(proj, name, CART_CHUNK_MESH);
+    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, CART_CHUNK_MESH);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, SYS_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
@@ -189,7 +187,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     typedef struct
     {
         void    *cgltf_ptr;
-        nu_u32_t hash;
+        nu_u32_t id;
     } resource_t;
 
 #define MAX_RESOURCE 512
@@ -225,17 +223,15 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         cgltf_mesh *mesh = data->meshes + i;
         for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nu_char_t name[CART_CHUNK_NAME_MAX];
-            nu_memset(name, 0, sizeof(name));
-            nu_sv_fmt(name, sizeof(name), "%s_m%d", asset->name, i);
-            NU_CHECK(compile_primitive_mesh(mesh->primitives + p, name, proj),
+            nu_u32_t id = sdk_next_id(proj);
+            NU_CHECK(compile_primitive_mesh(mesh->primitives + p, id, proj),
                      goto cleanup0);
-            sdk_log(NU_LOG_INFO,
-                    "- Loading mesh %s '%s' primitive %d",
-                    name,
+            sdk_log(NU_LOG_DEBUG,
+                    "Loading mesh %u '%s' primitive %d",
+                    id,
                     mesh->name,
                     p);
-            resources[resources_count].hash      = nu_sv_hash(nu_sv_cstr(name));
+            resources[resources_count].id        = id;
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             ++resources_count;
         }
@@ -262,10 +258,9 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
         if (texture)
         {
-            nu_char_t name[CART_CHUNK_NAME_MAX];
-            nu_sv_fmt(name, sizeof(name), "%s_t%d", asset->name, i);
-            NU_CHECK(compile_texture(texture, name, proj), goto cleanup0);
-            resources[resources_count].hash      = nu_sv_hash(nu_sv_cstr(name));
+            nu_u32_t id = sdk_next_id(proj);
+            NU_CHECK(compile_texture(texture, id, proj), goto cleanup0);
+            resources[resources_count].id        = id;
             resources[resources_count].cgltf_ptr = texture;
             ++resources_count;
         }
@@ -289,7 +284,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
         // Write model
         cart_chunk_entry_t *entry
-            = sdk_begin_entry(proj, asset->name, CART_CHUNK_MODEL);
+            = sdk_begin_entry(proj, asset->id, CART_CHUNK_MODEL);
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
         // Create model
@@ -334,7 +329,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].hash;
+                            mesh = resources[i].id;
                             break;
                         }
                     }
@@ -360,7 +355,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].hash;
+                                texture = resources[i].id;
                                 break;
                             }
                         }
@@ -372,8 +367,8 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                 node->name);
                     }
 
-                    sdk_log(NU_LOG_INFO,
-                            "- Loading node %s mesh %d texture %d",
+                    sdk_log(NU_LOG_DEBUG,
+                            "Loading node %s mesh %d texture %d",
                             node->name,
                             mesh,
                             texture);

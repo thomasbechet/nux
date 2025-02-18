@@ -39,11 +39,11 @@ image_resize (nu_v2u_t         source_size,
 }
 nu_status_t
 cart_write_texture (sdk_project_t   *proj,
-                    const nu_char_t *name,
+                    nu_u32_t         id,
                     nu_u32_t         size,
                     const nu_byte_t *data)
 {
-    cart_chunk_entry_t *entry = sdk_begin_entry(proj, name, CART_CHUNK_TEXTURE);
+    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, CART_CHUNK_TEXTURE);
     nu_status_t         status;
     status = cart_write_u32(proj, size);
     NU_CHECK(status, return NU_FAILURE);
@@ -53,23 +53,23 @@ cart_write_texture (sdk_project_t   *proj,
 }
 
 nu_status_t
-sdk_image_load (sdk_project_asset_t *asset, JSON_Object *jasset)
+sdk_texture_load (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_parse_u32(jasset, "size", &asset->image.target_size),
+    NU_CHECK(json_parse_u32(jasset, "size", &asset->texture.target_size),
              return NU_FAILURE);
     return NU_SUCCESS;
 }
 nu_status_t
-sdk_image_save (sdk_project_asset_t *asset, JSON_Object *jasset)
+sdk_texture_save (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_write_u32(jasset, "size", asset->image.target_size),
+    NU_CHECK(json_write_u32(jasset, "size", asset->texture.target_size),
              return NU_FAILURE);
     return NU_SUCCESS;
 }
 nu_status_t
-sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
+sdk_texture_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 {
-    const nu_u32_t target_size = asset->image.target_size;
+    const nu_u32_t target_size = asset->texture.target_size;
 
     // Load image
     nu_status_t status = NU_SUCCESS;
@@ -87,7 +87,7 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
     // Write cart
     NU_CHECK(
-        cart_write_texture(proj, asset->name, asset->image.target_size, data),
+        cart_write_texture(proj, asset->id, asset->texture.target_size, data),
         goto cleanup1);
 
 cleanup1:

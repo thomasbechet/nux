@@ -12,9 +12,15 @@ typedef struct
     nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
 } cmd_entry_t;
 
+static nu_log_level_t log_level;
+
 void
 cli_log (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
+    if (level > log_level)
+    {
+        return;
+    }
     switch (level)
     {
         case NU_LOG_DEBUG:
@@ -57,6 +63,7 @@ main (int argc, const nu_char_t *argv[])
         OPT_END(),
     };
 
+    log_level = NU_LOG_INFO;
 #ifdef NUX_BUILD_SDK
     sdk_set_log_callback(cli_log);
 #endif

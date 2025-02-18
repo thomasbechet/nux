@@ -17,32 +17,44 @@ vm_malloc (vm_t *vm, nu_u32_t n)
     vm->memsize += n;
     return p;
 }
-nu_u32_t
-vm_add_res (vm_t *vm, resource_type_t type)
+resource_t *
+vm_set_res (vm_t *vm, nu_u32_t id, resource_type_t type)
 {
-    if (!vm->res_free)
+    if (type == RES_NULL)
     {
-        vm_log(vm, NU_LOG_ERROR, "out of resource");
-        return ID_NULL;
+        vm_log(vm, NU_LOG_ERROR, "Invalid resource type");
+        return NU_NULL;
     }
-    nu_u32_t index      = vm->res_free;
-    vm->res_free        = vm->res[index].next;
-    vm->res[index].type = type;
-    vm->res[index].hash = 0;
-    return INDEX_TO_ID(index);
+    if (id == 0 || id > MAX_RESOURCE_COUNT)
+    {
+        vm_log(vm, NU_LOG_ERROR, "Invalid resource id");
+        return NU_NULL;
+    }
+    // TODO: uninit resource
+    switch (vm->res[id].type)
+    {
+        case RES_POOL:
+        case RES_TEXTURE:
+        case RES_MESH:
+        case RES_MODEL:
+        case RES_SPRITESHEET:
+            break;
+        default:
+            break;
+    }
+    vm->res[id].type = type;
+    vm->res[id].next = 0;
+    return vm->res + id;
 }
-nu_u32_t
-vm_find_res (vm_t *vm, nu_u32_t hash)
+resource_t *
+vm_get_res (vm_t *vm, nu_u32_t id, resource_type_t type)
 {
-    for (nu_size_t i = 0; i < MAX_RESOURCE_COUNT; ++i)
+    if (!id || id > MAX_RESOURCE_COUNT)
     {
-        if (hash == vm->res[i].hash)
-        {
-            return INDEX_TO_ID(i);
-        }
+        return NU_NULL;
     }
-    vm_log(vm, NU_LOG_ERROR, "resource not found 0x%x", hash);
-    return ID_NULL;
+    resource_t *res = vm->res + id;
+    return res->type == type ? res : NU_NULL;
 }
 
 nu_u32_t
@@ -53,16 +65,6 @@ sys_add_group (vm_t *vm, nu_u32_t size)
 void
 sys_clear_group (vm_t *vm, nu_u32_t group)
 {
-}
-nu_u32_t
-sys_find (vm_t *vm, const nu_char_t *name)
-{
-    nu_u32_t id = vm_find_res(vm, nu_sv_hash(nu_sv_cstr(name)));
-    if (!id)
-    {
-        vm_log(vm, NU_LOG_ERROR, "Resource not found %s", name);
-    }
-    return id;
 }
 
 nu_status_t
@@ -88,13 +90,13 @@ vm_init (vm_t *vm, const vm_config_t *config)
     vm->memcapa = config->memsize;
 
     // Initialize resource table
-    for (nu_size_t i = 0; i < MAX_RESOURCE_COUNT; ++i)
+    vm->res[ID_NULL].type = RES_NULL;
+    vm->res[ID_NULL].next = 0;
+    for (nu_size_t i = 1; i < MAX_RESOURCE_COUNT; ++i)
     {
         vm->res[i].type = RES_FREE;
-        vm->res[i].next = INDEX_TO_ID(i + 1);
+        vm->res[i].next = 0;
     }
-    vm->res[MAX_RESOURCE_COUNT - 1].next = ID_NULL;
-    vm->res_free                         = INDEX_TO_ID(0);
 
     return NU_SUCCESS;
 }

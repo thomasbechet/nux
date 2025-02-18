@@ -68,9 +68,8 @@ nu_u32_t sys_console_info(vm_t *vm, sys_console_info_t info);
 
 nu_u32_t sys_add_group(vm_t *vm, nu_u32_t size);
 void     sys_clear_group(vm_t *vm, nu_u32_t group);
-nu_u32_t sys_find(vm_t *vm, const nu_char_t *name);
 
-nu_u32_t    sys_add_texture(vm_t *vm, nu_u32_t size);
+nu_status_t sys_alloc_texture(vm_t *vm, nu_u32_t id, nu_u32_t size);
 nu_status_t sys_write_texture(vm_t       *vm,
                               nu_u32_t    id,
                               nu_u32_t    x,
@@ -79,10 +78,11 @@ nu_status_t sys_write_texture(vm_t       *vm,
                               nu_u32_t    h,
                               const void *p);
 
-nu_u32_t    sys_add_mesh(vm_t                  *vm,
-                         nu_u32_t               count,
-                         sys_primitive_t        primitive,
-                         sys_vertex_attribute_t attribs);
+nu_status_t sys_alloc_mesh(vm_t                  *vm,
+                           nu_u32_t               id,
+                           nu_u32_t               count,
+                           sys_primitive_t        primitive,
+                           sys_vertex_attribute_t attribs);
 nu_status_t sys_write_mesh(vm_t                  *vm,
                            nu_u32_t               id,
                            sys_vertex_attribute_t attribs,
@@ -90,7 +90,7 @@ nu_status_t sys_write_mesh(vm_t                  *vm,
                            nu_u32_t               count,
                            const void            *p);
 
-nu_u32_t    sys_add_model(vm_t *vm, nu_u32_t count);
+nu_status_t sys_alloc_model(vm_t *vm, nu_u32_t id, nu_u32_t count);
 nu_status_t sys_write_model(vm_t           *vm,
                             nu_u32_t        id,
                             nu_u32_t        node,
@@ -99,12 +99,13 @@ nu_status_t sys_write_model(vm_t           *vm,
                             nu_u32_t        parent,
                             const nu_f32_t *transform);
 
-nu_u32_t sys_add_spritesheet(vm_t    *vm,
-                             nu_u32_t texture,
-                             nu_u32_t row,
-                             nu_u32_t col,
-                             nu_u32_t fwidth,
-                             nu_u32_t fheight);
+nu_status_t sys_set_spritesheet(vm_t    *vm,
+                                nu_u32_t id,
+                                nu_u32_t texture,
+                                nu_u32_t row,
+                                nu_u32_t col,
+                                nu_u32_t fwidth,
+                                nu_u32_t fheight);
 
 void sys_transform(vm_t *vm, sys_transform_t transform, const nu_f32_t *m);
 void sys_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);

@@ -69,8 +69,8 @@ gfx_end_frame (vm_t *vm)
     os_gpu_end_frame(vm);
 }
 
-nu_u32_t
-sys_add_texture (vm_t *vm, nu_u32_t size)
+nu_status_t
+sys_alloc_texture (vm_t *vm, nu_u32_t id, nu_u32_t size)
 {
     if (size < GFX_MIN_TEXTURE_SIZE || size > GFX_MAX_TEXTURE_SIZE)
     {
@@ -82,9 +82,8 @@ sys_add_texture (vm_t *vm, nu_u32_t size)
                GFX_MAX_TEXTURE_SIZE);
         return ID_NULL;
     }
-    nu_u32_t id = vm_add_res(vm, RES_TEXTURE);
-    NU_CHECK(id, return ID_NULL);
-    resource_t *res   = vm->res + ID_TO_INDEX(id);
+    resource_t *res = vm_set_res(vm, id, RES_TEXTURE);
+    NU_CHECK(res, return NU_FAILURE);
     res->texture.size = size;
     res->texture.data = vm_malloc(vm, gfx_texture_memsize(size));
     NU_CHECK(res->texture.data != ADDR_INVALID, return ID_NULL);
@@ -100,9 +99,8 @@ sys_write_texture (vm_t       *vm,
                    nu_u32_t    h,
                    const void *p)
 {
-    NU_CHECK(id, return NU_FAILURE);
-    resource_t *res = vm->res + ID_TO_INDEX(id);
-    NU_CHECK(res->type == RES_TEXTURE, return NU_FAILURE);
+    resource_t *res = vm_get_res(vm, id, RES_TEXTURE);
+    NU_CHECK(res, return NU_FAILURE);
     nu_byte_t *data = vm->mem + res->texture.data;
     NU_ASSERT(x + w <= res->texture.size);
     NU_ASSERT(y + h <= res->texture.size);
@@ -115,15 +113,15 @@ sys_write_texture (vm_t       *vm,
     os_gpu_update_texture(vm, id);
     return NU_SUCCESS;
 }
-nu_u32_t
-sys_add_mesh (vm_t                  *vm,
-              nu_u32_t               count,
-              sys_primitive_t        primitive,
-              sys_vertex_attribute_t attributes)
+nu_status_t
+sys_alloc_mesh (vm_t                  *vm,
+                nu_u32_t               id,
+                nu_u32_t               count,
+                sys_primitive_t        primitive,
+                sys_vertex_attribute_t attributes)
 {
-    nu_u32_t id = vm_add_res(vm, RES_MESH);
-    NU_CHECK(id, return ID_NULL);
-    resource_t *res      = vm->res + ID_TO_INDEX(id);
+    resource_t *res = vm_set_res(vm, id, RES_MESH);
+    NU_CHECK(res, return NU_FAILURE);
     res->mesh.count      = count;
     res->mesh.primitive  = primitive;
     res->mesh.attributes = attributes;
@@ -132,7 +130,7 @@ sys_add_mesh (vm_t                  *vm,
     nu_memset(
         vm->mem + res->mesh.data, 0, gfx_vertex_memsize(attributes, count));
     os_gpu_init_mesh(vm, id);
-    return id;
+    return NU_SUCCESS;
 }
 nu_status_t
 sys_write_mesh (vm_t                  *vm,
@@ -142,9 +140,7 @@ sys_write_mesh (vm_t                  *vm,
                 nu_u32_t               count,
                 const void            *p)
 {
-    NU_CHECK(id, return NU_FAILURE);
-    resource_t *res = vm->res + ID_TO_INDEX(id);
-    NU_CHECK(res->type == RES_MESH, return NU_FAILURE);
+    resource_t     *res  = vm_get_res(vm, id, RES_MESH);
     nu_f32_t       *ptr  = (nu_f32_t *)(vm->mem + res->mesh.data);
     const nu_f32_t *data = p;
     if (attributes & SYS_VERTEX_POSITION
@@ -199,18 +195,17 @@ sys_write_mesh (vm_t                  *vm,
     return NU_SUCCESS;
 }
 
-nu_u32_t
-sys_add_model (vm_t *vm, nu_u32_t node_count)
+nu_status_t
+sys_alloc_model (vm_t *vm, nu_u32_t id, nu_u32_t node_count)
 {
-    nu_u32_t id = vm_add_res(vm, RES_MODEL);
-    NU_CHECK(id, return ID_NULL);
-    resource_t *res     = vm->res + ID_TO_INDEX(id);
-    nu_u32_t    memsize = node_count * sizeof(gfx_model_node_t);
-    res->model.data     = vm_malloc(vm, memsize);
+    resource_t *res = vm_set_res(vm, id, RES_MODEL);
+    NU_CHECK(res, return NU_FAILURE);
+    nu_u32_t memsize = node_count * sizeof(gfx_model_node_t);
+    res->model.data  = vm_malloc(vm, memsize);
     NU_CHECK(res->model.data != ADDR_INVALID, return ID_NULL);
     res->model.node_count = node_count;
     os_gpu_init_model(vm, id);
-    return id;
+    return NU_SUCCESS;
 }
 nu_status_t
 sys_write_model (vm_t           *vm,
@@ -221,9 +216,7 @@ sys_write_model (vm_t           *vm,
                  nu_u32_t        parent,
                  const nu_f32_t *transform)
 {
-    NU_CHECK(id, return NU_FAILURE);
-    resource_t *res = vm->res + ID_TO_INDEX(id);
-    NU_CHECK(res->type == RES_MODEL, return NU_FAILURE);
+    resource_t *res = vm_get_res(vm, id, RES_MODEL);
     if (node_index >= res->model.node_count)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid model node index %d", node_index);
@@ -238,23 +231,23 @@ sys_write_model (vm_t           *vm,
     return NU_SUCCESS;
 }
 
-nu_u32_t
-sys_add_spritesheet (vm_t    *vm,
+nu_status_t
+sys_set_spritesheet (vm_t    *vm,
+                     nu_u32_t id,
                      nu_u32_t texture,
                      nu_u32_t row,
                      nu_u32_t col,
                      nu_u32_t fwidth,
                      nu_u32_t fheight)
 {
-    nu_u32_t id = vm_add_res(vm, RES_SPRITESHEET);
-    NU_CHECK(id, return ID_NULL);
-    resource_t *res          = vm->res + ID_TO_INDEX(id);
+    resource_t *res = vm_set_res(vm, id, RES_SPRITESHEET);
+    NU_CHECK(res, return NU_FAILURE);
     res->spritesheet.texture = texture;
     res->spritesheet.row     = row;
     res->spritesheet.col     = col;
     res->spritesheet.fwidth  = fwidth;
     res->spritesheet.fheight = fheight;
-    return id;
+    return NU_SUCCESS;
 }
 
 void
@@ -303,8 +296,7 @@ sys_color (vm_t *vm, nu_u32_t color)
 void
 sys_draw (vm_t *vm, nu_u32_t id)
 {
-    NU_ASSERT(id);
-    NU_CHECK(id && vm->res[ID_TO_INDEX(id)].type == RES_MODEL, return);
+    NU_CHECK(vm_get_res(vm, id, RES_MODEL), return);
     os_gpu_draw_model(vm, id);
 }
 void
@@ -336,16 +328,16 @@ sys_print (vm_t *vm, const void *text)
 void
 sys_blit (vm_t *vm, nu_u32_t id, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
-    NU_CHECK(id && vm->res[ID_TO_INDEX(id)].type == RES_TEXTURE, return);
+    NU_CHECK(vm_get_res(vm, id, RES_TEXTURE), return);
     os_gpu_draw_blit(vm, id, x, y, w, h);
 }
 void
 sys_sprite (vm_t *vm, nu_u32_t spritesheet, nu_u32_t sprite)
 {
-    NU_CHECK(spritesheet, return);
-    resource_t *res = vm->res + ID_TO_INDEX(spritesheet);
-    nu_u32_t    x   = (sprite % res->spritesheet.row) * res->spritesheet.fwidth;
-    nu_u32_t    y = (sprite / res->spritesheet.row) * res->spritesheet.fheight;
+    resource_t *res = vm_get_res(vm, spritesheet, RES_SPRITESHEET);
+    NU_CHECK(res, return);
+    nu_u32_t x = (sprite % res->spritesheet.row) * res->spritesheet.fwidth;
+    nu_u32_t y = (sprite / res->spritesheet.row) * res->spritesheet.fheight;
     os_gpu_draw_blit(vm,
                      res->spritesheet.texture,
                      x,
