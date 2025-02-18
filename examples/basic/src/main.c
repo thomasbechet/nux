@@ -88,5 +88,5 @@ update (void)
 
     // blit(1, 0, 0, 128, 128);
 
-    nux_draw_gamepad(0, 60, 200);
+    nux_draw_gamepad(0, 85, 200);
 }
