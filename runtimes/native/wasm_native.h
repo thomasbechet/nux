@@ -11,6 +11,12 @@ trace (wasm_exec_env_t env, const nu_char_t *text)
     sys_trace(vm, text);
 }
 static nu_u32_t
+console_info (wasm_exec_env_t env, sys_console_info_t info)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_console_info(vm, info);
+}
+static nu_u32_t
 add_group (wasm_exec_env_t env, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
@@ -27,12 +33,6 @@ find (wasm_exec_env_t env, const nu_char_t *name)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     return sys_find(vm, name);
-}
-static nu_u32_t
-find_hash (wasm_exec_env_t env, nu_u32_t hash)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_find_hash(vm, hash);
 }
 static nu_u32_t
 add_texture (wasm_exec_env_t env, nu_u32_t size)
@@ -205,10 +205,10 @@ axis (wasm_exec_env_t env, nu_u32_t player, sys_axis_t axis)
 
 static NativeSymbol wasm_native_symbols[]
     = { EXPORT_WASM_API_WITH_SIG(trace, "(*)"),
+        EXPORT_WASM_API_WITH_SIG(console_info, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(add_group, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(clear_group, "(i)"),
         EXPORT_WASM_API_WITH_SIG(find, "(*)i"),
-        EXPORT_WASM_API_WITH_SIG(find_hash, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(add_texture, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
         EXPORT_WASM_API_WITH_SIG(add_mesh, "(iii)i"),

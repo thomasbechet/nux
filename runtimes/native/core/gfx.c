@@ -77,9 +77,9 @@ sys_add_texture (vm_t *vm, nu_u32_t size)
         vm_log(vm,
                NU_LOG_ERROR,
                "Invalid texture size %d (min %d max %d)",
+               size,
                GFX_MIN_TEXTURE_SIZE,
-               GFX_MAX_TEXTURE_SIZE,
-               size);
+               GFX_MAX_TEXTURE_SIZE);
         return ID_NULL;
     }
     nu_u32_t id = vm_add_res(vm, RES_TEXTURE);

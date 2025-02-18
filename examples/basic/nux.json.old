@@ -1,28 +1,33 @@
 {
 	"target": "cart.bin",
 	"prebuild": "make",
-	"assets": {
-        "w_main": {
-            "type": "wasm",
-            "source": "build/cart.wasm"
-        },
-        "thorror": {
-            "type": "texture",
+	"assets": [
+		{
+            "name": "wmain",
+			"type": "wasm",
+			"source": "build/cart.wasm"
+		},
+        {
+            "name": "thorror",
+            "type": "image",
             "source": "assets/Horror_Brick_01-128x128.png",
             "size": 128 
         },
-        "mariane6": {
+        {
+            "name": "mariane6",
             "type": "model",
             "source": "assets/ariane6.glb"
         },
-        "mindustrial": {
+        {
+            "name": "mindustrial",
             "type": "model",
             "source": "assets/industrial.glb"
         },
-        "tgamepad": {
-            "type": "texture",
+        {
+            "name": "tgamepad",
+            "type": "image",
             "size": 256,
             "source": "../../nuxlib/assets/gamepad.png"
         }
-    }
+	]
 }

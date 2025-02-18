@@ -69,6 +69,10 @@ update (void)
     print(buf);
     sprintf(buf, "t: %.2lf", time);
     print(buf);
+    nu_f32_t memusage = (nu_f32_t)console_info(CONSOLE_MEMORY_USAGE)
+                        / (nu_f32_t)console_info(CONSOLE_MEMORY_CAPACITY);
+    sprintf(buf, "m: %.2lf%%", memusage * 100);
+    print(buf);
 
     sprintf(buf, "b: %d", button(0));
     print(buf);
@@ -81,5 +85,5 @@ update (void)
 
     // blit(1, 0, 0, 128, 128);
 
-    nux_draw_gamepad(0, 60, 270);
+    nux_draw_gamepad(0, 60, 200);
 }

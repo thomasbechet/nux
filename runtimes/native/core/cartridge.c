@@ -50,13 +50,21 @@ cart_parse_entries (const void         *data,
     const nu_byte_t *ptr = data;
     for (nu_size_t i = 0; i < count; ++i)
     {
+        // Type
         cart_chunk_entry_t *entry = entries + i;
         entry->type               = nu_u32_le(*(nu_u32_t *)ptr);
         ptr += sizeof(nu_u32_t);
-        entry->hash = nu_u32_le(*(nu_u32_t *)ptr);
-        ptr += sizeof(nu_u32_t);
+        // Name
+        nu_memcpy(entry->name, ptr, CART_CHUNK_NAME_MAX);
+        if (entry->name[CART_CHUNK_NAME_MAX - 1] != '\0')
+        {
+            return NU_FAILURE;
+        }
+        ptr += CART_CHUNK_NAME_MAX;
+        // Offset
         entry->offset = nu_u32_le(*(nu_u32_t *)ptr);
         ptr += sizeof(nu_u32_t);
+        // Length
         entry->length = nu_u32_le(*(nu_u32_t *)ptr);
         ptr += sizeof(nu_u32_t);
     }

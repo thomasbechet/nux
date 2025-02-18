@@ -39,13 +39,12 @@ image_resize (nu_v2u_t         source_size,
 }
 nu_status_t
 cart_write_texture (sdk_project_t   *proj,
-                    nu_u32_t         hash,
+                    const nu_char_t *name,
                     nu_u32_t         size,
                     const nu_byte_t *data)
 {
-    cart_chunk_entry_t *entry = sdk_begin_entry(proj, CART_CHUNK_TEXTURE);
-    entry->hash               = hash;
-    nu_status_t status;
+    cart_chunk_entry_t *entry = sdk_begin_entry(proj, name, CART_CHUNK_TEXTURE);
+    nu_status_t         status;
     status = cart_write_u32(proj, size);
     NU_CHECK(status, return NU_FAILURE);
     status = cart_write(proj, data, gfx_texture_memsize(size));
@@ -88,7 +87,7 @@ sdk_image_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
     // Write cart
     NU_CHECK(
-        cart_write_texture(proj, asset->hash, asset->image.target_size, data),
+        cart_write_texture(proj, asset->name, asset->image.target_size, data),
         goto cleanup1);
 
 cleanup1:

@@ -59,17 +59,7 @@ nu_sv_eq (nu_sv_t s1, nu_sv_t s2)
 nu_u32_t
 nu_sv_hash (nu_sv_t s)
 {
-    static const nu_u32_t FNV1A_HASH_32  = 0x811c9dc5;
-    static const nu_u32_t FNV1A_PRIME_32 = 0x01000193;
-    nu_u32_t              hash           = FNV1A_HASH_32;
-    nu_size_t             i              = 0;
-    while (i < s.size)
-    {
-        hash ^= s.data[i];
-        hash *= FNV1A_PRIME_32;
-        ++i;
-    }
-    return hash;
+    return nu_hash((const nu_byte_t *)s.data, s.size);
 }
 nu_bool_t
 nu_sv_next (nu_sv_t s, nu_size_t *it, nu_wchar_t *c)

@@ -32,7 +32,7 @@ typedef enum
 typedef struct
 {
     resource_type_t type;
-    nu_u32_t        hash;
+    nu_u32_t        hash; // non-zero if cartridge resource
     nu_u32_t        next;
     union
     {
@@ -108,5 +108,6 @@ void     vm_vlog(vm_t            *vm,
                  va_list          args);
 nu_u32_t vm_malloc(vm_t *vm, nu_u32_t n);
 nu_u32_t vm_add_res(vm_t *vm, resource_type_t type);
+nu_u32_t vm_find_res(vm_t *vm, nu_u32_t hash);
 
 #endif

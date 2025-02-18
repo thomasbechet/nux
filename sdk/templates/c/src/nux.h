@@ -101,20 +101,26 @@ typedef enum
     AXIS_ENUM_MAX = 6
 } axis_t;
 
+typedef enum
+{
+    CONSOLE_MEMORY_CAPACITY = 0,
+    CONSOLE_MEMORY_USAGE    = 1
+} console_info_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                           SYSCALL                            //////
 //////////////////////////////////////////////////////////////////////////
 
 WASM_EXPORT("trace")
 void trace(const void *text);
+WASM_EXPORT("console_info")
+u32 console_info(u32 info);
 WASM_EXPORT("add_group")
 u32 add_group(u32 size);
 WASM_EXPORT("clear_group")
 void clear_group(u32 group);
 WASM_EXPORT("find")
 u32 find(const void *name);
-WASM_EXPORT("find_hash")
-u32 find_hash(u32 hash);
 WASM_EXPORT("add_texture")
 u32 add_texture(u32 size);
 WASM_EXPORT("write_texture")

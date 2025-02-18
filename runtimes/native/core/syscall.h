@@ -57,12 +57,18 @@ typedef enum
     SYS_AXIS_ENUM_MAX = 6
 } sys_axis_t;
 
-void sys_trace(vm_t *vm, const nu_char_t *text);
+typedef enum
+{
+    SYS_CONSOLE_MEMORY_CAPACITY = 0,
+    SYS_CONSOLE_MEMORY_USAGE    = 1,
+} sys_console_info_t;
+
+void     sys_trace(vm_t *vm, const nu_char_t *text);
+nu_u32_t sys_console_info(vm_t *vm, sys_console_info_t info);
 
 nu_u32_t sys_add_group(vm_t *vm, nu_u32_t size);
 void     sys_clear_group(vm_t *vm, nu_u32_t group);
 nu_u32_t sys_find(vm_t *vm, const nu_char_t *name);
-nu_u32_t sys_find_hash(vm_t *vm, nu_u32_t hash);
 
 nu_u32_t    sys_add_texture(vm_t *vm, nu_u32_t size);
 nu_status_t sys_write_texture(vm_t       *vm,

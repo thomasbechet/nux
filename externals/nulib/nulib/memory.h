@@ -34,4 +34,6 @@ NU_API void    *nu_memalign(void *ptr, nu_size_t align);
 NU_API nu_u32_t nu_u32_le(nu_u32_t v);
 NU_API nu_f32_t nu_f32_le(nu_f32_t v);
 
+NU_API nu_u32_t nu_hash(const nu_byte_t *p, nu_size_t s);
+
 #endif

@@ -31,6 +31,19 @@ vm_add_res (vm_t *vm, resource_type_t type)
     vm->res[index].hash = 0;
     return INDEX_TO_ID(index);
 }
+nu_u32_t
+vm_find_res (vm_t *vm, nu_u32_t hash)
+{
+    for (nu_size_t i = 0; i < MAX_RESOURCE_COUNT; ++i)
+    {
+        if (hash == vm->res[i].hash)
+        {
+            return INDEX_TO_ID(i);
+        }
+    }
+    vm_log(vm, NU_LOG_ERROR, "resource not found 0x%x", hash);
+    return ID_NULL;
+}
 
 nu_u32_t
 sys_add_group (vm_t *vm, nu_u32_t size)
@@ -44,25 +57,12 @@ sys_clear_group (vm_t *vm, nu_u32_t group)
 nu_u32_t
 sys_find (vm_t *vm, const nu_char_t *name)
 {
-    nu_u32_t id = sys_find_hash(vm, nu_sv_hash(nu_sv_cstr(name)));
+    nu_u32_t id = vm_find_res(vm, nu_sv_hash(nu_sv_cstr(name)));
     if (!id)
     {
         vm_log(vm, NU_LOG_ERROR, "Resource not found %s", name);
     }
     return id;
-}
-nu_u32_t
-sys_find_hash (vm_t *vm, nu_u32_t hash)
-{
-    for (nu_size_t i = 0; i < MAX_RESOURCE_COUNT; ++i)
-    {
-        if (hash == vm->res[i].hash)
-        {
-            return INDEX_TO_ID(i);
-        }
-    }
-    vm_log(vm, NU_LOG_ERROR, "resource not found 0x%x", hash);
-    return ID_NULL;
 }
 
 nu_status_t
@@ -167,4 +167,16 @@ void
 sys_trace (vm_t *vm, const nu_char_t *text)
 {
     vm_log(vm, NU_LOG_INFO, text);
+}
+nu_u32_t
+sys_console_info (vm_t *vm, sys_console_info_t info)
+{
+    switch (info)
+    {
+        case SYS_CONSOLE_MEMORY_CAPACITY:
+            return vm->memcapa;
+        case SYS_CONSOLE_MEMORY_USAGE:
+            return vm->memsize;
+    }
+    return 0;
 }

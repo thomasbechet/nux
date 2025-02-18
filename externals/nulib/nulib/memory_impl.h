@@ -89,4 +89,20 @@ nu_f32_le (nu_f32_t v)
     return v;
 }
 
+nu_u32_t
+nu_hash (const nu_byte_t *p, nu_size_t s)
+{
+    const nu_u32_t FNV1A_HASH_32  = 0x811c9dc5;
+    const nu_u32_t FNV1A_PRIME_32 = 0x01000193;
+    nu_u32_t       hash           = FNV1A_HASH_32;
+    nu_size_t      i              = 0;
+    while (i < s)
+    {
+        hash ^= p[i];
+        hash *= FNV1A_PRIME_32;
+        ++i;
+    }
+    return hash;
+}
+
 #endif

@@ -11,7 +11,7 @@
 typedef enum
 {
     SDK_ASSET_WASM,
-    SDK_ASSET_IMAGE,
+    SDK_ASSET_TEXTURE,
     SDK_ASSET_MODEL,
 } sdk_asset_type_t;
 
@@ -19,7 +19,6 @@ typedef struct
 {
     sdk_asset_type_t type;
     nu_char_t        name[SDK_NAME_MAX];
-    nu_u32_t         hash;
     nu_char_t        source[NU_PATH_MAX];
     nu_bool_t        ignore;
 
@@ -72,6 +71,7 @@ NU_API nu_status_t sdk_project_save(const sdk_project_t *project, nu_sv_t path);
 NU_API void        sdk_project_free(sdk_project_t *project);
 
 cart_chunk_entry_t *sdk_begin_entry(sdk_project_t    *proj,
+                                    const nu_char_t  *name,
                                     cart_chunk_type_t type);
 
 nu_status_t sdk_wasm_load(sdk_project_asset_t *asset, JSON_Object *jasset);
@@ -109,7 +109,7 @@ nu_status_t cart_write_v2(sdk_project_t *proj, nu_v2_t v);
 nu_status_t cart_write_v3(sdk_project_t *proj, nu_v3_t v);
 nu_status_t cart_write_m4(sdk_project_t *proj, nu_m4_t v);
 nu_status_t cart_write_texture(sdk_project_t   *proj,
-                               nu_u32_t         hash,
+                               const nu_char_t *name,
                                nu_u32_t         size,
                                const nu_byte_t *data);
 
