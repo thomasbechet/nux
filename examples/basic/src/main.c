@@ -5,12 +5,12 @@
 #include <nuxlib/freecam.h>
 #include <nuxlib/gamepad.h>
 #include <nuxlib/print.h>
+#include <nuxlib/debug.h>
 
 #define MODEL_INDUSTRIAL 4
 #define MODEL_ARIANE6    3
 
 static nu_f32_t rotation = 0.0f;
-static nu_f32_t time     = 0;
 
 void
 start (void)
@@ -22,11 +22,9 @@ start (void)
 void
 update (void)
 {
-    time += 0.02;
-
     nu_u32_t c = nu_color_from_vec4(nu_v4(0.7, 0.7, 0.7, 1)).rgba;
     clear(c);
-    nu_f32_t       near  = 100 + nu_sin(time) * 10.0;
+    nu_f32_t       near  = 100 + nu_sin(time()) * 10.0;
     const nu_f32_t fog[] = { 1, near, near + 30 };
     fog_params(fog);
     clear(c);
@@ -50,7 +48,7 @@ update (void)
     for (nu_size_t i = 0; i < count; ++i)
     {
         points[i * 3 + 0] = nu_cos(i * 0.3);
-        points[i * 3 + 1] = i * 0.05 * (1 + nu_sin(time)) * 0.5;
+        points[i * 3 + 1] = i * 0.05 * (1 + nu_sin(time())) * 0.5;
         points[i * 3 + 2] = nu_sin(i * 0.3);
     }
     color(0xFF0000FF);
@@ -70,7 +68,7 @@ update (void)
     print(buf);
     sprintf(buf, "n: %.2lf", near);
     print(buf);
-    sprintf(buf, "t: %.2lf", time);
+    sprintf(buf, "t: %.2lf", time());
     print(buf);
     nu_f32_t memusage = (nu_f32_t)console_info(CONSOLE_MEMORY_USAGE)
                         / (nu_f32_t)console_info(CONSOLE_MEMORY_CAPACITY);
@@ -85,6 +83,8 @@ update (void)
     color(NU_COLOR_BLUE.rgba);
     draw(MODEL_ARIANE6);
     color(0xFFFFFFFF);
+
+    nux_debug();
 
     // blit(1, 0, 0, 128, 128);
 

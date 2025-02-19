@@ -68,6 +68,7 @@ typedef struct
 typedef struct
 {
     nu_u32_t memsize;
+    nu_u32_t tps;
 } vm_config_t;
 
 struct vm
@@ -76,6 +77,9 @@ struct vm
     gfx_t     gfx;
     gamepad_t gamepad;
     nu_bool_t running;
+
+    nu_f32_t time;
+    nu_u32_t tps;
 
     nu_u32_t active_pool;
 

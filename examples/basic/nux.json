@@ -1,33 +1,33 @@
 {
-	"target": "cart.bin",
-	"prebuild": "make",
-	"assets": {
-        "w_main": {
-            "type": "wasm",
-            "source": "build/cart.wasm",
-            "id": 1
-        },
-        "thorror": {
-            "type": "texture",
-            "source": "assets/Horror_Brick_01-128x128.png",
-            "size": 128,
-            "id": 2
-        },
-        "mariane6": {
-            "type": "model",
-            "source": "assets/ariane6.glb",
-            "id": 3
-        },
-        "mindustrial": {
-            "type": "model",
-            "source": "assets/industrial.glb",
-            "id": 4
-        },
-        "tgamepad": {
-            "type": "texture",
-            "size": 256,
-            "source": "../../nuxlib/assets/gamepad.png",
-            "id": 5
-        }
+  "target": "cart.bin",
+  "prebuild": "make",
+  "assets": {
+    "w_main": {
+      "type": "wasm",
+      "source": "build/cart.wasm",
+      "id": 1
+    },
+    "thorror": {
+      "type": "texture",
+      "source": "assets/Horror_Brick_01-128x128.png",
+      "size": 128,
+      "id": 2
+    },
+    "mariane6": {
+      "type": "model",
+      "source": "assets/ariane6.glb",
+      "id": 3
+    },
+    "mindustrial": {
+      "type": "model",
+      "source": "assets/industrial.glb",
+      "id": 4
+    },
+    "tgamepad": {
+      "type": "texture",
+      "size": 256,
+      "source": "../../nuxlib/assets/gamepad.png",
+      "id": 5
     }
+  }
 }

@@ -9,19 +9,19 @@
 } %}
 {% for function in functions %}
 static {{ function.returntype }} 
-{{ function.name }}(wasm_exec_env_t env, {{ "" }}
+{{ function.name }}(wasm_exec_env_t env {{ "" }}
     {%- for arg in function.args -%}
-        {{ "const " if arg.isconst else "" }}{{ 
+        {{ ", "}}{{ 
+            "const " if arg.isconst else "" }}{{ 
             arg.typename }}{{ 
             " *" if arg.isptr else " " }}{{ 
-            arg.name }}{{ 
-            ", " if not loop.last else "" }}
+            arg.name }}    
     {%- endfor -%})
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    {{ "return " if function.returntype != "void" else "" }}sys_{{ function.name }}(vm, 
+    {{ "return " if function.returntype != "void" else "" }}sys_{{ function.name }}(vm
         {%- for arg in function.args -%}
-            {{ arg.name }}{{ ", " if not loop.last else "" }}
+            {{ ", "}}{{ arg.name }}
         {%- endfor -%}
     );
 }

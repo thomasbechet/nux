@@ -115,6 +115,8 @@ WASM_EXPORT("trace")
 void trace(const void *text);
 WASM_EXPORT("console_info")
 u32 console_info(u32 info);
+WASM_EXPORT("time")
+f32 time();
 WASM_EXPORT("add_group")
 u32 add_group(u32 size);
 WASM_EXPORT("clear_group")

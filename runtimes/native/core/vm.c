@@ -82,6 +82,7 @@ vm_init (vm_t *vm, const vm_config_t *config)
     NU_CHECK(status, return NU_FAILURE);
 
     vm->running = NU_TRUE;
+    vm->time    = 0;
 
     // Allocate memory
     vm->mem = os_malloc(vm, config->memsize);
@@ -119,6 +120,7 @@ vm_tick (vm_t *vm)
     gfx_begin_frame(vm);
     wasm_call_event(vm, WASM_EVENT_UPDATE);
     gfx_end_frame(vm);
+    vm->time += 1.0 / vm->tps;
     return NU_SUCCESS;
 }
 void
@@ -144,6 +146,7 @@ void
 vm_config_default (vm_config_t *config)
 {
     config->memsize = NU_MEM_128M;
+    config->tps     = 30;
 }
 nu_size_t
 vm_config_state_memsize (const vm_config_t *config)
@@ -181,4 +184,9 @@ sys_console_info (vm_t *vm, sys_console_info_t info)
             return vm->memsize;
     }
     return 0;
+}
+nu_f32_t
+sys_time (vm_t *vm)
+{
+    return vm->time;
 }

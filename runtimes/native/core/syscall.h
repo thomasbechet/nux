@@ -65,6 +65,7 @@ typedef enum
 
 void     sys_trace(vm_t *vm, const nu_char_t *text);
 nu_u32_t sys_console_info(vm_t *vm, sys_console_info_t info);
+nu_f32_t sys_time(vm_t *vm);
 
 nu_u32_t sys_add_group(vm_t *vm, nu_u32_t size);
 void     sys_clear_group(vm_t *vm, nu_u32_t group);

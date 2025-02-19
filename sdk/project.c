@@ -321,7 +321,8 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             // Parse id
             proj->assets[i].id
                 = json_object_get_number(jasset, PROJECT_ASSET_ID);
-            if (!proj->assets[i].id)
+            if (proj->assets[i].id == 0
+                || proj->assets[i].id > MAX_RESOURCE_COUNT)
             {
                 sdk_log(NU_LOG_ERROR,
                         "Invalid or missing asset id for '%s'",
@@ -640,14 +641,14 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     if (display_table)
     {
         printf("Chunk table:\n\n");
-        printf("     %-8s %-8s %-8s %-8s %-8s\n",
+        printf("     %-5s %-8s %-10s %-8s %-8s\n",
                "Id",
                "Type",
                "Offset",
                "Length",
                "Usage");
 
-        printf("   ------------------------------------------------------\n");
+        printf("   --------------------------------------------\n");
         nu_u32_t display_entry = num ? num : (nu_u32_t)-1;
         for (nu_size_t i = 0; i < header.chunk_count && i < display_entry; ++i)
         {
@@ -658,7 +659,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                      "%.2lf%%",
                      ((nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_size)
                          * 100);
-            printf("     %-8u %-8s %-8x %-8d %-8s\n",
+            printf("     %-5u %-8s 0x%-8x %-8d %-8s\n",
                    entry->data.id,
                    nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
                    entry->data.offset,
