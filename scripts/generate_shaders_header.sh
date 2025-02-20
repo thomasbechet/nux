@@ -21,7 +21,8 @@ for file in $SHADERS/*; do
         # if [[ -z $line ]]; then
         #     continue 
         # fi
-        printf "\"$line\\\n\"\n" >> $OUTPUT
+        #printf "\"$line\\\n\"\n" >> $OUTPUT
+        printf "\"%s\\\n\"\n" "$line" >> $OUTPUT
     done < $file
     printf ");\n" >> $OUTPUT
 done

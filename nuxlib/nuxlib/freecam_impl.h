@@ -163,7 +163,10 @@ nux_debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
     nu_m4_t view = nu_lookat(pos, nu_v3_add(pos, forward), up);
     transform(TRANSFORM_VIEW, view.data);
     nu_m4_t projection
-        = nu_perspective(nu_radian(70.0), 640.0 / 400.0, 0.01, 500);
+        = nu_perspective(nu_radian(60.0),
+                         (nu_f32_t)SCREEN_WIDTH / (nu_f32_t)SCREEN_HEIGHT,
+                         0.01,
+                         500);
     transform(TRANSFORM_PROJECTION, projection.data);
 
     if (out_pos)

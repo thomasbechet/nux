@@ -85,7 +85,7 @@ if __name__ == "__main__":
     typedef int nu_status_t;\n
     """
 
-    fixed = "\n".join([line if not re.findall("#include|#ifndef|#endif|#define", line) else "" for line in src.splitlines()])
+    fixed = "\n".join([line if not re.findall("//|#include|#ifndef|#endif|#define", line) else "" for line in src.splitlines()])
     ast = c_parser.CParser().parse(prelude + fixed)
     v = FuncDefVisitor()
     v.visit(ast)

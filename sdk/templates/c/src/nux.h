@@ -56,6 +56,12 @@ void update();
 
 typedef enum
 {
+    SCREEN_WIDTH  = 480,
+    SCREEN_HEIGHT = 360
+} screen_size_t;
+
+typedef enum
+{
     VERTEX_POSITION = 1 << 0,
     VERTEX_UV       = 1 << 1,
     VERTEX_COLOR    = 1 << 2,
@@ -115,12 +121,16 @@ WASM_EXPORT("trace")
 void trace(const void *text);
 WASM_EXPORT("console_info")
 u32 console_info(u32 info);
-WASM_EXPORT("time")
-f32 time();
-WASM_EXPORT("add_group")
-u32 add_group(u32 size);
-WASM_EXPORT("clear_group")
-void clear_group(u32 group);
+WASM_EXPORT("global_time")
+f32 global_time();
+WASM_EXPORT("delta_time")
+f32 delta_time();
+WASM_EXPORT("init_scope")
+void init_scope(u32 id, u32 size);
+WASM_EXPORT("rewind_scope")
+void rewind_scope(u32 id);
+WASM_EXPORT("set_active_scope")
+void set_active_scope(u32 id);
 WASM_EXPORT("alloc_texture")
 void alloc_texture(u32 id, u32 size);
 WASM_EXPORT("write_texture")

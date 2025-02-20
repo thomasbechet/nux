@@ -443,8 +443,8 @@ renderer_init (void)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_SRGB,
-                 GFX_SCREEN_WIDTH,
-                 GFX_SCREEN_HEIGHT,
+                 SYS_SCREEN_WIDTH,
+                 SYS_SCREEN_HEIGHT,
                  0,
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
@@ -458,8 +458,8 @@ renderer_init (void)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_DEPTH24_STENCIL8,
-                 GFX_SCREEN_WIDTH,
-                 GFX_SCREEN_HEIGHT,
+                 SYS_SCREEN_WIDTH,
+                 SYS_SCREEN_HEIGHT,
                  0,
                  GL_DEPTH_STENCIL,
                  GL_UNSIGNED_INT_24_8,
@@ -599,6 +599,10 @@ os_gpu_init_texture (vm_t *vm, nu_u32_t id)
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(
+    //     GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     renderer.resources[id].texture = handle;
 }
@@ -622,6 +626,7 @@ os_gpu_update_texture (vm_t *vm, nu_u32_t id)
                     GL_RGBA,
                     GL_UNSIGNED_BYTE,
                     vm->mem + res->texture.data);
+    // glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -752,7 +757,7 @@ os_gpu_begin_frame (vm_t *vm)
 
     // Render on surface framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
-    glViewport(0, 0, GFX_SCREEN_WIDTH, GFX_SCREEN_HEIGHT);
+    glViewport(0, 0, SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
@@ -790,7 +795,7 @@ update_ubo (vm_t *vm)
     renderer.ubo.projection    = vm->gfx.state.projection;
     renderer.ubo.color         = nu_color_to_vec4(vm->gfx.state.color);
     renderer.ubo.fog_color     = nu_color_to_vec4(vm->gfx.state.fog_color);
-    renderer.ubo.viewport_size = nu_v2u(GFX_SCREEN_WIDTH, GFX_SCREEN_HEIGHT);
+    renderer.ubo.viewport_size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
     renderer.ubo.fog_density   = vm->gfx.state.fog_density;
     renderer.ubo.fog_near      = vm->gfx.state.fog_near;
     renderer.ubo.fog_far       = vm->gfx.state.fog_far;
@@ -945,7 +950,7 @@ blit (GLuint texture, nu_size_t first, nu_size_t count)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    nu_v2u_t size = nu_v2u(GFX_SCREEN_WIDTH, GFX_SCREEN_HEIGHT);
+    nu_v2u_t size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
     glUniform2uiv(
         glGetUniformLocation(renderer.canvas_blit_program, "viewport_size"),
         1,

@@ -17,22 +17,34 @@ console_info (wasm_exec_env_t env, sys_console_info_t info)
     return sys_console_info(vm, info);
 }
 static nu_f32_t
-time (wasm_exec_env_t env)
+global_time (wasm_exec_env_t env)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_time(vm);
+    return sys_global_time(vm);
 }
-static nu_u32_t
-add_group (wasm_exec_env_t env, nu_u32_t size)
+static nu_f32_t
+delta_time (wasm_exec_env_t env)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_add_group(vm, size);
+    return sys_delta_time(vm);
+}
+static nu_status_t
+init_scope (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_init_scope(vm, id, size);
+}
+static nu_status_t
+rewind_scope (wasm_exec_env_t env, nu_u32_t id)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_rewind_scope(vm, id);
 }
 static void
-clear_group (wasm_exec_env_t env, nu_u32_t group)
+set_active_scope (wasm_exec_env_t env, nu_u32_t id)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_clear_group(vm, group);
+    sys_set_active_scope(vm, id);
 }
 static nu_status_t
 alloc_texture (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
@@ -208,9 +220,11 @@ axis (wasm_exec_env_t env, nu_u32_t player, sys_axis_t axis)
 static NativeSymbol wasm_native_symbols[]
     = { EXPORT_WASM_API_WITH_SIG(trace, "(*)"),
         EXPORT_WASM_API_WITH_SIG(console_info, "(i)i"),
-        EXPORT_WASM_API_WITH_SIG(time, "()f"),
-        EXPORT_WASM_API_WITH_SIG(add_group, "(i)i"),
-        EXPORT_WASM_API_WITH_SIG(clear_group, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(global_time, "()f"),
+        EXPORT_WASM_API_WITH_SIG(delta_time, "()f"),
+        EXPORT_WASM_API_WITH_SIG(init_scope, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(rewind_scope, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(set_active_scope, "(i)"),
         EXPORT_WASM_API_WITH_SIG(alloc_texture, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(write_texture, "(iiiii*)"),
         EXPORT_WASM_API_WITH_SIG(alloc_mesh, "(iiii)"),

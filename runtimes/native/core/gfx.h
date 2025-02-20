@@ -4,27 +4,6 @@
 #include "syscall.h"
 #include "cartridge.h"
 
-// #define GFX_SCREEN_WIDTH  640 * 2
-// #define GFX_SCREEN_HEIGHT 400 * 2
-
-// #define GFX_SCREEN_WIDTH  640
-// #define GFX_SCREEN_HEIGHT 400
-
-// #define GFX_SCREEN_WIDTH  512
-// #define GFX_SCREEN_HEIGHT 320
-
-// #define GFX_SCREEN_WIDTH  480
-// #define GFX_SCREEN_HEIGHT 300
-
-// #define GFX_SCREEN_WIDTH  360
-// #define GFX_SCREEN_HEIGHT 225
-
-// #define GFX_SCREEN_WIDTH  320
-// #define GFX_SCREEN_HEIGHT 200
-
-#define GFX_SCREEN_WIDTH  320
-#define GFX_SCREEN_HEIGHT 240
-
 #define GFX_MIN_TEXTURE_SIZE 32
 #define GFX_MAX_TEXTURE_SIZE 256
 

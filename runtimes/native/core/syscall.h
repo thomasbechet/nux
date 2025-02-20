@@ -7,6 +7,41 @@ typedef struct vm vm_t;
 
 typedef enum
 {
+    // 16:9
+    // SYS_SCREEN_WIDTH  = 1920,
+    // SYS_SCREEN_HEIGHT = 1080,
+
+    // 16:10, too high ?
+    // SYS_SCREEN_WIDTH  = 640,
+    // SYS_SCREEN_HEIGHT = 400,
+
+    // 4:3
+    // SYS_SCREEN_WIDTH  = 640,
+    // SYS_SCREEN_HEIGHT = 480,
+
+    // 16:10
+    // SYS_SCREEN_WIDTH  = 512,
+    // SYS_SCREEN_HEIGHT = 320,
+
+    // 16:10
+    // SYS_SCREEN_WIDTH  = 480,
+    // SYS_SCREEN_HEIGHT = 300,
+
+    // 4:3
+    SYS_SCREEN_WIDTH  = 480,
+    SYS_SCREEN_HEIGHT = 360,
+
+    // 16:10
+    // SYS_SCREEN_WIDTH  = 360,
+    // SYS_SCREEN_HEIGHT = 225,
+
+    // 4:3
+    // SYS_SCREEN_WIDTH  = 320,
+    // SYS_SCREEN_HEIGHT = 240
+} sys_screen_size_t;
+
+typedef enum
+{
     SYS_VERTEX_POSITION = 1 << 0,
     SYS_VERTEX_UV       = 1 << 1,
     SYS_VERTEX_COLOR    = 1 << 2,
@@ -65,10 +100,12 @@ typedef enum
 
 void     sys_trace(vm_t *vm, const nu_char_t *text);
 nu_u32_t sys_console_info(vm_t *vm, sys_console_info_t info);
-nu_f32_t sys_time(vm_t *vm);
+nu_f32_t sys_global_time(vm_t *vm);
+nu_f32_t sys_delta_time(vm_t *vm);
 
-nu_u32_t sys_add_group(vm_t *vm, nu_u32_t size);
-void     sys_clear_group(vm_t *vm, nu_u32_t group);
+nu_status_t sys_init_scope(vm_t *vm, nu_u32_t id, nu_u32_t size);
+nu_status_t sys_rewind_scope(vm_t *vm, nu_u32_t id);
+void        sys_set_active_scope(vm_t *vm, nu_u32_t id);
 
 nu_status_t sys_alloc_texture(vm_t *vm, nu_u32_t id, nu_u32_t size);
 nu_status_t sys_write_texture(vm_t       *vm,
