@@ -82,6 +82,25 @@
         (v)->capacity = (capa);                                                \
         (v)->size     = 0;                                                     \
     }
+#define NU_VEC_INIT(v, ptr, capa) \
+    {                             \
+        (v)->data     = (ptr);    \
+        (v)->capacity = (capa);   \
+        (v)->size     = 0;        \
+    }
+#define NU_VEC_INIT_A(v, malloc, capa)                       \
+    {                                                        \
+        (v)->data     = (malloc)(sizeof(*(v)->data) * capa); \
+        (v)->capacity = (capa);                              \
+        (v)->size     = 0;                                   \
+    }
+#define NU_VEC_FREE_A(v, free, capa) \
+    {                                \
+        (free)((v)->data);           \
+        (v)->data     = NU_NULL;     \
+        (v)->capacity = 0;           \
+        (v)->size     = 0;           \
+    }
 #define NU_VEC_PUSH(v) \
     (v)->size >= (v)->capacity ? NU_NULL : &(v)->data[(v)->size++]
 #define NU_VEC_POP(v)      (v)->size ? &(v)->data[(v)->size--] : NU_NULL

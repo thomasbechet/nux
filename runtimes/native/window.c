@@ -1,6 +1,7 @@
 #include "window.h"
 
 #include "core/vm.h"
+#include "logger.h"
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define RGFW_EXPORT
@@ -111,6 +112,11 @@ window_init (void)
     flags                  = 0;
     window.win
         = RGFW_createWindow("nux", RGFW_RECT(0, 0, width, height), flags);
+    if (!window.win)
+    {
+        logger_log(NU_LOG_ERROR, "Failed to create RGFW window");
+        return NU_FAILURE;
+    }
     RGFW_window_swapInterval(window.win, 1);
 
     // Initialize viewport

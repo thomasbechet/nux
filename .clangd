@@ -3,5 +3,7 @@ CompileFlags:
     - "-DNU_IMPLEMENTATION"
     - "-DNU_STDLIB"
     - "-DNUX_BUILD_SDK"
+    - "-DNUX_BUILD_WASM_DEBUG"
+    - "-DNUX_BUILD_WASM_JIT"
     - "-I../../sdk/templates/c/src/"
     - "-I../../nuxlib/"

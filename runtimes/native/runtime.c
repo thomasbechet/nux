@@ -5,7 +5,7 @@
 #include "core/vm.h"
 
 nu_status_t
-runtime_init (const runtime_info_t *info)
+runtime_run (const runtime_info_t *info)
 {
     nu_status_t status;
     logger_init(info->log_callback);
@@ -13,7 +13,7 @@ runtime_init (const runtime_info_t *info)
     NU_CHECK(status, goto cleanup0);
     status = renderer_init();
     NU_CHECK(status, goto cleanup1);
-    status = wamr_init();
+    status = wamr_init(info->debug);
     NU_CHECK(status, goto cleanup2);
 
     vm_t        vm;

@@ -4,6 +4,7 @@
 #include "wasm_native.h"
 
 #include <wasm_export.h>
+#include <wasm_native.h>
 
 #define START_CALLBACK  "start"
 #define UPDATE_CALLBACK "update"
@@ -16,6 +17,7 @@ static struct
     wasm_function_inst_t start_callback;
     wasm_function_inst_t update_callback;
     vm_t                *active_vm;
+    nu_bool_t            debug;
 } wamr;
 
 static void *
@@ -55,8 +57,42 @@ native_wasm_free (mem_alloc_usage_t usage, void *user, void *p)
     }
 }
 
+static nu_u32_t
+fd_write (wasm_exec_env_t env,
+          nu_u32_t        fd,
+          nu_u32_t       *iovs,
+          nu_u32_t        iovs_len,
+          nu_u32_t       *nwritten)
+{
+    vm_t              *vm      = wasm_runtime_get_user_data(env);
+    wasm_module_inst_t inst    = wasm_runtime_get_module_inst(env);
+    nu_u32_t           written = 0;
+    for (nu_size_t i = 0; i < iovs_len; ++i)
+    {
+        nu_char_t *buf
+            = wasm_runtime_addr_app_to_native(inst, (nu_u64_t)iovs[i * 2 + 0]);
+        nu_u32_t buf_len = iovs[i * 2 + 1];
+        if (buf_len)
+        {
+            vm_log(vm, NU_LOG_INFO, "%.*s", buf_len, buf);
+            written += buf_len;
+        }
+    }
+    *nwritten = written;
+    return 0;
+}
+static nu_u32_t
+fd_fdstat_get (wasm_exec_env_t env, nu_u32_t fd, void *p)
+{
+    return 0;
+}
+static NativeSymbol wasi_wasm_native_symbols[] = {
+    EXPORT_WASM_API_WITH_SIG(fd_write, "(i*i*)i"),
+    EXPORT_WASM_API_WITH_SIG(fd_fdstat_get, "(i*)i"),
+};
+
 nu_status_t
-wamr_init (void)
+wamr_init (nu_bool_t debug)
 {
     // Configure memory allocator
     RuntimeInitArgs init_args;
@@ -74,12 +110,28 @@ wamr_init (void)
 
     init_args.max_thread_num = 1;
 
+    wamr.debug = debug;
+    if (debug)
+    {
+        strcpy(init_args.ip_addr, "127.0.0.1");
+        init_args.instance_port = 1234;
+    }
+
     // wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
     wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
 
     if (!wasm_runtime_full_init(&init_args))
     {
         logger_log(NU_LOG_ERROR, "Failed to fully initialize wasm");
+        return NU_FAILURE;
+    }
+
+    // register wasi api
+    if (!wasm_runtime_register_natives("wasi_snapshot_preview1",
+                                       wasi_wasm_native_symbols,
+                                       NU_ARRAY_SIZE(wasi_wasm_native_symbols)))
+    {
+        logger_log(NU_LOG_ERROR, "Failed to register wasi api");
         return NU_FAILURE;
     }
 
@@ -161,6 +213,15 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
                "The " UPDATE_CALLBACK " wasm function is not found");
         wasm_unload_cart(vm);
         return NU_FAILURE;
+    }
+
+    // Enable debugging
+    if (wamr.debug)
+    {
+#ifdef NUX_BUILD_WASM_DEBUG
+        nu_u32_t port = wasm_runtime_start_debug_instance(wamr.env);
+        logger_log(NU_LOG_INFO, "Starting debug instance on port %u", port);
+#endif
     }
 
     return NU_SUCCESS;

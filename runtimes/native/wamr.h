@@ -3,7 +3,7 @@
 
 #include "core/vm.h"
 
-nu_status_t wamr_init(void);
+nu_status_t wamr_init(nu_bool_t debug);
 void        wamr_free(void);
 
 #endif

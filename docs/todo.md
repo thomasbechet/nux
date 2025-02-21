@@ -8,7 +8,6 @@
 [x] Draw color
 [x] Fix 'Is a directory'
 [~] Gamepad example (improve gamepad support)
-[ ] Support transparency
 [ ] Remove os_gpu_init (probably useless)
 [ ] Model animation
 [ ] Check bounds for 2d rendering
@@ -16,3 +15,4 @@
 [ ] Indexed textures
 [ ] Save / Load GPU resources
 [ ] Combine sdk and projects ?
+[ ] Fix fog / transparency / dithering

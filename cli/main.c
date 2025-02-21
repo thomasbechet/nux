@@ -81,17 +81,24 @@ main (int argc, const nu_char_t *argv[])
     argc = argparse_parse(&argparse, argc, argv);
     if (version)
     {
+        printf(
+            "nux runtime v%d.%d.%d ("
 #ifdef NUX_BUILD_SDK
-        printf("nux runtime v%d.%d.%d (with sdk)\n",
-               VM_VERSION_MAJOR(VM_VERSION),
-               VM_VERSION_MINOR(VM_VERSION),
-               VM_VERSION_PATCH(VM_VERSION));
+            "with sdk, "
 #else
-        printf("nux runtime v%d.%d.%d (no sdk)\n",
-               VM_VERSION_MAJOR(VM_VERSION),
-               VM_VERSION_MINOR(VM_VERSION),
-               VM_VERSION_PATCH(VM_VERSION));
+            "no sdk, "
 #endif
+#ifdef NUX_BUILD_WASM_DEBUG
+            "debug interpreter"
+#elif NUX_BUILD_WASM_JIT
+            "jit interpreter"
+#else
+            "default interpreter"
+#endif
+            ")\n",
+            VM_VERSION_MAJOR(VM_VERSION),
+            VM_VERSION_MINOR(VM_VERSION),
+            VM_VERSION_PATCH(VM_VERSION));
         return 0;
     }
     else if (argc < 1)

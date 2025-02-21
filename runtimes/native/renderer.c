@@ -81,6 +81,7 @@ static struct
     GLuint           mesh_vao;
     nu_u32_t         im_vbo_offset;
     GLuint           im_vbo;
+    nu_f32_t        *im_vbo_data;
     GLuint           im_vao;
     nu_bool_t        ubo_dirty;
     GLuint           ubo_buffer;
@@ -754,6 +755,9 @@ os_gpu_begin_frame (vm_t *vm)
 {
     renderer.blit_count    = 0;
     renderer.im_vbo_offset = 0;
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
+    renderer.im_vbo_data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Render on surface framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
@@ -764,6 +768,10 @@ os_gpu_begin_frame (vm_t *vm)
 void
 os_gpu_end_frame (vm_t *vm)
 {
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     // Clear window
     nu_v4_t clear
         = nu_color_to_vec4(nu_color_to_linear(nu_color(25, 27, 43, 255)));
@@ -872,8 +880,7 @@ push_im_positions (const nu_f32_t *positions, nu_u32_t count)
 {
     nu_u32_t offset = renderer.im_vbo_offset;
     renderer.im_vbo_offset += count;
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
-    nu_f32_t *data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    nu_f32_t *data = renderer.im_vbo_data;
     data += offset * VERTEX_SIZE;
     for (nu_size_t i = 0; i < count; ++i)
     {
@@ -884,8 +891,6 @@ push_im_positions (const nu_f32_t *positions, nu_u32_t count)
         data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 2]
             = positions[i * 3 + 2];
     }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
     return offset;
 }
 void

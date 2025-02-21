@@ -11,9 +11,10 @@ typedef struct
 {
     nu_sv_t                path;
     runtime_log_callback_t log_callback;
+    nu_bool_t              debug;
 } runtime_info_t;
 
-NU_API nu_status_t runtime_init(const runtime_info_t *info);
+NU_API nu_status_t runtime_run(const runtime_info_t *info);
 
 void *runtime_malloc(nu_size_t n);
 void  runtime_free(void *p);
