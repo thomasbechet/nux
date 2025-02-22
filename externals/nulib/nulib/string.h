@@ -11,12 +11,9 @@
 #define NU_STRINGIFY(X)  NU_STRINGIFY_(X)
 #define NU_STRINGIFY_(X) #X
 
-#define NU_SV(str)                                     \
-    (nu_sv_t)                                          \
-    {                                                  \
-        .data = (const nu_char_t *)(str),              \
-        .size = (sizeof((str)) / sizeof((str)[0])) - 1 \
-    }
+#define NU_SV(str)                                \
+    (nu_sv_t) { .data = (const nu_char_t *)(str), \
+                .size = (sizeof((str)) / sizeof((str)[0])) - 1 }
 #define NU_SV_FMT       "%.*s"
 #define NU_SV_ARGS(str) (int)str.size, str.data
 

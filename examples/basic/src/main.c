@@ -45,7 +45,7 @@ update (void)
         {
             nu_m4_t m = nu_m4_identity();
             m         = nu_m4_mul(m, nu_m4_scale(nu_v3(-1, 1, 1)));
-            m         = nu_m4_mul(m, nu_m4_translate(nu_v3(x * 90, 0, y * 130)));
+            m = nu_m4_mul(m, nu_m4_translate(nu_v3(x * 90, 0, y * 130)));
             transform(TRANSFORM_MODEL, m.data);
             draw(MODEL_INDUSTRIAL);
         }
@@ -68,7 +68,9 @@ update (void)
 
     m = nu_m4_translate(nu_v3(10, 0, 0));
     transform(TRANSFORM_MODEL, m.data);
-    color(NU_COLOR_BLUE.rgba);
+    color(nu_color_from_vec4(nu_v4(1, 0, 0, (nu_sin(global_time() * 0.5) + 1) * 0.5))
+              .rgba);
+    // color(nu_color(255, 0, 0, 128).rgba);
     draw(MODEL_ARIANE6);
     color(0xFFFFFFFF);
 

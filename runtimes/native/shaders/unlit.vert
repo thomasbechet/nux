@@ -19,7 +19,7 @@ uniform mat4 model;
 
 out VS_OUT {
     vec2 uv;
-    vec3 color;
+    vec4 color;
     float dist_cam;
 } vs_out;
 
@@ -40,5 +40,5 @@ void main()
     gl_Position = snap_vertex(position);
 
     vs_out.uv = in_uv;
-    vs_out.color = in_color * color.xyz;
+    vs_out.color = vec4(in_color, 1) * color;
 }
