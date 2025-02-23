@@ -166,7 +166,7 @@ nux_debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
         = nu_perspective(nu_radian(60.0),
                          (nu_f32_t)SCREEN_WIDTH / (nu_f32_t)SCREEN_HEIGHT,
                          0.01,
-                         500);
+                         10000);
     transform(TRANSFORM_PROJECTION, projection.data);
 
     if (out_pos)

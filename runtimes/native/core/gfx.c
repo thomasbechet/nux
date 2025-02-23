@@ -294,7 +294,7 @@ sys_color (vm_t *vm, nu_u32_t color)
     vm->gfx.state.color = nu_color_from_u32(color);
 }
 void
-sys_draw (vm_t *vm, nu_u32_t id)
+sys_draw_model (vm_t *vm, nu_u32_t id)
 {
     NU_CHECK(vm_get_res(vm, id, RES_MODEL), return);
     os_gpu_draw_model(vm, id);

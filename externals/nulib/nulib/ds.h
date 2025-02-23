@@ -102,7 +102,7 @@
         (v)->size     = 0;           \
     }
 #define NU_VEC_PUSH(v) \
-    (v)->size >= (v)->capacity ? NU_NULL : &(v)->data[(v)->size++]
+    ((v)->size >= (v)->capacity ? NU_NULL : &(v)->data[(v)->size++])
 #define NU_VEC_POP(v)      (v)->size ? &(v)->data[(v)->size--] : NU_NULL
 #define NU_VEC_CLEAR(v)    (v)->size = 0
 #define NU_VEC_INDEX(v, p) ((p) - (v)->data)

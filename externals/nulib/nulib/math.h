@@ -222,6 +222,7 @@ NU_API nu_v2_t  nu_v2_floor(nu_v2_t a);
 NU_API nu_f32_t nu_v2_dot(nu_v2_t a, nu_v2_t b);
 NU_API nu_f32_t nu_v2_norm(nu_v2_t a);
 NU_API nu_v2_t  nu_v2_normalize(nu_v2_t v);
+NU_API nu_v2_t  nu_v2_lerp(nu_v2_t a, nu_v2_t b, nu_f32_t t);
 
 NU_API nu_v3_t  nu_v3(nu_f32_t x, nu_f32_t y, nu_f32_t z);
 NU_API nu_v3_t  nu_v3s(nu_f32_t s);
@@ -237,6 +238,7 @@ NU_API nu_v3_t  nu_v3_cross(nu_v3_t a, nu_v3_t b);
 NU_API nu_f32_t nu_v3_dot(nu_v3_t a, nu_v3_t b);
 NU_API nu_v3_t  nu_v3_min(nu_v3_t a, nu_v3_t b);
 NU_API nu_v3_t  nu_v3_max(nu_v3_t a, nu_v3_t b);
+NU_API nu_v3_t  nu_v3_lerp(nu_v3_t a, nu_v3_t b, nu_f32_t t);
 
 NU_API nu_v4_t  nu_v4(nu_f32_t x, nu_f32_t y, nu_f32_t z, nu_f32_t w);
 NU_API nu_f32_t nu_v4_dot(nu_v4_t a, nu_v4_t b);
@@ -328,6 +330,7 @@ NU_API nu_v3_t nu_triangle_normal(nu_v3_t p0, nu_v3_t p1, nu_v3_t p2);
 
 NU_API nu_color_t nu_color(nu_u8_t r, nu_u8_t g, nu_u8_t b, nu_u8_t a);
 NU_API nu_v4_t    nu_color_to_vec4(nu_color_t c);
+NU_API nu_v3_t    nu_color_to_vec3(nu_color_t c);
 NU_API nu_color_t nu_color_from_vec4(nu_v4_t v);
 NU_API nu_color_t nu_color_from_u32(nu_u32_t rgba);
 NU_API nu_color_t nu_color_to_srgb(nu_color_t c);

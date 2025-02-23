@@ -151,7 +151,7 @@ void sys_fog_params(vm_t *vm, const nu_f32_t *params);
 void sys_fog_color(vm_t *vm, nu_u32_t color);
 void sys_clear(vm_t *vm, nu_u32_t color);
 void sys_color(vm_t *vm, nu_u32_t color);
-void sys_draw(vm_t *vm, nu_u32_t id);
+void sys_draw_model(vm_t *vm, nu_u32_t id);
 void sys_draw_cube(vm_t *vm, const nu_f32_t *c, const nu_f32_t *s);
 void sys_draw_lines(vm_t *vm, const nu_f32_t *p, nu_u32_t n);
 void sys_draw_linestrip(vm_t *vm, const nu_f32_t *p, nu_u32_t n);

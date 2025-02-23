@@ -152,10 +152,10 @@ color (wasm_exec_env_t env, nu_u32_t color)
     sys_color(vm, color);
 }
 static void
-draw (wasm_exec_env_t env, nu_u32_t id)
+draw_model (wasm_exec_env_t env, nu_u32_t id)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_draw(vm, id);
+    sys_draw_model(vm, id);
 }
 static void
 draw_cube (wasm_exec_env_t env, const nu_f32_t *c, const nu_f32_t *s)
@@ -238,7 +238,7 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(fog_color, "(i)"),
         EXPORT_WASM_API_WITH_SIG(clear, "(i)"),
         EXPORT_WASM_API_WITH_SIG(color, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(draw, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
         EXPORT_WASM_API_WITH_SIG(draw_cube, "(**)"),
         EXPORT_WASM_API_WITH_SIG(draw_lines, "(*i)"),
         EXPORT_WASM_API_WITH_SIG(draw_linestrip, "(*i)"),

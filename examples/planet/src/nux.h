@@ -159,8 +159,8 @@ WASM_EXPORT("clear")
 void clear(u32 color);
 WASM_EXPORT("color")
 void color(u32 color);
-WASM_EXPORT("draw_model")
-void draw_model(u32 id);
+WASM_EXPORT("draw")
+void draw(u32 id);
 WASM_EXPORT("draw_cube")
 void draw_cube(const f32 *c, const f32 *s);
 WASM_EXPORT("draw_lines")

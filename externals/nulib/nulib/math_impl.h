@@ -199,6 +199,12 @@ nu_v2_normalize (nu_v2_t v)
     ret.y = v.y / norm;
     return ret;
 }
+nu_v2_t
+nu_v2_lerp (nu_v2_t a, nu_v2_t b, nu_f32_t t)
+{
+    // (1 - t) * a + t * b
+    return nu_v2_add(nu_v2_muls(a, 1 - t), nu_v2_muls(b, t));
+}
 
 nu_v3_t
 nu_v3 (nu_f32_t x, nu_f32_t y, nu_f32_t z)
@@ -318,6 +324,12 @@ nu_v3_max (nu_v3_t a, nu_v3_t b)
     v.y = NU_MAX(a.y, b.y);
     v.z = NU_MAX(a.z, b.z);
     return v;
+}
+nu_v3_t
+nu_v3_lerp (nu_v3_t a, nu_v3_t b, nu_f32_t t)
+{
+    // (1 - t) * a + t * b
+    return nu_v3_add(nu_v3_muls(a, 1 - t), nu_v3_muls(b, t));
 }
 
 nu_v4_t
@@ -979,6 +991,11 @@ nu_v4_t
 nu_color_to_vec4 (nu_color_t c)
 {
     return nu_v4(c.r / 255.0, c.g / 255.0, c.b / 255.0, c.a / 255.0);
+}
+nu_v3_t
+nu_color_to_vec3 (nu_color_t c)
+{
+    return nu_v3(c.r / 255.0, c.g / 255.0, c.b / 255.0);
 }
 nu_color_t
 nu_color_from_vec4 (nu_v4_t v)
