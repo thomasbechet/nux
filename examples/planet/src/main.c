@@ -1,4 +1,3 @@
-#include "nulib/nulib/math.h"
 #include "nux.h"
 #define NU_IMPLEMENTATION
 #include <nulib/nulib.h>
@@ -18,7 +17,7 @@ NU_VEC(nu_v3_t) colors;
 void
 add_face (nu_v3_t v0, nu_v3_t v1, nu_v3_t v2)
 {
-    const nu_f32_t radius    = 100000;
+    const nu_f32_t radius    = 50;
     v0                       = nu_v3_muls(nu_v3_normalize(v0), radius);
     v1                       = nu_v3_muls(nu_v3_normalize(v1), radius);
     v2                       = nu_v3_muls(nu_v3_normalize(v2), radius);
@@ -94,25 +93,25 @@ start (void)
         subdivide(lod, &lod, &lods);
     }
 
-    alloc_mesh(
+    init_mesh(
         ICO_ID, lods, PRIMITIVE_TRIANGLES, VERTEX_POSITION | VERTEX_COLOR);
-    write_mesh(ICO_ID, VERTEX_POSITION, 0, lods, positions.data + lod);
-    write_mesh(ICO_ID, VERTEX_COLOR, 0, lods, colors.data + lod);
-    alloc_model(2, 1);
+    update_mesh(ICO_ID, VERTEX_POSITION, 0, lods, positions.data + lod);
+    update_mesh(ICO_ID, VERTEX_COLOR, 0, lods, colors.data + lod);
+    init_model(2, 1);
     nu_m4_t identity = nu_m4_identity();
-    write_model(2, 0, ICO_ID, 0, -1, identity.data);
+    update_model(2, 0, ICO_ID, 0, -1, identity.data);
 
-    nux_init_debug_camera(nu_v3(0, 100000, 0));
+    nux_init_debug_camera(nu_v3(40, 0, 0));
 }
 
 void
 update (void)
 {
     nu_m4_t lookat = nu_lookat(nu_v3(5, 5, 5), NU_V3_ZEROS, NU_V3_UP);
-    transform(TRANSFORM_VIEW, lookat.data);
+    set_view(lookat.data);
     nu_m4_t projection = nu_perspective(
         nu_radian(30), (nu_f32_t)SCREEN_WIDTH / SCREEN_HEIGHT, 0.5, 100);
-    transform(TRANSFORM_PROJECTION, projection.data);
+    set_projection(projection.data);
 
     // rotation += delta_time() * 10;
 
@@ -120,8 +119,9 @@ update (void)
 
     nu_m4_t trans = nu_m4_identity();
     trans         = nu_m4_mul(trans, nu_m4_rotate_y(nu_radian(rotation)));
-    transform(TRANSFORM_MODEL, trans.data);
-    draw(2);
+    set_transform(trans.data);
+    draw_model(2);
+    draw_volume();
 
     nux_debug();
 }

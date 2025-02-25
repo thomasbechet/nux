@@ -13,6 +13,7 @@ layout(std140) uniform UBO {
     float fog_density;
     float fog_near;
     float fog_far;
+    bool is_volume;
 };
 
 uniform mat4 model;
@@ -21,6 +22,7 @@ out VS_OUT {
     vec2 uv;
     vec4 color;
     float dist_cam;
+    vec3 world_pos;
 } vs_out;
 
 vec4 snap_vertex(in vec4 position)
@@ -34,9 +36,11 @@ vec4 snap_vertex(in vec4 position)
 
 void main()
 {
-    vec4 position = view * model * vec4(in_position, 1);
-    vs_out.dist_cam = length(position);
-    position = projection * position;
+    vec4 world_pos = model * vec4(in_position, 1);
+    vs_out.world_pos = world_pos.xyz;
+    vec4 view_pos = view * world_pos;
+    vs_out.dist_cam = length(view_pos);
+    vec4 position = projection * view_pos;
     gl_Position = snap_vertex(position);
 
     vs_out.uv = in_uv;

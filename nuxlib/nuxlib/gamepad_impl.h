@@ -32,13 +32,13 @@ static nu_u32_t nux__gamepad_spriteheet;
 static void
 nux__blitt (nu_u32_t x, nu_u32_t y)
 {
-    sprite(nux__gamepad_spriteheet, y * 10 + x);
+    draw_sprite(nux__gamepad_spriteheet, y * 10 + x);
 }
 static void
 nux__draw_button (nu_u32_t player, button_t b, nu_u32_t x, nu_u32_t y)
 {
-    cursor(x, y);
-    nu_u32_t        i = nu_log2(b);
+    set_cursor(x, y);
+    nu_u32_t        i = (nu_u32_t)nu_log2(b);
     const nu_u32_t *map;
     if (button(player) & b)
     {
@@ -63,9 +63,9 @@ nux__draw_stick (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
     nu_f32_t offset = 3;
     nu_u32_t tx     = left ? 0 : 1;
     nu_u32_t ty     = 8;
-    cursor(x, y);
+    set_cursor(x, y);
     nux__blitt(2, ty);
-    cursor(x + offset * ax.x, y - offset * ax.y);
+    set_cursor(x + (nu_u32_t)(offset * ax.x), y - (nu_u32_t)(offset * ax.y));
     nux__blitt(tx, ty);
 }
 static void
@@ -75,7 +75,7 @@ nux__draw_trigger (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
     nu_f32_t offset = 3;
     nu_u32_t tx     = 6;
     nu_u32_t ty     = left ? 4 : 5;
-    cursor(x, y + offset * ax);
+    set_cursor(x, y + (nu_u32_t)(offset * ax));
     nux__blitt(tx, ty);
 }
 
@@ -83,7 +83,7 @@ void
 nux_gamepad_setup (nu_u32_t spritesheet, nu_u32_t texture)
 {
     nux__gamepad_spriteheet = spritesheet;
-    set_spritesheet(spritesheet, texture, 10, 9, 16, 16);
+    init_spritesheet(spritesheet, texture, 10, 9, 16, 16);
 }
 void
 nux_draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)

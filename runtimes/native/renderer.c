@@ -49,14 +49,15 @@ typedef struct
 
 typedef struct
 {
-    nu_m4_t  view;
-    nu_m4_t  projection;
-    nu_v4_t  color;
-    nu_v4_t  fog_color;
-    nu_v2u_t viewport_size;
-    nu_f32_t fog_density;
-    nu_f32_t fog_near;
-    nu_f32_t fog_far;
+    nu_m4_t   view;
+    nu_m4_t   projection;
+    nu_v4_t   color;
+    nu_v4_t   fog_color;
+    nu_v2u_t  viewport_size;
+    nu_f32_t  fog_density;
+    nu_f32_t  fog_near;
+    nu_f32_t  fog_far;
+    nu_bool_t is_volume;
 } ubo_t;
 
 typedef union
@@ -71,7 +72,7 @@ static struct
     GLuint           white_texture;
     gfx_model_node_t nodes[NODE_INIT_SIZE];
     nu_u32_t         nodes_next;
-    gl_resource_t    resources[MAX_RESOURCE_COUNT];
+    gl_resource_t    resources[SYS_MAX_RESOURCE_COUNT];
     font_t           font;
     nu_size_t        blit_count;
     GLuint           blit_vbo;
@@ -768,6 +769,7 @@ os_gpu_begin_frame (vm_t *vm)
 void
 os_gpu_end_frame (vm_t *vm)
 {
+    // Unmap buffers
     glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -795,8 +797,12 @@ os_gpu_end_frame (vm_t *vm)
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);
 }
+void
+os_gpu_set_render_state (vm_t *vm, sys_render_state_t state)
+{
+}
 static void
-update_ubo (vm_t *vm)
+update_ubo (vm_t *vm, nu_bool_t is_volume)
 {
     // Update ubo
     renderer.ubo.view          = vm->gfx.state.view;
@@ -807,6 +813,7 @@ update_ubo (vm_t *vm)
     renderer.ubo.fog_density   = vm->gfx.state.fog_density;
     renderer.ubo.fog_near      = vm->gfx.state.fog_near;
     renderer.ubo.fog_far       = vm->gfx.state.fog_far;
+    renderer.ubo.is_volume     = is_volume;
     glBindBuffer(GL_UNIFORM_BUFFER, renderer.ubo_buffer);
     glBufferData(
         GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
@@ -816,7 +823,7 @@ void
 draw_model (vm_t *vm, nu_u32_t id, nu_m4_t transform)
 {
     // Update ubo
-    update_ubo(vm);
+    update_ubo(vm, NU_FALSE);
 
     // Setup GL states
     glUseProgram(renderer.unlit_program);
@@ -894,6 +901,56 @@ push_im_positions (const nu_f32_t *positions, nu_u32_t count)
     return offset;
 }
 void
+os_gpu_draw_volume (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
+{
+    // Update ubo
+    update_ubo(vm, NU_TRUE);
+
+    glUseProgram(renderer.unlit_program);
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    const nu_b3_t box = nu_b3(nu_v3(center[0], center[1], center[2]),
+                              nu_v3(size[0], size[1], size[2]));
+
+    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
+    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
+    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
+    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
+
+    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
+    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
+    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
+    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
+
+    const nu_v3_t positions[]
+        = { v0, v1, v2, v3, v0, v2, v5, v4, v6, v6, v4, v7,
+            v0, v3, v7, v0, v7, v4, v1, v5, v6, v1, v6, v2,
+            v0, v4, v5, v0, v5, v1, v3, v2, v6, v3, v6, v7 };
+
+    nu_u32_t offset = push_im_positions((const nu_f32_t *)positions,
+                                        NU_ARRAY_SIZE(positions));
+
+    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
+                       1,
+                       GL_FALSE,
+                       vm->gfx.state.model.data);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
+    glBindVertexArray(renderer.im_vao);
+    glDrawArrays(GL_TRIANGLES, offset, 6 * 2 * 3);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glEnable(GL_DEPTH_TEST);
+    glUseProgram(0);
+}
+void
 os_gpu_draw_cube (vm_t *vm, const nu_f32_t *pos, const nu_f32_t *size)
 {
     nu_b3_t box = nu_b3(nu_v3(pos[0], pos[1], pos[2]),
@@ -929,7 +986,7 @@ os_gpu_draw_lines (vm_t           *vm,
     glCullFace(GL_BACK);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-    update_ubo(vm);
+    update_ubo(vm, NU_FALSE);
     nu_u32_t offset = push_im_positions(points, count);
 
     glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
@@ -945,6 +1002,10 @@ os_gpu_draw_lines (vm_t           *vm,
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUseProgram(0);
+}
+void
+os_gpu_draw_triangles (vm_t *vm, const nu_f32_t *positions, nu_u32_t count)
+{
 }
 static void
 blit (GLuint texture, nu_size_t first, nu_size_t count)

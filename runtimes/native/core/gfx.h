@@ -4,9 +4,6 @@
 #include "syscall.h"
 #include "cartridge.h"
 
-#define GFX_MIN_TEXTURE_SIZE 32
-#define GFX_MAX_TEXTURE_SIZE 256
-
 typedef struct
 {
     nu_v4u_t   scissor;

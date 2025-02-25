@@ -6,7 +6,7 @@ void
 nux_debug (void)
 {
     char buf[256];
-    cursor(10, 10);
+    set_cursor(10, 10);
     nu_sv_fmt(buf, sizeof(buf), "time: %.2lf", global_time());
     print(buf);
     nu_f32_t memusage = (nu_f32_t)console_info(CONSOLE_MEMORY_USAGE)

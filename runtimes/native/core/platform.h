@@ -26,8 +26,10 @@ void os_gpu_update_model(vm_t                   *vm,
 
 void os_gpu_begin_frame(vm_t *vm);
 void os_gpu_end_frame(vm_t *vm);
+void os_gpu_set_render_state(vm_t *vm, sys_render_state_t state);
 void os_gpu_clear(vm_t *vm, nu_u32_t color);
 void os_gpu_draw_model(vm_t *vm, nu_u32_t id);
+void os_gpu_draw_volume(vm_t *vm, const nu_f32_t *center, const nu_f32_t *size);
 void os_gpu_draw_cube(vm_t *vm, const nu_f32_t *center, const nu_f32_t *size);
 void os_gpu_draw_lines(vm_t           *vm,
                        const nu_f32_t *points,

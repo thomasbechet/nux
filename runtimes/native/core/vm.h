@@ -11,8 +11,6 @@
 #define VM_VERSION_MAKE(maj, min, pat) (maj << 16 | min << 8 | pat)
 #define VM_VERSION                     VM_VERSION_MAKE(0, 0, 1)
 
-#define MAX_RESOURCE_COUNT 1024
-
 #define ID_NULL      (0)
 #define ADDR_INVALID (nu_u32_t)(0xFFFFFFFF)
 
@@ -83,7 +81,7 @@ struct vm
 
     nu_u32_t active_pool;
 
-    resource_t res[MAX_RESOURCE_COUNT];
+    resource_t res[SYS_MAX_RESOURCE_COUNT];
 
     nu_byte_t *mem;
     nu_u32_t   memsize;

@@ -25,7 +25,7 @@ vm_set_res (vm_t *vm, nu_u32_t id, resource_type_t type)
         vm_log(vm, NU_LOG_ERROR, "Invalid resource type");
         return NU_NULL;
     }
-    if (id == 0 || id > MAX_RESOURCE_COUNT)
+    if (id == 0 || id > SYS_MAX_RESOURCE_COUNT)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid resource id");
         return NU_NULL;
@@ -49,7 +49,7 @@ vm_set_res (vm_t *vm, nu_u32_t id, resource_type_t type)
 resource_t *
 vm_get_res (vm_t *vm, nu_u32_t id, resource_type_t type)
 {
-    if (!id || id > MAX_RESOURCE_COUNT)
+    if (!id || id > SYS_MAX_RESOURCE_COUNT)
     {
         return NU_NULL;
     }
@@ -94,7 +94,7 @@ vm_init (vm_t *vm, const vm_config_t *config)
     // Initialize resource table
     vm->res[ID_NULL].type = RES_NULL;
     vm->res[ID_NULL].next = 0;
-    for (nu_size_t i = 1; i < MAX_RESOURCE_COUNT; ++i)
+    for (nu_size_t i = 1; i < SYS_MAX_RESOURCE_COUNT; ++i)
     {
         vm->res[i].type = RES_FREE;
         vm->res[i].next = 0;

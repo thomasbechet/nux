@@ -9,7 +9,7 @@ CC = "$(WASI_SDK_PATH)/bin/clang" --sysroot="$(WASI_SDK_PATH)/share/wasi-sysroot
 WASM_OPT = wasm-opt
 WASM_OPT_FLAGS = -Oz --zero-filled-memory --strip-producers --enable-bulk-memory
 
-CFLAGS = -W -Wall -Wextra -Wno-unused -MMD -MP -fno-exceptions -mbulk-memory -Isrc -I../../externals/ -I../../nuxlib/
+CFLAGS = -W -Wall -Wextra -Wno-unused -MMD -MP -fno-exceptions -mbulk-memory -Isrc -I../../sdk/templates/c/src/ -I../../externals/ -I../../nuxlib/
 ifeq ($(DEBUG), 1)
 	CFLAGS += -DDEBUG -O0 -g
 else

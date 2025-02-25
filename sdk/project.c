@@ -322,7 +322,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             proj->assets[i].id
                 = json_object_get_number(jasset, PROJECT_ASSET_ID);
             if (proj->assets[i].id == 0
-                || proj->assets[i].id > MAX_RESOURCE_COUNT)
+                || proj->assets[i].id > SYS_MAX_RESOURCE_COUNT)
             {
                 sdk_log(NU_LOG_ERROR,
                         "Invalid or missing asset id for '%s'",

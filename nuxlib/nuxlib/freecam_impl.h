@@ -138,17 +138,17 @@ nux_debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
     }
 
     // Apply drag
-    force = nu_v3_add(force, nu_v3_muls(nux__freecam.vel, -0.3));
+    force = nu_v3_add(force, nu_v3_muls(nux__freecam.vel, -0.3f));
 
     // Integrate
     nux__freecam.pos
         = nu_v3_add(nux__freecam.pos,
                     nu_v3_add(nu_v3_muls(nux__freecam.vel, dt),
-                              nu_v3_muls(nux__freecam.acc, 0.5 * dt * dt)));
+                              nu_v3_muls(nux__freecam.acc, 0.5f * dt * dt)));
     nu_v3_t new_acc = nu_v3_muls(force, mass);
-    nu_v3_t new_vel
-        = nu_v3_add(nux__freecam.vel,
-                    nu_v3_muls(nu_v3_add(nux__freecam.acc, new_acc), 0.5 * dt));
+    nu_v3_t new_vel = nu_v3_add(
+        nux__freecam.vel,
+        nu_v3_muls(nu_v3_add(nux__freecam.acc, new_acc), 0.5f * dt));
     if (nu_v3_norm(new_vel) < 0.1)
     {
         new_vel = NU_V3_ZEROS;
@@ -161,13 +161,13 @@ nux_debug_camera (nu_f32_t dt, nu_v3_t *out_pos)
     nu_v3_t up      = nu_v3_normalize(nu_q4_mulv3(nux__freecam.rot, NU_V3_UP));
 
     nu_m4_t view = nu_lookat(pos, nu_v3_add(pos, forward), up);
-    transform(TRANSFORM_VIEW, view.data);
+    set_view(view.data);
     nu_m4_t projection
         = nu_perspective(nu_radian(60.0),
                          (nu_f32_t)SCREEN_WIDTH / (nu_f32_t)SCREEN_HEIGHT,
-                         0.01,
+                         0.01f,
                          10000);
-    transform(TRANSFORM_PROJECTION, projection.data);
+    set_projection(projection.data);
 
     if (out_pos)
     {

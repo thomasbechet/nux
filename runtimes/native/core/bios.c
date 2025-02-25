@@ -31,7 +31,7 @@ load_texture (vm_t *vm, const cart_chunk_entry_t *entry)
     vm_log(vm, NU_LOG_DEBUG, "texture %u, size:%d", entry->id, size);
     // TODO: validate size
     nu_size_t data_length = gfx_texture_memsize(size);
-    NU_CHECK(sys_alloc_texture(vm, entry->id, size), return NU_FAILURE);
+    NU_CHECK(sys_init_texture(vm, entry->id, size), return NU_FAILURE);
     resource_t *res = vm->res + entry->id;
     NU_CHECK(cart_read(vm, vm->mem + res->texture.data, data_length),
              return NU_FAILURE);
@@ -52,7 +52,7 @@ load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
            count,
            primitive,
            attributes);
-    NU_CHECK(sys_alloc_mesh(vm, entry->id, count, primitive, attributes),
+    NU_CHECK(sys_init_mesh(vm, entry->id, count, primitive, attributes),
              return NU_FAILURE);
     resource_t *res = vm->res + entry->id;
     NU_ASSERT(os_cart_read(
@@ -65,7 +65,7 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
 {
     nu_u32_t node_count;
     NU_CHECK(cart_read_u32(vm, &node_count), return NU_FAILURE);
-    NU_CHECK(sys_alloc_model(vm, entry->id, node_count), return NU_FAILURE);
+    NU_CHECK(sys_init_model(vm, entry->id, node_count), return NU_FAILURE);
     vm_log(vm, NU_LOG_DEBUG, "model %u, node_count:%d", entry->id, node_count);
     for (nu_size_t i = 0; i < node_count; ++i)
     {
@@ -82,7 +82,7 @@ load_model (vm_t *vm, const cart_chunk_entry_t *entry)
                mesh,
                texture,
                parent);
-        NU_CHECK(sys_write_model(
+        NU_CHECK(sys_update_model(
                      vm, entry->id, i, mesh, texture, parent, transform.data),
                  return NU_FAILURE);
     }

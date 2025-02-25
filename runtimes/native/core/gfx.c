@@ -18,7 +18,7 @@ gfx_init (vm_t *vm)
 nu_status_t
 gfx_free (vm_t *vm)
 {
-    for (nu_size_t i = 0; i < MAX_RESOURCE_COUNT; ++i)
+    for (nu_size_t i = 0; i < SYS_MAX_RESOURCE_COUNT; ++i)
     {
         switch (vm->res[i].type)
         {
@@ -37,7 +37,7 @@ gfx_free (vm_t *vm)
 void
 gpu_reload_state (vm_t *vm)
 {
-    for (nu_size_t i = 0; i < MAX_RESOURCE_COUNT; ++i)
+    for (nu_size_t i = 0; i < SYS_MAX_RESOURCE_COUNT; ++i)
     {
         switch (vm->res[i].type)
         {
@@ -70,16 +70,16 @@ gfx_end_frame (vm_t *vm)
 }
 
 nu_status_t
-sys_alloc_texture (vm_t *vm, nu_u32_t id, nu_u32_t size)
+sys_init_texture (vm_t *vm, nu_u32_t id, nu_u32_t size)
 {
-    if (size < GFX_MIN_TEXTURE_SIZE || size > GFX_MAX_TEXTURE_SIZE)
+    if (size < SYS_MIN_TEXTURE_SIZE || size > SYS_MAX_TEXTURE_SIZE)
     {
         vm_log(vm,
                NU_LOG_ERROR,
                "Invalid texture size %d (min %d max %d)",
                size,
-               GFX_MIN_TEXTURE_SIZE,
-               GFX_MAX_TEXTURE_SIZE);
+               SYS_MIN_TEXTURE_SIZE,
+               SYS_MAX_TEXTURE_SIZE);
         return ID_NULL;
     }
     resource_t *res = vm_set_res(vm, id, RES_TEXTURE);
@@ -91,13 +91,13 @@ sys_alloc_texture (vm_t *vm, nu_u32_t id, nu_u32_t size)
     return id;
 }
 nu_status_t
-sys_write_texture (vm_t       *vm,
-                   nu_u32_t    id,
-                   nu_u32_t    x,
-                   nu_u32_t    y,
-                   nu_u32_t    w,
-                   nu_u32_t    h,
-                   const void *p)
+sys_update_texture (vm_t       *vm,
+                    nu_u32_t    id,
+                    nu_u32_t    x,
+                    nu_u32_t    y,
+                    nu_u32_t    w,
+                    nu_u32_t    h,
+                    const void *p)
 {
     resource_t *res = vm_get_res(vm, id, RES_TEXTURE);
     NU_CHECK(res, return NU_FAILURE);
@@ -114,11 +114,11 @@ sys_write_texture (vm_t       *vm,
     return NU_SUCCESS;
 }
 nu_status_t
-sys_alloc_mesh (vm_t                  *vm,
-                nu_u32_t               id,
-                nu_u32_t               count,
-                sys_primitive_t        primitive,
-                sys_vertex_attribute_t attributes)
+sys_init_mesh (vm_t                  *vm,
+               nu_u32_t               id,
+               nu_u32_t               count,
+               sys_primitive_t        primitive,
+               sys_vertex_attribute_t attributes)
 {
     resource_t *res = vm_set_res(vm, id, RES_MESH);
     NU_CHECK(res, return NU_FAILURE);
@@ -133,12 +133,12 @@ sys_alloc_mesh (vm_t                  *vm,
     return NU_SUCCESS;
 }
 nu_status_t
-sys_write_mesh (vm_t                  *vm,
-                nu_u32_t               id,
-                sys_vertex_attribute_t attributes,
-                nu_u32_t               first,
-                nu_u32_t               count,
-                const void            *p)
+sys_update_mesh (vm_t                  *vm,
+                 nu_u32_t               id,
+                 sys_vertex_attribute_t attributes,
+                 nu_u32_t               first,
+                 nu_u32_t               count,
+                 const void            *p)
 {
     resource_t     *res  = vm_get_res(vm, id, RES_MESH);
     nu_f32_t       *ptr  = (nu_f32_t *)(vm->mem + res->mesh.data);
@@ -196,7 +196,7 @@ sys_write_mesh (vm_t                  *vm,
 }
 
 nu_status_t
-sys_alloc_model (vm_t *vm, nu_u32_t id, nu_u32_t node_count)
+sys_init_model (vm_t *vm, nu_u32_t id, nu_u32_t node_count)
 {
     resource_t *res = vm_set_res(vm, id, RES_MODEL);
     NU_CHECK(res, return NU_FAILURE);
@@ -208,13 +208,13 @@ sys_alloc_model (vm_t *vm, nu_u32_t id, nu_u32_t node_count)
     return NU_SUCCESS;
 }
 nu_status_t
-sys_write_model (vm_t           *vm,
-                 nu_u32_t        id,
-                 nu_u32_t        node_index,
-                 nu_u32_t        mesh,
-                 nu_u32_t        texture,
-                 nu_u32_t        parent,
-                 const nu_f32_t *transform)
+sys_update_model (vm_t           *vm,
+                  nu_u32_t        id,
+                  nu_u32_t        node_index,
+                  nu_u32_t        mesh,
+                  nu_u32_t        texture,
+                  nu_u32_t        parent,
+                  const nu_f32_t *transform)
 {
     resource_t *res = vm_get_res(vm, id, RES_MODEL);
     if (node_index >= res->model.node_count)
@@ -232,13 +232,13 @@ sys_write_model (vm_t           *vm,
 }
 
 nu_status_t
-sys_set_spritesheet (vm_t    *vm,
-                     nu_u32_t id,
-                     nu_u32_t texture,
-                     nu_u32_t row,
-                     nu_u32_t col,
-                     nu_u32_t fwidth,
-                     nu_u32_t fheight)
+sys_init_spritesheet (vm_t    *vm,
+                      nu_u32_t id,
+                      nu_u32_t texture,
+                      nu_u32_t row,
+                      nu_u32_t col,
+                      nu_u32_t fwidth,
+                      nu_u32_t fheight)
 {
     resource_t *res = vm_set_res(vm, id, RES_SPRITESHEET);
     NU_CHECK(res, return NU_FAILURE);
@@ -251,53 +251,128 @@ sys_set_spritesheet (vm_t    *vm,
 }
 
 void
-sys_transform (vm_t *vm, sys_transform_t transform, const nu_f32_t *m)
+sys_set_render_state (vm_t *vm, sys_render_state_t state, const void *p)
 {
-    switch (transform)
+    switch (state)
     {
-        case SYS_TRANSFORM_MODEL:
-            vm->gfx.state.model = nu_m4(m);
+        case SYS_RENDER_SCISSOR:
+            vm->gfx.state.scissor = *(const nu_v4u_t *)p;
             break;
-        case SYS_TRANSFORM_VIEW:
-            vm->gfx.state.view = nu_m4(m);
+        case SYS_RENDER_VIEWPORT:
+            vm->gfx.state.viewport = *(const nu_v4u_t *)p;
             break;
-        case SYS_TRANSFORM_PROJECTION:
-            vm->gfx.state.projection = nu_m4(m);
+        case SYS_RENDER_TRANSFORM:
+            vm->gfx.state.model = *(const nu_m4_t *)p;
+            break;
+        case SYS_RENDER_VIEW:
+            vm->gfx.state.view = *(const nu_m4_t *)p;
+            break;
+        case SYS_RENDER_PROJECTION:
+            vm->gfx.state.projection = *(const nu_m4_t *)p;
+            break;
+        case SYS_RENDER_CURSOR:
+            vm->gfx.state.cursor = *(const nu_v2u_t *)p;
+            break;
+        case SYS_RENDER_FOG_COLOR:
+            vm->gfx.state.fog_color = nu_color_from_u32(*(const nu_u32_t *)p);
+            break;
+        case SYS_RENDER_FOG_DENSITY:
+            vm->gfx.state.fog_density = nu_fabs(*(const nu_f32_t *)p);
+            break;
+        case SYS_RENDER_FOG_NEAR:
+            vm->gfx.state.fog_near = nu_fabs(*(const nu_f32_t *)p);
+            break;
+        case SYS_RENDER_FOG_FAR:
+            vm->gfx.state.fog_far
+                = NU_MAX(vm->gfx.state.fog_near, *(const nu_f32_t *)p);
+            break;
+        case SYS_RENDER_COLOR:
+            vm->gfx.state.color = nu_color_from_u32(*(const nu_u32_t *)p);
             break;
     }
 }
 void
-sys_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
+sys_get_render_state (vm_t *vm, sys_render_state_t state, void *p)
 {
-    vm->gfx.state.cursor = nu_v2u(x, y);
 }
 void
-sys_fog_params (vm_t *vm, const nu_f32_t *params)
+sys_set_scissor (vm_t *vm, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
-    vm->gfx.state.fog_density = nu_fabs(params[0]);
-    vm->gfx.state.fog_near    = nu_fabs(params[1]);
-    vm->gfx.state.fog_far     = NU_MAX(vm->gfx.state.fog_near, params[2]);
+    nu_v4u_t scissor = nu_v4u(x, y, w, h);
+    sys_set_render_state(vm, SYS_RENDER_SCISSOR, &scissor);
 }
 void
-sys_fog_color (vm_t *vm, nu_u32_t color)
+sys_set_viewport (vm_t *vm, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
-    vm->gfx.state.fog_color = nu_color_from_u32(color);
+    nu_v4u_t viewport = nu_v4u(x, y, w, h);
+    sys_set_render_state(vm, SYS_RENDER_VIEWPORT, &viewport);
 }
+void
+sys_set_view (vm_t *vm, const nu_f32_t *m)
+{
+    sys_set_render_state(vm, SYS_RENDER_VIEW, m);
+}
+void
+sys_set_projection (vm_t *vm, const nu_f32_t *m)
+{
+    sys_set_render_state(vm, SYS_RENDER_PROJECTION, m);
+}
+void
+sys_set_transform (vm_t *vm, const nu_f32_t *m)
+{
+    sys_set_render_state(vm, SYS_RENDER_TRANSFORM, m);
+}
+void
+sys_set_cursor (vm_t *vm, nu_u32_t x, nu_u32_t y)
+{
+    nu_v2u_t cursor = nu_v2u(x, y);
+    sys_set_render_state(vm, SYS_RENDER_CURSOR, &cursor);
+}
+void
+sys_set_fog_near (vm_t *vm, nu_f32_t near)
+{
+    sys_set_render_state(vm, SYS_RENDER_FOG_NEAR, &near);
+}
+void
+sys_set_fog_far (vm_t *vm, nu_f32_t far)
+{
+    sys_set_render_state(vm, SYS_RENDER_FOG_FAR, &far);
+}
+void
+sys_set_fog_density (vm_t *vm, nu_f32_t density)
+{
+    sys_set_render_state(vm, SYS_RENDER_FOG_DENSITY, &density);
+}
+void
+sys_set_fog_color (vm_t *vm, nu_u32_t color)
+{
+    sys_set_render_state(vm, SYS_RENDER_FOG_COLOR, &color);
+}
+void
+sys_set_color (vm_t *vm, nu_u32_t color)
+{
+    sys_set_render_state(vm, SYS_RENDER_COLOR, &color);
+}
+
 void
 sys_clear (vm_t *vm, nu_u32_t color)
 {
     os_gpu_clear(vm, color);
 }
 void
-sys_color (vm_t *vm, nu_u32_t color)
-{
-    vm->gfx.state.color = nu_color_from_u32(color);
-}
-void
 sys_draw_model (vm_t *vm, nu_u32_t id)
 {
     NU_CHECK(vm_get_res(vm, id, RES_MODEL), return);
     os_gpu_draw_model(vm, id);
+}
+void
+sys_draw_volume (vm_t *vm)
+{
+    const nu_f32_t r = 60;
+    const nu_f32_t r2 = r * 2;
+    const nu_f32_t c[3] = { -r, -r, -r };
+    const nu_f32_t s[3] = { r2, r2, r2 };
+    os_gpu_draw_volume(vm, c, s);
 }
 void
 sys_draw_cube (vm_t *vm, const nu_f32_t *p, const nu_f32_t *s)
@@ -315,14 +390,14 @@ sys_draw_linestrip (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
     os_gpu_draw_lines(vm, p, n, NU_TRUE);
 }
 void
-sys_text (vm_t *vm, const void *text)
+sys_draw_text (vm_t *vm, const void *text)
 {
     os_gpu_draw_text(vm, text, nu_strlen(text));
 }
 void
 sys_print (vm_t *vm, const void *text)
 {
-    sys_text(vm, text);
+    sys_draw_text(vm, text);
     vm->gfx.state.cursor.y += 9;
 }
 void
@@ -332,7 +407,7 @@ sys_blit (vm_t *vm, nu_u32_t id, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
     os_gpu_draw_blit(vm, id, x, y, w, h);
 }
 void
-sys_sprite (vm_t *vm, nu_u32_t spritesheet, nu_u32_t sprite)
+sys_draw_sprite (vm_t *vm, nu_u32_t spritesheet, nu_u32_t sprite)
 {
     resource_t *res = vm_get_res(vm, spritesheet, RES_SPRITESHEET);
     NU_CHECK(res, return);

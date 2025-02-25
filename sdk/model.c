@@ -32,10 +32,10 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
 
     // Find nearest texture size
     nu_u32_t target_size = nu_upper_power_of_two(NU_MAX(w, h));
-    if (target_size > GFX_MAX_TEXTURE_SIZE)
+    if (target_size > SYS_MAX_TEXTURE_SIZE)
     {
-        target_size = GFX_MAX_TEXTURE_SIZE;
-        sdk_log(NU_LOG_WARNING, "Texture resized to %d", GFX_MAX_TEXTURE_SIZE);
+        target_size = SYS_MAX_TEXTURE_SIZE;
+        sdk_log(NU_LOG_WARNING, "Texture resized to %d", SYS_MAX_TEXTURE_SIZE);
     }
 
     // Resize image

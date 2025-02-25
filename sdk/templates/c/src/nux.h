@@ -56,9 +56,12 @@ void update();
 
 typedef enum
 {
-    SCREEN_WIDTH  = 480,
-    SCREEN_HEIGHT = 360
-} screen_size_t;
+    SCREEN_WIDTH       = 480,
+    SCREEN_HEIGHT      = 360,
+    MIN_TEXTURE_SIZE   = 32,
+    MAX_TEXTURE_SIZE   = 256,
+    MAX_RESOURCE_COUNT = 1024
+} constants_t;
 
 typedef enum
 {
@@ -74,13 +77,6 @@ typedef enum
     PRIMITIVE_LINES     = 1,
     PRIMITIVE_POINTS    = 2
 } primitive_t;
-
-typedef enum
-{
-    TRANSFORM_MODEL      = 0,
-    TRANSFORM_VIEW       = 1,
-    TRANSFORM_PROJECTION = 2
-} transform_t;
 
 typedef enum
 {
@@ -113,6 +109,21 @@ typedef enum
     CONSOLE_MEMORY_USAGE    = 1
 } console_info_t;
 
+typedef enum
+{
+    RENDER_VIEWPORT    = 0,
+    RENDER_SCISSOR     = 1,
+    RENDER_TRANSFORM   = 2,
+    RENDER_VIEW        = 3,
+    RENDER_PROJECTION  = 4,
+    RENDER_CURSOR      = 5,
+    RENDER_FOG_COLOR   = 6,
+    RENDER_FOG_DENSITY = 7,
+    RENDER_FOG_NEAR    = 8,
+    RENDER_FOG_FAR     = 9,
+    RENDER_COLOR       = 10
+} render_state_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                           SYSCALL                            //////
 //////////////////////////////////////////////////////////////////////////
@@ -131,50 +142,68 @@ WASM_EXPORT("rewind_scope")
 void rewind_scope(u32 id);
 WASM_EXPORT("set_active_scope")
 void set_active_scope(u32 id);
-WASM_EXPORT("alloc_texture")
-void alloc_texture(u32 id, u32 size);
-WASM_EXPORT("write_texture")
-void write_texture(u32 id, u32 x, u32 y, u32 w, u32 h, const void *p);
-WASM_EXPORT("alloc_mesh")
-void alloc_mesh(u32 id, u32 count, u32 primitive, u32 attribs);
-WASM_EXPORT("write_mesh")
-void write_mesh(u32 id, u32 attribs, u32 first, u32 count, const void *p);
-WASM_EXPORT("alloc_model")
-void alloc_model(u32 id, u32 count);
-WASM_EXPORT("write_model")
-void write_model(
+WASM_EXPORT("init_texture")
+void init_texture(u32 id, u32 size);
+WASM_EXPORT("update_texture")
+void update_texture(u32 id, u32 x, u32 y, u32 w, u32 h, const void *p);
+WASM_EXPORT("init_mesh")
+void init_mesh(u32 id, u32 count, u32 primitive, u32 attribs);
+WASM_EXPORT("update_mesh")
+void update_mesh(u32 id, u32 attribs, u32 first, u32 count, const void *p);
+WASM_EXPORT("init_model")
+void init_model(u32 id, u32 count);
+WASM_EXPORT("update_model")
+void update_model(
     u32 id, u32 node, u32 mesh, u32 texture, u32 parent, const f32 *transform);
-WASM_EXPORT("set_spritesheet")
-void set_spritesheet(
+WASM_EXPORT("init_spritesheet")
+void init_spritesheet(
     u32 id, u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
-WASM_EXPORT("transform")
-void transform(u32 transform, const f32 *m);
-WASM_EXPORT("cursor")
-void cursor(u32 x, u32 y);
-WASM_EXPORT("fog_params")
-void fog_params(const f32 *params);
-WASM_EXPORT("fog_color")
-void fog_color(u32 color);
+WASM_EXPORT("set_render_state")
+void set_render_state(u32 state, const void *p);
+WASM_EXPORT("get_render_state")
+void get_render_state(u32 state, void *p);
+WASM_EXPORT("set_scissor")
+void set_scissor(u32 x, u32 y, u32 w, u32 h);
+WASM_EXPORT("set_viewport")
+void set_viewport(u32 x, u32 y, u32 w, u32 h);
+WASM_EXPORT("set_view")
+void set_view(const f32 *m);
+WASM_EXPORT("set_projection")
+void set_projection(const f32 *m);
+WASM_EXPORT("set_transform")
+void set_transform(const f32 *m);
+WASM_EXPORT("set_cursor")
+void set_cursor(u32 x, u32 y);
+WASM_EXPORT("set_fog_near")
+void set_fog_near(f32 near);
+WASM_EXPORT("set_fog_far")
+void set_fog_far(f32 far);
+WASM_EXPORT("set_fog_density")
+void set_fog_density(f32 density);
+WASM_EXPORT("set_fog_color")
+void set_fog_color(u32 color);
+WASM_EXPORT("set_color")
+void set_color(u32 color);
 WASM_EXPORT("clear")
 void clear(u32 color);
-WASM_EXPORT("color")
-void color(u32 color);
 WASM_EXPORT("draw_model")
 void draw_model(u32 id);
+WASM_EXPORT("draw_volume")
+void draw_volume();
 WASM_EXPORT("draw_cube")
 void draw_cube(const f32 *c, const f32 *s);
 WASM_EXPORT("draw_lines")
 void draw_lines(const f32 *p, u32 n);
 WASM_EXPORT("draw_linestrip")
 void draw_linestrip(const f32 *p, u32 n);
-WASM_EXPORT("text")
-void text(const void *text);
+WASM_EXPORT("draw_text")
+void draw_text(const void *text);
 WASM_EXPORT("print")
 void print(const void *text);
 WASM_EXPORT("blit")
 void blit(u32 id, u32 x, u32 y, u32 w, u32 h);
-WASM_EXPORT("sprite")
-void sprite(u32 spritesheet, u32 sprite);
+WASM_EXPORT("draw_sprite")
+void draw_sprite(u32 spritesheet, u32 sprite);
 WASM_EXPORT("button")
 u32 button(u32 player);
 WASM_EXPORT("axis")
