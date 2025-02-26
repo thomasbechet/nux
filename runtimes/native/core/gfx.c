@@ -368,7 +368,7 @@ sys_draw_model (vm_t *vm, nu_u32_t id)
 void
 sys_draw_volume (vm_t *vm)
 {
-    const nu_f32_t r = 60;
+    const nu_f32_t r = 100;
     const nu_f32_t r2 = r * 2;
     const nu_f32_t c[3] = { -r, -r, -r };
     const nu_f32_t s[3] = { r2, r2, r2 };

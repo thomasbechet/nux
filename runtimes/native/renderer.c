@@ -912,6 +912,9 @@ os_gpu_draw_volume (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
     glDepthFunc(GL_LEQUAL);
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
+    glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     const nu_b3_t box = nu_b3(nu_v3(center[0], center[1], center[2]),
@@ -947,7 +950,9 @@ os_gpu_draw_volume (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    glDisable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
     glUseProgram(0);
 }
 void
