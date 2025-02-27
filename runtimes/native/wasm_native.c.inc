@@ -1,6 +1,3 @@
-#ifndef WASM_NATIVE_H
-#define WASM_NATIVE_H
-
 #include "core/vm.h"
 #include <wasm_export.h>
 
@@ -313,5 +310,3 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(draw_sprite, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(button, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(axis, "(ii)f") };
-
-#endif

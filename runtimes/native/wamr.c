@@ -1,6 +1,4 @@
-#include "wamr.h"
-
-#include "logger.h"
+#include "runtime.h"
 #include "wasm_native.h"
 
 #include <wasm_export.h>

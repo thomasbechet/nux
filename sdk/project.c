@@ -1,8 +1,6 @@
 #include "sdk.h"
 
-#include "templates_data.h"
-
-#include <stdio.h>
+#include "templates_data.c.inc"
 
 #define PROJECT_CART_DEFAULT "cart.bin"
 #define PROJECT_JSON         "nux.json"

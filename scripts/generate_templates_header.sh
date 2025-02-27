@@ -7,10 +7,7 @@ if [[ ! -d $ROOT_DIR ]]; then
 fi
 
 TEMPLATES=$ROOT_DIR/sdk/templates
-OUTPUT=$ROOT_DIR/sdk/templates_data.h
-
-printf "#ifndef SDK_TEMPLATES_DATA_H\n" > $OUTPUT
-printf "#define SDK_TEMPLATES_DATA_H\n" >> $OUTPUT
+OUTPUT=$ROOT_DIR/sdk/templates_data.c.inc
 
 printf "#include <nulib/nulib.h>\n" >> $OUTPUT
 printf "typedef struct
@@ -46,6 +43,3 @@ for TEMPLATE in $TEMPLATES/*; do
     printf "{ .path=NU_NULL, .data=NU_NULL, .size=0 }\n" >> $OUTPUT
     printf "};\n" >> $OUTPUT
 done
-
-printf "#endif\n" >> $OUTPUT
-

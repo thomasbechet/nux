@@ -1,6 +1,3 @@
-#ifndef WASM_NATIVE_H
-#define WASM_NATIVE_H
-
 #include "core/vm.h"
 #include <wasm_export.h>
 {% set sigmap = {
@@ -37,5 +34,3 @@ static NativeSymbol wasm_native_symbols[] = {
         ", " if not loop.last else "" }}
     {% endfor -%}
 };
-
-#endif

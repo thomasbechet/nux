@@ -1,5 +1,3 @@
-#ifndef SHADERS_DATA_H
-#define SHADERS_DATA_H
 #include <nulib/nulib.h>
 static const nu_sv_t shader_canvas_blit_frag = NU_SV(
 "#version 330\n"
@@ -232,7 +230,7 @@ static const nu_sv_t shader_unlit_frag = NU_SV(
 "\n"
 "    float original_color_transmittance = exp(-view_ray_optical_depth);\n"
 "    // return original_color_transmittance * original_color + scatter_light;\n"
-"    return vec4(scatter_light, original_color_transmittance);\n"
+"    return vec4(scatter_light, 1 - original_color_transmittance);\n"
 "}\n"
 "\n"
 "void main()\n"
@@ -379,4 +377,3 @@ static const nu_sv_t shader_volume_vert = NU_SV(
 "    gl_Position = vec4(x - 1.0, y - 1.0, 0.0, 1.0);\n"
 "}\n"
 );
-#endif

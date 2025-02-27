@@ -1,8 +1,4 @@
-#include "logger.h"
-#include "window.h"
-#include "renderer.h"
-#include "wamr.h"
-#include "nuklear.h"
+#include "runtime.h"
 #include "core/vm.h"
 
 nu_status_t

@@ -7,10 +7,7 @@ if [[ ! -d $ROOT_DIR ]]; then
 fi
 
 SHADERS=$ROOT_DIR/runtimes/native/shaders
-OUTPUT=$ROOT_DIR/runtimes/native/shaders_data.h
-
-printf "#ifndef SHADERS_DATA_H\n" > $OUTPUT
-printf "#define SHADERS_DATA_H\n" >> $OUTPUT
+OUTPUT=$ROOT_DIR/runtimes/native/shaders_data.c.inc
 
 printf "#include <nulib/nulib.h>\n" >> $OUTPUT
 
@@ -26,5 +23,3 @@ for file in $SHADERS/*; do
     done < $file
     printf ");\n" >> $OUTPUT
 done
-
-printf "#endif\n" >> $OUTPUT

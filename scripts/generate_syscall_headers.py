@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # wasm_native.h
     template = env.get_template("wasm_native.h.jinja")
     r = template.render(functions=functions, enums=enums)
-    output = "runtimes/native/wasm_native.h"
+    output = "runtimes/native/wasm_native.c.inc"
     with open(os.path.join(args.rootdir, output), "w") as f:
         f.write(r)
         f.close()

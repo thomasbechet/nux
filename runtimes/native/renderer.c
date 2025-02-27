@@ -1,9 +1,6 @@
-#include "renderer.h"
-
-#include "shaders_data.h"
-#include "fonts_data.h"
-#include "logger.h"
-#include "window.h"
+#include "shaders_data.c.inc"
+#include "fonts_data.c.inc"
+#include "runtime.h"
 #include "core/platform.h"
 
 #include <glad/gl.h>
