@@ -42,6 +42,7 @@ typedef enum
     SYS_MIN_TEXTURE_SIZE   = 32,
     SYS_MAX_TEXTURE_SIZE   = 256,
     SYS_MAX_RESOURCE_COUNT = 1024,
+    SYS_MAX_PLAYER_COUNT   = 4,
 } sys_constants_t;
 
 typedef enum

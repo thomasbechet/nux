@@ -33,8 +33,8 @@ static struct
     viewport_t       viewport;
     RGFW_rect        previous_rect;
     RGFW_window     *win;
-    nu_u32_t         buttons[MAX_PLAYER];
-    nu_f32_t         axis[MAX_PLAYER][SYS_AXIS_ENUM_MAX];
+    nu_u32_t         buttons[SYS_MAX_PLAYER_COUNT];
+    nu_f32_t         axis[SYS_MAX_PLAYER_COUNT][SYS_AXIS_ENUM_MAX];
     window_command_t cmds[MAX_COMMAND];
     nu_size_t        cmds_count;
 } window;
@@ -335,16 +335,18 @@ window_poll_events (void)
                 }
                 break;
                 case RGFW_gamepadConnected:
-                    printf("Gamepad (%i) connected %s\n",
-                           window.win->event.gamepad,
-                           RGFW_getGamepadName(window.win,
-                                               window.win->event.gamepad));
+                    logger_log(NU_LOG_INFO,
+                               "Gamepad (%i) connected %s\n",
+                               window.win->event.gamepad,
+                               RGFW_getGamepadName(window.win,
+                                                   window.win->event.gamepad));
                     break;
                 case RGFW_gamepadDisconnected:
-                    printf("Gamepad (%i) disconnected %s\n",
-                           window.win->event.gamepad,
-                           RGFW_getGamepadName(window.win,
-                                               window.win->event.gamepad));
+                    logger_log(NU_LOG_INFO,
+                               "Gamepad (%i) disconnected %s\n",
+                               window.win->event.gamepad,
+                               RGFW_getGamepadName(window.win,
+                                                   window.win->event.gamepad));
                     break;
 
                 case RGFW_mouseButtonPressed:
