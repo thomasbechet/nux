@@ -1,7 +1,7 @@
-#include "native/core/cartridge.h"
 #include "sdk.h"
 
 #include "templates_data.h"
+
 #include <stdio.h>
 
 #define PROJECT_CART_DEFAULT "cart.bin"

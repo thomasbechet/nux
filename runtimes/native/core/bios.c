@@ -1,7 +1,3 @@
-#include "bios.h"
-
-#include "cartridge.h"
-#include "vm.h"
 #include "platform.h"
 
 static NU_ENUM_MAP(cart_chunk_type_map,

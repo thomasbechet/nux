@@ -1,6 +1,3 @@
-#include "gfx.h"
-
-#include "vm.h"
 #include "platform.h"
 
 nu_status_t
@@ -22,10 +19,10 @@ gfx_free (vm_t *vm)
     {
         switch (vm->res[i].type)
         {
-            case RES_TEXTURE:
+            case RESOURCE_TEXTURE:
                 os_gpu_free_texture(vm, i);
                 break;
-            case RES_MESH:
+            case RESOURCE_MESH:
                 os_gpu_free_mesh(vm, i);
                 break;
             default:
@@ -41,13 +38,13 @@ gpu_reload_state (vm_t *vm)
     {
         switch (vm->res[i].type)
         {
-            case RES_TEXTURE: {
+            case RESOURCE_TEXTURE: {
                 os_gpu_free_texture(vm, i);
                 os_gpu_init_texture(vm, i);
                 os_gpu_update_texture(vm, i);
             }
             break;
-            case RES_MESH: {
+            case RESOURCE_MESH: {
                 os_gpu_free_mesh(vm, i);
                 os_gpu_init_mesh(vm, i);
                 os_gpu_update_mesh(vm, i);
@@ -82,7 +79,7 @@ sys_init_texture (vm_t *vm, nu_u32_t id, nu_u32_t size)
                SYS_MAX_TEXTURE_SIZE);
         return ID_NULL;
     }
-    resource_t *res = vm_set_res(vm, id, RES_TEXTURE);
+    resource_t *res = vm_set_res(vm, id, RESOURCE_TEXTURE);
     NU_CHECK(res, return NU_FAILURE);
     res->texture.size = size;
     res->texture.data = vm_malloc(vm, gfx_texture_memsize(size));
@@ -99,7 +96,7 @@ sys_update_texture (vm_t       *vm,
                     nu_u32_t    h,
                     const void *p)
 {
-    resource_t *res = vm_get_res(vm, id, RES_TEXTURE);
+    resource_t *res = vm_get_res(vm, id, RESOURCE_TEXTURE);
     NU_CHECK(res, return NU_FAILURE);
     nu_byte_t *data = vm->mem + res->texture.data;
     NU_ASSERT(x + w <= res->texture.size);
@@ -120,7 +117,7 @@ sys_init_mesh (vm_t                  *vm,
                sys_primitive_t        primitive,
                sys_vertex_attribute_t attributes)
 {
-    resource_t *res = vm_set_res(vm, id, RES_MESH);
+    resource_t *res = vm_set_res(vm, id, RESOURCE_MESH);
     NU_CHECK(res, return NU_FAILURE);
     res->mesh.count      = count;
     res->mesh.primitive  = primitive;
@@ -140,7 +137,7 @@ sys_update_mesh (vm_t                  *vm,
                  nu_u32_t               count,
                  const void            *p)
 {
-    resource_t     *res  = vm_get_res(vm, id, RES_MESH);
+    resource_t     *res  = vm_get_res(vm, id, RESOURCE_MESH);
     nu_f32_t       *ptr  = (nu_f32_t *)(vm->mem + res->mesh.data);
     const nu_f32_t *data = p;
     if (attributes & SYS_VERTEX_POSITION
@@ -198,7 +195,7 @@ sys_update_mesh (vm_t                  *vm,
 nu_status_t
 sys_init_model (vm_t *vm, nu_u32_t id, nu_u32_t node_count)
 {
-    resource_t *res = vm_set_res(vm, id, RES_MODEL);
+    resource_t *res = vm_set_res(vm, id, RESOURCE_MODEL);
     NU_CHECK(res, return NU_FAILURE);
     nu_u32_t memsize = node_count * sizeof(gfx_model_node_t);
     res->model.data  = vm_malloc(vm, memsize);
@@ -216,7 +213,7 @@ sys_update_model (vm_t           *vm,
                   nu_u32_t        parent,
                   const nu_f32_t *transform)
 {
-    resource_t *res = vm_get_res(vm, id, RES_MODEL);
+    resource_t *res = vm_get_res(vm, id, RESOURCE_MODEL);
     if (node_index >= res->model.node_count)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid model node index %d", node_index);
@@ -240,7 +237,7 @@ sys_init_spritesheet (vm_t    *vm,
                       nu_u32_t fwidth,
                       nu_u32_t fheight)
 {
-    resource_t *res = vm_set_res(vm, id, RES_SPRITESHEET);
+    resource_t *res = vm_set_res(vm, id, RESOURCE_SPRITESHEET);
     NU_CHECK(res, return NU_FAILURE);
     res->spritesheet.texture = texture;
     res->spritesheet.row     = row;
@@ -362,14 +359,14 @@ sys_clear (vm_t *vm, nu_u32_t color)
 void
 sys_draw_model (vm_t *vm, nu_u32_t id)
 {
-    NU_CHECK(vm_get_res(vm, id, RES_MODEL), return);
+    NU_CHECK(vm_get_res(vm, id, RESOURCE_MODEL), return);
     os_gpu_draw_model(vm, id);
 }
 void
 sys_draw_volume (vm_t *vm)
 {
-    const nu_f32_t r = 100;
-    const nu_f32_t r2 = r * 2;
+    const nu_f32_t r    = 100;
+    const nu_f32_t r2   = r * 2;
     const nu_f32_t c[3] = { -r, -r, -r };
     const nu_f32_t s[3] = { r2, r2, r2 };
     os_gpu_draw_volume(vm, c, s);
@@ -403,13 +400,13 @@ sys_print (vm_t *vm, const void *text)
 void
 sys_blit (vm_t *vm, nu_u32_t id, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
-    NU_CHECK(vm_get_res(vm, id, RES_TEXTURE), return);
+    NU_CHECK(vm_get_res(vm, id, RESOURCE_TEXTURE), return);
     os_gpu_draw_blit(vm, id, x, y, w, h);
 }
 void
 sys_draw_sprite (vm_t *vm, nu_u32_t spritesheet, nu_u32_t sprite)
 {
-    resource_t *res = vm_get_res(vm, spritesheet, RES_SPRITESHEET);
+    resource_t *res = vm_get_res(vm, spritesheet, RESOURCE_SPRITESHEET);
     NU_CHECK(res, return);
     nu_u32_t x = (sprite % res->spritesheet.row) * res->spritesheet.fwidth;
     nu_u32_t y = (sprite / res->spritesheet.row) * res->spritesheet.fheight;

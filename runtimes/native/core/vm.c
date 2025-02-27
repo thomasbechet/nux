@@ -1,9 +1,6 @@
-#include "vm.h"
-
 #include "platform.h"
-#include "bios.h"
 
-#include <string.h>
+#include <string.h> // TODO: required for memcpy, fix nulib
 
 nu_u32_t
 vm_malloc (vm_t *vm, nu_u32_t n)
@@ -20,7 +17,7 @@ vm_malloc (vm_t *vm, nu_u32_t n)
 resource_t *
 vm_set_res (vm_t *vm, nu_u32_t id, resource_type_t type)
 {
-    if (type == RES_NULL)
+    if (type == RESOURCE_NULL)
     {
         vm_log(vm, NU_LOG_ERROR, "Invalid resource type");
         return NU_NULL;
@@ -33,11 +30,11 @@ vm_set_res (vm_t *vm, nu_u32_t id, resource_type_t type)
     // TODO: uninit resource
     switch (vm->res[id].type)
     {
-        case RES_POOL:
-        case RES_TEXTURE:
-        case RES_MESH:
-        case RES_MODEL:
-        case RES_SPRITESHEET:
+        case RESOURCE_POOL:
+        case RESOURCE_TEXTURE:
+        case RESOURCE_MESH:
+        case RESOURCE_MODEL:
+        case RESOURCE_SPRITESHEET:
             break;
         default:
             break;
@@ -92,11 +89,11 @@ vm_init (vm_t *vm, const vm_config_t *config)
     vm->memcapa = config->memsize;
 
     // Initialize resource table
-    vm->res[ID_NULL].type = RES_NULL;
+    vm->res[ID_NULL].type = RESOURCE_NULL;
     vm->res[ID_NULL].next = 0;
     for (nu_size_t i = 1; i < SYS_MAX_RESOURCE_COUNT; ++i)
     {
-        vm->res[i].type = RES_FREE;
+        vm->res[i].type = RESOURCE_FREE;
         vm->res[i].next = 0;
     }
 

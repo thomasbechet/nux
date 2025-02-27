@@ -5,8 +5,6 @@
 #include "logger.h"
 #include "window.h"
 #include "core/platform.h"
-#include "core/gfx.h"
-#include "core/vm.h"
 
 #include <glad/gl.h>
 #define RGFW_IMPORT

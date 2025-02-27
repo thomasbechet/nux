@@ -1,9 +1,7 @@
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#include "syscall.h"
-#include "gfx.h"
-#include "wasm.h"
+#include "vm.h"
 
 void *os_malloc(vm_t *vm, nu_size_t n);
 void  os_vlog(vm_t            *vm,

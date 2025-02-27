@@ -1,6 +1,3 @@
-#include "gamepad.h"
-
-#include "vm.h"
 #include "platform.h"
 
 nu_status_t

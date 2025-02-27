@@ -2,7 +2,6 @@
 #include "sdk.h"
 
 #include <native/core/vm.h>
-#include <native/core/gfx.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 #include <stb/stb_image.h>
