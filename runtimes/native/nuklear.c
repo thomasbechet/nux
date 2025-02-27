@@ -1,10 +1,12 @@
 #include "nuklear.h"
 
+#ifdef NUX_BUILD_GUI
+
 #include <glad/gl.h>
 #include "window.h"
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
+// #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #include <nuklear/nuklear.h>
@@ -511,3 +513,5 @@ gui_mouse_button_callback (RGFW_window *win,
         gui.is_double_click_down = nk_false;
     }
 }
+
+#endif

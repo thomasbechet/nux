@@ -282,7 +282,9 @@ window_poll_events (void)
                     {
                         window.axis[0][axis] = axvalue;
                     }
+#ifdef NUX_BUILD_GUI
                     gui_char_callback(window.win, window.win->event.key);
+#endif
                 }
                 break;
                 case RGFW_keyReleased: {
@@ -348,16 +350,20 @@ window_poll_events (void)
                     break;
 
                 case RGFW_mouseButtonPressed:
+#ifdef NUX_BUILD_GUI
                     gui_mouse_button_callback(window.win,
                                               window.win->event.button,
                                               window.win->event.scroll,
                                               NU_TRUE);
+#endif
                     break;
                 case RGFW_mouseButtonReleased:
+#ifdef NUX_BUILD_GUI
                     gui_mouse_button_callback(window.win,
                                               window.win->event.button,
                                               window.win->event.scroll,
                                               NU_TRUE);
+#endif
                     break;
                 case RGFW_windowResized:
                     resize_callback(window.win, window.win->r);

@@ -5,6 +5,7 @@ CompileFlags:
     - "-DNUX_BUILD_SDK"
     - "-DNUX_BUILD_WASM_DEBUG"
     - "-DNUX_BUILD_WASM_JIT"
+    - "-DNUX_BUILD_GUI"
     - "-I../../sdk/templates/c/src/"
     - "-I../../../sdk/templates/c/src/"
     - "-I../../externals/"

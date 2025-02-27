@@ -14,11 +14,14 @@ runtime_run (const runtime_info_t *info)
     NU_CHECK(status, goto cleanup0);
     status = renderer_init();
     NU_CHECK(status, goto cleanup1);
+#ifdef NUX_BUILD_GUI
     status = gui_init(window_get_win());
     NU_CHECK(status, goto cleanup2);
+#endif
     status = wamr_init(info->debug);
     NU_CHECK(status, goto cleanup3);
 
+#ifdef NUX_BUILD_GUI
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     {
@@ -39,6 +42,7 @@ runtime_run (const runtime_info_t *info)
         gui_font_stash_end();
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     /*nk_style_set_font(ctx, &droid->handle);*/}
+#endif
 
     vm_t        vm;
     vm_config_t config;
@@ -60,6 +64,7 @@ runtime_run (const runtime_info_t *info)
 
         vm_tick(&vm);
 
+#ifdef NUX_BUILD_GUI
         struct nk_context *ctx = gui_new_frame();
         /* GUI */
         if (nk_begin(ctx,
@@ -100,6 +105,7 @@ runtime_run (const runtime_info_t *info)
         }
         nk_end(ctx);
         gui_render(NK_ANTI_ALIASING_ON, NU_MEM_32K, NU_MEM_32K);
+#endif
 
         window_swap_buffers();
 
@@ -128,8 +134,10 @@ cleanup5:
 cleanup4:
     wamr_free();
 cleanup3:
+#ifdef NUX_BUILD_GUI
     gui_free();
 cleanup2:
+#endif
     renderer_free();
 cleanup1:
     window_free();

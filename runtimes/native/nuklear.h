@@ -1,6 +1,8 @@
 #ifndef NUKLEAR_H
 #define NUKLEAR_H
 
+#ifdef NUX_BUILD_GUI
+
 #include <nulib/nulib.h>
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -32,5 +34,7 @@ void gui_mouse_button_callback(struct RGFW_window *win,
                                int                 button,
                                double              scroll,
                                int                 pressed);
+
+#endif
 
 #endif
