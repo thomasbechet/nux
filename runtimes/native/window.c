@@ -2,6 +2,7 @@
 
 #include "core/vm.h"
 #include "logger.h"
+#include "nuklear.h"
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #define RGFW_EXPORT
@@ -137,6 +138,11 @@ void
 window_free (void)
 {
     RGFW_window_close(window.win);
+}
+RGFW_window *
+window_get_win (void)
+{
+    return window.win;
 }
 static sys_button_t
 key_to_button (nu_u32_t code)
@@ -276,6 +282,7 @@ window_poll_events (void)
                     {
                         window.axis[0][axis] = axvalue;
                     }
+                    gui_char_callback(window.win, window.win->event.key);
                 }
                 break;
                 case RGFW_keyReleased: {
@@ -341,8 +348,16 @@ window_poll_events (void)
                     break;
 
                 case RGFW_mouseButtonPressed:
+                    gui_mouse_button_callback(window.win,
+                                              window.win->event.button,
+                                              window.win->event.scroll,
+                                              NU_TRUE);
                     break;
                 case RGFW_mouseButtonReleased:
+                    gui_mouse_button_callback(window.win,
+                                              window.win->event.button,
+                                              window.win->event.scroll,
+                                              NU_TRUE);
                     break;
                 case RGFW_windowResized:
                     resize_callback(window.win, window.win->r);
@@ -412,6 +427,11 @@ nu_b2i_t
 window_get_render_viewport (void)
 {
     return window.viewport.viewport;
+}
+nu_v2u_t
+window_get_size (void)
+{
+    return nu_b2i_size(window.viewport.extent);
 }
 nu_bool_t
 window_poll_command (window_command_t *cmd)
