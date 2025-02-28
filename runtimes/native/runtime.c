@@ -92,6 +92,15 @@ runtime_run (const runtime_info_t *info)
                 op = HARD;
             }
 
+            static nu_char_t text[64];
+            static nu_int_t  text_len;
+            nk_edit_string(ctx,
+                           NK_EDIT_FIELD | NK_EDIT_READ_ONLY,
+                           text,
+                           &text_len,
+                           sizeof(text),
+                           nk_filter_float);
+
             nk_layout_row_dynamic(ctx, 25, 1);
             nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
 

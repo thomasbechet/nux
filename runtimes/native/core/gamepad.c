@@ -9,7 +9,7 @@ gpad_init (vm_t *vm)
 void
 gpad_update (vm_t *vm)
 {
-    os_gpad_update(vm);
+    os_gamepad_update(vm);
 }
 
 nu_u32_t

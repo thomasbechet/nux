@@ -575,7 +575,7 @@ renderer_free (void)
 }
 
 void
-os_gpu_init_texture (vm_t *vm, nu_u32_t id)
+os_gfx_init_texture (vm_t *vm, nu_u32_t id)
 {
     resource_t *res = vm->res + id;
     GLuint      handle;
@@ -604,12 +604,12 @@ os_gpu_init_texture (vm_t *vm, nu_u32_t id)
     renderer.resources[id].texture = handle;
 }
 void
-os_gpu_free_texture (vm_t *vm, nu_u32_t id)
+os_gfx_free_texture (vm_t *vm, nu_u32_t id)
 {
     glDeleteTextures(1, &renderer.resources[id].texture);
 }
 void
-os_gpu_update_texture (vm_t *vm, nu_u32_t id)
+os_gfx_update_texture (vm_t *vm, nu_u32_t id)
 {
     resource_t *res    = vm->res + id;
     GLuint      handle = renderer.resources[id].texture;
@@ -628,7 +628,7 @@ os_gpu_update_texture (vm_t *vm, nu_u32_t id)
 }
 
 void
-os_gpu_init_mesh (vm_t *vm, nu_u32_t id)
+os_gfx_init_mesh (vm_t *vm, nu_u32_t id)
 {
     renderer.resources[id].mesh.offset = renderer.mesh_vbo_offset;
     renderer.mesh_vbo_offset += vm->res[id].mesh.count;
@@ -648,11 +648,11 @@ os_gpu_init_mesh (vm_t *vm, nu_u32_t id)
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 void
-os_gpu_free_mesh (vm_t *vm, nu_u32_t id)
+os_gfx_free_mesh (vm_t *vm, nu_u32_t id)
 {
 }
 void
-os_gpu_update_mesh (vm_t *vm, nu_u32_t id)
+os_gfx_update_mesh (vm_t *vm, nu_u32_t id)
 {
     const resource_t *res = vm->res + id;
 
@@ -717,7 +717,7 @@ os_gpu_update_mesh (vm_t *vm, nu_u32_t id)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 void
-os_gpu_init_model (vm_t *vm, nu_u32_t id)
+os_gfx_init_model (vm_t *vm, nu_u32_t id)
 {
     resource_t *res = vm->res + id;
     NU_ASSERT(res->model.node_count + renderer.nodes_next < NODE_INIT_SIZE);
@@ -734,11 +734,11 @@ os_gpu_init_model (vm_t *vm, nu_u32_t id)
     renderer.nodes_next += res->model.node_count;
 }
 void
-os_gpu_free_model (vm_t *vm, nu_u32_t id)
+os_gfx_free_model (vm_t *vm, nu_u32_t id)
 {
 }
 void
-os_gpu_update_model (vm_t                   *vm,
+os_gfx_update_model (vm_t                   *vm,
                      nu_u32_t                id,
                      nu_u32_t                node_index,
                      const gfx_model_node_t *node)
@@ -747,7 +747,7 @@ os_gpu_update_model (vm_t                   *vm,
         = *node;
 }
 void
-os_gpu_begin_frame (vm_t *vm)
+os_gfx_begin_frame (vm_t *vm)
 {
     renderer.blit_count    = 0;
     renderer.im_vbo_offset = 0;
@@ -762,7 +762,7 @@ os_gpu_begin_frame (vm_t *vm)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void
-os_gpu_end_frame (vm_t *vm)
+os_gfx_end_frame (vm_t *vm)
 {
     // Unmap buffers
     glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
@@ -793,7 +793,7 @@ os_gpu_end_frame (vm_t *vm)
     glUseProgram(0);
 }
 void
-os_gpu_set_render_state (vm_t *vm, sys_render_state_t state)
+os_gfx_set_render_state (vm_t *vm, sys_render_state_t state)
 {
 }
 static void
@@ -866,14 +866,14 @@ draw_model (vm_t *vm, nu_u32_t id, nu_m4_t transform)
     glUseProgram(0);
 }
 void
-os_gpu_clear (vm_t *vm, nu_u32_t color)
+os_gfx_clear (vm_t *vm, nu_u32_t color)
 {
     nu_v4_t c = nu_color_to_vec4(nu_color_from_u32(color));
     glClearColor(c.x, c.y, c.z, c.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 void
-os_gpu_draw_model (vm_t *vm, nu_u32_t id)
+os_gfx_draw_model (vm_t *vm, nu_u32_t id)
 {
     draw_model(vm, id, vm->gfx.state.model);
 }
@@ -896,7 +896,7 @@ push_im_positions (const nu_f32_t *positions, nu_u32_t count)
     return offset;
 }
 void
-os_gpu_draw_volume (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
+os_gfx_draw_volume (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
 {
     // Update ubo
     update_ubo(vm, NU_TRUE);
@@ -951,7 +951,7 @@ os_gpu_draw_volume (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
     glUseProgram(0);
 }
 void
-os_gpu_draw_cube (vm_t *vm, const nu_f32_t *pos, const nu_f32_t *size)
+os_gfx_draw_cube (vm_t *vm, const nu_f32_t *pos, const nu_f32_t *size)
 {
     nu_b3_t box = nu_b3(nu_v3(pos[0], pos[1], pos[2]),
                         nu_v3(size[0], size[1], size[2]));
@@ -970,10 +970,10 @@ os_gpu_draw_cube (vm_t *vm, const nu_f32_t *pos, const nu_f32_t *size)
         = { v0, v1, v1, v2, v2, v3, v3, v0, v4, v5, v5, v6,
             v6, v7, v7, v4, v0, v4, v1, v5, v2, v6, v3, v7 };
 
-    os_gpu_draw_lines(vm, (const nu_f32_t *)positions, 12 * 2, NU_FALSE);
+    os_gfx_draw_lines(vm, (const nu_f32_t *)positions, 12 * 2, NU_FALSE);
 }
 void
-os_gpu_draw_lines (vm_t           *vm,
+os_gfx_draw_lines (vm_t           *vm,
                    const nu_f32_t *points,
                    nu_u32_t        count,
                    nu_bool_t       linestrip)
@@ -1033,7 +1033,7 @@ blit (GLuint texture, nu_size_t first, nu_size_t count)
     glUseProgram(0);
 }
 void
-os_gpu_draw_text (vm_t *vm, const void *text, nu_u32_t len)
+os_gfx_draw_text (vm_t *vm, const void *text, nu_u32_t len)
 {
     // Transfer buffer
     glBindBuffer(GL_ARRAY_BUFFER, renderer.blit_vbo);
@@ -1085,7 +1085,7 @@ os_gpu_draw_text (vm_t *vm, const void *text, nu_u32_t len)
     }
 }
 void
-os_gpu_draw_blit (
+os_gfx_draw_blit (
     vm_t *vm, nu_u32_t id, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
     nu_v2u_t pos = vm->gfx.state.cursor;

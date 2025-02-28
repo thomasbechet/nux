@@ -31,7 +31,7 @@ load_texture (vm_t *vm, const cart_chunk_entry_t *entry)
     resource_t *res = vm->res + entry->id;
     NU_CHECK(cart_read(vm, vm->mem + res->texture.data, data_length),
              return NU_FAILURE);
-    os_gpu_update_texture(vm, entry->id);
+    os_gfx_update_texture(vm, entry->id);
     return NU_SUCCESS;
 }
 static nu_status_t
@@ -53,7 +53,7 @@ load_mesh (vm_t *vm, const cart_chunk_entry_t *entry)
     resource_t *res = vm->res + entry->id;
     NU_ASSERT(os_cart_read(
         vm, vm->mem + res->mesh.data, gfx_vertex_memsize(attributes, count)));
-    os_gpu_update_mesh(vm, entry->id);
+    os_gfx_update_mesh(vm, entry->id);
     return NU_SUCCESS;
 }
 static nu_status_t

@@ -60,7 +60,8 @@ typedef enum
     SCREEN_HEIGHT      = 360,
     MIN_TEXTURE_SIZE   = 32,
     MAX_TEXTURE_SIZE   = 256,
-    MAX_RESOURCE_COUNT = 1024
+    MAX_RESOURCE_COUNT = 1024,
+    MAX_PLAYER_COUNT   = 4
 } constants_t;
 
 typedef enum
@@ -124,12 +125,20 @@ typedef enum
     RENDER_COLOR       = 10
 } render_state_t;
 
+typedef enum
+{
+    INSPECT_I32 = 0,
+    INSPECT_F32 = 0
+} inspect_type_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                           SYSCALL                            //////
 //////////////////////////////////////////////////////////////////////////
 
 WASM_EXPORT("trace")
 void trace(const void *text);
+WASM_EXPORT("inspect")
+void inspect(const void *name, u32 type, void *p);
 WASM_EXPORT("console_info")
 u32 console_info(u32 info);
 WASM_EXPORT("global_time")

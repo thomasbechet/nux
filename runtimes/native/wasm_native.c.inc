@@ -7,6 +7,15 @@ trace (wasm_exec_env_t env, const nu_char_t *text)
     vm_t *vm = wasm_runtime_get_user_data(env);
     sys_trace(vm, text);
 }
+static void
+inspect (wasm_exec_env_t    env,
+         const nu_char_t   *name,
+         sys_inspect_type_t type,
+         void              *p)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    sys_inspect(vm, name, type, p);
+}
 static nu_u32_t
 console_info (wasm_exec_env_t env, sys_console_info_t info)
 {
@@ -272,6 +281,7 @@ axis (wasm_exec_env_t env, nu_u32_t player, sys_axis_t axis)
 
 static NativeSymbol wasm_native_symbols[]
     = { EXPORT_WASM_API_WITH_SIG(trace, "(*)"),
+        EXPORT_WASM_API_WITH_SIG(inspect, "(*i*)"),
         EXPORT_WASM_API_WITH_SIG(console_info, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(global_time, "()f"),
         EXPORT_WASM_API_WITH_SIG(delta_time, "()f"),

@@ -1,5 +1,5 @@
 #include "runtime.h"
-#include "wasm_native.h"
+#include "wasm_native.c.inc"
 
 #include <wasm_export.h>
 #include <wasm_native.h>

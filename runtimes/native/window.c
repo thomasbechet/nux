@@ -451,7 +451,7 @@ window_poll_command (window_command_t *cmd)
 }
 
 void
-os_gpad_update (vm_t *vm)
+os_gamepad_update (vm_t *vm)
 {
     nu_memcpy(vm->gamepad.buttons, window.buttons, sizeof(window.buttons));
     nu_memcpy(vm->gamepad.axis, window.axis, sizeof(window.axis));

@@ -183,6 +183,11 @@ sys_console_info (vm_t *vm, sys_console_info_t info)
     }
     return 0;
 }
+void
+sys_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
+{
+    os_inspect(vm, name, type, p);
+}
 nu_f32_t
 sys_global_time (vm_t *vm)
 {

@@ -33,9 +33,10 @@ update (void)
     set_fog_color(c);
 
     nu_f32_t scale = 1.5;
-    nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));
-    m              = nu_m4_rotate_y(rotation);
-    m              = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
+    inspect("scale", INSPECT_F32, &scale);
+    nu_m4_t m = nu_m4_translate(nu_v3(0, -5, 0));
+    m         = nu_m4_rotate_y(rotation);
+    m         = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     set_transform(m.data);
     nu_v3_t pos;
     nux_debug_camera(0.02, &pos);

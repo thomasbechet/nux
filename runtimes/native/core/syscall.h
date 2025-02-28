@@ -111,7 +111,17 @@ typedef enum
     SYS_RENDER_COLOR       = 10
 } sys_render_state_t;
 
+typedef enum
+{
+    SYS_INSPECT_I32 = 0,
+    SYS_INSPECT_F32 = 1,
+} sys_inspect_type_t;
+
 void     sys_trace(vm_t *vm, const nu_char_t *text);
+void     sys_inspect(vm_t              *vm,
+                     const nu_char_t   *name,
+                     sys_inspect_type_t type,
+                     void              *p);
 nu_u32_t sys_console_info(vm_t *vm, sys_console_info_t info);
 nu_f32_t sys_global_time(vm_t *vm);
 nu_f32_t sys_delta_time(vm_t *vm);
