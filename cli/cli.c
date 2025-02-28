@@ -1,7 +1,8 @@
 #include "cli.h"
 
 #include <argparse/argparse.h>
-#include <native/core/vm.h>
+#include <core/vm.h>
+#include <runtime.h>
 #ifdef NUX_BUILD_SDK
 #include <sdk.h>
 #endif
@@ -64,9 +65,7 @@ main (int argc, const nu_char_t *argv[])
     };
 
     log_level = NU_LOG_INFO;
-#ifdef NUX_BUILD_SDK
-    sdk_set_log_callback(cli_log);
-#endif
+    logger_set_callback(cli_log);
 
     argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);
     argparse_describe(&argparse,

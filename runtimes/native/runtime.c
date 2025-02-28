@@ -2,10 +2,9 @@
 #include "core/vm.h"
 
 nu_status_t
-runtime_run (const runtime_info_t *info)
+runtime_run (nu_sv_t path, nu_bool_t debug)
 {
     nu_status_t status;
-    logger_init(info->log_callback);
     status = window_init();
     NU_CHECK(status, goto cleanup0);
     status = renderer_init();
@@ -14,7 +13,7 @@ runtime_run (const runtime_info_t *info)
     status = gui_init(window_get_win());
     NU_CHECK(status, goto cleanup2);
 #endif
-    status = wamr_init(info->debug);
+    status = wamr_init(debug);
     NU_CHECK(status, goto cleanup3);
 
 #ifdef NUX_BUILD_GUI
@@ -43,14 +42,14 @@ runtime_run (const runtime_info_t *info)
     vm_t        vm;
     vm_config_t config;
     vm_config_default(&config);
-    nu_byte_t *save_state = runtime_malloc(vm_config_state_memsize(&config));
+    nu_byte_t *save_state = native_malloc(vm_config_state_memsize(&config));
     NU_ASSERT(save_state);
 
     status = vm_init(&vm, &config);
     NU_CHECK(status, goto cleanup4);
 
     nu_char_t name[NU_PATH_MAX];
-    nu_sv_to_cstr(info->path, name, NU_PATH_MAX);
+    nu_sv_to_cstr(path, name, NU_PATH_MAX);
     status = vm_load(&vm, name);
     NU_CHECK(status, goto cleanup5);
 
@@ -151,12 +150,12 @@ cleanup0:
 }
 
 void *
-runtime_malloc (nu_size_t n)
+native_malloc (nu_size_t n)
 {
     return malloc(n);
 }
 void
-runtime_free (void *p)
+native_free (void *p)
 {
     free(p);
 }

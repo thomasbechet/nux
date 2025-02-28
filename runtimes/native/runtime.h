@@ -14,19 +14,12 @@ typedef enum
     COMMAND_LOAD_STATE,
 } window_command_t;
 
-typedef struct
-{
-    nu_sv_t                path;
-    runtime_log_callback_t log_callback;
-    nu_bool_t              debug;
-} runtime_info_t;
+NU_API nu_status_t runtime_run(nu_sv_t path, nu_bool_t debug);
 
-NU_API nu_status_t runtime_run(const runtime_info_t *info);
+void *native_malloc(nu_size_t n);
+void  native_free(void *p);
 
-void *runtime_malloc(nu_size_t n);
-void  runtime_free(void *p);
-
-void logger_init(runtime_log_callback_t callback);
+void logger_set_callback(runtime_log_callback_t callback);
 void logger_log(nu_log_level_t level, const nu_char_t *fmt, ...);
 void logger_vlog(nu_log_level_t level, const nu_char_t *fmt, va_list args);
 

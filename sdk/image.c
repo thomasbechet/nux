@@ -1,5 +1,7 @@
 #include "sdk.h"
 
+#include <runtime.h>
+
 #define STBIR_DEBUG
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -32,7 +34,7 @@ image_resize (nu_v2u_t         source_size,
                             0,
                             4))
     {
-        sdk_log(NU_LOG_ERROR, "Failed to resize image");
+        logger_log(NU_LOG_ERROR, "Failed to resize image");
         return NU_FAILURE;
     }
     return NU_SUCCESS;
@@ -77,11 +79,11 @@ sdk_texture_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     nu_byte_t  *img = stbi_load(asset->source, &w, &h, &n, STBI_rgb_alpha);
     if (!img)
     {
-        sdk_log(NU_LOG_ERROR, "Failed to load image file %s", asset->source);
+        logger_log(NU_LOG_ERROR, "Failed to load image file %s", asset->source);
         return NU_FAILURE;
     }
     nu_size_t  data_size = gfx_texture_memsize(target_size);
-    nu_byte_t *data      = sdk_malloc(data_size);
+    nu_byte_t *data      = native_malloc(data_size);
     NU_CHECK(data, goto cleanup0);
     NU_CHECK(image_resize(nu_v2u(w, h), img, target_size, data), goto cleanup1);
 
@@ -91,7 +93,7 @@ sdk_texture_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         goto cleanup1);
 
 cleanup1:
-    sdk_free(data);
+    native_free(data);
 cleanup0:
     stbi_image_free(img);
     return status;

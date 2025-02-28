@@ -1,7 +1,7 @@
 #include "cli.h"
 
 #include <argparse/argparse.h>
-#include <native/runtime.h>
+#include <runtime.h>
 #ifdef NUX_BUILD_SDK
 #include <sdk.h>
 #endif
@@ -28,10 +28,9 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         OPT_END(),
     };
     argparse_init(&argparse, options, usages, 0);
-    argc               = argparse_parse(&argparse, argc, argv);
-    nu_status_t status = NU_SUCCESS;
-    nu_sv_t     path   = argc >= 1 ? nu_sv_cstr(argv[0]) : nu_sv_null();
-    nu_char_t   target_path[NU_PATH_MAX];
+    argc           = argparse_parse(&argparse, argc, argv);
+    nu_sv_t   path = argc >= 1 ? nu_sv_cstr(argv[0]) : nu_sv_null();
+    nu_char_t target_path[NU_PATH_MAX];
 #ifdef NUX_BUILD_SDK
     if (nu_sv_is_null(path))
     {
@@ -49,7 +48,6 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         sdk_project_free(&project);
     }
 #endif
-    runtime_info_t info = { path, cli_log, debug };
-    status              = runtime_run(&info);
+    nu_status_t status = runtime_run(path, debug);
     return status ? 0 : -1;
 }

@@ -1,7 +1,7 @@
-#include "nulib/nulib/string.h"
 #include "sdk.h"
 
-#include <native/core/vm.h>
+#include <runtime.h>
+#include <core/vm.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 #include <stb/stb_image.h>
@@ -22,11 +22,11 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
                                            STBI_rgb_alpha);
     if (!img)
     {
-        sdk_log(NU_LOG_ERROR, "Failed to load image '%s'", texture->name);
+        logger_log(NU_LOG_ERROR, "Failed to load image '%s'", texture->name);
         return NU_FAILURE;
     }
 
-    sdk_log(
+    logger_log(
         NU_LOG_DEBUG, "Loading texture '%s' w %d h %d", texture->name, w, h);
 
     // Find nearest texture size
@@ -34,15 +34,16 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
     if (target_size > SYS_MAX_TEXTURE_SIZE)
     {
         target_size = SYS_MAX_TEXTURE_SIZE;
-        sdk_log(NU_LOG_WARNING, "Texture resized to %d", SYS_MAX_TEXTURE_SIZE);
+        logger_log(
+            NU_LOG_WARNING, "Texture resized to %d", SYS_MAX_TEXTURE_SIZE);
     }
 
     // Resize image
-    nu_byte_t *resized = sdk_malloc(gfx_texture_memsize(target_size));
+    nu_byte_t *resized = native_malloc(gfx_texture_memsize(target_size));
     NU_ASSERT(resized);
     if (!image_resize(nu_v2u(w, h), img, target_size, resized))
     {
-        sdk_log(
+        logger_log(
             NU_LOG_ERROR, "Failed to resized glb image '%s'", texture->name);
         goto cleanup0;
     }
@@ -203,16 +204,17 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     result = cgltf_parse_file(&options, asset->source, &data);
     if (result != cgltf_result_success)
     {
-        sdk_log(NU_LOG_ERROR,
-                "Failed to load gltf file %s (code %d)",
-                asset->source,
-                result);
+        logger_log(NU_LOG_ERROR,
+                   "Failed to load gltf file %s (code %d)",
+                   asset->source,
+                   result);
         return NU_FAILURE;
     }
     result = cgltf_load_buffers(&options, data, asset->source);
     if (result != cgltf_result_success)
     {
-        sdk_log(NU_LOG_ERROR, "Failed to load gltf buffers %s", asset->source);
+        logger_log(
+            NU_LOG_ERROR, "Failed to load gltf buffers %s", asset->source);
         return NU_FAILURE;
     }
 
@@ -225,11 +227,11 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
             nu_u32_t id = sdk_next_id(proj);
             NU_CHECK(compile_primitive_mesh(mesh->primitives + p, id, proj),
                      goto cleanup0);
-            sdk_log(NU_LOG_DEBUG,
-                    "Loading mesh %u '%s' primitive %d",
-                    id,
-                    mesh->name,
-                    p);
+            logger_log(NU_LOG_DEBUG,
+                       "Loading mesh %u '%s' primitive %d",
+                       id,
+                       mesh->name,
+                       p);
             resources[resources_count].id        = id;
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             ++resources_count;
@@ -334,9 +336,9 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     }
                     if (!mesh)
                     {
-                        sdk_log(NU_LOG_ERROR,
-                                "Mesh primitive not found for model %s",
-                                node->name);
+                        logger_log(NU_LOG_ERROR,
+                                   "Mesh primitive not found for model %s",
+                                   node->name);
                         status = NU_FAILURE;
                         goto cleanup0;
                     }
@@ -361,16 +363,17 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     }
                     if (!texture)
                     {
-                        sdk_log(NU_LOG_WARNING,
-                                "Texture not found for model %s, using default",
-                                node->name);
+                        logger_log(
+                            NU_LOG_WARNING,
+                            "Texture not found for model %s, using default",
+                            node->name);
                     }
 
-                    sdk_log(NU_LOG_DEBUG,
-                            "Loading node %s mesh %d texture %d",
-                            node->name,
-                            mesh,
-                            texture);
+                    logger_log(NU_LOG_DEBUG,
+                               "Loading node %s mesh %d texture %d",
+                               node->name,
+                               mesh,
+                               texture);
 
                     // Write model node
                     NU_CHECK(cart_write_u32(proj, mesh), goto cleanup0);
