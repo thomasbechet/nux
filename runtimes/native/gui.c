@@ -5,7 +5,6 @@
 #include <glad/gl.h>
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-// #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #include <nuklear/nuklear.h>
@@ -85,9 +84,9 @@ upload_atlas (const void *image, int width, int height)
 }
 
 nu_status_t
-gui_init (RGFW_window *win)
+gui_init (void)
 {
-    gui.win = win;
+    gui.win = window_get_win();
     nk_init_default(&gui.ctx, 0);
     // gui.ctx.clip.copy     = nk_glfw3_clipboard_copy;
     // gui.ctx.clip.paste    = nk_glfw3_clipboard_paste;
@@ -145,8 +144,8 @@ gui_new_frame (void)
     nu_v2u_t size      = window_get_size();
     gui.width          = size.x;
     gui.height         = size.y;
-    gui.display_width  = size.x;
-    gui.display_height = size.y;
+    gui.display_width  = size.x * window_get_scale_factor();
+    gui.display_height = size.y * window_get_scale_factor();
     gui.fb_scale.x     = (float)gui.display_width / (float)gui.width;
     gui.fb_scale.y     = (float)gui.display_height / (float)gui.height;
 

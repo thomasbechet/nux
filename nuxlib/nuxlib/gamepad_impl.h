@@ -65,7 +65,7 @@ nux__draw_stick (nu_u32_t player, nu_bool_t left, nu_u32_t x, nu_u32_t y)
     nu_u32_t ty     = 8;
     set_cursor(x, y);
     nux__blitt(2, ty);
-    set_cursor(x + (nu_u32_t)(offset * ax.x), y - (nu_u32_t)(offset * ax.y));
+    set_cursor(x + (nu_i32_t)(offset * ax.x), y - (nu_i32_t)(offset * ax.y));
     nux__blitt(tx, ty);
 }
 static void

@@ -38,8 +38,9 @@ void         window_free(void);
 RGFW_window *window_get_win(void);
 void         window_poll_events(void);
 void         window_swap_buffers(void);
-nu_b2i_t     window_get_render_viewport(void);
+nu_b2i_t     window_get_scene_viewport(void);
 nu_v2u_t     window_get_size(void);
+nu_f32_t     window_get_scale_factor(void);
 nu_bool_t    window_poll_command(window_command_t *cmd);
 
 #ifdef NUX_BUILD_GUI
@@ -53,9 +54,7 @@ nu_bool_t    window_poll_command(window_command_t *cmd);
 #define NK_INCLUDE_DEFAULT_FONT
 #include <nuklear/nuklear.h>
 
-struct RGFW_window;
-
-nu_status_t gui_init(struct RGFW_window *win);
+nu_status_t gui_init(void);
 void        gui_free(void);
 
 void               gui_font_stash_begin(struct nk_font_atlas **atlas);

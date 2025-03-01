@@ -784,7 +784,7 @@ os_gfx_end_frame (vm_t *vm)
     glDisable(GL_DEPTH_TEST);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_FRAMEBUFFER_SRGB);
-    nu_b2i_t viewport = window_get_render_viewport();
+    nu_b2i_t viewport = window_get_scene_viewport();
     nu_v2u_t size     = nu_b2i_size(viewport);
     glViewport(viewport.min.x, viewport.min.y, size.x, size.y);
     glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
