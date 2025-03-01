@@ -17,13 +17,15 @@
 
 typedef enum
 {
-    RESOURCE_FREE = 0,
-    RESOURCE_NULL,
-    RESOURCE_POOL,
-    RESOURCE_TEXTURE,
-    RESOURCE_MESH,
-    RESOURCE_MODEL,
-    RESOURCE_SPRITESHEET,
+    RESOURCE_FREE        = 0,
+    RESOURCE_NULL        = 1,
+    RESOURCE_POOL        = 2,
+    RESOURCE_WASM        = 3,
+    RESOURCE_RAW         = 4,
+    RESOURCE_TEXTURE     = 5,
+    RESOURCE_MESH        = 6,
+    RESOURCE_MODEL       = 7,
+    RESOURCE_SPRITESHEET = 8,
 } resource_type_t;
 
 typedef struct
@@ -70,21 +72,12 @@ typedef struct
     nu_u32_t tps;
 } vm_config_t;
 
-typedef enum
-{
-    CART_CHUNK_RAW     = 0,
-    CART_CHUNK_WASM    = 1,
-    CART_CHUNK_TEXTURE = 2,
-    CART_CHUNK_MESH    = 3,
-    CART_CHUNK_MODEL   = 4,
-} cart_chunk_type_t;
-
 typedef struct
 {
-    cart_chunk_type_t type;
-    nu_u32_t          id;
-    nu_u32_t          offset;
-    nu_u32_t          length;
+    resource_type_t type;
+    nu_u32_t        id;
+    nu_u32_t        offset;
+    nu_u32_t        length;
 } cart_chunk_entry_t;
 
 typedef struct
@@ -169,6 +162,8 @@ NU_API nu_status_t vm_load_state(vm_t *vm, const void *state);
 
 NU_API void      vm_config_default(vm_config_t *config);
 NU_API nu_size_t vm_config_state_memsize(const vm_config_t *config);
+
+NU_API const nu_enum_name_map_t *resource_enum_map(void);
 
 void     vm_log(vm_t *vm, nu_log_level_t level, const nu_char_t *format, ...);
 void     vm_vlog(vm_t            *vm,

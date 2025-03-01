@@ -45,7 +45,7 @@ cart_write_texture (sdk_project_t   *proj,
                     nu_u32_t         size,
                     const nu_byte_t *data)
 {
-    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, CART_CHUNK_TEXTURE);
+    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, RESOURCE_TEXTURE);
     nu_status_t         status;
     status = cart_write_u32(proj, size);
     NU_CHECK(status, return NU_FAILURE);

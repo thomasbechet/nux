@@ -14,13 +14,6 @@
 #define PROJECT_ASSET_SOURCE "source"
 #define PROJECT_ASSET_IGNORE "ignore"
 
-static NU_ENUM_MAP(cart_chunk_type_map,
-                   NU_ENUM_NAME(CART_CHUNK_RAW, "raw"),
-                   NU_ENUM_NAME(CART_CHUNK_MESH, "mesh"),
-                   NU_ENUM_NAME(CART_CHUNK_WASM, "wasm"),
-                   NU_ENUM_NAME(CART_CHUNK_TEXTURE, "texture"),
-                   NU_ENUM_NAME(CART_CHUNK_MODEL, "model"));
-
 static NU_ENUM_MAP(asset_type_map,
                    NU_ENUM_NAME(SDK_ASSET_WASM, "wasm"),
                    NU_ENUM_NAME(SDK_ASSET_TEXTURE, "texture"),
@@ -499,7 +492,7 @@ sdk_project_free (sdk_project_t *project)
 }
 
 cart_chunk_entry_t *
-sdk_begin_entry (sdk_project_t *proj, nu_u32_t id, cart_chunk_type_t type)
+sdk_begin_entry (sdk_project_t *proj, nu_u32_t id, resource_type_t type)
 {
     if (proj->current_entry)
     {
@@ -630,7 +623,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
             snprintf(buf,
                      sizeof(buf),
                      "Total %s size",
-                     nu_enum_to_cstr(i, cart_chunk_type_map));
+                     nu_enum_to_cstr(i, resource_enum_map()));
             printf("     %-18s %-8d bytes (%.2lf%%)\n",
                    buf,
                    chunk_sizes[i],
@@ -663,7 +656,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                          * 100);
             printf("     %-5u %-8s 0x%-8x %-8d %-8s\n",
                    entry->data.id,
-                   nu_enum_to_cstr(entry->data.type, cart_chunk_type_map),
+                   nu_enum_to_cstr(entry->data.type, resource_enum_map()),
                    entry->data.offset,
                    entry->data.length,
                    buf);

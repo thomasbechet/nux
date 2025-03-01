@@ -62,9 +62,9 @@ NU_API nu_status_t sdk_project_load(sdk_project_t *project, nu_sv_t path);
 NU_API nu_status_t sdk_project_save(const sdk_project_t *project, nu_sv_t path);
 NU_API void        sdk_project_free(sdk_project_t *project);
 
-cart_chunk_entry_t *sdk_begin_entry(sdk_project_t    *proj,
-                                    nu_u32_t          id,
-                                    cart_chunk_type_t type);
+cart_chunk_entry_t *sdk_begin_entry(sdk_project_t  *proj,
+                                    nu_u32_t        id,
+                                    resource_type_t type);
 nu_u32_t            sdk_next_id(sdk_project_t *proj);
 
 nu_status_t sdk_wasm_load(sdk_project_asset_t *asset, JSON_Object *jasset);

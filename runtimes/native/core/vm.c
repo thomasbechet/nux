@@ -2,6 +2,13 @@
 
 #include <string.h> // TODO: required for memcpy, fix nulib
 
+static NU_ENUM_MAP(resource_type_map,
+                   NU_ENUM_NAME(RESOURCE_RAW, "raw"),
+                   NU_ENUM_NAME(RESOURCE_MESH, "mesh"),
+                   NU_ENUM_NAME(RESOURCE_WASM, "wasm"),
+                   NU_ENUM_NAME(RESOURCE_TEXTURE, "texture"),
+                   NU_ENUM_NAME(RESOURCE_MODEL, "model"));
+
 nu_u32_t
 vm_malloc (vm_t *vm, nu_u32_t n)
 {
@@ -150,6 +157,12 @@ nu_size_t
 vm_config_state_memsize (const vm_config_t *config)
 {
     return sizeof(vm_t) + config->memsize;
+}
+
+const nu_enum_name_map_t *
+resource_enum_map (void)
+{
+    return resource_type_map;
 }
 
 void

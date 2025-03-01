@@ -139,7 +139,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t       indice_count = accessor->count;
 
     // Write header
-    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, CART_CHUNK_MESH);
+    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, RESOURCE_MESH);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, SYS_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
@@ -285,7 +285,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
         // Write model
         cart_chunk_entry_t *entry
-            = sdk_begin_entry(proj, asset->id, CART_CHUNK_MODEL);
+            = sdk_begin_entry(proj, asset->id, RESOURCE_MODEL);
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
         // Create model

@@ -1,12 +1,5 @@
 #include "platform.h"
 
-static NU_ENUM_MAP(cart_chunk_type_map,
-                   NU_ENUM_NAME(CART_CHUNK_RAW, "raw"),
-                   NU_ENUM_NAME(CART_CHUNK_MESH, "mesh"),
-                   NU_ENUM_NAME(CART_CHUNK_WASM, "wasm"),
-                   NU_ENUM_NAME(CART_CHUNK_TEXTURE, "texture"),
-                   NU_ENUM_NAME(CART_CHUNK_MODEL, "model"));
-
 static nu_status_t
 load_wasm (vm_t *vm, const cart_chunk_entry_t *entry)
 {
@@ -136,20 +129,25 @@ bios_load_cart (vm_t *vm, const nu_char_t *name)
         // Read chunk
         switch (entry.type)
         {
-            case CART_CHUNK_RAW:
+            case RESOURCE_RAW:
                 break;
-            case CART_CHUNK_WASM:
+            case RESOURCE_WASM:
                 status = load_wasm(vm, &entry);
                 break;
-            case CART_CHUNK_TEXTURE:
+            case RESOURCE_TEXTURE:
                 status = load_texture(vm, &entry);
                 break;
-            case CART_CHUNK_MESH:
+            case RESOURCE_MESH:
                 status = load_mesh(vm, &entry);
                 break;
-            case CART_CHUNK_MODEL:
+            case RESOURCE_MODEL:
                 status = load_model(vm, &entry);
                 break;
+            default: {
+                vm_log(
+                    vm, NU_LOG_ERROR, "Invalid resource type %d", entry.type);
+                return NU_FAILURE;
+            }
         }
         if (!status)
         {
