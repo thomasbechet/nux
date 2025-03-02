@@ -52,7 +52,9 @@ typedef struct
 NU_API runtime_app_t runtime_app_default(nu_sv_t path);
 NU_API nu_status_t   runtime_run(runtime_app_t app, nu_bool_t debug);
 NU_API nu_status_t   runtime_init_instance(nu_u32_t index, nu_sv_t path);
-NU_API void runtime_set_instance_viewport(nu_u32_t index, nu_b2i_t viewport);
+NU_API void          runtime_set_instance_viewport(nu_u32_t        index,
+                                                   nu_b2i_t        viewport,
+                                                   viewport_mode_t mode);
 
 void *native_malloc(nu_size_t n);
 void  native_free(void *p);

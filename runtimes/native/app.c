@@ -2,12 +2,14 @@
 
 static struct
 {
-    nu_char_t path[NU_PATH_MAX];
+    nu_char_t       path[NU_PATH_MAX];
+    viewport_mode_t viewport_mode;
 } app;
 
 static void
 init (void)
 {
+    app.viewport_mode = VIEWPORT_FIXED_BEST_FIT;
     runtime_init_instance(0, nu_sv_cstr(app.path));
 }
 static void
@@ -23,8 +25,19 @@ update (struct nk_context *ctx)
             struct nk_rect bounds = nk_rect(0, 0, size.x * ratio, size.y);
             if (nk_begin(ctx, "Inspector", bounds, NK_WINDOW_TITLE))
             {
-                nk_layout_row_static(ctx, 30, 80, 1);
-                nk_button_label(ctx, "Button");
+                nk_layout_row_dynamic(ctx, 30, 1);
+                {
+                    const nu_char_t *modes[] = { "FIXED",
+                                                 "FIXED BEST FIT",
+                                                 "STRETCH KEEP ASPECT",
+                                                 "STRETCH" };
+                    app.viewport_mode        = nk_combo(ctx,
+                                                 modes,
+                                                 NK_LEN(modes),
+                                                 app.viewport_mode,
+                                                 25,
+                                                 nk_vec2(200, 200));
+                }
                 nk_end(ctx);
             }
         }
@@ -33,7 +46,7 @@ update (struct nk_context *ctx)
         {
             nu_b2i_t viewport
                 = nu_b2i_xywh(size.x * ratio, 0, size.x * (1 - ratio), size.y);
-            runtime_set_instance_viewport(0, viewport);
+            runtime_set_instance_viewport(0, viewport, app.viewport_mode);
         }
     }
 }

@@ -168,11 +168,14 @@ runtime_init_instance (nu_u32_t index, nu_sv_t path)
     vm_config_default(&config);
     return instance_init(&runtime.instances[index], &config, path);
 }
-void
-runtime_set_instance_viewport (nu_u32_t index, nu_b2i_t viewport)
+NU_API void
+runtime_set_instance_viewport (nu_u32_t        index,
+                               nu_b2i_t        viewport,
+                               viewport_mode_t mode)
 {
     NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
-    runtime.instances[index].viewport = viewport;
+    runtime.instances[index].viewport      = viewport;
+    runtime.instances[index].viewport_mode = mode;
 }
 
 void *
