@@ -9,90 +9,29 @@
 
 #define MAX_COMMAND 64
 
-typedef enum
-{
-    VIEWPORT_FIXED,
-    VIEWPORT_FIXED_BEST_FIT,
-    VIEWPORT_STRETCH_KEEP_ASPECT,
-    VIEWPORT_STRETCH,
-} viewport_mode_t;
-
 typedef struct
 {
-    viewport_mode_t mode;
-    nu_f32_t        scale_factor;
-    nu_b2i_t        window_viewport;
-    nu_b2i_t        scene_viewport;
 } layout_t;
 
 static struct
 {
-    nu_bool_t        fullscreen;
-    nu_bool_t        switch_fullscreen;
-    layout_t         layout;
-    RGFW_rect        previous_rect;
-    RGFW_window     *win;
-    nu_u32_t         buttons[SYS_MAX_PLAYER_COUNT];
-    nu_f32_t         axis[SYS_MAX_PLAYER_COUNT][SYS_AXIS_ENUM_MAX];
-    window_command_t cmds[MAX_COMMAND];
-    nu_size_t        cmds_count;
+    nu_bool_t         fullscreen;
+    nu_bool_t         switch_fullscreen;
+    layout_t          layout;
+    RGFW_rect         previous_rect;
+    RGFW_window      *win;
+    nu_u32_t          buttons[SYS_MAX_PLAYER_COUNT];
+    nu_f32_t          axis[SYS_MAX_PLAYER_COUNT][SYS_AXIS_ENUM_MAX];
+    runtime_command_t cmds[MAX_COMMAND];
+    nu_size_t         cmds_count;
+    nu_f32_t          scale_factor;
+    nu_v2u_t          size;
 } window;
 
 static void
-update_viewport (layout_t *v)
-{
-    nu_v2_t global_pos
-        = nu_v2(v->window_viewport.min.x, v->window_viewport.min.y);
-    nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(v->window_viewport));
-
-    nu_v2_t  screen       = nu_v2(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
-    nu_f32_t aspect_ratio = screen.x / screen.y;
-
-    nu_v2_t size = NU_V2_ZEROS;
-    switch (v->mode)
-    {
-        case VIEWPORT_FIXED: {
-            size
-                = nu_v2(screen.x * v->scale_factor, screen.y * v->scale_factor);
-        };
-        break;
-        case VIEWPORT_FIXED_BEST_FIT: {
-            nu_f32_t w_factor = global_size.x / screen.x;
-            nu_f32_t h_factor = global_size.y / screen.y;
-            nu_f32_t min = NU_MAX(1.0f, nu_floor(NU_MIN(w_factor, h_factor)));
-            size.x       = screen.x * min;
-            size.y       = screen.y * min;
-        }
-        break;
-        case VIEWPORT_STRETCH_KEEP_ASPECT: {
-            if (global_size.x / global_size.y >= aspect_ratio)
-            {
-                size.x = nu_floor(global_size.y * aspect_ratio);
-                size.y = nu_floor(global_size.y);
-            }
-            else
-            {
-                size.x = nu_floor(global_size.x);
-                size.y = nu_floor(global_size.x / aspect_ratio);
-            }
-        }
-        break;
-        case VIEWPORT_STRETCH:
-            size = global_size;
-            break;
-    }
-
-    nu_v2_t vpos      = nu_v2_sub(global_size, size);
-    vpos              = nu_v2_divs(vpos, 2);
-    vpos              = nu_v2_add(vpos, global_pos);
-    v->scene_viewport = nu_b2i_xywh(vpos.x, vpos.y, size.x, size.y);
-}
-static void
 resize_callback (RGFW_window *w, RGFW_rect r)
 {
-    window.layout.window_viewport
-        = nu_b2i_resize(window.layout.window_viewport, nu_v2u(r.w, r.h));
-    update_viewport(&window.layout);
+    window.size = nu_v2u(r.w, r.h);
 }
 
 nu_status_t
@@ -120,11 +59,8 @@ window_init (void)
     RGFW_window_swapInterval(window.win, 1);
 
     // Initialize viewport
-    window.layout.mode            = VIEWPORT_FIXED_BEST_FIT;
-    window.layout.window_viewport = nu_b2i_xywh(0, 0, width, height);
-    window.layout.scene_viewport  = nu_b2i_xywh(0, 0, width, height);
-    window.layout.scale_factor    = 1;
-    update_viewport(&window.layout);
+    window.size         = nu_v2u(width, height);
+    window.scale_factor = 1;
 
     // Bind callbacks
     RGFW_window_makeCurrent_OpenGL(window.win);
@@ -430,23 +366,18 @@ window_swap_buffers (void)
 {
     RGFW_window_swapBuffers(window.win);
 }
-nu_b2i_t
-window_get_scene_viewport (void)
-{
-    return window.layout.scene_viewport;
-}
 nu_v2u_t
 window_get_size (void)
 {
-    return nu_b2i_size(window.layout.window_viewport);
+    return window.size;
 }
 nu_f32_t
 window_get_scale_factor (void)
 {
-    return window.layout.scale_factor;
+    return window.scale_factor;
 }
 nu_bool_t
-window_poll_command (window_command_t *cmd)
+window_poll_command (runtime_command_t *cmd)
 {
     if (!window.cmds_count)
     {

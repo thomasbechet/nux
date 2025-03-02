@@ -1,20 +1,58 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#include <nulib/nulib.h>
+#include "core/syscall.h"
+
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_STANDARD_VARARGS
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+#include <nuklear/nuklear.h>
 
 typedef void (*runtime_log_callback_t)(nu_log_level_t   level,
                                        const nu_char_t *fmt,
                                        va_list          args);
+
+typedef struct
+{
+    nu_char_t          name[32];
+    nu_u32_t           addr;
+    sys_inspect_type_t type;
+    union
+    {
+        nu_f32_t f32;
+        nu_u32_t u32;
+    } value;
+} inspect_value_t;
 
 typedef enum
 {
     COMMAND_EXIT,
     COMMAND_SAVE_STATE,
     COMMAND_LOAD_STATE,
-} window_command_t;
+} runtime_command_t;
 
-NU_API nu_status_t runtime_run(nu_sv_t path, nu_bool_t debug);
+typedef enum
+{
+    VIEWPORT_FIXED,
+    VIEWPORT_FIXED_BEST_FIT,
+    VIEWPORT_STRETCH_KEEP_ASPECT,
+    VIEWPORT_STRETCH,
+} viewport_mode_t;
+
+typedef struct
+{
+    void (*init)(void);
+    void (*update)(struct nk_context *ctx);
+} runtime_app_t;
+
+NU_API runtime_app_t runtime_app_default(nu_sv_t path);
+NU_API nu_status_t   runtime_run(runtime_app_t app, nu_bool_t debug);
+NU_API nu_status_t   runtime_init_instance(nu_u32_t index, nu_sv_t path);
+NU_API void runtime_set_instance_viewport(nu_u32_t index, nu_b2i_t viewport);
 
 void *native_malloc(nu_size_t n);
 void  native_free(void *p);
@@ -28,7 +66,9 @@ void        wamr_free(void);
 
 nu_status_t renderer_init(void);
 void        renderer_free(void);
-void        renderer_set_viewport(nu_b2i_t viewport);
+void        renderer_render_instance(nu_b2i_t        viewport,
+                                     viewport_mode_t mode,
+                                     nu_v2u_t        window_size);
 
 struct RGFW_window;
 typedef struct RGFW_window RGFW_window;
@@ -38,34 +78,16 @@ void         window_free(void);
 RGFW_window *window_get_win(void);
 void         window_poll_events(void);
 void         window_swap_buffers(void);
-nu_b2i_t     window_get_scene_viewport(void);
 nu_v2u_t     window_get_size(void);
 nu_f32_t     window_get_scale_factor(void);
-nu_bool_t    window_poll_command(window_command_t *cmd);
+nu_bool_t    window_poll_command(runtime_command_t *cmd);
 
-#ifdef NUX_BUILD_GUI
+typedef void (*gui_callback_t)(struct nk_context *ctx);
 
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-#include <nuklear/nuklear.h>
-
-nu_status_t gui_init(void);
-void        gui_free(void);
-
-void               gui_font_stash_begin(struct nk_font_atlas **atlas);
-void               gui_font_stash_end(void);
+nu_status_t        gui_init(void);
+void               gui_free(void);
 struct nk_context *gui_new_frame(void);
-void               gui_render(enum nk_anti_aliasing aa,
-                              int                   max_vertex_buffer,
-                              int                   max_element_buffer);
-
-void gui_device_destroy(void);
-void gui_device_create(void);
+void               gui_render(void);
 
 void gui_char_callback(struct RGFW_window *win, unsigned int codepoint);
 void gui_scroll_callback(struct RGFW_window *win, double xoff, double yoff);
@@ -73,7 +95,5 @@ void gui_mouse_button_callback(struct RGFW_window *win,
                                int                 button,
                                double              scroll,
                                int                 pressed);
-
-#endif
 
 #endif

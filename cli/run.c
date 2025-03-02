@@ -48,6 +48,6 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         sdk_project_free(&project);
     }
 #endif
-    nu_status_t status = runtime_run(path, debug);
+    nu_status_t status = runtime_run(runtime_app_default(path), debug);
     return status ? 0 : -1;
 }

@@ -1,6 +1,7 @@
 #ifndef SDK_H
 #define SDK_H
 
+#include <runtime.h>
 #include <core/vm.h>
 #include <parson/parson.h>
 
@@ -51,6 +52,8 @@ typedef struct
     cart_chunk_entry_t *current_entry;
     nu_u32_t            next_id;
 } sdk_project_t;
+
+NU_API runtime_app_t sdk_editor_app(nu_sv_t path);
 
 NU_API nu_status_t sdk_generate_template(nu_sv_t path, nu_sv_t lang);
 NU_API nu_status_t sdk_compile(sdk_project_t *project);
