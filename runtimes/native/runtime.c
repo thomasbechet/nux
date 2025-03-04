@@ -1,17 +1,6 @@
 #include "runtime.h"
 #include "core/vm.h"
 
-typedef struct
-{
-    nu_bool_t       active;
-    vm_config_t     config;
-    vm_t            vm;
-    nu_byte_t      *save_state;
-    nu_bool_t       pause;
-    nu_b2i_t        viewport;
-    viewport_mode_t viewport_mode;
-} instance_t;
-
 static struct
 {
     instance_t instances[4];
@@ -39,19 +28,21 @@ instance_init (instance_t *instance, const vm_config_t *config, nu_sv_t path)
 {
     instance_free(instance);
 
-    instance->active        = NU_TRUE;
-    instance->config        = *config;
-    instance->vm.mem        = NU_NULL;
-    instance->save_state    = NU_NULL;
-    instance->pause         = NU_FALSE;
-    instance->viewport      = nu_b2i_xywh(0, 0, 10, 10);
-    instance->viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
+    instance->active              = NU_TRUE;
+    instance->config              = *config;
+    instance->vm.mem              = NU_NULL;
+    instance->save_state          = NU_NULL;
+    instance->pause               = NU_FALSE;
+    instance->viewport            = nu_b2i_xywh(0, 0, 10, 10);
+    instance->viewport_mode       = VIEWPORT_STRETCH_KEEP_ASPECT;
+    instance->inspect_value_count = 0;
 
     nu_byte_t *save_state = native_malloc(vm_config_state_memsize(config));
     NU_ASSERT(save_state);
 
     nu_status_t status = vm_init(&instance->vm, config);
     NU_CHECK(status, goto cleanup0);
+    instance->vm.userdata = instance;
 
     nu_char_t name[NU_PATH_MAX];
     nu_sv_to_cstr(path, name, NU_PATH_MAX);
@@ -97,6 +88,7 @@ runtime_run (runtime_app_t app, nu_bool_t debug)
             instance_t *instance = runtime.instances + i;
             if (instance->active && !instance->pause)
             {
+                // Tick
                 vm_tick(&instance->vm);
             }
         }
@@ -168,7 +160,7 @@ runtime_init_instance (nu_u32_t index, nu_sv_t path)
     vm_config_default(&config);
     return instance_init(&runtime.instances[index], &config, path);
 }
-NU_API void
+void
 runtime_set_instance_viewport (nu_u32_t        index,
                                nu_b2i_t        viewport,
                                viewport_mode_t mode)
@@ -176,6 +168,13 @@ runtime_set_instance_viewport (nu_u32_t        index,
     NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
     runtime.instances[index].viewport      = viewport;
     runtime.instances[index].viewport_mode = mode;
+}
+inspect_value_t *
+runtime_inspect_values (nu_u32_t index, nu_size_t *count)
+{
+    NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
+    *count = runtime.instances[index].inspect_value_count;
+    return runtime.instances[index].inspect_values;
 }
 
 void *

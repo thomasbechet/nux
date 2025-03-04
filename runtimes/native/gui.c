@@ -60,8 +60,6 @@ static struct
     int                  is_double_click_down;
     struct nk_vec2       double_click_pos;
     float                delta_time_seconds_last;
-
-    gui_callback_t callback;
 } gui;
 
 static void
@@ -202,10 +200,6 @@ gui_device_create (void)
     glBindVertexArray(0);
 }
 
-void
-gui_set_hook (gui_callback_t callback)
-{
-}
 nu_status_t
 gui_init (void)
 {
@@ -236,10 +230,6 @@ gui_free (void)
     memset(&gui, 0, sizeof(gui));
 }
 
-// void
-// gui_update (void)
-// {
-// }
 struct nk_context *
 gui_new_frame (void)
 {

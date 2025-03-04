@@ -156,6 +156,22 @@ wamr_free (void)
 {
     wasm_runtime_destroy();
 }
+void
+wamr_override_value (vm_t *vm, const inspect_value_t *value)
+{
+    void *p = vm->mem + value->addr;
+    switch (value->type)
+    {
+        case SYS_INSPECT_I32:
+            *((nu_i32_t *)p) = value->value.i32;
+            break;
+        case SYS_INSPECT_F32: {
+            printf("override %lf\n", value->value.f32);
+            *((nu_f32_t *)p) = value->value.f32;
+        }
+        break;
+    }
+}
 nu_status_t
 os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
 {

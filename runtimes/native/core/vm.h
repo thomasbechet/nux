@@ -131,9 +131,6 @@ typedef struct
     nu_f32_t axis[SYS_MAX_PLAYER_COUNT][SYS_AXIS_ENUM_MAX];
 } gamepad_t;
 
-nu_status_t gpad_init(vm_t *vm);
-void        gpad_update(vm_t *vm);
-
 struct vm
 {
     wasm_t    wasm;
@@ -151,6 +148,8 @@ struct vm
     nu_byte_t *mem;
     nu_u32_t   memsize;
     nu_u32_t   memcapa;
+
+    void *userdata;
 };
 
 NU_API nu_status_t vm_init(vm_t *vm, const vm_config_t *config);
@@ -200,5 +199,8 @@ nu_u32_t gfx_vertex_offset(sys_vertex_attribute_t attributes,
 nu_status_t wasm_init(vm_t *vm);
 void        wasm_free(vm_t *vm);
 nu_status_t wasm_call_event(vm_t *vm, wasm_event_t event);
+
+nu_status_t gamepad_init(vm_t *vm);
+void        gamepad_update(vm_t *vm);
 
 #endif

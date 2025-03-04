@@ -1,7 +1,7 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#include "core/syscall.h"
+#include "core/vm.h"
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -21,10 +21,11 @@ typedef struct
     nu_char_t          name[32];
     nu_u32_t           addr;
     sys_inspect_type_t type;
+    nu_bool_t          override;
     union
     {
         nu_f32_t f32;
-        nu_u32_t u32;
+        nu_i32_t i32;
     } value;
 } inspect_value_t;
 
@@ -45,16 +46,31 @@ typedef enum
 
 typedef struct
 {
+    nu_bool_t       active;
+    vm_config_t     config;
+    vm_t            vm;
+    nu_byte_t      *save_state;
+    nu_bool_t       pause;
+    nu_b2i_t        viewport;
+    viewport_mode_t viewport_mode;
+    inspect_value_t inspect_values[256];
+    nu_size_t       inspect_value_count;
+} instance_t;
+
+typedef struct
+{
     void (*init)(void);
     void (*update)(struct nk_context *ctx);
 } runtime_app_t;
 
-NU_API runtime_app_t runtime_app_default(nu_sv_t path);
-NU_API nu_status_t   runtime_run(runtime_app_t app, nu_bool_t debug);
-NU_API nu_status_t   runtime_init_instance(nu_u32_t index, nu_sv_t path);
-NU_API void          runtime_set_instance_viewport(nu_u32_t        index,
-                                                   nu_b2i_t        viewport,
-                                                   viewport_mode_t mode);
+NU_API runtime_app_t    runtime_app_default(nu_sv_t path);
+NU_API nu_status_t      runtime_run(runtime_app_t app, nu_bool_t debug);
+NU_API nu_status_t      runtime_init_instance(nu_u32_t index, nu_sv_t path);
+NU_API void             runtime_set_instance_viewport(nu_u32_t        index,
+                                                      nu_b2i_t        viewport,
+                                                      viewport_mode_t mode);
+NU_API inspect_value_t *runtime_inspect_values(nu_u32_t   index,
+                                               nu_size_t *count);
 
 void *native_malloc(nu_size_t n);
 void  native_free(void *p);
@@ -65,6 +81,7 @@ void logger_vlog(nu_log_level_t level, const nu_char_t *fmt, va_list args);
 
 nu_status_t wamr_init(nu_bool_t debug);
 void        wamr_free(void);
+void        wamr_override_value(vm_t *vm, const inspect_value_t *value);
 
 nu_status_t renderer_init(void);
 void        renderer_free(void);
@@ -83,8 +100,6 @@ void         window_swap_buffers(void);
 nu_v2u_t     window_get_size(void);
 nu_f32_t     window_get_scale_factor(void);
 nu_bool_t    window_poll_command(runtime_command_t *cmd);
-
-typedef void (*gui_callback_t)(struct nk_context *ctx);
 
 nu_status_t        gui_init(void);
 void               gui_free(void);

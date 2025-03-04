@@ -5,4 +5,4 @@ CompileFlags:
     - "-DNU_STDLIB"
     - "-I../../sdk/templates/c/src/"
     - "-I../../externals/"
-    - "-I../../nuxlib/"
+    - "-I../../../nuxlib/"

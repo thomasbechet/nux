@@ -1,13 +1,13 @@
 #include "platform.h"
 
 nu_status_t
-gpad_init (vm_t *vm)
+gamepad_init (vm_t *vm)
 {
     nu_memset(vm->gamepad.buttons, 0, sizeof(vm->gamepad.buttons));
     return NU_SUCCESS;
 }
 void
-gpad_update (vm_t *vm)
+gamepad_update (vm_t *vm)
 {
     os_gamepad_update(vm);
 }

@@ -128,7 +128,7 @@ typedef enum
 typedef enum
 {
     INSPECT_I32 = 0,
-    INSPECT_F32 = 0
+    INSPECT_F32 = 1
 } inspect_type_t;
 
 //////////////////////////////////////////////////////////////////////////

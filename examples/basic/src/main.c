@@ -24,19 +24,19 @@ update (void)
 {
     nu_u32_t c = nu_color_from_vec4(nu_v4(0.7, 0.7, 0.7, 1)).rgba;
     clear(c);
-    nu_u32_t near = 50;
+    nu_f32_t near = 50;
     set_fog_density(1);
     set_fog_near(near);
+    inspect("rotation", INSPECT_F32, &rotation);
     set_fog_far(near + 100);
     clear(c);
     c = nu_color_from_vec4(nu_v4(0.7, 0.7, 0.7, 1)).rgba;
     set_fog_color(c);
 
     nu_f32_t scale = 1.5;
-    inspect("scale", INSPECT_F32, &scale);
-    nu_m4_t m = nu_m4_translate(nu_v3(0, -5, 0));
-    m         = nu_m4_rotate_y(rotation);
-    m         = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
+    nu_m4_t  m     = nu_m4_translate(nu_v3(0, -5, 0));
+    m              = nu_m4_rotate_y(rotation);
+    m              = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     set_transform(m.data);
     nu_v3_t pos;
     nux_debug_camera(0.02, &pos);
@@ -69,6 +69,8 @@ update (void)
     set_color(0xFFFFFFFF);
 
     m = nu_m4_translate(nu_v3(10, 0, 0));
+    inspect("scale", INSPECT_F32, &scale);
+    m = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     set_transform(m.data);
     set_color(nu_color_from_vec4(
                   nu_v4(1, 0, 0, (nu_sin(global_time() * 0.5) + 1) * 0.5))

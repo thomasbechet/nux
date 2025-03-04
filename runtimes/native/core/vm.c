@@ -82,7 +82,7 @@ vm_init (vm_t *vm, const vm_config_t *config)
     NU_CHECK(status, return NU_FAILURE);
     status = gfx_init(vm);
     NU_CHECK(status, return NU_FAILURE);
-    status = gpad_init(vm);
+    status = gamepad_init(vm);
     NU_CHECK(status, return NU_FAILURE);
 
     vm->running = NU_TRUE;
@@ -121,7 +121,7 @@ vm_load (vm_t *vm, const nu_char_t *name)
 nu_status_t
 vm_tick (vm_t *vm)
 {
-    gpad_update(vm);
+    gamepad_update(vm);
     gfx_begin_frame(vm);
     wasm_call_event(vm, WASM_EVENT_UPDATE);
     gfx_end_frame(vm);
