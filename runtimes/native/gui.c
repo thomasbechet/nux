@@ -241,9 +241,11 @@ gui_new_frame (void)
     gui.ctx.delta_time_seconds  = delta_time_now - gui.delta_time_seconds_last;
     gui.delta_time_seconds_last = delta_time_now;
 
+    const nu_f32_t gui_scale = 1.5;
+
     nu_v2u_t size      = window_get_size();
-    gui.width          = size.x;
-    gui.height         = size.y;
+    gui.width          = size.x / gui_scale;
+    gui.height         = size.y / gui_scale;
     gui.display_width  = size.x * window_get_scale_factor();
     gui.display_height = size.y * window_get_scale_factor();
     gui.fb_scale.x     = (float)gui.display_width / (float)gui.width;
@@ -319,7 +321,7 @@ gui_new_frame (void)
     }
 
     RGFW_point pos = RGFW_window_getMousePoint(gui.win);
-    nk_input_motion(ctx, (int)pos.x, (int)pos.y);
+    nk_input_motion(ctx, (int)pos.x / gui_scale, (int)pos.y / gui_scale);
 #ifdef NK_GL3_MOUSE_GRABBING
     if (ctx->input.mouse.grabbed)
     {
@@ -331,18 +333,18 @@ gui_new_frame (void)
 #endif
     nk_input_button(ctx,
                     NK_BUTTON_LEFT,
-                    (int)pos.x,
-                    (int)pos.y,
+                    (int)pos.x / gui_scale,
+                    (int)pos.y / gui_scale,
                     RGFW_isMousePressed(gui.win, RGFW_mouseLeft));
     nk_input_button(ctx,
                     NK_BUTTON_MIDDLE,
-                    (int)pos.x,
-                    (int)pos.y,
+                    (int)pos.x / gui_scale,
+                    (int)pos.y / gui_scale,
                     RGFW_isMousePressed(gui.win, RGFW_mouseMiddle));
     nk_input_button(ctx,
                     NK_BUTTON_RIGHT,
-                    (int)pos.x,
-                    (int)pos.y,
+                    (int)pos.x / gui_scale,
+                    (int)pos.y / gui_scale,
                     RGFW_isMousePressed(gui.win, RGFW_mouseRight));
     nk_input_button(ctx,
                     NK_BUTTON_DOUBLE,

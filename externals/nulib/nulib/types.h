@@ -24,6 +24,7 @@
 #define NU_COLOR_BLUE_DARK nu_color(25, 27, 43, 255)
 #define NU_PI              3.14159265359
 #define NU_FLT_MAX         3.402823E+38
+#define NU_FLT_MIN         1.175494e-38
 
 #define NU_MIN(a, b)          (((a) < (b)) ? (a) : (b))
 #define NU_MAX(a, b)          (((a) > (b)) ? (a) : (b))
