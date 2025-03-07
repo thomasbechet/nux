@@ -1,5 +1,14 @@
 #include "sdk.h"
 
+runtime_view_t *
+sdk_views (nu_size_t *count)
+{
+    static runtime_view_t views[]
+        = { { .name = "Debug", .update = view_debug } };
+    *count = NU_ARRAY_SIZE(views);
+    return views;
+}
+
 nu_status_t
 json_parse_f32 (const JSON_Object *object, const nu_char_t *name, nu_f32_t *v)
 {

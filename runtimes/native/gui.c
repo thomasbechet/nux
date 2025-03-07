@@ -223,13 +223,16 @@ gui_init (const runtime_config_t *config)
     gui_font_stash_begin(&atlas);
     gui_font_stash_end();
 
-    // Register core views
+    // Register base views
     gui.views_count                   = 0;
     gui.views[gui.views_count].name   = "Home";
     gui.views[gui.views_count].update = view_home;
     ++gui.views_count;
-    gui.views[gui.views_count].name   = "Debug";
-    gui.views[gui.views_count].update = view_debug;
+    gui.views[gui.views_count].name   = "Controls";
+    gui.views[gui.views_count].update = view_controls;
+    ++gui.views_count;
+    gui.views[gui.views_count].name   = "Settings";
+    gui.views[gui.views_count].update = view_settings;
     ++gui.views_count;
 
     // Register views

@@ -72,9 +72,9 @@ update (void)
     inspect("scale", INSPECT_F32, &scale);
     m = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     set_transform(m.data);
-    set_color(nu_color_from_vec4(
-                  nu_v4(1, 0, 0, (nu_sin(global_time() * 0.5) + 1) * 0.5))
-                  .rgba);
+    nu_f32_t transparency = 1;
+    inspect("transparency", INSPECT_F32, &transparency);
+    set_color(nu_color_from_vec4(nu_v4(1, 0, 0, transparency)).rgba);
     // color(nu_color(255, 0, 0, 128).rgba);
     draw_model(MODEL_ARIANE6);
     set_color(0xFFFFFFFF);

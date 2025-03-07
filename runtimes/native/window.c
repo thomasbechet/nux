@@ -39,7 +39,7 @@ window_init (void)
 {
     // Initialize surface (and inputs)
     const nu_int_t width  = 1280;
-    const nu_int_t height = 720;
+    const nu_int_t height = 800;
 
     // Initialize values
     window.fullscreen        = NU_FALSE;

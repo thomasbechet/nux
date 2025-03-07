@@ -1,4 +1,4 @@
-project(vmnative LANGUAGES C)
+project(runtime LANGUAGES C)
 
 set (WAMR_BUILD_PLATFORM "linux")
 set (WAMR_BUILD_TARGET "X86_64")

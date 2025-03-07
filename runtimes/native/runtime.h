@@ -119,6 +119,8 @@ void gui_mouse_button_callback(struct RGFW_window *win,
 
 void views_init(nu_sv_t path);
 void view_home(struct nk_context *ctx, struct nk_rect bounds);
+void view_controls(struct nk_context *ctx, struct nk_rect bounds);
+void view_settings(struct nk_context *ctx, struct nk_rect bounds);
 void view_debug(struct nk_context *ctx, struct nk_rect bounds);
 
 #endif

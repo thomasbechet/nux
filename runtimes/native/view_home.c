@@ -1,3 +1,4 @@
+#include "nuklear/src/nuklear.h"
 #include "runtime.h"
 
 void
@@ -38,6 +39,7 @@ view_home (struct nk_context *ctx, struct nk_rect bounds)
                 ++instance_count;
             }
         }
+        nk_checkbox_label(ctx, "Pause", &instance->pause);
         // Viewport mode
         {
             nk_label(ctx, "Viewport mode:", NK_TEXT_LEFT);

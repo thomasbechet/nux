@@ -50,6 +50,9 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
 #endif
     runtime_config_t config
         = { .views_count = 0, .debug = debug, .path = path };
+#ifdef NUX_BUILD_SDK
+    config.views = sdk_views(&config.views_count);
+#endif
     nu_status_t status = runtime_start(&config);
     return status ? 0 : -1;
 }
