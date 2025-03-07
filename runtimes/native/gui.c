@@ -60,6 +60,10 @@ static struct
     int                  is_double_click_down;
     struct nk_vec2       double_click_pos;
     float                delta_time_seconds_last;
+
+    runtime_view_t views[16];
+    nu_size_t      views_count;
+    nu_size_t      active_view;
 } gui;
 
 static void
@@ -201,7 +205,7 @@ gui_device_create (void)
 }
 
 nu_status_t
-gui_init (void)
+gui_init (const runtime_config_t *config)
 {
     gui.win = window_get_win();
     nk_init_default(&gui.ctx, 0);
@@ -219,6 +223,26 @@ gui_init (void)
     gui_font_stash_begin(&atlas);
     gui_font_stash_end();
 
+    // Register core views
+    gui.views_count                   = 0;
+    gui.views[gui.views_count].name   = "Home";
+    gui.views[gui.views_count].update = view_home;
+    ++gui.views_count;
+    gui.views[gui.views_count].name   = "Debug";
+    gui.views[gui.views_count].update = view_debug;
+    ++gui.views_count;
+
+    // Register views
+    for (nu_size_t i = 0; i < config->views_count; ++i)
+    {
+        gui.views[gui.views_count] = config->views[i];
+        ++gui.views_count;
+        if (config->views[i].init)
+        {
+            config->views[i].init();
+        }
+    }
+
     return NU_SUCCESS;
 }
 void
@@ -227,10 +251,10 @@ gui_free (void)
     nk_font_atlas_clear(&gui.atlas);
     nk_free(&gui.ctx);
     gui_device_destroy();
-    memset(&gui, 0, sizeof(gui));
+    nu_memset(&gui, 0, sizeof(gui));
 }
 
-struct nk_context *
+static struct nk_context *
 gui_new_frame (void)
 {
     int                i;
@@ -241,7 +265,7 @@ gui_new_frame (void)
     gui.ctx.delta_time_seconds  = delta_time_now - gui.delta_time_seconds_last;
     gui.delta_time_seconds_last = delta_time_now;
 
-    const nu_f32_t gui_scale = 1.5;
+    const nu_f32_t gui_scale = 1.0;
 
     nu_v2u_t size      = window_get_size();
     gui.width          = size.x / gui_scale;
@@ -356,6 +380,60 @@ gui_new_frame (void)
     gui.text_len = 0;
     gui.scroll   = nk_vec2(0, 0);
     return &gui.ctx;
+}
+void
+gui_update (void)
+{
+    // Cartridge / Run
+    // - Open cartridge
+    // - Open cartridge network
+    // - Reset cartridge
+    // - Save state
+    // - Load state
+    // Control window
+    // - Input mapping
+    // System window
+    // - Network config
+    // Debug window
+    // - Inspector
+    // - Resource viewer
+    // - Resource hotreload
+    // Editor window
+    // - Load project
+    // - Build project
+    // - Resource assembly
+
+    nu_v2u_t           size = window_get_size();
+    struct nk_context *ctx  = gui_new_frame();
+
+    // Views panel
+    const struct nk_rect menu_bounds = nk_rect(0, 0, size.x, 40);
+    if (nk_begin(ctx, "main", menu_bounds, NK_WINDOW_NO_SCROLLBAR))
+    {
+        nk_layout_row_static(ctx, 30, 130, gui.views_count);
+        for (nu_size_t i = 0; i < gui.views_count; ++i)
+        {
+            if (nk_button_symbol_label(ctx,
+                                       (gui.active_view == i)
+                                           ? NK_SYMBOL_CIRCLE_SOLID
+                                           : NK_SYMBOL_CIRCLE_OUTLINE,
+                                       gui.views[i].name,
+                                       NK_TEXT_CENTERED))
+            {
+                gui.active_view = i;
+            }
+        }
+
+        nk_end(ctx);
+    }
+
+    // Active view
+    struct nk_rect viewport
+        = nk_rect(0, menu_bounds.h, menu_bounds.w, size.y - menu_bounds.h);
+    if (gui.views[gui.active_view].update)
+    {
+        gui.views[gui.active_view].update(ctx, viewport);
+    }
 }
 void
 gui_render (void)

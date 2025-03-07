@@ -573,98 +573,38 @@ renderer_free (void)
         free_canvas();
     }
 }
-static nu_b2i_t
-update_viewport (nu_b2i_t viewport, viewport_mode_t mode)
-{
-    nu_v2_t global_pos  = nu_v2(viewport.min.x, viewport.min.y);
-    nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(viewport));
-
-    nu_v2_t  screen       = nu_v2(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
-    nu_f32_t aspect_ratio = screen.x / screen.y;
-
-    nu_v2_t size = NU_V2_ZEROS;
-    switch (mode)
-    {
-        case VIEWPORT_FIXED: {
-            const nu_f32_t scale_factor = 1;
-            size = nu_v2(screen.x * scale_factor, screen.y * scale_factor);
-        };
-        break;
-        case VIEWPORT_FIXED_BEST_FIT: {
-            nu_f32_t w_factor = global_size.x / screen.x;
-            nu_f32_t h_factor = global_size.y / screen.y;
-            nu_f32_t min      = NU_MIN(w_factor, h_factor);
-            if (min < 1)
-            {
-                // 0.623 => 0.5
-                // 0,432 => 0.25
-                // 0.115 => 0,125
-                nu_f32_t n = 2;
-                while (min < (1 / n))
-                {
-                    n *= 2;
-                }
-                min = 1 / n;
-            }
-            else
-            {
-                min = nu_floor(min);
-            }
-            size.x = screen.x * min;
-            size.y = screen.y * min;
-        }
-        break;
-        case VIEWPORT_STRETCH_KEEP_ASPECT: {
-            if (global_size.x / global_size.y >= aspect_ratio)
-            {
-                size.x = nu_floor(global_size.y * aspect_ratio);
-                size.y = nu_floor(global_size.y);
-            }
-            else
-            {
-                size.x = nu_floor(global_size.x);
-                size.y = nu_floor(global_size.x / aspect_ratio);
-            }
-        }
-        break;
-        case VIEWPORT_STRETCH:
-            size = global_size;
-            break;
-    }
-
-    nu_v2_t vpos = nu_v2_sub(global_size, size);
-    vpos         = nu_v2_divs(vpos, 2);
-    vpos         = nu_v2_add(vpos, global_pos);
-    return nu_b2i_xywh(vpos.x, vpos.y, size.x, size.y);
-}
 void
-renderer_render_instance (nu_b2i_t        viewport,
-                          viewport_mode_t mode,
-                          nu_v2u_t        window_size)
+renderer_clear (nu_b2i_t viewport, nu_v2u_t window_size)
 {
-    // Clear viewport
     nu_v4_t clear
         = nu_color_to_vec4(nu_color_to_linear(nu_color(25, 27, 43, 255)));
+    nu_v2i_t pos  = viewport.min;
+    nu_v2u_t size = nu_b2i_size(viewport);
+    // Patch pos (bottom left in opengl)
+    pos.y = window_size.y - (pos.y + size.y);
     glViewport(0, 0, window_size.x, window_size.y);
     glEnable(GL_SCISSOR_TEST);
-    nu_v2u_t size = nu_b2i_size(viewport);
-    glScissor(viewport.min.x, viewport.min.y, size.x, size.y);
+    glScissor(pos.x, pos.y, size.x, size.y);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(clear.x, clear.y, clear.z, clear.w);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_FRAMEBUFFER_SRGB);
     glDisable(GL_SCISSOR_TEST);
-
-    // Blit surface
-    nu_b2i_t blit_viewport = update_viewport(viewport, mode);
+}
+void
+renderer_render_instance (nu_b2i_t viewport, nu_v2u_t window_size)
+{
+    nu_v2i_t pos  = viewport.min;
+    nu_v2u_t size = nu_b2i_size(viewport);
+    // Patch pos (bottom left in opengl)
+    pos.y = window_size.y - (pos.y + size.y);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(renderer.screen_blit_program);
     glDisable(GL_DEPTH_TEST);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_FRAMEBUFFER_SRGB);
-    size = nu_b2i_size(blit_viewport);
-    glViewport(blit_viewport.min.x, blit_viewport.min.y, size.x, size.y);
+    glViewport(pos.x, pos.y, size.x, size.y);
     glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glDisable(GL_FRAMEBUFFER_SRGB);

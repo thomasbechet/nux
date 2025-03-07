@@ -38,6 +38,7 @@ typedef enum
 
 typedef enum
 {
+    VIEWPORT_HIDDEN,
     VIEWPORT_FIXED,
     VIEWPORT_FIXED_BEST_FIT,
     VIEWPORT_STRETCH_KEEP_ASPECT,
@@ -51,26 +52,30 @@ typedef struct
     vm_t            vm;
     nu_byte_t      *save_state;
     nu_bool_t       pause;
-    nu_b2i_t        viewport;
+    struct nk_rect  viewport;
     viewport_mode_t viewport_mode;
     inspect_value_t inspect_values[256];
     nu_size_t       inspect_value_count;
-} instance_t;
+} runtime_instance_t;
 
 typedef struct
 {
+    const nu_char_t *name;
     void (*init)(void);
-    void (*update)(struct nk_context *ctx);
-} runtime_app_t;
+    void (*update)(struct nk_context *ctx, struct nk_rect viewport);
+} runtime_view_t;
 
-NU_API runtime_app_t    runtime_app_default(nu_sv_t path);
-NU_API nu_status_t      runtime_run(runtime_app_t app, nu_bool_t debug);
-NU_API nu_status_t      runtime_init_instance(nu_u32_t index, nu_sv_t path);
-NU_API void             runtime_set_instance_viewport(nu_u32_t        index,
-                                                      nu_b2i_t        viewport,
-                                                      viewport_mode_t mode);
-NU_API inspect_value_t *runtime_inspect_values(nu_u32_t   index,
-                                               nu_size_t *count);
+typedef struct
+{
+    const runtime_view_t *views;
+    nu_size_t             views_count;
+    nu_bool_t             debug;
+    nu_sv_t               path;
+} runtime_config_t;
+
+NU_API nu_status_t         runtime_start(const runtime_config_t *config);
+NU_API nu_status_t         runtime_init_instance(nu_u32_t index, nu_sv_t path);
+NU_API runtime_instance_t *runtime_instance(void);
 
 void *native_malloc(nu_size_t n);
 void  native_free(void *p);
@@ -85,9 +90,8 @@ void        wamr_override_value(vm_t *vm, const inspect_value_t *value);
 
 nu_status_t renderer_init(void);
 void        renderer_free(void);
-void        renderer_render_instance(nu_b2i_t        viewport,
-                                     viewport_mode_t mode,
-                                     nu_v2u_t        window_size);
+void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
+void        renderer_render_instance(nu_b2i_t viewport, nu_v2u_t window_size);
 
 struct RGFW_window;
 typedef struct RGFW_window RGFW_window;
@@ -101,10 +105,10 @@ nu_v2u_t     window_get_size(void);
 nu_f32_t     window_get_scale_factor(void);
 nu_bool_t    window_poll_command(runtime_command_t *cmd);
 
-nu_status_t        gui_init(void);
-void               gui_free(void);
-struct nk_context *gui_new_frame(void);
-void               gui_render(void);
+nu_status_t gui_init(const runtime_config_t *config);
+void        gui_free(void);
+void        gui_update(void);
+void        gui_render(void);
 
 void gui_char_callback(struct RGFW_window *win, unsigned int codepoint);
 void gui_scroll_callback(struct RGFW_window *win, double xoff, double yoff);
@@ -112,5 +116,9 @@ void gui_mouse_button_callback(struct RGFW_window *win,
                                int                 button,
                                double              scroll,
                                int                 pressed);
+
+void views_init(nu_sv_t path);
+void view_home(struct nk_context *ctx, struct nk_rect bounds);
+void view_debug(struct nk_context *ctx, struct nk_rect bounds);
 
 #endif

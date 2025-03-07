@@ -53,8 +53,6 @@ typedef struct
     nu_u32_t            next_id;
 } sdk_project_t;
 
-NU_API runtime_app_t sdk_editor_app(nu_sv_t path);
-
 NU_API nu_status_t sdk_generate_template(nu_sv_t path, nu_sv_t lang);
 NU_API nu_status_t sdk_compile(sdk_project_t *project);
 NU_API nu_status_t sdk_dump(nu_sv_t   path,

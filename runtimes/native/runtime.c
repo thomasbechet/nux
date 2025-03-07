@@ -3,11 +3,11 @@
 
 static struct
 {
-    instance_t instances[4];
+    runtime_instance_t instances[4];
 } runtime;
 
 static void
-instance_free (instance_t *instance)
+instance_free (runtime_instance_t *instance)
 {
     if (!instance->active)
     {
@@ -24,7 +24,9 @@ instance_free (instance_t *instance)
     instance->active = NU_FALSE;
 }
 static nu_status_t
-instance_init (instance_t *instance, const vm_config_t *config, nu_sv_t path)
+instance_init (runtime_instance_t *instance,
+               const vm_config_t  *config,
+               nu_sv_t             path)
 {
     instance_free(instance);
 
@@ -33,7 +35,7 @@ instance_init (instance_t *instance, const vm_config_t *config, nu_sv_t path)
     instance->vm.mem              = NU_NULL;
     instance->save_state          = NU_NULL;
     instance->pause               = NU_FALSE;
-    instance->viewport            = nu_b2i_xywh(0, 0, 10, 10);
+    instance->viewport            = nk_rect(0, 0, 10, 10);
     instance->viewport_mode       = VIEWPORT_STRETCH_KEEP_ASPECT;
     instance->inspect_value_count = 0;
 
@@ -54,9 +56,74 @@ cleanup0:
     instance_free(instance);
     return NU_FAILURE;
 }
+static nu_b2i_t
+apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
+{
+    nu_v2_t global_pos  = nu_v2(viewport.min.x, viewport.min.y);
+    nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(viewport));
+
+    nu_v2_t  screen       = nu_v2(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    nu_f32_t aspect_ratio = screen.x / screen.y;
+
+    nu_v2_t vsize = NU_V2_ZEROS;
+    switch (mode)
+    {
+        case VIEWPORT_FIXED: {
+            vsize = nu_v2(screen.x, screen.y);
+        };
+        break;
+        case VIEWPORT_FIXED_BEST_FIT: {
+            nu_f32_t w_factor = global_size.x / screen.x;
+            nu_f32_t h_factor = global_size.y / screen.y;
+            nu_f32_t min      = NU_MIN(w_factor, h_factor);
+            if (min < 1)
+            {
+                // 0.623 => 0.5
+                // 0,432 => 0.25
+                // 0.115 => 0,125
+                nu_f32_t n = 2;
+                while (min < (1 / n))
+                {
+                    n *= 2;
+                }
+                min = 1 / n;
+            }
+            else
+            {
+                min = nu_floor(min);
+            }
+            vsize.x = screen.x * min;
+            vsize.y = screen.y * min;
+        }
+        break;
+        case VIEWPORT_STRETCH_KEEP_ASPECT: {
+            if (global_size.x / global_size.y >= aspect_ratio)
+            {
+                vsize.x = nu_floor(global_size.y * aspect_ratio);
+                vsize.y = nu_floor(global_size.y);
+            }
+            else
+            {
+                vsize.x = nu_floor(global_size.x);
+                vsize.y = nu_floor(global_size.x / aspect_ratio);
+            }
+        }
+        break;
+        case VIEWPORT_STRETCH:
+            vsize = global_size;
+            break;
+        default:
+            break;
+    }
+
+    nu_v2_t vpos = nu_v2_sub(global_size, vsize);
+    vpos         = nu_v2_divs(vpos, 2);
+    vpos         = nu_v2_add(vpos, global_pos);
+    return nu_b2i_xywh(vpos.x, vpos.y, vsize.x, vsize.y);
+}
 
 nu_status_t
-runtime_run (runtime_app_t app, nu_bool_t debug)
+runtime_start (const runtime_config_t *config)
 {
     // Initialize runtime
     nu_status_t status;
@@ -64,15 +131,21 @@ runtime_run (runtime_app_t app, nu_bool_t debug)
     NU_CHECK(status, goto cleanup0);
     status = renderer_init();
     NU_CHECK(status, goto cleanup1);
-    status = gui_init();
+    status = gui_init(config);
     NU_CHECK(status, goto cleanup2);
-    status = wamr_init(debug);
+    status = wamr_init(config->debug);
     NU_CHECK(status, goto cleanup3);
 
-    // Initialization callback
-    if (app.init)
+    // Initialize base
+    runtime_init_instance(0, config->path);
+
+    // Initialize views
+    for (nu_size_t i = 0; i < config->views_count; ++i)
     {
-        app.init();
+        if (config->views[i].init)
+        {
+            config->views[i].init();
+        }
     }
 
     // Main loop
@@ -85,7 +158,7 @@ runtime_run (runtime_app_t app, nu_bool_t debug)
         // Update active instances
         for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
         {
-            instance_t *instance = runtime.instances + i;
+            runtime_instance_t *instance = runtime.instances + i;
             if (instance->active && !instance->pause)
             {
                 // Tick
@@ -94,22 +167,28 @@ runtime_run (runtime_app_t app, nu_bool_t debug)
         }
 
         // Update GUI
-        struct nk_context *ctx = gui_new_frame();
-        if (app.update)
-        {
-            app.update(ctx);
-        }
+        gui_update();
+
+        // Clear window
+        nu_v2u_t size = window_get_size();
+        renderer_clear(nu_b2i_xywh(0, 0, size.x, size.y), size);
 
         // Draw instances
         for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
         {
-            instance_t *instance = runtime.instances + i;
+            runtime_instance_t *instance = runtime.instances + i;
             if (instance->active)
             {
-                nu_v2u_t size = window_get_size();
-                renderer_render_instance(instance->viewport,
-                                         instance->viewport_mode,
-                                         nu_v2u(size.x, size.y));
+                if (instance->viewport_mode != VIEWPORT_HIDDEN)
+                {
+                    nu_b2i_t viewport = nu_b2i_xywh(instance->viewport.x,
+                                                    instance->viewport.y,
+                                                    instance->viewport.w,
+                                                    instance->viewport.h);
+                    viewport          = apply_viewport_mode(viewport,
+                                                   instance->viewport_mode);
+                    renderer_render_instance(viewport, size);
+                }
             }
         }
 
@@ -160,21 +239,10 @@ runtime_init_instance (nu_u32_t index, nu_sv_t path)
     vm_config_default(&config);
     return instance_init(&runtime.instances[index], &config, path);
 }
-void
-runtime_set_instance_viewport (nu_u32_t        index,
-                               nu_b2i_t        viewport,
-                               viewport_mode_t mode)
+runtime_instance_t *
+runtime_instance (void)
 {
-    NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
-    runtime.instances[index].viewport      = viewport;
-    runtime.instances[index].viewport_mode = mode;
-}
-inspect_value_t *
-runtime_inspect_values (nu_u32_t index, nu_size_t *count)
-{
-    NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
-    *count = runtime.instances[index].inspect_value_count;
-    return runtime.instances[index].inspect_values;
+    return &runtime.instances[0];
 }
 
 void *

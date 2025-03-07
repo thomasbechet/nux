@@ -48,7 +48,6 @@ window_init (void)
 
     // Create window
     RGFW_windowFlags flags = RGFW_windowCenter;
-    flags                  = 0;
     window.win
         = RGFW_createWindow("nux", RGFW_RECT(0, 0, width, height), flags);
     if (!window.win)

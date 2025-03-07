@@ -23,10 +23,12 @@ enable_c_compiler_flag_if_supported("-Wno-unused-function")
 enable_c_compiler_flag_if_supported("-Wno-unused-parameter")
 enable_c_compiler_flag_if_supported("-Wno-unused-variable")
 
+# Options
 option(NUX_BUILD_SDK "Build nux with sdk tools" ON)
 option(NUX_BUILD_WASM_DEBUG "Build nux with runtime debug server" OFF)
 option(NUX_BUILD_WASM_JIT "Build nux with runtime jit" ON)
 
+# Show options
 if (NUX_BUILD_WASM_DEBUG)
     message("NUX_BUILD_WASM_DEBUG enable")
 else ()
@@ -43,14 +45,19 @@ else ()
     message("NUX_BUILD_SDK disable")
 endif ()
 
+# Add constants
+if (NUX_BUILD_SDK)
+    add_definitions(-DNUX_BUILD_SDK)
+endif ()
 if (NUX_BUILD_WASM_DEBUG)
     add_definitions(-DNUX_BUILD_WASM_DEBUG)
 elseif (NUX_BUILD_WASM_JIT)
     add_definitions(-DNUX_BUILD_WASM_JIT)
 endif ()
+
+# Add subdirectories
 add_subdirectory(runtimes/native)
 if (NUX_BUILD_SDK)
-    add_definitions(-DNUX_BUILD_SDK)
     add_subdirectory(sdk)
 endif ()
 add_subdirectory(cli)

@@ -6,7 +6,7 @@ os_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
 {
     // Find existing value at address
     nu_u32_t         addr     = (nu_u32_t)((nu_size_t)p - (nu_size_t)vm->mem);
-    instance_t      *instance = vm->userdata;
+    runtime_instance_t      *instance = vm->userdata;
     inspect_value_t *value    = NU_NULL;
     for (nu_size_t i = 0; i < instance->inspect_value_count; ++i)
     {
