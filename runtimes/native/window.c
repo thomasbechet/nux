@@ -294,7 +294,7 @@ window_poll_events (void)
                     gui_mouse_button_callback(window.win,
                                               window.win->event.button,
                                               window.win->event.scroll,
-                                              NU_TRUE);
+                                              NU_FALSE);
                     break;
                 case RGFW_windowResized:
                     resize_callback(window.win, window.win->r);

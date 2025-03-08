@@ -66,6 +66,12 @@ static struct
     nu_size_t      active_view;
 } gui;
 
+static double
+get_time (void)
+{
+    return ((double)RGFW_getTimeNS() / 1000000000.);
+}
+
 static void
 upload_atlas (const void *image, int width, int height)
 {
@@ -217,7 +223,7 @@ gui_init (const runtime_config_t *config)
     gui.is_double_click_down = nk_false;
     gui.double_click_pos     = nk_vec2(0, 0);
 
-    gui.delta_time_seconds_last = (float)RGFW_getTime();
+    gui.delta_time_seconds_last = (float)get_time();
 
     struct nk_font_atlas *atlas;
     gui_font_stash_begin(&atlas);
@@ -264,7 +270,7 @@ gui_new_frame (void)
     struct nk_context *ctx = &gui.ctx;
 
     /* update the timer */
-    float delta_time_now        = (float)RGFW_getTime();
+    float delta_time_now        = (float)get_time();
     gui.ctx.delta_time_seconds  = delta_time_now - gui.delta_time_seconds_last;
     gui.delta_time_seconds_last = delta_time_now;
 
@@ -579,16 +585,22 @@ gui_mouse_button_callback (RGFW_window *win,
     RGFW_point p = RGFW_window_getMousePoint(win);
     if (pressed)
     {
-        double dt = RGFW_getTime() - gui.last_button_click;
+        double time = get_time();
+        double dt   = time - gui.last_button_click;
         if (dt > NK_DOUBLE_CLICK_LO && dt < NK_DOUBLE_CLICK_HI)
         {
             gui.is_double_click_down = nk_true;
             gui.double_click_pos     = nk_vec2((float)p.x, (float)p.y);
         }
-        gui.last_button_click = RGFW_getTime();
+        gui.last_button_click = time;
     }
     else
     {
         gui.is_double_click_down = nk_false;
     }
+}
+nu_bool_t
+gui_is_double_click (void)
+{
+    return gui.is_double_click_down;
 }

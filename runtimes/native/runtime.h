@@ -111,11 +111,12 @@ void        gui_free(void);
 void        gui_update(void);
 void        gui_render(void);
 
-void gui_char_callback(struct RGFW_window *win, unsigned int codepoint);
-void gui_mouse_button_callback(struct RGFW_window *win,
-                               int                 button,
-                               double              scroll,
-                               int                 pressed);
+void      gui_char_callback(struct RGFW_window *win, unsigned int codepoint);
+void      gui_mouse_button_callback(struct RGFW_window *win,
+                                    int                 button,
+                                    double              scroll,
+                                    int                 pressed);
+nu_bool_t gui_is_double_click(void);
 
 void views_init(nu_sv_t path);
 void view_home(struct nk_context *ctx, struct nk_rect bounds);
