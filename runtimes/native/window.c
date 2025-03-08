@@ -25,6 +25,7 @@ static struct
     runtime_command_t cmds[MAX_COMMAND];
     nu_size_t         cmds_count;
     nu_f32_t          scale_factor;
+    nu_v2_t           mouse_scroll;
     nu_v2u_t          size;
 } window;
 
@@ -368,6 +369,11 @@ nu_f32_t
 window_get_scale_factor (void)
 {
     return window.scale_factor;
+}
+nu_v2_t
+window_get_mouse_scroll (void)
+{
+    return window.mouse_scroll;
 }
 nu_bool_t
 window_poll_command (runtime_command_t *cmd)

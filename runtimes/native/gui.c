@@ -378,10 +378,12 @@ gui_new_frame (void)
                     (int)gui.double_click_pos.x,
                     (int)gui.double_click_pos.y,
                     gui.is_double_click_down);
+
+    gui.scroll = nk_vec2(RGFW_isMousePressed(gui.win, RGFW_mouseScrollUp),
+                         RGFW_isMousePressed(gui.win, RGFW_mouseScrollDown));
     nk_input_scroll(ctx, gui.scroll);
     nk_input_end(&gui.ctx);
     gui.text_len = 0;
-    gui.scroll   = nk_vec2(0, 0);
     return &gui.ctx;
 }
 void

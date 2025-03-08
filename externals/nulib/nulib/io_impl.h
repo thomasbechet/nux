@@ -2,10 +2,12 @@
 #define NU_IO_IMPL_H
 
 #include "io.h"
+#include "nulib/nulib/string.h"
 
 #ifdef NU_PLATFORM_UNIX
 #include <string.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <errno.h>
 #endif
 
@@ -34,6 +36,7 @@ mkpath_p (nu_sv_t path)
     return NU_FAILURE;
 #endif
 }
+
 nu_status_t
 nu_load_bytes (nu_sv_t filename, nu_byte_t *data, nu_size_t *size)
 {
@@ -96,6 +99,39 @@ nu_isdir (nu_sv_t path)
     (void)path;
     return NU_FALSE;
 #endif
+}
+nu_size_t
+nu_list_files (nu_sv_t path, nu_char_t (*files)[NU_PATH_MAX], nu_size_t capa)
+{
+    if (!nu_isdir(path))
+    {
+        return 0;
+    }
+    nu_size_t count = 0;
+    nu_char_t s[NU_PATH_MAX];
+    nu_sv_to_cstr(path, s, NU_PATH_MAX);
+    DIR           *d;
+    struct dirent *dir;
+    d = opendir(s);
+    if (d)
+    {
+        for (nu_size_t i = 0; i < capa; ++i)
+        {
+            dir = readdir(d);
+            if (dir != NU_NULL)
+            {
+                nu_sv_to_cstr(
+                    nu_sv_cstr(dir->d_name), files[count], NU_PATH_MAX);
+                ++count;
+            }
+            else
+            {
+                break;
+            }
+        }
+        closedir(d);
+    }
+    return count;
 }
 
 #endif

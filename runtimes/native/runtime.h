@@ -103,6 +103,7 @@ void         window_poll_events(void);
 void         window_swap_buffers(void);
 nu_v2u_t     window_get_size(void);
 nu_f32_t     window_get_scale_factor(void);
+nu_v2_t      window_get_mouse_scroll(void);
 nu_bool_t    window_poll_command(runtime_command_t *cmd);
 
 nu_status_t gui_init(const runtime_config_t *config);
