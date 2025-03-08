@@ -112,7 +112,6 @@ void        gui_update(void);
 void        gui_render(void);
 
 void gui_char_callback(struct RGFW_window *win, unsigned int codepoint);
-void gui_scroll_callback(struct RGFW_window *win, double xoff, double yoff);
 void gui_mouse_button_callback(struct RGFW_window *win,
                                int                 button,
                                double              scroll,

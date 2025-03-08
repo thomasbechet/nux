@@ -379,11 +379,10 @@ gui_new_frame (void)
                     (int)gui.double_click_pos.y,
                     gui.is_double_click_down);
 
-    gui.scroll = nk_vec2(RGFW_isMousePressed(gui.win, RGFW_mouseScrollUp),
-                         RGFW_isMousePressed(gui.win, RGFW_mouseScrollDown));
     nk_input_scroll(ctx, gui.scroll);
     nk_input_end(&gui.ctx);
     gui.text_len = 0;
+    gui.scroll   = nk_vec2(0, 0);
     return &gui.ctx;
 }
 void
@@ -564,18 +563,15 @@ gui_char_callback (RGFW_window *win, unsigned int codepoint)
     }
 }
 void
-gui_scroll_callback (RGFW_window *win, double xoff, double yoff)
-{
-    (void)xoff;
-    gui.scroll.x += (float)xoff;
-    gui.scroll.y += (float)yoff;
-}
-void
 gui_mouse_button_callback (RGFW_window *win,
                            int          button,
                            double       scroll,
                            int          pressed)
 {
+    if (button == RGFW_mouseScrollDown || button == RGFW_mouseScrollUp)
+    {
+        gui.scroll = nk_vec2(0, scroll);
+    }
     if (button != RGFW_mouseLeft)
     {
         return;
