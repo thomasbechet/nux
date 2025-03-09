@@ -1,22 +1,47 @@
 #include "nuklear/src/nuklear.h"
 #include "runtime.h"
 
-static void
-file_dialog (struct nk_context *ctx, struct nk_rect bounds)
+typedef struct
 {
+    nu_char_t dir[NU_PATH_MAX];
+    nu_char_t edit_dir[NU_PATH_MAX];
+    nu_int_t  edit_dir_len;
+    nu_char_t edit_filename[NU_PATH_MAX];
+    nu_int_t  edit_filename_len;
+    nu_int_t  file_selected;
+    nu_int_t  filetype;
+} file_dialog_t;
+
+static void
+file_dialog_change_dir (file_dialog_t *fd, nu_sv_t dir)
+{
+    nu_sv_to_cstr(dir, fd->dir, NU_PATH_MAX);
+    nu_sv_to_cstr(dir, fd->edit_dir, NU_PATH_MAX);
+    fd->edit_dir_len      = dir.size;
+    fd->edit_filename_len = 0;
+    fd->file_selected     = -1;
+}
+
+static void
+file_dialog_init (file_dialog_t *fd)
+{
+    nu_char_t dir[NU_PATH_MAX];
+    nu_getcwd(dir, NU_PATH_MAX);
+    file_dialog_change_dir(fd, nu_sv_cstr(dir));
+}
+
+static nu_bool_t
+file_dialog (file_dialog_t *fd, struct nk_context *ctx, struct nk_rect bounds)
+{
+    nu_bool_t exit = NU_FALSE;
     if (nk_begin(ctx,
                  "File Dialog",
                  bounds,
                  NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
     {
-        const nu_size_t  row = 30;
-        nu_char_t        files[32][NU_PATH_MAX];
-        nu_size_t        count         = nu_list_files(NU_SV("."), files, 32);
-        static int       file_selected = 0;
-        static nu_char_t filename[NU_PATH_MAX];
-        static nu_int_t  filename_len      = 0;
-        static nu_int_t  filetype_selected = 0;
-        static nu_int_t  old_selected      = -1;
+        const nu_size_t row = 30;
+        nu_char_t       files[32][NU_PATH_MAX];
+        nu_size_t       count = nu_list_files(nu_sv_cstr(fd->dir), files, 32);
 
         nk_layout_row_template_begin(ctx, row);
         nk_layout_row_template_push_static(ctx, 30);
@@ -25,7 +50,20 @@ file_dialog (struct nk_context *ctx, struct nk_rect bounds)
 
         if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_UP))
         {
+            nu_sv_t parent = nu_path_parent(nu_sv_cstr(fd->dir));
+            if (!nu_sv_is_null(parent))
+            {
+                nu_char_t temp[NU_PATH_MAX];
+                nu_sv_to_cstr(parent, temp, NU_PATH_MAX);
+                file_dialog_change_dir(fd, nu_sv_cstr(temp));
+            }
         }
+        nk_edit_string(ctx,
+                       NK_EDIT_FIELD,
+                       fd->edit_dir,
+                       &fd->edit_dir_len,
+                       NU_PATH_MAX,
+                       nk_filter_default);
 
         nk_layout_row_dynamic(ctx, bounds.h - row * 5, 1);
         if (nk_group_begin(ctx, "Files", NK_WINDOW_BORDER))
@@ -33,29 +71,27 @@ file_dialog (struct nk_context *ctx, struct nk_rect bounds)
             nk_layout_row_dynamic(ctx, row, 1);
             for (nu_size_t i = 0; i < count; ++i)
             {
-                if (nk_select_label(ctx,
-                                    files[i],
-                                    NK_TEXT_LEFT,
-                                    file_selected == (nu_int_t)i))
+                nk_bool   selected = fd->file_selected == (nu_int_t)i;
+                nu_sv_t   file     = nu_sv_cstr(files[i]);
+                nu_char_t basename[NU_PATH_MAX];
+                nu_sv_to_cstr(
+                    nu_path_basename(file), basename, sizeof(basename));
+                if (nk_selectable_label(ctx, basename, NK_TEXT_LEFT, &selected))
                 {
-                    file_selected = i;
-                    if (gui_is_double_click())
+                    if (selected)
                     {
-                        printf("Double click !\n");
+                        fd->file_selected = i;
+                        nu_sv_to_cstr(nu_sv_cstr(basename),
+                                      fd->edit_filename,
+                                      NU_PATH_MAX);
+                        fd->edit_filename_len = nu_strlen(basename);
                     }
                 }
+                if (selected && gui_is_double_click() && nu_isdir(file))
+                {
+                    file_dialog_change_dir(fd, file);
+                }
             }
-            // if (file_selected != (nu_int_t)old_selected)
-            // {
-            //     file_selected = old_selected;
-            //     nu_sv_to_cstr(
-            //         nu_sv_cstr(files[file_selected]), filename, NU_PATH_MAX);
-            //     filename_len = nu_strlen(files[i]);
-            // }
-            // else if (gui_is_double_click())
-            // {
-            //     printf("Double click !\n");
-            // }
             nk_group_end(ctx);
         }
 
@@ -67,8 +103,8 @@ file_dialog (struct nk_context *ctx, struct nk_rect bounds)
         nk_label(ctx, "File name:", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
         nk_edit_string(ctx,
                        NK_EDIT_FIELD,
-                       filename,
-                       &filename_len,
+                       fd->edit_filename,
+                       &fd->edit_filename_len,
                        NU_PATH_MAX,
                        nk_filter_default);
 
@@ -85,15 +121,25 @@ file_dialog (struct nk_context *ctx, struct nk_rect bounds)
         nk_combobox(ctx,
                     items,
                     NU_ARRAY_SIZE(items),
-                    &filetype_selected,
+                    &fd->filetype,
                     row,
                     nk_vec2(100, 100));
         nk_spacer(ctx);
-        nk_button_label(ctx, "Ok");
-        nk_button_label(ctx, "Cancel");
+        if (nk_button_label(ctx, "Ok"))
+        {
+            exit = NU_TRUE;
+        }
+        if (nk_button_label(ctx, "Cancel"))
+        {
+            exit = NU_TRUE;
+        }
     }
     nk_end(ctx);
+    return exit;
 }
+
+static file_dialog_t filedialog;
+static nu_bool_t     filedialog_open;
 
 void
 view_home (struct nk_context *ctx, struct nk_rect bounds)
@@ -112,6 +158,11 @@ view_home (struct nk_context *ctx, struct nk_rect bounds)
 
         if (nk_button_label(ctx, "Open"))
         {
+            if (!filedialog_open)
+            {
+                file_dialog_init(&filedialog);
+                filedialog_open = NU_TRUE;
+            }
         }
         if (nk_button_label(ctx, "Open File"))
         {
@@ -153,7 +204,13 @@ view_home (struct nk_context *ctx, struct nk_rect bounds)
     }
     nk_end(ctx);
 
-    file_dialog(ctx, central_bounds);
+    if (filedialog_open)
+    {
+        if (file_dialog(&filedialog, ctx, central_bounds))
+        {
+            filedialog_open = NU_FALSE;
+        }
+    }
 
     instance->viewport = central_bounds;
 }

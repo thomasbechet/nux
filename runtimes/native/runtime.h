@@ -11,6 +11,9 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #include <nuklear/nuklear.h>
+#include <glad/gl.h>
+#define RGFW_EXPORT
+#include <rgfw/RGFW.h>
 
 typedef void (*runtime_log_callback_t)(nu_log_level_t   level,
                                        const nu_char_t *fmt,
@@ -93,9 +96,6 @@ void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
 void        renderer_render_instance(nu_b2i_t viewport, nu_v2u_t window_size);
 
-struct RGFW_window;
-typedef struct RGFW_window RGFW_window;
-
 nu_status_t  window_init(void);
 void         window_free(void);
 RGFW_window *window_get_win(void);
@@ -111,7 +111,8 @@ void        gui_free(void);
 void        gui_update(void);
 void        gui_render(void);
 
-void      gui_char_callback(struct RGFW_window *win, unsigned int codepoint);
+void      gui_char_event(struct RGFW_window *win, unsigned int codepoint);
+void      gui_key_event(RGFW_key key, nu_bool_t pressed);
 void      gui_mouse_button_callback(struct RGFW_window *win,
                                     int                 button,
                                     double              scroll,

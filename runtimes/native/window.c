@@ -1,9 +1,7 @@
 #include "runtime.h"
-#include "core/vm.h"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
-#define RGFW_EXPORT
 #define RGFW_IMPLEMENTATION
 #include <rgfw/RGFW.h>
 
@@ -202,8 +200,6 @@ window_poll_events (void)
         {
             switch (window.win->event.type)
             {
-                case RGFW_mousePosChanged:
-                    break;
                 case RGFW_keyPressed: {
                     sys_button_t button = key_to_button(window.win->event.key);
                     nu_f32_t     axvalue;
@@ -217,7 +213,11 @@ window_poll_events (void)
                     {
                         window.axis[0][axis] = axvalue;
                     }
-                    gui_char_callback(window.win, window.win->event.key);
+                    if (window.win->event.keyChar)
+                    {
+                        gui_char_event(window.win, window.win->event.keyChar);
+                    }
+                    gui_key_event(window.win->event.key, NU_TRUE);
                 }
                 break;
                 case RGFW_keyReleased: {
@@ -249,6 +249,7 @@ window_poll_events (void)
                     {
                         window.axis[0][axis] = 0;
                     }
+                    gui_key_event(window.win->event.key, NU_FALSE);
                 }
                 break;
                 case RGFW_gamepadButtonPressed: {

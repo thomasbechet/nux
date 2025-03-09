@@ -130,37 +130,6 @@ nu_sv_join (nu_char_t *buf, nu_size_t n, nu_sv_t a, nu_sv_t b)
     return nu_sv_fmt(buf, n, NU_SV_FMT NU_SV_FMT, NU_SV_ARGS(a), NU_SV_ARGS(b));
 }
 
-nu_sv_t
-nu_path_basename (nu_sv_t path)
-{
-    for (nu_size_t n = path.size; n; --n)
-    {
-        if (path.data[n - 1] == '/')
-        {
-            return nu_sv(path.data + n, path.size - n);
-        }
-    }
-    return path;
-}
-nu_sv_t
-nu_path_dirname (nu_sv_t path)
-{
-    for (nu_size_t n = path.size; n; --n)
-    {
-        if (path.data[n - 1] == '/')
-        {
-            return nu_sv(path.data, n);
-        }
-    }
-    return path;
-}
-nu_sv_t
-nu_path_concat (nu_char_t *buf, nu_size_t n, nu_sv_t p1, nu_sv_t p2)
-{
-    return nu_sv_fmt(
-        buf, n, NU_SV_FMT "/" NU_SV_FMT, NU_SV_ARGS(p1), NU_SV_ARGS(p2));
-}
-
 const nu_char_t *
 nu_enum_to_cstr (nu_u32_t v, const nu_enum_name_map_t *map)
 {
