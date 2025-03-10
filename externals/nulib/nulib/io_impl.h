@@ -2,7 +2,7 @@
 #define NU_IO_IMPL_H
 
 #include "io.h"
-#include "nulib/nulib/string.h"
+#include "assert.h"
 
 #ifdef NU_PLATFORM_UNIX
 #include <string.h>
@@ -84,8 +84,21 @@ nu_save_bytes (nu_sv_t filename, const nu_byte_t *data, nu_size_t size)
     fclose(f);
     return n == 1 ? NU_SUCCESS : NU_FAILURE;
 }
+
+nu_sv_t
+nu_path_getcwd (nu_char_t *buf, nu_size_t n)
+{
+    if (getcwd(buf, n) != NU_NULL)
+    {
+        return nu_sv(buf, n);
+    }
+    else
+    {
+        return nu_sv_empty();
+    }
+}
 nu_bool_t
-nu_isdir (nu_sv_t path)
+nu_path_isdir (nu_sv_t path)
 {
 #ifdef NU_PLATFORM_UNIX
     nu_char_t s[NU_PATH_MAX];
@@ -101,69 +114,54 @@ nu_isdir (nu_sv_t path)
     return NU_FALSE;
 #endif
 }
-nu_size_t
-nu_list_files (nu_sv_t path, nu_char_t (*files)[NU_PATH_MAX], nu_size_t capa)
+nu_status_t
+nu_path_list_files (nu_sv_t path,
+                    nu_char_t (*files)[NU_PATH_MAX],
+                    nu_size_t  capa,
+                    nu_size_t *count)
 {
-    if (!nu_isdir(path))
-    {
-        return 0;
-    }
-    nu_size_t count = 0;
+    NU_ASSERT(path.len);
+    *count = 0;
     nu_char_t s[NU_PATH_MAX];
     nu_sv_to_cstr(path, s, NU_PATH_MAX);
-    DIR           *d;
-    struct dirent *dir;
+    DIR *d;
     d = opendir(s);
-    if (d)
+    if (!d)
     {
-        for (nu_size_t i = 0; i < capa; ++i)
+        return NU_FAILURE;
+    }
+    struct dirent *dir;
+    while ((dir = readdir(d)))
+    {
+        // Apply filter
+        if (!nu_strneq(dir->d_name, ".", NU_PATH_MAX)
+            && !nu_strneq(dir->d_name, "..", NU_PATH_MAX)
+            && !(nu_strnlen(dir->d_name, NU_PATH_MAX) && dir->d_name[0] == '.'))
         {
-            dir = readdir(d);
-            if (dir != NU_NULL)
+            if (*count < capa)
             {
-                if (!nu_sv_eq(nu_sv_cstr(dir->d_name), NU_SV("."))
-                    && !nu_sv_eq(nu_sv_cstr(dir->d_name), NU_SV("..")))
-                {
-                    nu_char_t realpath_buf[NU_PATH_MAX];
-                    nu_sv_t   realpath = nu_path_concat(realpath_buf,
-                                                      sizeof(realpath_buf),
-                                                      path,
-                                                      nu_sv_cstr(dir->d_name));
-
-                    nu_sv_to_cstr(realpath, files[count], NU_PATH_MAX);
-                    ++count;
-                }
+                nu_char_t realpath_buf[NU_PATH_MAX];
+                nu_sv_t   realpath
+                    = nu_path_concat(realpath_buf,
+                                     NU_PATH_MAX,
+                                     path,
+                                     nu_sv(dir->d_name, NU_PATH_MAX));
+                nu_sv_to_cstr(realpath, files[*count], NU_PATH_MAX);
             }
-            else
-            {
-                break;
-            }
+            ++(*count);
         }
-        closedir(d);
     }
-    return count;
+    closedir(d);
+    return NU_SUCCESS;
 }
-nu_sv_t
-nu_getcwd (nu_char_t *buf, nu_size_t n)
-{
-    if (getcwd(buf, n) != NU_NULL)
-    {
-        return nu_sv_cstr(buf);
-    }
-    else
-    {
-        return nu_sv_null();
-    }
-}
-
 nu_sv_t
 nu_path_basename (nu_sv_t path)
 {
-    for (nu_size_t n = path.size; n; --n)
+    for (nu_size_t n = path.len; n; --n)
     {
-        if (path.data[n - 1] == '/')
+        if (path.ptr[n - 1] == '/')
         {
-            return nu_sv(path.data + n, path.size - n);
+            return nu_sv_slice(path.ptr + n, path.len - n);
         }
     }
     return path;
@@ -171,11 +169,11 @@ nu_path_basename (nu_sv_t path)
 nu_sv_t
 nu_path_dirname (nu_sv_t path)
 {
-    for (nu_size_t n = path.size; n; --n)
+    for (nu_size_t n = path.len; n; --n)
     {
-        if (path.data[n - 1] == '/')
+        if (path.ptr[n - 1] == '/')
         {
-            return nu_sv(path.data, n);
+            return nu_sv_slice(path.ptr, n);
         }
     }
     return path;
@@ -183,29 +181,48 @@ nu_path_dirname (nu_sv_t path)
 nu_sv_t
 nu_path_parent (nu_sv_t path)
 {
-    // Remive trailing '/' for folder
-    if (path.size && path.data[path.size - 1] == '/')
+    NU_ASSERT(path.len);
+    // Remove trailing '/' for folder
+    if (path.ptr[path.len - 1] == '/')
     {
-        --path.size;
+        --path.len;
     }
-    if (!path.size)
+    // Remove the basename
+    for (nu_size_t n = path.len; n; --n)
     {
-        return nu_sv_null();
-    }
-    for (nu_size_t n = path.size; n; --n)
-    {
-        if (path.data[n - 1] == '/')
+        if (path.ptr[n - 1] == '/')
         {
-            return nu_sv(path.data, n - 1);
+            if (n - 1 == 0) // Special case for root dir
+            {
+                ++n;
+            }
+            return nu_sv_slice(path.ptr, n - 1);
         }
     }
-    return path;
+    return nu_sv_empty();
 }
 nu_sv_t
 nu_path_concat (nu_char_t *buf, nu_size_t n, nu_sv_t p1, nu_sv_t p2)
 {
-    return nu_sv_fmt(
-        buf, n, NU_SV_FMT "/" NU_SV_FMT, NU_SV_ARGS(p1), NU_SV_ARGS(p2));
+    if (!p1.len)
+    {
+        return nu_sv_to_cstr(p2, buf, n);
+    }
+    if (!p2.len)
+    {
+        return nu_sv_to_cstr(p1, buf, n);
+    }
+
+    const nu_char_t *fmt;
+    if (p1.ptr[p1.len - 1] == '/')
+    {
+        fmt = NU_SV_FMT NU_SV_FMT;
+    }
+    else
+    {
+        fmt = NU_SV_FMT "/" NU_SV_FMT;
+    }
+    return nu_sv_fmt(buf, n, fmt, NU_SV_ARGS(p1), NU_SV_ARGS(p2));
 }
 
 #endif

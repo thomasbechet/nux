@@ -11,64 +11,88 @@
 #endif
 
 nu_size_t
-nu_strlen (const nu_char_t *s)
+nu_strnlen (const nu_char_t *s, nu_size_t n)
 {
-    const char *p = s;
-    while (*p)
+    size_t i = 0;
+    for (; (i < n) && s[i]; ++i)
+        ;
+    return i;
+}
+void
+nu_strncpy (nu_char_t *dst, const nu_char_t *src, nu_size_t n)
+{
+    size_t i = 0;
+    while (i++ != n && (*dst++ = *src++))
+        ;
+}
+nu_int_t
+nu_strncmp (const nu_char_t *a, const nu_char_t *b, nu_size_t n)
+{
+    while (n && *a && (*a == *b))
     {
-        p++;
+        ++a;
+        ++b;
+        --n;
     }
-    return p - s;
+    if (n == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return (*(unsigned char *)a - *(unsigned char *)b);
+    }
+}
+nu_bool_t
+nu_strneq (const nu_char_t *a, const nu_char_t *b, nu_size_t n)
+{
+    return nu_strncmp(a, b, n) == 0;
 }
 
 nu_sv_t
 nu_sv (const nu_char_t *s, nu_size_t n)
 {
+    return nu_sv_slice(s, nu_strnlen(s, n));
+}
+nu_sv_t
+nu_sv_slice (const nu_char_t *s, nu_size_t n)
+{
     nu_sv_t str;
-    str.data = s;
-    str.size = n;
+    str.ptr = s;
+    str.len = n;
     return str;
 }
 nu_sv_t
-nu_sv_cstr (const nu_char_t *s)
+nu_sv_empty (void)
 {
-    return nu_sv(s, nu_strlen(s));
+    return nu_sv_slice(NU_NULL, 0);
 }
 nu_sv_t
-nu_sv_null (void)
-{
-    return nu_sv(NU_NULL, 0);
-}
-nu_bool_t
-nu_sv_is_null (nu_sv_t str)
-{
-    return str.data == NU_NULL;
-}
-void
 nu_sv_to_cstr (nu_sv_t str, nu_char_t *chars, nu_size_t n)
 {
-    NU_ASSERT(str.size < n);
+    NU_ASSERT(str.len < n);
     nu_memset(chars, 0, n);
-    nu_memcpy(chars, str.data, NU_MIN(str.size, n - 1));
+    nu_memcpy(chars, str.ptr, NU_MIN(str.len, n - 1));
+    return nu_sv(chars, str.len);
 }
 nu_bool_t
 nu_sv_eq (nu_sv_t s1, nu_sv_t s2)
 {
-    return (s1.size == s2.size && nu_memcmp(s1.data, s2.data, s1.size) == 0);
+    return (s1.len == s2.len && nu_memcmp(s1.ptr, s2.ptr, s1.len) == 0);
 }
 nu_u32_t
 nu_sv_hash (nu_sv_t s)
 {
-    return nu_hash((const nu_byte_t *)s.data, s.size);
+    return nu_hash((const nu_byte_t *)s.ptr, s.len);
 }
 nu_bool_t
 nu_sv_next (nu_sv_t s, nu_size_t *it, nu_wchar_t *c)
 {
-    if (*it >= s.size)
+    if (*it >= s.len)
     {
         return NU_FALSE;
     }
-    *c = s.data[*it];
+    *c = s.ptr[*it];
     ++(*it);
     return NU_TRUE;
 }
@@ -121,7 +145,7 @@ nu_sv_vfmt (nu_char_t *buf, nu_size_t n, const nu_char_t *format, va_list args)
 {
 #ifdef NU_STDLIB
     nu_size_t k = vsnprintf(buf, n, format, args);
-    return nu_sv(buf, k);
+    return nu_sv_slice(buf, k);
 #endif
 }
 nu_sv_t
@@ -151,7 +175,7 @@ nu_sv_to_enum (nu_sv_t sv, const nu_enum_name_map_t *map, nu_bool_t *found)
     const nu_enum_name_map_t *current = map;
     while (current->s)
     {
-        if (nu_sv_eq(nu_sv_cstr(current->s), sv))
+        if (nu_sv_eq(nu_sv_slice(current->s, current->l), sv))
         {
             *found = NU_TRUE;
             return current->v;

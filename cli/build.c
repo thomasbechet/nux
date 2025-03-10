@@ -24,7 +24,7 @@ cli_command_build (nu_u32_t argc, const nu_char_t **argv)
     nu_sv_t path_sv = NU_SV(".");
     if (path)
     {
-        path_sv = nu_sv_cstr(path);
+        path_sv = nu_sv(path, NU_PATH_MAX);
     }
     sdk_project_t project;
     nu_status_t   status;

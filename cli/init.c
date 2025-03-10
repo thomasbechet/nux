@@ -27,10 +27,10 @@ cli_command_init (nu_u32_t argc, const nu_char_t **argv)
         OPT_END(),
     };
     argparse_init(&argparse, options, usages, 0);
-    argc = argparse_parse(&argparse, argc, argv);
-    nu_status_t status
-        = sdk_generate_template(path ? nu_sv_cstr(path) : NU_SV("."),
-                                lang ? nu_sv_cstr(lang) : nu_sv_null());
+    argc               = argparse_parse(&argparse, argc, argv);
+    nu_status_t status = sdk_generate_template(
+        path ? nu_sv(path, NU_PATH_MAX) : NU_SV("."),
+        lang ? nu_sv(lang, NU_PATH_MAX) : nu_sv_empty());
     return status ? 0 : -1;
 }
 

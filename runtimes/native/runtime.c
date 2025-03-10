@@ -137,7 +137,10 @@ runtime_start (const runtime_config_t *config)
     NU_CHECK(status, goto cleanup3);
 
     // Initialize base
-    runtime_init_instance(0, config->path);
+    if (config->path.len)
+    {
+        runtime_init_instance(0, config->path);
+    }
 
     // Initialize views
     for (nu_size_t i = 0; i < config->views_count; ++i)

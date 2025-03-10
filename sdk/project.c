@@ -63,7 +63,7 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
     {
         template_file = template_rust_files;
     }
-    else if (!nu_sv_is_null(lang))
+    else
     {
         logger_log(NU_LOG_ERROR,
                    "Project language '" NU_SV_FMT
@@ -78,8 +78,11 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
         while (template_file->path)
         {
             nu_char_t filepath[NU_PATH_MAX];
-            nu_sv_t   filepath_sv = nu_path_concat(
-                filepath, NU_PATH_MAX, path, nu_sv_cstr(template_file->path));
+            nu_sv_t   filepath_sv
+                = nu_path_concat(filepath,
+                                 NU_PATH_MAX,
+                                 path,
+                                 nu_sv(template_file->path, NU_PATH_MAX));
             NU_ASSERT(nu_save_bytes(
                 filepath_sv, template_file->data, template_file->size));
             ++template_file;
@@ -126,7 +129,7 @@ sdk_compile (sdk_project_t *project)
     project->next_id   = 1;
 
     // Execute prebuild command
-    if (nu_strlen(project->prebuild))
+    if (nu_strnlen(project->prebuild, SDK_NAME_MAX))
     {
         logger_log(
             NU_LOG_INFO, "Executing prebuild command '%s'", project->prebuild);
@@ -301,7 +304,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             NU_ASSERT(type_string);
             nu_bool_t        found;
             sdk_asset_type_t type = nu_sv_to_enum(
-                nu_sv_cstr(type_string), asset_type_map, &found);
+                nu_sv(type_string, SDK_NAME_MAX), asset_type_map, &found);
             if (!found)
             {
                 logger_log(NU_LOG_ERROR, "Invalid asset type %s", type_string);
@@ -311,7 +314,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             proj->assets[i].type = type;
 
             // Parse name
-            nu_sv_to_cstr(nu_sv_cstr(name_string), asset->name, SDK_NAME_MAX);
+            nu_strncpy(asset->name, name_string, SDK_NAME_MAX);
 
             // Parse id
             proj->assets[i].id
@@ -330,8 +333,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             const nu_char_t *source_string
                 = json_object_get_string(jasset, PROJECT_ASSET_SOURCE);
             NU_ASSERT(source_string);
-            nu_sv_to_cstr(
-                nu_sv_cstr(source_string), asset->source, NU_PATH_MAX);
+            nu_strncpy(asset->source, source_string, NU_PATH_MAX);
 
             // Parse ignore
             int ignore = json_object_get_boolean(jasset, PROJECT_ASSET_IGNORE);
@@ -379,7 +381,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
         = json_object_get_string(jroot, PROJECT_PREBUILD);
     if (jprebuild)
     {
-        nu_sv_to_cstr(nu_sv_cstr(jprebuild), proj->prebuild, SDK_NAME_MAX);
+        nu_strncpy(proj->prebuild, jprebuild, SDK_NAME_MAX);
     }
 
     json_value_free(jrootv);
@@ -404,7 +406,7 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
     json_object_set_string(jroot, PROJECT_TARGET, project->target_path);
 
     // Assets
-    if (nu_strlen(project->target_path))
+    if (nu_strnlen(project->target_path, NU_PATH_MAX))
     {
         JSON_Value *jassetsv = json_value_init_object();
         NU_CHECK(jassetsv, goto cleanup1);
@@ -453,7 +455,7 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
     }
 
     // Prebuild
-    if (nu_strlen(project->prebuild))
+    if (nu_strnlen(project->prebuild, NU_PATH_MAX))
     {
         json_object_set_string(jroot, PROJECT_PREBUILD, project->prebuild);
     }

@@ -9,21 +9,21 @@
 #define NU_STRINGIFY(X)  NU_STRINGIFY_(X)
 #define NU_STRINGIFY_(X) #X
 
-#define NU_SV(str)                                     \
-    (nu_sv_t)                                          \
-    {                                                  \
-        .data = (const nu_char_t *)(str),              \
-        .size = (sizeof((str)) / sizeof((str)[0])) - 1 \
+#define NU_SV(str)                                    \
+    (nu_sv_t)                                         \
+    {                                                 \
+        .ptr = (const nu_char_t *)(str),              \
+        .len = (sizeof((str)) / sizeof((str)[0])) - 1 \
     }
 #define NU_SV_FMT       "%.*s"
-#define NU_SV_ARGS(str) (int)str.size, str.data
+#define NU_SV_ARGS(str) (int)str.len, str.ptr
 
 #define NU_ENUM_MAP(mapname, ...) \
     nu_enum_name_map_t mapname[]  \
         = { __VA_ARGS__, { .v = NU_NULL, .s = NU_NULL } };
-#define NU_ENUM_NAME(enumval, name) \
-    {                               \
-        .v = enumval, .s = name     \
+#define NU_ENUM_NAME(enumval, name)                                            \
+    {                                                                          \
+        .v = enumval, .s = name, .l = (sizeof((name)) / sizeof((name)[0])) - 1 \
     }
 
 #define NU_SV_TO_ENUM(sv, penum, map, found)                 \
@@ -41,23 +41,26 @@
 
 typedef struct
 {
-    const nu_char_t *data; // might not be null-terminated
-    nu_size_t        size;
+    const nu_char_t *ptr; // might not be null-terminated
+    nu_size_t        len;
 } nu_sv_t;
 
 typedef struct
 {
     nu_u32_t         v;
     const nu_char_t *s;
+    nu_size_t        l;
 } nu_enum_name_map_t;
 
-NU_API nu_size_t nu_strlen(const nu_char_t *s);
+NU_API nu_size_t nu_strnlen(const nu_char_t *s, nu_size_t n);
+NU_API void      nu_strncpy(nu_char_t *dst, const nu_char_t *src, nu_size_t n);
+NU_API nu_int_t nu_strncmp(const nu_char_t *a, const nu_char_t *b, nu_size_t n);
+NU_API nu_bool_t nu_strneq(const nu_char_t *a, const nu_char_t *b, nu_size_t n);
 
 NU_API nu_sv_t   nu_sv(const nu_char_t *s, nu_size_t n);
-NU_API nu_sv_t   nu_sv_cstr(const nu_char_t *s);
-NU_API nu_sv_t   nu_sv_null(void);
-NU_API nu_bool_t nu_sv_is_null(nu_sv_t str);
-NU_API void      nu_sv_to_cstr(nu_sv_t str, nu_char_t *s, nu_size_t n);
+NU_API nu_sv_t   nu_sv_slice(const nu_char_t *s, nu_size_t n);
+NU_API nu_sv_t   nu_sv_empty(void);
+NU_API nu_sv_t   nu_sv_to_cstr(nu_sv_t str, nu_char_t *s, nu_size_t n);
 NU_API nu_bool_t nu_sv_eq(nu_sv_t s1, nu_sv_t s2);
 NU_API nu_u32_t  nu_sv_hash(nu_sv_t s);
 NU_API nu_bool_t nu_sv_next(nu_sv_t s, nu_size_t *it, nu_wchar_t *c);

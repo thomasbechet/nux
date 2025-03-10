@@ -388,7 +388,16 @@ gui_update (void)
     const struct nk_rect menu_bounds = nk_rect(0, 0, size.x, 40);
     if (nk_begin(ctx, "main", menu_bounds, NK_WINDOW_NO_SCROLLBAR))
     {
-        nk_layout_row_static(ctx, 30, 130, gui.views_count);
+        nk_layout_row_template_begin(ctx, 30);
+        for (nu_size_t i = 0; i < gui.views_count; ++i)
+        {
+            nk_layout_row_template_push_static(ctx, 130);
+        }
+        nk_layout_row_template_push_dynamic(ctx);
+        nk_layout_row_template_push_static(ctx, 100);
+        nk_layout_row_template_end(ctx);
+
+        // nk_layout_row_static(ctx, 30, 130, gui.views_count);
         for (nu_size_t i = 0; i < gui.views_count; ++i)
         {
             if (nk_button_symbol_label(ctx,
@@ -400,6 +409,10 @@ gui_update (void)
             {
                 gui.active_view = i;
             }
+        }
+        nk_spacer(ctx);
+        if (nk_button_label(ctx, "Exit"))
+        {
         }
 
         nk_end(ctx);

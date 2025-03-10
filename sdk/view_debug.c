@@ -48,13 +48,14 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
         for (nu_size_t i = 0; i < instance->inspect_value_count; ++i)
         {
             inspect_value_t *value = instance->inspect_values + i;
-            if (nk_tree_push_hashed(ctx,
-                                    NK_TREE_TAB,
-                                    value->name,
-                                    NK_MINIMIZED,
-                                    value->name,
-                                    nu_strlen(value->name),
-                                    0))
+            if (nk_tree_push_hashed(
+                    ctx,
+                    NK_TREE_TAB,
+                    value->name,
+                    NK_MINIMIZED,
+                    value->name,
+                    nu_strnlen(value->name, NU_ARRAY_SIZE(value->name)),
+                    0))
             {
                 nk_layout_row_dynamic(ctx, row, 2);
                 nk_labelf(ctx, NK_TEXT_LEFT, "Address");

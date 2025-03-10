@@ -389,7 +389,7 @@ sys_draw_linestrip (vm_t *vm, const nu_f32_t *p, nu_u32_t n)
 void
 sys_draw_text (vm_t *vm, const void *text)
 {
-    os_gfx_draw_text(vm, text, nu_strlen(text));
+    os_gfx_draw_text(vm, text, nu_strnlen(text, 4096));
 }
 void
 sys_print (vm_t *vm, const void *text)

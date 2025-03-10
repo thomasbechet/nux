@@ -5,9 +5,9 @@ void
 os_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
 {
     // Find existing value at address
-    nu_u32_t         addr     = (nu_u32_t)((nu_size_t)p - (nu_size_t)vm->mem);
-    runtime_instance_t      *instance = vm->userdata;
-    inspect_value_t *value    = NU_NULL;
+    nu_u32_t            addr = (nu_u32_t)((nu_size_t)p - (nu_size_t)vm->mem);
+    runtime_instance_t *instance = vm->userdata;
+    inspect_value_t    *value    = NU_NULL;
     for (nu_size_t i = 0; i < instance->inspect_value_count; ++i)
     {
         if (instance->inspect_values[i].addr == addr)
@@ -28,7 +28,7 @@ os_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
         value->type     = type;
         value->addr     = addr;
         value->override = NU_FALSE;
-        nu_sv_to_cstr(nu_sv_cstr(name), value->name, sizeof(value->name));
+        nu_strncpy(value->name, name, sizeof(value->name));
     }
     // Read / Write value
     if (value->override)

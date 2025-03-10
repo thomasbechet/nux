@@ -160,8 +160,8 @@ compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
 {
     GLint success;
     *shader                 = glCreateShader(shader_type);
-    const GLchar *psource[] = { (const GLchar *)source.data };
-    const GLint   psize[]   = { source.size };
+    const GLchar *psource[] = { (const GLchar *)source.ptr };
+    const GLint   psize[]   = { source.len };
     glShaderSource(*shader, 1, psource, psize);
     glCompileShader(*shader);
     glGetShaderiv(*shader, GL_COMPILE_STATUS, &success);
@@ -1059,7 +1059,7 @@ os_gfx_draw_text (vm_t *vm, const void *text, nu_u32_t len)
     nu_v2u_t  pos        = vm->gfx.state.cursor;
 
     const font_t *font = &renderer.font;
-    nu_sv_t       sv   = nu_sv_cstr(text);
+    nu_sv_t       sv   = nu_sv(text, len);
     nu_b2i_t      extent
         = nu_b2i_xywh(pos.x, pos.y, font->glyph_size.x, font->glyph_size.y);
     nu_size_t  it = 0;

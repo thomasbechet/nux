@@ -109,7 +109,7 @@ main (int argc, const nu_char_t *argv[])
     }
 
     cmd_entry_t *cmd      = NULL;
-    nu_sv_t      cmd_name = nu_sv_cstr(argv[0]);
+    nu_sv_t      cmd_name = nu_sv(argv[0], NU_PATH_MAX);
     for (nu_size_t i = 0; i < NU_ARRAY_SIZE(commands); i++)
     {
         if (nu_sv_eq(commands[i].cmd, cmd_name))

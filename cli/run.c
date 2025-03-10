@@ -29,14 +29,14 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
     };
     argparse_init(&argparse, options, usages, 0);
     argc           = argparse_parse(&argparse, argc, argv);
-    nu_sv_t   path = argc >= 1 ? nu_sv_cstr(argv[0]) : nu_sv_null();
+    nu_sv_t   path = argc >= 1 ? nu_sv(argv[0], NU_PATH_MAX) : nu_sv_empty();
     nu_char_t target_path[NU_PATH_MAX];
 #ifdef NUX_BUILD_SDK
-    if (nu_sv_is_null(path))
+    if (!path.len)
     {
         path = NU_SV(".");
     }
-    if (nu_isdir(path))
+    if (nu_path_isdir(path))
     {
         sdk_project_t project;
         if (!sdk_project_load(&project, path))
@@ -44,7 +44,7 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
             return -1;
         }
         nu_memcpy(target_path, project.target_path, sizeof(target_path));
-        path = nu_sv_cstr(project.target_path);
+        path = nu_sv(project.target_path, NU_PATH_MAX);
         sdk_project_free(&project);
     }
 #endif

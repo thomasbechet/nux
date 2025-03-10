@@ -38,7 +38,7 @@ cli_command_dump (nu_u32_t argc, const nu_char_t **argv)
         return -1;
     }
     nu_status_t status
-        = sdk_dump(nu_sv_cstr(argv[0]), sort, display_table, num);
+        = sdk_dump(nu_sv(argv[0], NU_PATH_MAX), sort, display_table, num);
     return status ? 0 : -1;
 }
 
