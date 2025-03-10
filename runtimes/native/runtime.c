@@ -123,7 +123,7 @@ apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
 }
 
 nu_status_t
-runtime_start (const runtime_config_t *config)
+runtime_run (const runtime_config_t *config)
 {
     // Initialize runtime
     nu_status_t status;

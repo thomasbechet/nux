@@ -53,6 +53,6 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
 #ifdef NUX_BUILD_SDK
     config.views = sdk_views(&config.views_count);
 #endif
-    nu_status_t status = runtime_start(&config);
+    nu_status_t status = runtime_run(&config);
     return status ? 0 : -1;
 }

@@ -76,7 +76,7 @@ typedef struct
     nu_sv_t               path;
 } runtime_config_t;
 
-NU_API nu_status_t         runtime_start(const runtime_config_t *config);
+NU_API nu_status_t         runtime_run(const runtime_config_t *config);
 NU_API nu_status_t         runtime_init_instance(nu_u32_t index, nu_sv_t path);
 NU_API runtime_instance_t *runtime_instance(void);
 
