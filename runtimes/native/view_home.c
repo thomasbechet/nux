@@ -173,7 +173,7 @@ view_home (struct nk_context *ctx, struct nk_rect bounds)
     struct nk_rect left_bounds    = nk_rect(bounds.x, bounds.y, 200, bounds.h);
     struct nk_rect central_bounds = nk_rect(
         left_bounds.w, bounds.y, NU_MAX(0, bounds.w - left_bounds.w), bounds.h);
-    if (nk_begin(ctx, "Games", left_bounds, 0))
+    if (nk_begin(ctx, "Games", left_bounds, NK_WINDOW_NO_SCROLLBAR))
     {
         nk_layout_row_dynamic(ctx, row, 1);
 

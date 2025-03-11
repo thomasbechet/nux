@@ -395,7 +395,6 @@ gui_update (void)
         }
         nk_layout_row_template_push_dynamic(ctx);
         nk_layout_row_template_push_static(ctx, 100);
-        nk_layout_row_template_push_static(ctx, 100);
         nk_layout_row_template_end(ctx);
 
         // nk_layout_row_static(ctx, 30, 130, gui.views_count);
@@ -412,9 +411,6 @@ gui_update (void)
             }
         }
         nk_spacer(ctx);
-        if (nk_button_label(ctx, "Fullscreen"))
-        {
-        }
         if (nk_button_label(ctx, "Exit"))
         {
             runtime_quit();
