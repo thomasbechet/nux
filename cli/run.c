@@ -11,7 +11,7 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
 {
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux run [-h] "
+        "nux [-h] "
 #ifdef NUX_BUILD_WASM_DEBUG
         "[-d] "
 #endif

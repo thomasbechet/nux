@@ -74,6 +74,8 @@ typedef enum
 
     SYS_BUTTON_LB = 1 << 8,
     SYS_BUTTON_RB = 1 << 9,
+
+    SYS_BUTTON_COUNT = 10,
 } sys_button_t;
 
 typedef enum
@@ -87,7 +89,7 @@ typedef enum
     SYS_AXIS_RT = 4,
     SYS_AXIS_LT = 5,
 
-    SYS_AXIS_ENUM_MAX = 6
+    SYS_AXIS_COUNT = 6
 } sys_axis_t;
 
 typedef enum

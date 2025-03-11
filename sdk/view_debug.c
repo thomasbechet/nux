@@ -33,10 +33,12 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
     }
 
     // Inspector
-    const nu_size_t     row      = 25;
-    const nu_size_t     left_w   = 300;
-    const nu_size_t     bottom_h = 200;
-    runtime_instance_t *instance = runtime_instance();
+    const nu_size_t      row            = 25;
+    const nu_size_t      left_w         = 300;
+    const nu_size_t      bottom_h       = 200;
+    runtime_instance_t  *instance       = runtime_instance();
+    const struct nk_rect central_bounds = nk_rect(
+        bounds.x + left_w, bounds.y, bounds.w - left_w, bounds.h - bottom_h);
 
     // Left panel
     if (nk_begin(ctx,
@@ -44,7 +46,7 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
                  nk_rect(bounds.x, bounds.y, left_w, bounds.h - bottom_h),
                  NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE))
     {
-        // values
+        // Values
         for (nu_size_t i = 0; i < instance->inspect_value_count; ++i)
         {
             inspect_value_t *value = instance->inspect_values + i;
@@ -105,6 +107,18 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
         nk_end(ctx);
     }
 
+    // Central panel
+    if (!instance->active)
+    {
+        if (!nk_begin(ctx,
+                      "Central",
+                      central_bounds,
+                      NK_WINDOW_BACKGROUND | NK_WINDOW_BORDER))
+        {
+        }
+        nk_end(ctx);
+    }
+
     // Bottom panel
     if (nk_begin(
             ctx,
@@ -116,11 +130,5 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
     }
     nk_end(ctx);
 
-    // Instance viewport
-    {
-        instance->viewport = nk_rect(bounds.x + left_w,
-                                     bounds.y,
-                                     bounds.w - left_w,
-                                     bounds.h - bottom_h);
-    }
+    instance->viewport = central_bounds;
 }

@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    nu_sv_t cmd;
+    const nu_char_t *cmd;
     nu_u32_t (*fn)(nu_u32_t, const nu_char_t **);
 } cmd_entry_t;
 
@@ -47,15 +47,15 @@ main (int argc, const nu_char_t *argv[])
     nu_bool_t              version = NU_FALSE;
     struct argparse        argparse;
     const nu_char_t *const usages[] = {
-        "nux [-h] [-v] <command> [<args>]",
+        "nux [-h] [-v] [command | cartridge] [<args>]",
         NULL,
     };
     cmd_entry_t commands[] = {
-        { NU_SV("run"), cli_command_run },
+        { "run", cli_command_run },
 #ifdef NUX_BUILD_SDK
-        { NU_SV("init"), cli_command_init },
-        { NU_SV("build"), cli_command_build },
-        { NU_SV("dump"), cli_command_dump },
+        { "init", cli_command_init },
+        { "build", cli_command_build },
+        { "dump", cli_command_dump },
 #endif
     };
     struct argparse_option options[] = {
@@ -101,25 +101,32 @@ main (int argc, const nu_char_t *argv[])
             VM_VERSION_PATCH(VM_VERSION));
         return 0;
     }
-    else if (argc < 1)
-    {
-        argparse_usage(&argparse);
-        return -1;
-    }
 
-    cmd_entry_t *cmd      = NULL;
-    nu_sv_t      cmd_name = nu_sv(argv[0], NU_PATH_MAX);
-    for (nu_size_t i = 0; i < NU_ARRAY_SIZE(commands); i++)
+    if (argc > 0)
     {
-        if (nu_sv_eq(commands[i].cmd, cmd_name))
+        // Try to find subcommand
+        cmd_entry_t *cmd = NULL;
+        for (nu_size_t i = 0; i < NU_ARRAY_SIZE(commands); i++)
         {
-            cmd = &commands[i];
+            if (nu_strneq(commands[i].cmd, argv[0], NU_PATH_MAX))
+            {
+                cmd = &commands[i];
+                break;
+            }
+        }
+        if (cmd) // Subcommand found
+        {
+            return cmd->fn(argc, argv);
         }
     }
-    if (!cmd)
-    {
-        argparse_usage(&argparse);
-        return -1;
-    }
-    return cmd->fn(argc, argv);
+
+    // Not subcommand found, execute run by default
+
+    nu_sv_t path = argc > 0 ? nu_sv(argv[0], NU_PATH_MAX) : nu_sv_empty();
+    runtime_config_t config
+        = { .views_count = 0, .debug = NU_FALSE, .path = path };
+#ifdef NUX_BUILD_SDK
+    config.views = sdk_views(&config.views_count);
+#endif
+    return runtime_run(&config) ? 0 : -1;
 }

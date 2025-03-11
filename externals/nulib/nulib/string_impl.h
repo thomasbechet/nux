@@ -48,6 +48,28 @@ nu_strneq (const nu_char_t *a, const nu_char_t *b, nu_size_t n)
 {
     return nu_strncmp(a, b, n) == 0;
 }
+nu_sv_t
+nu_snprintf (nu_char_t *buf, nu_size_t n, const nu_char_t *format, ...)
+{
+#ifdef NU_STDLIB
+    va_list args;
+    va_start(args, format);
+    nu_sv_t r = nu_vsnprintf(buf, n, format, args);
+    va_end(args);
+    return r;
+#endif
+}
+nu_sv_t
+nu_vsnprintf (nu_char_t       *buf,
+              nu_size_t        n,
+              const nu_char_t *format,
+              va_list          args)
+{
+#ifdef NU_STDLIB
+    nu_size_t k = vsnprintf(buf, n, format, args);
+    return nu_sv_slice(buf, k);
+#endif
+}
 
 nu_sv_t
 nu_sv (const nu_char_t *s, nu_size_t n)
@@ -130,28 +152,10 @@ nu_sv_to_f32 (nu_sv_t s, nu_f32_t *v)
 #endif
 }
 nu_sv_t
-nu_sv_fmt (nu_char_t *buf, nu_size_t n, const nu_char_t *format, ...)
-{
-#ifdef NU_STDLIB
-    va_list args;
-    va_start(args, format);
-    nu_sv_t r = nu_sv_vfmt(buf, n, format, args);
-    va_end(args);
-    return r;
-#endif
-}
-nu_sv_t
-nu_sv_vfmt (nu_char_t *buf, nu_size_t n, const nu_char_t *format, va_list args)
-{
-#ifdef NU_STDLIB
-    nu_size_t k = vsnprintf(buf, n, format, args);
-    return nu_sv_slice(buf, k);
-#endif
-}
-nu_sv_t
 nu_sv_join (nu_char_t *buf, nu_size_t n, nu_sv_t a, nu_sv_t b)
 {
-    return nu_sv_fmt(buf, n, NU_SV_FMT NU_SV_FMT, NU_SV_ARGS(a), NU_SV_ARGS(b));
+    return nu_snprintf(
+        buf, n, NU_SV_FMT NU_SV_FMT, NU_SV_ARGS(a), NU_SV_ARGS(b));
 }
 
 const nu_char_t *

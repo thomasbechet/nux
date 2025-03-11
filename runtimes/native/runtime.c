@@ -1,9 +1,11 @@
 #include "runtime.h"
 #include "core/vm.h"
+#include "nulib/nulib/string.h"
 
 static struct
 {
     runtime_instance_t instances[4];
+    nu_bool_t          running;
 } runtime;
 
 static void
@@ -30,6 +32,7 @@ instance_init (runtime_instance_t *instance,
 {
     instance_free(instance);
 
+    nu_sv_to_cstr(path, instance->path, NU_PATH_MAX);
     instance->active              = NU_TRUE;
     instance->config              = *config;
     instance->vm.mem              = NU_NULL;
@@ -46,9 +49,7 @@ instance_init (runtime_instance_t *instance,
     NU_CHECK(status, goto cleanup0);
     instance->vm.userdata = instance;
 
-    nu_char_t name[NU_PATH_MAX];
-    nu_sv_to_cstr(path, name, NU_PATH_MAX);
-    status = vm_load(&instance->vm, name);
+    status = vm_load(&instance->vm, instance->path);
     NU_CHECK(status, goto cleanup0);
 
     return NU_SUCCESS;
@@ -136,10 +137,12 @@ runtime_run (const runtime_config_t *config)
     status = wamr_init(config->debug);
     NU_CHECK(status, goto cleanup3);
 
+    runtime.running = NU_TRUE;
+
     // Initialize base
     if (config->path.len)
     {
-        runtime_init_instance(0, config->path);
+        runtime_open(0, config->path);
     }
 
     // Initialize views
@@ -152,8 +155,7 @@ runtime_run (const runtime_config_t *config)
     }
 
     // Main loop
-    nu_bool_t running = NU_TRUE;
-    while (running)
+    while (runtime.running)
     {
         // Retrieve window events
         window_poll_events();
@@ -208,7 +210,7 @@ runtime_run (const runtime_config_t *config)
             switch (cmd)
             {
                 case COMMAND_EXIT:
-                    running = NU_FALSE;
+                    runtime.running = NU_FALSE;
                     break;
                 case COMMAND_SAVE_STATE:
                     break;
@@ -235,17 +237,39 @@ cleanup0:
     return status;
 }
 nu_status_t
-runtime_init_instance (nu_u32_t index, nu_sv_t path)
+runtime_open (nu_u32_t index, nu_sv_t path)
 {
     NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
     vm_config_t config;
     vm_config_default(&config);
     return instance_init(&runtime.instances[index], &config, path);
 }
+void
+runtime_close (nu_u32_t index)
+{
+    instance_free(runtime.instances + index);
+}
+void
+runtime_reset (nu_u32_t index)
+{
+    runtime_instance_t *instance = runtime_instance();
+    if (instance->active)
+    {
+        nu_char_t path[NU_PATH_MAX];
+        nu_strncpy(path, instance->path, NU_PATH_MAX);
+        runtime_close(0);
+        runtime_open(0, nu_sv(path, NU_PATH_MAX));
+    }
+}
 runtime_instance_t *
 runtime_instance (void)
 {
     return &runtime.instances[0];
+}
+void
+runtime_quit (void)
+{
+    runtime.running = NU_FALSE;
 }
 
 void *

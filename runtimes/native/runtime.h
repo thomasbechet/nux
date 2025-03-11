@@ -50,6 +50,7 @@ typedef enum
 
 typedef struct
 {
+    nu_char_t       path[NU_PATH_MAX];
     nu_bool_t       active;
     vm_config_t     config;
     vm_t            vm;
@@ -77,8 +78,11 @@ typedef struct
 } runtime_config_t;
 
 NU_API nu_status_t         runtime_run(const runtime_config_t *config);
-NU_API nu_status_t         runtime_init_instance(nu_u32_t index, nu_sv_t path);
+NU_API nu_status_t         runtime_open(nu_u32_t index, nu_sv_t path);
+NU_API void                runtime_close(nu_u32_t index);
+NU_API void                runtime_reset(nu_u32_t index);
 NU_API runtime_instance_t *runtime_instance(void);
+NU_API void                runtime_quit(void);
 
 void *native_malloc(nu_size_t n);
 void  native_free(void *p);

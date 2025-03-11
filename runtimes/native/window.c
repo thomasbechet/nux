@@ -19,7 +19,7 @@ static struct
     RGFW_rect         previous_rect;
     RGFW_window      *win;
     nu_u32_t          buttons[SYS_MAX_PLAYER_COUNT];
-    nu_f32_t          axis[SYS_MAX_PLAYER_COUNT][SYS_AXIS_ENUM_MAX];
+    nu_f32_t          axis[SYS_MAX_PLAYER_COUNT][SYS_AXIS_COUNT];
     runtime_command_t cmds[MAX_COMMAND];
     nu_size_t         cmds_count;
     nu_f32_t          scale_factor;

@@ -222,7 +222,7 @@ nu_path_concat (nu_char_t *buf, nu_size_t n, nu_sv_t p1, nu_sv_t p2)
     {
         fmt = NU_SV_FMT "/" NU_SV_FMT;
     }
-    return nu_sv_fmt(buf, n, fmt, NU_SV_ARGS(p1), NU_SV_ARGS(p2));
+    return nu_snprintf(buf, n, fmt, NU_SV_ARGS(p1), NU_SV_ARGS(p2));
 }
 
 #endif
