@@ -6,8 +6,10 @@ if [[ ! -d $ROOT_DIR ]]; then
     exit 1
 fi
 
-find $ROOT_DIR/runtimes/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
+find $ROOT_DIR/runtimes/native/runtime -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
+find $ROOT_DIR/runtimes/native/cli -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
+find $ROOT_DIR/runtimes/native/sdk  -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
+find $ROOT_DIR/runtimes/native/core -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
 find $ROOT_DIR/examples/ -type f -regex '.*\(h\|c\)^' -exec clang-format -i {} \;
 find $ROOT_DIR/nuxlib/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
 find $ROOT_DIR/externals/nulib/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
-find $ROOT_DIR/cli/ -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;

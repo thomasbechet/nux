@@ -60,7 +60,22 @@
 #else
 #define NU_BIG_ENDIAN (!*(unsigned char *)&(uint16_t) { 1 })
 #endif
-#define NU_UNUSED(x) (void)x
+
+#define NU_UNUSED0()
+#define NU_UNUSED1(a)             (void)(a)
+#define NU_UNUSED2(a, b)          (void)(a), NU_UNUSED1(b)
+#define NU_UNUSED3(a, b, c)       (void)(a), NU_UNUSED2(b, c)
+#define NU_UNUSED4(a, b, c, d)    (void)(a), NU_UNUSED3(b, c, d)
+#define NU_UNUSED5(a, b, c, d, e) (void)(a), NU_UNUSED4(b, c, d, e)
+
+#define NU_VA_NUM_ARGS_IMPL(_0, _1, _2, _3, _4, _5, N, ...) N
+#define NU_VA_NUM_ARGS(...) \
+    NU_VA_NUM_ARGS_IMPL(100, ##__VA_ARGS__, 5, 4, 3, 2, 1, 0)
+
+#define NU_ALL_UNUSED_IMPL_(nargs) NU_UNUSED##nargs
+#define NU_ALL_UNUSED_IMPL(nargs)  NU_ALL_UNUSED_IMPL_(nargs)
+#define NU_UNUSED(...) \
+    NU_ALL_UNUSED_IMPL(NU_VA_NUM_ARGS(__VA_ARGS__))(__VA_ARGS__)
 
 #ifdef NU_CXX
 #define NU_VOID_CAST(type, expr) (static_cast<decltype(type)>(expr))

@@ -6,6 +6,7 @@
 
 #define NU_PATH_MAX 256
 
+#ifdef NU_STDLIB
 NU_API nu_status_t nu_load_bytes(nu_sv_t    filename,
                                  nu_byte_t *data,
                                  nu_size_t *size);
@@ -19,12 +20,14 @@ nu_status_t      nu_path_list_files(nu_sv_t path,
                                     nu_char_t (*files)[NU_PATH_MAX],
                                     nu_size_t  capa,
                                     nu_size_t *count);
-NU_API nu_sv_t   nu_path_basename(nu_sv_t path);
-NU_API nu_sv_t   nu_path_dirname(nu_sv_t path);
-NU_API nu_sv_t   nu_path_parent(nu_sv_t path);
-NU_API nu_sv_t   nu_path_concat(nu_char_t *buf,
-                                nu_size_t  n,
-                                nu_sv_t    p1,
-                                nu_sv_t    p2);
+#endif
+
+NU_API nu_sv_t nu_path_basename(nu_sv_t path);
+NU_API nu_sv_t nu_path_dirname(nu_sv_t path);
+NU_API nu_sv_t nu_path_parent(nu_sv_t path);
+NU_API nu_sv_t nu_path_concat(nu_char_t *buf,
+                              nu_size_t  n,
+                              nu_sv_t    p1,
+                              nu_sv_t    p2);
 
 #endif

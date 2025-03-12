@@ -6,10 +6,10 @@ if [[ ! -d $ROOT_DIR ]]; then
     exit 1
 fi
 
-TEMPLATES=$ROOT_DIR/runtimes/native/sdk/templates
+TEMPLATES=$ROOT_DIR/runtimes/native/data/templates
 OUTPUT=$ROOT_DIR/runtimes/native/sdk/templates_data.c.inc
 
-printf "#include <nulib/nulib.h>\n" >> $OUTPUT
+printf "#include <nulib/nulib.h>\n" > $OUTPUT
 printf "typedef struct
 {const nu_char_t *path; const nu_byte_t *data; nu_size_t size; } sdk_template_file_t;\n" >> $OUTPUT
 

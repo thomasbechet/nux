@@ -4,6 +4,8 @@
 #include "io.h"
 #include "assert.h"
 
+#ifdef NU_STDLIB
+
 #ifdef NU_PLATFORM_UNIX
 #include <string.h>
 #include <sys/stat.h>
@@ -88,6 +90,7 @@ nu_save_bytes (nu_sv_t filename, const nu_byte_t *data, nu_size_t size)
 nu_sv_t
 nu_path_getcwd (nu_char_t *buf, nu_size_t n)
 {
+#ifdef NU_PLATFORM_UNIX
     if (getcwd(buf, n) != NU_NULL)
     {
         return nu_sv(buf, n);
@@ -96,6 +99,10 @@ nu_path_getcwd (nu_char_t *buf, nu_size_t n)
     {
         return nu_sv_empty();
     }
+#else
+    NU_UNUSED(buf, n);
+    return nu_sv_empty();
+#endif
 }
 nu_bool_t
 nu_path_isdir (nu_sv_t path)
@@ -110,7 +117,7 @@ nu_path_isdir (nu_sv_t path)
     }
     return S_ISDIR(statbuf.st_mode);
 #else
-    (void)path;
+    NU_UNUSED(path);
     return NU_FALSE;
 #endif
 }
@@ -120,6 +127,7 @@ nu_path_list_files (nu_sv_t path,
                     nu_size_t  capa,
                     nu_size_t *count)
 {
+#ifdef NU_PLATFORM_UNIX
     NU_ASSERT(path.len);
     *count = 0;
     nu_char_t s[NU_PATH_MAX];
@@ -153,7 +161,13 @@ nu_path_list_files (nu_sv_t path,
     }
     closedir(d);
     return NU_SUCCESS;
+#else
+    NU_UNUSED(path, files, capa, count);
+    return NU_FAILURE;
+#endif
 }
+#endif
+
 nu_sv_t
 nu_path_basename (nu_sv_t path)
 {

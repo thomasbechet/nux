@@ -10,7 +10,7 @@ if __name__ == "__main__":
     parser.add_argument("rootdir")
     args = parser.parse_args()
 
-    font_path = os.path.join(args.rootdir, "runtimes/native/runtime/fonts/PublicPixel.ttf")
+    font_path = os.path.join(args.rootdir, "runtimes/native/data/fonts/PublicPixel.ttf")
     font = ImageFont.truetype(font_path, 8)
     left, top, right, bottom = font.getbbox("A", stroke_width=0)
     w = right - left + 1

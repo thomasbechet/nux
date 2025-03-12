@@ -6,10 +6,10 @@ if [[ ! -d $ROOT_DIR ]]; then
     exit 1
 fi
 
-SHADERS=$ROOT_DIR/runtimes/native/runtime/shaders
+SHADERS=$ROOT_DIR/runtimes/native/data/shaders
 OUTPUT=$ROOT_DIR/runtimes/native/runtime/shaders_data.c.inc
 
-printf "#include <nulib/nulib.h>\n" >> $OUTPUT
+printf "#include <nulib/nulib.h>\n" > $OUTPUT
 
 for file in $SHADERS/*; do
     name="shader_$(basename $file | tr '.' '_')" 

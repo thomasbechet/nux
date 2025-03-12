@@ -90,18 +90,19 @@ typedef enum
     BUTTON_LEFT  = 1 << 6,
     BUTTON_RIGHT = 1 << 7,
     BUTTON_LB    = 1 << 8,
-    BUTTON_RB    = 1 << 9
+    BUTTON_RB    = 1 << 9,
+    BUTTON_COUNT = 10
 } button_t;
 
 typedef enum
 {
-    AXIS_LEFTX    = 0,
-    AXIS_LEFTY    = 1,
-    AXIS_RIGHTX   = 2,
-    AXIS_RIGHTY   = 3,
-    AXIS_RT       = 4,
-    AXIS_LT       = 5,
-    AXIS_ENUM_MAX = 6
+    AXIS_LEFTX  = 0,
+    AXIS_LEFTY  = 1,
+    AXIS_RIGHTX = 2,
+    AXIS_RIGHTY = 3,
+    AXIS_RT     = 4,
+    AXIS_LT     = 5,
+    AXIS_COUNT  = 6
 } axis_t;
 
 typedef enum
