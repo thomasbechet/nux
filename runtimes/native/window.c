@@ -7,15 +7,10 @@
 
 #define MAX_COMMAND 64
 
-typedef struct
-{
-} layout_t;
-
 static struct
 {
     nu_bool_t         fullscreen;
     nu_bool_t         switch_fullscreen;
-    layout_t          layout;
     RGFW_rect         previous_rect;
     RGFW_window      *win;
     nu_u32_t          buttons[SYS_MAX_PLAYER_COUNT];

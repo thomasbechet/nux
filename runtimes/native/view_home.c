@@ -87,16 +87,8 @@ file_dialog (file_dialog_t     *fd,
                 nu_sv_t   file     = nu_sv(files[i], NU_PATH_MAX);
                 nu_char_t basename[NU_PATH_MAX];
                 nu_sv_to_cstr(nu_path_basename(file), basename, NU_PATH_MAX);
-                if (nk_selectable_label(ctx, basename, NK_TEXT_LEFT, &selected))
-                {
-                    if (selected)
-                    {
-                        fd->file_selected = i;
-                        nu_strncpy(fd->edit_filename, basename, NU_PATH_MAX);
-                        fd->edit_filename_len
-                            = nu_strnlen(basename, NU_PATH_MAX);
-                    }
-                }
+
+                // Must be checked before selectable label update
                 if (selected && gui_is_double_click())
                 {
                     if (nu_path_isdir(file))
@@ -108,6 +100,17 @@ file_dialog (file_dialog_t     *fd,
                         nu_strncpy(output, files[i], NU_PATH_MAX);
                         fd->open = NU_FALSE;
                         exit     = NU_TRUE;
+                    }
+                }
+
+                if (nk_selectable_label(ctx, basename, NK_TEXT_LEFT, &selected))
+                {
+                    if (selected)
+                    {
+                        fd->file_selected = i;
+                        nu_strncpy(fd->edit_filename, basename, NU_PATH_MAX);
+                        fd->edit_filename_len
+                            = nu_strnlen(basename, NU_PATH_MAX);
                     }
                 }
             }
@@ -214,20 +217,18 @@ view_home (struct nk_context *ctx, struct nk_rect bounds)
             nk_layout_row_dynamic(ctx, row, 1);
 
             // Viewport mode
-            {
-                nk_label(ctx, "Viewport mode:", NK_TEXT_LEFT);
-                const nu_char_t *modes[] = { "HIDDEN",
-                                             "FIXED",
-                                             "FIXED BEST FIT",
-                                             "STRETCH KEEP ASPECT",
-                                             "STRETCH" };
-                instance->viewport_mode  = nk_combo(ctx,
-                                                   modes,
-                                                   NK_LEN(modes),
-                                                   instance->viewport_mode,
-                                                   row,
-                                                   nk_vec2(200, 200));
-            }
+            nk_label(ctx, "Viewport mode:", NK_TEXT_LEFT);
+            const nu_char_t *modes[] = { "HIDDEN",
+                                         "FIXED",
+                                         "FIXED BEST FIT",
+                                         "STRETCH KEEP ASPECT",
+                                         "STRETCH" };
+            instance->viewport_mode  = nk_combo(ctx,
+                                               modes,
+                                               NK_LEN(modes),
+                                               instance->viewport_mode,
+                                               row,
+                                               nk_vec2(200, 200));
         }
     }
     nk_end(ctx);

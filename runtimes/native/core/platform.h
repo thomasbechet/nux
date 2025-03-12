@@ -44,7 +44,8 @@ void os_gfx_draw_blit(
 nu_status_t os_cart_mount(vm_t *vm, const nu_char_t *name);
 nu_status_t os_cart_seek(vm_t *vm, nu_size_t n);
 nu_size_t   os_cart_read(vm_t *vm, void *p, nu_size_t n);
-void        os_gamepad_update(vm_t *vm);
+
+void os_gamepad_update(vm_t *vm);
 
 nu_status_t os_cpu_load_wasm(vm_t      *vm,
                              nu_byte_t *buffer,
