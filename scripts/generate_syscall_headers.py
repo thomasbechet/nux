@@ -96,7 +96,7 @@ if __name__ == "__main__":
     # nux.h
     template = env.get_template("nux.h.jinja")
     r = template.render(functions=functions, enums=enums)
-    for output in ["sdk/templates/c/src/nux.h", "sdk/templates/cxx/src/nux.h"]:
+    for output in ["runtimes/native/sdk/templates/c/src/nux.h", "runtimes/native/sdk/templates/cxx/src/nux.h"]:
         with open(os.path.join(args.rootdir, output), "w") as f:
             f.write(r)
             f.close()
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # wasm_native.h
     template = env.get_template("wasm_native.h.jinja")
     r = template.render(functions=functions, enums=enums)
-    output = "runtimes/native/wasm_native.c.inc"
+    output = "runtimes/native/runtime/wasm_native.c.inc"
     with open(os.path.join(args.rootdir, output), "w") as f:
         f.write(r)
         f.close()

@@ -2,9 +2,9 @@
 
 #include <argparse/argparse.h>
 #include <core/vm.h>
-#include <runtime.h>
+#include <runtime/runtime.h>
 #ifdef NUX_BUILD_SDK
-#include <sdk.h>
+#include <sdk/sdk.h>
 #endif
 
 typedef struct

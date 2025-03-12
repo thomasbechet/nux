@@ -1,6 +1,6 @@
 #include "sdk.h"
 
-#include <runtime.h>
+#include <runtime/runtime.h>
 
 nu_status_t
 sdk_wasm_load (sdk_project_asset_t *asset, JSON_Object *jasset)

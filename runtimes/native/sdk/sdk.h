@@ -1,7 +1,7 @@
 #ifndef SDK_H
 #define SDK_H
 
-#include <runtime.h>
+#include <runtime/runtime.h>
 #include <core/vm.h>
 #include <parson/parson.h>
 

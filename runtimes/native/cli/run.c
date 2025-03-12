@@ -1,9 +1,9 @@
 #include "cli.h"
 
 #include <argparse/argparse.h>
-#include <runtime.h>
+#include <runtime/runtime.h>
 #ifdef NUX_BUILD_SDK
-#include <sdk.h>
+#include <sdk/sdk.h>
 #endif
 
 nu_u32_t

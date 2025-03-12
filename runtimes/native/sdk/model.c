@@ -1,6 +1,6 @@
 #include "sdk.h"
 
-#include <runtime.h>
+#include <runtime/runtime.h>
 #include <core/vm.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>

@@ -3,7 +3,7 @@
 #ifdef NUX_BUILD_SDK
 
 #include <argparse/argparse.h>
-#include <sdk.h>
+#include <sdk/sdk.h>
 
 nu_u32_t
 cli_command_dump (nu_u32_t argc, const nu_char_t **argv)
