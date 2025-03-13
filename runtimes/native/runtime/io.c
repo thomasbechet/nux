@@ -10,6 +10,10 @@ os_cart_mount (vm_t *vm, const nu_char_t *name)
 {
     io.file = fopen((char *)name, "rb");
     NU_ASSERT(io.file);
+    if (!io.file)
+    {
+        return NU_FAILURE;
+    }
     return NU_SUCCESS;
 }
 nu_status_t
