@@ -145,15 +145,6 @@ runtime_run (const runtime_config_t *config)
         runtime_open(0, config->path);
     }
 
-    // Initialize views
-    for (nu_size_t i = 0; i < config->views_count; ++i)
-    {
-        if (config->views[i].init)
-        {
-            config->views[i].init();
-        }
-    }
-
     // Main loop
     while (runtime.running)
     {

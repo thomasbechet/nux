@@ -7,9 +7,9 @@
 [x] Draw primitives
 [x] Draw color
 [x] Fix 'Is a directory'
+[x] Remove os_gpu_init (probably useless)
 [ ] Add dependencies section to README
 [~] Gamepad example (improve gamepad support)
-[ ] Remove os_gpu_init (probably useless)
 [ ] Model animation
 [ ] Check bounds for 2d rendering
 [ ] Scissor / Viewport commands

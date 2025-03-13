@@ -123,10 +123,6 @@ main (int argc, const nu_char_t *argv[])
     // Not subcommand found, execute run by default
 
     nu_sv_t path = argc > 0 ? nu_sv(argv[0], NU_PATH_MAX) : nu_sv_empty();
-    runtime_config_t config
-        = { .views_count = 0, .debug = NU_FALSE, .path = path };
-#ifdef NUX_BUILD_SDK
-    config.views = sdk_views(&config.views_count);
-#endif
+    runtime_config_t config = { .debug = NU_FALSE, .path = path };
     return runtime_run(&config) ? 0 : -1;
 }

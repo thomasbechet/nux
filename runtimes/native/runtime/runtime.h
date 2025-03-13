@@ -64,17 +64,8 @@ typedef struct
 
 typedef struct
 {
-    const nu_char_t *name;
-    void (*init)(void);
-    void (*update)(struct nk_context *ctx, struct nk_rect viewport);
-} runtime_view_t;
-
-typedef struct
-{
-    const runtime_view_t *views;
-    nu_size_t             views_count;
-    nu_bool_t             debug;
-    nu_sv_t               path;
+    nu_bool_t debug;
+    nu_sv_t   path;
 } runtime_config_t;
 
 NU_API nu_status_t         runtime_run(const runtime_config_t *config);
@@ -123,7 +114,6 @@ void      gui_mouse_button_callback(struct RGFW_window *win,
                                     int                 pressed);
 nu_bool_t gui_is_double_click(void);
 
-void views_init(nu_sv_t path);
 void view_home(struct nk_context *ctx, struct nk_rect bounds);
 void view_controls(struct nk_context *ctx, struct nk_rect bounds);
 void view_settings(struct nk_context *ctx, struct nk_rect bounds);

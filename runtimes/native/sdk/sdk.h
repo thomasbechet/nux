@@ -62,7 +62,6 @@ NU_API nu_status_t sdk_dump(nu_sv_t   path,
 NU_API nu_status_t sdk_project_load(sdk_project_t *project, nu_sv_t path);
 NU_API nu_status_t sdk_project_save(const sdk_project_t *project, nu_sv_t path);
 NU_API void        sdk_project_free(sdk_project_t *project);
-NU_API runtime_view_t *sdk_views(nu_size_t *count);
 
 void view_debug(struct nk_context *ctx, struct nk_rect bounds);
 
