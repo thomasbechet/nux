@@ -80,7 +80,8 @@ if __name__ == "__main__":
 
     prelude = """
     typedef char nu_char_t;\n
-    typedef int nu_u32_t;\n
+    typedef int nu_i32_t;\n
+    typedef unsigned int nu_u32_t;\n
     typedef float nu_f32_t;\n
     typedef int nu_status_t;\n
     """

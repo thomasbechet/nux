@@ -138,35 +138,37 @@ typedef enum
 
 WASM_EXPORT("trace")
 void trace(const void *text);
-WASM_EXPORT("inspect")
-void inspect(const void *name, u32 type, void *p);
+WASM_EXPORT("inspect_i32")
+void inspect_i32(const void *name, u32 *p);
+WASM_EXPORT("inspect_f32")
+void inspect_f32(const void *name, f32 *p);
 WASM_EXPORT("console_info")
 u32 console_info(u32 info);
 WASM_EXPORT("global_time")
 f32 global_time();
 WASM_EXPORT("delta_time")
 f32 delta_time();
-WASM_EXPORT("init_scope")
-void init_scope(u32 id, u32 size);
+WASM_EXPORT("create_scope")
+void create_scope(u32 id, u32 size);
 WASM_EXPORT("rewind_scope")
 void rewind_scope(u32 id);
 WASM_EXPORT("set_active_scope")
 void set_active_scope(u32 id);
-WASM_EXPORT("init_texture")
-void init_texture(u32 id, u32 size);
+WASM_EXPORT("create_texture")
+void create_texture(u32 id, u32 size);
 WASM_EXPORT("update_texture")
 void update_texture(u32 id, u32 x, u32 y, u32 w, u32 h, const void *p);
-WASM_EXPORT("init_mesh")
-void init_mesh(u32 id, u32 count, u32 primitive, u32 attribs);
+WASM_EXPORT("create_mesh")
+void create_mesh(u32 id, u32 count, u32 primitive, u32 attribs);
 WASM_EXPORT("update_mesh")
 void update_mesh(u32 id, u32 attribs, u32 first, u32 count, const void *p);
-WASM_EXPORT("init_model")
-void init_model(u32 id, u32 count);
+WASM_EXPORT("create_model")
+void create_model(u32 id, u32 count);
 WASM_EXPORT("update_model")
 void update_model(
     u32 id, u32 node, u32 mesh, u32 texture, u32 parent, const f32 *transform);
-WASM_EXPORT("init_spritesheet")
-void init_spritesheet(
+WASM_EXPORT("create_spritesheet")
+void create_spritesheet(
     u32 id, u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
 WASM_EXPORT("set_render_state")
 void set_render_state(u32 state, const void *p);

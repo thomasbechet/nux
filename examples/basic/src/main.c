@@ -27,7 +27,7 @@ update (void)
     nu_f32_t near = 50;
     set_fog_density(1);
     set_fog_near(near);
-    inspect("rotation", INSPECT_F32, &rotation);
+    inspect_f32("rotation", &rotation);
     set_fog_far(near + 100);
     clear(c);
     c = nu_color_from_vec4(nu_v4(0.7, 0.7, 0.7, 1)).rgba;
@@ -69,11 +69,11 @@ update (void)
     set_color(0xFFFFFFFF);
 
     m = nu_m4_translate(nu_v3(10, 0, 0));
-    inspect("scale", INSPECT_F32, &scale);
+    inspect_f32("scale", &scale);
     m = nu_m4_mul(m, nu_m4_scale(nu_v3s(scale)));
     set_transform(m.data);
     nu_f32_t transparency = 1;
-    inspect("transparency", INSPECT_F32, &transparency);
+    inspect_f32("transparency", &transparency);
     set_color(nu_color_from_vec4(nu_v4(1, 0, 0, transparency)).rgba);
     // color(nu_color(255, 0, 0, 128).rgba);
     draw_model(MODEL_ARIANE6);

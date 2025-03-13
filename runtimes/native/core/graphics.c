@@ -67,7 +67,7 @@ gfx_end_frame (vm_t *vm)
 }
 
 nu_status_t
-sys_init_texture (vm_t *vm, nu_u32_t id, nu_u32_t size)
+sys_create_texture (vm_t *vm, nu_u32_t id, nu_u32_t size)
 {
     if (size < SYS_MIN_TEXTURE_SIZE || size > SYS_MAX_TEXTURE_SIZE)
     {
@@ -111,11 +111,11 @@ sys_update_texture (vm_t       *vm,
     return NU_SUCCESS;
 }
 nu_status_t
-sys_init_mesh (vm_t                  *vm,
-               nu_u32_t               id,
-               nu_u32_t               count,
-               sys_primitive_t        primitive,
-               sys_vertex_attribute_t attributes)
+sys_create_mesh (vm_t                  *vm,
+                 nu_u32_t               id,
+                 nu_u32_t               count,
+                 sys_primitive_t        primitive,
+                 sys_vertex_attribute_t attributes)
 {
     resource_t *res = vm_set_res(vm, id, RESOURCE_MESH);
     NU_CHECK(res, return NU_FAILURE);
@@ -193,7 +193,7 @@ sys_update_mesh (vm_t                  *vm,
 }
 
 nu_status_t
-sys_init_model (vm_t *vm, nu_u32_t id, nu_u32_t node_count)
+sys_create_model (vm_t *vm, nu_u32_t id, nu_u32_t node_count)
 {
     resource_t *res = vm_set_res(vm, id, RESOURCE_MODEL);
     NU_CHECK(res, return NU_FAILURE);
@@ -229,13 +229,13 @@ sys_update_model (vm_t           *vm,
 }
 
 nu_status_t
-sys_init_spritesheet (vm_t    *vm,
-                      nu_u32_t id,
-                      nu_u32_t texture,
-                      nu_u32_t row,
-                      nu_u32_t col,
-                      nu_u32_t fwidth,
-                      nu_u32_t fheight)
+sys_create_spritesheet (vm_t    *vm,
+                        nu_u32_t id,
+                        nu_u32_t texture,
+                        nu_u32_t row,
+                        nu_u32_t col,
+                        nu_u32_t fwidth,
+                        nu_u32_t fheight)
 {
     resource_t *res = vm_set_res(vm, id, RESOURCE_SPRITESHEET);
     NU_CHECK(res, return NU_FAILURE);

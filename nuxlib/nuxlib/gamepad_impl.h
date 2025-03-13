@@ -83,7 +83,7 @@ void
 nux_gamepad_setup (nu_u32_t spritesheet, nu_u32_t texture)
 {
     nux__gamepad_spriteheet = spritesheet;
-    init_spritesheet(spritesheet, texture, 10, 9, 16, 16);
+    create_spritesheet(spritesheet, texture, 10, 9, 16, 16);
 }
 void
 nux_draw_gamepad (nu_u32_t player, nu_u32_t x, nu_u32_t y)

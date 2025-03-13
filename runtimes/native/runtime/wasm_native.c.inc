@@ -8,13 +8,16 @@ trace (wasm_exec_env_t env, const nu_char_t *text)
     sys_trace(vm, text);
 }
 static void
-inspect (wasm_exec_env_t    env,
-         const nu_char_t   *name,
-         sys_inspect_type_t type,
-         void              *p)
+inspect_i32 (wasm_exec_env_t env, const nu_char_t *name, nu_i32_t *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_inspect(vm, name, type, p);
+    sys_inspect_i32(vm, name, p);
+}
+static void
+inspect_f32 (wasm_exec_env_t env, const nu_char_t *name, nu_f32_t *p)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    sys_inspect_f32(vm, name, p);
 }
 static nu_u32_t
 console_info (wasm_exec_env_t env, sys_console_info_t info)
@@ -35,10 +38,10 @@ delta_time (wasm_exec_env_t env)
     return sys_delta_time(vm);
 }
 static nu_status_t
-init_scope (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
+create_scope (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_init_scope(vm, id, size);
+    return sys_create_scope(vm, id, size);
 }
 static nu_status_t
 rewind_scope (wasm_exec_env_t env, nu_u32_t id)
@@ -53,10 +56,10 @@ set_active_scope (wasm_exec_env_t env, nu_u32_t id)
     sys_set_active_scope(vm, id);
 }
 static nu_status_t
-init_texture (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
+create_texture (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_init_texture(vm, id, size);
+    return sys_create_texture(vm, id, size);
 }
 static nu_status_t
 update_texture (wasm_exec_env_t env,
@@ -71,14 +74,14 @@ update_texture (wasm_exec_env_t env,
     return sys_update_texture(vm, id, x, y, w, h, p);
 }
 static nu_status_t
-init_mesh (wasm_exec_env_t        env,
-           nu_u32_t               id,
-           nu_u32_t               count,
-           sys_primitive_t        primitive,
-           sys_vertex_attribute_t attribs)
+create_mesh (wasm_exec_env_t        env,
+             nu_u32_t               id,
+             nu_u32_t               count,
+             sys_primitive_t        primitive,
+             sys_vertex_attribute_t attribs)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_init_mesh(vm, id, count, primitive, attribs);
+    return sys_create_mesh(vm, id, count, primitive, attribs);
 }
 static nu_status_t
 update_mesh (wasm_exec_env_t        env,
@@ -92,10 +95,10 @@ update_mesh (wasm_exec_env_t        env,
     return sys_update_mesh(vm, id, attribs, first, count, p);
 }
 static nu_status_t
-init_model (wasm_exec_env_t env, nu_u32_t id, nu_u32_t count)
+create_model (wasm_exec_env_t env, nu_u32_t id, nu_u32_t count)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_init_model(vm, id, count);
+    return sys_create_model(vm, id, count);
 }
 static nu_status_t
 update_model (wasm_exec_env_t env,
@@ -110,16 +113,16 @@ update_model (wasm_exec_env_t env,
     return sys_update_model(vm, id, node, mesh, texture, parent, transform);
 }
 static nu_status_t
-init_spritesheet (wasm_exec_env_t env,
-                  nu_u32_t        id,
-                  nu_u32_t        texture,
-                  nu_u32_t        row,
-                  nu_u32_t        col,
-                  nu_u32_t        fwidth,
-                  nu_u32_t        fheight)
+create_spritesheet (wasm_exec_env_t env,
+                    nu_u32_t        id,
+                    nu_u32_t        texture,
+                    nu_u32_t        row,
+                    nu_u32_t        col,
+                    nu_u32_t        fwidth,
+                    nu_u32_t        fheight)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_init_spritesheet(vm, id, texture, row, col, fwidth, fheight);
+    return sys_create_spritesheet(vm, id, texture, row, col, fwidth, fheight);
 }
 static void
 set_render_state (wasm_exec_env_t env, sys_render_state_t state, const void *p)
@@ -281,20 +284,21 @@ axis (wasm_exec_env_t env, nu_u32_t player, sys_axis_t axis)
 
 static NativeSymbol wasm_native_symbols[]
     = { EXPORT_WASM_API_WITH_SIG(trace, "(*)"),
-        EXPORT_WASM_API_WITH_SIG(inspect, "(*i*)"),
+        EXPORT_WASM_API_WITH_SIG(inspect_i32, "(**)"),
+        EXPORT_WASM_API_WITH_SIG(inspect_f32, "(**)"),
         EXPORT_WASM_API_WITH_SIG(console_info, "(i)i"),
         EXPORT_WASM_API_WITH_SIG(global_time, "()f"),
         EXPORT_WASM_API_WITH_SIG(delta_time, "()f"),
-        EXPORT_WASM_API_WITH_SIG(init_scope, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(create_scope, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(rewind_scope, "(i)"),
         EXPORT_WASM_API_WITH_SIG(set_active_scope, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(init_texture, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(create_texture, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
-        EXPORT_WASM_API_WITH_SIG(init_mesh, "(iiii)"),
+        EXPORT_WASM_API_WITH_SIG(create_mesh, "(iiii)"),
         EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
-        EXPORT_WASM_API_WITH_SIG(init_model, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(create_model, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
-        EXPORT_WASM_API_WITH_SIG(init_spritesheet, "(iiiiii)"),
+        EXPORT_WASM_API_WITH_SIG(create_spritesheet, "(iiiiii)"),
         EXPORT_WASM_API_WITH_SIG(set_render_state, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(get_render_state, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(set_scissor, "(iiii)"),

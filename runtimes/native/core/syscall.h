@@ -120,19 +120,17 @@ typedef enum
 } sys_inspect_type_t;
 
 void     sys_trace(vm_t *vm, const nu_char_t *text);
-void     sys_inspect(vm_t              *vm,
-                     const nu_char_t   *name,
-                     sys_inspect_type_t type,
-                     void              *p);
+void     sys_inspect_i32(vm_t *vm, const nu_char_t *name, nu_i32_t *p);
+void     sys_inspect_f32(vm_t *vm, const nu_char_t *name, nu_f32_t *p);
 nu_u32_t sys_console_info(vm_t *vm, sys_console_info_t info);
 nu_f32_t sys_global_time(vm_t *vm);
 nu_f32_t sys_delta_time(vm_t *vm);
 
-nu_status_t sys_init_scope(vm_t *vm, nu_u32_t id, nu_u32_t size);
+nu_status_t sys_create_scope(vm_t *vm, nu_u32_t id, nu_u32_t size);
 nu_status_t sys_rewind_scope(vm_t *vm, nu_u32_t id);
 void        sys_set_active_scope(vm_t *vm, nu_u32_t id);
 
-nu_status_t sys_init_texture(vm_t *vm, nu_u32_t id, nu_u32_t size);
+nu_status_t sys_create_texture(vm_t *vm, nu_u32_t id, nu_u32_t size);
 nu_status_t sys_update_texture(vm_t       *vm,
                                nu_u32_t    id,
                                nu_u32_t    x,
@@ -141,11 +139,11 @@ nu_status_t sys_update_texture(vm_t       *vm,
                                nu_u32_t    h,
                                const void *p);
 
-nu_status_t sys_init_mesh(vm_t                  *vm,
-                          nu_u32_t               id,
-                          nu_u32_t               count,
-                          sys_primitive_t        primitive,
-                          sys_vertex_attribute_t attribs);
+nu_status_t sys_create_mesh(vm_t                  *vm,
+                            nu_u32_t               id,
+                            nu_u32_t               count,
+                            sys_primitive_t        primitive,
+                            sys_vertex_attribute_t attribs);
 nu_status_t sys_update_mesh(vm_t                  *vm,
                             nu_u32_t               id,
                             sys_vertex_attribute_t attribs,
@@ -153,7 +151,7 @@ nu_status_t sys_update_mesh(vm_t                  *vm,
                             nu_u32_t               count,
                             const void            *p);
 
-nu_status_t sys_init_model(vm_t *vm, nu_u32_t id, nu_u32_t count);
+nu_status_t sys_create_model(vm_t *vm, nu_u32_t id, nu_u32_t count);
 nu_status_t sys_update_model(vm_t           *vm,
                              nu_u32_t        id,
                              nu_u32_t        node,
@@ -162,13 +160,13 @@ nu_status_t sys_update_model(vm_t           *vm,
                              nu_u32_t        parent,
                              const nu_f32_t *transform);
 
-nu_status_t sys_init_spritesheet(vm_t    *vm,
-                                 nu_u32_t id,
-                                 nu_u32_t texture,
-                                 nu_u32_t row,
-                                 nu_u32_t col,
-                                 nu_u32_t fwidth,
-                                 nu_u32_t fheight);
+nu_status_t sys_create_spritesheet(vm_t    *vm,
+                                   nu_u32_t id,
+                                   nu_u32_t texture,
+                                   nu_u32_t row,
+                                   nu_u32_t col,
+                                   nu_u32_t fwidth,
+                                   nu_u32_t fheight);
 
 void sys_set_render_state(vm_t *vm, sys_render_state_t state, const void *p);
 void sys_get_render_state(vm_t *vm, sys_render_state_t state, void *p);

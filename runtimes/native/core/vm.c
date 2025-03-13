@@ -197,9 +197,14 @@ sys_console_info (vm_t *vm, sys_console_info_t info)
     return 0;
 }
 void
-sys_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
+sys_inspect_i32 (vm_t *vm, const nu_char_t *name, nu_i32_t *p)
 {
-    os_inspect(vm, name, type, p);
+    os_inspect(vm, name, SYS_INSPECT_I32, p);
+}
+void
+sys_inspect_f32 (vm_t *vm, const nu_char_t *name, nu_f32_t *p)
+{
+    os_inspect(vm, name, SYS_INSPECT_F32, p);
 }
 nu_f32_t
 sys_global_time (vm_t *vm)
@@ -213,7 +218,7 @@ sys_delta_time (vm_t *vm)
 }
 
 nu_status_t
-sys_init_scope (vm_t *vm, nu_u32_t id, nu_u32_t size)
+sys_create_scope (vm_t *vm, nu_u32_t id, nu_u32_t size)
 {
     return NU_SUCCESS;
 }
