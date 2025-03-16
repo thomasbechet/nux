@@ -22,10 +22,11 @@ enable_c_compiler_flag_if_supported("-Werror")
 enable_c_compiler_flag_if_supported("-Wno-unused-function")
 enable_c_compiler_flag_if_supported("-Wno-unused-parameter")
 enable_c_compiler_flag_if_supported("-Wno-unused-variable")
+enable_c_compiler_flag_if_supported("-fsanitize=address")
 
 # Options
 option(NUX_BUILD_SDK "Build nux with sdk tools" ON)
-option(NUX_BUILD_WASM_JIT "Build nux with runtime jit" ON)
+option(NUX_BUILD_WASM_JIT "Build nux with runtime jit" OFF)
 option(NUX_BUILD_WASM_DEBUG "Build nux with runtime debug server" OFF)
 
 # Show options

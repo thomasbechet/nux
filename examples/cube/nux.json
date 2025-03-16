@@ -1,0 +1,22 @@
+{
+  "target": "cart.bin",
+  "prebuild": "make",
+  "assets": {
+    "w_main": {
+      "type": "wasm",
+      "source": "build/cart.wasm",
+      "id": 1
+    },
+    "mariane6": {
+      "type": "model",
+      "source": "assets/ariane6.glb",
+      "id": 3
+    },
+    "mindustrial": {
+      "ignore": true,
+      "type": "model",
+      "source": "assets/industrial.glb",
+      "id": 4
+    }
+  }
+}

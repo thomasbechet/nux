@@ -7760,11 +7760,11 @@ wasm_runtime_detect_native_stack_overflow(WASMExecEnv *exec_env)
     uint32 guard_page_count = STACK_OVERFLOW_CHECK_GUARD_PAGE_COUNT;
     boundary = boundary + page_size * guard_page_count;
 #endif
-    if ((uint8 *)&boundary < boundary) {
-        wasm_runtime_set_exception(wasm_runtime_get_module_inst(exec_env),
-                                   "native stack overflow");
-        return false;
-    }
+    // if ((uint8 *)&boundary < boundary) {
+    //     wasm_runtime_set_exception(wasm_runtime_get_module_inst(exec_env),
+    //                                "native stack overflow");
+    //     return false;
+    // }
     return true;
 }
 

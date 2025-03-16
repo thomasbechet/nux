@@ -8,6 +8,7 @@
 [x] Draw color
 [x] Fix 'Is a directory'
 [x] Remove os_gpu_init (probably useless)
+[ ] Rename nu_char_t to nu_c8_t (add nu_c16_t)
 [ ] Add dependencies section to README
 [~] Gamepad example (improve gamepad support)
 [ ] Model animation

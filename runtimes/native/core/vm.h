@@ -15,6 +15,8 @@
 #define ID_NULL      (0)
 #define ADDR_INVALID (nu_u32_t)(0xFFFFFFFF)
 
+#define GFX_COMMAND_SIZE 64
+
 typedef enum
 {
     RESOURCE_FREE        = 0,
@@ -22,16 +24,17 @@ typedef enum
     RESOURCE_POOL        = 2,
     RESOURCE_WASM        = 3,
     RESOURCE_RAW         = 4,
-    RESOURCE_TEXTURE     = 5,
-    RESOURCE_MESH        = 6,
-    RESOURCE_MODEL       = 7,
-    RESOURCE_SPRITESHEET = 8,
+    RESOURCE_CAMERA      = 5,
+    RESOURCE_TEXTURE     = 6,
+    RESOURCE_MESH        = 7,
+    RESOURCE_MODEL       = 8,
+    RESOURCE_SPRITESHEET = 9,
 } resource_type_t;
 
 typedef struct
 {
-    resource_type_t type;
-    nu_u32_t        next;
+    resource_type_t type; // 1
+    nu_u32_t        next; // 1
     union
     {
         struct
@@ -40,16 +43,20 @@ typedef struct
         } pool;
         struct
         {
+            nu_u32_t data;
+        } camera;
+        struct
+        {
             nu_u32_t size;
             nu_u32_t data;
-        } texture;
+        } texture; // 2
         struct
         {
             nu_u32_t               count;
             sys_primitive_t        primitive;
             sys_vertex_attribute_t attributes;
             nu_u32_t               data;
-        } mesh;
+        } mesh; // 4
         struct
         {
             nu_u32_t node_count;
@@ -64,12 +71,13 @@ typedef struct
             nu_u16_t fheight;
         } spritesheet;
     };
-} resource_t;
+} resource_t; // max 8 * 4 = 32 bytes (max 6 * 4 bytes per object)
 
 typedef struct
 {
     nu_u32_t memsize;
     nu_u32_t tps;
+    nu_u32_t gpu_command_size;
 } vm_config_t;
 
 typedef struct
@@ -88,21 +96,6 @@ typedef struct
 
 typedef struct
 {
-    nu_v4u_t   scissor;
-    nu_v4u_t   viewport;
-    nu_m4_t    model;
-    nu_m4_t    view;
-    nu_m4_t    projection;
-    nu_v2u_t   cursor;
-    nu_color_t fog_color;
-    nu_f32_t   fog_density;
-    nu_f32_t   fog_near;
-    nu_f32_t   fog_far;
-    nu_color_t color;
-} gfx_state_t;
-
-typedef struct
-{
     nu_u32_t texture;
     nu_u32_t mesh;
     nu_m4_t  local_to_parent;
@@ -111,7 +104,89 @@ typedef struct
 
 typedef struct
 {
-    gfx_state_t state;
+    nu_m4_t view;
+    nu_m4_t projection;
+} gfx_camera_t;
+
+typedef enum
+{
+    GFX_CMD_PUSH_VIEWPORT,
+    GFX_CMD_PUSH_SCISSOR,
+    GFX_CMD_PUSH_TRANSLATION,
+    GFX_CMD_PUSH_CAMERA,
+    GFX_CMD_PUSH_CURSOR,
+    GFX_CMD_PUSH_COLOR,
+
+    GFX_CMD_CLEAR,
+    GFX_CMD_DRAW_MODEL,
+    GFX_CMD_DRAW_VOLUME,
+    GFX_CMD_DRAW_CUBE,
+    GFX_CMD_DRAW_LINES,
+    GFX_CMD_DRAW_LINESTRIP,
+    GFX_CMD_DRAW_TEXT,
+    GFX_CMD_BLIT,
+} gfx_command_type_t;
+
+typedef union
+{
+    struct
+    {
+        nu_u32_t type; // 4 * 1
+        union
+        {
+            nu_v3_t push_translation;
+            nu_q4_t push_rotation;
+            nu_v3_t push_scale;
+            struct
+            {
+                nu_u32_t camera;
+            } push_camera;
+            struct
+            {
+                nu_v4u_t rect;
+            } push_viewport;
+            struct
+            {
+                nu_v4u_t rect;
+            } push_scissor;
+            struct
+            {
+                nu_color_t color;
+            } push_color;
+            struct
+            {
+                nu_v2u_t position;
+            } push_cursor;
+            struct
+            {
+                nu_u32_t model;
+            } draw_model;
+            struct
+            {
+                nu_u32_t count;
+                nu_f32_t first_points[12];
+            } draw_lines;
+            struct
+            {
+                nu_u32_t texture;
+                nu_u32_t x;
+                nu_u32_t y;
+                nu_u32_t w;
+                nu_u32_t h;
+            } blit; // 4 * 5
+        };
+    };
+    nu_f32_t  points[16];        // 4 * 16
+    nu_char_t chars[16];         // 4 * 16
+    nu_m4_t   camera_view;       // 4 * 16
+    nu_m4_t   camera_projection; // 4 * 16
+} gfx_command_t;
+
+typedef struct
+{
+    nu_u32_t cmds_size;
+    nu_u32_t cmds_addr;
+    nu_u32_t cmds_count;
 } gfx_t;
 
 typedef enum
@@ -158,6 +233,7 @@ NU_API nu_status_t vm_load(vm_t *vm, const nu_char_t *name);
 NU_API nu_status_t vm_tick(vm_t *vm);
 NU_API void        vm_save_state(const vm_t *vm, void *state);
 NU_API nu_status_t vm_load_state(vm_t *vm, const void *state);
+NU_API void       *vm_ptr(const vm_t *vm, nu_u32_t addr);
 
 NU_API void      vm_config_default(vm_config_t *config);
 NU_API nu_size_t vm_config_state_memsize(const vm_config_t *config);
@@ -185,7 +261,7 @@ nu_status_t cart_parse_entries(const void         *data,
                                nu_u32_t            count,
                                cart_chunk_entry_t *entries);
 
-nu_status_t gfx_init(vm_t *vm);
+nu_status_t gfx_init(vm_t *vm, const vm_config_t *config);
 nu_status_t gfx_free(vm_t *vm);
 void        gfx_begin_frame(vm_t *vm);
 void        gfx_end_frame(vm_t *vm);

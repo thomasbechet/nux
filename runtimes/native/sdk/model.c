@@ -50,6 +50,7 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
 
     // Write image
     status = cart_write_texture(proj, id, target_size, resized);
+    native_free(resized);
     NU_CHECK(status, goto cleanup0);
 
 cleanup0:

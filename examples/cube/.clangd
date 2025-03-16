@@ -1,0 +1,8 @@
+CompileFlags:
+  Add: 
+    - "-DNU_IMPLEMENTATION"
+    - "-DNUX_IMPLEMENTATION"
+    - "-DNU_STDLIB"
+    - "-I../../../runtimes/native/data/templates/c/src/"
+    - "-I../../externals/"
+    - "-I../../../nuxlib/"

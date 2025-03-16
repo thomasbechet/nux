@@ -5214,7 +5214,8 @@ wayland:
 
     RGFW_LOAD_ATOM(_NET_WM_NAME);
     XChangeProperty(win->src.display, win->src.window, _NET_WM_NAME,
-                    RGFW_XUTF8_STRING, 8, PropModeReplace, (u8 *)name, 256);
+                    RGFW_XUTF8_STRING, 8, PropModeReplace, (u8 *)name,
+                    strlen(name));
 #endif
 #ifdef RGFW_WAYLAND
   wayland:
@@ -5740,7 +5741,7 @@ wayland:
     float physW = info->mm_width / 25.4;
     float physH = info->mm_height / 25.4;
 
-    RGFW_MEMCPY(monitor.name, info->name, 128);
+    RGFW_MEMCPY(monitor.name, info->name, strlen(info->name));
 
     if (physW && physH) {
       monitor.physW = physW;

@@ -35,10 +35,9 @@ nu_memset (void *dst, nu_word_t c, nu_size_t n)
 void
 nu_memcpy (void *dst, const void *src, nu_size_t n)
 {
-    nu_size_t        i;
     nu_byte_t       *u8_dst = (nu_byte_t *)dst;
     const nu_byte_t *u8_src = (const nu_byte_t *)src;
-    for (i = 0; i < n; ++i)
+    for (nu_size_t i = 0; i < n; ++i)
     {
         u8_dst[i] = u8_src[i];
     }

@@ -1,14 +1,14 @@
 #ifndef NU_LIB_H
 #define NU_LIB_H
 
+#include "nulib/platform.h"
+#include "nulib/types.h"
 #include "nulib/assert.h"
 #include "nulib/ds.h"
 #include "nulib/io.h"
 #include "nulib/math.h"
 #include "nulib/memory.h"
-#include "nulib/platform.h"
 #include "nulib/string.h"
-#include "nulib/types.h"
 
 #ifdef NU_IMPLEMENTATION
 #include "nulib/io_impl.h"

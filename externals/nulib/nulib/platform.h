@@ -21,7 +21,7 @@
 #define NU_CXX
 #endif
 
-#if !defined(NDEBUG)
+#ifndef NDEBUG
 #define NU_DEBUG
 #endif
 

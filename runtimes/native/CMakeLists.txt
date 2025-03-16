@@ -17,6 +17,8 @@ set (WAMR_BUILD_SIMD 1)
 else ()
 set (WAMR_BUILD_INTERP 1)
 set (WAMR_BUILD_FAST_INTERP 1)
+set (WAMR_DISABLE_HW_BOUND_CHECK 1)
+set (WAMR_DISABLE_STACK_HW_BOUND_CHECK 1)
 endif ()
 
 set (WAMR_BUILD_GLOBAL_HEAP_POOL 0)
@@ -38,6 +40,10 @@ include (${CMAKE_SOURCE_DIR}/externals/wamr/build-scripts/runtime_lib.cmake)
 
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)
+
+add_compile_options(-DNU_STDLIB)
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
 
 file(GLOB CORE_SOURCES core/*.c)
 file(GLOB RUNTIME_SOURCES runtime/*.c)

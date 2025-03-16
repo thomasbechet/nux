@@ -100,21 +100,6 @@ typedef enum
 
 typedef enum
 {
-    SYS_RENDER_VIEWPORT    = 0,
-    SYS_RENDER_SCISSOR     = 1,
-    SYS_RENDER_TRANSFORM   = 2,
-    SYS_RENDER_VIEW        = 3,
-    SYS_RENDER_PROJECTION  = 4,
-    SYS_RENDER_CURSOR      = 5,
-    SYS_RENDER_FOG_COLOR   = 6,
-    SYS_RENDER_FOG_DENSITY = 7,
-    SYS_RENDER_FOG_NEAR    = 8,
-    SYS_RENDER_FOG_FAR     = 9,
-    SYS_RENDER_COLOR       = 10
-} sys_render_state_t;
-
-typedef enum
-{
     SYS_INSPECT_I32 = 0,
     SYS_INSPECT_F32 = 1,
 } sys_inspect_type_t;
@@ -129,6 +114,17 @@ nu_f32_t sys_delta_time(vm_t *vm);
 nu_status_t sys_create_scope(vm_t *vm, nu_u32_t id, nu_u32_t size);
 nu_status_t sys_rewind_scope(vm_t *vm, nu_u32_t id);
 void        sys_set_active_scope(vm_t *vm, nu_u32_t id);
+
+nu_status_t sys_create_camera(vm_t *vm, nu_u32_t id);
+void        sys_set_camera_view(vm_t *vm, nu_u32_t id, const nu_f32_t *m);
+void        sys_set_camera_projection(vm_t *vm, nu_u32_t id, const nu_f32_t *m);
+void        sys_set_camera_lookat(vm_t           *vm,
+                                  nu_u32_t        id,
+                                  const nu_f32_t *eye,
+                                  const nu_f32_t *center,
+                                  const nu_f32_t *up);
+void        sys_set_camera_perspective(
+           vm_t *vm, nu_u32_t id, nu_f32_t fov, nu_f32_t near, nu_f32_t far);
 
 nu_status_t sys_create_texture(vm_t *vm, nu_u32_t id, nu_u32_t size);
 nu_status_t sys_update_texture(vm_t       *vm,
@@ -168,19 +164,13 @@ nu_status_t sys_create_spritesheet(vm_t    *vm,
                                    nu_u32_t fwidth,
                                    nu_u32_t fheight);
 
-void sys_set_render_state(vm_t *vm, sys_render_state_t state, const void *p);
-void sys_get_render_state(vm_t *vm, sys_render_state_t state, void *p);
-void sys_set_scissor(vm_t *vm, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
-void sys_set_viewport(vm_t *vm, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
-void sys_set_view(vm_t *vm, const nu_f32_t *m);
-void sys_set_projection(vm_t *vm, const nu_f32_t *m);
-void sys_set_transform(vm_t *vm, const nu_f32_t *m);
-void sys_set_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
-void sys_set_fog_near(vm_t *vm, nu_f32_t near);
-void sys_set_fog_far(vm_t *vm, nu_f32_t far);
-void sys_set_fog_density(vm_t *vm, nu_f32_t density);
-void sys_set_fog_color(vm_t *vm, nu_u32_t color);
-void sys_set_color(vm_t *vm, nu_u32_t color);
+void sys_push_scissor(vm_t *vm, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
+void sys_push_viewport(
+    vm_t *vm, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h);
+void sys_push_camera(vm_t *vm, nu_u32_t id);
+void sys_push_translation(vm_t *vm, nu_f32_t x, nu_f32_t y, nu_f32_t z);
+void sys_push_cursor(vm_t *vm, nu_u32_t x, nu_u32_t y);
+void sys_push_color(vm_t *vm, nu_u32_t color);
 
 void sys_clear(vm_t *vm, nu_u32_t color);
 void sys_draw_model(vm_t *vm, nu_u32_t id);

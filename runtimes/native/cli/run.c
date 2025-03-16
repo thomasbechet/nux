@@ -43,8 +43,8 @@ cli_command_run (nu_u32_t argc, const nu_char_t **argv)
         {
             return -1;
         }
-        nu_memcpy(target_path, project.target_path, sizeof(target_path));
-        path = nu_sv(project.target_path, NU_PATH_MAX);
+        nu_strncpy(target_path, project.target_path, NU_PATH_MAX);
+        path = nu_sv(target_path, NU_PATH_MAX);
         sdk_project_free(&project);
     }
 #endif

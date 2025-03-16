@@ -113,21 +113,6 @@ typedef enum
 
 typedef enum
 {
-    RENDER_VIEWPORT    = 0,
-    RENDER_SCISSOR     = 1,
-    RENDER_TRANSFORM   = 2,
-    RENDER_VIEW        = 3,
-    RENDER_PROJECTION  = 4,
-    RENDER_CURSOR      = 5,
-    RENDER_FOG_COLOR   = 6,
-    RENDER_FOG_DENSITY = 7,
-    RENDER_FOG_NEAR    = 8,
-    RENDER_FOG_FAR     = 9,
-    RENDER_COLOR       = 10
-} render_state_t;
-
-typedef enum
-{
     INSPECT_I32 = 0,
     INSPECT_F32 = 1
 } inspect_type_t;
@@ -154,6 +139,19 @@ WASM_EXPORT("rewind_scope")
 void rewind_scope(u32 id);
 WASM_EXPORT("set_active_scope")
 void set_active_scope(u32 id);
+WASM_EXPORT("create_camera")
+void create_camera(u32 id);
+WASM_EXPORT("set_camera_view")
+void set_camera_view(u32 id, const f32 *m);
+WASM_EXPORT("set_camera_projection")
+void set_camera_projection(u32 id, const f32 *m);
+WASM_EXPORT("set_camera_lookat")
+void set_camera_lookat(u32        id,
+                       const f32 *eye,
+                       const f32 *center,
+                       const f32 *up);
+WASM_EXPORT("set_camera_perspective")
+void set_camera_perspective(u32 id, f32 fov, f32 near, f32 far);
 WASM_EXPORT("create_texture")
 void create_texture(u32 id, u32 size);
 WASM_EXPORT("update_texture")
@@ -170,32 +168,18 @@ void update_model(
 WASM_EXPORT("create_spritesheet")
 void create_spritesheet(
     u32 id, u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
-WASM_EXPORT("set_render_state")
-void set_render_state(u32 state, const void *p);
-WASM_EXPORT("get_render_state")
-void get_render_state(u32 state, void *p);
-WASM_EXPORT("set_scissor")
-void set_scissor(u32 x, u32 y, u32 w, u32 h);
-WASM_EXPORT("set_viewport")
-void set_viewport(u32 x, u32 y, u32 w, u32 h);
-WASM_EXPORT("set_view")
-void set_view(const f32 *m);
-WASM_EXPORT("set_projection")
-void set_projection(const f32 *m);
-WASM_EXPORT("set_transform")
-void set_transform(const f32 *m);
-WASM_EXPORT("set_cursor")
-void set_cursor(u32 x, u32 y);
-WASM_EXPORT("set_fog_near")
-void set_fog_near(f32 near);
-WASM_EXPORT("set_fog_far")
-void set_fog_far(f32 far);
-WASM_EXPORT("set_fog_density")
-void set_fog_density(f32 density);
-WASM_EXPORT("set_fog_color")
-void set_fog_color(u32 color);
-WASM_EXPORT("set_color")
-void set_color(u32 color);
+WASM_EXPORT("push_scissor")
+void push_scissor(u32 x, u32 y, u32 w, u32 h);
+WASM_EXPORT("push_viewport")
+void push_viewport(u32 x, u32 y, u32 w, u32 h);
+WASM_EXPORT("push_camera")
+void push_camera(u32 id);
+WASM_EXPORT("push_translation")
+void push_translation(f32 x, f32 y, f32 z);
+WASM_EXPORT("push_cursor")
+void push_cursor(u32 x, u32 y);
+WASM_EXPORT("push_color")
+void push_color(u32 color);
 WASM_EXPORT("clear")
 void clear(u32 color);
 WASM_EXPORT("draw_model")

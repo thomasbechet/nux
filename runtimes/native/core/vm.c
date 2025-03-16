@@ -76,11 +76,17 @@ vm_init (vm_t *vm, const vm_config_t *config)
 {
     nu_memset(vm, 0, sizeof(*vm));
 
+    // Allocate memory
+    vm->mem = os_malloc(vm, config->memsize);
+    NU_CHECK(vm->mem, return NU_FAILURE);
+    vm->memsize = 0;
+    vm->memcapa = config->memsize;
+
     // Init units
     nu_status_t status;
     status = wasm_init(vm);
     NU_CHECK(status, return NU_FAILURE);
-    status = gfx_init(vm);
+    status = gfx_init(vm, config);
     NU_CHECK(status, return NU_FAILURE);
     status = gamepad_init(vm);
     NU_CHECK(status, return NU_FAILURE);
@@ -88,12 +94,6 @@ vm_init (vm_t *vm, const vm_config_t *config)
     vm->running = NU_TRUE;
     vm->time    = 0;
     vm->tps     = config->tps;
-
-    // Allocate memory
-    vm->mem = os_malloc(vm, config->memsize);
-    NU_CHECK(vm->mem, return NU_FAILURE);
-    vm->memsize = 0;
-    vm->memcapa = config->memsize;
 
     // Initialize resource table
     vm->res[ID_NULL].type = RESOURCE_NULL;
@@ -123,7 +123,7 @@ vm_tick (vm_t *vm)
 {
     gamepad_update(vm);
     gfx_begin_frame(vm);
-    wasm_call_event(vm, WASM_EVENT_UPDATE);
+    NU_CHECK(wasm_call_event(vm, WASM_EVENT_UPDATE), return NU_FAILURE);
     gfx_end_frame(vm);
     vm->time += sys_delta_time(vm);
     return NU_SUCCESS;
@@ -146,12 +146,19 @@ vm_load_state (vm_t *vm, const void *state)
     // gfx_reload_state(vm);
     return NU_SUCCESS;
 }
+void *
+vm_ptr (const vm_t *vm, nu_u32_t addr)
+{
+    NU_ASSERT(addr <= vm->memsize);
+    return vm->mem + addr;
+}
 
 void
 vm_config_default (vm_config_t *config)
 {
-    config->memsize = NU_MEM_128M;
-    config->tps     = 30;
+    config->memsize          = NU_MEM_128M;
+    config->tps              = 30;
+    config->gpu_command_size = 1024;
 }
 nu_size_t
 vm_config_state_memsize (const vm_config_t *config)

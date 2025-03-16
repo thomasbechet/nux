@@ -42,8 +42,8 @@ instance_init (runtime_instance_t *instance,
     instance->viewport_mode       = VIEWPORT_STRETCH_KEEP_ASPECT;
     instance->inspect_value_count = 0;
 
-    nu_byte_t *save_state = native_malloc(vm_config_state_memsize(config));
-    NU_ASSERT(save_state);
+    instance->save_state = native_malloc(vm_config_state_memsize(config));
+    NU_ASSERT(instance->save_state);
 
     nu_status_t status = vm_init(&instance->vm, config);
     NU_CHECK(status, goto cleanup0);
@@ -158,7 +158,7 @@ runtime_run (const runtime_config_t *config)
             if (instance->active && !instance->pause)
             {
                 // Tick
-                vm_tick(&instance->vm);
+                NU_ASSERT(vm_tick(&instance->vm));
             }
         }
 
@@ -183,7 +183,7 @@ runtime_run (const runtime_config_t *config)
                                                     instance->viewport.h);
                     viewport          = apply_viewport_mode(viewport,
                                                    instance->viewport_mode);
-                    renderer_render_instance(viewport, size);
+                    renderer_render_instance(&instance->vm, viewport, size);
                 }
             }
         }

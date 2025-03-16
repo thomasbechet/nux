@@ -4,22 +4,25 @@
 #include "types.h"
 #include "platform.h"
 
-#include <stdarg.h>
-
 #define NU_STRINGIFY(X)  NU_STRINGIFY_(X)
 #define NU_STRINGIFY_(X) #X
 
-#define NU_SV(str)                               \
-    (nu_sv_t) { .ptr = (const nu_char_t *)(str), \
-                .len = (sizeof((str)) / sizeof((str)[0])) - 1 }
+#define NU_SV(str)                                    \
+    (nu_sv_t)                                         \
+    {                                                 \
+        .ptr = (const nu_char_t *)(str),              \
+        .len = (sizeof((str)) / sizeof((str)[0])) - 1 \
+    }
 #define NU_SV_FMT       "%.*s"
 #define NU_SV_ARGS(str) (int)str.len, str.ptr
 
 #define NU_ENUM_MAP(mapname, ...) \
     nu_enum_name_map_t mapname[]  \
         = { __VA_ARGS__, { .v = NU_NULL, .s = NU_NULL } };
-#define NU_ENUM_NAME(enumval, name) \
-    { .v = enumval, .s = name, .l = (sizeof((name)) / sizeof((name)[0])) - 1 }
+#define NU_ENUM_NAME(enumval, name)                                            \
+    {                                                                          \
+        .v = enumval, .s = name, .l = (sizeof((name)) / sizeof((name)[0])) - 1 \
+    }
 
 #define NU_SV_TO_ENUM(sv, penum, map, found)                 \
     {                                                        \

@@ -56,6 +56,41 @@ set_active_scope (wasm_exec_env_t env, nu_u32_t id)
     sys_set_active_scope(vm, id);
 }
 static nu_status_t
+create_camera (wasm_exec_env_t env, nu_u32_t id)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_create_camera(vm, id);
+}
+static void
+set_camera_view (wasm_exec_env_t env, nu_u32_t id, const nu_f32_t *m)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    sys_set_camera_view(vm, id, m);
+}
+static void
+set_camera_projection (wasm_exec_env_t env, nu_u32_t id, const nu_f32_t *m)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    sys_set_camera_projection(vm, id, m);
+}
+static void
+set_camera_lookat (wasm_exec_env_t env,
+                   nu_u32_t        id,
+                   const nu_f32_t *eye,
+                   const nu_f32_t *center,
+                   const nu_f32_t *up)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    sys_set_camera_lookat(vm, id, eye, center, up);
+}
+static void
+set_camera_perspective (
+    wasm_exec_env_t env, nu_u32_t id, nu_f32_t fov, nu_f32_t near, nu_f32_t far)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    sys_set_camera_perspective(vm, id, fov, near, far);
+}
+static nu_status_t
 create_texture (wasm_exec_env_t env, nu_u32_t id, nu_u32_t size)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
@@ -125,84 +160,42 @@ create_spritesheet (wasm_exec_env_t env,
     return sys_create_spritesheet(vm, id, texture, row, col, fwidth, fheight);
 }
 static void
-set_render_state (wasm_exec_env_t env, sys_render_state_t state, const void *p)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_render_state(vm, state, p);
-}
-static void
-get_render_state (wasm_exec_env_t env, sys_render_state_t state, void *p)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_get_render_state(vm, state, p);
-}
-static void
-set_scissor (
+push_scissor (
     wasm_exec_env_t env, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_scissor(vm, x, y, w, h);
+    sys_push_scissor(vm, x, y, w, h);
 }
 static void
-set_viewport (
+push_viewport (
     wasm_exec_env_t env, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_viewport(vm, x, y, w, h);
+    sys_push_viewport(vm, x, y, w, h);
 }
 static void
-set_view (wasm_exec_env_t env, const nu_f32_t *m)
+push_camera (wasm_exec_env_t env, nu_u32_t id)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_view(vm, m);
+    sys_push_camera(vm, id);
 }
 static void
-set_projection (wasm_exec_env_t env, const nu_f32_t *m)
+push_translation (wasm_exec_env_t env, nu_f32_t x, nu_f32_t y, nu_f32_t z)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_projection(vm, m);
+    sys_push_translation(vm, x, y, z);
 }
 static void
-set_transform (wasm_exec_env_t env, const nu_f32_t *m)
+push_cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_transform(vm, m);
+    sys_push_cursor(vm, x, y);
 }
 static void
-set_cursor (wasm_exec_env_t env, nu_u32_t x, nu_u32_t y)
+push_color (wasm_exec_env_t env, nu_u32_t color)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_cursor(vm, x, y);
-}
-static void
-set_fog_near (wasm_exec_env_t env, nu_f32_t near)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_fog_near(vm, near);
-}
-static void
-set_fog_far (wasm_exec_env_t env, nu_f32_t far)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_fog_far(vm, far);
-}
-static void
-set_fog_density (wasm_exec_env_t env, nu_f32_t density)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_fog_density(vm, density);
-}
-static void
-set_fog_color (wasm_exec_env_t env, nu_u32_t color)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_fog_color(vm, color);
-}
-static void
-set_color (wasm_exec_env_t env, nu_u32_t color)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_color(vm, color);
+    sys_push_color(vm, color);
 }
 static void
 clear (wasm_exec_env_t env, nu_u32_t color)
@@ -292,6 +285,11 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(create_scope, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(rewind_scope, "(i)"),
         EXPORT_WASM_API_WITH_SIG(set_active_scope, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(create_camera, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(set_camera_view, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(set_camera_projection, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(set_camera_lookat, "(i***)"),
+        EXPORT_WASM_API_WITH_SIG(set_camera_perspective, "(ifff)"),
         EXPORT_WASM_API_WITH_SIG(create_texture, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
         EXPORT_WASM_API_WITH_SIG(create_mesh, "(iiii)"),
@@ -299,19 +297,12 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(create_model, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(update_model, "(iiiii*)"),
         EXPORT_WASM_API_WITH_SIG(create_spritesheet, "(iiiiii)"),
-        EXPORT_WASM_API_WITH_SIG(set_render_state, "(i*)"),
-        EXPORT_WASM_API_WITH_SIG(get_render_state, "(i*)"),
-        EXPORT_WASM_API_WITH_SIG(set_scissor, "(iiii)"),
-        EXPORT_WASM_API_WITH_SIG(set_viewport, "(iiii)"),
-        EXPORT_WASM_API_WITH_SIG(set_view, "(*)"),
-        EXPORT_WASM_API_WITH_SIG(set_projection, "(*)"),
-        EXPORT_WASM_API_WITH_SIG(set_transform, "(*)"),
-        EXPORT_WASM_API_WITH_SIG(set_cursor, "(ii)"),
-        EXPORT_WASM_API_WITH_SIG(set_fog_near, "(f)"),
-        EXPORT_WASM_API_WITH_SIG(set_fog_far, "(f)"),
-        EXPORT_WASM_API_WITH_SIG(set_fog_density, "(f)"),
-        EXPORT_WASM_API_WITH_SIG(set_fog_color, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(set_color, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(push_scissor, "(iiii)"),
+        EXPORT_WASM_API_WITH_SIG(push_viewport, "(iiii)"),
+        EXPORT_WASM_API_WITH_SIG(push_camera, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(push_translation, "(fff)"),
+        EXPORT_WASM_API_WITH_SIG(push_cursor, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(push_color, "(i)"),
         EXPORT_WASM_API_WITH_SIG(clear, "(i)"),
         EXPORT_WASM_API_WITH_SIG(draw_model, "(i)"),
         EXPORT_WASM_API_WITH_SIG(draw_volume, "()"),

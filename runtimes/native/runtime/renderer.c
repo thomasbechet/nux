@@ -395,6 +395,302 @@ gen_vertex_vbo (GLuint *vbo, GLuint *vao, nu_u32_t capacity)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
+
+static void
+init_ubo (void)
+{
+    renderer.ubo.view          = nu_m4_identity();
+    renderer.ubo.projection    = nu_m4_identity();
+    renderer.ubo.color         = nu_color_to_vec4(NU_COLOR_WHITE);
+    renderer.ubo.fog_color     = nu_color_to_vec4(NU_COLOR_WHITE);
+    renderer.ubo.viewport_size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    renderer.ubo.fog_density   = 0;
+    renderer.ubo.fog_near      = 0;
+    renderer.ubo.fog_far       = 100;
+    renderer.ubo.is_volume     = NU_FALSE;
+}
+static void
+update_ubo (void)
+{
+    glBindBuffer(GL_UNIFORM_BUFFER, renderer.ubo_buffer);
+    glBufferData(
+        GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+static void
+draw_model (const vm_t *vm, nu_u32_t id, nu_m4_t transform)
+{
+    // Update ubo
+    renderer.ubo.is_volume = NU_FALSE;
+    update_ubo();
+
+    // Setup GL states
+    glUseProgram(renderer.unlit_program);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // Draw model
+    const resource_t *res = vm->res + id;
+    for (nu_size_t i = 0; i < res->model.node_count; ++i)
+    {
+        gfx_model_node_t *node
+            = renderer.nodes + renderer.resources[id].model.first_node + i;
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D,
+                      node->texture ? renderer.resources[node->texture].texture
+                                    : renderer.white_texture);
+        nu_m4_t  global_transform = node->local_to_parent;
+        nu_u32_t parent           = node->parent;
+        while (parent != (nu_u32_t)-1)
+        {
+            gfx_model_node_t *parent_node
+                = renderer.nodes + renderer.resources[id].model.first_node
+                  + parent;
+            global_transform = nu_m4_mul(parent_node->local_to_parent,
+                                         node->local_to_parent);
+            parent           = parent_node->parent;
+        }
+        global_transform = nu_m4_mul(transform, global_transform);
+        glUniformMatrix4fv(
+            glGetUniformLocation(renderer.unlit_program, "model"),
+            1,
+            GL_FALSE,
+            global_transform.data);
+        nu_u32_t offset = renderer.resources[node->mesh].mesh.offset;
+        glBindVertexArray(renderer.mesh_vao);
+        glDrawArrays(GL_TRIANGLES, offset, vm->res[node->mesh].mesh.count);
+        glBindVertexArray(0);
+    }
+
+    // Reset state
+    glUseProgram(0);
+}
+static nu_u32_t
+push_im_positions (const nu_f32_t *positions, nu_u32_t count)
+{
+    nu_u32_t offset = renderer.im_vbo_offset;
+    renderer.im_vbo_offset += count;
+    nu_f32_t *data = renderer.im_vbo_data;
+    data += offset * VERTEX_SIZE;
+    for (nu_size_t i = 0; i < count; ++i)
+    {
+        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 0]
+            = positions[i * 3 + 0];
+        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 1]
+            = positions[i * 3 + 1];
+        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 2]
+            = positions[i * 3 + 2];
+    }
+    return offset;
+}
+static void
+draw_volume (const nu_f32_t *center, const nu_f32_t *size, nu_m4_t transform)
+{
+    // Update ubo
+    renderer.ubo.is_volume = NU_TRUE;
+    update_ubo();
+
+    glUseProgram(renderer.unlit_program);
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glEnable(GL_BLEND);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    const nu_b3_t box = nu_b3(nu_v3(center[0], center[1], center[2]),
+                              nu_v3(size[0], size[1], size[2]));
+
+    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
+    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
+    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
+    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
+
+    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
+    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
+    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
+    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
+
+    const nu_v3_t positions[]
+        = { v0, v1, v2, v3, v0, v2, v5, v4, v6, v6, v4, v7,
+            v0, v3, v7, v0, v7, v4, v1, v5, v6, v1, v6, v2,
+            v0, v4, v5, v0, v5, v1, v3, v2, v6, v3, v6, v7 };
+
+    nu_u32_t offset = push_im_positions((const nu_f32_t *)positions,
+                                        NU_ARRAY_SIZE(positions));
+
+    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
+                       1,
+                       GL_FALSE,
+                       transform.data);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
+    glBindVertexArray(renderer.im_vao);
+    glDrawArrays(GL_TRIANGLES, offset, 6 * 2 * 3);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glDisable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
+    glUseProgram(0);
+}
+static void
+draw_lines (const nu_f32_t *points,
+            nu_u32_t        count,
+            nu_bool_t       linestrip,
+            nu_m4_t         transform)
+{
+    glUseProgram(renderer.unlit_program);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    update_ubo();
+    nu_u32_t offset = push_im_positions(points, count);
+
+    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
+                       1,
+                       GL_FALSE,
+                       transform.data);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
+    glBindVertexArray(renderer.im_vao);
+    glDrawArrays(linestrip ? GL_LINE_STRIP : GL_LINES, offset, count);
+    glBindVertexArray(0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glUseProgram(0);
+}
+static void
+draw_cube (const nu_f32_t *pos, const nu_f32_t *size, nu_m4_t transform)
+{
+    nu_b3_t box = nu_b3(nu_v3(pos[0], pos[1], pos[2]),
+                        nu_v3(size[0], size[1], size[2]));
+
+    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
+    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
+    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
+    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
+
+    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
+    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
+    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
+    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
+
+    const nu_v3_t positions[]
+        = { v0, v1, v1, v2, v2, v3, v3, v0, v4, v5, v5, v6,
+            v6, v7, v7, v4, v0, v4, v1, v5, v2, v6, v3, v7 };
+
+    draw_lines((const nu_f32_t *)positions, 12 * 2, NU_FALSE, transform);
+}
+static void
+blit (GLuint texture, nu_size_t first, nu_size_t count)
+{
+    glUseProgram(renderer.canvas_blit_program);
+
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    nu_v2u_t size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    glUniform2uiv(
+        glGetUniformLocation(renderer.canvas_blit_program, "viewport_size"),
+        1,
+        size.data);
+    glBindVertexArray(renderer.blit_vao);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, count, first);
+
+    glBindVertexArray(0);
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+    glUseProgram(0);
+}
+static void
+draw_text (const void *text, nu_u32_t len, nu_v2u_t cursor)
+{
+    // Transfer buffer
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.blit_vbo);
+    blit_t *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(blits);
+    nu_size_t blit_start = renderer.blit_count;
+
+    const font_t *font   = &renderer.font;
+    nu_sv_t       sv     = nu_sv(text, len);
+    nu_b2i_t      extent = nu_b2i_xywh(
+        cursor.x, cursor.y, font->glyph_size.x, font->glyph_size.y);
+    nu_size_t  it = 0;
+    nu_wchar_t c;
+    while (nu_sv_next(sv, &it, &c))
+    {
+        if (c == '\n')
+        {
+            extent = nu_b2i_moveto(
+                extent, nu_v2i(cursor.x, extent.min.y + font->glyph_size.y));
+            continue;
+        }
+        if (c < font->min_char || c > font->max_char)
+        {
+            continue;
+        }
+        nu_size_t gi         = c - font->min_char;
+        nu_b2i_t  tex_extent = font->glyphs[gi];
+
+        nu_v2i_t pos = extent.min;
+        nu_v2u_t tex = nu_v2u(tex_extent.min.x, tex_extent.min.y);
+        nu_v2u_t size
+            = nu_v2u_min(nu_b2i_size(extent), nu_b2i_size(tex_extent));
+
+        NU_ASSERT(renderer.blit_count < MAX_BLIT_COUNT);
+        blit_t *blit = blits + renderer.blit_count++;
+        blit->pos    = ((nu_u32_t)pos.y << 16) | (nu_u32_t)pos.x;
+        blit->tex    = (tex.y << 16) | tex.x;
+        blit->size   = (size.y << 16) | size.x;
+
+        extent = nu_b2i_translate(extent, nu_v2i(font->glyph_size.x, 0));
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    // Draw blits
+    if (renderer.blit_count - blit_start)
+    {
+        blit(font->texture, blit_start, renderer.blit_count - blit_start);
+    }
+}
+static void
+draw_blit (nu_v2u_t cursor,
+           nu_u32_t id,
+           nu_u32_t x,
+           nu_u32_t y,
+           nu_u32_t w,
+           nu_u32_t h)
+{
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.blit_vbo);
+    blit_t *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(renderer.blit_count < MAX_BLIT_COUNT);
+    blit_t *b = blits + renderer.blit_count++;
+    b->pos    = ((nu_u32_t)cursor.y << 16) | (nu_u32_t)cursor.x;
+    b->tex    = (y << 16) | x;
+    b->size   = (h << 16) | w;
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    blit(renderer.resources[id].texture, renderer.blit_count - 1, 1);
+}
+
 nu_status_t
 renderer_init (void)
 {
@@ -488,6 +784,7 @@ renderer_init (void)
                           1);
     glBindBufferBase(GL_UNIFORM_BUFFER, 1, renderer.ubo_buffer);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    init_ubo();
 
     // Create white texture
     glGenTextures(1, &renderer.white_texture);
@@ -592,9 +889,96 @@ renderer_clear (nu_b2i_t viewport, nu_v2u_t window_size)
     glDisable(GL_FRAMEBUFFER_SRGB);
     glDisable(GL_SCISSOR_TEST);
 }
-void
-renderer_render_instance (nu_b2i_t viewport, nu_v2u_t window_size)
+static void
+begin_frame (const vm_t *vm)
 {
+    renderer.blit_count    = 0;
+    renderer.im_vbo_offset = 0;
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
+    renderer.im_vbo_data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // Render on surface framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
+    glViewport(0, 0, SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+static void
+end_frame (const vm_t *vm)
+{
+    // Unmap buffers
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+void
+renderer_render_instance (const vm_t *vm,
+                          nu_b2i_t    viewport,
+                          nu_v2u_t    window_size)
+{
+    // Begin frame
+    begin_frame(vm);
+    // Execute vm commands
+    nu_v2u_t             cursor    = NU_V2U_ZEROS;
+    nu_m4_t              transform = nu_m4_identity();
+    const gfx_command_t *cmd       = vm_ptr(vm, vm->gfx.cmds_addr);
+    for (nu_size_t i = 0; i < vm->gfx.cmds_count; ++i, ++cmd)
+    {
+        switch ((gfx_command_type_t)cmd->type)
+        {
+            case GFX_CMD_PUSH_VIEWPORT:
+                break;
+            case GFX_CMD_PUSH_SCISSOR:
+                break;
+            case GFX_CMD_PUSH_CAMERA: {
+                const gfx_camera_t *cam
+                    = vm_ptr(vm, vm->res[cmd->push_camera.camera].camera.data);
+                renderer.ubo.view       = cam->view;
+                renderer.ubo.projection = cam->projection;
+            }
+            break;
+            case GFX_CMD_PUSH_TRANSLATION:
+                transform = nu_m4_translate(cmd->push_translation);
+                break;
+            case GFX_CMD_PUSH_CURSOR:
+                cursor = cmd->push_cursor.position;
+                break;
+            case GFX_CMD_PUSH_COLOR:
+                break;
+            case GFX_CMD_CLEAR: {
+                nu_v4_t c = nu_color_to_vec4(cmd->push_color.color);
+                glClearColor(c.x, c.y, c.z, c.w);
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            }
+            break;
+            case GFX_CMD_DRAW_MODEL:
+                draw_model(vm, cmd->draw_model.model, transform);
+                break;
+            case GFX_CMD_DRAW_VOLUME:
+                break;
+            case GFX_CMD_DRAW_CUBE:
+                break;
+            case GFX_CMD_DRAW_LINES:
+                break;
+            case GFX_CMD_DRAW_LINESTRIP:
+                break;
+            case GFX_CMD_DRAW_TEXT:
+                break;
+            case GFX_CMD_BLIT:
+                draw_blit(cursor,
+                          cmd->blit.texture,
+                          cmd->blit.x,
+                          cmd->blit.y,
+                          cmd->blit.w,
+                          cmd->blit.h);
+                break;
+        }
+    }
+    end_frame(vm);
+
+    // Blit surface to screen
     nu_v2i_t pos  = viewport.min;
     nu_v2u_t size = nu_b2i_size(viewport);
     // Patch pos (bottom left in opengl)
@@ -782,336 +1166,4 @@ os_gfx_update_model (vm_t                   *vm,
 {
     renderer.nodes[renderer.resources[id].model.first_node + node_index]
         = *node;
-}
-void
-os_gfx_begin_frame (vm_t *vm)
-{
-    renderer.blit_count    = 0;
-    renderer.im_vbo_offset = 0;
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
-    renderer.im_vbo_data = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // Render on surface framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
-    glViewport(0, 0, SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-void
-os_gfx_end_frame (vm_t *vm)
-{
-    // Unmap buffers
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-void
-os_gfx_set_render_state (vm_t *vm, sys_render_state_t state)
-{
-}
-static void
-update_ubo (vm_t *vm, nu_bool_t is_volume)
-{
-    // Update ubo
-    renderer.ubo.view          = vm->gfx.state.view;
-    renderer.ubo.projection    = vm->gfx.state.projection;
-    renderer.ubo.color         = nu_color_to_vec4(vm->gfx.state.color);
-    renderer.ubo.fog_color     = nu_color_to_vec4(vm->gfx.state.fog_color);
-    renderer.ubo.viewport_size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
-    renderer.ubo.fog_density   = vm->gfx.state.fog_density;
-    renderer.ubo.fog_near      = vm->gfx.state.fog_near;
-    renderer.ubo.fog_far       = vm->gfx.state.fog_far;
-    renderer.ubo.is_volume     = is_volume;
-    glBindBuffer(GL_UNIFORM_BUFFER, renderer.ubo_buffer);
-    glBufferData(
-        GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
-}
-void
-draw_model (vm_t *vm, nu_u32_t id, nu_m4_t transform)
-{
-    // Update ubo
-    update_ubo(vm, NU_FALSE);
-
-    // Setup GL states
-    glUseProgram(renderer.unlit_program);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    // Draw model
-    const resource_t *res = vm->res + id;
-    for (nu_size_t i = 0; i < res->model.node_count; ++i)
-    {
-        gfx_model_node_t *node
-            = renderer.nodes + renderer.resources[id].model.first_node + i;
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,
-                      node->texture ? renderer.resources[node->texture].texture
-                                    : renderer.white_texture);
-        nu_m4_t  global_transform = node->local_to_parent;
-        nu_u32_t parent           = node->parent;
-        while (parent != (nu_u32_t)-1)
-        {
-            gfx_model_node_t *parent_node
-                = renderer.nodes + renderer.resources[id].model.first_node
-                  + parent;
-            global_transform = nu_m4_mul(parent_node->local_to_parent,
-                                         node->local_to_parent);
-            parent           = parent_node->parent;
-        }
-        global_transform = nu_m4_mul(transform, global_transform);
-        glUniformMatrix4fv(
-            glGetUniformLocation(renderer.unlit_program, "model"),
-            1,
-            GL_FALSE,
-            global_transform.data);
-        nu_u32_t offset = renderer.resources[node->mesh].mesh.offset;
-        glBindVertexArray(renderer.mesh_vao);
-        glDrawArrays(GL_TRIANGLES, offset, vm->res[node->mesh].mesh.count);
-        glBindVertexArray(0);
-    }
-
-    // Reset state
-    glUseProgram(0);
-}
-void
-os_gfx_clear (vm_t *vm, nu_u32_t color)
-{
-    nu_v4_t c = nu_color_to_vec4(nu_color_from_u32(color));
-    glClearColor(c.x, c.y, c.z, c.w);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-void
-os_gfx_draw_model (vm_t *vm, nu_u32_t id)
-{
-    draw_model(vm, id, vm->gfx.state.model);
-}
-static nu_u32_t
-push_im_positions (const nu_f32_t *positions, nu_u32_t count)
-{
-    nu_u32_t offset = renderer.im_vbo_offset;
-    renderer.im_vbo_offset += count;
-    nu_f32_t *data = renderer.im_vbo_data;
-    data += offset * VERTEX_SIZE;
-    for (nu_size_t i = 0; i < count; ++i)
-    {
-        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 0]
-            = positions[i * 3 + 0];
-        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 1]
-            = positions[i * 3 + 1];
-        data[i * VERTEX_SIZE + VERTEX_POSITION_OFFSET + 2]
-            = positions[i * 3 + 2];
-    }
-    return offset;
-}
-void
-os_gfx_draw_volume (vm_t *vm, const nu_f32_t *center, const nu_f32_t *size)
-{
-    // Update ubo
-    update_ubo(vm, NU_TRUE);
-
-    glUseProgram(renderer.unlit_program);
-    glDisable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
-    glEnable(GL_BLEND);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    const nu_b3_t box = nu_b3(nu_v3(center[0], center[1], center[2]),
-                              nu_v3(size[0], size[1], size[2]));
-
-    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
-    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
-    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
-    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
-
-    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
-    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
-    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
-    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
-
-    const nu_v3_t positions[]
-        = { v0, v1, v2, v3, v0, v2, v5, v4, v6, v6, v4, v7,
-            v0, v3, v7, v0, v7, v4, v1, v5, v6, v1, v6, v2,
-            v0, v4, v5, v0, v5, v1, v3, v2, v6, v3, v6, v7 };
-
-    nu_u32_t offset = push_im_positions((const nu_f32_t *)positions,
-                                        NU_ARRAY_SIZE(positions));
-
-    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
-                       1,
-                       GL_FALSE,
-                       vm->gfx.state.model.data);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
-    glBindVertexArray(renderer.im_vao);
-    glDrawArrays(GL_TRIANGLES, offset, 6 * 2 * 3);
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glDisable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
-    glDisable(GL_BLEND);
-    glUseProgram(0);
-}
-void
-os_gfx_draw_cube (vm_t *vm, const nu_f32_t *pos, const nu_f32_t *size)
-{
-    nu_b3_t box = nu_b3(nu_v3(pos[0], pos[1], pos[2]),
-                        nu_v3(size[0], size[1], size[2]));
-
-    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
-    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
-    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
-    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
-
-    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
-    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
-    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
-    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
-
-    const nu_v3_t positions[]
-        = { v0, v1, v1, v2, v2, v3, v3, v0, v4, v5, v5, v6,
-            v6, v7, v7, v4, v0, v4, v1, v5, v2, v6, v3, v7 };
-
-    os_gfx_draw_lines(vm, (const nu_f32_t *)positions, 12 * 2, NU_FALSE);
-}
-void
-os_gfx_draw_lines (vm_t           *vm,
-                   const nu_f32_t *points,
-                   nu_u32_t        count,
-                   nu_bool_t       linestrip)
-{
-    glUseProgram(renderer.unlit_program);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    update_ubo(vm, NU_FALSE);
-    nu_u32_t offset = push_im_positions(points, count);
-
-    glUniformMatrix4fv(glGetUniformLocation(renderer.unlit_program, "model"),
-                       1,
-                       GL_FALSE,
-                       vm->gfx.state.model.data);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer.white_texture);
-    glBindVertexArray(renderer.im_vao);
-    glDrawArrays(linestrip ? GL_LINE_STRIP : GL_LINES, offset, count);
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    glUseProgram(0);
-}
-void
-os_gpu_draw_triangles (vm_t *vm, const nu_f32_t *positions, nu_u32_t count)
-{
-}
-static void
-blit (GLuint texture, nu_size_t first, nu_size_t count)
-{
-    glUseProgram(renderer.canvas_blit_program);
-
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    nu_v2u_t size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
-    glUniform2uiv(
-        glGetUniformLocation(renderer.canvas_blit_program, "viewport_size"),
-        1,
-        size.data);
-    glBindVertexArray(renderer.blit_vao);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glDrawArraysInstancedBaseInstance(GL_TRIANGLES, 0, 6, count, first);
-
-    glBindVertexArray(0);
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
-    glUseProgram(0);
-}
-void
-os_gfx_draw_text (vm_t *vm, const void *text, nu_u32_t len)
-{
-    // Transfer buffer
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.blit_vbo);
-    blit_t *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    NU_ASSERT(blits);
-    nu_size_t blit_start = renderer.blit_count;
-    nu_v2u_t  pos        = vm->gfx.state.cursor;
-
-    const font_t *font = &renderer.font;
-    nu_sv_t       sv   = nu_sv(text, len);
-    nu_b2i_t      extent
-        = nu_b2i_xywh(pos.x, pos.y, font->glyph_size.x, font->glyph_size.y);
-    nu_size_t  it = 0;
-    nu_wchar_t c;
-    while (nu_sv_next(sv, &it, &c))
-    {
-        if (c == '\n')
-        {
-            extent = nu_b2i_moveto(
-                extent, nu_v2i(pos.x, extent.min.y + font->glyph_size.y));
-            continue;
-        }
-        if (c < font->min_char || c > font->max_char)
-        {
-            continue;
-        }
-        nu_size_t gi         = c - font->min_char;
-        nu_b2i_t  tex_extent = font->glyphs[gi];
-
-        nu_v2i_t pos = extent.min;
-        nu_v2u_t tex = nu_v2u(tex_extent.min.x, tex_extent.min.y);
-        nu_v2u_t size
-            = nu_v2u_min(nu_b2i_size(extent), nu_b2i_size(tex_extent));
-
-        NU_ASSERT(renderer.blit_count < MAX_BLIT_COUNT);
-        blit_t *blit = blits + renderer.blit_count++;
-        blit->pos    = ((nu_u32_t)pos.y << 16) | (nu_u32_t)pos.x;
-        blit->tex    = (tex.y << 16) | tex.x;
-        blit->size   = (size.y << 16) | size.x;
-
-        extent = nu_b2i_translate(extent, nu_v2i(font->glyph_size.x, 0));
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-
-    // Draw blits
-    if (renderer.blit_count - blit_start)
-    {
-        blit(font->texture, blit_start, renderer.blit_count - blit_start);
-    }
-}
-void
-os_gfx_draw_blit (
-    vm_t *vm, nu_u32_t id, nu_u32_t x, nu_u32_t y, nu_u32_t w, nu_u32_t h)
-{
-    nu_v2u_t pos = vm->gfx.state.cursor;
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.blit_vbo);
-    blit_t *blits = (blit_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    NU_ASSERT(renderer.blit_count < MAX_BLIT_COUNT);
-    blit_t *b = blits + renderer.blit_count++;
-    b->pos    = ((nu_u32_t)pos.y << 16) | (nu_u32_t)pos.x;
-    b->tex    = (y << 16) | x;
-    b->size   = (h << 16) | w;
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    blit(renderer.resources[id].texture, renderer.blit_count - 1, 1);
 }

@@ -17,7 +17,7 @@ wasm_call_event (vm_t *vm, wasm_event_t event)
 {
     if (vm->wasm.loaded)
     {
-        NU_ASSERT(os_cpu_call_event(vm, event));
+        return os_cpu_call_event(vm, event);
     }
     return NU_SUCCESS;
 }

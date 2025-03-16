@@ -89,7 +89,9 @@ void        wamr_override_value(vm_t *vm, const inspect_value_t *value);
 nu_status_t renderer_init(void);
 void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
-void        renderer_render_instance(nu_b2i_t viewport, nu_v2u_t window_size);
+void        renderer_render_instance(const vm_t *vm,
+                                     nu_b2i_t    viewport,
+                                     nu_v2u_t    window_size);
 
 nu_status_t  window_init(void);
 void         window_free(void);

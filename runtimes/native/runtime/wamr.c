@@ -27,7 +27,7 @@ native_wasm_malloc (mem_alloc_usage_t usage, void *user, nu_size_t n)
             return malloc(n);
         case Alloc_For_LinearMemory: {
             nu_u32_t addr = vm_malloc(wamr.active_vm, n);
-            NU_CHECK(addr != ADDR_INVALID, return NU_NULL);
+            NU_ASSERT(addr != ADDR_INVALID);
             return wamr.active_vm->mem + addr;
         }
     }
@@ -115,8 +115,8 @@ wamr_init (nu_bool_t debug)
         init_args.instance_port = 1234;
     }
 
-    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
-    wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
+    wasm_runtime_set_log_level(WASM_LOG_LEVEL_VERBOSE);
+    // wasm_runtime_set_log_level(WASM_LOG_LEVEL_ERROR);
 
     if (!wasm_runtime_full_init(&init_args))
     {
@@ -166,7 +166,6 @@ wamr_override_value (vm_t *vm, const inspect_value_t *value)
             *((nu_i32_t *)p) = value->value.i32;
             break;
         case SYS_INSPECT_F32: {
-            printf("override %lf\n", value->value.f32);
             *((nu_f32_t *)p) = value->value.f32;
         }
         break;
@@ -187,7 +186,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     }
 
     // Instantiate module
-    const nu_size_t init_stack_size = NU_MEM_32K;
+    const nu_size_t init_stack_size = NU_MEM_16K;
     wamr.active_vm                  = vm;
     wamr.instance                   = wasm_runtime_instantiate(
         wamr.module, init_stack_size, 0, error_buf, sizeof(error_buf));
@@ -204,7 +203,10 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
     if (!wamr.env)
     {
         vm_log(vm, NU_LOG_ERROR, "Create wasm execution environment failed");
+        return NU_FAILURE;
     }
+    wasm_runtime_set_native_stack_boundary(wamr.env,
+                                           (nu_u8_t *)&error_buf - NU_MEM_32K);
     wasm_runtime_set_user_data(wamr.env, vm);
 
     // Find entry point
@@ -243,6 +245,7 @@ os_cpu_load_wasm (vm_t *vm, nu_byte_t *buffer, nu_size_t buffer_size)
 nu_status_t
 os_cpu_call_event (vm_t *vm, wasm_event_t event)
 {
+    uint8               *boundary      = NU_NULL;
     wasm_function_inst_t callback      = NU_NULL;
     const nu_char_t     *callback_name = NU_NULL;
     switch (event)
@@ -257,6 +260,8 @@ os_cpu_call_event (vm_t *vm, wasm_event_t event)
             break;
     }
     NU_ASSERT(callback_name);
+    wasm_runtime_set_native_stack_boundary(wamr.env,
+                                           (nu_u8_t *)&boundary - NU_MEM_32K);
     if (!wasm_runtime_call_wasm_a(wamr.env, callback, 0, NU_NULL, 0, NU_NULL))
     {
         vm_log(vm,

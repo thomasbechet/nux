@@ -1,11 +1,12 @@
 #ifndef NU_TYPES_H
 #define NU_TYPES_H
 
-#define NU_STDLIB
 #ifdef NU_STDLIB
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
+#include <stdarg.h>
 #endif
 
 #define NU_TRUE  1
