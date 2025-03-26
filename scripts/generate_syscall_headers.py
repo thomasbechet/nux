@@ -83,7 +83,7 @@ if __name__ == "__main__":
     typedef int nux_i32_t;\n
     typedef unsigned int nux_u32_t;\n
     typedef float nux_f32_t;\n
-    typedef int nux_error_t;\n
+    typedef int nux_status_t;\n
     typedef int nux_oid_t;\n
     typedef int nux_nid_t;\n
     """

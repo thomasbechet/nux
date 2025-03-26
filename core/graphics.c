@@ -72,3 +72,83 @@ nux_vertex_offset (nux_vertex_attribute_t attributes,
     }
     return offset;
 }
+
+void
+nux_push_scissor (
+    nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
+{
+    nux_command_t *cmd = push_command(env->inst);
+    NU_CHECK(cmd, return);
+    cmd->type       = NUX_COMMAND_PUSH_SCISSOR;
+    cmd->scissor[0] = x;
+    cmd->scissor[1] = y;
+    cmd->scissor[2] = w;
+    cmd->scissor[3] = h;
+}
+void
+nux_push_viewport (
+    nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
+{
+    nux_command_t *cmd = push_command(env->inst);
+    NU_CHECK(cmd, return);
+    cmd->type        = NUX_COMMAND_PUSH_VIEWPORT;
+    cmd->viewport[0] = x;
+    cmd->viewport[1] = y;
+    cmd->viewport[2] = w;
+    cmd->viewport[3] = h;
+}
+void
+nux_push_cursor (nux_env_t env, nux_u32_t x, nux_u32_t y)
+{
+    nux_command_t *cmd = push_command(env->inst);
+    NU_CHECK(cmd, return);
+    cmd->type      = NUX_COMMAND_PUSH_CURSOR;
+    cmd->cursor[0] = x;
+    cmd->cursor[1] = y;
+}
+void
+nux_push_color (nux_env_t env, nux_u32_t color)
+{
+    nux_command_t *cmd = push_command(env->inst);
+    NU_CHECK(cmd, return);
+    cmd->type  = NUX_COMMAND_PUSH_COLOR;
+    cmd->color = color;
+}
+void
+nux_clear (nux_env_t env, nux_u32_t color)
+{
+    nux_command_t *cmd = push_command(env->inst);
+    NU_CHECK(cmd, return);
+    cmd->type  = NUX_COMMAND_CLEAR;
+    cmd->clear = color;
+}
+void
+nux_draw_text (nux_env_t env, const nux_c8_t *text)
+{
+}
+void
+nux_print (nux_env_t env, const nux_c8_t *text)
+{
+}
+void
+nux_blit (nux_env_t env,
+          nux_oid_t texture,
+          nux_u32_t x,
+          nux_u32_t y,
+          nux_u32_t w,
+          nux_u32_t h)
+{
+}
+void
+nux_draw_sprite (nux_env_t env, nux_oid_t spritesheet, nux_u32_t sprite)
+{
+}
+void
+nux_draw_scene (nux_env_t env, nux_oid_t scene, nux_u32_t camera)
+{
+    nux_command_t *cmd = push_command(env->inst);
+    NU_CHECK(cmd, return);
+    cmd->type              = NUX_COMMAND_DRAW_SCENE;
+    cmd->draw_scene.scene  = scene;
+    cmd->draw_scene.camera = camera;
+}

@@ -10,6 +10,11 @@ nux_env_init (nux_instance_t inst, nux_oid_t scene)
     nux_bind_scene(&env, scene);
     return env;
 }
+void
+nux_set_error (nux_instance_t inst, nux_error_t error)
+{
+    inst->error = error;
+}
 
 nux_instance_t
 nux_instance_init (const nux_instance_config_t *config)
@@ -33,6 +38,14 @@ nux_instance_init (const nux_instance_config_t *config)
     inst->time    = 0;
     inst->tps     = 60;
 
+    // Command buffer
+    inst->cmds_capa = config->command_buffer_capacity;
+    inst->cmds_size = 0;
+    inst->cmds      = nux_platform_malloc(inst->userdata,
+                                     NUX_MEMORY_USAGE_CORE,
+                                     sizeof(*inst->cmds) * inst->cmds_capa);
+    NU_CHECK(inst->cmds, goto cleanup0);
+
     // Initialize resource table
     inst->objects[NUX_NULL].type = NUX_OBJECT_NULL;
     inst->objects[NUX_NULL].next = NUX_NULL;
@@ -53,7 +66,7 @@ nux_instance_init (const nux_instance_config_t *config)
     }
 
     // Wasm initialization
-    nu_status_t res = nux_wasm_init(inst, config);
+    nux_status_t res = nux_wasm_init(inst, config);
     NU_CHECK(res, goto cleanup0);
 
     return inst;
@@ -64,11 +77,19 @@ cleanup0:
 void
 nux_instance_free (nux_instance_t inst)
 {
+    // Wasm
     nux_wasm_free(inst);
+    // Command buffer
+    if (inst->cmds)
+    {
+        nux_platform_free(inst->userdata, inst->cmds);
+    }
+    // State
     if (inst->mem)
     {
         nux_platform_free(inst->userdata, inst->mem);
     }
+    // Instance
     nux_platform_free(inst->userdata, inst);
 }
 void

@@ -9,10 +9,12 @@
 //////////////////////////////////////////////////////////////////////////
 
 typedef struct nux_instance *nux_instance_t;
+typedef nux_u32_t            nux_ptr_t;
 
 typedef struct
 {
-    void *userdata;
+    void     *userdata;
+    nux_u32_t command_buffer_capacity;
 } nux_instance_config_t;
 
 typedef enum
@@ -21,32 +23,36 @@ typedef enum
     NUX_NODE_CACHED_TRANSFORM = 1 << 1,
 } nux_node_flags_t;
 
-typedef union
+typedef enum
 {
-    struct
-    {
-        enum
-        {
-            NUX_COMMAND_PUSH_VIEWPORT,
-            NUX_COMMAND_PUSH_SCISSOR,
-            NUX_COMMAND_PUSH_CURSOR,
-            NUX_COMMAND_PUSH_COLOR,
+    NUX_COMMAND_PUSH_VIEWPORT,
+    NUX_COMMAND_PUSH_SCISSOR,
+    NUX_COMMAND_PUSH_CURSOR,
+    NUX_COMMAND_PUSH_COLOR,
+    NUX_COMMAND_CLEAR,
+    NUX_COMMAND_DRAW_SCENE,
+    NUX_COMMAND_DRAW_CUBE,
+    NUX_COMMAND_DRAW_LINES,
+    NUX_COMMAND_DRAW_LINESTRIP,
+    NUX_COMMAND_DRAW_TEXT,
+    NUX_COMMAND_BLIT,
+} nux_command_type_t;
 
-            NUX_COMMAND_CLEAR,
-            NUX_COMMAND_DRAW_SCENE,
-            NUX_COMMAND_DRAW_CUBE,
-            NUX_COMMAND_DRAW_LINES,
-            NUX_COMMAND_DRAW_LINESTRIP,
-            NUX_COMMAND_DRAW_TEXT,
-            NUX_COMMAND_BLIT,
-        } type;
-        union
+typedef struct
+{
+    nux_command_type_t type;
+    union
+    {
+        nux_u32_t clear;
+        nux_u32_t scissor[4];
+        nux_u32_t viewport[4];
+        nux_u32_t cursor[2];
+        nux_u32_t color;
+        struct
         {
-            struct
-            {
-                nux_oid_t oid;
-            } draw_scene;
-        };
+            nux_oid_t scene;
+            nux_nid_t camera;
+        } draw_scene;
     };
 } nux_command_t;
 
@@ -79,12 +85,12 @@ typedef struct
 typedef struct
 {
     nux_u32_t size;
-    nux_u32_t data;
+    nux_ptr_t data;
 } nux_texture_t;
 
 typedef struct
 {
-    nux_u32_t data;
+    nux_ptr_t data;
 } nux_pool_t;
 
 typedef struct
@@ -92,7 +98,7 @@ typedef struct
     nux_u32_t              count;
     nux_primitive_t        primitive;
     nux_vertex_attribute_t attributes;
-    nux_u32_t              data;
+    nux_ptr_t              data;
 } nux_mesh_t;
 
 typedef struct
@@ -135,7 +141,7 @@ typedef struct
     nux_nid_t next;        // 2
     nux_nid_t prev;        // 2
     nux_nid_t table;       // 2
-    nux_u16_t _pad0;       // 2 (TODO: node version ?)
+    nux_u16_t nid;         // 2 (store nid for validation)
     nux_f32_t position[3]; // 12
     nux_f32_t rotation[4]; // 16
     nux_f32_t scale[3];    // 12
@@ -230,7 +236,7 @@ NUX_API void  nux_instance_set_axis(nux_instance_t inst,
 NUX_API nux_object_t *nux_instance_get_object(nux_instance_t    inst,
                                               nux_object_type_t type,
                                               nux_oid_t         oid);
-NUX_API void *nux_instance_get_memory(nux_instance_t inst, nux_u32_t ptr);
+NUX_API void *nux_instance_get_memory(nux_instance_t inst, nux_ptr_t ptr);
 NUX_API nux_command_t *nux_instance_get_command_buffer(nux_instance_t inst,
                                                        nux_u32_t     *count);
 

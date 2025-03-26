@@ -72,11 +72,19 @@ typedef enum
 
 typedef enum
 {
-    ERROR_NONE        = 0,
-    ERROR_ALLOCATION  = 1,
-    ERROR_OUT_OF_NODE = 2,
-    ERROR_INVALID_ID  = 3
+    ERROR_NONE                 = 0,
+    ERROR_ALLOCATION           = 1,
+    ERROR_OUT_OF_NODE          = 2,
+    ERROR_INVALID_ID           = 3,
+    ERROR_INVALID_TEXTURE_SIZE = 4,
+    ERROR_RUNTIME              = 5
 } error_t;
+
+typedef enum
+{
+    SUCCESS = 1,
+    FAILURE = 0
+} status_t;
 
 typedef enum
 {
@@ -93,7 +101,7 @@ typedef enum
 {
     OBJECT_FREE        = 0,
     OBJECT_NULL        = 1,
-    OBJECT_POOL        = 2,
+    OBJECT_SCOPE       = 2,
     OBJECT_WASM        = 3,
     OBJECT_RAW         = 4,
     OBJECT_CAMERA      = 5,
@@ -165,28 +173,28 @@ f32 global_time();
 WASM_EXPORT("delta_time")
 f32 delta_time();
 WASM_EXPORT("create_scope")
-create_scope(u32 oid, u32 size);
+void create_scope(u32 oid, u32 size);
 WASM_EXPORT("rewind_scope")
 void rewind_scope(u32 oid);
 WASM_EXPORT("set_active_scope")
 void set_active_scope(u32 oid);
 WASM_EXPORT("create_texture")
-create_texture(u32 oid, u32 size);
+void create_texture(u32 oid, u32 size);
 WASM_EXPORT("update_texture")
 void update_texture(u32 oid, u32 x, u32 y, u32 w, u32 h, const void *p);
 WASM_EXPORT("create_mesh")
-create_mesh(u32 oid, u32 count, u32 primitive, u32 attribs);
+void create_mesh(u32 oid, u32 count, u32 primitive, u32 attributes);
 WASM_EXPORT("update_mesh")
-void update_mesh(u32 oid, u32 attribs, u32 first, u32 count, const void *p);
+void update_mesh(u32 oid, u32 attributes, u32 first, u32 count, const void *p);
 WASM_EXPORT("create_spritesheet")
-create_spritesheet(
-    u32 oid, u32 texture, u32 row, u32 col, u32 oidth, u32 fheight);
+void create_spritesheet(
+    u32 oid, u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
 WASM_EXPORT("create_scene")
-create_scene(u32 oid, u32 node_capa);
+void create_scene(u32 oid, u32 node_capa);
 WASM_EXPORT("bind_scene")
 void bind_scene(u32 oid);
 WASM_EXPORT("node_add")
-node_add(u32 parent);
+u32 node_add(u32 parent);
 WASM_EXPORT("node_remove")
 void node_remove(u32 nid);
 WASM_EXPORT("node_get_position")
@@ -204,17 +212,15 @@ void node_set_scale(u32 nid, const f32 *scale);
 WASM_EXPORT("node_get_parent")
 u32 node_get_parent(u32 nid);
 WASM_EXPORT("camera_add")
-camera_add(u32 nid);
+void camera_add(u32 nid);
 WASM_EXPORT("camera_remove")
 void camera_remove(u32 nid);
 WASM_EXPORT("camera_set_perspective")
 void camera_set_perspective(u32 nid, f32 fov, f32 near, f32 far);
 WASM_EXPORT("model_add")
-model_add(u32 nid);
+void model_add(u32 nid, u32 mesh, u32 texture);
 WASM_EXPORT("model_remove")
 void model_remove(u32 nid);
-WASM_EXPORT("light_add")
-light_add(u32 nid);
 WASM_EXPORT("push_scissor")
 void push_scissor(u32 x, u32 y, u32 w, u32 h);
 WASM_EXPORT("push_viewport")

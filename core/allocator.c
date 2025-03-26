@@ -7,20 +7,21 @@ static NU_ENUM_MAP(object_type_map,
                    NU_ENUM_NAME(NUX_OBJECT_TEXTURE, "texture"),
                    NU_ENUM_NAME(NUX_OBJECT_SCENE, "scene"));
 
-nux_u32_t
-nux_malloc (nux_instance_t inst, nux_u32_t n)
+void *
+nux_malloc (nux_instance_t inst, nux_u32_t n, nux_ptr_t *ptr)
 {
     if (inst->memhead + n > inst->memcapa)
     {
-        return NUX_INVALID_ADDR;
+        nux_set_error(inst, NUX_ERROR_ALLOCATION);
+        return NU_NULL;
     }
-    nu_u32_t p = inst->memhead;
+    *ptr = inst->memhead;
     inst->memhead += n;
-    return p;
+    return inst->mem + (*ptr);
 }
 void *
-nux_instance_get_memory (nux_instance_t inst, nux_u32_t addr)
+nux_instance_get_memory (nux_instance_t inst, nux_ptr_t ptr)
 {
     // TODO: check boundary
-    return inst->mem + addr;
+    return inst->mem + ptr;
 }
