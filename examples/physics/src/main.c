@@ -363,9 +363,9 @@ update (void)
 
     for (nu_size_t i = 0; i < g_ctx.point_masses.size; ++i)
     {
-        point_mass_t *pm        = g_ctx.point_masses.data + i;
-        nu_m4_t       translate = nu_m4_translate(pm->x);
-        set_transform(translate.data);
+        point_mass_t *pm = g_ctx.point_masses.data + i;
+        // nu_m4_t       translate = nu_m4_translate(pm->x);
+        push_translation(pm->x.x, pm->x.y, pm->x.z);
         nu_v3_t p = NU_V3_ZEROS;
         nu_v3_t s = NU_V3_ONES;
         draw_cube(p.data, s.data);
@@ -395,7 +395,7 @@ update (void)
     nux_debug_camera(delta_time(), &pos);
     nux_debug();
     char buf[256];
-    set_cursor(100, 100);
+    push_cursor(100, 100);
     snprintf(buf, sizeof(buf), "pm:%lu", g_ctx.point_masses.size);
     print(buf);
     snprintf(buf, sizeof(buf), "dc:%lu", g_ctx.distance_constraints.size);

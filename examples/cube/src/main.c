@@ -13,19 +13,31 @@
 #define CAMERA           5
 
 void
+test (void)
+{
+}
+
+void
 start (void)
 {
+    button(0);
     create_camera(CAMERA);
     set_camera_lookat(CAMERA,
                       (const float[]) { 100, 50, 100 },
                       (const float[]) { 0, 0, 0 },
                       (const float[]) { 0, 1, 0 });
     set_camera_perspective(CAMERA, nu_radian(60), 0.1f, 200);
+
+    bind_scene(SCENE);
 }
 
 void
 update (void)
 {
-    push_camera(CAMERA);
+    nu_f32_t  x = nu_sin(0.42);
+    nu_char_t buf[64];
+    snprintf(buf, sizeof(buf), "%lf", x);
+    trace(buf);
+    push_camera(MODEL_INDUSTRIAL);
     draw_model(MODEL_ARIANE6);
 }

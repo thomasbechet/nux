@@ -56,13 +56,52 @@ void update();
 
 typedef enum
 {
-    SCREEN_WIDTH       = 480,
-    SCREEN_HEIGHT      = 360,
-    MIN_TEXTURE_SIZE   = 32,
-    MAX_TEXTURE_SIZE   = 256,
-    MAX_RESOURCE_COUNT = 1024,
-    MAX_PLAYER_COUNT   = 4
+    SCREEN_WIDTH     = 480,
+    SCREEN_HEIGHT    = 360,
+    TEXTURE_MIN_SIZE = 32,
+    TEXTURE_MAX_SIZE = 256,
+    OBJECT_MAX       = 1024,
+    PLAYER_MAX       = 4,
+    BUTTON_MAX       = 10,
+    AXIS_MAX         = 6,
+    NODE_ROOT        = 1,
+    NULL             = 0,
+    NODE_MAX         = (1 << 16) - 1,
+    NAME_MAX         = 64
 } constants_t;
+
+typedef enum
+{
+    ERROR_NONE        = 0,
+    ERROR_ALLOCATION  = 1,
+    ERROR_OUT_OF_NODE = 2,
+    ERROR_INVALID_ID  = 3
+} error_t;
+
+typedef enum
+{
+    COMPONENT_CAMERA  = 1 << 0,
+    COMPONENT_MODEL   = 1 << 1,
+    COMPONENT_LIGHT   = 1 << 2,
+    COMPONENT_VOLUME  = 1 << 3,
+    COMPONENT_EMITTER = 1 << 4,
+    COMPONENT_SOUND   = 1 << 5,
+    COMPONENT_USER    = 1 << 6
+} component_type_t;
+
+typedef enum
+{
+    OBJECT_FREE        = 0,
+    OBJECT_NULL        = 1,
+    OBJECT_POOL        = 2,
+    OBJECT_WASM        = 3,
+    OBJECT_RAW         = 4,
+    OBJECT_CAMERA      = 5,
+    OBJECT_TEXTURE     = 6,
+    OBJECT_MESH        = 7,
+    OBJECT_SPRITESHEET = 9,
+    OBJECT_SCENE       = 10
+} object_type_t;
 
 typedef enum
 {
@@ -90,8 +129,7 @@ typedef enum
     BUTTON_LEFT  = 1 << 6,
     BUTTON_RIGHT = 1 << 7,
     BUTTON_LB    = 1 << 8,
-    BUTTON_RB    = 1 << 9,
-    BUTTON_COUNT = 10
+    BUTTON_RB    = 1 << 9
 } button_t;
 
 typedef enum
@@ -101,8 +139,7 @@ typedef enum
     AXIS_RIGHTX = 2,
     AXIS_RIGHTY = 3,
     AXIS_RT     = 4,
-    AXIS_LT     = 5,
-    AXIS_COUNT  = 6
+    AXIS_LT     = 5
 } axis_t;
 
 typedef enum
@@ -110,12 +147,6 @@ typedef enum
     CONSOLE_MEMORY_CAPACITY = 0,
     CONSOLE_MEMORY_USAGE    = 1
 } console_info_t;
-
-typedef enum
-{
-    INSPECT_I32 = 0,
-    INSPECT_F32 = 1
-} inspect_type_t;
 
 //////////////////////////////////////////////////////////////////////////
 //////                           SYSCALL                            //////
@@ -134,72 +165,76 @@ f32 global_time();
 WASM_EXPORT("delta_time")
 f32 delta_time();
 WASM_EXPORT("create_scope")
-void create_scope(u32 id, u32 size);
+create_scope(u32 oid, u32 size);
 WASM_EXPORT("rewind_scope")
-void rewind_scope(u32 id);
+void rewind_scope(u32 oid);
 WASM_EXPORT("set_active_scope")
-void set_active_scope(u32 id);
-WASM_EXPORT("create_camera")
-void create_camera(u32 id);
-WASM_EXPORT("set_camera_view")
-void set_camera_view(u32 id, const f32 *m);
-WASM_EXPORT("set_camera_projection")
-void set_camera_projection(u32 id, const f32 *m);
-WASM_EXPORT("set_camera_lookat")
-void set_camera_lookat(u32        id,
-                       const f32 *eye,
-                       const f32 *center,
-                       const f32 *up);
-WASM_EXPORT("set_camera_perspective")
-void set_camera_perspective(u32 id, f32 fov, f32 near, f32 far);
+void set_active_scope(u32 oid);
 WASM_EXPORT("create_texture")
-void create_texture(u32 id, u32 size);
+create_texture(u32 oid, u32 size);
 WASM_EXPORT("update_texture")
-void update_texture(u32 id, u32 x, u32 y, u32 w, u32 h, const void *p);
+void update_texture(u32 oid, u32 x, u32 y, u32 w, u32 h, const void *p);
 WASM_EXPORT("create_mesh")
-void create_mesh(u32 id, u32 count, u32 primitive, u32 attribs);
+create_mesh(u32 oid, u32 count, u32 primitive, u32 attribs);
 WASM_EXPORT("update_mesh")
-void update_mesh(u32 id, u32 attribs, u32 first, u32 count, const void *p);
-WASM_EXPORT("create_model")
-void create_model(u32 id, u32 count);
-WASM_EXPORT("update_model")
-void update_model(
-    u32 id, u32 node, u32 mesh, u32 texture, u32 parent, const f32 *transform);
+void update_mesh(u32 oid, u32 attribs, u32 first, u32 count, const void *p);
 WASM_EXPORT("create_spritesheet")
-void create_spritesheet(
-    u32 id, u32 texture, u32 row, u32 col, u32 fwidth, u32 fheight);
+create_spritesheet(
+    u32 oid, u32 texture, u32 row, u32 col, u32 oidth, u32 fheight);
+WASM_EXPORT("create_scene")
+create_scene(u32 oid, u32 node_capa);
+WASM_EXPORT("bind_scene")
+void bind_scene(u32 oid);
+WASM_EXPORT("node_add")
+node_add(u32 parent);
+WASM_EXPORT("node_remove")
+void node_remove(u32 nid);
+WASM_EXPORT("node_get_position")
+void node_get_position(u32 nid, f32 *pos);
+WASM_EXPORT("node_set_position")
+void node_set_position(u32 nid, const f32 *pos);
+WASM_EXPORT("node_get_rotation")
+void node_get_rotation(u32 nid, f32 *rot);
+WASM_EXPORT("node_set_rotation")
+void node_set_rotation(u32 nid, const f32 *rot);
+WASM_EXPORT("node_get_scale")
+void node_get_scale(u32 nid, f32 *scale);
+WASM_EXPORT("node_set_scale")
+void node_set_scale(u32 nid, const f32 *scale);
+WASM_EXPORT("node_get_parent")
+u32 node_get_parent(u32 nid);
+WASM_EXPORT("camera_add")
+camera_add(u32 nid);
+WASM_EXPORT("camera_remove")
+void camera_remove(u32 nid);
+WASM_EXPORT("camera_set_perspective")
+void camera_set_perspective(u32 nid, f32 fov, f32 near, f32 far);
+WASM_EXPORT("model_add")
+model_add(u32 nid);
+WASM_EXPORT("model_remove")
+void model_remove(u32 nid);
+WASM_EXPORT("light_add")
+light_add(u32 nid);
 WASM_EXPORT("push_scissor")
 void push_scissor(u32 x, u32 y, u32 w, u32 h);
 WASM_EXPORT("push_viewport")
 void push_viewport(u32 x, u32 y, u32 w, u32 h);
-WASM_EXPORT("push_camera")
-void push_camera(u32 id);
-WASM_EXPORT("push_translation")
-void push_translation(f32 x, f32 y, f32 z);
 WASM_EXPORT("push_cursor")
 void push_cursor(u32 x, u32 y);
 WASM_EXPORT("push_color")
 void push_color(u32 color);
 WASM_EXPORT("clear")
 void clear(u32 color);
-WASM_EXPORT("draw_model")
-void draw_model(u32 id);
-WASM_EXPORT("draw_volume")
-void draw_volume();
-WASM_EXPORT("draw_cube")
-void draw_cube(const f32 *c, const f32 *s);
-WASM_EXPORT("draw_lines")
-void draw_lines(const f32 *p, u32 n);
-WASM_EXPORT("draw_linestrip")
-void draw_linestrip(const f32 *p, u32 n);
 WASM_EXPORT("draw_text")
 void draw_text(const void *text);
 WASM_EXPORT("print")
 void print(const void *text);
 WASM_EXPORT("blit")
-void blit(u32 id, u32 x, u32 y, u32 w, u32 h);
+void blit(u32 texture, u32 x, u32 y, u32 w, u32 h);
 WASM_EXPORT("draw_sprite")
 void draw_sprite(u32 spritesheet, u32 sprite);
+WASM_EXPORT("draw_scene")
+void draw_scene(u32 scene, u32 camera);
 WASM_EXPORT("button")
 u32 button(u32 player);
 WASM_EXPORT("axis")

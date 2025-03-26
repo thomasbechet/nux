@@ -35,7 +35,7 @@ class EnumValue:
 
 def parse_function(node):
     func = Func()
-    func.name = node.type.declname.replace('sys_', '')
+    func.name = node.type.declname.replace('nux_', '')
     func.returntype = node.type.type.names[0]
     for param in node.args.params[1:]:
         arg = Arg()
@@ -52,10 +52,10 @@ def parse_function(node):
 
 def parse_enum(node):
     enum = Enum()
-    enum.name = node.name.replace("sys_", "")
+    enum.name = node.name.replace("nux_", "")
     for e in node.type.type.values.enumerators:
         val = EnumValue()
-        val.name = e.name.replace("SYS_", "")
+        val.name = e.name.replace("NUX_", "")
         val.value = c_generator.CGenerator().visit(e.value)
         enum.values.append(val)
     enums.append(enum)
@@ -74,19 +74,22 @@ if __name__ == "__main__":
     parser.add_argument("rootdir")
     args = parser.parse_args()
 
-    syscall_header = os.path.join(args.rootdir, "runtimes/native/core/syscall.h")
-    with open(syscall_header, 'r') as file:
+    api_header = os.path.join(args.rootdir, "core/nux_api.h")
+    with open(api_header, 'r') as file:
         src = file.read()
 
     prelude = """
-    typedef char nu_char_t;\n
-    typedef int nu_i32_t;\n
-    typedef unsigned int nu_u32_t;\n
-    typedef float nu_f32_t;\n
-    typedef int nu_status_t;\n
+    typedef char nux_c8_t;\n
+    typedef int nux_i32_t;\n
+    typedef unsigned int nux_u32_t;\n
+    typedef float nux_f32_t;\n
+    typedef int nux_error_t;\n
+    typedef int nux_oid_t;\n
+    typedef int nux_nid_t;\n
     """
+    # prelude = ""
 
-    fixed = "\n".join([line if not re.findall("//|#include|#ifndef|#endif|#define", line) else "" for line in src.splitlines()])
+    fixed = "\n".join([line if not re.findall("//|#include|#ifdef|#ifndef|#else|#endif|#define", line) else "" for line in src.splitlines()])
     ast = c_parser.CParser().parse(prelude + fixed)
     v = FuncDefVisitor()
     v.visit(ast)
@@ -111,3 +114,14 @@ if __name__ == "__main__":
         f.write(r)
         f.close()
         subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
+
+    # wasm3_native.h
+    template = env.get_template("wasm3_native.h.jinja")
+    r = template.render(functions=functions, enums=enums)
+    output = "core/wasm3_native.c.inc"
+    with open(os.path.join(args.rootdir, output), "w") as f:
+        f.write(r)
+        f.close()
+        subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
+    
+

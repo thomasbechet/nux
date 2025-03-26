@@ -57,4 +57,7 @@ elseif (NUX_BUILD_WASM_JIT)
 endif ()
 
 # Add subdirectories
-add_subdirectory(runtimes/native)
+# add_subdirectory(runtimes/native)
+# add_subdirectory(externals/wasm3/source)
+add_subdirectory(core)
+add_subdirectory(runtimes/mini)
