@@ -221,6 +221,11 @@ nu_v3s (nu_f32_t s)
     return nu_v3(s, s, s);
 }
 nu_v3_t
+nu_v3_v4 (nu_v4_t v)
+{
+    return nu_v3(v.x, v.y, v.z);
+}
+nu_v3_t
 nu_v3_add (nu_v3_t a, nu_v3_t b)
 {
     nu_v3_t ret;
@@ -341,6 +346,11 @@ nu_v4 (nu_f32_t x, nu_f32_t y, nu_f32_t z, nu_f32_t w)
     v.z = z;
     v.w = w;
     return v;
+}
+nu_v4_t
+nu_v4_v3 (nu_v3_t v, nu_f32_t w)
+{
+    return nu_v4(v.x, v.y, v.z, w);
 }
 nu_f32_t
 nu_v4_dot (nu_v4_t a, nu_v4_t b)
@@ -745,6 +755,11 @@ nu_m4_mulv3 (nu_m4_t a, nu_v3_t v)
     nu_v4_t v4 = nu_v4(v.x, v.y, v.z, 1);
     v4         = nu_m4_mulv(a, v4);
     return nu_v3(v4.x, v4.y, v4.z);
+}
+nu_m4_t
+nu_m4_trs (nu_v3_t t, nu_q4_t r, nu_v3_t s)
+{
+    return nu_m4_mul(nu_m4_translate(t), nu_q4_mulm4(r, nu_m4_scale(s)));
 }
 
 nu_b2i_t

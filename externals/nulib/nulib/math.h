@@ -226,6 +226,7 @@ NU_API nu_v2_t  nu_v2_lerp(nu_v2_t a, nu_v2_t b, nu_f32_t t);
 
 NU_API nu_v3_t  nu_v3(nu_f32_t x, nu_f32_t y, nu_f32_t z);
 NU_API nu_v3_t  nu_v3s(nu_f32_t s);
+NU_API nu_v3_t  nu_v3_v4(nu_v4_t v);
 NU_API nu_v3_t  nu_v3_add(nu_v3_t a, nu_v3_t b);
 NU_API nu_v3_t  nu_v3_sub(nu_v3_t a, nu_v3_t b);
 NU_API nu_v3_t  nu_v3_mul(nu_v3_t a, nu_v3_t b);
@@ -241,6 +242,7 @@ NU_API nu_v3_t  nu_v3_max(nu_v3_t a, nu_v3_t b);
 NU_API nu_v3_t  nu_v3_lerp(nu_v3_t a, nu_v3_t b, nu_f32_t t);
 
 NU_API nu_v4_t  nu_v4(nu_f32_t x, nu_f32_t y, nu_f32_t z, nu_f32_t w);
+NU_API nu_v4_t  nu_v4_v3(nu_v3_t v, nu_f32_t w);
 NU_API nu_f32_t nu_v4_dot(nu_v4_t a, nu_v4_t b);
 NU_API nu_f32_t nu_v4_norm(nu_v4_t v);
 NU_API nu_v2_t  nu_v4_xy(nu_v4_t v);
@@ -288,6 +290,7 @@ NU_API nu_m4_t nu_m4_rotate_y(nu_f32_t angle);
 NU_API nu_m4_t nu_m4_mul(nu_m4_t a, nu_m4_t b);
 NU_API nu_v4_t nu_m4_mulv(nu_m4_t a, nu_v4_t v);
 NU_API nu_v3_t nu_m4_mulv3(nu_m4_t a, nu_v3_t v);
+NU_API nu_m4_t nu_m4_trs(nu_v3_t t, nu_q4_t r, nu_v3_t s);
 
 NU_API nu_b2i_t  nu_b2i(nu_v2i_t min, nu_v2i_t max);
 NU_API nu_b2i_t  nu_b2i_xywh(nu_i32_t x, nu_i32_t y, nu_u32_t w, nu_u32_t h);

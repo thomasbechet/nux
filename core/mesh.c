@@ -9,10 +9,11 @@ nux_create_mesh (nux_env_t              env,
 {
     nux_object_t *object = nux_object_set(env->inst, oid, NUX_OBJECT_MESH);
     NU_CHECK(object, return NUX_FAILURE);
-    object->mesh.count      = count;
-    object->mesh.primitive  = primitive;
-    object->mesh.attributes = attributes;
-    nu_byte_t *data         = nux_malloc(
+    object->mesh.count          = count;
+    object->mesh.primitive      = primitive;
+    object->mesh.attributes     = attributes;
+    object->mesh.update_counter = 0;
+    nu_byte_t *data             = nux_malloc(
         env->inst, nux_vertex_memsize(attributes, count), &object->mesh.data);
     NU_CHECK(data, return NUX_FAILURE);
     nu_memset(data, 0, nux_vertex_memsize(attributes, count));
@@ -79,4 +80,5 @@ nux_update_mesh (nux_env_t              env,
                 = data[src_offset + i * 3 + 2];
         }
     }
+    ++object->mesh.update_counter;
 }

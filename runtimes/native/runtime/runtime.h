@@ -54,7 +54,7 @@ typedef struct
     nu_char_t             path[NU_PATH_MAX];
     nu_bool_t             active;
     nux_instance_config_t config;
-    nux_instance_t        vm;
+    nux_instance_t        instance;
     nu_byte_t            *save_state;
     nu_bool_t             pause;
     struct nk_rect        viewport;
@@ -86,9 +86,9 @@ void logger_vlog(nu_log_level_t level, const nu_char_t *fmt, va_list args);
 nu_status_t renderer_init(void);
 void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
-void        renderer_render_instance(const nux_instance_t *vm,
-                                     nu_b2i_t              viewport,
-                                     nu_v2u_t              window_size);
+void        renderer_render_instance(nux_instance_t inst,
+                                     nu_b2i_t       viewport,
+                                     nu_v2u_t       window_size);
 
 nu_status_t  window_init(void);
 void         window_free(void);

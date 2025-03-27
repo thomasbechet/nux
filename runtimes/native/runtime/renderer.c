@@ -1,3 +1,4 @@
+#include "nulib/nulib/math.h"
 #include "shaders_data.c.inc"
 #include "fonts_data.c.inc"
 #include "runtime.h"
@@ -15,13 +16,16 @@
 
 typedef struct
 {
-    nu_u32_t offset;
+    nu_u32_t  offset;
+    nu_u32_t  update_counter;
+    nu_bool_t initialized;
 } mesh_t;
 
 typedef struct
 {
-    nu_u32_t first_node;
-} model_t;
+    GLuint   handle;
+    nu_u32_t update_counter;
+} texture_t;
 
 typedef struct
 {
@@ -55,36 +59,34 @@ typedef struct
 
 typedef union
 {
-    GLuint  texture;
-    mesh_t  mesh;
-    model_t model;
-} gl_resource_t;
+    texture_t texture;
+    mesh_t    mesh;
+} gl_object_t;
 
 static struct
 {
-    GLuint        white_texture;
-    nu_u32_t      nodes_next;
-    gl_resource_t resources[NUX_OBJECT_MAX];
-    font_t        font;
-    nu_size_t     blit_count;
-    GLuint        blit_vbo;
-    GLuint        blit_vao;
-    nu_u32_t      mesh_vbo_offset;
-    GLuint        mesh_vbo;
-    GLuint        mesh_vao;
-    nu_u32_t      im_vbo_offset;
-    GLuint        im_vbo;
-    nu_f32_t     *im_vbo_data;
-    GLuint        im_vao;
-    nu_bool_t     ubo_dirty;
-    GLuint        ubo_buffer;
-    ubo_t         ubo;
-    GLuint        unlit_program;
-    GLuint        screen_blit_program;
-    GLuint        canvas_blit_program;
-    GLuint        surface_fbo;
-    GLuint        surface_texture;
-    GLuint        surface_depth;
+    GLuint      white_texture;
+    gl_object_t objects[NUX_OBJECT_MAX];
+    font_t      font;
+    nu_size_t   blit_count;
+    GLuint      blit_vbo;
+    GLuint      blit_vao;
+    nu_u32_t    mesh_vbo_offset;
+    GLuint      mesh_vbo;
+    GLuint      mesh_vao;
+    nu_u32_t    im_vbo_offset;
+    GLuint      im_vbo;
+    nu_f32_t   *im_vbo_data;
+    GLuint      im_vao;
+    nu_bool_t   ubo_dirty;
+    GLuint      ubo_buffer;
+    ubo_t       ubo;
+    GLuint      unlit_program;
+    GLuint      screen_blit_program;
+    GLuint      canvas_blit_program;
+    GLuint      surface_fbo;
+    GLuint      surface_texture;
+    GLuint      surface_depth;
 } renderer;
 
 static const GLchar *
@@ -392,6 +394,145 @@ gen_vertex_vbo (GLuint *vbo, GLuint *vao, nu_u32_t capacity)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 }
+static void
+init_texture (const nux_texture_t *texture, nux_oid_t oid)
+{
+    GLuint handle;
+    glGenTextures(1, &handle);
+    glBindTexture(GL_TEXTURE_2D, handle);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 texture->size,
+                 texture->size,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glTexParameteri(
+    //     GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    renderer.objects[oid].texture.handle         = handle;
+    renderer.objects[oid].texture.update_counter = 0;
+}
+static void
+free_texture (nux_oid_t oid)
+{
+    glDeleteTextures(1, &renderer.objects[oid].texture.handle);
+}
+static void
+update_texture (nux_instance_t       inst,
+                const nux_texture_t *texture,
+                nux_oid_t            oid)
+{
+    GLuint handle = renderer.objects[oid].texture.handle;
+    glBindTexture(GL_TEXTURE_2D, handle);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    texture->size,
+                    texture->size,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    nux_instance_get_memory(inst, texture->data));
+    // glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    renderer.objects[oid].texture.update_counter = texture->update_counter;
+}
+
+static void
+init_mesh (const nux_mesh_t *mesh, nux_oid_t oid)
+{
+    renderer.objects[oid].mesh.offset = renderer.mesh_vbo_offset;
+    renderer.mesh_vbo_offset += mesh->count;
+    // Initialize colors to white
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
+    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(ptr);
+    for (nu_size_t i = 0; i < mesh->count; ++i)
+    {
+        nu_size_t vbo_offset
+            = (renderer.objects[oid].mesh.offset + i) * VERTEX_SIZE
+              + VERTEX_COLOR_OFFSET;
+        ptr[vbo_offset + 0] = 1;
+        ptr[vbo_offset + 1] = 1;
+        ptr[vbo_offset + 2] = 1;
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+static void
+update_mesh (nux_instance_t inst, const nux_mesh_t *mesh, nux_oid_t oid)
+{
+    // Compute vertex index in vbo
+    nu_size_t first = renderer.objects[oid].mesh.offset;
+
+    // Update VBO
+    glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
+    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    NU_ASSERT(ptr);
+
+    if (mesh->attributes & NUX_VERTEX_POSITION)
+    {
+        const nu_f32_t *data
+            = (const nu_f32_t *)(nux_instance_get_memory(inst, mesh->data)
+                                 + nux_vertex_offset(mesh->attributes,
+                                                     NUX_VERTEX_POSITION,
+                                                     mesh->count)
+                                       * sizeof(nu_f32_t));
+        for (nu_size_t i = 0; i < mesh->count; ++i)
+        {
+            nu_size_t vbo_offset
+                = (first + i) * VERTEX_SIZE + VERTEX_POSITION_OFFSET;
+            ptr[vbo_offset + 0] = data[i * 3 + 0];
+            ptr[vbo_offset + 1] = data[i * 3 + 1];
+            ptr[vbo_offset + 2] = data[i * 3 + 2];
+        }
+    }
+    if (mesh->attributes & NUX_VERTEX_UV)
+    {
+        const nu_f32_t *data
+            = (const nu_f32_t *)(nux_instance_get_memory(inst, mesh->data)
+                                 + nux_vertex_offset(mesh->attributes,
+                                                     NUX_VERTEX_UV,
+                                                     mesh->count)
+                                       * sizeof(nu_f32_t));
+        for (nu_size_t i = 0; i < mesh->count; ++i)
+        {
+            nu_size_t vbo_offset = (first + i) * VERTEX_SIZE + VERTEX_UV_OFFSET;
+            ptr[vbo_offset + 0]  = data[i * 2 + 0];
+            ptr[vbo_offset + 1]  = data[i * 2 + 1];
+        }
+    }
+    if (mesh->attributes & NUX_VERTEX_COLOR)
+    {
+        const nu_f32_t *data
+            = (const nu_f32_t *)(nux_instance_get_memory(inst, mesh->data)
+                                 + nux_vertex_offset(mesh->attributes,
+                                                     NUX_VERTEX_COLOR,
+                                                     mesh->count)
+                                       * sizeof(nu_f32_t));
+        for (nu_size_t i = 0; i < mesh->count; ++i)
+        {
+            nu_size_t vbo_offset
+                = (first + i) * VERTEX_SIZE + VERTEX_COLOR_OFFSET;
+            ptr[vbo_offset + 0] = data[i * 3 + 0];
+            ptr[vbo_offset + 1] = data[i * 3 + 1];
+            ptr[vbo_offset + 2] = data[i * 3 + 2];
+        }
+    }
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    renderer.objects[oid].mesh.update_counter = mesh->update_counter;
+}
 
 static void
 init_ubo (void)
@@ -414,12 +555,62 @@ update_ubo (void)
         GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
-static void
-draw_scene (nux_instance_t inst, nux_oid_t oid, nu_m4_t transform)
+static nu_m4_t
+node_local_to_parent (const nux_node_t *node)
 {
+    return nu_m4_trs(
+        nu_v3(node->position[0], node->position[1], node->position[2]),
+        nu_q4(node->rotation[0],
+              node->rotation[1],
+              node->rotation[2],
+              node->rotation[3]),
+        nu_v3(node->scale[0], node->scale[1], node->scale[2]));
+}
+static nu_m4_t
+node_global_transform (const nux_scene_node_t *nodes, const nux_node_t *node)
+{
+    nu_m4_t   global_transform = node_local_to_parent(node);
+    nux_nid_t parent           = node->parent;
+    while (parent != NUX_NULL)
+    {
+        const nux_node_t *parent_node = &nodes[parent].node;
+        global_transform
+            = nu_m4_mul(node_local_to_parent(parent_node), global_transform);
+        parent = parent_node->parent;
+    }
+    return global_transform;
+}
+static void
+draw_scene (nux_instance_t inst,
+            nux_oid_t      scene,
+            nux_nid_t      camera,
+            nu_m4_t        transform)
+{
+    // Get scene and camera
+    nux_object_t *object
+        = nux_instance_get_object(inst, NUX_OBJECT_SCENE, scene);
+    NU_ASSERT(object);
+    nux_scene_node_t *nodes
+        = nux_instance_get_memory(inst, object->scene.nodes);
+    const nux_node_t *cam_node = &nodes[camera].node;
+    nux_camera_t     *cam
+        = &nux_scene_get_component(nodes, camera, NUX_COMPONENT_CAMERA)->camera;
+
     // Update ubo
-    renderer.ubo.is_volume = NU_FALSE;
-    update_ubo();
+    {
+        nu_m4_t cam_transform = node_global_transform(nodes, cam_node);
+        nu_v3_t eye           = nu_m4_mulv3(cam_transform, NU_V3_ZEROS);
+        nu_v3_t center        = nu_m4_mulv3(cam_transform, NU_V3_FORWARD);
+        nu_v3_t up = nu_v3_v4(nu_m4_mulv(cam_transform, nu_v4_v3(NU_V3_UP, 0)));
+        renderer.ubo.view = nu_lookat(eye, center, up);
+        renderer.ubo.projection
+            = nu_perspective(cam->fov,
+                             (nu_f32_t)NUX_SCREEN_WIDTH / NUX_SCREEN_HEIGHT,
+                             cam->near,
+                             cam->far);
+        renderer.ubo.is_volume = NU_FALSE;
+        update_ubo();
+    }
 
     // Setup GL states
     glUseProgram(renderer.unlit_program);
@@ -431,38 +622,70 @@ draw_scene (nux_instance_t inst, nux_oid_t oid, nu_m4_t transform)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw model
-    nux_object_t *object = nux_instance_get_object(inst, NUX_OBJECT_SCENE, oid);
-    NU_ASSERT(object);
-    nux_scene_node_t *nodes = nux_instance_get_memory(inst, object->scene.addr);
-    for (nu_size_t i = 0; i < node_count; ++i)
+    nux_nid_t  nid;
+    nux_nid_t *iter = NU_NULL;
+    nux_nid_t  stack[256];
+    while ((nid = nux_scene_iter_dfs(nodes, &iter, stack, sizeof(stack))))
     {
-        gfx_model_node_t *node
-            = renderer.nodes + renderer.resources[id].model.first_node + i;
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,
-                      node->texture ? renderer.resources[node->texture].texture
-                                    : renderer.white_texture);
-        nu_m4_t  global_transform = node->local_to_parent;
-        nu_u32_t parent           = node->parent;
-        while (parent != (nu_u32_t)-1)
+        nux_node_t      *node = &nodes[nid].node;
+        nux_component_t *model
+            = nux_scene_get_component(nodes, nid, NUX_COMPONENT_MODEL);
+        if (model && model->model.visible)
         {
-            gfx_model_node_t *parent_node
-                = renderer.nodes + renderer.resources[id].model.first_node
-                  + parent;
-            global_transform = nu_m4_mul(parent_node->local_to_parent,
-                                         node->local_to_parent);
-            parent           = parent_node->parent;
+            // Update texture
+            texture_t *texture
+                = model->model.texture
+                      ? &renderer.objects[model->model.texture].texture
+                      : NU_NULL;
+            if (texture)
+            {
+                nux_texture_t *tex
+                    = &nux_instance_get_object(
+                           inst, NUX_OBJECT_TEXTURE, model->model.texture)
+                           ->texture;
+                if (!texture->handle)
+                {
+                    init_texture(tex, model->model.texture);
+                }
+                if (texture->update_counter != tex->update_counter)
+                {
+                    update_texture(inst, tex, model->model.texture);
+                }
+            }
+
+            // Update mesh
+            mesh_t *renderer_mesh = &renderer.objects[model->model.mesh].mesh;
+            nux_mesh_t *mesh      = &nux_instance_get_object(
+                                    inst, NUX_OBJECT_TEXTURE, model->model.mesh)
+                                    ->mesh;
+            if (!renderer_mesh->initialized)
+            {
+                init_mesh(mesh, model->model.mesh);
+            }
+            if (renderer_mesh->update_counter != mesh->update_counter)
+            {
+                update_mesh(inst, mesh, model->model.mesh);
+            }
+
+            // Bind texture
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D,
+                          texture ? texture->handle : renderer.white_texture);
+
+            // Bind model matrix
+            nu_m4_t global_transform = node_global_transform(nodes, node);
+            global_transform         = nu_m4_mul(transform, global_transform);
+            glUniformMatrix4fv(
+                glGetUniformLocation(renderer.unlit_program, "model"),
+                1,
+                GL_FALSE,
+                global_transform.data);
+
+            // Draw mesh
+            glBindVertexArray(renderer.mesh_vao);
+            glDrawArrays(GL_TRIANGLES, renderer_mesh->offset, mesh->count);
+            glBindVertexArray(0);
         }
-        global_transform = nu_m4_mul(transform, global_transform);
-        glUniformMatrix4fv(
-            glGetUniformLocation(renderer.unlit_program, "model"),
-            1,
-            GL_FALSE,
-            global_transform.data);
-        nu_u32_t offset = renderer.resources[node->mesh].mesh.offset;
-        glBindVertexArray(renderer.mesh_vao);
-        glDrawArrays(GL_TRIANGLES, offset, vm->res[node->mesh].mesh.count);
-        glBindVertexArray(0);
     }
 
     // Reset state
@@ -604,7 +827,7 @@ blit (GLuint texture, nu_size_t first, nu_size_t count)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    nu_v2u_t size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    nu_v2u_t size = nu_v2u(NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     glUniform2uiv(
         glGetUniformLocation(renderer.canvas_blit_program, "viewport_size"),
         1,
@@ -687,7 +910,7 @@ draw_blit (nu_v2u_t cursor,
     b->tex    = (y << 16) | x;
     b->size   = (h << 16) | w;
     glUnmapBuffer(GL_ARRAY_BUFFER);
-    blit(renderer.resources[id].texture, renderer.blit_count - 1, 1);
+    blit(renderer.objects[id].texture.handle, renderer.blit_count - 1, 1);
 }
 
 nu_status_t
@@ -735,8 +958,8 @@ renderer_init (void)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_SRGB,
-                 SYS_SCREEN_WIDTH,
-                 SYS_SCREEN_HEIGHT,
+                 NUX_SCREEN_WIDTH,
+                 NUX_SCREEN_HEIGHT,
                  0,
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
@@ -750,8 +973,8 @@ renderer_init (void)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_DEPTH24_STENCIL8,
-                 SYS_SCREEN_WIDTH,
-                 SYS_SCREEN_HEIGHT,
+                 NUX_SCREEN_WIDTH,
+                 NUX_SCREEN_HEIGHT,
                  0,
                  GL_DEPTH_STENCIL,
                  GL_UNSIGNED_INT_24_8,
@@ -807,10 +1030,9 @@ renderer_init (void)
     init_canvas();
 
     // Initialize memory
-    nu_memset(renderer.resources, 0, sizeof(renderer.resources));
+    nu_memset(renderer.objects, 0, sizeof(renderer.objects));
 
-    renderer.nodes_next = 0;
-    renderer.ubo_dirty  = NU_TRUE;
+    renderer.ubo_dirty = NU_TRUE;
 
     // Mesh VBO
     renderer.mesh_vbo_offset = 0;
@@ -889,7 +1111,7 @@ renderer_clear (nu_b2i_t viewport, nu_v2u_t window_size)
     glDisable(GL_SCISSOR_TEST);
 }
 static void
-begin_frame (const vm_t *vm)
+begin_frame (void)
 {
     renderer.blit_count    = 0;
     renderer.im_vbo_offset = 0;
@@ -899,12 +1121,12 @@ begin_frame (const vm_t *vm)
 
     // Render on surface framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
-    glViewport(0, 0, SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    glViewport(0, 0, NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     glClearColor(0, 0, 0, 1);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 static void
-end_frame (const vm_t *vm)
+end_frame (void)
 {
     // Unmap buffers
     glBindBuffer(GL_ARRAY_BUFFER, renderer.im_vbo);
@@ -913,69 +1135,63 @@ end_frame (const vm_t *vm)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 void
-renderer_render_instance (const vm_t *vm,
-                          nu_b2i_t    viewport,
-                          nu_v2u_t    window_size)
+renderer_render_instance (nux_instance_t inst,
+                          nu_b2i_t       viewport,
+                          nu_v2u_t       window_size)
 {
     // Begin frame
-    begin_frame(vm);
+    begin_frame();
     // Execute vm commands
-    nu_v2u_t             cursor    = NU_V2U_ZEROS;
+    // nu_v2u_t             cursor    = NU_V2U_ZEROS;
     nu_m4_t              transform = nu_m4_identity();
-    const gfx_command_t *cmd       = vm_ptr(vm, vm->gfx.cmds_addr);
-    for (nu_size_t i = 0; i < vm->gfx.cmds_count; ++i, ++cmd)
+    nux_u32_t            cmds_count;
+    const nux_command_t *cmds
+        = nux_instance_get_command_buffer(inst, &cmds_count);
+    for (nu_size_t i = 0; i < cmds_count; ++i)
     {
-        switch ((gfx_command_type_t)cmd->type)
+        const nux_command_t *cmd = cmds + i;
+        switch (cmd->type)
         {
-            case GFX_CMD_PUSH_VIEWPORT:
+            case NUX_COMMAND_PUSH_VIEWPORT:
                 break;
-            case GFX_CMD_PUSH_SCISSOR:
+            case NUX_COMMAND_PUSH_SCISSOR:
                 break;
-            case GFX_CMD_PUSH_CAMERA: {
-                const gfx_camera_t *cam
-                    = vm_ptr(vm, vm->res[cmd->push_camera.camera].camera.data);
-                renderer.ubo.view       = cam->view;
-                renderer.ubo.projection = cam->projection;
-            }
-            break;
-            case GFX_CMD_PUSH_TRANSLATION:
-                transform = nu_m4_translate(cmd->push_translation);
+            case NUX_COMMAND_PUSH_CURSOR:
+                // cursor = nu_v2u(cmd->cursor[0], cmd->cursor[1]);
                 break;
-            case GFX_CMD_PUSH_CURSOR:
-                cursor = cmd->push_cursor.position;
+            case NUX_COMMAND_PUSH_COLOR:
                 break;
-            case GFX_CMD_PUSH_COLOR:
-                break;
-            case GFX_CMD_CLEAR: {
-                nu_v4_t c = nu_color_to_vec4(cmd->push_color.color);
+            case NUX_COMMAND_CLEAR: {
+                nu_v4_t c = nu_color_to_vec4(nu_color_from_u32(cmd->clear));
                 glClearColor(c.x, c.y, c.z, c.w);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
             break;
-            case GFX_CMD_DRAW_MODEL:
-                draw_scene(vm, cmd->draw_model.model, transform);
+            case NUX_COMMAND_DRAW_SCENE:
+                draw_scene(inst,
+                           cmd->draw_scene.scene,
+                           cmd->draw_scene.camera,
+                           transform);
                 break;
-            case GFX_CMD_DRAW_VOLUME:
+            case NUX_COMMAND_DRAW_CUBE:
                 break;
-            case GFX_CMD_DRAW_CUBE:
+            case NUX_COMMAND_DRAW_LINES:
                 break;
-            case GFX_CMD_DRAW_LINES:
+            case NUX_COMMAND_DRAW_LINESTRIP:
                 break;
-            case GFX_CMD_DRAW_LINESTRIP:
+            case NUX_COMMAND_DRAW_TEXT:
                 break;
-            case GFX_CMD_DRAW_TEXT:
-                break;
-            case GFX_CMD_BLIT:
-                draw_blit(cursor,
-                          cmd->blit.texture,
-                          cmd->blit.x,
-                          cmd->blit.y,
-                          cmd->blit.w,
-                          cmd->blit.h);
+            case NUX_COMMAND_BLIT:
+                // draw_blit(cursor,
+                //           cmd->draw_blit.texture,
+                //           cmd->blit.x,
+                //           cmd->blit.y,
+                //           cmd->blit.w,
+                //           cmd->blit.h);
                 break;
         }
     }
-    end_frame(vm);
+    end_frame();
 
     // Blit surface to screen
     nu_v2i_t pos  = viewport.min;
@@ -992,177 +1208,4 @@ renderer_render_instance (const vm_t *vm,
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);
-}
-
-void
-os_gfx_init_texture (vm_t *vm, nu_u32_t id)
-{
-    resource_t *res = vm->res + id;
-    GLuint      handle;
-    glGenTextures(1, &handle);
-    glBindTexture(GL_TEXTURE_2D, handle);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 res->texture.size,
-                 res->texture.size,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                 NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glTexParameteri(
-    //     GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    renderer.resources[id].texture = handle;
-}
-void
-os_gfx_free_texture (vm_t *vm, nu_u32_t id)
-{
-    glDeleteTextures(1, &renderer.resources[id].texture);
-}
-void
-os_gfx_update_texture (vm_t *vm, nu_u32_t id)
-{
-    resource_t *res    = vm->res + id;
-    GLuint      handle = renderer.resources[id].texture;
-    glBindTexture(GL_TEXTURE_2D, handle);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    0,
-                    0,
-                    res->texture.size,
-                    res->texture.size,
-                    GL_RGBA,
-                    GL_UNSIGNED_BYTE,
-                    vm->mem + res->texture.data);
-    // glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0);
-}
-
-void
-os_gfx_init_mesh (vm_t *vm, nu_u32_t id)
-{
-    renderer.resources[id].mesh.offset = renderer.mesh_vbo_offset;
-    renderer.mesh_vbo_offset += vm->res[id].mesh.count;
-    // Initialize colors to white
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
-    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    NU_ASSERT(ptr);
-    for (nu_size_t i = 0; i < vm->res[id].mesh.count; ++i)
-    {
-        nu_size_t vbo_offset
-            = (renderer.resources[id].mesh.offset + i) * VERTEX_SIZE
-              + VERTEX_COLOR_OFFSET;
-        ptr[vbo_offset + 0] = 1;
-        ptr[vbo_offset + 1] = 1;
-        ptr[vbo_offset + 2] = 1;
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-}
-void
-os_gfx_free_mesh (vm_t *vm, nu_u32_t id)
-{
-}
-void
-os_gfx_update_mesh (vm_t *vm, nu_u32_t id)
-{
-    const resource_t *res = vm->res + id;
-
-    // Compute vertex index in vbo
-    nu_size_t first = renderer.resources[id].mesh.offset;
-
-    // Update VBO
-    glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
-    nu_f32_t *ptr = (nu_f32_t *)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-    NU_ASSERT(ptr);
-
-    if (res->mesh.attributes & SYS_VERTEX_POSITION)
-    {
-        const nu_f32_t *data
-            = (const nu_f32_t *)(vm->mem + res->mesh.data
-                                 + gfx_vertex_offset(res->mesh.attributes,
-                                                     SYS_VERTEX_POSITION,
-                                                     res->mesh.count)
-                                       * sizeof(nu_f32_t));
-        for (nu_size_t i = 0; i < res->mesh.count; ++i)
-        {
-            nu_size_t vbo_offset
-                = (first + i) * VERTEX_SIZE + VERTEX_POSITION_OFFSET;
-            ptr[vbo_offset + 0] = data[i * 3 + 0];
-            ptr[vbo_offset + 1] = data[i * 3 + 1];
-            ptr[vbo_offset + 2] = data[i * 3 + 2];
-        }
-    }
-    if (res->mesh.attributes & SYS_VERTEX_UV)
-    {
-        const nu_f32_t *data
-            = (const nu_f32_t *)(vm->mem + res->mesh.data
-                                 + gfx_vertex_offset(res->mesh.attributes,
-                                                     SYS_VERTEX_UV,
-                                                     res->mesh.count)
-                                       * sizeof(nu_f32_t));
-        for (nu_size_t i = 0; i < res->mesh.count; ++i)
-        {
-            nu_size_t vbo_offset = (first + i) * VERTEX_SIZE + VERTEX_UV_OFFSET;
-            ptr[vbo_offset + 0]  = data[i * 2 + 0];
-            ptr[vbo_offset + 1]  = data[i * 2 + 1];
-        }
-    }
-    if (res->mesh.attributes & SYS_VERTEX_COLOR)
-    {
-        const nu_f32_t *data
-            = (const nu_f32_t *)(vm->mem + res->mesh.data
-                                 + gfx_vertex_offset(res->mesh.attributes,
-                                                     SYS_VERTEX_COLOR,
-                                                     res->mesh.count)
-                                       * sizeof(nu_f32_t));
-        for (nu_size_t i = 0; i < res->mesh.count; ++i)
-        {
-            nu_size_t vbo_offset
-                = (first + i) * VERTEX_SIZE + VERTEX_COLOR_OFFSET;
-            ptr[vbo_offset + 0] = data[i * 3 + 0];
-            ptr[vbo_offset + 1] = data[i * 3 + 1];
-            ptr[vbo_offset + 2] = data[i * 3 + 2];
-        }
-    }
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-}
-void
-os_gfx_init_model (vm_t *vm, nu_u32_t id)
-{
-    resource_t *res = vm->res + id;
-    NU_ASSERT(res->model.node_count + renderer.nodes_next < NODE_INIT_SIZE);
-    renderer.resources[id].model.first_node = renderer.nodes_next;
-    for (nu_size_t i = 0; i < res->model.node_count; ++i)
-    {
-        gfx_model_node_t *node
-            = renderer.nodes + i + renderer.resources[id].model.first_node;
-        node->texture         = 0;
-        node->mesh            = 0;
-        node->parent          = -1;
-        node->local_to_parent = nu_m4_identity();
-    }
-    renderer.nodes_next += res->model.node_count;
-}
-void
-os_gfx_free_model (vm_t *vm, nu_u32_t id)
-{
-}
-void
-os_gfx_update_model (vm_t                   *vm,
-                     nu_u32_t                id,
-                     nu_u32_t                node_index,
-                     const gfx_model_node_t *node)
-{
-    renderer.nodes[renderer.resources[id].model.first_node + node_index]
-        = *node;
 }

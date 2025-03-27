@@ -37,4 +37,5 @@ nux_update_texture (nux_env_t   env,
         nu_byte_t *src = ((nu_byte_t *)p) + w * i;
         nu_memcpy(row, src, w);
     }
+    ++object->mesh.update_counter;
 }

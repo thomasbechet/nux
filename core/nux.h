@@ -84,31 +84,34 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t size;
-    nux_ptr_t data;
-} nux_texture_t;
+    nux_u32_t size;           // 4
+    nux_ptr_t data;           // 4
+    nux_u32_t update_counter; // 4
+} nux_texture_t;              // 12 bytes
 
 typedef struct
 {
-    nux_ptr_t data;
-} nux_pool_t;
+    nux_u32_t size; // 4
+    nux_ptr_t data; // 4
+} nux_pool_t;       // 8 bytes
 
 typedef struct
 {
-    nux_u32_t              count;
-    nux_primitive_t        primitive;
-    nux_vertex_attribute_t attributes;
-    nux_ptr_t              data;
-} nux_mesh_t;
+    nux_u32_t              count;          // 4
+    nux_primitive_t        primitive;      // 4
+    nux_vertex_attribute_t attributes;     // 4
+    nux_ptr_t              data;           // 4
+    nux_u32_t              update_counter; // 4
+} nux_mesh_t;                              // 20 bytes
 
 typedef struct
 {
-    nux_oid_t texture;
-    nux_u16_t row;
-    nux_u16_t col;
-    nux_u16_t fwidth;
-    nux_u16_t fheight;
-} nux_spritesheet_t;
+    nux_oid_t texture; // 4
+    nux_u16_t row;     // 2
+    nux_u16_t col;     // 2
+    nux_u16_t fwidth;  // 2
+    nux_u16_t fheight; // 2
+} nux_spritesheet_t;   // 12 bytes
 
 typedef struct
 {
@@ -116,7 +119,7 @@ typedef struct
     nux_u32_t nodes; // 4
     nux_u32_t size;  // 4
     nux_u32_t capa;  // 4
-} nux_scene_t;
+} nux_scene_t;       // 16 bytes
 
 typedef struct
 {
@@ -245,16 +248,18 @@ NUX_API nux_env_t      nux_instance_init_env(nux_instance_t inst);
 //////                           Helper API                         //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_u32_t       nux_texture_memsize(nux_u32_t size);
-NUX_API nux_u32_t       nux_vertex_memsize(nux_vertex_attribute_t attributes,
+NUX_API nux_u32_t        nux_texture_memsize(nux_u32_t size);
+NUX_API nux_u32_t        nux_vertex_memsize(nux_vertex_attribute_t attributes,
+                                            nux_u32_t              count);
+NUX_API nux_u32_t        nux_vertex_offset(nux_vertex_attribute_t attributes,
+                                           nux_vertex_attribute_t attribute,
                                            nux_u32_t              count);
-NUX_API nux_u32_t       nux_vertex_offset(nux_vertex_attribute_t attributes,
-                                          nux_vertex_attribute_t attribute,
-                                          nux_u32_t              count);
-NUX_API const nux_c8_t *nux_error_message(nux_error_t error);
-NUX_API nux_nid_t       nux_scene_iter_dfs(const nux_scene_node_t *nodes,
-                                           nux_nid_t             **iter,
-                                           nux_nid_t              *stack,
-                                           nux_u32_t               stack_size);
+NUX_API const nux_c8_t  *nux_error_message(nux_error_t error);
+NUX_API nux_nid_t        nux_scene_iter_dfs(const nux_scene_node_t *nodes,
+                                            nux_nid_t             **iter,
+                                            nux_nid_t              *stack,
+                                            nux_u32_t               stack_size);
+NUX_API nux_component_t *nux_scene_get_component(
+    nux_scene_node_t *nodes, nux_nid_t node, nux_component_type_t component);
 
 #endif

@@ -168,13 +168,7 @@ nux_node_get_component (nux_env_t            env,
                         nux_component_type_t component)
 {
     NU_CHECK(nux_validate_node(env, node), return NU_NULL);
-    if (env->nodes[node].node.mask & component)
-    {
-        nux_node_table_t *table = &env->nodes[node].table;
-        return &env->nodes[table->indices[COMPONENT_TO_INDEX(component)]]
-                    .component;
-    }
-    return NU_NULL;
+    return nux_scene_get_component(env->nodes, node, component);
 }
 void
 nux_node_get_position (nux_env_t env, nux_nid_t nid, nux_f32_t *pos)
@@ -256,4 +250,16 @@ nux_scene_iter_dfs (const nux_scene_node_t *nodes,
 
     // Process current node
     return current_nid;
+}
+nux_component_t *
+nux_scene_get_component (nux_scene_node_t    *nodes,
+                         nux_nid_t            node,
+                         nux_component_type_t component)
+{
+    if (nodes[node].node.mask & component)
+    {
+        const nux_node_table_t *table = &nodes[node].table;
+        return &nodes[table->indices[COMPONENT_TO_INDEX(component)]].component;
+    }
+    return NU_NULL;
 }

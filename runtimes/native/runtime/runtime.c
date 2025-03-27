@@ -1,6 +1,4 @@
 #include "runtime.h"
-#include "core/vm.h"
-#include "nulib/nulib/string.h"
 
 static struct
 {
@@ -19,23 +17,23 @@ instance_free (runtime_instance_t *instance)
     {
         native_free(instance->save_state);
     }
-    if (instance->vm.mem)
+    if (instance->instance)
     {
-        vm_free(&instance->vm);
+        nux_instance_free(instance->instance);
     }
     instance->active = NU_FALSE;
 }
 static nu_status_t
-instance_init (runtime_instance_t *instance,
-               const vm_config_t  *config,
-               nu_sv_t             path)
+instance_init (runtime_instance_t          *instance,
+               const nux_instance_config_t *config,
+               nu_sv_t                      path)
 {
     instance_free(instance);
 
     nu_sv_to_cstr(path, instance->path, NU_PATH_MAX);
     instance->active              = NU_TRUE;
     instance->config              = *config;
-    instance->vm.mem              = NU_NULL;
+    instance->instance            = NU_NULL;
     instance->save_state          = NU_NULL;
     instance->pause               = NU_FALSE;
     instance->viewport            = nk_rect(0, 0, 10, 10);
@@ -45,11 +43,11 @@ instance_init (runtime_instance_t *instance,
     instance->save_state = native_malloc(vm_config_state_memsize(config));
     NU_ASSERT(instance->save_state);
 
-    nu_status_t status = vm_init(&instance->vm, config);
-    NU_CHECK(status, goto cleanup0);
-    instance->vm.userdata = instance;
+    instance->instance = nux_instance_init(config);
+    NU_CHECK(instance->instance, goto cleanup0);
+    nux_instance_set_userdata(instance->instance, instance);
 
-    status = vm_load(&instance->vm, instance->path);
+    nux_status_t status = vm_load(&instance->instance, instance->path);
     NU_CHECK(status, goto cleanup0);
 
     return NU_SUCCESS;
@@ -63,7 +61,7 @@ apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
     nu_v2_t global_pos  = nu_v2(viewport.min.x, viewport.min.y);
     nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(viewport));
 
-    nu_v2_t  screen       = nu_v2(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    nu_v2_t  screen       = nu_v2(NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     nu_f32_t aspect_ratio = screen.x / screen.y;
 
     nu_v2_t vsize = NU_V2_ZEROS;
@@ -134,8 +132,6 @@ runtime_run (const runtime_config_t *config)
     NU_CHECK(status, goto cleanup1);
     status = gui_init(config);
     NU_CHECK(status, goto cleanup2);
-    status = wamr_init(config->debug);
-    NU_CHECK(status, goto cleanup3);
 
     runtime.running = NU_TRUE;
 
@@ -158,7 +154,7 @@ runtime_run (const runtime_config_t *config)
             if (instance->active && !instance->pause)
             {
                 // Tick
-                NU_ASSERT(vm_tick(&instance->vm));
+                nux_instance_tick(instance->instance);
             }
         }
 
@@ -183,7 +179,8 @@ runtime_run (const runtime_config_t *config)
                                                     instance->viewport.h);
                     viewport          = apply_viewport_mode(viewport,
                                                    instance->viewport_mode);
-                    renderer_render_instance(&instance->vm, viewport, size);
+                    renderer_render_instance(
+                        instance->instance, viewport, size);
                 }
             }
         }
@@ -217,8 +214,6 @@ runtime_run (const runtime_config_t *config)
         instance_free(runtime.instances + i);
     }
 
-    wamr_free();
-cleanup3:
     gui_free();
 cleanup2:
     renderer_free();
@@ -231,7 +226,7 @@ nu_status_t
 runtime_open (nu_u32_t index, nu_sv_t path)
 {
     NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
-    vm_config_t config;
+    nux_instance_config_t config;
     vm_config_default(&config);
     return instance_init(&runtime.instances[index], &config, path);
 }
