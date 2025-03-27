@@ -1,5 +1,4 @@
 #include "runtime.h"
-#include "core/vm.h"
 
 static runtime_log_callback_t logger;
 
@@ -23,7 +22,7 @@ logger_vlog (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 }
 
 void
-os_vlog (vm_t *vm, nu_log_level_t level, const nu_char_t *fmt, va_list args)
+nux_platform_log (nux_instance_t inst, const nux_c8_t *log, nux_u32_t n)
 {
-    logger_vlog(level, fmt, args);
+    logger_log(NU_LOG_INFO, "%*.s", n, log);
 }

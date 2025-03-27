@@ -1,7 +1,7 @@
 #ifndef RUNTIME_H
 #define RUNTIME_H
 
-#include "core/vm.h"
+#include <nux.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -14,6 +14,7 @@
 #include <glad/gl.h>
 #define RGFW_EXPORT
 #include <rgfw/RGFW.h>
+#include <nulib/nulib.h>
 
 typedef void (*runtime_log_callback_t)(nu_log_level_t   level,
                                        const nu_char_t *fmt,
@@ -22,8 +23,8 @@ typedef void (*runtime_log_callback_t)(nu_log_level_t   level,
 typedef struct
 {
     nu_char_t          name[32];
-    nu_u32_t           addr;
-    sys_inspect_type_t type;
+    intptr_t           addr;
+    nux_inspect_type_t type;
     nu_bool_t          override;
     union
     {
@@ -50,16 +51,16 @@ typedef enum
 
 typedef struct
 {
-    nu_char_t       path[NU_PATH_MAX];
-    nu_bool_t       active;
-    vm_config_t     config;
-    vm_t            vm;
-    nu_byte_t      *save_state;
-    nu_bool_t       pause;
-    struct nk_rect  viewport;
-    viewport_mode_t viewport_mode;
-    inspect_value_t inspect_values[256];
-    nu_size_t       inspect_value_count;
+    nu_char_t             path[NU_PATH_MAX];
+    nu_bool_t             active;
+    nux_instance_config_t config;
+    nux_instance_t        vm;
+    nu_byte_t            *save_state;
+    nu_bool_t             pause;
+    struct nk_rect        viewport;
+    viewport_mode_t       viewport_mode;
+    inspect_value_t       inspect_values[256];
+    nu_size_t             inspect_value_count;
 } runtime_instance_t;
 
 typedef struct
@@ -82,16 +83,12 @@ void logger_set_callback(runtime_log_callback_t callback);
 void logger_log(nu_log_level_t level, const nu_char_t *fmt, ...);
 void logger_vlog(nu_log_level_t level, const nu_char_t *fmt, va_list args);
 
-nu_status_t wamr_init(nu_bool_t debug);
-void        wamr_free(void);
-void        wamr_override_value(vm_t *vm, const inspect_value_t *value);
-
 nu_status_t renderer_init(void);
 void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
-void        renderer_render_instance(const vm_t *vm,
-                                     nu_b2i_t    viewport,
-                                     nu_v2u_t    window_size);
+void        renderer_render_instance(const nux_instance_t *vm,
+                                     nu_b2i_t              viewport,
+                                     nu_v2u_t              window_size);
 
 nu_status_t  window_init(void);
 void         window_free(void);

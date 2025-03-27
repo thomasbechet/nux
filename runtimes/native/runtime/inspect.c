@@ -1,12 +1,15 @@
 #include "runtime.h"
-#include "core/platform.h"
 
 void
-os_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
+nux_platform_inspect (nux_instance_t     inst,
+                      const nux_c8_t    *name,
+                      nux_u32_t          n,
+                      nux_inspect_type_t type,
+                      void              *p)
 {
     // Find existing value at address
-    nu_u32_t            addr = (nu_u32_t)((nu_size_t)p - (nu_size_t)vm->mem);
-    runtime_instance_t *instance = vm->userdata;
+    intptr_t            addr     = (intptr_t)p;
+    runtime_instance_t *instance = nux_instance_get_userdata(inst);
     inspect_value_t    *value    = NU_NULL;
     for (nu_size_t i = 0; i < instance->inspect_value_count; ++i)
     {
@@ -35,10 +38,10 @@ os_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
     {
         switch (type)
         {
-            case SYS_INSPECT_I32:
+            case NUX_INSPECT_I32:
                 *((nu_i32_t *)p) = value->value.i32;
                 break;
-            case SYS_INSPECT_F32:
+            case NUX_INSPECT_F32:
                 *((nu_f32_t *)p) = value->value.f32;
                 break;
         }
@@ -48,10 +51,10 @@ os_inspect (vm_t *vm, const nu_char_t *name, sys_inspect_type_t type, void *p)
     {
         switch (type)
         {
-            case SYS_INSPECT_I32:
+            case NUX_INSPECT_I32:
                 value->value.i32 = *(const nu_i32_t *)p;
                 break;
-            case SYS_INSPECT_F32:
+            case NUX_INSPECT_F32:
                 value->value.f32 = *(const nu_f32_t *)p;
                 break;
         }

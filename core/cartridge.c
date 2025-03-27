@@ -139,7 +139,7 @@ nux_load_cartridge (nux_instance_t inst, const nu_char_t *name)
     nux_status_t status = NUX_SUCCESS;
 
     // Create bios env
-    struct nux_env env = nux_env_init(inst, NUX_NULL);
+    nux_env_t env = nux_instance_init_env(inst);
 
     nux_platform_mount(inst, name, nu_strnlen(name, NUX_NAME_MAX));
     nux_platform_seek(inst, 0);
@@ -182,16 +182,16 @@ nux_load_cartridge (nux_instance_t inst, const nu_char_t *name)
             case NUX_OBJECT_RAW:
                 break;
             case NUX_OBJECT_WASM:
-                status = load_wasm(&env, &entry);
+                status = load_wasm(env, &entry);
                 break;
             case NUX_OBJECT_TEXTURE:
-                status = load_texture(&env, &entry);
+                status = load_texture(env, &entry);
                 break;
             case NUX_OBJECT_MESH:
-                status = load_mesh(&env, &entry);
+                status = load_mesh(env, &entry);
                 break;
             case NUX_OBJECT_SCENE:
-                status = load_scene(&env, &entry);
+                status = load_scene(env, &entry);
                 break;
             default: {
                 return NUX_FAILURE;

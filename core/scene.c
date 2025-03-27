@@ -3,7 +3,7 @@
 #define COMPONENT_TO_INDEX(component) nu_log2(component)
 
 static void
-init_node (nux_node_t *node, nux_nid_t parent)
+init_node (nux_node_t *node, nux_nid_t nid, nux_nid_t parent)
 {
     node->mask   = 0;
     node->flags  = 0;
@@ -12,6 +12,7 @@ init_node (nux_node_t *node, nux_nid_t parent)
     node->next   = NUX_NULL;
     node->prev   = NUX_NULL;
     node->child  = NUX_NULL;
+    node->nid    = nid;
 }
 static nux_nid_t
 add_node (nux_scene_t *scene, nux_scene_node_t *nodes)
@@ -44,9 +45,11 @@ init_scene_empty (nux_instance_t inst, nux_scene_t *scene)
 {
     scene->size             = 1; // first index reserved for NUX_NODE_NULL
     scene->free             = 0;
-    nux_scene_node_t *nodes = nux_instance_get_memory(inst, scene->addr);
+    nux_scene_node_t *nodes = nux_instance_get_memory(inst, scene->nodes);
     nu_memset(nodes, 0, sizeof(*nodes) * scene->capa);
-    init_node(&nodes[NUX_NODE_ROOT].node, NUX_NULL);
+    nux_nid_t root       = add_node(scene, nodes);
+    nux_nid_t root_table = add_node(scene, nodes);
+    init_node(&nodes[root].node, NUX_NODE_ROOT, NUX_NULL);
 }
 
 static nux_status_t
@@ -73,7 +76,7 @@ nux_create_scene (nux_env_t env, nux_oid_t oid, nux_u32_t node_capa)
     }
     NU_CHECK(nux_malloc(env->inst,
                         sizeof(nux_scene_node_t) * node_capa,
-                        &object->scene.addr),
+                        &object->scene.nodes),
              return NUX_FAILURE);
     object->scene.capa = node_capa;
     init_scene_empty(env->inst, &object->scene);
@@ -87,19 +90,28 @@ nux_bind_scene (nux_env_t env, nux_oid_t oid)
         = nux_instance_get_object(env->inst, NUX_OBJECT_SCENE, oid);
     NU_CHECK(object, return);
     env->scene = &object->scene;
-    env->nodes = nux_instance_get_memory(env->inst, object->scene.addr);
+    env->nodes = nux_instance_get_memory(env->inst, object->scene.nodes);
 }
 nux_nid_t
 nux_node_add (nux_env_t env, nux_nid_t parent)
 {
-    NU_CHECK(parent && env->scene, return NUX_NULL);
-    nux_nid_t node  = add_node(env->scene, env->nodes);
-    nux_nid_t table = add_node(env->scene, env->nodes);
+    NU_CHECK(nux_validate_node(env, parent), return NUX_NULL);
+    NU_CHECK(env->scene, return NUX_NULL);
+    nux_scene_node_t *nodes = env->nodes;
+    nux_nid_t         node  = add_node(env->scene, nodes);
+    nux_nid_t         table = add_node(env->scene, nodes);
     NU_CHECK(node && table, return NUX_NULL);
-    init_node(&env->nodes[node].node, parent);
-    nu_memset(&env->nodes[table].table.indices, 0, sizeof(nux_node_table_t));
+    init_node(&nodes[node].node, node, parent);
+    nu_memset(&nodes[table].table.indices, 0, sizeof(nux_node_table_t));
     if (parent)
     {
+        nux_nid_t child = nodes[parent].node.child;
+        if (child)
+        {
+            nodes[child].node.prev = node;
+        }
+        nodes[node].node.next    = child;
+        nodes[parent].node.child = node;
     }
     return node;
 }
@@ -205,4 +217,43 @@ nux_node_get_parent (nux_env_t env, nux_nid_t nid)
 {
     NU_CHECK(nux_validate_node(env, nid), return NUX_NULL);
     return env->nodes[nid].node.parent;
+}
+
+nux_nid_t
+nux_scene_iter_dfs (const nux_scene_node_t *nodes,
+                    nux_nid_t             **iter,
+                    nux_nid_t              *stack,
+                    nux_u32_t               stack_size)
+{
+    // Initialization case
+    if (!*iter)
+    {
+        stack[0] = NUX_NODE_ROOT;
+        *iter    = &stack[1];
+    }
+
+    // Pop current node from stack
+    nu_size_t top = (*iter) - stack;
+    if (top == 0)
+    {
+        return NUX_NULL; // End of iteration
+    }
+    --top;
+    nux_nid_t current_nid = stack[top];
+
+    // Insert childs
+    for (nux_nid_t child = nodes[current_nid].node.child; child != NUX_NULL;
+         child           = nodes[child].node.next)
+    {
+        if (top >= stack_size)
+        {
+            return NUX_NULL;
+        }
+        stack[top] = child;
+        ++top;
+    }
+    *iter = stack + top;
+
+    // Process current node
+    return current_nid;
 }

@@ -13,6 +13,15 @@
 #define NUX_CART_HEADER_SIZE      sizeof(nux_cart_header_t)
 #define NUX_CART_CHUNK_ENTRY_SIZE (sizeof(nu_u32_t) * 4)
 
+struct nux_env
+{
+    nux_instance_t    inst;
+    nux_oid_t         active_scope;
+    nux_scene_t      *scene;
+    nux_scene_node_t *nodes;
+    nu_v2u_t          cursor;
+};
+
 struct nux_instance
 {
     void *userdata;
@@ -34,7 +43,8 @@ struct nux_instance
     nu_u32_t buttons[NUX_PLAYER_MAX];
     nu_f32_t axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
 
-    nux_error_t error;
+    struct nux_env env;
+    nux_error_t    error;
 
     struct
     {
@@ -49,20 +59,10 @@ struct nux_instance
     } wasm;
 };
 
-struct nux_env
-{
-    nux_instance_t    inst;
-    nux_oid_t         active_scope;
-    nux_scene_t      *scene;
-    nux_scene_node_t *nodes;
-    nu_v2u_t          cursor;
-};
-
 void *nux_malloc(nux_instance_t inst, nux_u32_t n, nux_ptr_t *ptr);
 
-struct nux_env nux_env_init(nux_instance_t inst, nux_oid_t scene);
-nux_status_t   nux_validate_object(nux_instance_t inst, nux_oid_t oid);
-void           nux_set_error(nux_instance_t inst, nux_error_t error);
+nux_status_t nux_validate_object(nux_instance_t inst, nux_oid_t oid);
+void         nux_set_error(nux_instance_t inst, nux_error_t error);
 
 nux_status_t nux_wasm_init(nux_instance_t               inst,
                            const nux_instance_config_t *config);

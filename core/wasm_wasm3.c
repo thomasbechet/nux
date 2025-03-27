@@ -76,11 +76,14 @@ nux_wasm_start (nux_instance_t inst)
 nux_status_t
 nux_wasm_update (nux_instance_t inst)
 {
-    M3Result res = m3_Call(inst->wasm.update_function, 0, NU_NULL);
-    if (res)
+    if (inst->wasm.loaded)
     {
-        nux_set_error(inst, NUX_ERROR_RUNTIME);
-        return NUX_FAILURE;
+        M3Result res = m3_Call(inst->wasm.update_function, 0, NU_NULL);
+        if (res)
+        {
+            nux_set_error(inst, NUX_ERROR_RUNTIME);
+            return NUX_FAILURE;
+        }
     }
     return NUX_SUCCESS;
 }

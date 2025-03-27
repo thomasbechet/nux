@@ -58,7 +58,7 @@ typedef struct
 
 typedef enum
 {
-    NUX_INSPECT_U32,
+    NUX_INSPECT_I32,
     NUX_INSPECT_F32,
 } nux_inspect_type_t;
 
@@ -112,10 +112,10 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t free; // 4
-    nux_u32_t addr; // 4
-    nux_u32_t size; // 4
-    nux_u32_t capa; // 4
+    nux_u32_t free;  // 4
+    nux_u32_t nodes; // 4
+    nux_u32_t size;  // 4
+    nux_u32_t capa;  // 4
 } nux_scene_t;
 
 typedef struct
@@ -239,9 +239,10 @@ NUX_API nux_object_t *nux_instance_get_object(nux_instance_t    inst,
 NUX_API void *nux_instance_get_memory(nux_instance_t inst, nux_ptr_t ptr);
 NUX_API nux_command_t *nux_instance_get_command_buffer(nux_instance_t inst,
                                                        nux_u32_t     *count);
+NUX_API nux_env_t      nux_instance_init_env(nux_instance_t inst);
 
 //////////////////////////////////////////////////////////////////////////
-//////                          Utility API                         //////
+//////                           Helper API                         //////
 //////////////////////////////////////////////////////////////////////////
 
 NUX_API nux_u32_t       nux_texture_memsize(nux_u32_t size);
@@ -251,5 +252,9 @@ NUX_API nux_u32_t       nux_vertex_offset(nux_vertex_attribute_t attributes,
                                           nux_vertex_attribute_t attribute,
                                           nux_u32_t              count);
 NUX_API const nux_c8_t *nux_error_message(nux_error_t error);
+NUX_API nux_nid_t       nux_scene_iter_dfs(const nux_scene_node_t *nodes,
+                                           nux_nid_t             **iter,
+                                           nux_nid_t              *stack,
+                                           nux_u32_t               stack_size);
 
 #endif

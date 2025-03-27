@@ -1,19 +1,14 @@
 #include "internal.h"
 
-struct nux_env
-nux_env_init (nux_instance_t inst, nux_oid_t scene)
-{
-    struct nux_env env;
-    env.inst         = inst;
-    env.active_scope = NUX_NULL;
-    env.cursor       = NU_V2U_ZEROS;
-    nux_bind_scene(&env, scene);
-    return env;
-}
 void
 nux_set_error (nux_instance_t inst, nux_error_t error)
 {
     inst->error = error;
+    nux_c8_t  buf[128];
+    nu_size_t n
+        = nu_snprintf(buf, sizeof(buf), "ERROR: %s", nux_error_message(error))
+              .len;
+    nux_platform_log(inst, buf, n);
 }
 
 nux_instance_t
@@ -120,6 +115,36 @@ nux_instance_set_userdata (nux_instance_t inst, void *userdata)
 {
     inst->userdata = userdata;
 }
+nux_env_t
+nux_instance_init_env (nux_instance_t inst)
+{
+    inst->env.inst         = inst;
+    inst->env.active_scope = NUX_NULL;
+    inst->env.cursor       = NU_V2U_ZEROS;
+    inst->env.scene        = NU_NULL;
+    inst->env.nodes        = NU_NULL;
+    return &inst->env;
+}
+const nux_c8_t *
+nux_error_message (nux_error_t error)
+{
+    switch (error)
+    {
+        case NUX_ERROR_NONE:
+            return "none";
+        case NUX_ERROR_ALLOCATION:
+            return "allocation";
+        case NUX_ERROR_OUT_OF_NODE:
+            return "out of node";
+        case NUX_ERROR_INVALID_ID:
+            return "invalid id";
+        case NUX_ERROR_INVALID_TEXTURE_SIZE:
+            return "invalid texture size";
+        case NUX_ERROR_RUNTIME:
+            return "runtime error";
+    }
+    return NU_NULL;
+}
 
 void
 nux_trace (nux_env_t env, const nux_c8_t *text)
@@ -131,7 +156,7 @@ void
 nux_inspect_i32 (nux_env_t env, const nux_c8_t *name, nux_i32_t *p)
 {
     nux_platform_inspect(
-        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_INSPECT_U32, p);
+        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_INSPECT_I32, p);
 }
 void
 nux_inspect_f32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)

@@ -1,7 +1,6 @@
 #include "shaders_data.c.inc"
 #include "fonts_data.c.inc"
 #include "runtime.h"
-#include "core/platform.h"
 
 #include <glad/gl.h>
 #define RGFW_IMPORT
@@ -12,7 +11,6 @@
 #define VERTEX_COLOR_OFFSET    5
 #define VERTEX_SIZE            8
 #define VERTEX_INIT_SIZE       NU_MEM_1M
-#define NODE_INIT_SIZE         2048
 #define MAX_BLIT_COUNT         4096
 
 typedef struct
@@ -64,30 +62,29 @@ typedef union
 
 static struct
 {
-    GLuint           white_texture;
-    gfx_model_node_t nodes[NODE_INIT_SIZE];
-    nu_u32_t         nodes_next;
-    gl_resource_t    resources[SYS_MAX_RESOURCE_COUNT];
-    font_t           font;
-    nu_size_t        blit_count;
-    GLuint           blit_vbo;
-    GLuint           blit_vao;
-    nu_u32_t         mesh_vbo_offset;
-    GLuint           mesh_vbo;
-    GLuint           mesh_vao;
-    nu_u32_t         im_vbo_offset;
-    GLuint           im_vbo;
-    nu_f32_t        *im_vbo_data;
-    GLuint           im_vao;
-    nu_bool_t        ubo_dirty;
-    GLuint           ubo_buffer;
-    ubo_t            ubo;
-    GLuint           unlit_program;
-    GLuint           screen_blit_program;
-    GLuint           canvas_blit_program;
-    GLuint           surface_fbo;
-    GLuint           surface_texture;
-    GLuint           surface_depth;
+    GLuint        white_texture;
+    nu_u32_t      nodes_next;
+    gl_resource_t resources[NUX_OBJECT_MAX];
+    font_t        font;
+    nu_size_t     blit_count;
+    GLuint        blit_vbo;
+    GLuint        blit_vao;
+    nu_u32_t      mesh_vbo_offset;
+    GLuint        mesh_vbo;
+    GLuint        mesh_vao;
+    nu_u32_t      im_vbo_offset;
+    GLuint        im_vbo;
+    nu_f32_t     *im_vbo_data;
+    GLuint        im_vao;
+    nu_bool_t     ubo_dirty;
+    GLuint        ubo_buffer;
+    ubo_t         ubo;
+    GLuint        unlit_program;
+    GLuint        screen_blit_program;
+    GLuint        canvas_blit_program;
+    GLuint        surface_fbo;
+    GLuint        surface_texture;
+    GLuint        surface_depth;
 } renderer;
 
 static const GLchar *
@@ -403,7 +400,7 @@ init_ubo (void)
     renderer.ubo.projection    = nu_m4_identity();
     renderer.ubo.color         = nu_color_to_vec4(NU_COLOR_WHITE);
     renderer.ubo.fog_color     = nu_color_to_vec4(NU_COLOR_WHITE);
-    renderer.ubo.viewport_size = nu_v2u(SYS_SCREEN_WIDTH, SYS_SCREEN_HEIGHT);
+    renderer.ubo.viewport_size = nu_v2u(NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     renderer.ubo.fog_density   = 0;
     renderer.ubo.fog_near      = 0;
     renderer.ubo.fog_far       = 100;
@@ -418,7 +415,7 @@ update_ubo (void)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 static void
-draw_model (const vm_t *vm, nu_u32_t id, nu_m4_t transform)
+draw_scene (nux_instance_t inst, nux_oid_t oid, nu_m4_t transform)
 {
     // Update ubo
     renderer.ubo.is_volume = NU_FALSE;
@@ -434,8 +431,10 @@ draw_model (const vm_t *vm, nu_u32_t id, nu_m4_t transform)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw model
-    const resource_t *res = vm->res + id;
-    for (nu_size_t i = 0; i < res->model.node_count; ++i)
+    nux_object_t *object = nux_instance_get_object(inst, NUX_OBJECT_SCENE, oid);
+    NU_ASSERT(object);
+    nux_scene_node_t *nodes = nux_instance_get_memory(inst, object->scene.addr);
+    for (nu_size_t i = 0; i < node_count; ++i)
     {
         gfx_model_node_t *node
             = renderer.nodes + renderer.resources[id].model.first_node + i;
@@ -954,7 +953,7 @@ renderer_render_instance (const vm_t *vm,
             }
             break;
             case GFX_CMD_DRAW_MODEL:
-                draw_model(vm, cmd->draw_model.model, transform);
+                draw_scene(vm, cmd->draw_model.model, transform);
                 break;
             case GFX_CMD_DRAW_VOLUME:
                 break;
