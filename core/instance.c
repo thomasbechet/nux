@@ -1,5 +1,11 @@
 #include "internal.h"
 
+static nux_f32_t
+delta_time (nux_instance_t inst)
+{
+    return 1.0 / (nu_f32_t)inst->tps;
+}
+
 void
 nux_set_error (nux_instance_t inst, nux_error_t error)
 {
@@ -91,11 +97,12 @@ void
 nux_instance_tick (nux_instance_t inst)
 {
     nux_wasm_update(inst);
+    inst->time += delta_time(inst);
 }
-void
-nux_instance_load (nux_instance_t inst, const nux_u8_t *data, nux_u32_t n)
+nux_status_t
+nux_instance_load (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
 {
-    nux_wasm_load(inst, data, n);
+    return nux_load_cartridge(inst, cart, n);
 }
 void
 nux_instance_save_state (nux_instance_t inst, nux_u8_t *state)
@@ -109,11 +116,6 @@ void *
 nux_instance_get_userdata (nux_instance_t inst)
 {
     return inst->userdata;
-}
-void
-nux_instance_set_userdata (nux_instance_t inst, void *userdata)
-{
-    inst->userdata = userdata;
 }
 nux_env_t
 nux_instance_init_env (nux_instance_t inst)
@@ -178,5 +180,5 @@ nux_global_time (nux_env_t env)
 nux_f32_t
 nux_delta_time (nux_env_t env)
 {
-    return 1.0 / (nu_f32_t)env->inst->tps;
+    return delta_time(env->inst);
 }

@@ -64,11 +64,11 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
                 nk_labelf(ctx, NK_TEXT_LEFT, "0x%X", value->addr);
                 switch (value->type)
                 {
-                    case SYS_INSPECT_I32:
+                    case NUX_INSPECT_I32:
                         nk_labelf(
                             ctx, NK_TEXT_LEFT, "Value: %d", value->value.i32);
                         break;
-                    case SYS_INSPECT_F32: {
+                    case NUX_INSPECT_F32: {
                         nk_labelf(ctx, NK_TEXT_LEFT, "Value");
                         nk_labelf(ctx, NK_TEXT_LEFT, "%lf", value->value.f32);
                         nk_layout_row_template_begin(ctx, row);

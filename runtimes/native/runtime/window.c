@@ -13,8 +13,8 @@ static struct
     nu_bool_t         switch_fullscreen;
     RGFW_rect         previous_rect;
     RGFW_window      *win;
-    nu_u32_t          buttons[SYS_MAX_PLAYER_COUNT];
-    nu_f32_t          axis[SYS_MAX_PLAYER_COUNT][SYS_AXIS_COUNT];
+    nu_u32_t          buttons[NUX_PLAYER_MAX];
+    nu_f32_t          axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
     runtime_command_t cmds[MAX_COMMAND];
     nu_size_t         cmds_count;
     nu_f32_t          scale_factor;
@@ -72,40 +72,40 @@ window_get_win (void)
 {
     return window.win;
 }
-static sys_button_t
+static nux_button_t
 key_to_button (nu_u32_t code)
 {
     switch (code)
     {
         // D-Pad
         case RGFW_left:
-            return SYS_BUTTON_LEFT;
+            return NUX_BUTTON_LEFT;
         case RGFW_down:
-            return SYS_BUTTON_DOWN;
+            return NUX_BUTTON_DOWN;
         case RGFW_up:
-            return SYS_BUTTON_UP;
+            return NUX_BUTTON_UP;
         case RGFW_right:
-            return SYS_BUTTON_RIGHT;
+            return NUX_BUTTON_RIGHT;
 
         // Triggers
         case RGFW_e:
-            return SYS_BUTTON_RB;
+            return NUX_BUTTON_RB;
         case RGFW_q:
-            return SYS_BUTTON_LB;
+            return NUX_BUTTON_LB;
 
         // Action buttons
         case RGFW_f:
-            return SYS_BUTTON_A;
+            return NUX_BUTTON_A;
         case RGFW_r:
-            return SYS_BUTTON_B;
+            return NUX_BUTTON_B;
         case RGFW_x:
-            return SYS_BUTTON_Y;
+            return NUX_BUTTON_Y;
         case RGFW_z:
-            return SYS_BUTTON_X;
+            return NUX_BUTTON_X;
     }
     return -1;
 }
-static sys_axis_t
+static nux_axis_t
 key_to_axis (nu_u32_t code, nu_f32_t *value)
 {
     switch (code)
@@ -113,68 +113,68 @@ key_to_axis (nu_u32_t code, nu_f32_t *value)
         // Left Stick
         case RGFW_w:
             *value = 1;
-            return SYS_AXIS_LEFTY;
+            return NUX_AXIS_LEFTY;
         case RGFW_a:
             *value = -1;
-            return SYS_AXIS_LEFTX;
+            return NUX_AXIS_LEFTX;
         case RGFW_s:
             *value = -1;
-            return SYS_AXIS_LEFTY;
+            return NUX_AXIS_LEFTY;
         case RGFW_d:
             *value = 1;
-            return SYS_AXIS_LEFTX;
+            return NUX_AXIS_LEFTX;
 
         // Right Stick
         case RGFW_j:
             *value = -1;
-            return SYS_AXIS_RIGHTY;
+            return NUX_AXIS_RIGHTY;
         case RGFW_h:
             *value = -1;
-            return SYS_AXIS_RIGHTX;
+            return NUX_AXIS_RIGHTX;
         case RGFW_k:
             *value = 1;
-            return SYS_AXIS_RIGHTY;
+            return NUX_AXIS_RIGHTY;
         case RGFW_l:
             *value = 1;
-            return SYS_AXIS_RIGHTX;
+            return NUX_AXIS_RIGHTX;
 
         case RGFW_u:
             *value = 1;
-            return SYS_AXIS_LT;
+            return NUX_AXIS_LT;
         case RGFW_o:
             *value = 1;
-            return SYS_AXIS_RT;
+            return NUX_AXIS_RT;
 
         default:
             break;
     }
     return -1;
 }
-static sys_button_t
+static nux_button_t
 gamepad_button_to_button (nu_u32_t button)
 {
     switch (button)
     {
         case RGFW_gamepadA:
-            return SYS_BUTTON_A;
+            return NUX_BUTTON_A;
         case RGFW_gamepadX:
-            return SYS_BUTTON_X;
+            return NUX_BUTTON_X;
         case RGFW_gamepadY:
-            return SYS_BUTTON_Y;
+            return NUX_BUTTON_Y;
         case RGFW_gamepadB:
-            return SYS_BUTTON_B;
+            return NUX_BUTTON_B;
         case RGFW_gamepadUp:
-            return SYS_BUTTON_UP;
+            return NUX_BUTTON_UP;
         case RGFW_gamepadDown:
-            return SYS_BUTTON_DOWN;
+            return NUX_BUTTON_DOWN;
         case RGFW_gamepadLeft:
-            return SYS_BUTTON_LEFT;
+            return NUX_BUTTON_LEFT;
         case RGFW_gamepadRight:
-            return SYS_BUTTON_RIGHT;
+            return NUX_BUTTON_RIGHT;
         case RGFW_gamepadL1:
-            return SYS_BUTTON_LB;
+            return NUX_BUTTON_LB;
         case RGFW_gamepadR1:
-            return SYS_BUTTON_RB;
+            return NUX_BUTTON_RB;
         default:
             return -1;
     }
@@ -196,15 +196,15 @@ window_poll_events (void)
             switch (window.win->event.type)
             {
                 case RGFW_keyPressed: {
-                    sys_button_t button = key_to_button(window.win->event.key);
+                    nux_button_t button = key_to_button(window.win->event.key);
                     nu_f32_t     axvalue;
-                    sys_axis_t   axis
+                    nux_axis_t   axis
                         = key_to_axis(window.win->event.key, &axvalue);
-                    if (button != (sys_button_t)-1)
+                    if (button != (nux_button_t)-1)
                     {
                         window.buttons[0] |= button;
                     }
-                    if (axis != (sys_axis_t)-1)
+                    if (axis != (nux_axis_t)-1)
                     {
                         window.axis[0][axis] = axvalue;
                     }
@@ -232,15 +232,15 @@ window_poll_events (void)
                     {
                         window.cmds[window.cmds_count++] = COMMAND_LOAD_STATE;
                     }
-                    sys_button_t button = key_to_button(window.win->event.key);
+                    nux_button_t button = key_to_button(window.win->event.key);
                     nu_f32_t     axvalue;
-                    sys_axis_t   axis
+                    nux_axis_t   axis
                         = key_to_axis(window.win->event.key, &axvalue);
-                    if (button != (sys_button_t)-1)
+                    if (button != (nux_button_t)-1)
                     {
                         window.buttons[0] &= ~button;
                     }
-                    if (axis != (sys_axis_t)-1)
+                    if (axis != (nux_axis_t)-1)
                     {
                         window.axis[0][axis] = 0;
                     }
@@ -248,18 +248,18 @@ window_poll_events (void)
                 }
                 break;
                 case RGFW_gamepadButtonPressed: {
-                    sys_button_t button
+                    nux_button_t button
                         = gamepad_button_to_button(window.win->event.button);
-                    if (button != (sys_button_t)-1)
+                    if (button != (nux_button_t)-1)
                     {
                         window.buttons[1] |= button;
                     }
                 }
                 break;
                 case RGFW_gamepadButtonReleased: {
-                    sys_button_t button
+                    nux_button_t button
                         = gamepad_button_to_button(window.win->event.button);
-                    if (button != (sys_button_t)-1)
+                    if (button != (nux_button_t)-1)
                     {
                         window.buttons[1] &= ~button;
                     }
@@ -337,8 +337,8 @@ window_poll_events (void)
             {
                 ax = NU_V2_ZEROS;
             }
-            window.axis[player][SYS_AXIS_LEFTX] = ax.x;
-            window.axis[player][SYS_AXIS_LEFTY] = -ax.y;
+            window.axis[player][NUX_AXIS_LEFTX] = ax.x;
+            window.axis[player][NUX_AXIS_LEFTY] = -ax.y;
             ax = nu_v2(RGFW_getGamepadAxis(window.win, controller, 1).x / 100.0,
                        RGFW_getGamepadAxis(window.win, controller, 1).y
                            / 100.0);
@@ -346,8 +346,8 @@ window_poll_events (void)
             {
                 ax = NU_V2_ZEROS;
             }
-            window.axis[player][SYS_AXIS_RIGHTX] = ax.x;
-            window.axis[player][SYS_AXIS_RIGHTY] = -ax.y;
+            window.axis[player][NUX_AXIS_RIGHTX] = ax.x;
+            window.axis[player][NUX_AXIS_RIGHTY] = -ax.y;
         }
     }
 }
@@ -383,8 +383,11 @@ window_poll_command (runtime_command_t *cmd)
 }
 
 void
-os_gamepad_update (vm_t *vm)
+window_update_inputs (nux_instance_t inst)
 {
-    nu_memcpy(vm->gamepad.buttons, window.buttons, sizeof(window.buttons));
-    nu_memcpy(vm->gamepad.axis, window.axis, sizeof(window.axis));
+    nux_instance_set_buttons(inst, 0, window.buttons[0]);
+    for (nu_size_t a = 0; a < NUX_AXIS_MAX; ++a)
+    {
+        nux_instance_set_axis(inst, 0, a, window.axis[0][a]);
+    }
 }

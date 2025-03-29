@@ -10,9 +10,6 @@
 
 #define NUX_COMMAND_SIZE 64
 
-#define NUX_CART_HEADER_SIZE      sizeof(nux_cart_header_t)
-#define NUX_CART_CHUNK_ENTRY_SIZE (sizeof(nu_u32_t) * 4)
-
 struct nux_env
 {
     nux_instance_t    inst;
@@ -63,6 +60,10 @@ void *nux_malloc(nux_instance_t inst, nux_u32_t n, nux_ptr_t *ptr);
 
 nux_status_t nux_validate_object(nux_instance_t inst, nux_oid_t oid);
 void         nux_set_error(nux_instance_t inst, nux_error_t error);
+
+nux_status_t nux_load_cartridge(nux_instance_t  inst,
+                                const nux_c8_t *cart,
+                                nux_u32_t       n);
 
 nux_status_t nux_wasm_init(nux_instance_t               inst,
                            const nux_instance_config_t *config);

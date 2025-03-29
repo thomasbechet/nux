@@ -23,7 +23,7 @@ typedef void (*runtime_log_callback_t)(nu_log_level_t   level,
 typedef struct
 {
     nu_char_t          name[32];
-    intptr_t           addr;
+    nux_ptr_t          addr;
     nux_inspect_type_t type;
     nu_bool_t          override;
     union
@@ -99,6 +99,7 @@ nu_v2u_t     window_get_size(void);
 nu_f32_t     window_get_scale_factor(void);
 nu_v2_t      window_get_mouse_scroll(void);
 nu_bool_t    window_poll_command(runtime_command_t *cmd);
+void         window_update_inputs(nux_instance_t inst);
 
 nu_status_t gui_init(const runtime_config_t *config);
 void        gui_free(void);

@@ -24,15 +24,18 @@ instance_free (runtime_instance_t *instance)
     instance->active = NU_FALSE;
 }
 static nu_status_t
-instance_init (runtime_instance_t          *instance,
-               const nux_instance_config_t *config,
-               nu_sv_t                      path)
+instance_init (runtime_instance_t *instance, nu_sv_t path)
 {
     instance_free(instance);
 
+    nux_instance_config_t config = {
+        .userdata                = instance,
+        .command_buffer_capacity = 1024,
+    };
+
     nu_sv_to_cstr(path, instance->path, NU_PATH_MAX);
     instance->active              = NU_TRUE;
-    instance->config              = *config;
+    instance->config              = config;
     instance->instance            = NU_NULL;
     instance->save_state          = NU_NULL;
     instance->pause               = NU_FALSE;
@@ -40,14 +43,16 @@ instance_init (runtime_instance_t          *instance,
     instance->viewport_mode       = VIEWPORT_STRETCH_KEEP_ASPECT;
     instance->inspect_value_count = 0;
 
-    instance->save_state = native_malloc(vm_config_state_memsize(config));
-    NU_ASSERT(instance->save_state);
+    // instance->save_state = native_malloc(vm_config_state_memsize(config));
+    // NU_ASSERT(instance->save_state);
 
-    instance->instance = nux_instance_init(config);
+    instance->instance = nux_instance_init(&config);
     NU_CHECK(instance->instance, goto cleanup0);
-    nux_instance_set_userdata(instance->instance, instance);
 
-    nux_status_t status = vm_load(&instance->instance, instance->path);
+    nux_status_t status
+        = nux_instance_load(instance->instance,
+                            instance->path,
+                            nu_strnlen(instance->path, NU_PATH_MAX));
     NU_CHECK(status, goto cleanup0);
 
     return NU_SUCCESS;
@@ -153,6 +158,8 @@ runtime_run (const runtime_config_t *config)
             runtime_instance_t *instance = runtime.instances + i;
             if (instance->active && !instance->pause)
             {
+                // Update inputs
+                window_update_inputs(instance->instance);
                 // Tick
                 nux_instance_tick(instance->instance);
             }
@@ -226,9 +233,7 @@ nu_status_t
 runtime_open (nu_u32_t index, nu_sv_t path)
 {
     NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
-    nux_instance_config_t config;
-    vm_config_default(&config);
-    return instance_init(&runtime.instances[index], &config, path);
+    return instance_init(&runtime.instances[index], path);
 }
 void
 runtime_close (nu_u32_t index)
@@ -267,4 +272,20 @@ void
 native_free (void *p)
 {
     free(p);
+}
+
+void *
+nux_platform_malloc (void *userdata, nux_memory_usage_t usage, nux_u32_t n)
+{
+    return native_malloc(n);
+}
+void
+nux_platform_free (void *userdata, void *p)
+{
+    native_free(p);
+}
+void *
+nux_platform_realloc (void *userdata, void *p, nux_u32_t n)
+{
+    return realloc(p, n);
 }

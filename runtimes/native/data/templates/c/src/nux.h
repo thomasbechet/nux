@@ -197,10 +197,10 @@ WASM_EXPORT("node_add")
 u32 node_add(u32 parent);
 WASM_EXPORT("node_remove")
 void node_remove(u32 nid);
-WASM_EXPORT("node_get_position")
-void node_get_position(u32 nid, f32 *pos);
-WASM_EXPORT("node_set_position")
-void node_set_position(u32 nid, const f32 *pos);
+WASM_EXPORT("node_get_translation")
+void node_get_translation(u32 nid, f32 *pos);
+WASM_EXPORT("node_set_translation")
+void node_set_translation(u32 nid, const f32 *pos);
 WASM_EXPORT("node_get_rotation")
 void node_get_rotation(u32 nid, f32 *rot);
 WASM_EXPORT("node_set_rotation")

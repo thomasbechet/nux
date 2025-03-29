@@ -21,7 +21,7 @@ image_resize (nu_v2u_t         source_size,
     if (source_size.x == source_size.y && source_size.x == target_size)
     {
         // No resize required, simply copy data
-        nu_memcpy(target_data, source_data, gfx_texture_memsize(target_size));
+        nu_memcpy(target_data, source_data, nux_texture_memsize(target_size));
         return NU_SUCCESS;
     }
     if (!stbir_resize_uint8(source_data,
@@ -45,11 +45,12 @@ cart_write_texture (sdk_project_t   *proj,
                     nu_u32_t         size,
                     const nu_byte_t *data)
 {
-    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, RESOURCE_TEXTURE);
-    nu_status_t         status;
+    nux_cart_chunk_entry_t *entry
+        = sdk_begin_entry(proj, id, NUX_OBJECT_TEXTURE);
+    nu_status_t status;
     status = cart_write_u32(proj, size);
     NU_CHECK(status, return NU_FAILURE);
-    status = cart_write(proj, data, gfx_texture_memsize(size));
+    status = cart_write(proj, data, nux_texture_memsize(size));
     NU_CHECK(status, return NU_FAILURE);
     return NU_SUCCESS;
 }
@@ -82,14 +83,14 @@ sdk_texture_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         logger_log(NU_LOG_ERROR, "Failed to load image file %s", asset->source);
         return NU_FAILURE;
     }
-    nu_size_t  data_size = gfx_texture_memsize(target_size);
+    nu_size_t  data_size = nux_texture_memsize(target_size);
     nu_byte_t *data      = native_malloc(data_size);
     NU_CHECK(data, goto cleanup0);
     NU_CHECK(image_resize(nu_v2u(w, h), img, target_size, data), goto cleanup1);
 
     // Write cart
     NU_CHECK(
-        cart_write_texture(proj, asset->id, asset->texture.target_size, data),
+        cart_write_texture(proj, asset->oid, asset->texture.target_size, data),
         goto cleanup1);
 
 cleanup1:

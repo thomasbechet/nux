@@ -8,25 +8,20 @@
 // #include <nuxlib/print.h>
 // #include <nuxlib/debug.h>
 
-#define MODEL_INDUSTRIAL 4
-#define MODEL_ARIANE6    3
-#define CAMERA           5
-
-void
-test (void)
-{
-}
+#define SCENE_ARIANE6    3
+#define SCENE_INDUSTRIAL 4
 
 void
 start (void)
 {
-    button(0);
-    create_camera(CAMERA);
+    bind_scene(SCENE_ARIANE6);
+    node_add(NUX_NULL);
+
     set_camera_lookat(CAMERA,
                       (const float[]) { 100, 50, 100 },
                       (const float[]) { 0, 0, 0 },
                       (const float[]) { 0, 1, 0 });
-    set_camera_perspective(CAMERA, nu_radian(60), 0.1f, 200);
+    camera_set_perspective(CAMERA, nu_radian(60), 0.1f, 200);
 
     bind_scene(SCENE);
 }

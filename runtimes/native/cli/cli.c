@@ -1,7 +1,6 @@
 #include "cli.h"
 
 #include <argparse/argparse.h>
-#include <core/vm.h>
 #include <runtime/runtime.h>
 #ifdef NUX_BUILD_SDK
 #include <sdk/sdk.h>
@@ -96,9 +95,9 @@ main (int argc, const nu_char_t *argv[])
             "default interpreter"
 #endif
             ")\n",
-            VM_VERSION_MAJOR(VM_VERSION),
-            VM_VERSION_MINOR(VM_VERSION),
-            VM_VERSION_PATCH(VM_VERSION));
+            NUX_VERSION_MAJOR(NUX_VERSION),
+            NUX_VERSION_MINOR(NUX_VERSION),
+            NUX_VERSION_PATCH(NUX_VERSION));
         return 0;
     }
 

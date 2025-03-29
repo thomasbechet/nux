@@ -8,13 +8,13 @@
       "id": 1
     },
     "mariane6": {
-      "type": "model",
+      "type": "scene",
       "source": "assets/ariane6.glb",
       "id": 3
     },
     "mindustrial": {
       "ignore": true,
-      "type": "model",
+      "type": "scene",
       "source": "assets/industrial.glb",
       "id": 4
     }

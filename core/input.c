@@ -1,7 +1,9 @@
 #include "internal.h"
 
 void
-nux_instance_set_button (nux_instance_t inst, nux_u32_t player, nux_u32_t state)
+nux_instance_set_buttons (nux_instance_t inst,
+                          nux_u32_t      player,
+                          nux_u32_t      state)
 {
     // TODO: validate ?
     inst->buttons[player] = state;

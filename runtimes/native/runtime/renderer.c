@@ -559,7 +559,7 @@ static nu_m4_t
 node_local_to_parent (const nux_node_t *node)
 {
     return nu_m4_trs(
-        nu_v3(node->position[0], node->position[1], node->position[2]),
+        nu_v3(node->translation[0], node->translation[1], node->translation[2]),
         nu_q4(node->rotation[0],
               node->rotation[1],
               node->rotation[2],

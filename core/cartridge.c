@@ -22,6 +22,24 @@ cart_read_f32 (nux_instance_t inst, nu_f32_t *v)
     return NUX_SUCCESS;
 }
 nux_status_t
+cart_read_v3 (nux_instance_t inst, nu_v3_t *v)
+{
+    for (nu_size_t i = 0; i < NU_V3_SIZE; ++i)
+    {
+        NU_CHECK(cart_read_f32(inst, &v->data[i]), return NUX_FAILURE);
+    }
+    return NUX_SUCCESS;
+}
+nux_status_t
+cart_read_q4 (nux_instance_t inst, nu_q4_t *v)
+{
+    for (nu_size_t i = 0; i < NU_Q4_SIZE; ++i)
+    {
+        NU_CHECK(cart_read_f32(inst, &v->data[i]), return NUX_FAILURE);
+    }
+    return NUX_SUCCESS;
+}
+nux_status_t
 cart_read_m4 (nux_instance_t inst, nu_m4_t *v)
 {
     for (nu_size_t i = 0; i < NU_M4_SIZE; ++i)
@@ -32,7 +50,7 @@ cart_read_m4 (nux_instance_t inst, nu_m4_t *v)
 }
 
 nux_status_t
-cart_parse_header (const void *data, nux_cart_header_t *header)
+nux_cart_parse_header (const void *data, nux_cart_header_t *header)
 {
     const nu_byte_t *ptr = data;
     header->version      = nu_u32_le(*((nu_u32_t *)ptr));
@@ -42,9 +60,9 @@ cart_parse_header (const void *data, nux_cart_header_t *header)
     return NUX_SUCCESS;
 }
 nux_status_t
-cart_parse_entries (const void             *data,
-                    nu_u32_t                count,
-                    nux_cart_chunk_entry_t *entries)
+nux_cart_parse_entries (const void             *data,
+                        nux_u32_t               count,
+                        nux_cart_chunk_entry_t *entries)
 {
     const nu_byte_t *ptr = data;
     for (nu_size_t i = 0; i < count; ++i)
@@ -116,32 +134,47 @@ load_scene (nux_env_t env, const nux_cart_chunk_entry_t *entry)
     nu_u32_t node_count;
     NU_CHECK(cart_read_u32(env->inst, &node_count), return NUX_FAILURE);
     NU_CHECK(nux_create_scene(env, entry->oid, node_count), return NUX_FAILURE);
+    NU_CHECK(nux_bind_scene(env, entry->oid), return NUX_FAILURE);
     for (nu_size_t i = 0; i < node_count; ++i)
     {
-        nu_u32_t mesh, texture, parent;
-        nu_m4_t  transform;
-        NU_CHECK(cart_read_u32(env->inst, &mesh), return NUX_FAILURE);
-        NU_CHECK(cart_read_u32(env->inst, &texture), return NUX_FAILURE);
+        nux_nid_t parent;
+        nu_v3_t   position;
+        nu_q4_t   rotation;
+        nu_v3_t   scale;
+        nux_u32_t components;
+
         NU_CHECK(cart_read_u32(env->inst, &parent), return NUX_FAILURE);
-        NU_CHECK(cart_read_m4(env->inst, &transform), return NUX_FAILURE);
-        // NU_CHECK(sys_update_model(
-        //              inst, entry->id, i, mesh, texture, parent,
-        //              transform.data),
-        //          return NUX_FAILURE);
+        NU_CHECK(cart_read_v3(env->inst, &position), return NUX_FAILURE);
+        NU_CHECK(cart_read_q4(env->inst, &rotation), return NUX_FAILURE);
+        NU_CHECK(cart_read_v3(env->inst, &scale), return NUX_FAILURE);
+        NU_CHECK(cart_read_u32(env->inst, &components), return NUX_FAILURE);
+
+        nux_nid_t node = nux_node_add(env, parent);
+        nux_node_set_translation(env, node, position.data);
+        nux_node_set_rotation(env, node, rotation.data);
+        nux_node_set_scale(env, node, scale.data);
+
+        if (components & NUX_COMPONENT_MODEL)
+        {
+            nux_oid_t mesh, texture, parent;
+            NU_CHECK(cart_read_u32(env->inst, &mesh), return NUX_FAILURE);
+            NU_CHECK(cart_read_u32(env->inst, &texture), return NUX_FAILURE);
+            nux_model_add(env, node, mesh, texture);
+        }
     }
 
     return NUX_SUCCESS;
 }
 
 nux_status_t
-nux_load_cartridge (nux_instance_t inst, const nu_char_t *name)
+nux_load_cartridge (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
 {
     nux_status_t status = NUX_SUCCESS;
 
     // Create bios env
     nux_env_t env = nux_instance_init_env(inst);
 
-    nux_platform_mount(inst, name, nu_strnlen(name, NUX_NAME_MAX));
+    nux_platform_mount(inst, cart, n);
     nux_platform_seek(inst, 0);
 
     nu_byte_t header_data[NUX_CART_HEADER_SIZE];
@@ -149,7 +182,7 @@ nux_load_cartridge (nux_instance_t inst, const nu_char_t *name)
                  == sizeof(header_data),
              return NUX_FAILURE);
     nux_cart_header_t header;
-    NU_CHECK(cart_parse_header(header_data, &header), return NUX_FAILURE);
+    NU_CHECK(nux_cart_parse_header(header_data, &header), return NUX_FAILURE);
 
     nu_u32_t data_offset
         = NUX_CART_HEADER_SIZE + NUX_CART_CHUNK_ENTRY_SIZE * header.chunk_count;
@@ -168,7 +201,7 @@ nux_load_cartridge (nux_instance_t inst, const nu_char_t *name)
                      == sizeof(entry_data),
                  return NUX_FAILURE);
 
-        if (!cart_parse_entries(entry_data, 1, &entry))
+        if (!nux_cart_parse_entries(entry_data, 1, &entry))
         {
             return NUX_FAILURE;
         }

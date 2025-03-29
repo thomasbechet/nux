@@ -187,8 +187,9 @@ static m3ApiRawFunction(bind_scene)
     printf("TRACE bind_scene\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
+    m3ApiReturnType(nux_status_t);
     m3ApiGetArg(nux_oid_t, oid);
-    nux_bind_scene(env, oid);
+    m3ApiReturn(nux_bind_scene(env, oid));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_add)
@@ -212,26 +213,26 @@ static m3ApiRawFunction(node_remove)
     nux_node_remove(env, nid);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(node_get_position)
+static m3ApiRawFunction(node_get_translation)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE node_get_position\n");
+    printf("TRACE node_get_translation\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(nux_f32_t *, pos);
-    nux_node_get_position(env, nid, pos);
+    nux_node_get_translation(env, nid, pos);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(node_set_position)
+static m3ApiRawFunction(node_set_translation)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE node_set_position\n");
+    printf("TRACE node_set_translation\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(const nux_f32_t *, pos);
-    nux_node_set_position(env, nid, pos);
+    nux_node_set_translation(env, nid, pos);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_get_rotation)
@@ -508,9 +509,9 @@ link_raw_functions (IM3Module module)
     m3_LinkRawFunction(module, "*", "node_add", "i(i)", node_add);
     m3_LinkRawFunction(module, "*", "node_remove", "v(i)", node_remove);
     m3_LinkRawFunction(
-        module, "*", "node_get_position", "v(i*)", node_get_position);
+        module, "*", "node_get_translation", "v(i*)", node_get_translation);
     m3_LinkRawFunction(
-        module, "*", "node_set_position", "v(i*)", node_set_position);
+        module, "*", "node_set_translation", "v(i*)", node_set_translation);
     m3_LinkRawFunction(
         module, "*", "node_get_rotation", "v(i*)", node_get_rotation);
     m3_LinkRawFunction(

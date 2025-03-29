@@ -196,11 +196,13 @@ nux_status_t nux_create_scene(nux_env_t env,
                               nux_oid_t oid,
                               nux_u32_t node_capa);
 
-void      nux_bind_scene(nux_env_t env, nux_oid_t oid);
-nux_nid_t nux_node_add(nux_env_t env, nux_nid_t parent);
-void      nux_node_remove(nux_env_t env, nux_nid_t nid);
-void      nux_node_get_position(nux_env_t env, nux_nid_t nid, nux_f32_t *pos);
-void nux_node_set_position(nux_env_t env, nux_nid_t nid, const nux_f32_t *pos);
+nux_status_t nux_bind_scene(nux_env_t env, nux_oid_t oid);
+nux_nid_t    nux_node_add(nux_env_t env, nux_nid_t parent);
+void         nux_node_remove(nux_env_t env, nux_nid_t nid);
+void nux_node_get_translation(nux_env_t env, nux_nid_t nid, nux_f32_t *pos);
+void nux_node_set_translation(nux_env_t        env,
+                              nux_nid_t        nid,
+                              const nux_f32_t *pos);
 void nux_node_get_rotation(nux_env_t env, nux_nid_t nid, nux_f32_t *rot);
 void nux_node_set_rotation(nux_env_t env, nux_nid_t nid, const nux_f32_t *rot);
 void nux_node_get_scale(nux_env_t env, nux_nid_t nid, nux_f32_t *scale);

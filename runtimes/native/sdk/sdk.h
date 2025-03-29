@@ -2,7 +2,6 @@
 #define SDK_H
 
 #include <runtime/runtime.h>
-#include <core/vm.h>
 #include <parson/parson.h>
 
 #define SDK_NAME_MAX        256
@@ -13,13 +12,13 @@ typedef enum
 {
     SDK_ASSET_WASM,
     SDK_ASSET_TEXTURE,
-    SDK_ASSET_MODEL,
+    SDK_ASSET_SCENE,
 } sdk_asset_type_t;
 
 typedef struct
 {
     sdk_asset_type_t type;
-    nu_u32_t         id;
+    nux_oid_t        oid;
     nu_char_t        name[SDK_NAME_MAX];
     nu_char_t        source[NU_PATH_MAX];
     nu_bool_t        ignore;
@@ -43,14 +42,14 @@ typedef struct
     nu_pcg_t             pcg;
 
     // Compilation state
-    cart_chunk_entry_t *entries;
-    nu_u32_t            entries_capa;
-    nu_u32_t            entries_size;
-    nu_byte_t          *data;
-    nu_u32_t            data_capa;
-    nu_u32_t            data_size;
-    cart_chunk_entry_t *current_entry;
-    nu_u32_t            next_id;
+    nux_cart_chunk_entry_t *entries;
+    nu_u32_t                entries_capa;
+    nu_u32_t                entries_size;
+    nu_byte_t              *data;
+    nu_u32_t                data_capa;
+    nu_u32_t                data_size;
+    nux_cart_chunk_entry_t *current_entry;
+    nu_u32_t                next_id;
 } sdk_project_t;
 
 NU_API nu_status_t sdk_generate_template(nu_sv_t path, nu_sv_t lang);
@@ -65,10 +64,10 @@ NU_API void        sdk_project_free(sdk_project_t *project);
 
 void view_debug(struct nk_context *ctx, struct nk_rect bounds);
 
-cart_chunk_entry_t *sdk_begin_entry(sdk_project_t  *proj,
-                                    nu_u32_t        id,
-                                    resource_type_t type);
-nu_u32_t            sdk_next_id(sdk_project_t *proj);
+nux_cart_chunk_entry_t *sdk_begin_entry(sdk_project_t    *proj,
+                                        nux_oid_t         oid,
+                                        nux_object_type_t type);
+nux_oid_t               sdk_next_oid(sdk_project_t *proj);
 
 nu_status_t sdk_wasm_load(sdk_project_asset_t *asset, JSON_Object *jasset);
 nu_status_t sdk_wasm_save(sdk_project_asset_t *asset, JSON_Object *jasset);
@@ -80,9 +79,9 @@ nu_status_t sdk_texture_save(sdk_project_asset_t *asset, JSON_Object *jasset);
 nu_status_t sdk_texture_compile(sdk_project_t       *project,
                                 sdk_project_asset_t *asset);
 
-nu_status_t sdk_model_load(sdk_project_asset_t *asset, JSON_Object *jasset);
-nu_status_t sdk_model_save(sdk_project_asset_t *asset, JSON_Object *jasset);
-nu_status_t sdk_model_compile(sdk_project_t       *project,
+nu_status_t sdk_scene_load(sdk_project_asset_t *asset, JSON_Object *jasset);
+nu_status_t sdk_scene_save(sdk_project_asset_t *asset, JSON_Object *jasset);
+nu_status_t sdk_scene_compile(sdk_project_t       *project,
                               sdk_project_asset_t *asset);
 
 nu_status_t        json_parse_f32(const JSON_Object *object,
@@ -103,6 +102,7 @@ nu_status_t cart_write_u32(sdk_project_t *proj, nu_u32_t v);
 nu_status_t cart_write_f32(sdk_project_t *proj, nu_f32_t v);
 nu_status_t cart_write_v2(sdk_project_t *proj, nu_v2_t v);
 nu_status_t cart_write_v3(sdk_project_t *proj, nu_v3_t v);
+nu_status_t cart_write_q4(sdk_project_t *proj, nu_q4_t v);
 nu_status_t cart_write_m4(sdk_project_t *proj, nu_m4_t v);
 nu_status_t cart_write_texture(sdk_project_t   *proj,
                                nu_u32_t         id,

@@ -73,6 +73,15 @@ cart_write_v3 (sdk_project_t *proj, nu_v3_t v)
     return NU_SUCCESS;
 }
 nu_status_t
+cart_write_q4 (sdk_project_t *proj, nu_q4_t v)
+{
+    for (nu_size_t i = 0; i < NU_Q4_SIZE; ++i)
+    {
+        NU_CHECK(cart_write_f32(proj, v.data[i]), return NU_FAILURE);
+    }
+    return NU_SUCCESS;
+}
+nu_status_t
 cart_write_m4 (sdk_project_t *proj, nu_m4_t v)
 {
     for (nu_size_t i = 0; i < NU_M4_SIZE; ++i)

@@ -83,14 +83,15 @@ nux_create_scene (nux_env_t env, nux_oid_t oid, nux_u32_t node_capa)
     return NUX_SUCCESS;
 }
 
-void
+nux_status_t
 nux_bind_scene (nux_env_t env, nux_oid_t oid)
 {
     nux_object_t *object
         = nux_instance_get_object(env->inst, NUX_OBJECT_SCENE, oid);
-    NU_CHECK(object, return);
+    NU_CHECK(object, return NUX_FAILURE);
     env->scene = &object->scene;
     env->nodes = nux_instance_get_memory(env->inst, object->scene.nodes);
+    return NUX_SUCCESS;
 }
 nux_nid_t
 nux_node_add (nux_env_t env, nux_nid_t parent)
@@ -171,16 +172,16 @@ nux_node_get_component (nux_env_t            env,
     return nux_scene_get_component(env->nodes, node, component);
 }
 void
-nux_node_get_position (nux_env_t env, nux_nid_t nid, nux_f32_t *pos)
+nux_node_get_translation (nux_env_t env, nux_nid_t nid, nux_f32_t *pos)
 {
     NU_CHECK(nux_validate_node(env, nid), return);
-    nu_memcpy(pos, env->nodes[nid].node.position, sizeof(*pos) * NU_V3_SIZE);
+    nu_memcpy(pos, env->nodes[nid].node.translation, sizeof(*pos) * NU_V3_SIZE);
 }
 void
-nux_node_set_position (nux_env_t env, nux_nid_t nid, const nux_f32_t *pos)
+nux_node_set_translation (nux_env_t env, nux_nid_t nid, const nux_f32_t *pos)
 {
     NU_CHECK(nux_validate_node(env, nid), return);
-    nu_memcpy(env->nodes[nid].node.position, pos, sizeof(*pos) * NU_V3_SIZE);
+    nu_memcpy(env->nodes[nid].node.translation, pos, sizeof(*pos) * NU_V3_SIZE);
 }
 void
 nux_node_get_rotation (nux_env_t env, nux_nid_t nid, nux_f32_t *rot)

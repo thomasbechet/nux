@@ -112,11 +112,11 @@ create_scene (wasm_exec_env_t env, nux_oid_t oid, nux_u32_t node_capa)
     vm_t *vm = wasm_runtime_get_user_data(env);
     return sys_create_scene(vm, oid, node_capa);
 }
-static void
+static nux_status_t
 bind_scene (wasm_exec_env_t env, nux_oid_t oid)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_bind_scene(vm, oid);
+    return sys_bind_scene(vm, oid);
 }
 static nux_nid_t
 node_add (wasm_exec_env_t env, nux_nid_t parent)
@@ -131,16 +131,16 @@ node_remove (wasm_exec_env_t env, nux_nid_t nid)
     sys_node_remove(vm, nid);
 }
 static void
-node_get_position (wasm_exec_env_t env, nux_nid_t nid, nux_f32_t *pos)
+node_get_translation (wasm_exec_env_t env, nux_nid_t nid, nux_f32_t *pos)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_get_position(vm, nid, pos);
+    sys_node_get_translation(vm, nid, pos);
 }
 static void
-node_set_position (wasm_exec_env_t env, nux_nid_t nid, const nux_f32_t *pos)
+node_set_translation (wasm_exec_env_t env, nux_nid_t nid, const nux_f32_t *pos)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_set_position(vm, nid, pos);
+    sys_node_set_translation(vm, nid, pos);
 }
 static void
 node_get_rotation (wasm_exec_env_t env, nux_nid_t nid, nux_f32_t *rot)
@@ -308,8 +308,8 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(bind_scene, "(i)"),
         EXPORT_WASM_API_WITH_SIG(node_add, "(i)"),
         EXPORT_WASM_API_WITH_SIG(node_remove, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(node_get_position, "(i*)"),
-        EXPORT_WASM_API_WITH_SIG(node_set_position, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(node_get_translation, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(node_set_translation, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(node_get_rotation, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(node_set_rotation, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(node_get_scale, "(i*)"),

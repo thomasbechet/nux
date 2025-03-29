@@ -1,7 +1,6 @@
 #include "sdk.h"
 
 #include <runtime/runtime.h>
-#include <core/vm.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 #include <stb/stb_image.h>
@@ -31,15 +30,15 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
 
     // Find nearest texture size
     nu_u32_t target_size = nu_upper_power_of_two(NU_MAX(w, h));
-    if (target_size > SYS_MAX_TEXTURE_SIZE)
+    if (target_size > NUX_TEXTURE_MAX_SIZE)
     {
-        target_size = SYS_MAX_TEXTURE_SIZE;
+        target_size = NUX_TEXTURE_MIN_SIZE;
         logger_log(
-            NU_LOG_WARNING, "Texture resized to %d", SYS_MAX_TEXTURE_SIZE);
+            NU_LOG_WARNING, "Texture resized to %d", NUX_TEXTURE_MAX_SIZE);
     }
 
     // Resize image
-    nu_byte_t *resized = native_malloc(gfx_texture_memsize(target_size));
+    nu_byte_t *resized = native_malloc(nux_texture_memsize(target_size));
     NU_ASSERT(resized);
     if (!image_resize(nu_v2u(w, h), img, target_size, resized))
     {
@@ -88,7 +87,7 @@ buffer_index (cgltf_accessor *accessor, nu_size_t i)
 }
 static nu_status_t
 compile_primitive_mesh (const cgltf_primitive *primitive,
-                        nu_u32_t               id,
+                        nux_oid_t              oid,
                         sdk_project_t         *proj)
 {
     // Access attributes
@@ -115,14 +114,14 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
 
     // Build vertex attributes
     nu_v3_t                base_color = NU_V3_ONES;
-    sys_vertex_attribute_t attributes = 0;
+    nux_vertex_attribute_t attributes = 0;
     if (positions)
     {
-        attributes |= SYS_VERTEX_POSITION;
+        attributes |= NUX_VERTEX_POSITION;
     }
     if (uvs)
     {
-        attributes |= SYS_VERTEX_UV;
+        attributes |= NUX_VERTEX_UV;
     }
     if (primitive->material && primitive->material->has_pbr_metallic_roughness)
     {
@@ -132,7 +131,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
             cgltf_float *color
                 = primitive->material->pbr_metallic_roughness.base_color_factor;
             base_color = nu_v3(color[0], color[1], color[2]);
-            attributes |= SYS_VERTEX_COLOR;
+            attributes |= NUX_VERTEX_COLOR;
         }
     }
 
@@ -140,27 +139,27 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t       indice_count = accessor->count;
 
     // Write header
-    cart_chunk_entry_t *entry = sdk_begin_entry(proj, id, RESOURCE_MESH);
+    nux_cart_chunk_entry_t *entry = sdk_begin_entry(proj, oid, NUX_OBJECT_MESH);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
-    NU_CHECK(cart_write_u32(proj, SYS_PRIMITIVE_TRIANGLES), return NU_FAILURE);
+    NU_CHECK(cart_write_u32(proj, NUX_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
 
     // Write vertices
-    if (attributes & SYS_VERTEX_POSITION)
+    if (attributes & NUX_VERTEX_POSITION)
     {
         for (nu_size_t i = 0; i < indice_count; ++i)
         {
             cart_write_v3(proj, positions[buffer_index(accessor, i)]);
         }
     }
-    if (attributes & SYS_VERTEX_UV)
+    if (attributes & NUX_VERTEX_UV)
     {
         for (nu_size_t i = 0; i < indice_count; ++i)
         {
             cart_write_v2(proj, uvs[buffer_index(accessor, i)]);
         }
     }
-    if (attributes & SYS_VERTEX_COLOR)
+    if (attributes & NUX_VERTEX_COLOR)
     {
         for (nu_size_t i = 0; i < indice_count; ++i)
         {
@@ -172,23 +171,23 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
 }
 
 nu_status_t
-sdk_model_load (sdk_project_asset_t *asset, JSON_Object *jasset)
+sdk_scene_load (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
     return NU_SUCCESS;
 }
 nu_status_t
-sdk_model_save (sdk_project_asset_t *asset, JSON_Object *jasset)
+sdk_scene_save (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
     return NU_SUCCESS;
 }
 
 nu_status_t
-sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
+sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 {
     typedef struct
     {
-        void    *cgltf_ptr;
-        nu_u32_t id;
+        void     *cgltf_ptr;
+        nux_oid_t oid;
     } resource_t;
 
 #define MAX_RESOURCE 512
@@ -225,15 +224,15 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         cgltf_mesh *mesh = data->meshes + i;
         for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nu_u32_t id = sdk_next_id(proj);
-            NU_CHECK(compile_primitive_mesh(mesh->primitives + p, id, proj),
+            nux_oid_t oid = sdk_next_oid(proj);
+            NU_CHECK(compile_primitive_mesh(mesh->primitives + p, oid, proj),
                      goto cleanup0);
             logger_log(NU_LOG_DEBUG,
                        "Loading mesh %u '%s' primitive %d",
-                       id,
+                       oid,
                        mesh->name,
                        p);
-            resources[resources_count].id        = id;
+            resources[resources_count].oid       = oid;
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             ++resources_count;
         }
@@ -260,9 +259,9 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
         if (texture)
         {
-            nu_u32_t id = sdk_next_id(proj);
+            nu_u32_t id = sdk_next_oid(proj);
             NU_CHECK(compile_texture(texture, id, proj), goto cleanup0);
-            resources[resources_count].id        = id;
+            resources[resources_count].oid       = id;
             resources[resources_count].cgltf_ptr = texture;
             ++resources_count;
         }
@@ -285,8 +284,8 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
 
         // Write model
-        cart_chunk_entry_t *entry
-            = sdk_begin_entry(proj, asset->id, RESOURCE_MODEL);
+        nux_cart_chunk_entry_t *entry
+            = sdk_begin_entry(proj, asset->oid, NUX_OBJECT_SCENE);
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
         // Create model
@@ -294,29 +293,25 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         {
             cgltf_node *node = scene->nodes[n];
 
-            nu_m4_t transform = nu_m4_identity();
+            nu_v3_t translation = NU_V3_ZEROS;
+            nu_q4_t rotation    = nu_q4_identity();
+            nu_v3_t scale       = NU_V3_ONES;
             if (node->has_scale)
             {
-                transform = nu_m4_mul(
-                    nu_m4_scale(
-                        nu_v3(node->scale[0], node->scale[1], node->scale[2])),
-                    transform);
+                scale = nu_v3(node->scale[0], node->scale[1], node->scale[2]);
             }
             if (node->has_rotation)
             {
-                nu_q4_t q = nu_q4(node->rotation[0],
-                                  node->rotation[1],
-                                  node->rotation[2],
-                                  node->rotation[3]);
-                transform = nu_q4_mulm4(q, transform);
+                rotation = nu_q4(node->rotation[0],
+                                 node->rotation[1],
+                                 node->rotation[2],
+                                 node->rotation[3]);
             }
             if (node->has_translation)
             {
-                transform
-                    = nu_m4_mul(nu_m4_translate(nu_v3(node->translation[0],
-                                                      node->translation[1],
-                                                      node->translation[2])),
-                                transform);
+                translation = nu_v3(node->translation[0],
+                                    node->translation[1],
+                                    node->translation[2]);
             }
 
             if (node->mesh)
@@ -326,12 +321,12 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     cgltf_primitive *primitive = node->mesh->primitives + p;
 
                     // Find mesh
-                    nu_u32_t mesh = 0;
+                    nux_oid_t mesh = NUX_NULL;
                     for (nu_size_t i = 0; i < MAX_RESOURCE; ++i)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].id;
+                            mesh = resources[i].oid;
                             break;
                         }
                     }
@@ -345,7 +340,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     }
 
                     // Find texture
-                    nu_u32_t texture = 0;
+                    nux_oid_t texture = NUX_NULL;
                     if (primitive->material
                         && primitive->material->has_pbr_metallic_roughness
                         && primitive->material->pbr_metallic_roughness
@@ -357,7 +352,7 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].id;
+                                texture = resources[i].oid;
                                 break;
                             }
                         }
@@ -376,11 +371,17 @@ sdk_model_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                mesh,
                                texture);
 
-                    // Write model node
+                    // Write node
+                    NU_CHECK(cart_write_u32(proj, NUX_NULL), goto cleanup0);
+                    NU_CHECK(cart_write_v3(proj, translation), goto cleanup0);
+                    NU_CHECK(cart_write_q4(proj, rotation), goto cleanup0);
+                    NU_CHECK(cart_write_v3(proj, scale), goto cleanup0);
+                    NU_CHECK(cart_write_u32(proj, NUX_COMPONENT_MODEL),
+                             goto cleanup0);
+
+                    // Write model
                     NU_CHECK(cart_write_u32(proj, mesh), goto cleanup0);
                     NU_CHECK(cart_write_u32(proj, texture), goto cleanup0);
-                    NU_CHECK(cart_write_u32(proj, -1), goto cleanup0);
-                    NU_CHECK(cart_write_m4(proj, transform), goto cleanup0);
                 }
             }
         }
