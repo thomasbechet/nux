@@ -203,6 +203,18 @@ static m3ApiRawFunction(node_add)
     m3ApiReturn(nux_node_add(env, parent));
     m3ApiSuccess();
 }
+static m3ApiRawFunction(node_add_instance)
+{
+#ifdef NUX_BUILD_TRACE
+    printf("TRACE node_add_instance\n");
+#endif
+    nux_env_t env = m3_GetUserData(runtime);
+    m3ApiReturnType(nux_nid_t);
+    m3ApiGetArg(nux_nid_t, parent);
+    m3ApiGetArg(nux_oid_t, scene);
+    m3ApiReturn(nux_node_add_instance(env, parent, scene));
+    m3ApiSuccess();
+}
 static m3ApiRawFunction(node_remove)
 {
 #ifdef NUX_BUILD_TRACE
@@ -507,6 +519,8 @@ link_raw_functions (IM3Module module)
     m3_LinkRawFunction(module, "*", "create_scene", "v(ii)", create_scene);
     m3_LinkRawFunction(module, "*", "bind_scene", "v(i)", bind_scene);
     m3_LinkRawFunction(module, "*", "node_add", "i(i)", node_add);
+    m3_LinkRawFunction(
+        module, "*", "node_add_instance", "i(ii)", node_add_instance);
     m3_LinkRawFunction(module, "*", "node_remove", "v(i)", node_remove);
     m3_LinkRawFunction(
         module, "*", "node_get_translation", "v(i*)", node_get_translation);

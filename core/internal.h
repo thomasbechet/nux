@@ -3,6 +3,7 @@
 
 #include "nux.h"
 
+#define NU_STDLIB
 #include <nulib/nulib.h>
 #ifdef NUX_BUILD_WASM3
 #include <wasm3.h>

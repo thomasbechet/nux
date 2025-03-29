@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project(nux VERSION 0.0.1)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 include(CheckCCompilerFlag)
 function(enable_c_compiler_flag_if_supported flag)
     string(FIND "${CMAKE_C_FLAGS}" "${flag}" flag_already_set)

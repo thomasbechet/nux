@@ -15,7 +15,7 @@ init_node (nux_node_t *node, nux_nid_t nid, nux_nid_t parent)
     node->nid    = nid;
 }
 static nux_nid_t
-add_node (nux_scene_t *scene, nux_scene_node_t *nodes)
+add_scene_node (nux_scene_t *scene, nux_scene_node_t *nodes)
 {
     nux_u32_t node = NU_NULL;
     if (scene->free)
@@ -34,7 +34,7 @@ add_node (nux_scene_t *scene, nux_scene_node_t *nodes)
     return node;
 }
 static void
-remove_node (nux_scene_t *scene, nux_scene_node_t *nodes, nux_nid_t node)
+remove_scene_node (nux_scene_t *scene, nux_scene_node_t *nodes, nux_nid_t node)
 {
     NU_ASSERT(node);
     nodes[node].free = scene->free;
@@ -47,8 +47,8 @@ init_scene_empty (nux_instance_t inst, nux_scene_t *scene)
     scene->free             = 0;
     nux_scene_node_t *nodes = nux_instance_get_memory(inst, scene->nodes);
     nu_memset(nodes, 0, sizeof(*nodes) * scene->capa);
-    nux_nid_t root       = add_node(scene, nodes);
-    nux_nid_t root_table = add_node(scene, nodes);
+    nux_nid_t root       = add_scene_node(scene, nodes);
+    nux_nid_t root_table = add_scene_node(scene, nodes);
     init_node(&nodes[root].node, NUX_NODE_ROOT, NU_NULL);
 }
 
@@ -93,35 +93,60 @@ nux_bind_scene (nux_env_t env, nux_oid_t oid)
     env->nodes = nux_instance_get_memory(env->inst, object->scene.nodes);
     return NUX_SUCCESS;
 }
+static nux_nid_t
+node_add (nux_env_t env, nux_nid_t parent)
+{
+    nux_nid_t node = add_scene_node(env->scene, env->nodes);
+    NU_CHECK(node, return NU_NULL);
+    init_node(&env->nodes[node].node, node, parent);
+
+    if (parent)
+    {
+        nux_nid_t child = env->nodes[parent].node.child;
+        if (child)
+        {
+            env->nodes[child].node.prev = node;
+        }
+        env->nodes[node].node.next    = child;
+        env->nodes[parent].node.child = node;
+    }
+    return node;
+}
 nux_nid_t
 nux_node_add (nux_env_t env, nux_nid_t parent)
 {
     NU_CHECK(nux_validate_node(env, parent), return NU_NULL);
     NU_CHECK(env->scene, return NU_NULL);
     nux_scene_node_t *nodes = env->nodes;
-    nux_nid_t         node  = add_node(env->scene, nodes);
-    nux_nid_t         table = add_node(env->scene, nodes);
-    NU_CHECK(node && table, return NU_NULL);
-    init_node(&nodes[node].node, node, parent);
+    nux_nid_t         node  = node_add(env, parent);
+
+    nux_nid_t table = add_scene_node(env->scene, nodes);
+    NU_CHECK(table, return NU_NULL);
     nu_memset(&nodes[table].table.indices, 0, sizeof(nux_node_table_t));
-    if (parent)
-    {
-        nux_nid_t child = nodes[parent].node.child;
-        if (child)
-        {
-            nodes[child].node.prev = node;
-        }
-        nodes[node].node.next    = child;
-        nodes[parent].node.child = node;
-    }
+    nodes[node].node.table = table;
+    nodes[node].node.mask  = 0;
+
+    return node;
+}
+nux_nid_t
+nux_node_add_instance (nux_env_t env, nux_nid_t parent, nux_oid_t scene)
+{
+    NU_CHECK(nux_validate_node(env, parent), return NU_NULL);
+    NU_CHECK(nux_instance_get_object(env->inst, NUX_OBJECT_SCENE, scene),
+             return NU_NULL);
+    NU_CHECK(env->scene, return NU_NULL);
+    nux_scene_node_t *nodes   = env->nodes;
+    nux_nid_t         node    = node_add(env, parent);
+    nodes[node].node.instance = scene;
+    nodes[node].node.flags |= NUX_NODE_INSTANCED;
     return node;
 }
 void
 nux_node_remove (nux_env_t env, nux_nid_t nid)
 {
     NU_CHECK(nux_validate_node(env, nid) && nid != NUX_NODE_ROOT, return);
-    remove_node(env->scene, env->nodes, env->nodes[nid].node.table);
-    remove_node(env->scene, env->nodes, nid);
+    remove_scene_node(env->scene, env->nodes, env->nodes[nid].node.table);
+    remove_scene_node(env->scene, env->nodes, nid);
 }
 
 nux_component_t *
@@ -134,7 +159,7 @@ nux_node_add_component (nux_env_t            env,
     {
         nux_node_remove_component(env, node, component);
     }
-    nux_nid_t comp_node = add_node(env->scene, env->nodes);
+    nux_nid_t comp_node = add_scene_node(env->scene, env->nodes);
     if (!comp_node)
     {
         return NU_NULL;
@@ -158,7 +183,7 @@ nux_node_remove_component (nux_env_t            env,
             = &env->nodes[env->nodes[node].node.table].table;
         nu_size_t comp_index = COMPONENT_TO_INDEX(component);
         // TODO: uninit component
-        remove_node(env->scene, env->nodes, table->indices[comp_index]);
+        remove_scene_node(env->scene, env->nodes, table->indices[comp_index]);
         table->indices[comp_index] = 0;
     }
     return NUX_SUCCESS;

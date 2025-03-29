@@ -581,53 +581,33 @@ node_global_transform (const nux_scene_node_t *nodes, const nux_node_t *node)
     return global_transform;
 }
 static void
-draw_scene (nux_instance_t inst,
-            nux_oid_t      scene,
-            nux_nid_t      camera,
-            nu_m4_t        transform)
+draw_scene_instance (nux_instance_t inst, nux_oid_t scene, nu_m4_t transform)
 {
-    // Get scene and camera
+    // Acquire scene
     nux_object_t *object
         = nux_instance_get_object(inst, NUX_OBJECT_SCENE, scene);
     NU_ASSERT(object);
     nux_scene_node_t *nodes
         = nux_instance_get_memory(inst, object->scene.nodes);
-    const nux_node_t *cam_node = &nodes[camera].node;
-    nux_camera_t     *cam
-        = &nux_scene_get_component(nodes, camera, NUX_COMPONENT_CAMERA)->camera;
 
-    // Update ubo
-    {
-        nu_m4_t cam_transform = node_global_transform(nodes, cam_node);
-        nu_v3_t eye           = nu_m4_mulv3(cam_transform, NU_V3_ZEROS);
-        nu_v3_t center        = nu_m4_mulv3(cam_transform, NU_V3_FORWARD);
-        nu_v3_t up = nu_v3_v4(nu_m4_mulv(cam_transform, nu_v4_v3(NU_V3_UP, 0)));
-        renderer.ubo.view = nu_lookat(eye, center, up);
-        renderer.ubo.projection
-            = nu_perspective(cam->fov,
-                             (nu_f32_t)NUX_SCREEN_WIDTH / NUX_SCREEN_HEIGHT,
-                             cam->near,
-                             cam->far);
-        renderer.ubo.is_volume = NU_FALSE;
-        update_ubo();
-    }
-
-    // Setup GL states
-    glUseProgram(renderer.unlit_program);
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
-    glFrontFace(GL_CCW);
-    glCullFace(GL_BACK);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-    // Draw model
+    // Draw scene
     nux_nid_t  nid;
     nux_nid_t *iter = NU_NULL;
     nux_nid_t  stack[256];
     while ((nid = nux_scene_iter_dfs(nodes, &iter, stack, sizeof(stack))))
     {
-        nux_node_t      *node = &nodes[nid].node;
+        nux_node_t *node = &nodes[nid].node;
+
+        // Instanced node case
+        if (node->flags & NUX_NODE_INSTANCED)
+        {
+            nu_m4_t global_transform = node_global_transform(nodes, node);
+            global_transform         = nu_m4_mul(transform, global_transform);
+            draw_scene_instance(inst, node->instance, global_transform);
+            return;
+        }
+
+        // Check model on node
         nux_component_t *model
             = nux_scene_get_component(nodes, nid, NUX_COMPONENT_MODEL);
         if (model && model->model.visible)
@@ -687,6 +667,45 @@ draw_scene (nux_instance_t inst,
             glBindVertexArray(0);
         }
     }
+}
+static void
+draw_scene (nux_instance_t inst, nux_oid_t scene, nux_nid_t camera)
+{
+    // Get scene camera
+    nux_object_t *object
+        = nux_instance_get_object(inst, NUX_OBJECT_SCENE, scene);
+    NU_ASSERT(object);
+    nux_scene_node_t *nodes
+        = nux_instance_get_memory(inst, object->scene.nodes);
+    const nux_node_t *cam_node = &nodes[camera].node;
+    nux_camera_t     *cam
+        = &nux_scene_get_component(nodes, camera, NUX_COMPONENT_CAMERA)->camera;
+
+    // Update ubo with camera info
+    nu_m4_t cam_transform = node_global_transform(nodes, cam_node);
+    nu_v3_t eye           = nu_m4_mulv3(cam_transform, NU_V3_ZEROS);
+    nu_v3_t center        = nu_m4_mulv3(cam_transform, NU_V3_FORWARD);
+    nu_v3_t up = nu_v3_v4(nu_m4_mulv(cam_transform, nu_v4_v3(NU_V3_UP, 0)));
+    renderer.ubo.view = nu_lookat(eye, center, up);
+    renderer.ubo.projection
+        = nu_perspective(cam->fov,
+                         (nu_f32_t)NUX_SCREEN_WIDTH / NUX_SCREEN_HEIGHT,
+                         cam->near,
+                         cam->far);
+    renderer.ubo.is_volume = NU_FALSE;
+    update_ubo();
+
+    // Setup GL states
+    glUseProgram(renderer.unlit_program);
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LEQUAL);
+    glFrontFace(GL_CCW);
+    glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    // Draw scene
+    draw_scene_instance(inst, scene, nu_m4_identity());
 
     // Reset state
     glUseProgram(0);
@@ -1143,7 +1162,6 @@ renderer_render_instance (nux_instance_t inst,
     begin_frame();
     // Execute vm commands
     // nu_v2u_t             cursor    = NU_V2U_ZEROS;
-    nu_m4_t              transform = nu_m4_identity();
     nux_u32_t            cmds_count;
     const nux_command_t *cmds
         = nux_instance_get_command_buffer(inst, &cmds_count);
@@ -1168,10 +1186,7 @@ renderer_render_instance (nux_instance_t inst,
             }
             break;
             case NUX_COMMAND_DRAW_SCENE:
-                draw_scene(inst,
-                           cmd->draw_scene.scene,
-                           cmd->draw_scene.camera,
-                           transform);
+                draw_scene(inst, cmd->draw_scene.scene, cmd->draw_scene.camera);
                 break;
             case NUX_COMMAND_DRAW_CUBE:
                 break;

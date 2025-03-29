@@ -124,6 +124,12 @@ node_add (wasm_exec_env_t env, nux_nid_t parent)
     vm_t *vm = wasm_runtime_get_user_data(env);
     return sys_node_add(vm, parent);
 }
+static nux_nid_t
+node_add_instance (wasm_exec_env_t env, nux_nid_t parent, nux_oid_t scene)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_node_add_instance(vm, parent, scene);
+}
 static void
 node_remove (wasm_exec_env_t env, nux_nid_t nid)
 {
@@ -307,6 +313,7 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(create_scene, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(bind_scene, "(i)"),
         EXPORT_WASM_API_WITH_SIG(node_add, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_add_instance, "(ii)"),
         EXPORT_WASM_API_WITH_SIG(node_remove, "(i)"),
         EXPORT_WASM_API_WITH_SIG(node_get_translation, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(node_set_translation, "(i*)"),

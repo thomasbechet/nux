@@ -107,7 +107,8 @@ typedef enum
     OBJECT_TEXTURE     = 6,
     OBJECT_MESH        = 7,
     OBJECT_SPRITESHEET = 9,
-    OBJECT_SCENE       = 10
+    OBJECT_SCENE       = 10,
+    OBJECT_TYPE_MAX    = 11
 } object_type_t;
 
 typedef enum
@@ -194,6 +195,8 @@ WASM_EXPORT("bind_scene")
 void bind_scene(u32 oid);
 WASM_EXPORT("node_add")
 u32 node_add(u32 parent);
+WASM_EXPORT("node_add_instance")
+u32 node_add_instance(u32 parent, u32 scene);
 WASM_EXPORT("node_remove")
 void node_remove(u32 nid);
 WASM_EXPORT("node_get_translation")

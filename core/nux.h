@@ -24,6 +24,7 @@ typedef enum
 {
     NUX_NODE_DIRTY            = 1 << 0,
     NUX_NODE_CACHED_TRANSFORM = 1 << 1,
+    NUX_NODE_INSTANCED        = 1 << 2,
 } nux_node_flags_t;
 
 typedef enum
@@ -140,14 +141,24 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t mask;           // 4
-    nux_u32_t flags;          // 4
-    nux_nid_t parent;         // 2
-    nux_nid_t child;          // 2
-    nux_nid_t next;           // 2
-    nux_nid_t prev;           // 2
-    nux_nid_t table;          // 2
-    nux_nid_t nid;            // 2 (store nid for validation)
+    nux_u32_t flags;  // 4
+    nux_nid_t parent; // 2
+    nux_nid_t next;   // 2
+    nux_nid_t prev;   // 2
+    nux_nid_t child;  // 2
+
+    nux_nid_t nid; // 2 (for validation)
+
+    union
+    {
+        struct
+        {
+            nux_u32_t mask;  // 4
+            nux_nid_t table; // 2
+        };
+        nux_oid_t instance; // 2
+    };
+
     nux_f32_t translation[3]; // 12
     nux_f32_t rotation[4];    // 16
     nux_f32_t scale[3];       // 12

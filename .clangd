@@ -3,3 +3,7 @@ CompileFlags:
     # Includes for examples
     - "-I../../../runtimes/native/data/templates/c/src/"
     - "-I../../../externals/"
+    # Includes for core 
+    - "-Icore"
+    - "-I../externals"
+    - "-I../externals/wasm3/source"
