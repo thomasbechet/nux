@@ -4448,7 +4448,7 @@ wayland:
         if (targets[i] == RGFW_XUTF8_STRING || targets[i] == XA_STRING)
           XChangeProperty(RGFW_root->src.display, request->requestor,
                           targets[i + 1], targets[i], 8, PropModeReplace,
-                          win->src.clipboard, win->src.clipboard_len);
+                          (const unsigned char*)win->src.clipboard, win->src.clipboard_len);
         else
           targets[i + 1] = None;
       }

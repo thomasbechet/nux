@@ -198,7 +198,7 @@ sdk_compile (sdk_project_t *project)
         }
     }
 
-    // End last chunk entry
+    // End last object entry
     if (project->current_entry)
     {
         project->current_entry->length
@@ -226,11 +226,11 @@ sdk_compile (sdk_project_t *project)
                  == 1,
              goto cleanup1);
 
-    // Write chunk table
+    // Write object table
     for (nu_size_t i = 0; i < project->entries_size; ++i)
     {
-        const nux_cart_chunk_entry_t *entry = project->entries + i;
-        nu_u32_t                      type  = entry->type;
+        const nux_cart_object_entry_t *entry = project->entries + i;
+        nu_u32_t                       type  = entry->type;
         NU_CHECK(fwrite(&type, sizeof(type), 1, f) == 1, return NU_FAILURE);
         NU_CHECK(fwrite(&entry->oid, sizeof(entry->oid), 1, f) == 1,
                  return NU_FAILURE);
@@ -500,7 +500,7 @@ sdk_project_free (sdk_project_t *project)
     }
 }
 
-nux_cart_chunk_entry_t *
+nux_cart_object_entry_t *
 sdk_begin_entry (sdk_project_t *proj, nux_oid_t oid, nux_object_type_t type)
 {
     if (proj->current_entry)
@@ -510,7 +510,7 @@ sdk_begin_entry (sdk_project_t *proj, nux_oid_t oid, nux_object_type_t type)
         // logger_log(NU_LOG_INFO,
         //         "[END ENTRY %s length %d]",
         //         nu_enum_to_cstr(proj->current_entry->type,
-        //         cart_chunk_type_map), proj->current_entry->length);
+        //         cart_object_type_map), proj->current_entry->length);
         proj->current_entry = NU_NULL;
     }
     NU_ASSERT(proj->entries);
@@ -521,7 +521,7 @@ sdk_begin_entry (sdk_project_t *proj, nux_oid_t oid, nux_object_type_t type)
                                 proj->entries_capa * sizeof(*proj->entries));
         NU_ASSERT(proj->entries);
     }
-    nux_cart_chunk_entry_t *entry = proj->entries + proj->entries_size;
+    nux_cart_object_entry_t *entry = proj->entries + proj->entries_size;
     ++proj->entries_size;
     proj->current_entry         = entry;
     proj->current_entry->type   = type;
@@ -530,7 +530,7 @@ sdk_begin_entry (sdk_project_t *proj, nux_oid_t oid, nux_object_type_t type)
     proj->current_entry->length = 0;
     // logger_log(NU_LOG_INFO,
     //         "[BEGIN ENTRY %s offset %d]",
-    //         nu_enum_to_cstr(entry->type, cart_chunk_type_map),
+    //         nu_enum_to_cstr(entry->type, cart_object_type_map),
     //         proj->current_entry->offset);
     return entry;
 }
@@ -556,11 +556,11 @@ sdk_next_oid (sdk_project_t *proj)
 }
 typedef struct
 {
-    nu_u32_t               index;
-    nux_cart_chunk_entry_t data;
+    nu_u32_t                index;
+    nux_cart_object_entry_t data;
 } indexed_entry_t;
 static int
-chunk_entry_cmp (const void *a, const void *b)
+object_entry_cmp (const void *a, const void *b)
 {
     const indexed_entry_t *ea = a;
     const indexed_entry_t *eb = b;
@@ -586,13 +586,13 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     NU_CHECK(nux_cart_parse_header(data, &header), goto cleanup0);
 
     indexed_entry_t *entries
-        = native_malloc(header.chunk_count * sizeof(*entries));
+        = native_malloc(header.object_count * sizeof(*entries));
     NU_ASSERT(entries);
     nu_byte_t *entry_data = data + NUX_CART_HEADER_SIZE;
-    for (nu_size_t i = 0; i < header.chunk_count; ++i)
+    for (nu_size_t i = 0; i < header.object_count; ++i)
     {
         NU_CHECK(
-            nux_cart_parse_entries(entry_data + i * NUX_CART_CHUNK_ENTRY_SIZE,
+            nux_cart_parse_entries(entry_data + i * NUX_CART_OBJECT_ENTRY_SIZE,
                                    1,
                                    &entries[i].data),
             goto cleanup1);
@@ -601,18 +601,18 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
 
     if (sort)
     {
-        qsort(entries, header.chunk_count, sizeof(*entries), chunk_entry_cmp);
+        qsort(entries, header.object_count, sizeof(*entries), object_entry_cmp);
     }
 
-    nu_u32_t total_chunk_size   = 0;
-    nu_u32_t total_texture_size = 0;
-    nu_u32_t total_mesh_size    = 0;
-    nu_u32_t chunk_sizes[5]     = { 0 };
-    for (nu_size_t i = 0; i < header.chunk_count; ++i)
+    nu_u32_t total_object_size                 = 0;
+    nu_u32_t total_texture_size                = 0;
+    nu_u32_t total_mesh_size                   = 0;
+    nu_u32_t object_sizes[NUX_OBJECT_TYPE_MAX] = { 0 };
+    for (nu_size_t i = 0; i < header.object_count; ++i)
     {
-        const nux_cart_chunk_entry_t *entry = &entries[i].data;
-        total_chunk_size += entry->length;
-        chunk_sizes[entry->type] += entry->length;
+        const nux_cart_object_entry_t *entry = &entries[i].data;
+        total_object_size += entry->length;
+        object_sizes[entry->type] += entry->length;
     }
 
     printf("Cartridge info:\n\n");
@@ -621,12 +621,12 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
            NUX_VERSION_MAJOR(header.version),
            NUX_VERSION_MINOR(header.version),
            NUX_VERSION_PATCH(header.version));
-    printf("     %-18s %-8d\n", "Chunk count", header.chunk_count);
+    printf("     %-18s %-8d\n", "Object count", header.object_count);
     printf("     %-18s %-8d bytes\n", "Total size", (nu_u32_t)size);
-    printf("     %-18s %-8d bytes\n", "Total chunk size", total_chunk_size);
-    for (nu_size_t i = 0; i < NU_ARRAY_SIZE(chunk_sizes); ++i)
+    printf("     %-18s %-8d bytes\n", "Total object size", total_object_size);
+    for (nu_size_t i = 0; i < NU_ARRAY_SIZE(object_sizes); ++i)
     {
-        if (chunk_sizes[i])
+        if (object_sizes[i])
         {
             nu_char_t buf[32];
             snprintf(buf,
@@ -635,8 +635,8 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                      nu_enum_to_cstr(i, object_type_map));
             printf("     %-18s %-8d bytes (%.2lf%%)\n",
                    buf,
-                   chunk_sizes[i],
-                   ((nu_f32_t)chunk_sizes[i] / (nu_f32_t)total_chunk_size)
+                   object_sizes[i],
+                   ((nu_f32_t)object_sizes[i] / (nu_f32_t)total_object_size)
                        * 100);
         }
     }
@@ -644,7 +644,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
 
     if (display_table)
     {
-        printf("Chunk table:\n\n");
+        printf("Object table:\n\n");
         printf("     %-5s %-8s %-10s %-8s %-8s\n",
                "OID",
                "Type",
@@ -654,15 +654,16 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
 
         printf("   --------------------------------------------\n");
         nu_u32_t display_entry = num ? num : (nu_u32_t)-1;
-        for (nu_size_t i = 0; i < header.chunk_count && i < display_entry; ++i)
+        for (nu_size_t i = 0; i < header.object_count && i < display_entry; ++i)
         {
             const indexed_entry_t *entry = entries + i;
             nu_char_t              buf[32];
-            snprintf(buf,
-                     sizeof(buf),
-                     "%.2lf%%",
-                     ((nu_f32_t)entry->data.length / (nu_f32_t)total_chunk_size)
-                         * 100);
+            snprintf(
+                buf,
+                sizeof(buf),
+                "%.2lf%%",
+                ((nu_f32_t)entry->data.length / (nu_f32_t)total_object_size)
+                    * 100);
             printf("     %-5u %-8s 0x%-8x %-8d %-8s\n",
                    entry->data.oid,
                    nu_enum_to_cstr(entry->data.type, object_type_map),

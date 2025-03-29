@@ -65,7 +65,6 @@ typedef enum
     BUTTON_MAX       = 10,
     AXIS_MAX         = 6,
     NODE_ROOT        = 1,
-    NULL             = 0,
     NODE_MAX         = (1 << 16) - 1,
     NAME_MAX         = 64
 } constants_t;

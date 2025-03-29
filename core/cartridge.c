@@ -55,21 +55,21 @@ nux_cart_parse_header (const void *data, nux_cart_header_t *header)
     const nu_byte_t *ptr = data;
     header->version      = nu_u32_le(*((nu_u32_t *)ptr));
     ptr += sizeof(nu_u32_t);
-    header->chunk_count = nu_u32_le(*((nu_u32_t *)ptr));
+    header->object_count = nu_u32_le(*((nu_u32_t *)ptr));
     // TODO: validate
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_cart_parse_entries (const void             *data,
-                        nux_u32_t               count,
-                        nux_cart_chunk_entry_t *entries)
+nux_cart_parse_entries (const void              *data,
+                        nux_u32_t                count,
+                        nux_cart_object_entry_t *entries)
 {
     const nu_byte_t *ptr = data;
     for (nu_size_t i = 0; i < count; ++i)
     {
         // Type
-        nux_cart_chunk_entry_t *entry = entries + i;
-        entry->type                   = nu_u32_le(*(nu_u32_t *)ptr);
+        nux_cart_object_entry_t *entry = entries + i;
+        entry->type                    = nu_u32_le(*(nu_u32_t *)ptr);
         ptr += sizeof(nu_u32_t);
         // Name
         entry->oid = nu_u32_le(*(nu_u32_t *)ptr);
@@ -85,7 +85,7 @@ nux_cart_parse_entries (const void             *data,
 }
 
 static nux_status_t
-load_wasm (nux_env_t env, const nux_cart_chunk_entry_t *entry)
+load_wasm (nux_env_t env, const nux_cart_object_entry_t *entry)
 {
     // Load module data
     NU_ASSERT(entry->length);
@@ -100,7 +100,7 @@ load_wasm (nux_env_t env, const nux_cart_chunk_entry_t *entry)
     return NUX_SUCCESS;
 }
 static nux_status_t
-load_texture (nux_env_t env, const nux_cart_chunk_entry_t *entry)
+load_texture (nux_env_t env, const nux_cart_object_entry_t *entry)
 {
     nu_u32_t size;
     NU_CHECK(cart_read_u32(env->inst, &size), return NUX_FAILURE);
@@ -114,7 +114,7 @@ load_texture (nux_env_t env, const nux_cart_chunk_entry_t *entry)
     return NUX_SUCCESS;
 }
 static nux_status_t
-load_mesh (nux_env_t env, const nux_cart_chunk_entry_t *entry)
+load_mesh (nux_env_t env, const nux_cart_object_entry_t *entry)
 {
     nu_u32_t count, primitive, attributes;
     NU_CHECK(cart_read_u32(env->inst, &count), return NUX_FAILURE);
@@ -129,7 +129,7 @@ load_mesh (nux_env_t env, const nux_cart_chunk_entry_t *entry)
     return NUX_SUCCESS;
 }
 static nux_status_t
-load_scene (nux_env_t env, const nux_cart_chunk_entry_t *entry)
+load_scene (nux_env_t env, const nux_cart_object_entry_t *entry)
 {
     nu_u32_t node_count;
     NU_CHECK(cart_read_u32(env->inst, &node_count), return NUX_FAILURE);
@@ -184,19 +184,19 @@ nux_load_cartridge (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
     nux_cart_header_t header;
     NU_CHECK(nux_cart_parse_header(header_data, &header), return NUX_FAILURE);
 
-    nu_u32_t data_offset
-        = NUX_CART_HEADER_SIZE + NUX_CART_CHUNK_ENTRY_SIZE * header.chunk_count;
+    nu_u32_t data_offset = NUX_CART_HEADER_SIZE
+                           + NUX_CART_OBJECT_ENTRY_SIZE * header.object_count;
 
-    // Load chunks
-    for (nu_u32_t i = 0; i < header.chunk_count; ++i)
+    // Load objects
+    for (nu_u32_t i = 0; i < header.object_count; ++i)
     {
         // Seek to entry
-        nux_platform_seek(inst,
-                          NUX_CART_HEADER_SIZE + NUX_CART_CHUNK_ENTRY_SIZE * i);
+        nux_platform_seek(
+            inst, NUX_CART_HEADER_SIZE + NUX_CART_OBJECT_ENTRY_SIZE * i);
 
         // Read entry
-        nux_cart_chunk_entry_t entry;
-        nu_byte_t              entry_data[NUX_CART_CHUNK_ENTRY_SIZE];
+        nux_cart_object_entry_t entry;
+        nu_byte_t               entry_data[NUX_CART_OBJECT_ENTRY_SIZE];
         NU_CHECK(cart_read(inst, entry_data, sizeof(entry_data))
                      == sizeof(entry_data),
                  return NUX_FAILURE);
@@ -206,10 +206,10 @@ nux_load_cartridge (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
             return NUX_FAILURE;
         }
 
-        // Seek to chunk
+        // Seek to object
         nux_platform_seek(inst, data_offset + entry.offset);
 
-        // Read chunk
+        // Read object
         switch (entry.type)
         {
             case NUX_OBJECT_RAW:

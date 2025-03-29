@@ -8,8 +8,8 @@
 //////                               Types                          //////
 //////////////////////////////////////////////////////////////////////////
 
-#define NUX_CART_HEADER_SIZE      sizeof(nux_cart_header_t)
-#define NUX_CART_CHUNK_ENTRY_SIZE (sizeof(nu_u32_t) * 4)
+#define NUX_CART_HEADER_SIZE       sizeof(nux_cart_header_t)
+#define NUX_CART_OBJECT_ENTRY_SIZE (sizeof(nu_u32_t) * 4)
 
 typedef struct nux_instance *nux_instance_t;
 typedef nux_u32_t            nux_ptr_t;
@@ -77,12 +77,12 @@ typedef struct
     nux_oid_t         oid;
     nux_u32_t         offset;
     nux_u32_t         length;
-} nux_cart_chunk_entry_t;
+} nux_cart_object_entry_t;
 
 typedef struct
 {
     nux_u32_t version;
-    nux_u32_t chunk_count;
+    nux_u32_t object_count;
 } nux_cart_header_t;
 
 typedef struct
@@ -265,8 +265,8 @@ NUX_API nux_component_t *nux_scene_get_component(
     nux_scene_node_t *nodes, nux_nid_t node, nux_component_type_t component);
 NUX_API nux_status_t nux_cart_parse_header(const void        *data,
                                            nux_cart_header_t *header);
-NUX_API nux_status_t nux_cart_parse_entries(const void             *data,
-                                            nux_u32_t               count,
-                                            nux_cart_chunk_entry_t *entries);
+NUX_API nux_status_t nux_cart_parse_entries(const void              *data,
+                                            nux_u32_t                count,
+                                            nux_cart_object_entry_t *entries);
 
 #endif

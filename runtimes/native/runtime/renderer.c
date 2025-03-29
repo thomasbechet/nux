@@ -571,7 +571,7 @@ node_global_transform (const nux_scene_node_t *nodes, const nux_node_t *node)
 {
     nu_m4_t   global_transform = node_local_to_parent(node);
     nux_nid_t parent           = node->parent;
-    while (parent != NUX_NULL)
+    while (parent != NU_NULL)
     {
         const nux_node_t *parent_node = &nodes[parent].node;
         global_transform

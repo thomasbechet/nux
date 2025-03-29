@@ -48,8 +48,8 @@ nux_instance_init (const nux_instance_config_t *config)
     NU_CHECK(inst->cmds, goto cleanup0);
 
     // Initialize resource table
-    inst->objects[NUX_NULL].type = NUX_OBJECT_NULL;
-    inst->objects[NUX_NULL].next = NUX_NULL;
+    inst->objects[NU_NULL].type = NUX_OBJECT_NULL;
+    inst->objects[NU_NULL].next = NU_NULL;
     for (nu_size_t i = 1; i < NUX_OBJECT_MAX; ++i)
     {
         inst->objects[i].type = NUX_OBJECT_FREE;
@@ -121,7 +121,7 @@ nux_env_t
 nux_instance_init_env (nux_instance_t inst)
 {
     inst->env.inst         = inst;
-    inst->env.active_scope = NUX_NULL;
+    inst->env.active_scope = NU_NULL;
     inst->env.cursor       = NU_V2U_ZEROS;
     inst->env.scene        = NU_NULL;
     inst->env.nodes        = NU_NULL;

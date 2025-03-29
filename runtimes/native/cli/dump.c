@@ -19,8 +19,13 @@ cli_command_dump (nu_u32_t argc, const nu_char_t **argv)
     struct argparse_option options[]     = {
         OPT_HELP(),
         OPT_BOOLEAN('s', "sort", &sort, "sort entries by usage", NU_NULL, 0, 0),
-        OPT_BOOLEAN(
-            't', "table", &display_table, "display chunk table", NU_NULL, 0, 0),
+        OPT_BOOLEAN('t',
+                    "table",
+                    &display_table,
+                    "display object table",
+                    NU_NULL,
+                    0,
+                    0),
         OPT_INTEGER('n',
                     "num",
                     &num,

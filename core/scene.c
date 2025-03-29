@@ -9,15 +9,15 @@ init_node (nux_node_t *node, nux_nid_t nid, nux_nid_t parent)
     node->flags  = 0;
     node->table  = 0;
     node->parent = parent;
-    node->next   = NUX_NULL;
-    node->prev   = NUX_NULL;
-    node->child  = NUX_NULL;
+    node->next   = NU_NULL;
+    node->prev   = NU_NULL;
+    node->child  = NU_NULL;
     node->nid    = nid;
 }
 static nux_nid_t
 add_node (nux_scene_t *scene, nux_scene_node_t *nodes)
 {
-    nux_u32_t node = NUX_NULL;
+    nux_u32_t node = NU_NULL;
     if (scene->free)
     {
         node        = scene->free;
@@ -27,7 +27,7 @@ add_node (nux_scene_t *scene, nux_scene_node_t *nodes)
     {
         if (scene->size >= scene->capa)
         {
-            return NUX_NULL;
+            return NU_NULL;
         }
         node = scene->size++;
     }
@@ -49,7 +49,7 @@ init_scene_empty (nux_instance_t inst, nux_scene_t *scene)
     nu_memset(nodes, 0, sizeof(*nodes) * scene->capa);
     nux_nid_t root       = add_node(scene, nodes);
     nux_nid_t root_table = add_node(scene, nodes);
-    init_node(&nodes[root].node, NUX_NODE_ROOT, NUX_NULL);
+    init_node(&nodes[root].node, NUX_NODE_ROOT, NU_NULL);
 }
 
 static nux_status_t
@@ -96,12 +96,12 @@ nux_bind_scene (nux_env_t env, nux_oid_t oid)
 nux_nid_t
 nux_node_add (nux_env_t env, nux_nid_t parent)
 {
-    NU_CHECK(nux_validate_node(env, parent), return NUX_NULL);
-    NU_CHECK(env->scene, return NUX_NULL);
+    NU_CHECK(nux_validate_node(env, parent), return NU_NULL);
+    NU_CHECK(env->scene, return NU_NULL);
     nux_scene_node_t *nodes = env->nodes;
     nux_nid_t         node  = add_node(env->scene, nodes);
     nux_nid_t         table = add_node(env->scene, nodes);
-    NU_CHECK(node && table, return NUX_NULL);
+    NU_CHECK(node && table, return NU_NULL);
     init_node(&nodes[node].node, node, parent);
     nu_memset(&nodes[table].table.indices, 0, sizeof(nux_node_table_t));
     if (parent)
@@ -210,7 +210,7 @@ nux_node_set_scale (nux_env_t env, nux_nid_t nid, const nux_f32_t *scale)
 nux_u32_t
 nux_node_get_parent (nux_env_t env, nux_nid_t nid)
 {
-    NU_CHECK(nux_validate_node(env, nid), return NUX_NULL);
+    NU_CHECK(nux_validate_node(env, nid), return NU_NULL);
     return env->nodes[nid].node.parent;
 }
 
@@ -231,18 +231,18 @@ nux_scene_iter_dfs (const nux_scene_node_t *nodes,
     nu_size_t top = (*iter) - stack;
     if (top == 0)
     {
-        return NUX_NULL; // End of iteration
+        return NU_NULL; // End of iteration
     }
     --top;
     nux_nid_t current_nid = stack[top];
 
     // Insert childs
-    for (nux_nid_t child = nodes[current_nid].node.child; child != NUX_NULL;
+    for (nux_nid_t child = nodes[current_nid].node.child; child != NU_NULL;
          child           = nodes[child].node.next)
     {
         if (top >= stack_size)
         {
-            return NUX_NULL;
+            return NU_NULL;
         }
         stack[top] = child;
         ++top;

@@ -61,7 +61,6 @@ typedef enum
     NUX_BUTTON_MAX       = 10,
     NUX_AXIS_MAX         = 6,
     NUX_NODE_ROOT        = 1,
-    NUX_NULL             = 0,
     NUX_NODE_MAX         = (1 << 16) - 1,
     NUX_NAME_MAX         = 64,
 } nux_constants_t;
@@ -105,6 +104,7 @@ typedef enum
     NUX_OBJECT_MESH        = 7,
     NUX_OBJECT_SPRITESHEET = 9,
     NUX_OBJECT_SCENE       = 10,
+    NUX_OBJECT_TYPE_MAX    = 11,
 } nux_object_type_t;
 
 typedef enum

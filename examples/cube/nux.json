@@ -13,7 +13,7 @@
       "id": 3
     },
     "mindustrial": {
-      "ignore": true,
+      "ignore": false,
       "type": "scene",
       "source": "assets/industrial.glb",
       "id": 4

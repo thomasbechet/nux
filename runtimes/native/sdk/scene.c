@@ -139,7 +139,8 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t       indice_count = accessor->count;
 
     // Write header
-    nux_cart_chunk_entry_t *entry = sdk_begin_entry(proj, oid, NUX_OBJECT_MESH);
+    nux_cart_object_entry_t *entry
+        = sdk_begin_entry(proj, oid, NUX_OBJECT_MESH);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, NUX_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
@@ -284,7 +285,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
 
         // Write model
-        nux_cart_chunk_entry_t *entry
+        nux_cart_object_entry_t *entry
             = sdk_begin_entry(proj, asset->oid, NUX_OBJECT_SCENE);
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
@@ -321,7 +322,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     cgltf_primitive *primitive = node->mesh->primitives + p;
 
                     // Find mesh
-                    nux_oid_t mesh = NUX_NULL;
+                    nux_oid_t mesh = NU_NULL;
                     for (nu_size_t i = 0; i < MAX_RESOURCE; ++i)
                     {
                         if (resources[i].cgltf_ptr == primitive)
@@ -340,7 +341,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     }
 
                     // Find texture
-                    nux_oid_t texture = NUX_NULL;
+                    nux_oid_t texture = NU_NULL;
                     if (primitive->material
                         && primitive->material->has_pbr_metallic_roughness
                         && primitive->material->pbr_metallic_roughness
@@ -372,7 +373,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                texture);
 
                     // Write node
-                    NU_CHECK(cart_write_u32(proj, NUX_NULL), goto cleanup0);
+                    NU_CHECK(cart_write_u32(proj, NU_NULL), goto cleanup0);
                     NU_CHECK(cart_write_v3(proj, translation), goto cleanup0);
                     NU_CHECK(cart_write_q4(proj, rotation), goto cleanup0);
                     NU_CHECK(cart_write_v3(proj, scale), goto cleanup0);

@@ -3,7 +3,7 @@
 nux_status_t
 nux_validate_object (nux_instance_t inst, nux_oid_t oid)
 {
-    if (oid >= NUX_OBJECT_MAX || oid == NUX_NULL)
+    if (oid >= NUX_OBJECT_MAX || oid == NU_NULL)
     {
         nux_set_error(inst, NUX_ERROR_INVALID_ID);
         return NUX_FAILURE;
@@ -55,6 +55,6 @@ nux_object_set (nux_instance_t inst, nux_oid_t oid, nux_object_type_t type)
             break;
     }
     inst->objects[oid].type = type;
-    inst->objects[oid].next = NUX_NULL;
+    inst->objects[oid].next = NU_NULL;
     return inst->objects + oid;
 }
