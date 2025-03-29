@@ -46,7 +46,8 @@ struct nux_instance
 
     struct
     {
-        nu_bool_t loaded;
+        nu_u8_t *buffer;
+        nu_u32_t buffer_size;
 #ifdef NUX_BUILD_WASM3
         IM3Environment env;
         IM3Runtime     runtime;
@@ -69,9 +70,7 @@ nux_status_t nux_load_cartridge(nux_instance_t  inst,
 nux_status_t nux_wasm_init(nux_instance_t               inst,
                            const nux_instance_config_t *config);
 void         nux_wasm_free(nux_instance_t inst);
-nux_status_t nux_wasm_load(nux_instance_t  inst,
-                           const nux_u8_t *data,
-                           nux_u32_t       n);
+nux_status_t nux_wasm_load(nux_instance_t inst, nux_u8_t *buffer, nux_u32_t n);
 nux_status_t nux_wasm_start(nux_instance_t inst);
 nux_status_t nux_wasm_update(nux_instance_t inst);
 

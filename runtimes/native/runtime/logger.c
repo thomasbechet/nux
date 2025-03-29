@@ -24,5 +24,5 @@ logger_vlog (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 void
 nux_platform_log (nux_instance_t inst, const nux_c8_t *log, nux_u32_t n)
 {
-    logger_log(NU_LOG_INFO, "%*.s", n, log);
+    logger_log(NU_LOG_INFO, "%.*s", n, log);
 }

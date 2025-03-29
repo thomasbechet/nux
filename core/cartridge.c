@@ -94,9 +94,8 @@ load_wasm (nux_env_t env, const nux_cart_object_entry_t *entry)
     NU_ASSERT(buffer);
     NU_CHECK(nux_platform_read(env->inst, buffer, entry->length),
              return NUX_FAILURE);
-    // NU_CHECK(os_cpu_load_wasm(inst, buffer, entry->length), return
-    // NU_FAILURE);
-    env->inst->wasm.loaded = NU_TRUE;
+    NU_CHECK(nux_wasm_load(env->inst, buffer, entry->length),
+             return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 static nux_status_t

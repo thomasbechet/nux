@@ -44,7 +44,7 @@ include_directories(${CMAKE_SOURCE_DIR}/externals/wasm3/source)
 
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)
-add_compile_options(-DNU_STDLIB)
+# add_compile_options(-DNU_STDLIB)
 
 # Add constants
 if (NUX_BUILD_TRACE)

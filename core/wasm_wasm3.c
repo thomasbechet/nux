@@ -9,6 +9,7 @@ nux_wasm3_init (nux_instance_t inst, const nux_instance_config_t *config)
 {
     inst->wasm.env     = m3_NewEnvironment();
     inst->wasm.runtime = m3_NewRuntime(inst->wasm.env, 8192, NU_NULL);
+    inst->wasm.buffer  = NU_NULL;
 
     return NUX_SUCCESS;
 }
@@ -21,14 +22,23 @@ nux_wasm_init (nux_instance_t inst, const nux_instance_config_t *config)
 void
 nux_wasm_free (nux_instance_t inst)
 {
+    if (inst->wasm.buffer)
+    {
+        nux_platform_free(inst->userdata, inst->wasm.buffer);
+    }
     m3_FreeRuntime(inst->wasm.runtime);
     m3_FreeEnvironment(inst->wasm.env);
 }
 nux_status_t
-nux_wasm_load (nux_instance_t inst, const nux_u8_t *data, nux_u32_t n)
+nux_wasm_load (nux_instance_t inst, nux_u8_t *buffer, nux_u32_t n)
 {
-    M3Result res = m3_ParseModule(
-        inst->wasm.env, &inst->wasm.module, (const uint8_t *)data, n);
+    inst->wasm.buffer      = buffer;
+    inst->wasm.buffer_size = n;
+
+    M3Result res = m3_ParseModule(inst->wasm.env,
+                                  &inst->wasm.module,
+                                  inst->wasm.buffer,
+                                  inst->wasm.buffer_size);
     if (res)
     {
         return NUX_FAILURE;
@@ -58,8 +68,6 @@ nux_wasm_load (nux_instance_t inst, const nux_u8_t *data, nux_u32_t n)
         return NUX_FAILURE;
     }
 
-    inst->wasm.loaded = NU_TRUE;
-
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -76,7 +84,7 @@ nux_wasm_start (nux_instance_t inst)
 nux_status_t
 nux_wasm_update (nux_instance_t inst)
 {
-    if (inst->wasm.loaded)
+    if (inst->wasm.buffer)
     {
         M3Result res = m3_Call(inst->wasm.update_function, 0, NU_NULL);
         if (res)

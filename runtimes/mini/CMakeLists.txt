@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project(nux-mini VERSION 0.0.1)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # set(CMAKE_EXECUTABLE_SUFFIX ".wasm") TODO: support wasm build
 
 include(CheckCCompilerFlag)
