@@ -149,6 +149,7 @@ load_scene (nux_env_t env, const nux_cart_object_entry_t *entry)
         NU_CHECK(cart_read_u32(env->inst, &components), return NUX_FAILURE);
 
         nux_nid_t node = nux_node_add(env, parent);
+        NU_CHECK(node, return NUX_FAILURE);
         nux_node_set_translation(env, node, position.data);
         nux_node_set_rotation(env, node, rotation.data);
         nux_node_set_scale(env, node, scale.data);
@@ -158,7 +159,8 @@ load_scene (nux_env_t env, const nux_cart_object_entry_t *entry)
             nux_oid_t mesh, texture, parent;
             NU_CHECK(cart_read_u32(env->inst, &mesh), return NUX_FAILURE);
             NU_CHECK(cart_read_u32(env->inst, &texture), return NUX_FAILURE);
-            nux_model_add(env, node, mesh, texture);
+            NU_CHECK(nux_model_add(env, node, mesh, texture),
+                     return NUX_FAILURE);
         }
     }
 

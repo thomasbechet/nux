@@ -373,7 +373,8 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                texture);
 
                     // Write node
-                    NU_CHECK(cart_write_u32(proj, NU_NULL), goto cleanup0);
+                    NU_CHECK(cart_write_u32(proj, NUX_NODE_ROOT),
+                             goto cleanup0);
                     NU_CHECK(cart_write_v3(proj, translation), goto cleanup0);
                     NU_CHECK(cart_write_q4(proj, rotation), goto cleanup0);
                     NU_CHECK(cart_write_v3(proj, scale), goto cleanup0);

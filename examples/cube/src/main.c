@@ -1,5 +1,6 @@
 #include <nux.h>
 #define NU_STDLIB
+#define NU_IMPLEMENTATION
 #include <nulib/nulib.h>
 
 #define SCENE_ARIANE6    3
@@ -27,5 +28,5 @@ start (void)
 void
 update (void)
 {
-    draw_scene(SCENE_INDUSTRIAL, camera);
+    // draw_scene(SCENE_INDUSTRIAL, camera);
 }
