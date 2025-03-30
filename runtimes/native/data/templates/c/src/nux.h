@@ -71,12 +71,17 @@ typedef enum
 
 typedef enum
 {
-    ERROR_NONE                 = 0,
-    ERROR_ALLOCATION           = 1,
-    ERROR_OUT_OF_NODE          = 2,
-    ERROR_INVALID_ID           = 3,
-    ERROR_INVALID_TEXTURE_SIZE = 4,
-    ERROR_RUNTIME              = 5
+    ERROR_NONE                    = 0,
+    ERROR_OUT_OF_MEMORY           = 1,
+    ERROR_OUT_OF_NODE             = 2,
+    ERROR_OUF_OF_COMMANDS         = 3,
+    ERROR_INVALID_TEXTURE_SIZE    = 4,
+    ERROR_INVALID_OBJECT_ID       = 5,
+    ERROR_INVALID_OBJECT_TYPE     = 6,
+    ERROR_INVALID_NODE_ID         = 7,
+    ERROR_WASM_RUNTIME            = 8,
+    ERROR_INVALID_OBJECT_CREATION = 9,
+    ERROR_CART_EOF                = 10
 } error_t;
 
 typedef enum

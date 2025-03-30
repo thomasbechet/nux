@@ -275,18 +275,22 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
         // Compute required node
         nu_u32_t node_count = 0;
+        nu_u32_t slab_capa  = 3; // Null + Root (node + table)
         for (nu_size_t n = 0; n < scene->nodes_count; ++n)
         {
             cgltf_node *node = scene->nodes[n];
             if (node->mesh)
             {
                 node_count += node->mesh->primitives_count;
+                slab_capa
+                    += node->mesh->primitives_count * 3; // node + table + model
             }
         }
 
         // Write model
         nux_cart_object_entry_t *entry
             = sdk_begin_entry(proj, asset->oid, NUX_OBJECT_SCENE);
+        NU_CHECK(cart_write_u32(proj, slab_capa), goto cleanup0);
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
         // Create model

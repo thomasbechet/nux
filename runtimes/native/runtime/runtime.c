@@ -53,7 +53,13 @@ instance_init (runtime_instance_t *instance, nu_sv_t path)
         = nux_instance_load(instance->instance,
                             instance->path,
                             nu_strnlen(instance->path, NU_PATH_MAX));
-    NU_CHECK(status, goto cleanup0);
+    if (!status)
+    {
+        logger_log(NU_LOG_ERROR,
+                   "Failed to load cartridge: %s",
+                   nux_instance_get_error(instance->instance));
+        goto cleanup0;
+    }
 
     return NU_SUCCESS;
 cleanup0:

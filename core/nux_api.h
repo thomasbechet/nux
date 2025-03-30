@@ -67,12 +67,18 @@ typedef enum
 
 typedef enum
 {
-    NUX_ERROR_NONE                 = 0,
-    NUX_ERROR_ALLOCATION           = 1,
-    NUX_ERROR_OUT_OF_NODE          = 2,
-    NUX_ERROR_INVALID_ID           = 3,
-    NUX_ERROR_INVALID_TEXTURE_SIZE = 4,
-    NUX_ERROR_RUNTIME              = 5,
+    NUX_ERROR_NONE                    = 0,
+    NUX_ERROR_OUT_OF_MEMORY           = 1,
+    NUX_ERROR_OUT_OF_SCENE_SLAB             = 2,
+    NUX_ERROR_OUF_OF_COMMANDS         = 3,
+    NUX_ERROR_INVALID_TEXTURE_SIZE    = 4,
+    NUX_ERROR_INVALID_OBJECT_ID       = 5,
+    NUX_ERROR_INVALID_OBJECT_TYPE     = 6,
+    NUX_ERROR_INVALID_NODE_ID         = 7,
+    NUX_ERROR_WASM_RUNTIME            = 8,
+    NUX_ERROR_INVALID_OBJECT_CREATION = 9,
+    NUX_ERROR_CART_EOF                = 10,
+    NUX_ERROR_CART_MOUNT              = 11,
 } nux_error_t;
 
 typedef enum

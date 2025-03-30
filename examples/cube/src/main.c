@@ -16,7 +16,10 @@ start (void)
     create_scene(SCENE, 16);
     bind_scene(SCENE);
 
-    camera = node_add(NU_NULL);
+    camera = node_add(NODE_ROOT);
+    char buf[16];
+    snprintf(buf, sizeof(buf), "%d", camera);
+    trace(buf);
     camera_add(camera);
     camera_set_perspective(camera, nu_radian(60), 0.1f, 200);
     node_set_translation(camera, (const float[]) { 100, 50, 100 });
@@ -28,5 +31,5 @@ start (void)
 void
 update (void)
 {
-    // draw_scene(SCENE_INDUSTRIAL, camera);
+    draw_scene(SCENE_INDUSTRIAL, camera);
 }

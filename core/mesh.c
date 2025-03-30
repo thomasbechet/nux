@@ -7,14 +7,14 @@ nux_create_mesh (nux_env_t              env,
                  nux_primitive_t        primitive,
                  nux_vertex_attribute_t attributes)
 {
-    nux_object_t *object = nux_object_set(env->inst, oid, NUX_OBJECT_MESH);
+    nux_object_t *object = nux_object_set(env, oid, NUX_OBJECT_MESH);
     NU_CHECK(object, return NUX_FAILURE);
     object->mesh.count          = count;
     object->mesh.primitive      = primitive;
     object->mesh.attributes     = attributes;
     object->mesh.update_counter = 0;
     nu_byte_t *data             = nux_malloc(
-        env->inst, nux_vertex_memsize(attributes, count), &object->mesh.data);
+        env, nux_vertex_memsize(attributes, count), &object->mesh.data);
     NU_CHECK(data, return NUX_FAILURE);
     nu_memset(data, 0, nux_vertex_memsize(attributes, count));
     return NUX_SUCCESS;
@@ -27,8 +27,7 @@ nux_update_mesh (nux_env_t              env,
                  nux_u32_t              count,
                  const void            *p)
 {
-    nux_object_t *object
-        = nux_instance_get_object(env->inst, NUX_OBJECT_MESH, oid);
+    nux_object_t *object = nux_validate_object(env, NUX_OBJECT_MESH, oid);
     NU_CHECK(object, return);
     nu_f32_t       *ptr = nux_instance_get_memory(env->inst, object->mesh.data);
     const nu_f32_t *data = p;

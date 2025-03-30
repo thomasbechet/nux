@@ -7,14 +7,13 @@ delta_time (nux_instance_t inst)
 }
 
 void
-nux_set_error (nux_instance_t inst, nux_error_t error)
+nux_set_error (nux_env_t env, nux_error_t error)
 {
-    inst->error = error;
-    nux_c8_t  buf[128];
-    nu_size_t n
-        = nu_snprintf(buf, sizeof(buf), "ERROR: %s", nux_error_message(error))
-              .len;
-    nux_platform_log(inst, buf, n);
+    env->error = error;
+    nu_snprintf(env->error_message,
+                sizeof(env->error_message),
+                "%s",
+                nux_error_message(error));
 }
 
 nux_instance_t
@@ -96,13 +95,15 @@ nux_instance_free (nux_instance_t inst)
 void
 nux_instance_tick (nux_instance_t inst)
 {
-    nux_wasm_update(inst);
+    nux_env_t env = nux_instance_init_env(inst);
+    nux_wasm_update(env);
     inst->time += delta_time(inst);
 }
 nux_status_t
 nux_instance_load (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
 {
-    return nux_load_cartridge(inst, cart, n);
+    nux_env_t env = nux_instance_init_env(inst);
+    return nux_load_cartridge(env, cart, n);
 }
 void
 nux_instance_save_state (nux_instance_t inst, nux_u8_t *state)
@@ -124,8 +125,15 @@ nux_instance_init_env (nux_instance_t inst)
     inst->env.active_scope = NU_NULL;
     inst->env.cursor       = NU_V2U_ZEROS;
     inst->env.scene        = NU_NULL;
-    inst->env.nodes        = NU_NULL;
+    inst->env.slabs        = NU_NULL;
+    inst->env.error        = NUX_ERROR_NONE;
+    nu_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
     return &inst->env;
+}
+const nux_c8_t *
+nux_instance_get_error (nux_instance_t inst)
+{
+    return nux_error_message(inst->env.error);
 }
 const nux_c8_t *
 nux_error_message (nux_error_t error)
@@ -134,16 +142,28 @@ nux_error_message (nux_error_t error)
     {
         case NUX_ERROR_NONE:
             return "none";
-        case NUX_ERROR_ALLOCATION:
+        case NUX_ERROR_OUT_OF_MEMORY:
             return "allocation";
-        case NUX_ERROR_OUT_OF_NODE:
+        case NUX_ERROR_OUT_OF_SCENE_SLAB:
             return "out of node";
-        case NUX_ERROR_INVALID_ID:
-            return "invalid id";
+        case NUX_ERROR_OUF_OF_COMMANDS:
+            return "out of commands";
         case NUX_ERROR_INVALID_TEXTURE_SIZE:
             return "invalid texture size";
-        case NUX_ERROR_RUNTIME:
-            return "runtime error";
+        case NUX_ERROR_INVALID_OBJECT_ID:
+            return "invalid object id";
+        case NUX_ERROR_INVALID_OBJECT_TYPE:
+            return "invalid object type";
+        case NUX_ERROR_INVALID_NODE_ID:
+            return "invalid node id";
+        case NUX_ERROR_WASM_RUNTIME:
+            return "wasm runtime";
+        case NUX_ERROR_INVALID_OBJECT_CREATION:
+            return "invalid object creation";
+        case NUX_ERROR_CART_EOF:
+            return "cartridge EOF";
+        case NUX_ERROR_CART_MOUNT:
+            return "cartridge mount";
     }
     return NU_NULL;
 }

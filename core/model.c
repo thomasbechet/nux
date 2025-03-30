@@ -3,7 +3,7 @@
 nux_status_t
 nux_model_add (nux_env_t env, nux_nid_t nid, nux_oid_t mesh, nux_oid_t texture)
 {
-    NU_CHECK(nux_instance_get_object(env->inst, NUX_OBJECT_MESH, mesh),
+    NU_CHECK(nux_validate_object(env, NUX_OBJECT_MESH, mesh),
              return NUX_FAILURE);
     // texture can be null and default texture must be used by the renderer
     nux_component_t *component

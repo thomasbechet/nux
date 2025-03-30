@@ -1,16 +1,21 @@
 #include "internal.h"
 
 static nux_command_t *
-push_command (nux_instance_t inst)
+push_command (nux_env_t env)
 {
-    NU_CHECK(inst->cmds_size < inst->cmds_capa, return NU_NULL);
-    nux_command_t *cmd = inst->cmds + inst->cmds_size;
-    ++inst->cmds_size;
+    NU_ASSERT(env->inst->cmds);
+    if (env->inst->cmds_size >= env->inst->cmds_capa)
+    {
+        nux_set_error(env, NUX_ERROR_OUF_OF_COMMANDS);
+        return NU_NULL;
+    }
+    nux_command_t *cmd = env->inst->cmds + env->inst->cmds_size;
+    ++env->inst->cmds_size;
     return cmd;
 }
 
 nux_command_t *
-nux_instance_get_command_buffer (nux_instance_t inst, nux_u32_t *count)
+nux_instance_get_commands (nux_instance_t inst, nux_u32_t *count)
 {
     *count = inst->cmds_size;
     return inst->cmds;
@@ -77,7 +82,7 @@ void
 nux_push_scissor (
     nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
 {
-    nux_command_t *cmd = push_command(env->inst);
+    nux_command_t *cmd = push_command(env);
     NU_CHECK(cmd, return);
     cmd->type       = NUX_COMMAND_PUSH_SCISSOR;
     cmd->scissor[0] = x;
@@ -89,7 +94,7 @@ void
 nux_push_viewport (
     nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
 {
-    nux_command_t *cmd = push_command(env->inst);
+    nux_command_t *cmd = push_command(env);
     NU_CHECK(cmd, return);
     cmd->type        = NUX_COMMAND_PUSH_VIEWPORT;
     cmd->viewport[0] = x;
@@ -100,7 +105,7 @@ nux_push_viewport (
 void
 nux_push_cursor (nux_env_t env, nux_u32_t x, nux_u32_t y)
 {
-    nux_command_t *cmd = push_command(env->inst);
+    nux_command_t *cmd = push_command(env);
     NU_CHECK(cmd, return);
     cmd->type      = NUX_COMMAND_PUSH_CURSOR;
     cmd->cursor[0] = x;
@@ -109,7 +114,7 @@ nux_push_cursor (nux_env_t env, nux_u32_t x, nux_u32_t y)
 void
 nux_push_color (nux_env_t env, nux_u32_t color)
 {
-    nux_command_t *cmd = push_command(env->inst);
+    nux_command_t *cmd = push_command(env);
     NU_CHECK(cmd, return);
     cmd->type  = NUX_COMMAND_PUSH_COLOR;
     cmd->color = color;
@@ -117,7 +122,7 @@ nux_push_color (nux_env_t env, nux_u32_t color)
 void
 nux_clear (nux_env_t env, nux_u32_t color)
 {
-    nux_command_t *cmd = push_command(env->inst);
+    nux_command_t *cmd = push_command(env);
     NU_CHECK(cmd, return);
     cmd->type  = NUX_COMMAND_CLEAR;
     cmd->clear = color;
@@ -146,7 +151,7 @@ nux_draw_sprite (nux_env_t env, nux_oid_t spritesheet, nux_u32_t sprite)
 void
 nux_draw_scene (nux_env_t env, nux_oid_t scene, nux_u32_t camera)
 {
-    nux_command_t *cmd = push_command(env->inst);
+    nux_command_t *cmd = push_command(env);
     NU_CHECK(cmd, return);
     cmd->type              = NUX_COMMAND_DRAW_SCENE;
     cmd->draw_scene.scene  = scene;

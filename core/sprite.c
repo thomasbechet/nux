@@ -9,8 +9,7 @@ nux_create_spritesheet (nux_env_t env,
                         nux_oid_t fwidth,
                         nux_u32_t fheight)
 {
-    nux_object_t *object
-        = nux_object_set(env->inst, oid, NUX_OBJECT_SPRITESHEET);
+    nux_object_t *object = nux_object_set(env, oid, NUX_OBJECT_SPRITESHEET);
     NU_CHECK(object, return NUX_FAILURE);
     object->spritesheet.texture = texture;
     object->spritesheet.row     = row;
