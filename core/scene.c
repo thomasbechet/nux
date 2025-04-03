@@ -79,20 +79,10 @@ nux_create_scene (nux_env_t env, nux_oid_t oid, nux_u32_t slab_capa)
                         &object->scene.slabs),
              return NUX_FAILURE);
     object->scene.capa = slab_capa;
-    nux_bind_scene(env, oid);
     init_scene_empty(env);
     return NUX_SUCCESS;
 }
 
-nux_status_t
-nux_bind_scene (nux_env_t env, nux_oid_t oid)
-{
-    nux_object_t *object = nux_validate_object(env, NUX_OBJECT_SCENE, oid);
-    NU_CHECK(object, return NUX_FAILURE);
-    env->scene = &object->scene;
-    env->slabs = nux_instance_get_memory(env->inst, object->scene.slabs);
-    return NUX_SUCCESS;
-}
 static nux_nid_t
 node_add (nux_env_t env, nux_nid_t parent)
 {

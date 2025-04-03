@@ -584,7 +584,7 @@ static void
 draw_scene_instance (nux_instance_t inst, nux_oid_t scene, nu_m4_t transform)
 {
     // Acquire scene
-    nux_object_t     *object = nux_instance_get_object(inst, scene);
+    nux_object_t     *object = nux_instance_get_slab(inst, scene);
     nux_scene_slab_t *nodes
         = nux_instance_get_memory(inst, object->scene.slabs);
 
@@ -618,7 +618,7 @@ draw_scene_instance (nux_instance_t inst, nux_oid_t scene, nu_m4_t transform)
             if (texture)
             {
                 nux_texture_t *tex
-                    = &nux_instance_get_object(inst, model->model.texture)
+                    = &nux_instance_get_slab(inst, model->model.texture)
                            ->texture;
                 if (!texture->handle)
                 {
@@ -633,7 +633,7 @@ draw_scene_instance (nux_instance_t inst, nux_oid_t scene, nu_m4_t transform)
             // Update mesh
             mesh_t *renderer_mesh = &renderer.objects[model->model.mesh].mesh;
             nux_mesh_t *mesh
-                = &nux_instance_get_object(inst, model->model.mesh)->mesh;
+                = &nux_instance_get_slab(inst, model->model.mesh)->mesh;
             if (!renderer_mesh->initialized)
             {
                 init_mesh(mesh, model->model.mesh);
@@ -668,7 +668,7 @@ static void
 draw_scene (nux_instance_t inst, nux_oid_t scene, nux_nid_t camera)
 {
     // Get scene camera
-    nux_object_t     *object = nux_instance_get_object(inst, scene);
+    nux_object_t     *object = nux_instance_get_slab(inst, scene);
     nux_scene_slab_t *nodes
         = nux_instance_get_memory(inst, object->scene.slabs);
     const nux_node_t *cam_node = &nodes[camera].node;

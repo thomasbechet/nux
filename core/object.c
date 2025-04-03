@@ -17,7 +17,7 @@ nux_validate_object (nux_env_t env, nux_object_type_t type, nux_oid_t oid)
 }
 
 nux_object_t *
-nux_instance_get_object (nux_instance_t inst, nux_oid_t oid)
+nux_instance_get_slab (nux_instance_t inst, nux_oid_t oid)
 {
     return &inst->objects[oid];
 }

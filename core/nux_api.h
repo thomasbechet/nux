@@ -15,8 +15,13 @@ typedef float         nux_f32_t;
 typedef double        nux_f64_t;
 #endif
 
-typedef nux_u32_t nux_oid_t; // object id (must be 32bits)
-typedef nux_u16_t nux_nid_t; // node id (must be 16bits)
+typedef nux_u32_t nux_id_t;
+
+#define NUX_ID_MAKE(index, version) ((index) | (version << 24) & 0xFF000000)
+#define NUX_ID_INDEX(id)            ((id) & 0xFFFFFF)
+#define NUX_ID_VERSION(id)          (((id) & 0xFF000000) >> 24)
+#define NUX_ID_TYPE(id)             (((id) & 0xFF000000) >> 24)
+#define NUX_BLOCK_SIZE              64
 
 typedef struct nux_env *nux_env_t;
 
@@ -56,7 +61,6 @@ typedef enum
 
     NUX_TEXTURE_MIN_SIZE = 32,
     NUX_TEXTURE_MAX_SIZE = 256,
-    NUX_OBJECT_MAX       = 1024,
     NUX_PLAYER_MAX       = 4,
     NUX_BUTTON_MAX       = 10,
     NUX_AXIS_MAX         = 6,
@@ -69,8 +73,9 @@ typedef enum
 {
     NUX_ERROR_NONE                    = 0,
     NUX_ERROR_OUT_OF_MEMORY           = 1,
-    NUX_ERROR_OUT_OF_SCENE_SLAB             = 2,
-    NUX_ERROR_OUF_OF_COMMANDS         = 3,
+    NUX_ERROR_OUT_OF_POOL_ITEM        = 2,
+    NUX_ERROR_OUT_OF_COMMANDS         = 3,
+    NUX_ERROR_OUT_OF_OBJECTS          = 12,
     NUX_ERROR_INVALID_TEXTURE_SIZE    = 4,
     NUX_ERROR_INVALID_OBJECT_ID       = 5,
     NUX_ERROR_INVALID_OBJECT_TYPE     = 6,
@@ -100,9 +105,11 @@ typedef enum
 
 typedef enum
 {
-    NUX_OBJECT_FREE        = 0,
-    NUX_OBJECT_NULL        = 1,
-    NUX_OBJECT_SCOPE       = 2,
+    NUX_OBJECT_MEMORY,
+    NUX_OBJECT_FREE, // use for object pool
+    NUX_OBJECT_STACK,
+    NUX_OBJECT_POOL,
+
     NUX_OBJECT_WASM        = 3,
     NUX_OBJECT_RAW         = 4,
     NUX_OBJECT_CAMERA      = 5,
@@ -165,69 +172,58 @@ nux_u32_t nux_console_info(nux_env_t env, nux_console_info_t info);
 nux_f32_t nux_global_time(nux_env_t env);
 nux_f32_t nux_delta_time(nux_env_t env);
 
-nux_status_t nux_create_scope(nux_env_t env, nux_oid_t oid, nux_u32_t size);
-void         nux_rewind_scope(nux_env_t env, nux_oid_t oid);
-void         nux_set_active_scope(nux_env_t env, nux_oid_t oid);
+void nux_stack_clear(nux_env_t env, nux_id_t id);
 
-nux_status_t nux_create_texture(nux_env_t env, nux_oid_t oid, nux_u32_t size);
-void         nux_update_texture(nux_env_t   env,
-                                nux_oid_t   oid,
-                                nux_u32_t   x,
-                                nux_u32_t   y,
-                                nux_u32_t   w,
-                                nux_u32_t   h,
-                                const void *p);
+nux_id_t nux_create_texture(nux_env_t env, nux_u32_t size);
+void     nux_update_texture(nux_env_t   env,
+                            nux_id_t    id,
+                            nux_u32_t   x,
+                            nux_u32_t   y,
+                            nux_u32_t   w,
+                            nux_u32_t   h,
+                            const void *p);
 
-nux_status_t nux_create_mesh(nux_env_t              env,
-                             nux_oid_t              oid,
-                             nux_u32_t              count,
-                             nux_primitive_t        primitive,
-                             nux_vertex_attribute_t attributes);
-void         nux_update_mesh(nux_env_t              env,
-                             nux_oid_t              oid,
-                             nux_vertex_attribute_t attributes,
-                             nux_u32_t              first,
-                             nux_u32_t              count,
-                             const void            *p);
+nux_id_t nux_create_mesh(nux_env_t              env,
+                         nux_u32_t              count,
+                         nux_primitive_t        primitive,
+                         nux_vertex_attribute_t attributes);
+void     nux_update_mesh(nux_env_t              env,
+                         nux_id_t               id,
+                         nux_vertex_attribute_t attributes,
+                         nux_u32_t              first,
+                         nux_u32_t              count,
+                         const void            *p);
 
-nux_status_t nux_create_spritesheet(nux_env_t env,
-                                    nux_oid_t oid,
-                                    nux_u32_t texture,
-                                    nux_u32_t row,
-                                    nux_u32_t col,
-                                    nux_oid_t fwidth,
-                                    nux_u32_t fheight);
+nux_id_t nux_create_spritesheet(nux_env_t env,
+                                nux_id_t  texture,
+                                nux_u32_t row,
+                                nux_u32_t col,
+                                nux_u32_t fwidth,
+                                nux_u32_t fheight);
 
-nux_status_t nux_create_scene(nux_env_t env,
-                              nux_oid_t oid,
-                              nux_u32_t node_capa);
+nux_id_t nux_create_scene(nux_env_t env, nux_u32_t node_capa);
 
-nux_status_t nux_bind_scene(nux_env_t env, nux_oid_t oid);
-nux_nid_t    nux_node_add(nux_env_t env, nux_nid_t parent);
-nux_nid_t    nux_node_add_instance(nux_env_t env,
-                                   nux_nid_t parent,
-                                   nux_oid_t scene);
-void         nux_node_remove(nux_env_t env, nux_nid_t nid);
-void nux_node_get_translation(nux_env_t env, nux_nid_t nid, nux_f32_t *pos);
-void nux_node_set_translation(nux_env_t        env,
-                              nux_nid_t        nid,
-                              const nux_f32_t *pos);
-void nux_node_get_rotation(nux_env_t env, nux_nid_t nid, nux_f32_t *rot);
-void nux_node_set_rotation(nux_env_t env, nux_nid_t nid, const nux_f32_t *rot);
-void nux_node_get_scale(nux_env_t env, nux_nid_t nid, nux_f32_t *scale);
-void nux_node_set_scale(nux_env_t env, nux_nid_t nid, const nux_f32_t *scale);
-nux_u32_t nux_node_get_parent(nux_env_t env, nux_nid_t nid);
+nux_id_t nux_node_add(nux_env_t env, nux_id_t parent);
+nux_id_t nux_node_add_instance(nux_env_t env, nux_id_t parent);
+void     nux_node_remove(nux_env_t env, nux_id_t id);
+void     nux_node_get_translation(nux_env_t env, nux_id_t id, nux_f32_t *pos);
+void nux_node_set_translation(nux_env_t env, nux_id_t id, const nux_f32_t *pos);
+void nux_node_get_rotation(nux_env_t env, nux_id_t id, nux_f32_t *rot);
+void nux_node_set_rotation(nux_env_t env, nux_id_t id, const nux_f32_t *rot);
+void nux_node_get_scale(nux_env_t env, nux_id_t id, nux_f32_t *scale);
+void nux_node_set_scale(nux_env_t env, nux_id_t id, const nux_f32_t *scale);
+nux_u32_t nux_node_get_parent(nux_env_t env, nux_id_t id);
 
-nux_status_t nux_camera_add(nux_env_t env, nux_nid_t nid);
-void         nux_camera_remove(nux_env_t env, nux_nid_t nid);
+nux_status_t nux_camera_add(nux_env_t env, nux_id_t id);
+void         nux_camera_remove(nux_env_t env, nux_id_t id);
 void         nux_camera_set_perspective(
-            nux_env_t env, nux_nid_t nid, nux_f32_t fov, nux_f32_t near, nux_f32_t far);
+            nux_env_t env, nux_id_t id, nux_f32_t fov, nux_f32_t near, nux_f32_t far);
 
 nux_status_t nux_model_add(nux_env_t env,
-                           nux_nid_t nid,
-                           nux_oid_t mesh,
-                           nux_oid_t texture);
-void         nux_model_remove(nux_env_t env, nux_nid_t nid);
+                           nux_id_t  node,
+                           nux_id_t  mesh,
+                           nux_id_t  texture);
+void         nux_model_remove(nux_env_t env, nux_id_t nid);
 
 void nux_push_scissor(
     nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h);
@@ -242,13 +238,13 @@ void nux_clear(nux_env_t env, nux_u32_t color);
 void nux_draw_text(nux_env_t env, const nux_c8_t *text);
 void nux_print(nux_env_t env, const nux_c8_t *text);
 void nux_blit(nux_env_t env,
-              nux_oid_t texture,
+              nux_id_t  texture,
               nux_u32_t x,
               nux_u32_t y,
               nux_u32_t w,
               nux_u32_t h);
-void nux_draw_sprite(nux_env_t env, nux_oid_t spritesheet, nux_u32_t sprite);
-void nux_draw_scene(nux_env_t env, nux_oid_t scene, nux_nid_t camera);
+void nux_draw_sprite(nux_env_t env, nux_id_t spritesheet, nux_u32_t sprite);
+void nux_draw_scene(nux_env_t env, nux_id_t scene, nux_id_t camera);
 
 nux_u32_t nux_button(nux_env_t env, nux_u32_t player);
 nux_f32_t nux_axis(nux_env_t env, nux_u32_t player, nux_axis_t axis);
