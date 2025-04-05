@@ -104,6 +104,8 @@ typedef struct
 typedef struct
 {
     nux_u32_t size;
+    nux_id_t  data;
+    nux_u32_t update_counter;
 } nux_texture_t;
 
 typedef struct
@@ -111,6 +113,7 @@ typedef struct
     nux_u32_t              count;
     nux_primitive_t        primitive;
     nux_vertex_attribute_t attributes;
+    nux_id_t               data;
     nux_u32_t              update_counter;
 } nux_mesh_t;
 
@@ -125,29 +128,31 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t free;
-    nux_u32_t size;
-    nux_u32_t capa;
+    nux_id_t pool;
+    nux_id_t root;
 } nux_scene_t;
 
 typedef struct
 {
-    nux_u32_t flags;
-    nux_id_t  scene;
-    nux_id_t  parent;
-    nux_id_t  next;
-    nux_id_t  prev;
-    nux_id_t  child;
+    nux_u32_t flags;  // 4
+    nux_id_t  scene;  // 4
+    nux_id_t  parent; // 4
+    nux_id_t  next;   // 4
+    nux_id_t  prev;   // 4
+    nux_id_t  child;  // 4
     union
     {
         struct
         {
-            nux_u32_t mask;
-            nux_id_t  table;
+            nux_u32_t mask;  // 4
+            nux_id_t  table; // 4
         };
         nux_id_t instance;
     };
-} nux_node_t;
+    nux_f32_t translation[3]; // 12
+    nux_f32_t rotation[4];    // 16
+    nux_f32_t scale[3;       // 
+} nux_node_t;                 // 32
 
 typedef struct
 {
@@ -177,8 +182,18 @@ typedef struct
 
 typedef struct
 {
-    nux_id_t indices[32]; // 64 bytes
+    nux_id_t indices[16]; // 64 bytes
 } nux_node_table_t;
+
+typedef union
+{
+    nux_node_t       node;
+    nux_node_table_t node_table;
+    nux_camera_t     camera;
+    nux_model_t      model;
+    nux_light_t      light;
+    nux_transform_t  transform;
+} nux_scene_object_t;
 
 typedef struct
 {
@@ -243,9 +258,11 @@ NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t inst);
 //////////////////////////////////////////////////////////////////////////
 
 NUX_API nux_env_t       nux_instance_init_env(nux_instance_t inst);
-NUX_API nux_block_t    *nux_instance_get_slab(nux_instance_t inst, nux_id_t id);
 NUX_API nux_command_t  *nux_instance_get_commands(nux_instance_t inst,
                                                   nux_u32_t     *count);
+NUX_API void           *nux_instance_get_object(nux_instance_t    inst,
+                                                nux_id_t          id,
+                                                nux_object_type_t type);
 NUX_API nux_u32_t       nux_texture_memsize(nux_u32_t size);
 NUX_API nux_u32_t       nux_vertex_memsize(nux_vertex_attribute_t attributes,
                                            nux_u32_t              count);

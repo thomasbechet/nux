@@ -121,12 +121,9 @@ nux_instance_get_userdata (nux_instance_t inst)
 nux_env_t
 nux_instance_init_env (nux_instance_t inst)
 {
-    inst->env.inst         = inst;
-    inst->env.active_scope = NU_NULL;
-    inst->env.cursor       = NU_V2U_ZEROS;
-    inst->env.scene        = NU_NULL;
-    inst->env.slabs        = NU_NULL;
-    inst->env.error        = NUX_ERROR_NONE;
+    inst->env.inst   = inst;
+    inst->env.cursor = NU_V2U_ZEROS;
+    inst->env.error  = NUX_ERROR_NONE;
     nu_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
     return &inst->env;
 }
@@ -144,18 +141,12 @@ nux_error_message (nux_error_t error)
             return "none";
         case NUX_ERROR_OUT_OF_MEMORY:
             return "allocation";
-        case NUX_ERROR_OUT_OF_SCENE_SLAB:
-            return "out of node";
-        case NUX_ERROR_OUF_OF_COMMANDS:
-            return "out of commands";
         case NUX_ERROR_INVALID_TEXTURE_SIZE:
             return "invalid texture size";
         case NUX_ERROR_INVALID_OBJECT_ID:
             return "invalid object id";
         case NUX_ERROR_INVALID_OBJECT_TYPE:
             return "invalid object type";
-        case NUX_ERROR_INVALID_NODE_ID:
-            return "invalid node id";
         case NUX_ERROR_WASM_RUNTIME:
             return "wasm runtime";
         case NUX_ERROR_INVALID_OBJECT_CREATION:
@@ -164,6 +155,12 @@ nux_error_message (nux_error_t error)
             return "cartridge EOF";
         case NUX_ERROR_CART_MOUNT:
             return "cartridge mount";
+        case NUX_ERROR_OUT_OF_POOL_ITEM:
+            return "out of pool item";
+        case NUX_ERROR_OUT_OF_COMMANDS:
+            return "out of commands";
+        case NUX_ERROR_OUT_OF_OBJECTS:
+            return "out of objects";
     }
     return NU_NULL;
 }

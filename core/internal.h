@@ -65,7 +65,6 @@ struct nux_instance
     } wasm;
 };
 
-nux_id_t nux_stack_new(nux_env_t env, nux_id_t allocator, nux_u32_t size);
 nux_id_t nux_stack_push(nux_env_t         env,
                         nux_id_t          stack,
                         nux_object_type_t type,
@@ -74,13 +73,10 @@ nux_id_t nux_pool_new(nux_env_t env,
                       nux_id_t  allocator,
                       nux_u32_t object_size,
                       nux_u32_t object_capa);
-nux_id_t nux_pool_add(nux_env_t         env,
-                      nux_id_t          pool,
-                      nux_object_type_t type,
-                      nux_u32_t         size);
+nux_id_t nux_pool_add(nux_env_t env, nux_id_t pool, nux_object_type_t type);
 void     nux_pool_remove(nux_env_t env, nux_id_t pool, nux_id_t id);
-void    *nux_get_object(nux_env_t env, nux_id_t id, nux_object_type_t type);
-void    *nux_get_object_unchecked(nux_env_t env, nux_id_t id);
+void    *nux_object_get(nux_env_t env, nux_id_t id, nux_object_type_t type);
+void    *nux_object_get_unchecked(nux_env_t env, nux_id_t id);
 nux_object_type_t nux_object_type(nux_env_t env, nux_id_t id);
 
 void nux_set_error(nux_env_t env, nux_error_t error);
@@ -96,14 +92,11 @@ nux_status_t nux_wasm_load(nux_env_t env, nux_u8_t *buffer, nux_u32_t n);
 nux_status_t nux_wasm_start(nux_env_t env);
 nux_status_t nux_wasm_update(nux_env_t env);
 
-nux_component_t *nux_node_add_component(nux_env_t            env,
-                                        nux_nid_t            node,
-                                        nux_component_type_t component);
-nux_status_t     nux_node_remove_component(nux_env_t            env,
-                                           nux_nid_t            node,
-                                           nux_component_type_t component);
-nux_component_t *nux_node_get_component(nux_env_t            env,
-                                        nux_nid_t            node,
-                                        nux_component_type_t component);
+nux_id_t     nux_node_add_component(nux_env_t            env,
+                                    nux_id_t             node,
+                                    nux_component_type_t component);
+nux_status_t nux_node_remove_component(nux_env_t            env,
+                                       nux_id_t             node,
+                                       nux_component_type_t component);
 
 #endif

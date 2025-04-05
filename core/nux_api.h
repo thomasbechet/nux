@@ -64,22 +64,21 @@ typedef enum
     NUX_PLAYER_MAX       = 4,
     NUX_BUTTON_MAX       = 10,
     NUX_AXIS_MAX         = 6,
-    NUX_NODE_ROOT        = 1,
     NUX_NODE_MAX         = (1 << 16) - 1,
     NUX_NAME_MAX         = 64,
 } nux_constants_t;
 
 typedef enum
 {
-    NUX_ERROR_NONE                    = 0,
-    NUX_ERROR_OUT_OF_MEMORY           = 1,
-    NUX_ERROR_OUT_OF_POOL_ITEM        = 2,
-    NUX_ERROR_OUT_OF_COMMANDS         = 3,
-    NUX_ERROR_OUT_OF_OBJECTS          = 12,
-    NUX_ERROR_INVALID_TEXTURE_SIZE    = 4,
-    NUX_ERROR_INVALID_OBJECT_ID       = 5,
-    NUX_ERROR_INVALID_OBJECT_TYPE     = 6,
-    NUX_ERROR_INVALID_NODE_ID         = 7,
+    NUX_ERROR_NONE                 = 0,
+    NUX_ERROR_OUT_OF_MEMORY        = 1,
+    NUX_ERROR_OUT_OF_POOL_ITEM     = 2,
+    NUX_ERROR_OUT_OF_COMMANDS      = 3,
+    NUX_ERROR_OUT_OF_OBJECTS       = 12,
+    NUX_ERROR_INVALID_TEXTURE_SIZE = 4,
+    NUX_ERROR_INVALID_OBJECT_ID    = 5,
+    NUX_ERROR_INVALID_OBJECT_TYPE  = 6,
+    NUX_ERROR_INVALID_PARENT_NODE,
     NUX_ERROR_WASM_RUNTIME            = 8,
     NUX_ERROR_INVALID_OBJECT_CREATION = 9,
     NUX_ERROR_CART_EOF                = 10,
@@ -110,14 +109,23 @@ typedef enum
     NUX_OBJECT_STACK,
     NUX_OBJECT_POOL,
 
-    NUX_OBJECT_WASM        = 3,
-    NUX_OBJECT_RAW         = 4,
-    NUX_OBJECT_CAMERA      = 5,
-    NUX_OBJECT_TEXTURE     = 6,
-    NUX_OBJECT_MESH        = 7,
-    NUX_OBJECT_SPRITESHEET = 9,
-    NUX_OBJECT_SCENE       = 10,
-    NUX_OBJECT_TYPE_MAX    = 11,
+    NUX_OBJECT_WASM,
+    NUX_OBJECT_RAW,
+    NUX_OBJECT_TEXTURE,
+    NUX_OBJECT_MESH,
+    NUX_OBJECT_SPRITESHEET,
+    NUX_OBJECT_SCENE,
+
+    NUX_OBJECT_NODE,
+    NUX_OBJECT_NODE_TABLE,
+    NUX_OBJECT_CAMERA,
+    NUX_OBJECT_MODEL,
+    NUX_OBJECT_LIGHT,
+    NUX_OBJECT_VOLUME,
+    NUX_OBJECT_EMITTER,
+    NUX_OBJECT_SOUND,
+
+    NUX_OBJECT_TYPE_MAX = 11,
 } nux_object_type_t;
 
 typedef enum
@@ -172,9 +180,9 @@ nux_u32_t nux_console_info(nux_env_t env, nux_console_info_t info);
 nux_f32_t nux_global_time(nux_env_t env);
 nux_f32_t nux_delta_time(nux_env_t env);
 
-void nux_stack_clear(nux_env_t env, nux_id_t id);
+nux_id_t nux_stack_new(nux_env_t env, nux_id_t allocator, nux_u32_t size);
 
-nux_id_t nux_create_texture(nux_env_t env, nux_u32_t size);
+nux_id_t nux_create_texture(nux_env_t env, nux_id_t stack, nux_u32_t size);
 void     nux_update_texture(nux_env_t   env,
                             nux_id_t    id,
                             nux_u32_t   x,
@@ -184,6 +192,7 @@ void     nux_update_texture(nux_env_t   env,
                             const void *p);
 
 nux_id_t nux_create_mesh(nux_env_t              env,
+                         nux_id_t               stack,
                          nux_u32_t              count,
                          nux_primitive_t        primitive,
                          nux_vertex_attribute_t attributes);
@@ -195,16 +204,20 @@ void     nux_update_mesh(nux_env_t              env,
                          const void            *p);
 
 nux_id_t nux_create_spritesheet(nux_env_t env,
+                                nux_id_t  stack,
                                 nux_id_t  texture,
                                 nux_u32_t row,
                                 nux_u32_t col,
                                 nux_u32_t fwidth,
                                 nux_u32_t fheight);
 
-nux_id_t nux_create_scene(nux_env_t env, nux_u32_t node_capa);
-
-nux_id_t nux_node_add(nux_env_t env, nux_id_t parent);
-nux_id_t nux_node_add_instance(nux_env_t env, nux_id_t parent);
+nux_id_t nux_create_scene(nux_env_t env, nux_id_t stack, nux_u32_t object_capa);
+nux_id_t nux_node_root(nux_env_t env, nux_id_t scene);
+nux_id_t nux_node_add(nux_env_t env, nux_id_t scene, nux_id_t parent);
+nux_id_t nux_node_add_instance(nux_env_t env,
+                               nux_id_t  scene,
+                               nux_id_t  parent,
+                               nux_id_t  instance);
 void     nux_node_remove(nux_env_t env, nux_id_t id);
 void     nux_node_get_translation(nux_env_t env, nux_id_t id, nux_f32_t *pos);
 void nux_node_set_translation(nux_env_t env, nux_id_t id, const nux_f32_t *pos);

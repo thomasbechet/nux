@@ -57,7 +57,7 @@ allocator_add (nux_env_t         env,
                 id = nux_stack_push(env, allocator, type, size);
                 break;
             case NUX_OBJECT_POOL:
-                id = nux_pool_add(env, allocator, type, size);
+                id = nux_pool_add(env, allocator, type);
                 break;
             default: {
                 nux_set_error(env, NUX_ERROR_INVALID_OBJECT_TYPE);
@@ -84,7 +84,7 @@ nux_stack_new (nux_env_t env, nux_id_t allocator, nux_u32_t size)
     nux_id_t  id
         = allocator_add(env, allocator, NUX_OBJECT_STACK, sizeof(nux_stack_t));
     NU_CHECK(id, return NU_NULL);
-    nux_stack_t *stack = nux_get_object_unchecked(env, id);
+    nux_stack_t *stack = nux_object_get_unchecked(env, id);
     stack->blocks_capa = block_count;
     stack->blocks_size = 0;
     stack->blocks      = allocator_add(env, allocator, NUX_OBJECT_MEMORY, size);
@@ -99,7 +99,7 @@ nux_stack_push (nux_env_t         env,
                 nux_u32_t         size)
 {
     nux_u32_t    block_count = MEM2BLOCK(size);
-    nux_stack_t *s           = nux_get_object(env, stack, NUX_OBJECT_STACK);
+    nux_stack_t *s           = nux_object_get(env, stack, NUX_OBJECT_STACK);
     NU_CHECK(s, return NU_NULL);
     if (s->blocks_size + block_count >= s->blocks_capa)
     {
@@ -121,7 +121,7 @@ nux_pool_new (nux_env_t env,
     nux_id_t id
         = allocator_add(env, allocator, NUX_OBJECT_POOL, sizeof(nux_pool_t));
     NU_CHECK(id, return NU_NULL);
-    nux_pool_t *pool = nux_get_object_unchecked(env, id);
+    nux_pool_t *pool = nux_object_get_unchecked(env, id);
     pool->items_capa = item_capa;
     pool->blocks     = allocator_add(
         env, allocator, NUX_OBJECT_MEMORY, MEM2BLOCK(item_size) * item_capa);
@@ -131,19 +131,16 @@ nux_pool_new (nux_env_t env,
     return id;
 }
 nux_id_t
-nux_pool_add (nux_env_t         env,
-              nux_id_t          pool,
-              nux_object_type_t type,
-              nux_u32_t         size)
+nux_pool_add (nux_env_t env, nux_id_t pool, nux_object_type_t type)
 {
-    nux_pool_t *p = nux_get_object(env, pool, NUX_OBJECT_POOL);
+    nux_pool_t *p = nux_object_get(env, pool, NUX_OBJECT_POOL);
     NU_CHECK(p, return NU_NULL);
     nux_u32_t block_index = NU_NULL;
     if (p->free_block)
     {
         block_index = p->free_block;
         p->free_block
-            = *((nux_u32_t *)nux_get_object_unchecked(env, p->free_block));
+            = *((nux_u32_t *)nux_object_get_unchecked(env, p->free_block));
     }
     if (!block_index)
     {
@@ -159,14 +156,14 @@ nux_pool_add (nux_env_t         env,
 void
 nux_pool_remove (nux_env_t env, nux_id_t pool, nux_id_t id)
 {
-    nux_pool_t *p = nux_get_object(env, pool, NUX_OBJECT_POOL);
+    nux_pool_t *p = nux_object_get(env, pool, NUX_OBJECT_POOL);
     NU_CHECK(p, return);
-    nux_u32_t *free_item = nux_get_object_unchecked(env, id);
+    nux_u32_t *free_item = nux_object_get_unchecked(env, id);
     *free_item           = p->free_block;
     p->free_block        = get_object_block_index(env, id);
 }
 void *
-nux_get_object (nux_env_t env, nux_id_t id, nux_object_type_t type)
+nux_object_get (nux_env_t env, nux_id_t id, nux_object_type_t type)
 {
     nux_u32_t index   = NUX_ID_INDEX(id);
     nux_u32_t version = NUX_ID_VERSION(id);
@@ -177,7 +174,7 @@ nux_get_object (nux_env_t env, nux_id_t id, nux_object_type_t type)
     return env->inst->memory + index * NUX_BLOCK_SIZE;
 }
 void *
-nux_get_object_unchecked (nux_env_t env, nux_id_t id)
+nux_object_get_unchecked (nux_env_t env, nux_id_t id)
 {
     nux_u32_t           index = NUX_ID_INDEX(id);
     nux_object_entry_t *entry = env->inst->objects + index;

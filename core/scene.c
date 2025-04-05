@@ -2,192 +2,148 @@
 
 #define COMPONENT_TO_INDEX(component) nu_log2(component)
 
-static void
-init_node (nux_node_t *node, nux_nid_t nid, nux_nid_t parent)
-{
-    node->mask   = 0;
-    node->flags  = 0;
-    node->table  = 0;
-    node->parent = parent;
-    node->next   = NU_NULL;
-    node->prev   = NU_NULL;
-    node->child  = NU_NULL;
-    node->nid    = nid;
-}
-static nux_nid_t
-add_scene_slab (nux_env_t env)
-{
-    nux_u32_t slab = NU_NULL;
-    if (env->scene->free)
-    {
-        slab             = env->scene->free;
-        env->scene->free = env->slabs[slab].free;
-    }
-    if (!slab)
-    {
-        if (env->scene->size >= env->scene->capa)
-        {
-            nux_set_error(env, NUX_ERROR_OUT_OF_SCENE_SLAB);
-            return NU_NULL;
-        }
-        slab = env->scene->size++;
-    }
-    return slab;
-}
-static void
-remove_scene_slab (nux_scene_t *scene, nux_scene_slab_t *slabs, nux_nid_t slab)
-{
-    NU_ASSERT(slab);
-    slabs[slab].free = scene->free;
-    scene->free      = slab;
-}
-static void
-init_scene_empty (nux_env_t env)
-{
-    env->scene->size = 1; // first index reserved for NUX_NODE_NULL
-    env->scene->free = 0;
-    nu_memset(env->slabs, 0, sizeof(*env->slabs) * env->scene->capa);
-    nux_nid_t root       = add_scene_slab(env);
-    nux_nid_t root_table = add_scene_slab(env);
-    init_node(&env->slabs[root].node, NUX_NODE_ROOT, NU_NULL);
-}
+static nux_object_type_t component_index_to_object_type[]
+    = { NUX_OBJECT_CAMERA, NUX_OBJECT_MODEL };
 
-static nux_status_t
-nux_validate_node (nux_env_t env, nux_nid_t nid)
+static nux_id_t
+node_add (nux_env_t env, nux_id_t scene, nux_id_t parent)
 {
-    if (nid >= env->scene->size || nid < NUX_NODE_ROOT
-        || env->slabs[nid].node.nid != nid)
-    {
-        nux_set_error(env, NUX_ERROR_INVALID_NODE_ID);
-        return NUX_FAILURE;
-    }
-    return NUX_SUCCESS;
-}
+    nux_scene_t *s = nux_object_get(env, scene, NUX_OBJECT_SCENE);
+    NU_CHECK(s, return NU_NULL);
 
-nux_status_t
-nux_create_scene (nux_env_t env, nux_oid_t oid, nux_u32_t slab_capa)
-{
-    nux_object_t *object = nux_object_set(env, oid, NUX_OBJECT_SCENE);
-    NU_CHECK(object, return NUX_FAILURE);
-    if (slab_capa < NUX_NODE_ROOT)
-    {
-        nux_set_error(env, NUX_ERROR_OUT_OF_SCENE_SLAB);
-        return NUX_FAILURE;
-    }
-    NU_CHECK(nux_malloc(env,
-                        sizeof(nux_scene_slab_t) * slab_capa,
-                        &object->scene.slabs),
-             return NUX_FAILURE);
-    object->scene.capa = slab_capa;
-    init_scene_empty(env);
-    return NUX_SUCCESS;
-}
+    nux_id_t id = nux_pool_add(env, s->pool, NUX_OBJECT_NODE);
+    NU_CHECK(id, return NU_NULL);
+    nux_node_t *n = nux_object_get_unchecked(env, id);
+    n->mask       = 0;
+    n->flags      = 0;
+    n->table      = 0;
+    n->parent     = parent;
+    n->next       = NU_NULL;
+    n->prev       = NU_NULL;
+    n->child      = NU_NULL;
 
-static nux_nid_t
-node_add (nux_env_t env, nux_nid_t parent)
-{
-    nux_nid_t node = add_scene_slab(env);
-    NU_CHECK(node, return NU_NULL);
-    init_node(&env->slabs[node].node, node, parent);
+    n->table = nux_pool_add(env, s->pool, NUX_OBJECT_NODE_TABLE);
+    NU_CHECK(n->table, return NU_NULL);
 
     if (parent)
     {
-        nux_nid_t child = env->slabs[parent].node.child;
+        nux_node_t *p = nux_object_get(env, parent, NUX_OBJECT_NODE);
+        NU_CHECK(s, return NU_NULL);
+        if (p->scene != scene)
+        {
+            nux_set_error(env, NUX_ERROR_INVALID_PARENT_NODE);
+            return NU_NULL;
+        }
+        nux_id_t child = p->child;
         if (child)
         {
-            env->slabs[child].node.prev = node;
+            nux_node_t *nc = nux_object_get_unchecked(env, child);
+            nc->prev       = id;
         }
-        env->slabs[node].node.next    = child;
-        env->slabs[parent].node.child = node;
+        n->next  = child;
+        p->child = id;
     }
-    return node;
-}
-nux_nid_t
-nux_node_add (nux_env_t env, nux_nid_t parent)
-{
-    NU_CHECK(nux_validate_node(env, parent), return NU_NULL);
-    NU_CHECK(env->scene, return NU_NULL);
-    nux_scene_slab_t *slabs = env->slabs;
-    nux_nid_t         node  = node_add(env, parent);
-    NU_CHECK(node, return NU_NULL);
 
-    nux_nid_t table = add_scene_slab(env);
-    NU_CHECK(table, return NU_NULL);
-    nu_memset(&slabs[table].table.indices, 0, sizeof(nux_node_table_t));
-    slabs[node].node.table = table;
-    slabs[node].node.mask  = 0;
-
-    return node;
+    return id;
 }
-nux_nid_t
-nux_node_add_instance (nux_env_t env, nux_nid_t parent, nux_oid_t scene)
+
+nux_id_t
+nux_create_scene (nux_env_t env, nux_id_t stack, nux_u32_t object_capa)
 {
-    NU_CHECK(nux_validate_node(env, parent), return NU_NULL);
-    NU_CHECK(nux_validate_object(env, NUX_OBJECT_SCENE, scene), return NU_NULL);
-    NU_CHECK(env->scene, return NU_NULL);
-    nux_scene_slab_t *slabs   = env->slabs;
-    nux_nid_t         node    = node_add(env, parent);
-    slabs[node].node.instance = scene;
-    slabs[node].node.flags |= NUX_NODE_INSTANCED;
-    return node;
+    nux_id_t id
+        = nux_stack_push(env, stack, NUX_OBJECT_SCENE, sizeof(nux_scene_t));
+    NU_CHECK(id, return NU_NULL);
+    nux_scene_t *scene = nux_object_get_unchecked(env, id);
+    scene->pool
+        = nux_pool_new(env, stack, sizeof(nux_scene_object_t), object_capa);
+    NU_CHECK(scene->pool, return NU_NULL);
+
+    scene->root = node_add(env, id, NU_NULL);
+    NU_CHECK(scene->root, return NU_NULL);
+
+    return id;
+}
+nux_id_t
+nux_node_root (nux_env_t env, nux_id_t scene)
+{
+    nux_scene_t *s = nux_object_get(env, scene, NUX_OBJECT_SCENE);
+    NU_CHECK(s, return NU_NULL);
+    return s->root;
+}
+
+nux_id_t
+nux_node_add (nux_env_t env, nux_id_t scene, nux_id_t parent)
+{
+    return node_add(env, scene, parent);
+}
+nux_id_t
+nux_node_add_instance (nux_env_t env,
+                       nux_id_t  scene,
+                       nux_id_t  parent,
+                       nux_id_t  instance)
+{
+    nux_id_t    id = node_add(env, scene, parent);
+    nux_node_t *n  = nux_object_get_unchecked(env, id);
+    n->flags |= NUX_NODE_INSTANCED;
+    n->instance = scene;
+    return id;
 }
 void
-nux_node_remove (nux_env_t env, nux_nid_t nid)
+nux_node_remove (nux_env_t env, nux_id_t id)
 {
-    NU_CHECK(nux_validate_node(env, nid) && nid != NUX_NODE_ROOT, return);
-    remove_scene_slab(env->scene, env->slabs, env->slabs[nid].node.table);
-    remove_scene_slab(env->scene, env->slabs, nid);
+    nux_node_t *n = nux_object_get(env, id, NUX_OBJECT_NODE);
+    NU_CHECK(n, return);
+    nux_scene_t *s = nux_object_get_unchecked(env, n->scene);
+    nux_pool_remove(env, s->pool, n->table);
+    nux_pool_remove(env, s->pool, id);
 }
 
-nux_component_t *
+nux_id_t
 nux_node_add_component (nux_env_t            env,
-                        nux_nid_t            node,
+                        nux_id_t             node,
                         nux_component_type_t component)
 {
-    NU_CHECK(nux_validate_node(env, node), return NU_NULL);
-    if (env->slabs[node].node.mask & component)
+    nux_node_t *n = nux_object_get(env, node, NUX_OBJECT_NODE);
+    NU_CHECK(n, return NU_NULL);
+    if (n->mask & component)
     {
         nux_node_remove_component(env, node, component);
     }
-    nux_nid_t comp_node = add_scene_slab(env);
-    NU_CHECK(comp_node, return NU_NULL);
-    env->slabs[node].node.mask |= component;
-    nux_node_table_t *table = &env->slabs[env->slabs[node].node.table].table;
-    table->indices[COMPONENT_TO_INDEX(component)] = comp_node;
+    nux_scene_t *s     = nux_object_get_unchecked(env, n->scene);
+    nux_u32_t    index = COMPONENT_TO_INDEX(component);
+    nux_id_t     id
+        = nux_pool_add(env, s->pool, component_index_to_object_type[index]);
+    NU_CHECK(id, return NU_NULL);
+    n->mask |= component;
+    nux_node_table_t *table = nux_object_get_unchecked(env, n->table);
+    table->indices[index]   = id;
     // TODO: init component ?
-    return &env->slabs[comp_node].component;
+    return component;
 }
 nux_status_t
 nux_node_remove_component (nux_env_t            env,
-                           nux_nid_t            node,
+                           nux_id_t             node,
                            nux_component_type_t component)
 {
-    NU_CHECK(env->scene, return NUX_FAILURE);
-    NU_CHECK(nux_validate_node(env, node), return NUX_FAILURE);
-    if (env->slabs[node].node.mask & component)
+    nux_node_t *n = nux_object_get(env, node, NUX_OBJECT_NODE);
+    NU_CHECK(n, return NUX_FAILURE);
+    if (n->mask & component)
     {
-        nux_node_table_t *table
-            = &env->slabs[env->slabs[node].node.table].table;
-        nu_size_t comp_index = COMPONENT_TO_INDEX(component);
+        nux_u32_t         index = COMPONENT_TO_INDEX(component);
+        nux_node_table_t *table = nux_object_get_unchecked(env, n->table);
+        nux_scene_t      *s     = nux_object_get_unchecked(env, n->scene);
         // TODO: uninit component
-        remove_scene_slab(env->scene, env->slabs, table->indices[comp_index]);
-        table->indices[comp_index] = 0;
+        nux_pool_remove(env, s->pool, table->indices[index]);
+        table->indices[index] = NU_NULL;
     }
     return NUX_SUCCESS;
 }
-nux_component_t *
-nux_node_get_component (nux_env_t            env,
-                        nux_nid_t            node,
-                        nux_component_type_t component)
-{
-    NU_CHECK(nux_validate_node(env, node), return NU_NULL);
-    return nux_scene_get_component(env->slabs, node, component);
-}
 void
-nux_node_get_translation (nux_env_t env, nux_nid_t nid, nux_f32_t *pos)
+nux_node_get_translation (nux_env_t env, nux_id_t node, nux_f32_t *pos)
 {
-    NU_CHECK(nux_validate_node(env, nid), return);
-    nu_memcpy(pos, env->slabs[nid].node.translation, sizeof(*pos) * NU_V3_SIZE);
+    nux_node_t *n = nux_object_get(env, node, NUX_OBJECT_NODE);
+    NU_CHECK(n, return);
+    nu_memcpy(pos, node->translation, sizeof(*pos) * NU_V3_SIZE);
 }
 void
 nux_node_set_translation (nux_env_t env, nux_nid_t nid, const nux_f32_t *pos)
@@ -264,15 +220,16 @@ nux_scene_iter_dfs (const nux_scene_slab_t *slabs,
     // Process current node
     return current_nid;
 }
-nux_component_t *
-nux_scene_get_component (nux_scene_slab_t    *slabs,
-                         nux_nid_t            node,
-                         nux_component_type_t component)
-{
-    if (slabs[node].node.mask & component)
-    {
-        const nux_node_table_t *table = &slabs[node].table;
-        return &slabs[table->indices[COMPONENT_TO_INDEX(component)]].component;
-    }
-    return NU_NULL;
-}
+// void *
+// nux_scene_get_component (nux_scene_slab_t    *slabs,
+//                          nux_nid_t            node,
+//                          nux_component_type_t component)
+// {
+//     if (slabs[node].node.mask & component)
+//     {
+//         const nux_node_table_t *table = &slabs[node].table;
+//         return
+//         &slabs[table->indices[COMPONENT_TO_INDEX(component)]].component;
+//     }
+//     return NU_NULL;
+// }

@@ -1,20 +1,22 @@
 #include "internal.h"
 
-nux_status_t
+nux_id_t
 nux_create_spritesheet (nux_env_t env,
-                        nux_oid_t oid,
+                        nux_id_t  stack,
                         nux_u32_t texture,
                         nux_u32_t row,
                         nux_u32_t col,
-                        nux_oid_t fwidth,
+                        nux_u32_t fwidth,
                         nux_u32_t fheight)
 {
-    nux_object_t *object = nux_object_set(env, oid, NUX_OBJECT_SPRITESHEET);
-    NU_CHECK(object, return NUX_FAILURE);
-    object->spritesheet.texture = texture;
-    object->spritesheet.row     = row;
-    object->spritesheet.col     = col;
-    object->spritesheet.fwidth  = fwidth;
-    object->spritesheet.fheight = fheight;
+    nux_id_t id = nux_stack_push(
+        env, stack, NUX_OBJECT_SPRITESHEET, sizeof(nux_spritesheet_t));
+    NU_CHECK(id, return NU_NULL);
+    nux_spritesheet_t *spritesheet = nux_object_get_unchecked(env, id);
+    spritesheet->texture           = texture;
+    spritesheet->row               = row;
+    spritesheet->col               = col;
+    spritesheet->fwidth            = fwidth;
+    spritesheet->fheight           = fheight;
     return NUX_SUCCESS;
 }
