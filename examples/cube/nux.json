@@ -4,19 +4,16 @@
   "assets": {
     "w_main": {
       "type": "wasm",
-      "source": "build/cart.wasm",
-      "id": 1
+      "source": "build/cart.wasm"
     },
     "mariane6": {
       "type": "scene",
-      "source": "assets/ariane6.glb",
-      "id": 3
+      "source": "assets/ariane6.glb"
     },
     "mindustrial": {
       "ignore": false,
       "type": "scene",
-      "source": "assets/industrial.glb",
-      "id": 4
+      "source": "assets/industrial.glb"
     }
   }
 }

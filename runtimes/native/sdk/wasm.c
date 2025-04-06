@@ -29,7 +29,7 @@ sdk_wasm_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     NU_ASSERT(nu_load_bytes(nu_sv(asset->source, NU_PATH_MAX), buffer, &size));
 
     // Write cart
-    nux_cart_object_entry_t *entry
+    nux_cart_entry_t *entry
         = sdk_begin_entry(proj, asset->oid, NUX_OBJECT_WASM);
     status = cart_write(proj, buffer, size);
     NU_CHECK(status, goto cleanup0);

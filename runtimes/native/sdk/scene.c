@@ -139,7 +139,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t       indice_count = accessor->count;
 
     // Write header
-    nux_cart_object_entry_t *entry
+    nux_cart_entry_t *entry
         = sdk_begin_entry(proj, oid, NUX_OBJECT_MESH);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, NUX_PRIMITIVE_TRIANGLES), return NU_FAILURE);
@@ -288,7 +288,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
 
         // Write model
-        nux_cart_object_entry_t *entry
+        nux_cart_entry_t *entry
             = sdk_begin_entry(proj, asset->oid, NUX_OBJECT_SCENE);
         NU_CHECK(cart_write_u32(proj, slab_capa), goto cleanup0);
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
@@ -382,7 +382,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     NU_CHECK(cart_write_v3(proj, translation), goto cleanup0);
                     NU_CHECK(cart_write_q4(proj, rotation), goto cleanup0);
                     NU_CHECK(cart_write_v3(proj, scale), goto cleanup0);
-                    NU_CHECK(cart_write_u32(proj, NUX_COMPONENT_MODEL),
+                    NU_CHECK(cart_write_u32(proj, NUX_NODE_MODEL),
                              goto cleanup0);
 
                     // Write model

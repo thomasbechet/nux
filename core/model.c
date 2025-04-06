@@ -1,21 +1,18 @@
 #include "internal.h"
 
 nux_status_t
-nux_model_add (nux_env_t env, nux_nid_t nid, nux_oid_t mesh, nux_oid_t texture)
+nux_create_model (nux_env_t env,
+                  nux_id_t  parent,
+                  nux_id_t  mesh,
+                  nux_id_t  texture)
 {
-    NU_CHECK(nux_validate_object(env, NUX_OBJECT_MESH, mesh),
-             return NUX_FAILURE);
+    nux_id_t id
+        = nux_create_node_with_object(env, parent, NUX_OBJECT_NODE_MODEL);
+    NU_CHECK(id, return NU_NULL);
+    nux_model_t *m = nux_object_get_unchecked(env, nux_node_object(env, id));
     // texture can be null and default texture must be used by the renderer
-    nux_component_t *component
-        = nux_node_add_component(env, nid, NUX_COMPONENT_MODEL);
-    NU_CHECK(component, return NUX_FAILURE);
-    component->model.mesh    = mesh;
-    component->model.texture = texture;
-    component->model.visible = NU_TRUE;
-    return NUX_SUCCESS;
-}
-void
-nux_model_remove (nux_env_t env, nux_nid_t nid)
-{
-    nux_node_remove_component(env, nid, NUX_COMPONENT_MODEL);
+    m->mesh    = mesh;
+    m->texture = texture;
+    m->visible = NU_TRUE;
+    return id;
 }

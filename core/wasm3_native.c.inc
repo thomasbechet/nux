@@ -200,7 +200,7 @@ static m3ApiRawFunction(node_add)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_nid_t);
     m3ApiGetArg(nux_nid_t, parent);
-    m3ApiReturn(nux_node_add(env, parent));
+    m3ApiReturn(nux_create_node(env, parent));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_add_instance)
@@ -212,7 +212,7 @@ static m3ApiRawFunction(node_add_instance)
     m3ApiReturnType(nux_nid_t);
     m3ApiGetArg(nux_nid_t, parent);
     m3ApiGetArg(nux_oid_t, scene);
-    m3ApiReturn(nux_node_add_instance(env, parent, scene));
+    m3ApiReturn(nux_create_instance_node(env, parent, scene));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_remove)
@@ -222,7 +222,7 @@ static m3ApiRawFunction(node_remove)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
-    nux_node_remove(env, nid);
+    nux_delete_node(env, nid);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_get_translation)
@@ -233,7 +233,7 @@ static m3ApiRawFunction(node_get_translation)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(nux_f32_t *, pos);
-    nux_node_get_translation(env, nid, pos);
+    nux_get_node_translation(env, nid, pos);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_set_translation)
@@ -244,7 +244,7 @@ static m3ApiRawFunction(node_set_translation)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(const nux_f32_t *, pos);
-    nux_node_set_translation(env, nid, pos);
+    nux_set_node_translation(env, nid, pos);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_get_rotation)
@@ -255,7 +255,7 @@ static m3ApiRawFunction(node_get_rotation)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(nux_f32_t *, rot);
-    nux_node_get_rotation(env, nid, rot);
+    nux_get_node_rotation(env, nid, rot);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_set_rotation)
@@ -266,7 +266,7 @@ static m3ApiRawFunction(node_set_rotation)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(const nux_f32_t *, rot);
-    nux_node_set_rotation(env, nid, rot);
+    nux_set_node_rotation(env, nid, rot);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_get_scale)
@@ -277,7 +277,7 @@ static m3ApiRawFunction(node_get_scale)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(nux_f32_t *, scale);
-    nux_node_get_scale(env, nid, scale);
+    nux_get_node_scale(env, nid, scale);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_set_scale)
@@ -288,7 +288,7 @@ static m3ApiRawFunction(node_set_scale)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArgMem(const nux_f32_t *, scale);
-    nux_node_set_scale(env, nid, scale);
+    nux_set_node_scale(env, nid, scale);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_get_parent)
@@ -299,7 +299,7 @@ static m3ApiRawFunction(node_get_parent)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_u32_t);
     m3ApiGetArg(nux_nid_t, nid);
-    m3ApiReturn(nux_node_get_parent(env, nid));
+    m3ApiReturn(nux_node_parent(env, nid));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(camera_add)
@@ -310,7 +310,7 @@ static m3ApiRawFunction(camera_add)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_status_t);
     m3ApiGetArg(nux_nid_t, nid);
-    m3ApiReturn(nux_camera_add(env, nid));
+    m3ApiReturn(nux_create_camera(env, nid));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(camera_remove)
@@ -320,7 +320,7 @@ static m3ApiRawFunction(camera_remove)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArg(nux_nid_t, nid);
-    nux_camera_remove(env, nid);
+    nux_delete_camera(env, nid);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(camera_set_perspective)
@@ -333,7 +333,7 @@ static m3ApiRawFunction(camera_set_perspective)
     m3ApiGetArg(nux_f32_t, fov);
     m3ApiGetArg(nux_f32_t, near);
     m3ApiGetArg(nux_f32_t, far);
-    nux_camera_set_perspective(env, nid, fov, near, far);
+    nux_set_camera_perspective(env, nid, fov, near, far);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(model_add)
@@ -346,7 +346,7 @@ static m3ApiRawFunction(model_add)
     m3ApiGetArg(nux_nid_t, nid);
     m3ApiGetArg(nux_oid_t, mesh);
     m3ApiGetArg(nux_oid_t, texture);
-    m3ApiReturn(nux_model_add(env, nid, mesh, texture));
+    m3ApiReturn(nux_create_model(env, nid, mesh, texture));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(model_remove)

@@ -17,10 +17,10 @@ struct nux_env
     nux_c8_t       error_message[256];
 };
 
-typedef union
+typedef struct
 {
-    nux_u32_t key; // version (4) | type (8) | block (20)
-    nux_u32_t next;
+    nux_u32_t key;  // version (4) | type (8) | block (20)
+    nux_u32_t next; // for free list
 } nux_object_entry_t;
 
 struct nux_instance
@@ -31,13 +31,20 @@ struct nux_instance
     nux_f32_t time;
     nux_u32_t tps;
 
-    nux_u8_t           *memory;
-    nux_u32_t           memory_capa;
+    nux_u8_t *memory;
+    nux_u32_t memory_capa;
+
     nux_object_entry_t *objects;
     nux_u32_t           objects_capa;
     nux_u32_t           objects_size;
     nux_u32_t           objects_free;
     nux_u32_t           objects_count;
+
+    nux_object_tag_t *tags;
+    nux_u32_t         tags_capa;
+    nux_u32_t         tags_size;
+    nux_u32_t         tags_free;
+    nux_u32_t         tags_count;
 
     nux_id_t root_stack;
 
@@ -77,6 +84,7 @@ nux_id_t nux_pool_add(nux_env_t env, nux_id_t pool, nux_object_type_t type);
 void     nux_pool_remove(nux_env_t env, nux_id_t pool, nux_id_t id);
 void    *nux_object_get(nux_env_t env, nux_id_t id, nux_object_type_t type);
 void    *nux_object_get_unchecked(nux_env_t env, nux_id_t id);
+nux_id_t nux_object_find(nux_env_t env, const nux_c8_t *name);
 nux_object_type_t nux_object_type(nux_env_t env, nux_id_t id);
 
 void nux_set_error(nux_env_t env, nux_error_t error);
@@ -92,11 +100,9 @@ nux_status_t nux_wasm_load(nux_env_t env, nux_u8_t *buffer, nux_u32_t n);
 nux_status_t nux_wasm_start(nux_env_t env);
 nux_status_t nux_wasm_update(nux_env_t env);
 
-nux_id_t     nux_node_add_component(nux_env_t            env,
-                                    nux_id_t             node,
-                                    nux_component_type_t component);
-nux_status_t nux_node_remove_component(nux_env_t            env,
-                                       nux_id_t             node,
-                                       nux_component_type_t component);
+nux_id_t nux_create_node_with_object(nux_env_t         env,
+                                     nux_id_t          parent,
+                                     nux_object_type_t type);
+nux_id_t nux_node_object(nux_env_t env, nux_id_t node);
 
 #endif

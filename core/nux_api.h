@@ -17,12 +17,6 @@ typedef double        nux_f64_t;
 
 typedef nux_u32_t nux_id_t;
 
-#define NUX_ID_MAKE(index, version) ((index) | (version << 24) & 0xFF000000)
-#define NUX_ID_INDEX(id)            ((id) & 0xFFFFFF)
-#define NUX_ID_VERSION(id)          (((id) & 0xFF000000) >> 24)
-#define NUX_ID_TYPE(id)             (((id) & 0xFF000000) >> 24)
-#define NUX_BLOCK_SIZE              64
-
 typedef struct nux_env *nux_env_t;
 
 typedef enum
@@ -70,15 +64,14 @@ typedef enum
 
 typedef enum
 {
-    NUX_ERROR_NONE                 = 0,
-    NUX_ERROR_OUT_OF_MEMORY        = 1,
-    NUX_ERROR_OUT_OF_POOL_ITEM     = 2,
-    NUX_ERROR_OUT_OF_COMMANDS      = 3,
-    NUX_ERROR_OUT_OF_OBJECTS       = 12,
-    NUX_ERROR_INVALID_TEXTURE_SIZE = 4,
-    NUX_ERROR_INVALID_OBJECT_ID    = 5,
-    NUX_ERROR_INVALID_OBJECT_TYPE  = 6,
-    NUX_ERROR_INVALID_PARENT_NODE,
+    NUX_ERROR_NONE                    = 0,
+    NUX_ERROR_OUT_OF_MEMORY           = 1,
+    NUX_ERROR_OUT_OF_POOL_ITEM        = 2,
+    NUX_ERROR_OUT_OF_COMMANDS         = 3,
+    NUX_ERROR_OUT_OF_OBJECTS          = 12,
+    NUX_ERROR_INVALID_TEXTURE_SIZE    = 4,
+    NUX_ERROR_INVALID_OBJECT_ID       = 5,
+    NUX_ERROR_INVALID_OBJECT_TYPE     = 6,
     NUX_ERROR_WASM_RUNTIME            = 8,
     NUX_ERROR_INVALID_OBJECT_CREATION = 9,
     NUX_ERROR_CART_EOF                = 10,
@@ -93,17 +86,6 @@ typedef enum
 
 typedef enum
 {
-    NUX_COMPONENT_CAMERA  = 1 << 0,
-    NUX_COMPONENT_MODEL   = 1 << 1,
-    NUX_COMPONENT_LIGHT   = 1 << 2,
-    NUX_COMPONENT_VOLUME  = 1 << 3,
-    NUX_COMPONENT_EMITTER = 1 << 4,
-    NUX_COMPONENT_SOUND   = 1 << 5,
-    NUX_COMPONENT_USER    = 1 << 6,
-} nux_component_type_t;
-
-typedef enum
-{
     NUX_OBJECT_MEMORY,
     NUX_OBJECT_FREE, // use for object pool
     NUX_OBJECT_STACK,
@@ -115,15 +97,10 @@ typedef enum
     NUX_OBJECT_MESH,
     NUX_OBJECT_SPRITESHEET,
     NUX_OBJECT_SCENE,
-
     NUX_OBJECT_NODE,
-    NUX_OBJECT_NODE_TABLE,
-    NUX_OBJECT_CAMERA,
-    NUX_OBJECT_MODEL,
-    NUX_OBJECT_LIGHT,
-    NUX_OBJECT_VOLUME,
-    NUX_OBJECT_EMITTER,
-    NUX_OBJECT_SOUND,
+    NUX_OBJECT_NODE_TRANSFORM,
+    NUX_OBJECT_NODE_CAMERA,
+    NUX_OBJECT_NODE_MODEL,
 
     NUX_OBJECT_TYPE_MAX = 11,
 } nux_object_type_t;
@@ -213,30 +190,30 @@ nux_id_t nux_create_spritesheet(nux_env_t env,
 
 nux_id_t nux_create_scene(nux_env_t env, nux_id_t stack, nux_u32_t object_capa);
 nux_id_t nux_node_root(nux_env_t env, nux_id_t scene);
-nux_id_t nux_node_add(nux_env_t env, nux_id_t scene, nux_id_t parent);
-nux_id_t nux_node_add_instance(nux_env_t env,
-                               nux_id_t  scene,
-                               nux_id_t  parent,
-                               nux_id_t  instance);
-void     nux_node_remove(nux_env_t env, nux_id_t id);
-void     nux_node_get_translation(nux_env_t env, nux_id_t id, nux_f32_t *pos);
-void nux_node_set_translation(nux_env_t env, nux_id_t id, const nux_f32_t *pos);
-void nux_node_get_rotation(nux_env_t env, nux_id_t id, nux_f32_t *rot);
-void nux_node_set_rotation(nux_env_t env, nux_id_t id, const nux_f32_t *rot);
-void nux_node_get_scale(nux_env_t env, nux_id_t id, nux_f32_t *scale);
-void nux_node_set_scale(nux_env_t env, nux_id_t id, const nux_f32_t *scale);
-nux_u32_t nux_node_get_parent(nux_env_t env, nux_id_t id);
+nux_id_t nux_create_node(nux_env_t env, nux_id_t parent);
+nux_id_t nux_create_instance_node(nux_env_t env,
+                                  nux_id_t  parent,
+                                  nux_id_t  instance);
+void     nux_delete_node(nux_env_t env, nux_id_t id);
+void     nux_node_translation(nux_env_t env, nux_id_t id, nux_f32_t *pos);
+void     nux_node_rotation(nux_env_t env, nux_id_t id, nux_f32_t *rot);
+void     nux_node_scale(nux_env_t env, nux_id_t id, nux_f32_t *scale);
+void nux_set_node_translation(nux_env_t env, nux_id_t id, const nux_f32_t *pos);
+void nux_set_node_rotation(nux_env_t env, nux_id_t id, const nux_f32_t *rot);
+void nux_set_node_scale(nux_env_t env, nux_id_t id, const nux_f32_t *scale);
+nux_id_t nux_node_scene(nux_env_t env, nux_id_t id);
+nux_id_t nux_node_parent(nux_env_t env, nux_id_t id);
+nux_id_t nux_node_next(nux_env_t env, nux_id_t id);
+nux_id_t nux_node_child(nux_env_t env, nux_id_t id);
 
-nux_status_t nux_camera_add(nux_env_t env, nux_id_t id);
-void         nux_camera_remove(nux_env_t env, nux_id_t id);
-void         nux_camera_set_perspective(
-            nux_env_t env, nux_id_t id, nux_f32_t fov, nux_f32_t near, nux_f32_t far);
+nux_id_t nux_create_camera(nux_env_t env, nux_id_t parent);
+void     nux_set_camera_perspective(
+        nux_env_t env, nux_id_t id, nux_f32_t fov, nux_f32_t near, nux_f32_t far);
 
-nux_status_t nux_model_add(nux_env_t env,
-                           nux_id_t  node,
-                           nux_id_t  mesh,
-                           nux_id_t  texture);
-void         nux_model_remove(nux_env_t env, nux_id_t nid);
+nux_status_t nux_create_model(nux_env_t env,
+                              nux_id_t  node,
+                              nux_id_t  mesh,
+                              nux_id_t  texture);
 
 void nux_push_scissor(
     nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h);
