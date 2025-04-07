@@ -1,7 +1,7 @@
 #include "internal.h"
 
 nux_id_t
-nux_create_spritesheet (nux_env_t env,
+nux_spritesheet_create (nux_env_t env,
                         nux_id_t  stack,
                         nux_u32_t texture,
                         nux_u32_t row,

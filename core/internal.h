@@ -39,12 +39,7 @@ struct nux_instance
     nux_u32_t           objects_size;
     nux_u32_t           objects_free;
     nux_u32_t           objects_count;
-
-    nux_object_tag_t *tags;
-    nux_u32_t         tags_capa;
-    nux_u32_t         tags_size;
-    nux_u32_t         tags_free;
-    nux_u32_t         tags_count;
+    nux_u32_t           objects_slot_size;
 
     nux_id_t root_stack;
 
@@ -84,12 +79,11 @@ nux_id_t nux_pool_add(nux_env_t env, nux_id_t pool, nux_object_type_t type);
 void     nux_pool_remove(nux_env_t env, nux_id_t pool, nux_id_t id);
 void    *nux_object_get(nux_env_t env, nux_id_t id, nux_object_type_t type);
 void    *nux_object_get_unchecked(nux_env_t env, nux_id_t id);
-nux_id_t nux_object_find(nux_env_t env, const nux_c8_t *name);
-nux_object_type_t nux_object_type(nux_env_t env, nux_id_t id);
 
 void nux_set_error(nux_env_t env, nux_error_t error);
 
 nux_status_t nux_load_cartridge(nux_env_t       env,
+                                nux_id_t        stack,
                                 const nux_c8_t *cart,
                                 nux_u32_t       n);
 

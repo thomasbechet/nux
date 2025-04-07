@@ -6,10 +6,11 @@ static nux_status_t
 init_object_table (nux_instance_t inst, nux_u32_t object_capa)
 {
     NU_CHECK(object_capa, return NUX_FAILURE);
-    inst->objects_count = 0;
-    inst->objects_size  = 1; // reserve index 0 for NULL
-    inst->objects_capa  = object_capa;
-    inst->objects_free  = NU_NULL;
+    inst->objects_count     = 0;
+    inst->objects_size      = 1; // reserve index 0 for NULL
+    inst->objects_capa      = object_capa;
+    inst->objects_free      = NU_NULL;
+    inst->objects_slot_size = 0;
     return NUX_SUCCESS;
 }
 static nux_id_t
@@ -30,7 +31,7 @@ add_object (nux_env_t env, nux_object_type_t type, nux_u32_t block_index)
         }
         index = env->inst->objects_size++;
     }
-    env->inst->objects[index].id = NUX_ID_MAKE(block_index, 1);
+    env->inst->objects[index].key = NUX_KEY_MAKE(block_index, 1);
     ++env->inst->objects_count;
     return NUX_ID_MAKE(index, 1);
 }
@@ -74,7 +75,7 @@ allocator_add (nux_env_t         env,
 static nux_u32_t
 get_object_block_index (nux_env_t env, nux_id_t id)
 {
-    return NUX_ID_INDEX(env->inst->objects[NUX_ID_INDEX(id)].id);
+    return NUX_KEY_BLOCK(env->inst->objects[NUX_ID_INDEX(id)].key);
 }
 
 nux_id_t
@@ -169,7 +170,8 @@ nux_object_get (nux_env_t env, nux_id_t id, nux_object_type_t type)
     nux_u32_t version = NUX_ID_VERSION(id);
     NU_CHECK(index < env->inst->objects_size, return NU_NULL);
     nux_object_entry_t *entry = env->inst->objects + index;
-    NU_CHECK(NUX_ID_VERSION(entry->id) == version && NUX_ID_TYPE(id) == type,
+    NU_CHECK(NUX_KEY_VERSION(entry->key) == version
+                 && NUX_KEY_TYPE(entry->key) == type,
              return NU_NULL);
     return env->inst->memory + index * NUX_BLOCK_SIZE;
 }
@@ -178,21 +180,7 @@ nux_object_get_unchecked (nux_env_t env, nux_id_t id)
 {
     nux_u32_t           index = NUX_ID_INDEX(id);
     nux_object_entry_t *entry = env->inst->objects + index;
-    return env->inst->memory + NUX_ID_INDEX(entry->id) * NUX_BLOCK_SIZE;
-}
-nux_id_t
-nux_object_find (nux_env_t env, const nux_c8_t *name)
-{
-    nux_u32_t hash = nu_hash(name, nu_strnlen(name, NUX_TAG_MAX));
-    for (nu_size_t i = env->inst->objects_size; i; --i)
-    {
-        const nux_object_entry_t *entry = env->inst->objects + (i - 1);
-        if (NUX_ID_TYPE(entry->id) == NUX_OBJECT_TAG
-            && NUX_ID_INDEX(entry->id) == hash)
-        {
-            return
-        }
-    }
+    return env->inst->memory + NUX_KEY_BLOCK(entry->key) * NUX_BLOCK_SIZE;
 }
 nux_object_type_t
 nux_object_type (nux_env_t env, nux_id_t id)
@@ -200,5 +188,18 @@ nux_object_type (nux_env_t env, nux_id_t id)
     nux_u32_t index = NUX_ID_INDEX(id);
     NU_CHECK(index < env->inst->objects_size, return NU_NULL);
     nux_object_entry_t *entry = env->inst->objects + index;
-    return NUX_ID_TYPE(entry->id);
+    return NUX_KEY_TYPE(entry->key);
+}
+nux_id_t
+nux_object_slot (nux_env_t env, nux_u32_t slot)
+{
+    NU_CHECK(slot > env->inst->objects_slot_size, return NU_NULL);
+    nux_u32_t                 index = env->inst->objects_capa - slot - 1;
+    const nux_object_entry_t *entry = &env->inst->objects[index];
+    return NUX_ID_MAKE(index, NUX_KEY_VERSION(entry->key));
+}
+nux_status_t
+nux_object_slot_set (nux_env_t env, nux_u32_t slot, nux_id_t id)
+{
+    return NUX_SUCCESS;
 }

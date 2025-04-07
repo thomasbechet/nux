@@ -1,7 +1,7 @@
 #include "internal.h"
 
 nux_status_t
-nux_create_model (nux_env_t env,
+nux_model_create (nux_env_t env,
                   nux_id_t  parent,
                   nux_id_t  mesh,
                   nux_id_t  texture)

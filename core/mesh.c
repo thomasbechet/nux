@@ -1,7 +1,7 @@
 #include "internal.h"
 
 nux_id_t
-nux_create_mesh (nux_env_t              env,
+nux_mesh_create (nux_env_t              env,
                  nux_id_t               stack,
                  nux_u32_t              count,
                  nux_primitive_t        primitive,
@@ -23,7 +23,7 @@ nux_create_mesh (nux_env_t              env,
     return NUX_SUCCESS;
 }
 void
-nux_update_mesh (nux_env_t              env,
+nux_mesh_update (nux_env_t              env,
                  nux_id_t               id,
                  nux_vertex_attribute_t attributes,
                  nux_u32_t              first,

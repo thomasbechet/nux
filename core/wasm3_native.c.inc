@@ -106,7 +106,7 @@ static m3ApiRawFunction(create_texture)
     m3ApiReturnType(nux_status_t);
     m3ApiGetArg(nux_oid_t, oid);
     m3ApiGetArg(nux_u32_t, size);
-    m3ApiReturn(nux_create_texture(env, oid, size));
+    m3ApiReturn(nux_texture_create(env, oid, size));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(update_texture)
@@ -121,7 +121,7 @@ static m3ApiRawFunction(update_texture)
     m3ApiGetArg(nux_u32_t, w);
     m3ApiGetArg(nux_u32_t, h);
     m3ApiGetArgMem(const void *, p);
-    nux_update_texture(env, oid, x, y, w, h, p);
+    nux_texture_update(env, oid, x, y, w, h, p);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(create_mesh)
@@ -135,7 +135,7 @@ static m3ApiRawFunction(create_mesh)
     m3ApiGetArg(nux_u32_t, count);
     m3ApiGetArg(nux_primitive_t, primitive);
     m3ApiGetArg(nux_vertex_attribute_t, attributes);
-    m3ApiReturn(nux_create_mesh(env, oid, count, primitive, attributes));
+    m3ApiReturn(nux_mesh_create(env, oid, count, primitive, attributes));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(update_mesh)

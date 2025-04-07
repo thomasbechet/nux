@@ -1,7 +1,7 @@
 #include "internal.h"
 
 nux_id_t
-nux_create_texture (nux_env_t env, nux_id_t stack, nux_u32_t size)
+nux_texture_create (nux_env_t env, nux_id_t stack, nux_u32_t size)
 {
     if (size < NUX_TEXTURE_MIN_SIZE || size > NUX_TEXTURE_MAX_SIZE)
     {
@@ -19,7 +19,7 @@ nux_create_texture (nux_env_t env, nux_id_t stack, nux_u32_t size)
     return id;
 }
 void
-nux_update_texture (nux_env_t   env,
+nux_texture_update (nux_env_t   env,
                     nux_id_t    id,
                     nux_u32_t   x,
                     nux_u32_t   y,

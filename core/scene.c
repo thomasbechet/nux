@@ -35,7 +35,7 @@ node_add (nux_env_t env, nux_id_t parent, nux_id_t object)
 }
 
 nux_id_t
-nux_create_scene (nux_env_t env, nux_id_t stack, nux_u32_t object_capa)
+nux_scene_create (nux_env_t env, nux_id_t stack, nux_u32_t object_capa)
 {
     nux_id_t id
         = nux_stack_push(env, stack, NUX_OBJECT_SCENE, sizeof(nux_scene_t));
@@ -67,12 +67,12 @@ nux_node_root (nux_env_t env, nux_id_t scene)
 }
 
 nux_id_t
-nux_create_node (nux_env_t env, nux_id_t parent)
+nux_node_create (nux_env_t env, nux_id_t parent)
 {
     return node_add(env, parent, NU_NULL);
 }
 nux_id_t
-nux_create_instance_node (nux_env_t env, nux_id_t parent, nux_id_t instance)
+nux_node_create_instance (nux_env_t env, nux_id_t parent, nux_id_t instance)
 {
     nux_id_t    id = node_add(env, parent, instance);
     nux_node_t *n  = nux_object_get_unchecked(env, id);
@@ -80,7 +80,7 @@ nux_create_instance_node (nux_env_t env, nux_id_t parent, nux_id_t instance)
     return id;
 }
 void
-nux_delete_node (nux_env_t env, nux_id_t id)
+nux_node_delete (nux_env_t env, nux_id_t id)
 {
     nux_node_t *n = nux_object_get(env, id, NUX_OBJECT_NODE);
     NU_CHECK(n, return);
