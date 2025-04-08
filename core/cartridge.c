@@ -132,32 +132,40 @@ load_mesh (nux_env_t env, nux_id_t stack, const nux_cart_entry_t *entry)
     return NUX_SUCCESS;
 }
 static nux_status_t
-load_scene (nux_env_t env, const nux_cart_entry_t *entry)
+load_node (nux_env_t env, nux_id_t stack, const nux_cart_entry_t *entry)
 {
-    nu_u32_t slab_capa, node_count;
-    NU_CHECK(cart_read_u32(env, &slab_capa), return NUX_FAILURE);
-    NU_CHECK(cart_read_u32(env, &node_count), return NUX_FAILURE);
-    NU_CHECK(nux_scene_create(env, entry->oid, slab_capa), return NUX_FAILURE);
-    NU_CHECK(nux_bind_scene(env, entry->oid), return NUX_FAILURE);
-    for (nu_size_t i = 0; i < node_count; ++i)
+}
+static nux_status_t
+load_scene (nux_env_t env, nux_id_t stack, const nux_cart_entry_t *entry)
+{
+    nu_u32_t object_count, object_capa;
+    NU_CHECK(cart_read_u32(env, &object_capa), return NUX_FAILURE);
+    NU_CHECK(cart_read_u32(env, &object_count), return NUX_FAILURE);
+    nux_id_t id = nux_scene_create(env, stack, object_capa);
+    NU_CHECK(id, return NUX_FAILURE);
+    NU_CHECK(nux_object_slot_set(env, entry->slot, id), return NUX_FAILURE);
+    for (nu_size_t i = 0; i < object_count; ++i)
     {
-        nux_nid_t parent;
+        nux_u32_t parent_slot;
         nu_v3_t   position;
         nu_q4_t   rotation;
         nu_v3_t   scale;
         nux_u32_t components;
 
-        NU_CHECK(cart_read_u32(env, &parent), return NUX_FAILURE);
+        NU_CHECK(cart_read_u32(env, &parent_slot), return NUX_FAILURE);
         NU_CHECK(cart_read_v3(env, &position), return NUX_FAILURE);
         NU_CHECK(cart_read_q4(env, &rotation), return NUX_FAILURE);
         NU_CHECK(cart_read_v3(env, &scale), return NUX_FAILURE);
         NU_CHECK(cart_read_u32(env, &components), return NUX_FAILURE);
 
-        nux_nid_t node = nux_node_create(env, parent);
+        nux_id_t parent = parent_slot ? nux_object_slot(env, parent_slot)
+                                      : nux_node_root(env, id);
+
+        nux_id_t node = nux_node_create(env, parent);
         NU_CHECK(node, return NUX_FAILURE);
-        nux_set_node_translation(env, node, position.data);
-        nux_set_node_rotation(env, node, rotation.data);
-        nux_set_node_scale(env, node, scale.data);
+        nux_node_set_translation(env, node, position.data);
+        nux_node_set_rotation(env, node, rotation.data);
+        nux_node_set_scale(env, node, scale.data);
 
         if (components & NUX_NODE_MODEL)
         {

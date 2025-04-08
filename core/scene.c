@@ -102,7 +102,7 @@ nux_node_translation (nux_env_t env, nux_id_t node, nux_f32_t *pos)
     nu_memcpy(pos, t->translation, sizeof(*pos) * NU_V3_SIZE);
 }
 void
-nux_set_node_translation (nux_env_t env, nux_id_t node, const nux_f32_t *pos)
+nux_node_set_translation (nux_env_t env, nux_id_t node, const nux_f32_t *pos)
 {
     nux_node_t *n = nux_object_get(env, node, NUX_OBJECT_NODE);
     NU_CHECK(n, return);
@@ -118,7 +118,7 @@ nux_node_rotation (nux_env_t env, nux_id_t node, nux_f32_t *rot)
     nu_memcpy(rot, t->rotation, sizeof(*rot) * NU_Q4_SIZE);
 }
 void
-nux_set_node_rotation (nux_env_t env, nux_id_t node, const nux_f32_t *rot)
+nux_node_set_rotation (nux_env_t env, nux_id_t node, const nux_f32_t *rot)
 {
     nux_node_t *n = nux_object_get(env, node, NUX_OBJECT_NODE);
     NU_CHECK(n, return);
@@ -134,7 +134,7 @@ nux_node_scale (nux_env_t env, nux_id_t node, nux_f32_t *scale)
     nu_memcpy(scale, t->scale, sizeof(*scale) * NU_V3_SIZE);
 }
 void
-nux_set_node_scale (nux_env_t env, nux_id_t node, const nux_f32_t *scale)
+nux_node_set_scale (nux_env_t env, nux_id_t node, const nux_f32_t *scale)
 {
     nux_node_t *n = nux_object_get(env, node, NUX_OBJECT_NODE);
     NU_CHECK(n, return);

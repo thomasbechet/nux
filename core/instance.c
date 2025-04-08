@@ -24,16 +24,14 @@ nux_instance_init (const nux_instance_config_t *config)
         config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));
     NU_CHECK(inst, return NU_NULL);
     nu_memset(inst, 0, sizeof(struct nux_instance));
-    inst->mem      = NU_NULL;
-    inst->memhead  = 0;
-    inst->memcapa  = NU_MEM_16M;
     inst->userdata = config->userdata;
 
     // State allocation
-    inst->mem = nux_platform_malloc(
-        config->userdata, NUX_MEMORY_USAGE_STATE, NU_MEM_16M);
-    NU_CHECK(inst->mem, goto cleanup0);
-    nu_memset(inst->mem, 0, inst->memcapa);
+    inst->memory_capa = NU_MEM_16M;
+    inst->memory      = nux_platform_malloc(
+        config->userdata, NUX_MEMORY_USAGE_STATE, inst->memory_capa);
+    NU_CHECK(inst->memory, goto cleanup0);
+    nu_memset(inst->memory, 0, inst->memory_capa);
     inst->running = NU_TRUE;
     inst->time    = 0;
     inst->tps     = 60;
@@ -159,7 +157,7 @@ nux_error_message (nux_error_t error)
             return "out of pool item";
         case NUX_ERROR_OUT_OF_COMMANDS:
             return "out of commands";
-        case NUX_ERROR_OUT_OF_OBJECTS:
+        case NUX_ERROR_OUT_OF_DYNAMIC_OBJECTS:
             return "out of objects";
     }
     return NU_NULL;

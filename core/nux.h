@@ -11,7 +11,6 @@
 #define NUX_ID_MAKE(index, version) ((index) | ((version << 24) & 0xFF000000))
 #define NUX_ID_INDEX(id)            ((id) & 0xFFFFFF)
 #define NUX_ID_VERSION(id)          (((id) & 0xFF000000) >> 24)
-#define NUX_ID_TYPE(id)             (((id) & 0xFF000000) >> 24)
 
 #define NUX_KEY_MAKE(block, version) ((block) | ((version << 24) & 0xFF000000))
 #define NUX_KEY_VERSION(key)         (((key) & 0xFF000000) >> 24)
@@ -21,7 +20,6 @@
 #define NUX_BLOCK_SIZE             64
 #define NUX_CART_HEADER_SIZE       sizeof(nux_cart_header_t)
 #define NUX_CART_OBJECT_ENTRY_SIZE (sizeof(nu_u32_t) * 4)
-#define NUX_TAG_MAX                32
 
 typedef struct nux_instance *nux_instance_t;
 

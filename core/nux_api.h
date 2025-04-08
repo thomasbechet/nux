@@ -64,11 +64,12 @@ typedef enum
 
 typedef enum
 {
-    NUX_ERROR_NONE                    = 0,
-    NUX_ERROR_OUT_OF_MEMORY           = 1,
-    NUX_ERROR_OUT_OF_POOL_ITEM        = 2,
-    NUX_ERROR_OUT_OF_COMMANDS         = 3,
-    NUX_ERROR_OUT_OF_OBJECTS          = 12,
+    NUX_ERROR_NONE                   = 0,
+    NUX_ERROR_OUT_OF_MEMORY          = 1,
+    NUX_ERROR_OUT_OF_POOL_ITEM       = 2,
+    NUX_ERROR_OUT_OF_COMMANDS        = 3,
+    NUX_ERROR_OUT_OF_DYNAMIC_OBJECTS = 12,
+    NUX_ERROR_INVALID_OBJECT_STATIC_INDEX,
     NUX_ERROR_INVALID_TEXTURE_SIZE    = 4,
     NUX_ERROR_INVALID_OBJECT_ID       = 5,
     NUX_ERROR_INVALID_OBJECT_TYPE     = 6,
@@ -87,8 +88,8 @@ typedef enum
 typedef enum
 {
     NUX_OBJECT_MEMORY,
-    NUX_OBJECT_FREE, // use for object pool
     NUX_OBJECT_STACK,
+    NUX_OBJECT_FREE, // use for object pool
     NUX_OBJECT_POOL,
 
     NUX_OBJECT_WASM,
@@ -159,9 +160,8 @@ nux_f32_t nux_delta_time(nux_env_t env);
 
 nux_object_type_t nux_object_type(nux_env_t env, nux_id_t id);
 nux_id_t          nux_object_slot(nux_env_t env, nux_u32_t slot);
-nux_status_t nux_object_slot_set(nux_env_t env, nux_u32_t slot, nux_id_t id);
 
-nux_id_t nux_stack_new(nux_env_t env, nux_id_t allocator, nux_u32_t size);
+nux_id_t nux_stack_new(nux_env_t env, nux_id_t stack, nux_u32_t size);
 
 nux_id_t nux_texture_create(nux_env_t env, nux_id_t stack, nux_u32_t size);
 void     nux_texture_update(nux_env_t   env,
@@ -202,9 +202,9 @@ void     nux_node_delete(nux_env_t env, nux_id_t id);
 void     nux_node_translation(nux_env_t env, nux_id_t id, nux_f32_t *pos);
 void     nux_node_rotation(nux_env_t env, nux_id_t id, nux_f32_t *rot);
 void     nux_node_scale(nux_env_t env, nux_id_t id, nux_f32_t *scale);
-void nux_set_node_translation(nux_env_t env, nux_id_t id, const nux_f32_t *pos);
-void nux_set_node_rotation(nux_env_t env, nux_id_t id, const nux_f32_t *rot);
-void nux_set_node_scale(nux_env_t env, nux_id_t id, const nux_f32_t *scale);
+void nux_node_set_translation(nux_env_t env, nux_id_t id, const nux_f32_t *pos);
+void nux_node_set_rotation(nux_env_t env, nux_id_t id, const nux_f32_t *rot);
+void nux_node_set_scale(nux_env_t env, nux_id_t id, const nux_f32_t *scale);
 nux_id_t nux_node_scene(nux_env_t env, nux_id_t id);
 nux_id_t nux_node_parent(nux_env_t env, nux_id_t id);
 nux_id_t nux_node_next(nux_env_t env, nux_id_t id);
