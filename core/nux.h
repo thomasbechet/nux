@@ -27,6 +27,7 @@ typedef struct
 {
     void     *userdata;
     nux_u32_t command_buffer_capacity;
+    nux_u32_t objects_capacity;
 } nux_instance_config_t;
 
 typedef enum
@@ -89,7 +90,7 @@ typedef enum
 typedef struct
 {
     nux_object_type_t type;
-    nux_u32_t         slot;
+    nux_id_t          id;
     nux_u32_t         offset;
     nux_u32_t         length;
 } nux_cart_entry_t;

@@ -18,11 +18,10 @@ typedef enum
 typedef struct
 {
     sdk_asset_type_t type;
-    nux_oid_t        oid;
+    nux_id_t         id;
     nu_char_t        name[SDK_NAME_MAX];
     nu_char_t        source[NU_PATH_MAX];
     nu_bool_t        ignore;
-
     union
     {
         struct
@@ -43,13 +42,13 @@ typedef struct
 
     // Compilation state
     nux_cart_entry_t *entries;
-    nu_u32_t                 entries_capa;
-    nu_u32_t                 entries_size;
-    nu_byte_t               *data;
-    nu_u32_t                 data_capa;
-    nu_u32_t                 data_size;
+    nu_u32_t          entries_capa;
+    nu_u32_t          entries_size;
+    nu_byte_t        *data;
+    nu_u32_t          data_capa;
+    nu_u32_t          data_size;
     nux_cart_entry_t *current_entry;
-    nu_u32_t                 next_id;
+    nu_u32_t          next_id;
 } sdk_project_t;
 
 NU_API nu_status_t sdk_generate_template(nu_sv_t path, nu_sv_t lang);
@@ -65,9 +64,9 @@ NU_API void        sdk_project_free(sdk_project_t *project);
 void view_debug(struct nk_context *ctx, struct nk_rect bounds);
 
 nux_cart_entry_t *sdk_begin_entry(sdk_project_t    *proj,
-                                         nux_oid_t         oid,
-                                         nux_object_type_t type);
-nux_oid_t                sdk_next_oid(sdk_project_t *proj);
+                                  nux_id_t          id,
+                                  nux_object_type_t type);
+nux_id_t          sdk_next_id(sdk_project_t *proj);
 
 nu_status_t sdk_wasm_load(sdk_project_asset_t *asset, JSON_Object *jasset);
 nu_status_t sdk_wasm_save(sdk_project_asset_t *asset, JSON_Object *jasset);

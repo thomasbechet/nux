@@ -139,8 +139,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t       indice_count = accessor->count;
 
     // Write header
-    nux_cart_entry_t *entry
-        = sdk_begin_entry(proj, oid, NUX_OBJECT_MESH);
+    nux_cart_entry_t *entry = sdk_begin_entry(proj, oid, NUX_OBJECT_MESH);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, NUX_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
@@ -225,7 +224,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         cgltf_mesh *mesh = data->meshes + i;
         for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nux_oid_t oid = sdk_next_oid(proj);
+            nux_oid_t oid = sdk_next_id(proj);
             NU_CHECK(compile_primitive_mesh(mesh->primitives + p, oid, proj),
                      goto cleanup0);
             logger_log(NU_LOG_DEBUG,
@@ -260,7 +259,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         }
         if (texture)
         {
-            nu_u32_t id = sdk_next_oid(proj);
+            nu_u32_t id = sdk_next_id(proj);
             NU_CHECK(compile_texture(texture, id, proj), goto cleanup0);
             resources[resources_count].oid       = id;
             resources[resources_count].cgltf_ptr = texture;

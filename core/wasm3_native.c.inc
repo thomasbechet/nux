@@ -65,175 +65,200 @@ static m3ApiRawFunction(delta_time)
     m3ApiReturn(nux_delta_time(env));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(create_scope)
+static m3ApiRawFunction(object_type)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE create_scope\n");
+    printf("TRACE object_type\n");
+#endif
+    nux_env_t env = m3_GetUserData(runtime);
+    m3ApiReturnType(nux_object_type_t);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiReturn(nux_object_type(env, id));
+    m3ApiSuccess();
+}
+static m3ApiRawFunction(object_put)
+{
+#ifdef NUX_BUILD_TRACE
+    printf("TRACE object_put\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_oid_t, oid);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiGetArg(nux_u32_t, index);
+    m3ApiReturn(nux_object_put(env, id, index));
+    m3ApiSuccess();
+}
+static m3ApiRawFunction(stack_new)
+{
+#ifdef NUX_BUILD_TRACE
+    printf("TRACE stack_new\n");
+#endif
+    nux_env_t env = m3_GetUserData(runtime);
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, stack);
     m3ApiGetArg(nux_u32_t, size);
-    m3ApiReturn(nux_create_scope(env, oid, size));
+    m3ApiReturn(nux_stack_new(env, stack, size));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(rewind_scope)
+static m3ApiRawFunction(texture_create)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE rewind_scope\n");
+    printf("TRACE texture_create\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_oid_t, oid);
-    nux_rewind_scope(env, oid);
-    m3ApiSuccess();
-}
-static m3ApiRawFunction(set_active_scope)
-{
-#ifdef NUX_BUILD_TRACE
-    printf("TRACE set_active_scope\n");
-#endif
-    nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_oid_t, oid);
-    nux_set_active_scope(env, oid);
-    m3ApiSuccess();
-}
-static m3ApiRawFunction(create_texture)
-{
-#ifdef NUX_BUILD_TRACE
-    printf("TRACE create_texture\n");
-#endif
-    nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_oid_t, oid);
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, stack);
     m3ApiGetArg(nux_u32_t, size);
-    m3ApiReturn(nux_texture_create(env, oid, size));
+    m3ApiReturn(nux_texture_create(env, stack, size));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(update_texture)
+static m3ApiRawFunction(texture_update)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE update_texture\n");
+    printf("TRACE texture_update\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_oid_t, oid);
+    m3ApiGetArg(nux_id_t, id);
     m3ApiGetArg(nux_u32_t, x);
     m3ApiGetArg(nux_u32_t, y);
     m3ApiGetArg(nux_u32_t, w);
     m3ApiGetArg(nux_u32_t, h);
     m3ApiGetArgMem(const void *, p);
-    nux_texture_update(env, oid, x, y, w, h, p);
+    nux_texture_update(env, id, x, y, w, h, p);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(create_mesh)
+static m3ApiRawFunction(mesh_create)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE create_mesh\n");
+    printf("TRACE mesh_create\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_oid_t, oid);
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, stack);
     m3ApiGetArg(nux_u32_t, count);
     m3ApiGetArg(nux_primitive_t, primitive);
     m3ApiGetArg(nux_vertex_attribute_t, attributes);
-    m3ApiReturn(nux_mesh_create(env, oid, count, primitive, attributes));
+    m3ApiReturn(nux_mesh_create(env, stack, count, primitive, attributes));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(update_mesh)
+static m3ApiRawFunction(mesh_update)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE update_mesh\n");
+    printf("TRACE mesh_update\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_oid_t, oid);
+    m3ApiGetArg(nux_id_t, id);
     m3ApiGetArg(nux_vertex_attribute_t, attributes);
     m3ApiGetArg(nux_u32_t, first);
     m3ApiGetArg(nux_u32_t, count);
     m3ApiGetArgMem(const void *, p);
-    nux_update_mesh(env, oid, attributes, first, count, p);
+    nux_mesh_update(env, id, attributes, first, count, p);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(create_spritesheet)
+static m3ApiRawFunction(spritesheet_create)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE create_spritesheet\n");
+    printf("TRACE spritesheet_create\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_oid_t, oid);
-    m3ApiGetArg(nux_u32_t, texture);
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, stack);
+    m3ApiGetArg(nux_id_t, texture);
     m3ApiGetArg(nux_u32_t, row);
     m3ApiGetArg(nux_u32_t, col);
-    m3ApiGetArg(nux_oid_t, fwidth);
+    m3ApiGetArg(nux_u32_t, fwidth);
     m3ApiGetArg(nux_u32_t, fheight);
     m3ApiReturn(
-        nux_create_spritesheet(env, oid, texture, row, col, fwidth, fheight));
+        nux_spritesheet_create(env, stack, texture, row, col, fwidth, fheight));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(create_scene)
+static m3ApiRawFunction(scene_create)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE create_scene\n");
+    printf("TRACE scene_create\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_oid_t, oid);
-    m3ApiGetArg(nux_u32_t, node_capa);
-    m3ApiReturn(nux_create_scene(env, oid, node_capa));
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, stack);
+    m3ApiGetArg(nux_u32_t, object_capa);
+    m3ApiReturn(nux_scene_create(env, stack, object_capa));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(bind_scene)
+static m3ApiRawFunction(node_root)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE bind_scene\n");
+    printf("TRACE node_root\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_oid_t, oid);
-    m3ApiReturn(nux_bind_scene(env, oid));
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, scene);
+    m3ApiReturn(nux_node_root(env, scene));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(node_add)
+static m3ApiRawFunction(node_create)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE node_add\n");
+    printf("TRACE node_create\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_nid_t);
-    m3ApiGetArg(nux_nid_t, parent);
-    m3ApiReturn(nux_create_node(env, parent));
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, parent);
+    m3ApiReturn(nux_node_create(env, parent));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(node_add_instance)
+static m3ApiRawFunction(node_create_instance)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE node_add_instance\n");
+    printf("TRACE node_create_instance\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_nid_t);
-    m3ApiGetArg(nux_nid_t, parent);
-    m3ApiGetArg(nux_oid_t, scene);
-    m3ApiReturn(nux_create_instance_node(env, parent, scene));
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, parent);
+    m3ApiGetArg(nux_id_t, instance);
+    m3ApiReturn(nux_node_create_instance(env, parent, instance));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(node_remove)
+static m3ApiRawFunction(node_delete)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE node_remove\n");
+    printf("TRACE node_delete\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
-    nux_delete_node(env, nid);
+    m3ApiGetArg(nux_id_t, id);
+    nux_node_delete(env, id);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(node_get_translation)
+static m3ApiRawFunction(node_translation)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE node_get_translation\n");
+    printf("TRACE node_translation\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
+    m3ApiGetArg(nux_id_t, id);
     m3ApiGetArgMem(nux_f32_t *, pos);
-    nux_get_node_translation(env, nid, pos);
+    nux_node_translation(env, id, pos);
+    m3ApiSuccess();
+}
+static m3ApiRawFunction(node_rotation)
+{
+#ifdef NUX_BUILD_TRACE
+    printf("TRACE node_rotation\n");
+#endif
+    nux_env_t env = m3_GetUserData(runtime);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiGetArgMem(nux_f32_t *, rot);
+    nux_node_rotation(env, id, rot);
+    m3ApiSuccess();
+}
+static m3ApiRawFunction(node_scale)
+{
+#ifdef NUX_BUILD_TRACE
+    printf("TRACE node_scale\n");
+#endif
+    nux_env_t env = m3_GetUserData(runtime);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiGetArgMem(nux_f32_t *, scale);
+    nux_node_scale(env, id, scale);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_set_translation)
@@ -242,20 +267,9 @@ static m3ApiRawFunction(node_set_translation)
     printf("TRACE node_set_translation\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
+    m3ApiGetArg(nux_id_t, id);
     m3ApiGetArgMem(const nux_f32_t *, pos);
-    nux_set_node_translation(env, nid, pos);
-    m3ApiSuccess();
-}
-static m3ApiRawFunction(node_get_rotation)
-{
-#ifdef NUX_BUILD_TRACE
-    printf("TRACE node_get_rotation\n");
-#endif
-    nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
-    m3ApiGetArgMem(nux_f32_t *, rot);
-    nux_get_node_rotation(env, nid, rot);
+    nux_node_set_translation(env, id, pos);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_set_rotation)
@@ -264,20 +278,9 @@ static m3ApiRawFunction(node_set_rotation)
     printf("TRACE node_set_rotation\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
+    m3ApiGetArg(nux_id_t, id);
     m3ApiGetArgMem(const nux_f32_t *, rot);
-    nux_set_node_rotation(env, nid, rot);
-    m3ApiSuccess();
-}
-static m3ApiRawFunction(node_get_scale)
-{
-#ifdef NUX_BUILD_TRACE
-    printf("TRACE node_get_scale\n");
-#endif
-    nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
-    m3ApiGetArgMem(nux_f32_t *, scale);
-    nux_get_node_scale(env, nid, scale);
+    nux_node_set_rotation(env, id, rot);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_set_scale)
@@ -286,41 +289,64 @@ static m3ApiRawFunction(node_set_scale)
     printf("TRACE node_set_scale\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
+    m3ApiGetArg(nux_id_t, id);
     m3ApiGetArgMem(const nux_f32_t *, scale);
-    nux_set_node_scale(env, nid, scale);
+    nux_node_set_scale(env, id, scale);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(node_get_parent)
+static m3ApiRawFunction(node_scene)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE node_get_parent\n");
+    printf("TRACE node_scene\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_u32_t);
-    m3ApiGetArg(nux_nid_t, nid);
-    m3ApiReturn(nux_node_parent(env, nid));
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiReturn(nux_node_scene(env, id));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(camera_add)
+static m3ApiRawFunction(node_parent)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE camera_add\n");
+    printf("TRACE node_parent\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_nid_t, nid);
-    m3ApiReturn(nux_create_camera(env, nid));
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiReturn(nux_node_parent(env, id));
     m3ApiSuccess();
 }
-static m3ApiRawFunction(camera_remove)
+static m3ApiRawFunction(node_next)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE camera_remove\n");
+    printf("TRACE node_next\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
-    nux_delete_camera(env, nid);
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiReturn(nux_node_next(env, id));
+    m3ApiSuccess();
+}
+static m3ApiRawFunction(node_child)
+{
+#ifdef NUX_BUILD_TRACE
+    printf("TRACE node_child\n");
+#endif
+    nux_env_t env = m3_GetUserData(runtime);
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, id);
+    m3ApiReturn(nux_node_child(env, id));
+    m3ApiSuccess();
+}
+static m3ApiRawFunction(camera_create)
+{
+#ifdef NUX_BUILD_TRACE
+    printf("TRACE camera_create\n");
+#endif
+    nux_env_t env = m3_GetUserData(runtime);
+    m3ApiReturnType(nux_id_t);
+    m3ApiGetArg(nux_id_t, parent);
+    m3ApiReturn(nux_camera_create(env, parent));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(camera_set_perspective)
@@ -329,34 +355,24 @@ static m3ApiRawFunction(camera_set_perspective)
     printf("TRACE camera_set_perspective\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
+    m3ApiGetArg(nux_id_t, id);
     m3ApiGetArg(nux_f32_t, fov);
     m3ApiGetArg(nux_f32_t, near);
     m3ApiGetArg(nux_f32_t, far);
-    nux_set_camera_perspective(env, nid, fov, near, far);
+    nux_camera_set_perspective(env, id, fov, near, far);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(model_add)
+static m3ApiRawFunction(model_create)
 {
 #ifdef NUX_BUILD_TRACE
-    printf("TRACE model_add\n");
+    printf("TRACE model_create\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_status_t);
-    m3ApiGetArg(nux_nid_t, nid);
-    m3ApiGetArg(nux_oid_t, mesh);
-    m3ApiGetArg(nux_oid_t, texture);
-    m3ApiReturn(nux_create_model(env, nid, mesh, texture));
-    m3ApiSuccess();
-}
-static m3ApiRawFunction(model_remove)
-{
-#ifdef NUX_BUILD_TRACE
-    printf("TRACE model_remove\n");
-#endif
-    nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_nid_t, nid);
-    nux_model_remove(env, nid);
+    m3ApiGetArg(nux_id_t, parent);
+    m3ApiGetArg(nux_id_t, mesh);
+    m3ApiGetArg(nux_id_t, texture);
+    m3ApiReturn(nux_model_create(env, parent, mesh, texture));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(push_scissor)
@@ -442,7 +458,7 @@ static m3ApiRawFunction(blit)
     printf("TRACE blit\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_oid_t, texture);
+    m3ApiGetArg(nux_id_t, texture);
     m3ApiGetArg(nux_u32_t, x);
     m3ApiGetArg(nux_u32_t, y);
     m3ApiGetArg(nux_u32_t, w);
@@ -456,7 +472,7 @@ static m3ApiRawFunction(draw_sprite)
     printf("TRACE draw_sprite\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_oid_t, spritesheet);
+    m3ApiGetArg(nux_id_t, spritesheet);
     m3ApiGetArg(nux_u32_t, sprite);
     nux_draw_sprite(env, spritesheet, sprite);
     m3ApiSuccess();
@@ -467,8 +483,8 @@ static m3ApiRawFunction(draw_scene)
     printf("TRACE draw_scene\n");
 #endif
     nux_env_t env = m3_GetUserData(runtime);
-    m3ApiGetArg(nux_oid_t, scene);
-    m3ApiGetArg(nux_nid_t, camera);
+    m3ApiGetArg(nux_id_t, scene);
+    m3ApiGetArg(nux_id_t, camera);
     nux_draw_scene(env, scene, camera);
     m3ApiSuccess();
 }
@@ -505,43 +521,42 @@ link_raw_functions (IM3Module module)
     m3_LinkRawFunction(module, "*", "console_info", "i(i)", console_info);
     m3_LinkRawFunction(module, "*", "global_time", "f()", global_time);
     m3_LinkRawFunction(module, "*", "delta_time", "f()", delta_time);
-    m3_LinkRawFunction(module, "*", "create_scope", "v(ii)", create_scope);
-    m3_LinkRawFunction(module, "*", "rewind_scope", "v(i)", rewind_scope);
+    m3_LinkRawFunction(module, "*", "object_type", "(i)", object_type);
+    m3_LinkRawFunction(module, "*", "object_put", "v(ii)", object_put);
+    m3_LinkRawFunction(module, "*", "stack_new", "i(ii)", stack_new);
+    m3_LinkRawFunction(module, "*", "texture_create", "i(ii)", texture_create);
     m3_LinkRawFunction(
-        module, "*", "set_active_scope", "v(i)", set_active_scope);
-    m3_LinkRawFunction(module, "*", "create_texture", "v(ii)", create_texture);
+        module, "*", "texture_update", "v(iiiii*)", texture_update);
+    m3_LinkRawFunction(module, "*", "mesh_create", "i(iiii)", mesh_create);
+    m3_LinkRawFunction(module, "*", "mesh_update", "v(iiii*)", mesh_update);
     m3_LinkRawFunction(
-        module, "*", "update_texture", "v(iiiii*)", update_texture);
-    m3_LinkRawFunction(module, "*", "create_mesh", "v(iiii)", create_mesh);
-    m3_LinkRawFunction(module, "*", "update_mesh", "v(iiii*)", update_mesh);
+        module, "*", "spritesheet_create", "i(iiiiii)", spritesheet_create);
+    m3_LinkRawFunction(module, "*", "scene_create", "i(ii)", scene_create);
+    m3_LinkRawFunction(module, "*", "node_root", "i(i)", node_root);
+    m3_LinkRawFunction(module, "*", "node_create", "i(i)", node_create);
     m3_LinkRawFunction(
-        module, "*", "create_spritesheet", "v(iiiiii)", create_spritesheet);
-    m3_LinkRawFunction(module, "*", "create_scene", "v(ii)", create_scene);
-    m3_LinkRawFunction(module, "*", "bind_scene", "v(i)", bind_scene);
-    m3_LinkRawFunction(module, "*", "node_add", "i(i)", node_add);
+        module, "*", "node_create_instance", "i(ii)", node_create_instance);
+    m3_LinkRawFunction(module, "*", "node_delete", "v(i)", node_delete);
     m3_LinkRawFunction(
-        module, "*", "node_add_instance", "i(ii)", node_add_instance);
-    m3_LinkRawFunction(module, "*", "node_remove", "v(i)", node_remove);
-    m3_LinkRawFunction(
-        module, "*", "node_get_translation", "v(i*)", node_get_translation);
+        module, "*", "node_translation", "v(i*)", node_translation);
+    m3_LinkRawFunction(module, "*", "node_rotation", "v(i*)", node_rotation);
+    m3_LinkRawFunction(module, "*", "node_scale", "v(i*)", node_scale);
     m3_LinkRawFunction(
         module, "*", "node_set_translation", "v(i*)", node_set_translation);
     m3_LinkRawFunction(
-        module, "*", "node_get_rotation", "v(i*)", node_get_rotation);
-    m3_LinkRawFunction(
         module, "*", "node_set_rotation", "v(i*)", node_set_rotation);
-    m3_LinkRawFunction(module, "*", "node_get_scale", "v(i*)", node_get_scale);
     m3_LinkRawFunction(module, "*", "node_set_scale", "v(i*)", node_set_scale);
-    m3_LinkRawFunction(module, "*", "node_get_parent", "i(i)", node_get_parent);
-    m3_LinkRawFunction(module, "*", "camera_add", "v(i)", camera_add);
-    m3_LinkRawFunction(module, "*", "camera_remove", "v(i)", camera_remove);
+    m3_LinkRawFunction(module, "*", "node_scene", "i(i)", node_scene);
+    m3_LinkRawFunction(module, "*", "node_parent", "i(i)", node_parent);
+    m3_LinkRawFunction(module, "*", "node_next", "i(i)", node_next);
+    m3_LinkRawFunction(module, "*", "node_child", "i(i)", node_child);
+    m3_LinkRawFunction(module, "*", "camera_create", "i(i)", camera_create);
     m3_LinkRawFunction(module,
                        "*",
                        "camera_set_perspective",
                        "v(ifff)",
                        camera_set_perspective);
-    m3_LinkRawFunction(module, "*", "model_add", "v(iii)", model_add);
-    m3_LinkRawFunction(module, "*", "model_remove", "v(i)", model_remove);
+    m3_LinkRawFunction(module, "*", "model_create", "v(iii)", model_create);
     m3_LinkRawFunction(module, "*", "push_scissor", "v(iiii)", push_scissor);
     m3_LinkRawFunction(module, "*", "push_viewport", "v(iiii)", push_viewport);
     m3_LinkRawFunction(module, "*", "push_cursor", "v(ii)", push_cursor);

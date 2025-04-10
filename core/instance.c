@@ -45,13 +45,7 @@ nux_instance_init (const nux_instance_config_t *config)
     NU_CHECK(inst->cmds, goto cleanup0);
 
     // Initialize resource table
-    inst->objects[NU_NULL].type = NUX_OBJECT_NULL;
-    inst->objects[NU_NULL].next = NU_NULL;
-    for (nu_size_t i = 1; i < NUX_OBJECT_MAX; ++i)
-    {
-        inst->objects[i].type = NUX_OBJECT_FREE;
-        inst->objects[i].next = 0;
-    }
+    nux_object_init_table(inst, config->objects_capacity);
 
     // Initialize inputs
     nu_memset(inst->buttons, 0, sizeof(inst->buttons));
@@ -83,9 +77,9 @@ nux_instance_free (nux_instance_t inst)
         nux_platform_free(inst->userdata, inst->cmds);
     }
     // State
-    if (inst->mem)
+    if (inst->memory)
     {
-        nux_platform_free(inst->userdata, inst->mem);
+        nux_platform_free(inst->userdata, inst->memory);
     }
     // Instance
     nux_platform_free(inst->userdata, inst);
@@ -101,7 +95,7 @@ nux_status_t
 nux_instance_load (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
 {
     nux_env_t env = nux_instance_init_env(inst);
-    return nux_load_cartridge(env, cart, n);
+    return nux_load_cartridge(env, inst->root_stack, cart, n);
 }
 void
 nux_instance_save_state (nux_instance_t inst, nux_u8_t *state)
@@ -159,6 +153,8 @@ nux_error_message (nux_error_t error)
             return "out of commands";
         case NUX_ERROR_OUT_OF_DYNAMIC_OBJECTS:
             return "out of objects";
+        case NUX_ERROR_INVALID_OBJECT_STATIC_INDEX:
+            return "invalid object static index";
     }
     return NU_NULL;
 }

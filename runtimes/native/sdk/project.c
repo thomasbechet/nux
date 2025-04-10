@@ -230,7 +230,7 @@ sdk_compile (sdk_project_t *project)
     for (nu_size_t i = 0; i < project->entries_size; ++i)
     {
         const nux_cart_entry_t *entry = project->entries + i;
-        nu_u32_t                       type  = entry->type;
+        nu_u32_t                type  = entry->type;
         NU_CHECK(fwrite(&type, sizeof(type), 1, f) == 1, return NU_FAILURE);
         NU_CHECK(fwrite(&entry->oid, sizeof(entry->oid), 1, f) == 1,
                  return NU_FAILURE);
@@ -501,7 +501,7 @@ sdk_project_free (sdk_project_t *project)
 }
 
 nux_cart_entry_t *
-sdk_begin_entry (sdk_project_t *proj, nux_oid_t oid, nux_object_type_t type)
+sdk_begin_entry (sdk_project_t *proj, nux_id_t id, nux_object_type_t type)
 {
     if (proj->current_entry)
     {
@@ -525,7 +525,7 @@ sdk_begin_entry (sdk_project_t *proj, nux_oid_t oid, nux_object_type_t type)
     ++proj->entries_size;
     proj->current_entry         = entry;
     proj->current_entry->type   = type;
-    proj->current_entry->oid    = oid;
+    proj->current_entry->id     = id;
     proj->current_entry->offset = proj->data_size;
     proj->current_entry->length = 0;
     // logger_log(NU_LOG_INFO,
@@ -534,29 +534,29 @@ sdk_begin_entry (sdk_project_t *proj, nux_oid_t oid, nux_object_type_t type)
     //         proj->current_entry->offset);
     return entry;
 }
-nux_oid_t
-sdk_next_oid (sdk_project_t *proj)
+nux_id_t
+sdk_next_id (sdk_project_t *proj)
 {
-    nux_oid_t oid   = 0;
+    nux_id_t  id    = NU_NULL;
     nu_bool_t found = NU_TRUE;
     while (found)
     {
-        oid   = proj->next_id++;
+        id    = proj->next_id++;
         found = NU_FALSE;
         for (nu_u32_t i = 0; i < proj->assets_count; ++i)
         {
-            if (proj->assets[i].oid == oid)
+            if (proj->assets[i].id == id)
             {
                 found = NU_TRUE;
                 break;
             }
         }
     }
-    return oid;
+    return id;
 }
 typedef struct
 {
-    nu_u32_t                index;
+    nu_u32_t         index;
     nux_cart_entry_t data;
 } indexed_entry_t;
 static int

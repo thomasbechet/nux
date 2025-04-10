@@ -6,7 +6,7 @@ push_command (nux_env_t env)
     NU_ASSERT(env->inst->cmds);
     if (env->inst->cmds_size >= env->inst->cmds_capa)
     {
-        nux_set_error(env, NUX_ERROR_OUF_OF_COMMANDS);
+        nux_set_error(env, NUX_ERROR_OUT_OF_COMMANDS);
         return NU_NULL;
     }
     nux_command_t *cmd = env->inst->cmds + env->inst->cmds_size;
@@ -137,7 +137,7 @@ nux_print (nux_env_t env, const nux_c8_t *text)
 }
 void
 nux_blit (nux_env_t env,
-          nux_oid_t texture,
+          nux_id_t  texture,
           nux_u32_t x,
           nux_u32_t y,
           nux_u32_t w,
@@ -145,15 +145,14 @@ nux_blit (nux_env_t env,
 {
 }
 void
-nux_draw_sprite (nux_env_t env, nux_oid_t spritesheet, nux_u32_t sprite)
+nux_draw_sprite (nux_env_t env, nux_id_t spritesheet, nux_u32_t sprite)
 {
 }
 void
-nux_draw_scene (nux_env_t env, nux_oid_t scene, nux_u32_t camera)
+nux_draw_scene (nux_env_t env, nux_id_t scene, nux_u32_t camera)
 {
     nux_command_t *cmd = push_command(env);
     NU_CHECK(cmd, return);
     cmd->type              = NUX_COMMAND_DRAW_SCENE;
-    cmd->draw_scene.scene  = scene;
     cmd->draw_scene.camera = camera;
 }

@@ -23,7 +23,7 @@ typedef void (*runtime_log_callback_t)(nu_log_level_t   level,
 typedef struct
 {
     nu_char_t          name[32];
-    nux_ptr_t          addr;
+    nux_u32_t          addr;
     nux_inspect_type_t type;
     nu_bool_t          override;
     union

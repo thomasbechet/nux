@@ -45,9 +45,8 @@ cart_write_texture (sdk_project_t   *proj,
                     nu_u32_t         size,
                     const nu_byte_t *data)
 {
-    nux_cart_entry_t *entry
-        = sdk_begin_entry(proj, id, NUX_OBJECT_TEXTURE);
-    nu_status_t status;
+    nux_cart_entry_t *entry = sdk_begin_entry(proj, id, NUX_OBJECT_TEXTURE);
+    nu_status_t       status;
     status = cart_write_u32(proj, size);
     NU_CHECK(status, return NU_FAILURE);
     status = cart_write(proj, data, nux_texture_memsize(size));

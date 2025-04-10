@@ -1,4 +1,3 @@
-#include "nulib/nulib/math.h"
 #include "shaders_data.c.inc"
 #include "fonts_data.c.inc"
 #include "runtime.h"
@@ -66,7 +65,7 @@ typedef union
 static struct
 {
     GLuint      white_texture;
-    gl_object_t objects[NUX_OBJECT_MAX];
+    gl_object_t objects[1024];
     font_t      font;
     nu_size_t   blit_count;
     GLuint      blit_vbo;
@@ -395,7 +394,7 @@ gen_vertex_vbo (GLuint *vbo, GLuint *vao, nu_u32_t capacity)
     glBindVertexArray(0);
 }
 static void
-init_texture (const nux_texture_t *texture, nux_oid_t oid)
+init_texture (const nux_texture_t *texture, nux_id_t id)
 {
     GLuint handle;
     glGenTextures(1, &handle);
@@ -420,20 +419,18 @@ init_texture (const nux_texture_t *texture, nux_oid_t oid)
     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     // glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-    renderer.objects[oid].texture.handle         = handle;
-    renderer.objects[oid].texture.update_counter = 0;
+    renderer.objects[id].texture.handle         = handle;
+    renderer.objects[id].texture.update_counter = 0;
 }
 static void
-free_texture (nux_oid_t oid)
+free_texture (nux_id_t id)
 {
-    glDeleteTextures(1, &renderer.objects[oid].texture.handle);
+    glDeleteTextures(1, &renderer.objects[NUX_ID_INDEX(id)].texture.handle);
 }
 static void
-update_texture (nux_instance_t       inst,
-                const nux_texture_t *texture,
-                nux_oid_t            oid)
+update_texture (nux_instance_t inst, const nux_texture_t *texture, nux_id_t id)
 {
-    GLuint handle = renderer.objects[oid].texture.handle;
+    GLuint handle = renderer.objects[NUX_ID_INDEX(id)].texture.handle;
     glBindTexture(GL_TEXTURE_2D, handle);
     glTexSubImage2D(GL_TEXTURE_2D,
                     0,
@@ -589,9 +586,6 @@ draw_scene_instance (nux_instance_t inst, nux_oid_t scene, nu_m4_t transform)
         = nux_instance_get_memory(inst, object->scene.slabs);
 
     // Draw scene
-    nux_nid_t  nid;
-    nux_nid_t *iter = NU_NULL;
-    nux_nid_t  stack[256];
     while ((nid = nux_scene_iter_dfs(nodes, &iter, stack, sizeof(stack))))
     {
         nux_node_t *node = &nodes[nid].node;

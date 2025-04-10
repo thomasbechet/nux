@@ -97,22 +97,12 @@ nux_id_t nux_pool_new(nux_env_t env,
 nux_id_t nux_pool_add(nux_env_t env, nux_id_t pool, nux_object_type_t type);
 void     nux_pool_remove(nux_env_t env, nux_id_t pool, nux_id_t id);
 
-void      nux_object_init_table(nux_instance_t inst,
-                                nux_u32_t      capa,
-                                nux_u32_t      static_capa);
+void      nux_object_init_table(nux_instance_t inst, nux_u32_t capa);
 void     *nux_object_get(nux_env_t env, nux_id_t id, nux_object_type_t type);
 void     *nux_object_get_unchecked(nux_env_t env, nux_id_t id);
 nux_u32_t nux_object_get_block_unchecked(nux_env_t env, nux_id_t id);
 nux_id_t nux_object_add(nux_env_t env, nux_object_type_t type, nux_u32_t block);
-void     nux_object_add_static(nux_env_t         env,
-                               nux_u32_t         index,
-                               nux_object_type_t type,
-                               nux_u32_t         block);
 void     nux_object_remove(nux_env_t env, nux_id_t id);
-void     nux_object_add_static(nux_env_t         env,
-                               nux_u32_t         index,
-                               nux_object_type_t type,
-                               nux_u32_t         block);
 
 void nux_set_error(nux_env_t env, nux_error_t error);
 

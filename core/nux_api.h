@@ -159,7 +159,7 @@ nux_f32_t nux_global_time(nux_env_t env);
 nux_f32_t nux_delta_time(nux_env_t env);
 
 nux_object_type_t nux_object_type(nux_env_t env, nux_id_t id);
-nux_id_t          nux_object_slot(nux_env_t env, nux_u32_t slot);
+nux_status_t      nux_object_put(nux_env_t env, nux_id_t id, nux_u32_t index);
 
 nux_id_t nux_stack_new(nux_env_t env, nux_id_t stack, nux_u32_t size);
 
@@ -215,7 +215,7 @@ void     nux_camera_set_perspective(
         nux_env_t env, nux_id_t id, nux_f32_t fov, nux_f32_t near, nux_f32_t far);
 
 nux_status_t nux_model_create(nux_env_t env,
-                              nux_id_t  node,
+                              nux_id_t  parent,
                               nux_id_t  mesh,
                               nux_id_t  texture);
 

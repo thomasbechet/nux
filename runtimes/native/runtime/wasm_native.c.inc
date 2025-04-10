@@ -37,33 +37,33 @@ delta_time (wasm_exec_env_t env)
     vm_t *vm = wasm_runtime_get_user_data(env);
     return sys_delta_time(vm);
 }
-static nux_status_t
-create_scope (wasm_exec_env_t env, nux_oid_t oid, nux_u32_t size)
+static nux_object_type_t
+object_type (wasm_exec_env_t env, nux_id_t id)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_create_scope(vm, oid, size);
-}
-static void
-rewind_scope (wasm_exec_env_t env, nux_oid_t oid)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_rewind_scope(vm, oid);
-}
-static void
-set_active_scope (wasm_exec_env_t env, nux_oid_t oid)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_set_active_scope(vm, oid);
+    return sys_object_type(vm, id);
 }
 static nux_status_t
-create_texture (wasm_exec_env_t env, nux_oid_t oid, nux_u32_t size)
+object_put (wasm_exec_env_t env, nux_id_t id, nux_u32_t index)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_create_texture(vm, oid, size);
+    return sys_object_put(vm, id, index);
+}
+static nux_id_t
+stack_new (wasm_exec_env_t env, nux_id_t stack, nux_u32_t size)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_stack_new(vm, stack, size);
+}
+static nux_id_t
+texture_create (wasm_exec_env_t env, nux_id_t stack, nux_u32_t size)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_texture_create(vm, stack, size);
 }
 static void
-update_texture (wasm_exec_env_t env,
-                nux_oid_t       oid,
+texture_update (wasm_exec_env_t env,
+                nux_id_t        id,
                 nux_u32_t       x,
                 nux_u32_t       y,
                 nux_u32_t       w,
@@ -71,149 +71,156 @@ update_texture (wasm_exec_env_t env,
                 const void     *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_update_texture(vm, oid, x, y, w, h, p);
+    sys_texture_update(vm, id, x, y, w, h, p);
 }
-static nux_status_t
-create_mesh (wasm_exec_env_t        env,
-             nux_oid_t              oid,
+static nux_id_t
+mesh_create (wasm_exec_env_t        env,
+             nux_id_t               stack,
              nux_u32_t              count,
              nux_primitive_t        primitive,
              nux_vertex_attribute_t attributes)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_create_mesh(vm, oid, count, primitive, attributes);
+    return sys_mesh_create(vm, stack, count, primitive, attributes);
 }
 static void
-update_mesh (wasm_exec_env_t        env,
-             nux_oid_t              oid,
+mesh_update (wasm_exec_env_t        env,
+             nux_id_t               id,
              nux_vertex_attribute_t attributes,
              nux_u32_t              first,
              nux_u32_t              count,
              const void            *p)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_update_mesh(vm, oid, attributes, first, count, p);
+    sys_mesh_update(vm, id, attributes, first, count, p);
 }
-static nux_status_t
-create_spritesheet (wasm_exec_env_t env,
-                    nux_oid_t       oid,
-                    nux_u32_t       texture,
+static nux_id_t
+spritesheet_create (wasm_exec_env_t env,
+                    nux_id_t        stack,
+                    nux_id_t        texture,
                     nux_u32_t       row,
                     nux_u32_t       col,
-                    nux_oid_t       fwidth,
+                    nux_u32_t       fwidth,
                     nux_u32_t       fheight)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_create_spritesheet(vm, oid, texture, row, col, fwidth, fheight);
+    return sys_spritesheet_create(
+        vm, stack, texture, row, col, fwidth, fheight);
 }
-static nux_status_t
-create_scene (wasm_exec_env_t env, nux_oid_t oid, nux_u32_t node_capa)
+static nux_id_t
+scene_create (wasm_exec_env_t env, nux_id_t stack, nux_u32_t object_capa)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_create_scene(vm, oid, node_capa);
+    return sys_scene_create(vm, stack, object_capa);
 }
-static nux_status_t
-bind_scene (wasm_exec_env_t env, nux_oid_t oid)
+static nux_id_t
+node_root (wasm_exec_env_t env, nux_id_t scene)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_bind_scene(vm, oid);
+    return sys_node_root(vm, scene);
 }
-static nux_nid_t
-node_add (wasm_exec_env_t env, nux_nid_t parent)
+static nux_id_t
+node_create (wasm_exec_env_t env, nux_id_t parent)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_node_add(vm, parent);
+    return sys_node_create(vm, parent);
 }
-static nux_nid_t
-node_add_instance (wasm_exec_env_t env, nux_nid_t parent, nux_oid_t scene)
+static nux_id_t
+node_create_instance (wasm_exec_env_t env, nux_id_t parent, nux_id_t instance)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_node_add_instance(vm, parent, scene);
-}
-static void
-node_remove (wasm_exec_env_t env, nux_nid_t nid)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_remove(vm, nid);
+    return sys_node_create_instance(vm, parent, instance);
 }
 static void
-node_get_translation (wasm_exec_env_t env, nux_nid_t nid, nux_f32_t *pos)
+node_delete (wasm_exec_env_t env, nux_id_t id)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_get_translation(vm, nid, pos);
+    sys_node_delete(vm, id);
 }
 static void
-node_set_translation (wasm_exec_env_t env, nux_nid_t nid, const nux_f32_t *pos)
+node_translation (wasm_exec_env_t env, nux_id_t id, nux_f32_t *pos)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_set_translation(vm, nid, pos);
+    sys_node_translation(vm, id, pos);
 }
 static void
-node_get_rotation (wasm_exec_env_t env, nux_nid_t nid, nux_f32_t *rot)
+node_rotation (wasm_exec_env_t env, nux_id_t id, nux_f32_t *rot)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_get_rotation(vm, nid, rot);
+    sys_node_rotation(vm, id, rot);
 }
 static void
-node_set_rotation (wasm_exec_env_t env, nux_nid_t nid, const nux_f32_t *rot)
+node_scale (wasm_exec_env_t env, nux_id_t id, nux_f32_t *scale)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_set_rotation(vm, nid, rot);
+    sys_node_scale(vm, id, scale);
 }
 static void
-node_get_scale (wasm_exec_env_t env, nux_nid_t nid, nux_f32_t *scale)
+node_set_translation (wasm_exec_env_t env, nux_id_t id, const nux_f32_t *pos)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_get_scale(vm, nid, scale);
+    sys_node_set_translation(vm, id, pos);
 }
 static void
-node_set_scale (wasm_exec_env_t env, nux_nid_t nid, const nux_f32_t *scale)
+node_set_rotation (wasm_exec_env_t env, nux_id_t id, const nux_f32_t *rot)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_node_set_scale(vm, nid, scale);
-}
-static nux_u32_t
-node_get_parent (wasm_exec_env_t env, nux_nid_t nid)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_node_get_parent(vm, nid);
-}
-static nux_status_t
-camera_add (wasm_exec_env_t env, nux_nid_t nid)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_camera_add(vm, nid);
+    sys_node_set_rotation(vm, id, rot);
 }
 static void
-camera_remove (wasm_exec_env_t env, nux_nid_t nid)
+node_set_scale (wasm_exec_env_t env, nux_id_t id, const nux_f32_t *scale)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_camera_remove(vm, nid);
+    sys_node_set_scale(vm, id, scale);
+}
+static nux_id_t
+node_scene (wasm_exec_env_t env, nux_id_t id)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_node_scene(vm, id);
+}
+static nux_id_t
+node_parent (wasm_exec_env_t env, nux_id_t id)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_node_parent(vm, id);
+}
+static nux_id_t
+node_next (wasm_exec_env_t env, nux_id_t id)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_node_next(vm, id);
+}
+static nux_id_t
+node_child (wasm_exec_env_t env, nux_id_t id)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_node_child(vm, id);
+}
+static nux_id_t
+camera_create (wasm_exec_env_t env, nux_id_t parent)
+{
+    vm_t *vm = wasm_runtime_get_user_data(env);
+    return sys_camera_create(vm, parent);
 }
 static void
 camera_set_perspective (wasm_exec_env_t env,
-                        nux_nid_t       nid,
+                        nux_id_t        id,
                         nux_f32_t       fov,
                         nux_f32_t       near,
                         nux_f32_t       far)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_camera_set_perspective(vm, nid, fov, near, far);
+    sys_camera_set_perspective(vm, id, fov, near, far);
 }
 static nux_status_t
-model_add (wasm_exec_env_t env,
-           nux_nid_t       nid,
-           nux_oid_t       mesh,
-           nux_oid_t       texture)
+model_create (wasm_exec_env_t env,
+              nux_id_t        parent,
+              nux_id_t        mesh,
+              nux_id_t        texture)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
-    return sys_model_add(vm, nid, mesh, texture);
-}
-static void
-model_remove (wasm_exec_env_t env, nux_nid_t nid)
-{
-    vm_t *vm = wasm_runtime_get_user_data(env);
-    sys_model_remove(vm, nid);
+    return sys_model_create(vm, parent, mesh, texture);
 }
 static void
 push_scissor (
@@ -261,7 +268,7 @@ print (wasm_exec_env_t env, const nux_c8_t *text)
 }
 static void
 blit (wasm_exec_env_t env,
-      nux_oid_t       texture,
+      nux_id_t        texture,
       nux_u32_t       x,
       nux_u32_t       y,
       nux_u32_t       w,
@@ -271,13 +278,13 @@ blit (wasm_exec_env_t env,
     sys_blit(vm, texture, x, y, w, h);
 }
 static void
-draw_sprite (wasm_exec_env_t env, nux_oid_t spritesheet, nux_u32_t sprite)
+draw_sprite (wasm_exec_env_t env, nux_id_t spritesheet, nux_u32_t sprite)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     sys_draw_sprite(vm, spritesheet, sprite);
 }
 static void
-draw_scene (wasm_exec_env_t env, nux_oid_t scene, nux_nid_t camera)
+draw_scene (wasm_exec_env_t env, nux_id_t scene, nux_id_t camera)
 {
     vm_t *vm = wasm_runtime_get_user_data(env);
     sys_draw_scene(vm, scene, camera);
@@ -302,31 +309,32 @@ static NativeSymbol wasm_native_symbols[]
         EXPORT_WASM_API_WITH_SIG(console_info, "(i)"),
         EXPORT_WASM_API_WITH_SIG(global_time, "()"),
         EXPORT_WASM_API_WITH_SIG(delta_time, "()"),
-        EXPORT_WASM_API_WITH_SIG(create_scope, "(ii)"),
-        EXPORT_WASM_API_WITH_SIG(rewind_scope, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(set_active_scope, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(create_texture, "(ii)"),
-        EXPORT_WASM_API_WITH_SIG(update_texture, "(iiiii*)"),
-        EXPORT_WASM_API_WITH_SIG(create_mesh, "(iiii)"),
-        EXPORT_WASM_API_WITH_SIG(update_mesh, "(iiii*)"),
-        EXPORT_WASM_API_WITH_SIG(create_spritesheet, "(iiiiii)"),
-        EXPORT_WASM_API_WITH_SIG(create_scene, "(ii)"),
-        EXPORT_WASM_API_WITH_SIG(bind_scene, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(node_add, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(node_add_instance, "(ii)"),
-        EXPORT_WASM_API_WITH_SIG(node_remove, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(node_get_translation, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(object_type, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(object_put, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(stack_new, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(texture_create, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(texture_update, "(iiiii*)"),
+        EXPORT_WASM_API_WITH_SIG(mesh_create, "(iiii)"),
+        EXPORT_WASM_API_WITH_SIG(mesh_update, "(iiii*)"),
+        EXPORT_WASM_API_WITH_SIG(spritesheet_create, "(iiiiii)"),
+        EXPORT_WASM_API_WITH_SIG(scene_create, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(node_root, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_create, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_create_instance, "(ii)"),
+        EXPORT_WASM_API_WITH_SIG(node_delete, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_translation, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(node_rotation, "(i*)"),
+        EXPORT_WASM_API_WITH_SIG(node_scale, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(node_set_translation, "(i*)"),
-        EXPORT_WASM_API_WITH_SIG(node_get_rotation, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(node_set_rotation, "(i*)"),
-        EXPORT_WASM_API_WITH_SIG(node_get_scale, "(i*)"),
         EXPORT_WASM_API_WITH_SIG(node_set_scale, "(i*)"),
-        EXPORT_WASM_API_WITH_SIG(node_get_parent, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(camera_add, "(i)"),
-        EXPORT_WASM_API_WITH_SIG(camera_remove, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_scene, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_parent, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_next, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(node_child, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(camera_create, "(i)"),
         EXPORT_WASM_API_WITH_SIG(camera_set_perspective, "(iiii)"),
-        EXPORT_WASM_API_WITH_SIG(model_add, "(iii)"),
-        EXPORT_WASM_API_WITH_SIG(model_remove, "(i)"),
+        EXPORT_WASM_API_WITH_SIG(model_create, "(iii)"),
         EXPORT_WASM_API_WITH_SIG(push_scissor, "(iiii)"),
         EXPORT_WASM_API_WITH_SIG(push_viewport, "(iiii)"),
         EXPORT_WASM_API_WITH_SIG(push_cursor, "(ii)"),
