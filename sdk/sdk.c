@@ -1,5 +1,29 @@
 #include "sdk.h"
 
+void *
+sdk_malloc (nu_size_t n)
+{
+    return malloc(n);
+}
+void
+sdk_free (void *p)
+{
+    free(p);
+}
+void *
+sdk_realloc (void *p, nu_size_t n)
+{
+    return realloc(p, n);
+}
+void
+sdk_log (nu_log_level_t level, const nu_char_t *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+}
+
 nu_status_t
 json_parse_f32 (const JSON_Object *object, const nu_char_t *name, nu_f32_t *v)
 {
@@ -34,7 +58,7 @@ cart_write (sdk_project_t *proj, const void *p, nu_size_t n)
     if (proj->data_size + n > proj->data_capa)
     {
         proj->data_capa *= 2;
-        proj->data = realloc(proj->data, proj->data_capa);
+        proj->data = sdk_realloc(proj->data, proj->data_capa);
         NU_ASSERT(proj->data);
     }
     nu_memcpy(proj->data + proj->data_size, p, n);

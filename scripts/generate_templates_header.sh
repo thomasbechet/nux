@@ -6,8 +6,8 @@ if [[ ! -d $ROOT_DIR ]]; then
     exit 1
 fi
 
-TEMPLATES=$ROOT_DIR/runtimes/native/data/templates
-OUTPUT=$ROOT_DIR/runtimes/native/sdk/templates_data.c.inc
+TEMPLATES=$ROOT_DIR/sdk/templates
+OUTPUT=$ROOT_DIR/sdk/templates_data.c.inc
 
 printf "#include <nulib/nulib.h>\n" > $OUTPUT
 printf "typedef struct

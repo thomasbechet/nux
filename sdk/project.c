@@ -2,8 +2,6 @@
 
 #include "templates_data.c.inc"
 
-#include <runtime/runtime.h>
-
 #define PROJECT_CART_DEFAULT "cart.bin"
 #define PROJECT_JSON         "nux.json"
 #define PROJECT_TARGET       "target"
@@ -48,10 +46,10 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
         nu_size_t size;
         if (nu_load_bytes(project_path, NU_NULL, &size) == NU_SUCCESS)
         {
-            logger_log(NU_LOG_ERROR,
-                       "Directory '" NU_SV_FMT
-                       "' already contains a " PROJECT_JSON " file",
-                       NU_SV_ARGS(path));
+            sdk_log(NU_LOG_ERROR,
+                    "Directory '" NU_SV_FMT "' already contains a " PROJECT_JSON
+                    " file",
+                    NU_SV_ARGS(path));
             return NU_FAILURE;
         }
     }
@@ -72,10 +70,9 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
     }
     else
     {
-        logger_log(NU_LOG_ERROR,
-                   "Project language '" NU_SV_FMT
-                   "' not found or not supported",
-                   NU_SV_ARGS(lang));
+        sdk_log(NU_LOG_ERROR,
+                "Project language '" NU_SV_FMT "' not found or not supported",
+                NU_SV_ARGS(lang));
         return NU_FAILURE;
     }
 
@@ -94,9 +91,9 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
                 filepath_sv, template_file->data, template_file->size));
             ++template_file;
         }
-        logger_log(NU_LOG_INFO,
-                   "Project generated with language '" NU_SV_FMT "'",
-                   NU_SV_ARGS(lang));
+        sdk_log(NU_LOG_INFO,
+                "Project generated with language '" NU_SV_FMT "'",
+                NU_SV_ARGS(lang));
     }
     else
     {
@@ -105,7 +102,7 @@ sdk_generate_template (nu_sv_t path, nu_sv_t lang)
         project_init(&project, path);
         status = sdk_project_save(&project, path);
         sdk_project_free(&project);
-        logger_log(NU_LOG_INFO, "Empty project generated");
+        sdk_log(NU_LOG_INFO, "Empty project generated");
     }
     return status;
 }
@@ -118,7 +115,7 @@ sdk_compile (sdk_project_t *project)
     if (!project->entries)
     {
         project->entries
-            = native_malloc(SDK_INIT_ENTRY_CAPA * sizeof(*project->entries));
+            = sdk_malloc(SDK_INIT_ENTRY_CAPA * sizeof(*project->entries));
         NU_ASSERT(project->entries);
         project->entries_capa = SDK_INIT_ENTRY_CAPA;
     }
@@ -127,7 +124,7 @@ sdk_compile (sdk_project_t *project)
     project->entries_size = 0;
     if (!project->data)
     {
-        project->data = native_malloc(SDK_INIT_DATA_CAPA);
+        project->data = sdk_malloc(SDK_INIT_DATA_CAPA);
         NU_ASSERT(project->data);
         project->data_capa = SDK_INIT_DATA_CAPA;
     }
@@ -138,17 +135,17 @@ sdk_compile (sdk_project_t *project)
     // Execute prebuild command
     if (nu_strnlen(project->prebuild, SDK_NAME_MAX))
     {
-        logger_log(
+        sdk_log(
             NU_LOG_INFO, "Executing prebuild command '%s'", project->prebuild);
 #ifdef NU_PLATFORM_UNIX
         nu_int_t errcode = system(project->prebuild);
         if (errcode)
         {
-            logger_log(NU_LOG_ERROR,
-                       "Prebuild command '%s' was not executed sucessfully "
-                       "(errocode %d)",
-                       project->prebuild,
-                       errcode);
+            sdk_log(NU_LOG_ERROR,
+                    "Prebuild command '%s' was not executed sucessfully "
+                    "(errocode %d)",
+                    project->prebuild,
+                    errcode);
             return NU_FAILURE;
         }
 #endif
@@ -156,7 +153,7 @@ sdk_compile (sdk_project_t *project)
 
     if (project->assets_count == 0)
     {
-        logger_log(NU_LOG_WARNING, "Compiling project with no assets");
+        sdk_log(NU_LOG_WARNING, "Compiling project with no assets");
     }
 
     // Compile assets
@@ -171,13 +168,13 @@ sdk_compile (sdk_project_t *project)
         {
             ignored = "(ignored) ";
         }
-        logger_log(NU_LOG_INFO,
-                   "[% 3d%][%d] %s%s : %s",
-                   (nu_u32_t)percent,
-                   i,
-                   ignored,
-                   nu_enum_to_cstr(asset->type, asset_type_map),
-                   asset->source);
+        sdk_log(NU_LOG_INFO,
+                "[% 3d%][%d] %s%s : %s",
+                (nu_u32_t)percent,
+                i,
+                ignored,
+                nu_enum_to_cstr(asset->type, asset_type_map),
+                asset->source);
 
         if (asset->ignore)
         {
@@ -209,14 +206,14 @@ sdk_compile (sdk_project_t *project)
     FILE *f = fopen(project->target_path, "wb");
     if (!f)
     {
-        logger_log(NU_LOG_ERROR,
-                   "Failed to create cartridge file %s",
-                   project->target_path);
+        sdk_log(NU_LOG_ERROR,
+                "Failed to create cartridge file %s",
+                project->target_path);
         return NU_FAILURE;
     }
     else
     {
-        logger_log(NU_LOG_INFO, "Compiling cartridge %s", project->target_path);
+        sdk_log(NU_LOG_INFO, "Compiling cartridge %s", project->target_path);
     }
 
     // Write header
@@ -232,7 +229,7 @@ sdk_compile (sdk_project_t *project)
         const nux_cart_entry_t *entry = project->entries + i;
         nu_u32_t                type  = entry->type;
         NU_CHECK(fwrite(&type, sizeof(type), 1, f) == 1, return NU_FAILURE);
-        NU_CHECK(fwrite(&entry->oid, sizeof(entry->oid), 1, f) == 1,
+        NU_CHECK(fwrite(&entry->id, sizeof(entry->id), 1, f) == 1,
                  return NU_FAILURE);
         NU_CHECK(fwrite(&entry->offset, sizeof(entry->offset), 1, f) == 1,
                  return NU_FAILURE);
@@ -244,7 +241,7 @@ sdk_compile (sdk_project_t *project)
     NU_CHECK(fwrite(project->data, project->data_size, 1, f) == 1,
              goto cleanup1);
 
-    logger_log(NU_LOG_INFO, "Compilation success");
+    sdk_log(NU_LOG_INFO, "Compilation success");
 
 cleanup1:
     fclose(f);
@@ -260,11 +257,11 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
     // Parse file
     nu_char_t json_path[NU_PATH_MAX];
     nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
-    logger_log(NU_LOG_INFO, "Loading project file %s", json_path);
+    sdk_log(NU_LOG_INFO, "Loading project file %s", json_path);
     JSON_Value *jrootv = json_parse_file(json_path);
     if (!jrootv)
     {
-        logger_log(NU_LOG_ERROR, "Failed to parse project file %s", json_path);
+        sdk_log(NU_LOG_ERROR, "Failed to parse project file %s", json_path);
         return NU_FAILURE;
     }
 
@@ -273,7 +270,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
     JSON_Object *jroot = json_object(jrootv);
     if (!jroot)
     {
-        logger_log(NU_LOG_ERROR, "Project json root is not an object");
+        sdk_log(NU_LOG_ERROR, "Project json root is not an object");
         status = NU_FAILURE;
         goto cleanup0;
     }
@@ -286,7 +283,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
         if (proj->assets_count)
         {
             proj->assets
-                = native_malloc(sizeof(*proj->assets) * proj->assets_count);
+                = sdk_malloc(sizeof(*proj->assets) * proj->assets_count);
             NU_ASSERT(proj->assets);
             nu_memset(
                 proj->assets, 0, sizeof(*proj->assets) * proj->assets_count);
@@ -298,8 +295,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             JSON_Object         *jasset  = json_object(jassetv);
             if (!jasset)
             {
-                logger_log(
-                    NU_LOG_ERROR, "Unexpected asset object type at %d", i);
+                sdk_log(NU_LOG_ERROR, "Unexpected asset object type at %d", i);
                 continue;
             }
             const nu_char_t *name_string = json_object_get_name(jassets, i);
@@ -314,7 +310,7 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
                 nu_sv(type_string, SDK_NAME_MAX), asset_type_map, &found);
             if (!found)
             {
-                logger_log(NU_LOG_ERROR, "Invalid asset type %s", type_string);
+                sdk_log(NU_LOG_ERROR, "Invalid asset type %s", type_string);
                 status = NU_FAILURE;
                 goto cleanup0;
             }
@@ -324,14 +320,13 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
             nu_strncpy(asset->name, name_string, SDK_NAME_MAX);
 
             // Parse id
-            proj->assets[i].oid
+            proj->assets[i].id
                 = json_object_get_number(jasset, PROJECT_ASSET_ID);
-            if (proj->assets[i].oid == 0
-                || proj->assets[i].oid > NUX_OBJECT_MAX)
+            if (proj->assets[i].id == 0)
             {
-                logger_log(NU_LOG_ERROR,
-                           "Invalid or missing asset id for '%s'",
-                           proj->assets[i].name);
+                sdk_log(NU_LOG_ERROR,
+                        "Invalid or missing asset id for '%s'",
+                        proj->assets[i].name);
                 status = NU_FAILURE;
                 goto cleanup0;
             }
@@ -370,13 +365,13 @@ sdk_project_load (sdk_project_t *proj, nu_sv_t path)
     {
         for (nu_u32_t j = i + 1; j < proj->assets_count; ++j)
         {
-            if (proj->assets[i].oid == proj->assets[j].oid)
+            if (proj->assets[i].id == proj->assets[j].id)
             {
-                logger_log(NU_LOG_ERROR,
-                           "Conflict between asset id %u of '%s' and '%s'",
-                           proj->assets[i].oid,
-                           proj->assets[i].name,
-                           proj->assets[j].name);
+                sdk_log(NU_LOG_ERROR,
+                        "Conflict between asset id %u of '%s' and '%s'",
+                        proj->assets[i].id,
+                        proj->assets[i].name,
+                        proj->assets[j].name);
                 status = NU_FAILURE;
                 goto cleanup0;
             }
@@ -435,7 +430,7 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
             json_object_set_string(jasset, PROJECT_ASSET_TYPE, type_str);
 
             // Id
-            json_object_set_number(jasset, PROJECT_ASSET_ID, asset->oid);
+            json_object_set_number(jasset, PROJECT_ASSET_ID, asset->id);
 
             // Source
             json_object_set_string(
@@ -472,7 +467,7 @@ sdk_project_save (const sdk_project_t *project, nu_sv_t path)
     nu_path_concat(json_path, NU_PATH_MAX, path, NU_SV(PROJECT_JSON));
     if (json_serialize_to_file_pretty(jrootv, json_path))
     {
-        logger_log(
+        sdk_log(
             NU_LOG_ERROR, "Failed to serialize project to json %s", json_path);
         status = NU_FAILURE;
         goto cleanup1;
@@ -488,15 +483,15 @@ sdk_project_free (sdk_project_t *project)
 {
     if (project->assets)
     {
-        native_free(project->assets);
+        sdk_free(project->assets);
     }
     if (project->entries)
     {
-        native_free(project->entries);
+        sdk_free(project->entries);
     }
     if (project->data)
     {
-        native_free(project->data);
+        sdk_free(project->data);
     }
 }
 
@@ -507,7 +502,7 @@ sdk_begin_entry (sdk_project_t *proj, nux_id_t id, nux_object_type_t type)
     {
         proj->current_entry->length
             = proj->data_size - proj->current_entry->offset;
-        // logger_log(NU_LOG_INFO,
+        // sdk_log(NU_LOG_INFO,
         //         "[END ENTRY %s length %d]",
         //         nu_enum_to_cstr(proj->current_entry->type,
         //         cart_object_type_map), proj->current_entry->length);
@@ -528,7 +523,7 @@ sdk_begin_entry (sdk_project_t *proj, nux_id_t id, nux_object_type_t type)
     proj->current_entry->id     = id;
     proj->current_entry->offset = proj->data_size;
     proj->current_entry->length = 0;
-    // logger_log(NU_LOG_INFO,
+    // sdk_log(NU_LOG_INFO,
     //         "[BEGIN ENTRY %s offset %d]",
     //         nu_enum_to_cstr(entry->type, cart_object_type_map),
     //         proj->current_entry->offset);
@@ -573,11 +568,11 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     nu_status_t status = nu_load_bytes(path, NU_NULL, &size);
     if (!status)
     {
-        logger_log(NU_LOG_ERROR, "Failed to load " NU_SV_FMT, NU_SV_ARGS(path));
+        sdk_log(NU_LOG_ERROR, "Failed to load " NU_SV_FMT, NU_SV_ARGS(path));
         return NU_FAILURE;
     }
 
-    nu_byte_t *data = native_malloc(size);
+    nu_byte_t *data = sdk_malloc(size);
     NU_ASSERT(data);
     status = nu_load_bytes(path, data, &size);
     NU_CHECK(status, goto cleanup0);
@@ -586,7 +581,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     NU_CHECK(nux_cart_parse_header(data, &header), goto cleanup0);
 
     indexed_entry_t *entries
-        = native_malloc(header.entry_count * sizeof(*entries));
+        = sdk_malloc(header.entry_count * sizeof(*entries));
     NU_ASSERT(entries);
     nu_byte_t *entry_data = data + NUX_CART_HEADER_SIZE;
     for (nu_size_t i = 0; i < header.entry_count; ++i)
@@ -665,7 +660,7 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
                 ((nu_f32_t)entry->data.length / (nu_f32_t)total_object_size)
                     * 100);
             printf("     %-5u %-8s 0x%-8x %-8d %-8s\n",
-                   entry->data.oid,
+                   entry->data.id,
                    nu_enum_to_cstr(entry->data.type, object_type_map),
                    entry->data.offset,
                    entry->data.length,
@@ -674,8 +669,8 @@ sdk_dump (nu_sv_t path, nu_bool_t sort, nu_bool_t display_table, nu_u32_t num)
     }
 
 cleanup1:
-    native_free(entries);
+    sdk_free(entries);
 cleanup0:
-    native_free(data);
+    sdk_free(data);
     return status;
 }

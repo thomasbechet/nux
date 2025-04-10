@@ -40,7 +40,7 @@ project(nux-native LANGUAGES C)
 
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/core)
-include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)
+include_directories(${CMAKE_SOURCE_DIR}/native)
 
 add_compile_options(-DNU_STDLIB)
 add_compile_options(-fsanitize=address)

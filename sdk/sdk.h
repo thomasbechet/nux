@@ -1,8 +1,10 @@
 #ifndef SDK_H
 #define SDK_H
 
-#include <runtime/runtime.h>
+#include <nux.h>
 #include <parson/parson.h>
+#define NU_STDLIB
+#include <nulib/nulib.h>
 
 #define SDK_NAME_MAX        256
 #define SDK_INIT_DATA_CAPA  NU_MEM_128M
@@ -61,7 +63,12 @@ NU_API nu_status_t sdk_project_load(sdk_project_t *project, nu_sv_t path);
 NU_API nu_status_t sdk_project_save(const sdk_project_t *project, nu_sv_t path);
 NU_API void        sdk_project_free(sdk_project_t *project);
 
-void view_debug(struct nk_context *ctx, struct nk_rect bounds);
+void *sdk_malloc(nu_size_t n);
+void  sdk_free(void *p);
+void *sdk_realloc(void *p, nu_size_t n);
+void  sdk_log(nu_log_level_t level, const nu_char_t *fmt, ...);
+
+// void view_debug(struct nk_context *ctx, struct nk_rect bounds);
 
 nux_cart_entry_t *sdk_begin_entry(sdk_project_t    *proj,
                                   nux_id_t          id,

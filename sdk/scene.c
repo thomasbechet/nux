@@ -1,6 +1,5 @@
 #include "sdk.h"
 
-#include <runtime/runtime.h>
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 #include <stb/stb_image.h>
@@ -21,11 +20,11 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
                                            STBI_rgb_alpha);
     if (!img)
     {
-        logger_log(NU_LOG_ERROR, "Failed to load image '%s'", texture->name);
+        sdk_log(NU_LOG_ERROR, "Failed to load image '%s'", texture->name);
         return NU_FAILURE;
     }
 
-    logger_log(
+    sdk_log(
         NU_LOG_DEBUG, "Loading texture '%s' w %d h %d", texture->name, w, h);
 
     // Find nearest texture size
@@ -33,8 +32,7 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
     if (target_size > NUX_TEXTURE_MAX_SIZE)
     {
         target_size = NUX_TEXTURE_MIN_SIZE;
-        logger_log(
-            NU_LOG_WARNING, "Texture resized to %d", NUX_TEXTURE_MAX_SIZE);
+        sdk_log(NU_LOG_WARNING, "Texture resized to %d", NUX_TEXTURE_MAX_SIZE);
     }
 
     // Resize image
@@ -42,7 +40,7 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
     NU_ASSERT(resized);
     if (!image_resize(nu_v2u(w, h), img, target_size, resized))
     {
-        logger_log(
+        sdk_log(
             NU_LOG_ERROR, "Failed to resized glb image '%s'", texture->name);
         goto cleanup0;
     }
@@ -186,8 +184,8 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 {
     typedef struct
     {
-        void     *cgltf_ptr;
-        nux_oid_t oid;
+        void    *cgltf_ptr;
+        nux_id_t id;
     } resource_t;
 
 #define MAX_RESOURCE 512
@@ -204,17 +202,16 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
     result = cgltf_parse_file(&options, asset->source, &data);
     if (result != cgltf_result_success)
     {
-        logger_log(NU_LOG_ERROR,
-                   "Failed to load gltf file %s (code %d)",
-                   asset->source,
-                   result);
+        sdk_log(NU_LOG_ERROR,
+                "Failed to load gltf file %s (code %d)",
+                asset->source,
+                result);
         return NU_FAILURE;
     }
     result = cgltf_load_buffers(&options, data, asset->source);
     if (result != cgltf_result_success)
     {
-        logger_log(
-            NU_LOG_ERROR, "Failed to load gltf buffers %s", asset->source);
+        sdk_log(NU_LOG_ERROR, "Failed to load gltf buffers %s", asset->source);
         return NU_FAILURE;
     }
 
@@ -224,15 +221,15 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         cgltf_mesh *mesh = data->meshes + i;
         for (nu_size_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nux_oid_t oid = sdk_next_id(proj);
-            NU_CHECK(compile_primitive_mesh(mesh->primitives + p, oid, proj),
+            nux_id_t id = sdk_next_id(proj);
+            NU_CHECK(compile_primitive_mesh(mesh->primitives + p, id, proj),
                      goto cleanup0);
-            logger_log(NU_LOG_DEBUG,
-                       "Loading mesh %u '%s' primitive %d",
-                       oid,
-                       mesh->name,
-                       p);
-            resources[resources_count].oid       = oid;
+            sdk_log(NU_LOG_DEBUG,
+                    "Loading mesh %u '%s' primitive %d",
+                    id,
+                    mesh->name,
+                    p);
+            resources[resources_count].id        = id;
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             ++resources_count;
         }
@@ -261,7 +258,7 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
         {
             nu_u32_t id = sdk_next_id(proj);
             NU_CHECK(compile_texture(texture, id, proj), goto cleanup0);
-            resources[resources_count].oid       = id;
+            resources[resources_count].id        = id;
             resources[resources_count].cgltf_ptr = texture;
             ++resources_count;
         }
@@ -274,22 +271,19 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
 
         // Compute required node
         nu_u32_t node_count = 0;
-        nu_u32_t slab_capa  = 3; // Null + Root (node + table)
         for (nu_size_t n = 0; n < scene->nodes_count; ++n)
         {
             cgltf_node *node = scene->nodes[n];
             if (node->mesh)
             {
-                node_count += node->mesh->primitives_count;
-                slab_capa
-                    += node->mesh->primitives_count * 3; // node + table + model
+                node_count
+                    += node->mesh->primitives_count * 2; // transform + model
             }
         }
 
         // Write model
         nux_cart_entry_t *entry
-            = sdk_begin_entry(proj, asset->oid, NUX_OBJECT_SCENE);
-        NU_CHECK(cart_write_u32(proj, slab_capa), goto cleanup0);
+            = sdk_begin_entry(proj, asset->id, NUX_OBJECT_SCENE);
         NU_CHECK(cart_write_u32(proj, node_count), goto cleanup0);
 
         // Create model
@@ -325,26 +319,26 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     cgltf_primitive *primitive = node->mesh->primitives + p;
 
                     // Find mesh
-                    nux_oid_t mesh = NU_NULL;
+                    nux_id_t mesh = NU_NULL;
                     for (nu_size_t i = 0; i < MAX_RESOURCE; ++i)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].oid;
+                            mesh = resources[i].id;
                             break;
                         }
                     }
                     if (!mesh)
                     {
-                        logger_log(NU_LOG_ERROR,
-                                   "Mesh primitive not found for model %s",
-                                   node->name);
+                        sdk_log(NU_LOG_ERROR,
+                                "Mesh primitive not found for model %s",
+                                node->name);
                         status = NU_FAILURE;
                         goto cleanup0;
                     }
 
                     // Find texture
-                    nux_oid_t texture = NU_NULL;
+                    nux_id_t texture = NU_NULL;
                     if (primitive->material
                         && primitive->material->has_pbr_metallic_roughness
                         && primitive->material->pbr_metallic_roughness
@@ -356,24 +350,28 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].oid;
+                                texture = resources[i].id;
                                 break;
                             }
                         }
                     }
                     if (!texture)
                     {
-                        logger_log(
-                            NU_LOG_WARNING,
-                            "Texture not found for model %s, using default",
-                            node->name);
+                        sdk_log(NU_LOG_WARNING,
+                                "Texture not found for model %s, using default",
+                                node->name);
                     }
 
-                    logger_log(NU_LOG_DEBUG,
-                               "Loading node %s mesh %d texture %d",
-                               node->name,
-                               mesh,
-                               texture);
+                    sdk_log(NU_LOG_DEBUG,
+                            "Loading node %s mesh %d texture %d",
+                            node->name,
+                            mesh,
+                            texture);
+
+                    // Write transform node
+                    NU_CHECK(cart_write_u32(proj, NUX_OBJECT_NODE),
+                             goto cleanup0);
+                    NU_CHECK(cart_write_u32(proj, root_node), goto cleanup0);
 
                     // Write node
                     NU_CHECK(cart_write_u32(proj, NUX_NODE_ROOT),
