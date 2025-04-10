@@ -1,4 +1,4 @@
-#include "sdk.h"
+#include "internal.h"
 
 #include "templates_data.c.inc"
 

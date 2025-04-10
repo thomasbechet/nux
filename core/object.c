@@ -34,7 +34,7 @@ object_add (nux_env_t env, nux_object_type_t type, nux_u32_t block)
     env->inst->objects[index].key = NUX_KEY_MAKE(block, 1);
     return NUX_ID_MAKE(index, 1);
 }
-void
+static void
 object_remove (nux_env_t env, nux_id_t id)
 {
     nux_u32_t index = id_index(env, id);

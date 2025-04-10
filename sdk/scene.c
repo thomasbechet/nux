@@ -1,4 +1,4 @@
-#include "sdk.h"
+#include "internal.h"
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
@@ -36,7 +36,7 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
     }
 
     // Resize image
-    nu_byte_t *resized = native_malloc(nux_texture_memsize(target_size));
+    nu_byte_t *resized = sdk_malloc(nux_texture_memsize(target_size));
     NU_ASSERT(resized);
     if (!image_resize(nu_v2u(w, h), img, target_size, resized))
     {
@@ -47,7 +47,7 @@ compile_texture (const cgltf_texture *texture, nu_u32_t id, sdk_project_t *proj)
 
     // Write image
     status = cart_write_texture(proj, id, target_size, resized);
-    native_free(resized);
+    sdk_free(resized);
     NU_CHECK(status, goto cleanup0);
 
 cleanup0:
@@ -85,7 +85,7 @@ buffer_index (cgltf_accessor *accessor, nu_size_t i)
 }
 static nu_status_t
 compile_primitive_mesh (const cgltf_primitive *primitive,
-                        nux_oid_t              oid,
+                        nux_id_t               id,
                         sdk_project_t         *proj)
 {
     // Access attributes
@@ -137,7 +137,7 @@ compile_primitive_mesh (const cgltf_primitive *primitive,
     nu_size_t       indice_count = accessor->count;
 
     // Write header
-    nux_cart_entry_t *entry = sdk_begin_entry(proj, oid, NUX_OBJECT_MESH);
+    nux_cart_entry_t *entry = sdk_begin_entry(proj, id, NUX_OBJECT_MESH);
     NU_CHECK(cart_write_u32(proj, indice_count), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, NUX_PRIMITIVE_TRIANGLES), return NU_FAILURE);
     NU_CHECK(cart_write_u32(proj, attributes), return NU_FAILURE);
@@ -371,18 +371,14 @@ sdk_scene_compile (sdk_project_t *proj, sdk_project_asset_t *asset)
                     // Write transform node
                     NU_CHECK(cart_write_u32(proj, NUX_OBJECT_NODE),
                              goto cleanup0);
-                    NU_CHECK(cart_write_u32(proj, root_node), goto cleanup0);
-
-                    // Write node
-                    NU_CHECK(cart_write_u32(proj, NUX_NODE_ROOT),
-                             goto cleanup0);
+                    NU_CHECK(cart_write_u32(proj, NU_NULL), goto cleanup0);
                     NU_CHECK(cart_write_v3(proj, translation), goto cleanup0);
                     NU_CHECK(cart_write_q4(proj, rotation), goto cleanup0);
                     NU_CHECK(cart_write_v3(proj, scale), goto cleanup0);
-                    NU_CHECK(cart_write_u32(proj, NUX_NODE_MODEL),
-                             goto cleanup0);
 
-                    // Write model
+                    // Write node
+                    NU_CHECK(cart_write_u32(proj, NUX_OBJECT_NODE_MODEL),
+                             goto cleanup0);
                     NU_CHECK(cart_write_u32(proj, mesh), goto cleanup0);
                     NU_CHECK(cart_write_u32(proj, texture), goto cleanup0);
                 }

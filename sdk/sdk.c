@@ -1,4 +1,4 @@
-#include "sdk.h"
+#include "internal.h"
 
 void *
 sdk_malloc (nu_size_t n)
@@ -25,30 +25,30 @@ sdk_log (nu_log_level_t level, const nu_char_t *fmt, ...)
 }
 
 nu_status_t
-json_parse_f32 (const JSON_Object *object, const nu_char_t *name, nu_f32_t *v)
+sdk_json_parse_f32 (const JSON_Object *object, const nu_char_t *name, nu_f32_t *v)
 {
     NU_ASSERT(object && name);
     *v = json_object_get_number(object, name);
     return NU_SUCCESS;
 }
 nu_status_t
-json_write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
+sdk_json_write_f32 (JSON_Object *object, const nu_char_t *name, nu_f32_t value)
 {
     json_object_set_number(object, name, value);
     return NU_SUCCESS;
 }
 nu_status_t
-json_parse_u32 (const JSON_Object *object, const nu_char_t *name, nu_u32_t *v)
+sdk_json_parse_u32 (const JSON_Object *object, const nu_char_t *name, nu_u32_t *v)
 {
     nu_f32_t value;
-    NU_CHECK(json_parse_f32(object, name, &value), return NU_FAILURE);
+    NU_CHECK(sdk_json_parse_f32(object, name, &value), return NU_FAILURE);
     *v = value;
     return NU_SUCCESS;
 }
 nu_status_t
-json_write_u32 (JSON_Object *object, const nu_char_t *name, nu_u32_t value)
+sdk_json_write_u32 (JSON_Object *object, const nu_char_t *name, nu_u32_t value)
 {
-    json_write_f32(object, name, value);
+    sdk_json_write_f32(object, name, value);
     return NU_SUCCESS;
 }
 

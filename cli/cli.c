@@ -1,10 +1,4 @@
-#include "cli.h"
-
-#include <argparse/argparse.h>
-#include <runtime/runtime.h>
-#ifdef NUX_BUILD_SDK
-#include <sdk/sdk.h>
-#endif
+#include "internal.h"
 
 typedef struct
 {
@@ -119,7 +113,7 @@ main (int argc, const nu_char_t *argv[])
         }
     }
 
-    // Not subcommand found, execute run by default
+    // No subcommand found, execute run by default
 
     nu_sv_t path = argc > 0 ? nu_sv(argv[0], NU_PATH_MAX) : nu_sv_empty();
     runtime_config_t config = { .debug = NU_FALSE, .path = path };

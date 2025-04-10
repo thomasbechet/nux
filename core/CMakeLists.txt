@@ -1,4 +1,4 @@
-project(nux LANGUAGES C)
+project(core LANGUAGES C)
 
 # set (WAMR_BUILD_PLATFORM "linux")
 # set (WAMR_BUILD_TARGET "X86_64")

@@ -1,4 +1,4 @@
-#include "sdk.h"
+#include "internal.h"
 
 #define STBIR_DEBUG
 
@@ -55,14 +55,14 @@ cart_write_texture (sdk_project_t   *proj,
 nu_status_t
 sdk_texture_load (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_parse_u32(jasset, "size", &asset->texture.target_size),
+    NU_CHECK(sdk_json_parse_u32(jasset, "size", &asset->texture.target_size),
              return NU_FAILURE);
     return NU_SUCCESS;
 }
 nu_status_t
 sdk_texture_save (sdk_project_asset_t *asset, JSON_Object *jasset)
 {
-    NU_CHECK(json_write_u32(jasset, "size", asset->texture.target_size),
+    NU_CHECK(sdk_json_write_u32(jasset, "size", asset->texture.target_size),
              return NU_FAILURE);
     return NU_SUCCESS;
 }

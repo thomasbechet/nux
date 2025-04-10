@@ -1,4 +1,4 @@
-project(nux-native LANGUAGES C)
+project(native LANGUAGES C)
 
 # set (WAMR_BUILD_PLATFORM "linux")
 # set (WAMR_BUILD_TARGET "X86_64")
@@ -40,21 +40,17 @@ project(nux-native LANGUAGES C)
 
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/core)
-include_directories(${CMAKE_SOURCE_DIR}/native)
+include_directories(${CMAKE_SOURCE_DIR}/sdk)
 
-add_compile_options(-DNU_STDLIB)
+# add_compile_options(-DNU_STDLIB)
 add_compile_options(-fsanitize=address)
 add_link_options(-fsanitize=address)
 
-file(GLOB RUNTIME_SOURCES runtime/*.c)
-file(GLOB CLI_SOURCES cli/*.c)
+file(GLOB SOURCES *.c)
 file(GLOB ARGPARSE_SOURCES ${CMAKE_SOURCE_DIR}/externals/argparse/*.c)
-if (NUX_BUILD_SDK)
-file(GLOB SDK_SOURCES sdk/*.c)
-file(GLOB PARSON_SOURCES ${CMAKE_SOURCE_DIR}/externals/parson/*.c)
-endif ()
+
 # add_executable(${PROJECT_NAME} ${RUNTIME_SOURCES} ${CLI_SOURCES} ${SDK_SOURCES} ${WAMR_RUNTIME_LIB_SOURCE} ${PARSON_SOURCES} ${ARGPARSE_SOURCES})
-add_executable(${PROJECT_NAME} ${RUNTIME_SOURCES} ${CLI_SOURCES} ${SDK_SOURCES} ${PARSON_SOURCES} ${ARGPARSE_SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES OUTPUT_NAME "nux")
 set(OpenGL_GL_PREFERENCE GLVND)

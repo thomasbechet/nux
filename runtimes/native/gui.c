@@ -1,4 +1,4 @@
-#include "runtime.h"
+#include "internal.h"
 
 #include <glad/gl.h>
 #define NK_INCLUDE_FIXED_TYPES

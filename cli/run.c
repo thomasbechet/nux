@@ -1,10 +1,4 @@
-#include "cli.h"
-
-#include <argparse/argparse.h>
-#include <runtime/runtime.h>
-#ifdef NUX_BUILD_SDK
-#include <sdk/sdk.h>
-#endif
+#include "internal.h"
 
 nu_u32_t
 cli_command_run (nu_u32_t argc, const nu_char_t **argv)

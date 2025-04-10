@@ -1,4 +1,4 @@
-#include "runtime.h"
+#include "internal.h"
 
 void
 nux_platform_inspect (nux_instance_t     inst,
