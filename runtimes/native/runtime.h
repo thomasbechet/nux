@@ -2,7 +2,6 @@
 #define RUNTIME_H
 
 #include <nux.h>
-#include <nux_api.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO

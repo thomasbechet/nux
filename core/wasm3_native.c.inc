@@ -192,7 +192,7 @@ static m3ApiRawFunction(node_root)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_id_t);
     m3ApiGetArg(nux_id_t, scene);
-    m3ApiReturn(nux_node_root(env, scene));
+    m3ApiReturn(nux_scene_root(env, scene));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(node_create)

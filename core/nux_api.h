@@ -99,7 +99,7 @@ typedef enum
     NUX_OBJECT_SPRITESHEET,
     NUX_OBJECT_SCENE,
     NUX_OBJECT_NODE,
-    NUX_OBJECT_NODE_TRANSFORM,
+    NUX_OBJECT_TRANSFORM,
     NUX_OBJECT_CAMERA,
     NUX_OBJECT_MODEL,
 
@@ -193,7 +193,7 @@ nux_id_t nux_spritesheet_create(nux_env_t env,
                                 nux_u32_t fheight);
 
 nux_id_t nux_scene_create(nux_env_t env, nux_id_t stack, nux_u32_t object_capa);
-nux_id_t nux_node_root(nux_env_t env, nux_id_t scene);
+nux_id_t nux_scene_root(nux_env_t env, nux_id_t scene);
 nux_id_t nux_node_create(nux_env_t env, nux_id_t parent);
 nux_id_t nux_node_create_instance(nux_env_t env,
                                   nux_id_t  parent,
@@ -209,15 +209,17 @@ nux_id_t nux_node_scene(nux_env_t env, nux_id_t id);
 nux_id_t nux_node_parent(nux_env_t env, nux_id_t id);
 nux_id_t nux_node_next(nux_env_t env, nux_id_t id);
 nux_id_t nux_node_child(nux_env_t env, nux_id_t id);
+void     nux_node_local_to_world(nux_env_t env, nux_id_t id, nux_f32_t *m);
+void     nux_node_local_to_parent(nux_env_t env, nux_id_t id, nux_f32_t *m);
 
 nux_id_t nux_camera_create(nux_env_t env, nux_id_t parent);
 void     nux_camera_set_perspective(
         nux_env_t env, nux_id_t id, nux_f32_t fov, nux_f32_t near, nux_f32_t far);
 
-nux_status_t nux_model_create(nux_env_t env,
-                              nux_id_t  parent,
-                              nux_id_t  mesh,
-                              nux_id_t  texture);
+nux_id_t nux_model_create(nux_env_t env,
+                          nux_id_t  parent,
+                          nux_id_t  mesh,
+                          nux_id_t  texture);
 
 void nux_push_scissor(
     nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h);

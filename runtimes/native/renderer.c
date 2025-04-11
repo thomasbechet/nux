@@ -429,22 +429,24 @@ free_texture (nux_id_t id)
     glDeleteTextures(1, &renderer.objects[NUX_ID_INDEX(id)].texture.handle);
 }
 static void
-update_texture (nux_env_t env, const nux_texture_t *texture, nux_id_t id)
+update_texture (nux_instance_t inst, const nux_texture_t *texture, nux_id_t id)
 {
     GLuint handle = renderer.objects[NUX_ID_INDEX(id)].texture.handle;
     glBindTexture(GL_TEXTURE_2D, handle);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    0,
-                    0,
-                    texture->size,
-                    texture->size,
-                    GL_RGBA,
-                    GL_UNSIGNED_BYTE,
-                    nux_object_get(env, texture->data, NUX_OBJECT_MEMORY));
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        0,
+        0,
+        0,
+        texture->size,
+        texture->size,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        nux_instance_get_object(inst, texture->data, NUX_OBJECT_MEMORY));
     // glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
-    renderer.objects[oid].texture.update_counter = texture->update_counter;
+    renderer.objects[NUX_ID_INDEX(id)].texture.update_counter
+        = texture->update_counter;
 }
 
 static void
@@ -468,7 +470,7 @@ init_mesh (const nux_mesh_t *mesh, nux_id_t id)
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 static void
-update_mesh (nux_env_t env, const nux_mesh_t *mesh, nux_id_t id)
+update_mesh (nux_instance_t inst, const nux_mesh_t *mesh, nux_id_t id)
 {
     // Compute vertex index in vbo
     nu_size_t first = renderer.objects[NUX_ID_INDEX(id)].mesh.offset;
@@ -481,8 +483,8 @@ update_mesh (nux_env_t env, const nux_mesh_t *mesh, nux_id_t id)
     if (mesh->attributes & NUX_VERTEX_POSITION)
     {
         const nu_f32_t *data
-            = (const nu_f32_t *)(nux_object_get(
-                                     env, mesh->data, NUX_OBJECT_MEMORY)
+            = (const nu_f32_t *)(nux_instance_get_object(
+                                     inst, mesh->data, NUX_OBJECT_MEMORY)
                                  + nux_vertex_offset(mesh->attributes,
                                                      NUX_VERTEX_POSITION,
                                                      mesh->count)
@@ -499,7 +501,8 @@ update_mesh (nux_env_t env, const nux_mesh_t *mesh, nux_id_t id)
     if (mesh->attributes & NUX_VERTEX_UV)
     {
         const nu_f32_t *data
-            = (const nu_f32_t *)(nux_instance_get_memory(inst, mesh->data)
+            = (const nu_f32_t *)(nux_instance_get_object(
+                                     inst, mesh->data, NUX_OBJECT_MEMORY)
                                  + nux_vertex_offset(mesh->attributes,
                                                      NUX_VERTEX_UV,
                                                      mesh->count)
@@ -514,7 +517,8 @@ update_mesh (nux_env_t env, const nux_mesh_t *mesh, nux_id_t id)
     if (mesh->attributes & NUX_VERTEX_COLOR)
     {
         const nu_f32_t *data
-            = (const nu_f32_t *)(nux_instance_get_memory(inst, mesh->data)
+            = (const nu_f32_t *)(nux_instance_get_object(
+                                     inst, mesh->data, NUX_OBJECT_MEMORY)
                                  + nux_vertex_offset(mesh->attributes,
                                                      NUX_VERTEX_COLOR,
                                                      mesh->count)
@@ -530,7 +534,8 @@ update_mesh (nux_env_t env, const nux_mesh_t *mesh, nux_id_t id)
     }
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    renderer.objects[oid].mesh.update_counter = mesh->update_counter;
+    renderer.objects[NUX_ID_INDEX(id)].mesh.update_counter
+        = mesh->update_counter;
 }
 
 static void
@@ -554,33 +559,8 @@ update_ubo (void)
         GL_UNIFORM_BUFFER, sizeof(renderer.ubo), &renderer.ubo, GL_STATIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
-static nu_m4_t
-node_local_to_parent (const nux_node_t *node)
-{
-    return nu_m4_trs(
-        nu_v3(node->translation[0], node->translation[1], node->translation[2]),
-        nu_q4(node->rotation[0],
-              node->rotation[1],
-              node->rotation[2],
-              node->rotation[3]),
-        nu_v3(node->scale[0], node->scale[1], node->scale[2]));
-}
-static nu_m4_t
-node_global_transform (const nux_scene_slab_t *nodes, const nux_node_t *node)
-{
-    nu_m4_t   global_transform = node_local_to_parent(node);
-    nux_nid_t parent           = node->parent;
-    while (parent != NU_NULL)
-    {
-        const nux_node_t *parent_node = &nodes[parent].node;
-        global_transform
-            = nu_m4_mul(node_local_to_parent(parent_node), global_transform);
-        parent = parent_node->parent;
-    }
-    return global_transform;
-}
 static void
-draw_scene_instance (nux_instance_t inst, nux_oid_t scene, nu_m4_t transform)
+draw_scene_instance (nux_instance_t inst, nux_id_t scene, nu_m4_t transform)
 {
     // Acquire scene
     nux_object_t     *object = nux_instance_get_slab(inst, scene);
@@ -661,15 +641,10 @@ draw_scene_instance (nux_instance_t inst, nux_oid_t scene, nu_m4_t transform)
     }
 }
 static void
-draw_scene (nux_instance_t inst, nux_oid_t scene, nux_nid_t camera)
+draw_scene (nux_instance_t inst, nux_id_t camera)
 {
     // Get scene camera
-    nux_object_t     *object = nux_instance_get_slab(inst, scene);
-    nux_scene_slab_t *nodes
-        = nux_instance_get_memory(inst, object->scene.slabs);
-    const nux_node_t *cam_node = &nodes[camera].node;
-    nux_camera_t     *cam
-        = &nux_scene_get_component(nodes, camera, NUX_COMPONENT_CAMERA)->camera;
+    nux_node_t *cam_node = nux_instance_get_object(inst, camera);
 
     // Update ubo with camera info
     nu_m4_t cam_transform = node_global_transform(nodes, cam_node);
@@ -1176,7 +1151,7 @@ renderer_render_instance (nux_instance_t inst,
             }
             break;
             case NUX_COMMAND_DRAW_SCENE:
-                draw_scene(inst, cmd->draw_scene.scene, cmd->draw_scene.camera);
+                draw_scene(inst, cmd->draw_scene.camera);
                 break;
             case NUX_COMMAND_DRAW_CUBE:
                 break;

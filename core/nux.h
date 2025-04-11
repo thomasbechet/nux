@@ -12,11 +12,6 @@
 #define NUX_ID_INDEX(id)            ((id) & 0xFFFFFF)
 #define NUX_ID_VERSION(id)          (((id) & 0xFF000000) >> 24)
 
-#define NUX_KEY_MAKE(block, version) ((block) | ((version << 24) & 0xFF000000))
-#define NUX_KEY_VERSION(key)         (((key) & 0xFF000000) >> 24)
-#define NUX_KEY_TYPE(key)            (((key) & 0xFF000000) >> 24)
-#define NUX_KEY_BLOCK(key)           ((key) & 0xFFFFFF)
-
 #define NUX_BLOCK_SIZE             64
 #define NUX_CART_HEADER_SIZE       sizeof(nux_cart_header_t)
 #define NUX_CART_OBJECT_ENTRY_SIZE (sizeof(nu_u32_t) * 4)
@@ -146,28 +141,33 @@ typedef struct
 
 typedef struct
 {
-    nux_id_t pool;
-    nux_id_t root;
+    nux_u32_t flags;
+    nux_id_t  pool;
+    nux_id_t  root;
+    nux_id_t  next;
+    nux_id_t  prev;
 } nux_scene_t;
 
 typedef struct
 {
-    nux_f32_t translation[3]; // 12
-    nux_f32_t rotation[4];    // 16
-    nux_f32_t scale[3];       // 12
-} nux_node_transform_t;
+    nux_f32_t translation[3];  // 12
+    nux_f32_t rotation[4];     // 16
+    nux_f32_t scale[3];        // 12
+    nux_id_t  global_to_world; // 4
+} nux_node_transform_t;        // 44
 
 typedef struct
 {
-    nux_u32_t flags;     // 4
-    nux_id_t  scene;     // 4
-    nux_id_t  parent;    // 4
-    nux_id_t  next;      // 4
-    nux_id_t  prev;      // 4
-    nux_id_t  child;     // 4
-    nux_id_t  object;    // 4
-    nux_id_t  transform; // 4
-} nux_node_t;
+    nux_u32_t flags;          // 4
+    nux_id_t  scene;          // 4
+    nux_id_t  parent;         // 4
+    nux_id_t  next;           // 4
+    nux_id_t  prev;           // 4
+    nux_id_t  child;          // 4
+    nux_id_t  object;         // 4
+    nux_id_t  transform;      // 4
+    nux_id_t  local_to_world; // 4
+} nux_node_t;                 // 32
 
 typedef struct
 {
@@ -272,23 +272,25 @@ NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t inst);
 //////                           Helper API                         //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_env_t       nux_instance_init_env(nux_instance_t inst);
-NUX_API nux_command_t  *nux_instance_get_commands(nux_instance_t inst,
-                                                  nux_u32_t     *count);
-NUX_API void           *nux_instance_get_object(nux_instance_t    inst,
-                                                nux_id_t          id,
-                                                nux_object_type_t type);
-NUX_API nux_u32_t       nux_texture_memsize(nux_u32_t size);
-NUX_API nux_u32_t       nux_vertex_memsize(nux_vertex_attribute_t attributes,
-                                           nux_u32_t              count);
-NUX_API nux_u32_t       nux_vertex_offset(nux_vertex_attribute_t attributes,
-                                          nux_vertex_attribute_t attribute,
-                                          nux_u32_t              count);
-NUX_API const nux_c8_t *nux_error_message(nux_error_t error);
-NUX_API nux_status_t    nux_cart_parse_header(const void        *data,
-                                              nux_cart_header_t *header);
-NUX_API nux_status_t    nux_cart_parse_entries(const void       *data,
-                                               nux_u32_t         count,
-                                               nux_cart_entry_t *entries);
+NUX_API nux_env_t         nux_instance_init_env(nux_instance_t inst);
+NUX_API nux_command_t    *nux_instance_get_commands(nux_instance_t inst,
+                                                    nux_u32_t     *count);
+NUX_API void             *nux_instance_get_object(nux_instance_t    inst,
+                                                  nux_id_t          id,
+                                                  nux_object_type_t type);
+NUX_API nux_object_type_t nux_instance_get_object_type(nux_instance_t inst,
+                                                       nux_id_t       id);
+NUX_API nux_u32_t         nux_texture_memsize(nux_u32_t size);
+NUX_API nux_u32_t         nux_vertex_memsize(nux_vertex_attribute_t attributes,
+                                             nux_u32_t              count);
+NUX_API nux_u32_t         nux_vertex_offset(nux_vertex_attribute_t attributes,
+                                            nux_vertex_attribute_t attribute,
+                                            nux_u32_t              count);
+NUX_API const nux_c8_t   *nux_error_message(nux_error_t error);
+NUX_API nux_status_t      nux_cart_parse_header(const void        *data,
+                                                nux_cart_header_t *header);
+NUX_API nux_status_t      nux_cart_parse_entries(const void       *data,
+                                                 nux_u32_t         count,
+                                                 nux_cart_entry_t *entries);
 
 #endif

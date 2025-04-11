@@ -9,6 +9,11 @@
 #include <wasm3.h>
 #endif
 
+#define NUX_KEY_MAKE(block, version) ((block) | ((version << 24) & 0xFF000000))
+#define NUX_KEY_VERSION(key)         (((key) & 0xFF000000) >> 24)
+#define NUX_KEY_TYPE(key)            (((key) & 0xFF000000) >> 24)
+#define NUX_KEY_BLOCK(key)           ((key) & 0xFFFFFF)
+
 ///
 /// +---------+
 /// |   NULL  | <-- 0
@@ -61,6 +66,7 @@ struct nux_instance
     nux_u32_t           objects_dynamic_free;
 
     nux_id_t root_stack;
+    nux_id_t first_scene;
 
     nux_command_t *cmds;
     nu_u32_t       cmds_capa;
@@ -118,6 +124,7 @@ nux_status_t nux_wasm_load(nux_env_t env, nux_u8_t *buffer, nux_u32_t n);
 nux_status_t nux_wasm_start(nux_env_t env);
 nux_status_t nux_wasm_update(nux_env_t env);
 
+void     nux_update_scenes(nux_env_t env);
 nux_id_t nux_create_node_with_object(nux_env_t         env,
                                      nux_id_t          parent,
                                      nux_object_type_t type);

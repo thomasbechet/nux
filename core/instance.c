@@ -32,9 +32,10 @@ nux_instance_init (const nux_instance_config_t *config)
         config->userdata, NUX_MEMORY_USAGE_STATE, inst->memory_capa);
     NU_CHECK(inst->memory, goto cleanup0);
     nu_memset(inst->memory, 0, inst->memory_capa);
-    inst->running = NU_TRUE;
-    inst->time    = 0;
-    inst->tps     = 60;
+    inst->running     = NU_TRUE;
+    inst->time        = 0;
+    inst->tps         = 60;
+    inst->first_scene = NU_NULL;
 
     // Command buffer
     inst->cmds_capa = config->command_buffer_capacity;
@@ -89,6 +90,7 @@ nux_instance_tick (nux_instance_t inst)
 {
     nux_env_t env = nux_instance_init_env(inst);
     nux_wasm_update(env);
+    nux_update_scenes(env);
     inst->time += delta_time(inst);
 }
 nux_status_t
