@@ -2,6 +2,7 @@
 #define RUNTIME_H
 
 #include <nux.h>
+#include <nux_api.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -14,6 +15,7 @@
 #include <glad/gl.h>
 #define RGFW_EXPORT
 #include <rgfw/RGFW.h>
+#define NU_STDLIB
 #include <nulib/nulib.h>
 
 typedef void (*runtime_log_callback_t)(nu_log_level_t   level,

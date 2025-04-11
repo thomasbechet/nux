@@ -162,7 +162,7 @@ load_scene (nux_env_t env, nux_id_t stack, const nux_cart_entry_t *entry)
                 nux_node_set_scale(env, node, scale.data);
             }
             break;
-            case NUX_OBJECT_NODE_MODEL: {
+            case NUX_OBJECT_MODEL: {
                 nux_id_t mesh, texture;
                 NU_CHECK(cart_read_u32(env, &mesh), return NUX_FAILURE);
                 NU_CHECK(cart_read_u32(env, &texture), return NUX_FAILURE);
@@ -170,7 +170,7 @@ load_scene (nux_env_t env, nux_id_t stack, const nux_cart_entry_t *entry)
                 NU_CHECK(model, return NUX_FAILURE);
             }
             break;
-            case NUX_OBJECT_NODE_CAMERA: {
+            case NUX_OBJECT_CAMERA: {
             }
             break;
             default:

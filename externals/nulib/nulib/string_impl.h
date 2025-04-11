@@ -13,7 +13,7 @@
 nu_size_t
 nu_strnlen (const nu_char_t *s, nu_size_t n)
 {
-    size_t i = 0;
+    nu_size_t i = 0;
     for (; (i < n) && s[i]; ++i)
         ;
     return i;
@@ -21,7 +21,7 @@ nu_strnlen (const nu_char_t *s, nu_size_t n)
 void
 nu_strncpy (nu_char_t *dst, const nu_char_t *src, nu_size_t n)
 {
-    size_t i = 0;
+    nu_size_t i = 0;
     while (i++ != n && (*dst++ = *src++))
         ;
 }

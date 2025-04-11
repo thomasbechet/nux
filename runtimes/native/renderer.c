@@ -1,6 +1,7 @@
+#include "internal.h"
+
 #include "shaders_data.c.inc"
 #include "fonts_data.c.inc"
-#include "runtime.h"
 
 #include <glad/gl.h>
 #define RGFW_IMPORT
@@ -428,7 +429,7 @@ free_texture (nux_id_t id)
     glDeleteTextures(1, &renderer.objects[NUX_ID_INDEX(id)].texture.handle);
 }
 static void
-update_texture (nux_instance_t inst, const nux_texture_t *texture, nux_id_t id)
+update_texture (nux_env_t env, const nux_texture_t *texture, nux_id_t id)
 {
     GLuint handle = renderer.objects[NUX_ID_INDEX(id)].texture.handle;
     glBindTexture(GL_TEXTURE_2D, handle);
@@ -440,16 +441,16 @@ update_texture (nux_instance_t inst, const nux_texture_t *texture, nux_id_t id)
                     texture->size,
                     GL_RGBA,
                     GL_UNSIGNED_BYTE,
-                    nux_instance_get_memory(inst, texture->data));
+                    nux_object_get(env, texture->data, NUX_OBJECT_MEMORY));
     // glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     renderer.objects[oid].texture.update_counter = texture->update_counter;
 }
 
 static void
-init_mesh (const nux_mesh_t *mesh, nux_oid_t oid)
+init_mesh (const nux_mesh_t *mesh, nux_id_t id)
 {
-    renderer.objects[oid].mesh.offset = renderer.mesh_vbo_offset;
+    renderer.objects[id].mesh.offset = renderer.mesh_vbo_offset;
     renderer.mesh_vbo_offset += mesh->count;
     // Initialize colors to white
     glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
@@ -458,7 +459,7 @@ init_mesh (const nux_mesh_t *mesh, nux_oid_t oid)
     for (nu_size_t i = 0; i < mesh->count; ++i)
     {
         nu_size_t vbo_offset
-            = (renderer.objects[oid].mesh.offset + i) * VERTEX_SIZE
+            = (renderer.objects[id].mesh.offset + i) * VERTEX_SIZE
               + VERTEX_COLOR_OFFSET;
         ptr[vbo_offset + 0] = 1;
         ptr[vbo_offset + 1] = 1;
@@ -467,10 +468,10 @@ init_mesh (const nux_mesh_t *mesh, nux_oid_t oid)
     glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 static void
-update_mesh (nux_instance_t inst, const nux_mesh_t *mesh, nux_oid_t oid)
+update_mesh (nux_env_t env, const nux_mesh_t *mesh, nux_id_t id)
 {
     // Compute vertex index in vbo
-    nu_size_t first = renderer.objects[oid].mesh.offset;
+    nu_size_t first = renderer.objects[NUX_ID_INDEX(id)].mesh.offset;
 
     // Update VBO
     glBindBuffer(GL_ARRAY_BUFFER, renderer.mesh_vbo);
@@ -480,7 +481,8 @@ update_mesh (nux_instance_t inst, const nux_mesh_t *mesh, nux_oid_t oid)
     if (mesh->attributes & NUX_VERTEX_POSITION)
     {
         const nu_f32_t *data
-            = (const nu_f32_t *)(nux_instance_get_memory(inst, mesh->data)
+            = (const nu_f32_t *)(nux_object_get(
+                                     env, mesh->data, NUX_OBJECT_MEMORY)
                                  + nux_vertex_offset(mesh->attributes,
                                                      NUX_VERTEX_POSITION,
                                                      mesh->count)

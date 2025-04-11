@@ -1,4 +1,4 @@
-#include "runtime.h"
+#include "internal.h"
 
 static runtime_log_callback_t logger;
 
