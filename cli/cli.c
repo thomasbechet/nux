@@ -58,7 +58,7 @@ main (int argc, const nu_char_t *argv[])
     };
 
     log_level = NU_LOG_INFO;
-    logger_set_callback(cli_log);
+    runtime_set_logger_callback(cli_log);
 
     argparse_init(&argparse, options, usages, ARGPARSE_STOP_AT_NON_OPTION);
     argparse_describe(&argparse,

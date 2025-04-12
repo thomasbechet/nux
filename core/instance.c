@@ -5,6 +5,15 @@ delta_time (nux_instance_t inst)
 {
     return 1.0 / (nu_f32_t)inst->tps;
 }
+static nux_env_t
+init_env (nux_instance_t inst)
+{
+    inst->env.inst   = inst;
+    inst->env.cursor = NU_V2U_ZEROS;
+    inst->env.error  = NUX_ERROR_NONE;
+    nu_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
+    return &inst->env;
+}
 
 void
 nux_set_error (nux_env_t env, nux_error_t error)
@@ -88,7 +97,7 @@ nux_instance_free (nux_instance_t inst)
 void
 nux_instance_tick (nux_instance_t inst)
 {
-    nux_env_t env = nux_instance_init_env(inst);
+    nux_env_t env = init_env(inst);
     nux_wasm_update(env);
     nux_update_scenes(env);
     inst->time += delta_time(inst);
@@ -96,7 +105,7 @@ nux_instance_tick (nux_instance_t inst)
 nux_status_t
 nux_instance_load (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
 {
-    nux_env_t env = nux_instance_init_env(inst);
+    nux_env_t env = init_env(inst);
     return nux_load_cartridge(env, inst->root_stack, cart, n);
 }
 void
@@ -111,15 +120,6 @@ void *
 nux_instance_get_userdata (nux_instance_t inst)
 {
     return inst->userdata;
-}
-nux_env_t
-nux_instance_init_env (nux_instance_t inst)
-{
-    inst->env.inst   = inst;
-    inst->env.cursor = NU_V2U_ZEROS;
-    inst->env.error  = NUX_ERROR_NONE;
-    nu_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
-    return &inst->env;
 }
 const nux_c8_t *
 nux_instance_get_error (nux_instance_t inst)

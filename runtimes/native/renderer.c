@@ -433,16 +433,15 @@ update_texture (nux_instance_t inst, const nux_texture_t *texture, nux_id_t id)
 {
     GLuint handle = renderer.objects[NUX_ID_INDEX(id)].texture.handle;
     glBindTexture(GL_TEXTURE_2D, handle);
-    glTexSubImage2D(
-        GL_TEXTURE_2D,
-        0,
-        0,
-        0,
-        texture->size,
-        texture->size,
-        GL_RGBA,
-        GL_UNSIGNED_BYTE,
-        nux_instance_get_object(inst, texture->data, NUX_OBJECT_MEMORY));
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    texture->size,
+                    texture->size,
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    nux_instance_get_object_unchecked(inst, texture->data));
     // glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
     renderer.objects[NUX_ID_INDEX(id)].texture.update_counter
@@ -483,8 +482,8 @@ update_mesh (nux_instance_t inst, const nux_mesh_t *mesh, nux_id_t id)
     if (mesh->attributes & NUX_VERTEX_POSITION)
     {
         const nu_f32_t *data
-            = (const nu_f32_t *)(nux_instance_get_object(
-                                     inst, mesh->data, NUX_OBJECT_MEMORY)
+            = (const nu_f32_t *)(nux_instance_get_object_unchecked(inst,
+                                                                   mesh->data)
                                  + nux_vertex_offset(mesh->attributes,
                                                      NUX_VERTEX_POSITION,
                                                      mesh->count)
@@ -501,8 +500,8 @@ update_mesh (nux_instance_t inst, const nux_mesh_t *mesh, nux_id_t id)
     if (mesh->attributes & NUX_VERTEX_UV)
     {
         const nu_f32_t *data
-            = (const nu_f32_t *)(nux_instance_get_object(
-                                     inst, mesh->data, NUX_OBJECT_MEMORY)
+            = (const nu_f32_t *)(nux_instance_get_object_unchecked(inst,
+                                                                   mesh->data)
                                  + nux_vertex_offset(mesh->attributes,
                                                      NUX_VERTEX_UV,
                                                      mesh->count)
@@ -517,8 +516,8 @@ update_mesh (nux_instance_t inst, const nux_mesh_t *mesh, nux_id_t id)
     if (mesh->attributes & NUX_VERTEX_COLOR)
     {
         const nu_f32_t *data
-            = (const nu_f32_t *)(nux_instance_get_object(
-                                     inst, mesh->data, NUX_OBJECT_MEMORY)
+            = (const nu_f32_t *)(nux_instance_get_object_unchecked(inst,
+                                                                   mesh->data)
                                  + nux_vertex_offset(mesh->attributes,
                                                      NUX_VERTEX_COLOR,
                                                      mesh->count)
@@ -560,63 +559,47 @@ update_ubo (void)
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 static void
-draw_scene_instance (nux_instance_t inst, nux_id_t scene, nu_m4_t transform)
+draw_node (nux_instance_t inst, nux_id_t node)
 {
-    // Acquire scene
-    nux_object_t     *object = nux_instance_get_slab(inst, scene);
-    nux_scene_slab_t *nodes
-        = nux_instance_get_memory(inst, object->scene.slabs);
-
-    // Draw scene
-    while ((nid = nux_scene_iter_dfs(nodes, &iter, stack, sizeof(stack))))
+    nux_node_t *n = nux_instance_get_object_unchecked(inst, node);
+    if (n->object
+        && nux_instance_get_object_type(inst, n->object) == NUX_OBJECT_MODEL)
     {
-        nux_node_t *node = &nodes[nid].node;
-
-        // Instanced node case
-        if (node->flags & NUX_NODE_INSTANCED)
-        {
-            nu_m4_t global_transform = node_global_transform(nodes, node);
-            global_transform         = nu_m4_mul(transform, global_transform);
-            draw_scene_instance(inst, node->instance, global_transform);
-            return;
-        }
-
-        // Check model on node
-        nux_component_t *model
-            = nux_scene_get_component(nodes, nid, NUX_COMPONENT_MODEL);
-        if (model && model->model.visible)
+        const nux_f32_t *local_to_world
+            = nux_instance_get_object_unchecked(inst, n->local_to_world);
+        nux_model_t *m = nux_instance_get_object_unchecked(inst, n->object);
+        if (m->visible)
         {
             // Update texture
             texture_t *texture
-                = model->model.texture
-                      ? &renderer.objects[model->model.texture].texture
+                = m->texture
+                      ? &renderer.objects[NUX_ID_INDEX(m->texture)].texture
                       : NU_NULL;
             if (texture)
             {
                 nux_texture_t *tex
-                    = &nux_instance_get_slab(inst, model->model.texture)
-                           ->texture;
+                    = nux_instance_get_object_unchecked(inst, m->texture);
                 if (!texture->handle)
                 {
-                    init_texture(tex, model->model.texture);
+                    init_texture(tex, m->texture);
                 }
                 if (texture->update_counter != tex->update_counter)
                 {
-                    update_texture(inst, tex, model->model.texture);
+                    update_texture(inst, tex, m->texture);
                 }
             }
 
             // Update mesh
-            mesh_t *renderer_mesh = &renderer.objects[model->model.mesh].mesh;
-            nux_mesh_t *mesh
-                = &nux_instance_get_slab(inst, model->model.mesh)->mesh;
+            mesh_t *renderer_mesh
+                = &renderer.objects[NUX_ID_INDEX(m->mesh)].mesh;
+            nux_mesh_t *mesh = nux_instance_get_object_unchecked(inst, m->mesh);
             if (!renderer_mesh->initialized)
             {
-                init_mesh(mesh, model->model.mesh);
+                init_mesh(mesh, m->mesh);
             }
             if (renderer_mesh->update_counter != mesh->update_counter)
             {
-                update_mesh(inst, mesh, model->model.mesh);
+                update_mesh(inst, mesh, m->mesh);
             }
 
             // Bind texture
@@ -625,13 +608,11 @@ draw_scene_instance (nux_instance_t inst, nux_id_t scene, nu_m4_t transform)
                           texture ? texture->handle : renderer.white_texture);
 
             // Bind model matrix
-            nu_m4_t global_transform = node_global_transform(nodes, node);
-            global_transform         = nu_m4_mul(transform, global_transform);
             glUniformMatrix4fv(
                 glGetUniformLocation(renderer.unlit_program, "model"),
                 1,
                 GL_FALSE,
-                global_transform.data);
+                local_to_world);
 
             // Draw mesh
             glBindVertexArray(renderer.mesh_vao);
@@ -639,15 +620,32 @@ draw_scene_instance (nux_instance_t inst, nux_id_t scene, nu_m4_t transform)
             glBindVertexArray(0);
         }
     }
+    nux_id_t c = n->child;
+    while (c)
+    {
+        draw_node(inst, c);
+        c = ((nux_node_t *)nux_instance_get_object_unchecked(inst, c))->next;
+    }
+}
+static void
+draw_scene_instance (nux_instance_t inst, nux_id_t scene)
+{
+    // Acquire scene
+    nux_scene_t *s = nux_instance_get_object_unchecked(inst, scene);
+    draw_node(inst, s->root);
 }
 static void
 draw_scene (nux_instance_t inst, nux_id_t camera)
 {
     // Get scene camera
-    nux_node_t *cam_node = nux_instance_get_object(inst, camera);
+    nux_node_t   *cam_node = nux_instance_get_object_unchecked(inst, camera);
+    nux_camera_t *cam
+        = nux_instance_get_object_unchecked(inst, cam_node->object);
 
     // Update ubo with camera info
-    nu_m4_t cam_transform = node_global_transform(nodes, cam_node);
+    const nux_f32_t *local_to_world
+        = nux_instance_get_object_unchecked(inst, cam_node->local_to_world);
+    nu_m4_t cam_transform = nu_m4(local_to_world);
     nu_v3_t eye           = nu_m4_mulv3(cam_transform, NU_V3_ZEROS);
     nu_v3_t center        = nu_m4_mulv3(cam_transform, NU_V3_FORWARD);
     nu_v3_t up = nu_v3_v4(nu_m4_mulv(cam_transform, nu_v4_v3(NU_V3_UP, 0)));
@@ -670,7 +668,7 @@ draw_scene (nux_instance_t inst, nux_id_t camera)
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     // Draw scene
-    draw_scene_instance(inst, scene, nu_m4_identity());
+    draw_scene_instance(inst, cam_node->scene);
 
     // Reset state
     glUseProgram(0);
@@ -1123,7 +1121,6 @@ renderer_render_instance (nux_instance_t inst,
                           nu_b2i_t       viewport,
                           nu_v2u_t       window_size)
 {
-    nux_env_t env = nux_instance_init_env(inst);
     // Begin frame
     begin_frame();
     // Execute vm commands

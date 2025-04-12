@@ -1,9 +1,9 @@
 #include "internal.h"
 
 static inline nux_u32_t
-id_index (nux_env_t env, nux_id_t id)
+id_index (nux_instance_t inst, nux_id_t id)
 {
-    if (id < env->inst->objects_static_head) // in static table
+    if (id < inst->objects_static_head) // in static table
     {
         return id;
     }
@@ -37,7 +37,7 @@ object_add (nux_env_t env, nux_object_type_t type, nux_u32_t block)
 static void
 object_remove (nux_env_t env, nux_id_t id)
 {
-    nux_u32_t index = id_index(env, id);
+    nux_u32_t index = id_index(env->inst, id);
     if (index > env->inst->objects_dynamic_head)
     {
         env->inst->objects[index].next  = env->inst->objects_dynamic_free;
@@ -57,7 +57,7 @@ nux_object_init_table (nux_instance_t inst, nux_u32_t capa)
 void *
 nux_object_get (nux_env_t env, nux_id_t id, nux_object_type_t type)
 {
-    nux_u32_t index   = id_index(env, id);
+    nux_u32_t index   = id_index(env->inst, id);
     nux_u32_t version = NUX_ID_VERSION(id); // will be zero if in static table
     nux_object_entry_t *entry = env->inst->objects + index;
     NU_CHECK(NUX_KEY_VERSION(entry->key) == version
@@ -68,14 +68,12 @@ nux_object_get (nux_env_t env, nux_id_t id, nux_object_type_t type)
 void *
 nux_object_get_unchecked (nux_env_t env, nux_id_t id)
 {
-    nux_u32_t           index = id_index(env, id);
-    nux_object_entry_t *entry = env->inst->objects + index;
-    return env->inst->memory + NUX_KEY_BLOCK(entry->key) * NUX_BLOCK_SIZE;
+    return nux_instance_get_object_unchecked(env->inst, id);
 }
 nux_u32_t
 nux_object_get_block_unchecked (nux_env_t env, nux_id_t id)
 {
-    nux_u32_t index = id_index(env, id);
+    nux_u32_t index = id_index(env->inst, id);
     return NUX_KEY_BLOCK(env->inst->objects[index].key);
 }
 nux_id_t
@@ -97,7 +95,7 @@ nux_object_remove (nux_env_t env, nux_id_t id)
 nux_object_type_t
 nux_object_type (nux_env_t env, nux_id_t id)
 {
-    nux_u32_t index = id_index(env, id);
+    nux_u32_t index = id_index(env->inst, id);
     NU_CHECK(index < env->inst->objects_capa, return NU_NULL);
     nux_object_entry_t *entry = env->inst->objects + index;
     return NUX_KEY_TYPE(entry->key);
@@ -115,8 +113,24 @@ nux_object_put (nux_env_t env, nux_id_t id, nux_u32_t static_index)
         nux_set_error(env, NUX_ERROR_INVALID_OBJECT_STATIC_INDEX);
         return NUX_FAILURE;
     }
-    nux_u32_t index                      = id_index(env, id);
+    nux_u32_t index                      = id_index(env->inst, id);
     env->inst->objects[static_index].key = env->inst->objects[index].key;
     object_remove(env, id);
     return NUX_SUCCESS;
+}
+
+void *
+nux_instance_get_object_unchecked (nux_instance_t inst, nux_id_t id)
+{
+    nux_u32_t           index = id_index(inst, id);
+    nux_object_entry_t *entry = inst->objects + index;
+    return inst->memory + NUX_KEY_BLOCK(entry->key) * NUX_BLOCK_SIZE;
+}
+nux_object_type_t
+nux_instance_get_object_type (nux_instance_t inst, nux_id_t id)
+{
+    nux_u32_t index = id_index(inst, id);
+    NU_CHECK(index < inst->objects_capa, return NU_NULL);
+    nux_object_entry_t *entry = inst->objects + index;
+    return NUX_KEY_TYPE(entry->key);
 }

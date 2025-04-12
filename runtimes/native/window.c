@@ -1,4 +1,4 @@
-#include "runtime.h"
+#include "internal.h"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>

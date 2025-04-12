@@ -3,7 +3,7 @@
 static runtime_log_callback_t logger;
 
 void
-logger_set_callback (runtime_log_callback_t callback)
+runtime_set_logger_callback (runtime_log_callback_t callback)
 {
     logger = callback;
 }

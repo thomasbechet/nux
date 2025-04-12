@@ -76,5 +76,6 @@ NU_API void                runtime_close(nu_u32_t index);
 NU_API void                runtime_reset(nu_u32_t index);
 NU_API runtime_instance_t *runtime_instance(void);
 NU_API void                runtime_quit(void);
+NU_API void runtime_set_logger_callback(runtime_log_callback_t callback);
 
 #endif

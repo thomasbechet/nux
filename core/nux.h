@@ -272,12 +272,10 @@ NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t inst);
 //////                           Helper API                         //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_env_t         nux_instance_init_env(nux_instance_t inst);
 NUX_API nux_command_t    *nux_instance_get_commands(nux_instance_t inst,
                                                     nux_u32_t     *count);
-NUX_API void             *nux_instance_get_object(nux_instance_t    inst,
-                                                  nux_id_t          id,
-                                                  nux_object_type_t type);
+NUX_API void             *nux_instance_get_object_unchecked(nux_instance_t inst,
+                                                            nux_id_t       id);
 NUX_API nux_object_type_t nux_instance_get_object_type(nux_instance_t inst,
                                                        nux_id_t       id);
 NUX_API nux_u32_t         nux_texture_memsize(nux_u32_t size);

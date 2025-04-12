@@ -1,4 +1,4 @@
-#include "runtime.h"
+#include "internal.h"
 
 typedef struct
 {
