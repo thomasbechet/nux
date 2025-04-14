@@ -1,158 +1,132 @@
 #include "internal.h"
 
-static nux_command_t *
-push_command (nux_env_t env)
-{
-    NU_ASSERT(env->inst->cmds);
-    if (env->inst->cmds_size >= env->inst->cmds_capa)
-    {
-        nux_set_error(env, NUX_ERROR_OUT_OF_COMMANDS);
-        return NU_NULL;
-    }
-    nux_command_t *cmd = env->inst->cmds + env->inst->cmds_size;
-    ++env->inst->cmds_size;
-    return cmd;
-}
-
-nux_command_t *
-nux_instance_get_commands (nux_instance_t inst, nux_u32_t *count)
-{
-    *count = inst->cmds_size;
-    return inst->cmds;
-}
-
-nux_u32_t
-nux_texture_memsize (nux_u32_t size)
-{
-    return size * size * 4;
-}
-nux_u32_t
-nux_vertex_memsize (nux_vertex_attribute_t attributes, nux_u32_t count)
-{
-    nu_u32_t size = 0;
-    if (attributes & NUX_VERTEX_POSITION)
-    {
-        size += NU_V3_SIZE * count;
-    }
-    if (attributes & NUX_VERTEX_UV)
-    {
-        size += NU_V2_SIZE * count;
-    }
-    if (attributes & NUX_VERTEX_COLOR)
-    {
-        size += NU_V3_SIZE * count;
-    }
-    return size * sizeof(nu_f32_t);
-}
-nux_u32_t
-nux_vertex_offset (nux_vertex_attribute_t attributes,
-                   nux_vertex_attribute_t attribute,
-                   nux_u32_t              count)
-{
-    NU_ASSERT(attribute & attributes);
-    nu_u32_t offset = 0;
-    if (attributes & NUX_VERTEX_POSITION)
-    {
-        if (attribute == NUX_VERTEX_POSITION)
-        {
-            return offset;
-        }
-        offset += NU_V3_SIZE * count;
-    }
-    if (attributes & NUX_VERTEX_UV)
-    {
-        if (attribute == NUX_VERTEX_UV)
-        {
-            return offset;
-        }
-        offset += NU_V2_SIZE * count;
-    }
-    if (attributes & NUX_VERTEX_COLOR)
-    {
-        if (attribute == NUX_VERTEX_COLOR)
-        {
-            return offset;
-        }
-        offset += NU_V3_SIZE * count;
-    }
-    return offset;
-}
-
-void
-nux_push_scissor (
-    nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
-{
-    nux_command_t *cmd = push_command(env);
-    NU_CHECK(cmd, return);
-    cmd->type       = NUX_COMMAND_PUSH_SCISSOR;
-    cmd->scissor[0] = x;
-    cmd->scissor[1] = y;
-    cmd->scissor[2] = w;
-    cmd->scissor[3] = h;
-}
-void
-nux_push_viewport (
-    nux_env_t env, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
-{
-    nux_command_t *cmd = push_command(env);
-    NU_CHECK(cmd, return);
-    cmd->type        = NUX_COMMAND_PUSH_VIEWPORT;
-    cmd->viewport[0] = x;
-    cmd->viewport[1] = y;
-    cmd->viewport[2] = w;
-    cmd->viewport[3] = h;
-}
-void
-nux_push_cursor (nux_env_t env, nux_u32_t x, nux_u32_t y)
-{
-    nux_command_t *cmd = push_command(env);
-    NU_CHECK(cmd, return);
-    cmd->type      = NUX_COMMAND_PUSH_CURSOR;
-    cmd->cursor[0] = x;
-    cmd->cursor[1] = y;
-}
-void
-nux_push_color (nux_env_t env, nux_u32_t color)
-{
-    nux_command_t *cmd = push_command(env);
-    NU_CHECK(cmd, return);
-    cmd->type  = NUX_COMMAND_PUSH_COLOR;
-    cmd->color = color;
-}
 void
 nux_clear (nux_env_t env, nux_u32_t color)
 {
-    nux_command_t *cmd = push_command(env);
-    NU_CHECK(cmd, return);
-    cmd->type  = NUX_COMMAND_CLEAR;
-    cmd->clear = color;
+    nux_fill(env, 0, 0, NUX_SCREEN_WIDTH - 1, NUX_SCREEN_HEIGHT - 1, color);
 }
 void
-nux_draw_text (nux_env_t env, const nux_c8_t *text)
+nux_fill (nux_env_t env,
+          nux_i32_t x0,
+          nux_i32_t y0,
+          nux_i32_t x1,
+          nux_i32_t y1,
+          nux_u32_t color)
 {
+    nux_i32_t minx = NU_MIN(x0, x1);
+    nux_i32_t miny = NU_MIN(y0, y1);
+    nux_i32_t maxx = NU_MAX(x0, x1);
+    nux_i32_t maxy = NU_MAX(y0, y1);
+    for (nux_i32_t y = miny; y <= maxy; ++y)
+    {
+        for (nux_i32_t x = minx; x <= maxx; ++x)
+        {
+            nux_point(env, x, y, color);
+        }
+    }
 }
 void
-nux_print (nux_env_t env, const nux_c8_t *text)
+nux_point (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t color)
 {
+    env->inst->memory[(y * NUX_SCREEN_WIDTH + x) * 3 + 0]
+        = (color >> 24) & 0xFF;
+    env->inst->memory[(y * NUX_SCREEN_WIDTH + x) * 3 + 1]
+        = (color >> 16) & 0xFF;
+    env->inst->memory[(y * NUX_SCREEN_WIDTH + x) * 3 + 2] = (color >> 8) & 0xFF;
 }
 void
-nux_blit (nux_env_t env,
-          nux_id_t  texture,
-          nux_u32_t x,
-          nux_u32_t y,
-          nux_u32_t w,
-          nux_u32_t h)
+nux_line (nux_env_t env,
+          nux_i32_t x0,
+          nux_i32_t y0,
+          nux_i32_t x1,
+          nux_i32_t y1,
+          nux_u32_t color)
 {
+    nu_bool_t steep = NU_FALSE;
+    if (NU_ABS(x0 - x1) < NU_ABS(y0 - y1))
+    {
+        NU_SWAP(x0, y0, nux_i32_t);
+        NU_SWAP(x1, y1, nux_i32_t);
+        steep = NU_TRUE;
+    }
+    if (x0 > x1)
+    {
+        NU_SWAP(x0, x1, nux_i32_t);
+        NU_SWAP(y0, y1, nux_i32_t);
+    }
+    nux_i32_t dx      = x1 - x0;
+    nux_i32_t dy      = y1 - y0;
+    nux_i32_t derror2 = NU_ABS(dy) * 2;
+    nux_i32_t error2  = 0;
+    nux_i32_t y       = y0;
+    for (nux_i32_t x = x0; x <= x1; x++)
+    {
+        if (steep)
+        {
+            nux_point(env, y, x, color);
+        }
+        else
+        {
+            nux_point(env, x, y, color);
+        }
+        error2 += derror2;
+        if (error2 > dx)
+        {
+            y += (y1 > y0 ? 1 : -1);
+            error2 -= dx * 2;
+        }
+    }
 }
 void
-nux_draw_sprite (nux_env_t env, nux_id_t spritesheet, nux_u32_t sprite)
+nux_triangle (nux_env_t env,
+              nux_i32_t x0,
+              nux_i32_t y0,
+              nux_i32_t x1,
+              nux_i32_t y1,
+              nux_i32_t x2,
+              nux_i32_t y2,
+              nux_u32_t color)
 {
-}
-void
-nux_draw_scene (nux_env_t env, nux_id_t scene, nux_u32_t camera)
-{
-    nux_command_t *cmd = push_command(env);
-    NU_CHECK(cmd, return);
-    cmd->type              = NUX_COMMAND_DRAW_SCENE;
-    cmd->draw_scene.camera = camera;
+    if (y0 == y1 && y0 == y2)
+    {
+        return; // I dont care about degenerate triangles
+    }
+    // sort the vertices, t0, t1, t2 lower−to−upper (bubblesort yay!)
+    if (y0 > y1)
+    {
+        NU_SWAP(x0, x1, nux_i32_t);
+        NU_SWAP(y0, y1, nux_i32_t);
+    }
+    if (y0 > y2)
+    {
+        NU_SWAP(x0, x2, nux_i32_t);
+        NU_SWAP(y0, y2, nux_i32_t);
+    }
+    if (y1 > y2)
+    {
+        NU_SWAP(x1, x2, nux_i32_t);
+        NU_SWAP(y1, y2, nux_i32_t);
+    }
+    nux_i32_t total_height = y2 - y0;
+    for (nux_i32_t i = 0; i < total_height; ++i)
+    {
+        nu_bool_t second_half    = i > y1 - y0 || y1 == y0;
+        nux_i32_t segment_height = second_half ? y2 - y1 : y1 - y0;
+        nux_f32_t alpha          = (nux_f32_t)i / total_height;
+        nux_f32_t beta           = (nux_f32_t)(i - (second_half ? y1 - y0 : 0))
+                         / segment_height; // be careful: with above conditions
+                                           // no division by zero here
+        Vec2i A = t0 + (t2 - t0) * alpha;
+        Vec2i B = second_half ? t1 + (t2 - t1) * beta : t0 + (t1 - t0) * beta;
+        if (A.x > B.x)
+        {
+            std::swap(A, B);
+        }
+        for (int j = A.x; j <= B.x; j++)
+        {
+            image.set(j,
+                      y0 + i,
+                      color); // attention, due to int casts y0+i != A.y
+        }
+    }
 }

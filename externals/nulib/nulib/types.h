@@ -31,6 +31,14 @@
 #define NU_MAX(a, b)          (((a) > (b)) ? (a) : (b))
 #define NU_CLAMP(x, min, max) (NU_MAX(min, NU_MIN(max, x)))
 #define NU_CLAMP01(x)         (NU_CLAMP(x, 0, 1))
+#define NU_ABS(x)             (((x) < 0) ? -(x) : (x))
+#define NU_SWAP(x, y, T) \
+    do                   \
+    {                    \
+        T SWAP = x;      \
+        x      = y;      \
+        y      = SWAP;   \
+    } while (0)
 
 #define NU_V2_SIZE 2
 #define NU_V3_SIZE 3

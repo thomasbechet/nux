@@ -41,21 +41,9 @@ nux_instance_init (const nux_instance_config_t *config)
         config->userdata, NUX_MEMORY_USAGE_STATE, inst->memory_capa);
     NU_CHECK(inst->memory, goto cleanup0);
     nu_memset(inst->memory, 0, inst->memory_capa);
-    inst->running     = NU_TRUE;
-    inst->time        = 0;
-    inst->tps         = 60;
-    inst->first_scene = NU_NULL;
-
-    // Command buffer
-    inst->cmds_capa = config->command_buffer_capacity;
-    inst->cmds_size = 0;
-    inst->cmds      = nux_platform_malloc(inst->userdata,
-                                     NUX_MEMORY_USAGE_CORE,
-                                     sizeof(*inst->cmds) * inst->cmds_capa);
-    NU_CHECK(inst->cmds, goto cleanup0);
-
-    // Initialize resource table
-    nux_object_init_table(inst, config->objects_capacity);
+    inst->running = NU_TRUE;
+    inst->time    = 0;
+    inst->tps     = 60;
 
     // Initialize inputs
     nu_memset(inst->buttons, 0, sizeof(inst->buttons));
@@ -68,8 +56,8 @@ nux_instance_init (const nux_instance_config_t *config)
     }
 
     // Wasm initialization
-    nux_status_t res = nux_wasm_init(inst, config);
-    NU_CHECK(res, goto cleanup0);
+    // nux_status_t res = nux_wasm_init(inst, config);
+    // NU_CHECK(res, goto cleanup0);
 
     return inst;
 cleanup0:
@@ -80,12 +68,7 @@ void
 nux_instance_free (nux_instance_t inst)
 {
     // Wasm
-    nux_wasm_free(inst);
-    // Command buffer
-    if (inst->cmds)
-    {
-        nux_platform_free(inst->userdata, inst->cmds);
-    }
+    // nux_wasm_free(inst);
     // State
     if (inst->memory)
     {
@@ -98,15 +81,27 @@ void
 nux_instance_tick (nux_instance_t inst)
 {
     nux_env_t env = init_env(inst);
-    nux_wasm_update(env);
-    nux_update_scenes(env);
+    // nux_wasm_update(env);
+    nux_clear(env, 0);
+    static nux_i32_t f = 1;
+    ++f;
+    nu_pcg_t pcg = nu_pcg(f, 123124);
+    for (nux_u32_t i = 0; i < 100; ++i)
+    {
+        nux_i32_t x0 = nu_pcg_u32(&pcg) % NUX_SCREEN_WIDTH;
+        nux_i32_t x1 = nu_pcg_u32(&pcg) % NUX_SCREEN_WIDTH;
+        nux_i32_t y0 = nu_pcg_u32(&pcg) % NUX_SCREEN_HEIGHT;
+        nux_i32_t y1 = nu_pcg_u32(&pcg) % NUX_SCREEN_HEIGHT;
+        nux_i32_t c  = nu_pcg_u32(&pcg);
+        nux_line(env, x0, y0, x1, y1, c);
+    }
     inst->time += delta_time(inst);
 }
 nux_status_t
 nux_instance_load (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
 {
     nux_env_t env = init_env(inst);
-    return nux_load_cartridge(env, inst->root_stack, cart, n);
+    return NUX_SUCCESS;
 }
 void
 nux_instance_save_state (nux_instance_t inst, nux_u8_t *state)
@@ -126,6 +121,12 @@ nux_instance_get_error (nux_instance_t inst)
 {
     return nux_error_message(inst->env.error);
 }
+const nux_u8_t *
+nux_instance_get_framebuffer (nux_instance_t inst)
+{
+    return inst->memory;
+}
+
 const nux_c8_t *
 nux_error_message (nux_error_t error)
 {
@@ -137,26 +138,12 @@ nux_error_message (nux_error_t error)
             return "allocation";
         case NUX_ERROR_INVALID_TEXTURE_SIZE:
             return "invalid texture size";
-        case NUX_ERROR_INVALID_OBJECT_ID:
-            return "invalid object id";
-        case NUX_ERROR_INVALID_OBJECT_TYPE:
-            return "invalid object type";
         case NUX_ERROR_WASM_RUNTIME:
             return "wasm runtime";
-        case NUX_ERROR_INVALID_OBJECT_CREATION:
-            return "invalid object creation";
         case NUX_ERROR_CART_EOF:
             return "cartridge EOF";
         case NUX_ERROR_CART_MOUNT:
             return "cartridge mount";
-        case NUX_ERROR_OUT_OF_POOL_ITEM:
-            return "out of pool item";
-        case NUX_ERROR_OUT_OF_COMMANDS:
-            return "out of commands";
-        case NUX_ERROR_OUT_OF_DYNAMIC_OBJECTS:
-            return "out of objects";
-        case NUX_ERROR_INVALID_OBJECT_STATIC_INDEX:
-            return "invalid object static index";
     }
     return NU_NULL;
 }

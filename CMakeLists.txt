@@ -58,7 +58,7 @@ endif ()
 
 # Add subdirectories
 add_subdirectory(core)
-add_subdirectory(sdk)
+# add_subdirectory(sdk)
 add_subdirectory(runtimes/mini)
-add_subdirectory(runtimes/native)
-add_subdirectory(cli)
+# add_subdirectory(runtimes/native)
+# add_subdirectory(cli)

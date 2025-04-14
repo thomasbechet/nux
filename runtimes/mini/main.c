@@ -1,15 +1,75 @@
-#include <nux.h>
-
-#include <stdlib.h>
-#include <assert.h>
-#include <stdio.h>
-#define NU_STDLIB
-#include <nulib/nulib.h>
+#include "internal.h"
 
 static struct
 {
     FILE *file;
 } io;
+
+static nu_b2i_t
+apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
+{
+    nu_v2_t global_pos  = nu_v2(viewport.min.x, viewport.min.y);
+    nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(viewport));
+
+    nu_v2_t  screen       = nu_v2(NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+    nu_f32_t aspect_ratio = screen.x / screen.y;
+
+    nu_v2_t vsize = NU_V2_ZEROS;
+    switch (mode)
+    {
+        case VIEWPORT_FIXED: {
+            vsize = nu_v2(screen.x, screen.y);
+        };
+        break;
+        case VIEWPORT_FIXED_BEST_FIT: {
+            nu_f32_t w_factor = global_size.x / screen.x;
+            nu_f32_t h_factor = global_size.y / screen.y;
+            nu_f32_t min      = NU_MIN(w_factor, h_factor);
+            if (min < 1)
+            {
+                // 0.623 => 0.5
+                // 0,432 => 0.25
+                // 0.115 => 0,125
+                nu_f32_t n = 2;
+                while (min < (1 / n))
+                {
+                    n *= 2;
+                }
+                min = 1 / n;
+            }
+            else
+            {
+                min = nu_floor(min);
+            }
+            vsize.x = screen.x * min;
+            vsize.y = screen.y * min;
+        }
+        break;
+        case VIEWPORT_STRETCH_KEEP_ASPECT: {
+            if (global_size.x / global_size.y >= aspect_ratio)
+            {
+                vsize.x = nu_floor(global_size.y * aspect_ratio);
+                vsize.y = nu_floor(global_size.y);
+            }
+            else
+            {
+                vsize.x = nu_floor(global_size.x);
+                vsize.y = nu_floor(global_size.x / aspect_ratio);
+            }
+        }
+        break;
+        case VIEWPORT_STRETCH:
+            vsize = global_size;
+            break;
+        default:
+            break;
+    }
+
+    nu_v2_t vpos = nu_v2_sub(global_size, vsize);
+    vpos         = nu_v2_divs(vpos, 2);
+    vpos         = nu_v2_add(vpos, global_pos);
+    return nu_b2i_xywh(vpos.x, vpos.y, vsize.x, vsize.y);
+}
 
 void *
 nux_platform_malloc (void *userdata, nux_memory_usage_t usage, nux_u32_t n)
@@ -56,9 +116,58 @@ nux_platform_read (nux_instance_t inst, void *p, nux_u32_t n)
 int
 main (int argc, char **argv)
 {
-    nux_instance_config_t config = {};
-    nux_instance_t        inst   = nux_instance_init(&config);
-    nux_instance_tick(inst);
-    nux_instance_free(inst);
-    return 0;
+    nux_instance_config_t config   = {};
+    nux_instance_t        instance = nux_instance_init(&config);
+
+    // Initialize runtime
+    nu_status_t status;
+    status = window_init();
+    NU_CHECK(status, goto cleanup0);
+    status = renderer_init();
+    NU_CHECK(status, goto cleanup1);
+
+    // Main loop
+    nu_bool_t running = NU_TRUE;
+    while (running)
+    {
+        // Retrieve window events
+        window_poll_events();
+
+        // Update instance
+        nux_instance_tick(instance);
+
+        // Clear window
+        nu_v2u_t size = window_get_size();
+        renderer_clear(nu_b2i_xywh(0, 0, size.x, size.y), size);
+
+        nu_b2i_t viewport = nu_b2i_xywh(0, 0, size.x, size.y);
+        viewport = apply_viewport_mode(viewport, VIEWPORT_FIXED_BEST_FIT);
+        renderer_render_instance(instance, viewport, size);
+
+        // Swap buffers
+        window_swap_buffers();
+
+        // Process runtime events
+        runtime_command_t cmd;
+        while (window_poll_command(&cmd))
+        {
+            switch (cmd)
+            {
+                case COMMAND_EXIT:
+                    running = NU_FALSE;
+                    break;
+                case COMMAND_SAVE_STATE:
+                    break;
+                case COMMAND_LOAD_STATE:
+                    break;
+            }
+        }
+    }
+
+    renderer_free();
+cleanup1:
+    window_free();
+cleanup0:
+    nux_instance_free(instance);
+    return status;
 }
