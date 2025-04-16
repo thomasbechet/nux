@@ -58,6 +58,7 @@ typedef enum
     NUX_AXIS_MAX         = 6,
     NUX_NODE_MAX         = (1 << 16) - 1,
     NUX_NAME_MAX         = 64,
+    NUX_PALETTE_LENGTH   = 256,
 } nux_constants_t;
 
 typedef enum
@@ -121,6 +122,20 @@ typedef enum
     NUX_CONSOLE_MEMORY_USAGE    = 1,
 } nux_console_info_t;
 
+typedef enum
+{
+    NUX_MAP_FRAMEBUFFER = 0x0,
+    NUX_MAP_PALETTE
+    = NUX_MAP_FRAMEBUFFER + (NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT),
+    NUX_MAP_GAMEPAD_BUTTONS
+    = NUX_MAP_PALETTE + NUX_PALETTE_LENGTH * sizeof(nux_u32_t),
+    NUX_MAP_GAMEPAD_AXIS
+    = NUX_MAP_GAMEPAD_BUTTONS + NUX_PLAYER_MAX * sizeof(nux_u32_t),
+    NUX_MAP_TIME
+    = NUX_MAP_GAMEPAD_AXIS + NUX_PLAYER_MAX * sizeof(nux_f32_t) * NUX_AXIS_MAX,
+    NUX_MAP_FRAME_INDEX = NUX_MAP_TIME + sizeof(nux_f32_t),
+} nux_map_t;
+
 // Debug
 void      nux_trace(nux_env_t env, const nux_c8_t *text);
 void      nux_inspect_i32(nux_env_t env, const nux_c8_t *name, nux_i32_t *p);
@@ -130,20 +145,21 @@ nux_f32_t nux_global_time(nux_env_t env);
 nux_f32_t nux_delta_time(nux_env_t env);
 
 // Memory
+void nux_palset(nux_env_t env, nux_u8_t index, nux_u32_t color);
 void nux_clear(nux_env_t env, nux_u32_t color);
 void nux_fill(nux_env_t env,
               nux_i32_t x0,
               nux_i32_t y0,
               nux_i32_t x1,
               nux_i32_t y1,
-              nux_u32_t color);
-void nux_point(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t color);
+              nux_u8_t  color);
+void nux_point(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color);
 void nux_line(nux_env_t env,
               nux_i32_t x0,
               nux_i32_t y0,
               nux_i32_t x1,
               nux_i32_t y1,
-              nux_u32_t color);
+              nux_u8_t  color);
 void nux_triangle(nux_env_t env,
                   nux_i32_t x0,
                   nux_i32_t y0,
@@ -151,7 +167,7 @@ void nux_triangle(nux_env_t env,
                   nux_i32_t y1,
                   nux_i32_t x2,
                   nux_i32_t y2,
-                  nux_u32_t color);
+                  nux_u8_t  color);
 void nux_begin3d(nux_env_t env, nux_primitive_t primitive);
 void nux_end3d(nux_env_t env);
 void nux_vertex(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);

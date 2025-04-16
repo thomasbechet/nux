@@ -1,6 +1,15 @@
 #include "internal.h"
 
 void
+nux_palset (nux_env_t env, nux_u8_t index, nux_u32_t color)
+{
+    // TODO: validate
+    nux_u8_t *pal      = env->inst->memory + NUX_MAP_PALETTE;
+    pal[index * 3 + 0] = (color & 0xFF0000) >> 16;
+    pal[index * 3 + 1] = (color & 0x00FF00) >> 8;
+    pal[index * 3 + 2] = (color & 0x0000FF) >> 0;
+}
+void
 nux_clear (nux_env_t env, nux_u32_t color)
 {
     nux_fill(env, 0, 0, NUX_SCREEN_WIDTH - 1, NUX_SCREEN_HEIGHT - 1, color);
@@ -11,7 +20,7 @@ nux_fill (nux_env_t env,
           nux_i32_t y0,
           nux_i32_t x1,
           nux_i32_t y1,
-          nux_u32_t color)
+          nux_u8_t  color)
 {
     nux_i32_t minx = NU_MIN(x0, x1);
     nux_i32_t miny = NU_MIN(y0, y1);
@@ -26,13 +35,9 @@ nux_fill (nux_env_t env,
     }
 }
 void
-nux_point (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t color)
+nux_point (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
 {
-    env->inst->memory[(y * NUX_SCREEN_WIDTH + x) * 3 + 0]
-        = (color >> 24) & 0xFF;
-    env->inst->memory[(y * NUX_SCREEN_WIDTH + x) * 3 + 1]
-        = (color >> 16) & 0xFF;
-    env->inst->memory[(y * NUX_SCREEN_WIDTH + x) * 3 + 2] = (color >> 8) & 0xFF;
+    env->inst->memory[NUX_MAP_FRAMEBUFFER + y * NUX_SCREEN_WIDTH + x] = color;
 }
 void
 nux_line (nux_env_t env,
@@ -40,7 +45,7 @@ nux_line (nux_env_t env,
           nux_i32_t y0,
           nux_i32_t x1,
           nux_i32_t y1,
-          nux_u32_t color)
+          nux_u8_t  color)
 {
     nu_bool_t steep = NU_FALSE;
     if (NU_ABS(x0 - x1) < NU_ABS(y0 - y1))
@@ -85,7 +90,7 @@ nux_triangle (nux_env_t env,
               nux_i32_t y1,
               nux_i32_t x2,
               nux_i32_t y2,
-              nux_u32_t color)
+              nux_u8_t  color)
 {
     if (y0 == y1 && y0 == y2)
     {
@@ -116,17 +121,17 @@ nux_triangle (nux_env_t env,
         nux_f32_t beta           = (nux_f32_t)(i - (second_half ? y1 - y0 : 0))
                          / segment_height; // be careful: with above conditions
                                            // no division by zero here
-        Vec2i A = t0 + (t2 - t0) * alpha;
-        Vec2i B = second_half ? t1 + (t2 - t1) * beta : t0 + (t1 - t0) * beta;
-        if (A.x > B.x)
-        {
-            std::swap(A, B);
-        }
-        for (int j = A.x; j <= B.x; j++)
-        {
-            image.set(j,
-                      y0 + i,
-                      color); // attention, due to int casts y0+i != A.y
-        }
+        // Vec2i A = t0 + (t2 - t0) * alpha;
+        // Vec2i B = second_half ? t1 + (t2 - t1) * beta : t0 + (t1 - t0) *
+        // beta; if (A.x > B.x)
+        // {
+        //     std::swap(A, B);
+        // }
+        // for (int j = A.x; j <= B.x; j++)
+        // {
+        //     image.set(j,
+        //               y0 + i,
+        //               color); // attention, due to int casts y0+i != A.y
+        // }
     }
 }

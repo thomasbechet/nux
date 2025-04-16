@@ -79,6 +79,7 @@ NUX_API void  nux_instance_set_axis(nux_instance_t inst,
                                     nux_f32_t      value);
 NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t inst);
 NUX_API const nux_u8_t *nux_instance_get_framebuffer(nux_instance_t inst);
+NUX_API const nux_u8_t *nux_instance_get_palette(nux_instance_t inst);
 
 //////////////////////////////////////////////////////////////////////////
 //////                           Helper API                         //////

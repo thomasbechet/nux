@@ -9,6 +9,14 @@
 #include <wasm3.h>
 #endif
 
+// texture color : 8bpp (index of 256 color palette)
+// texture mask  : 1bpp (visible or not)
+// texture alpha : 8bpp (0-255 blending function ?)
+// texture light : 8bpp (0-255 black to white)
+//
+// (A - B) * C + D
+// (1 - 0) * C + 0
+
 struct nux_env
 {
     nux_instance_t inst;
@@ -26,14 +34,10 @@ struct nux_instance
     void *userdata;
 
     nu_bool_t running;
-    nux_f32_t time;
     nux_u32_t tps;
 
     nux_u8_t *memory;
     nux_u32_t memory_capa;
-
-    nu_u32_t buttons[NUX_PLAYER_MAX];
-    nu_f32_t axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
 
     struct nux_env env;
 

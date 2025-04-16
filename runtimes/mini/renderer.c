@@ -6,6 +6,7 @@ static struct
 {
     GLuint screen_blit_program;
     GLuint surface_texture;
+    GLuint palette_texture;
 } renderer;
 
 static const GLchar *
@@ -161,15 +162,37 @@ renderer_init (void)
                              shader_screen_blit_frag,
                              &renderer.screen_blit_program);
     NU_CHECK(status, goto cleanup0);
+    glUseProgram(renderer.screen_blit_program);
+    glUniform1i(glGetUniformLocation(renderer.screen_blit_program, "t_surface"),
+                0);
+    glUniform1i(glGetUniformLocation(renderer.screen_blit_program, "t_palette"),
+                1);
+    glUseProgram(0);
 
-    // Create render target
+    // Create surface
     glGenTextures(1, &renderer.surface_texture);
     glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_SRGB,
+                 GL_R8,
                  NUX_SCREEN_WIDTH,
                  NUX_SCREEN_HEIGHT,
+                 0,
+                 GL_RED,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create palette
+    glGenTextures(1, &renderer.palette_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_SRGB,
+                 NUX_PALETTE_LENGTH,
+                 1,
                  0,
                  GL_RGB,
                  GL_UNSIGNED_BYTE,
@@ -227,9 +250,22 @@ renderer_render_instance (nux_instance_t inst,
                     0,
                     NUX_SCREEN_WIDTH,
                     NUX_SCREEN_HEIGHT,
-                    GL_RGB,
+                    GL_RED,
                     GL_UNSIGNED_BYTE,
                     nux_instance_get_framebuffer(inst));
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Update palette
+    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    NUX_PALETTE_LENGTH,
+                    1,
+                    GL_RGB,
+                    GL_UNSIGNED_BYTE,
+                    nux_instance_get_palette(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Blit surface to screen
@@ -240,10 +276,14 @@ renderer_render_instance (nux_instance_t inst,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glUseProgram(renderer.screen_blit_program);
     glDisable(GL_DEPTH_TEST);
+    glDisable(GL_BLEND);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glViewport(pos.x, pos.y, size.x, size.y);
+    glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);
