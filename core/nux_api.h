@@ -50,6 +50,8 @@ typedef enum
     // 4:3
     NUX_SCREEN_WIDTH  = 320,
     NUX_SCREEN_HEIGHT = 240,
+    // NUX_SCREEN_WIDTH  = 320,
+    // NUX_SCREEN_HEIGHT = 200,
 
     NUX_TEXTURE_MIN_SIZE = 32,
     NUX_TEXTURE_MAX_SIZE = 256,

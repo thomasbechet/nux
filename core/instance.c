@@ -75,17 +75,7 @@ nux_instance_tick (nux_instance_t inst)
     nux_palset(env, 2, 0x0000FF);
     // nux_wasm_update(env);
     nux_clear(env, 0);
-    static nux_i32_t f = 1;
-    ++f;
-    nu_pcg_t pcg = nu_pcg(f, 123124);
-    for (nux_u32_t i = 0; i < 100; ++i)
-    {
-        nux_i32_t x0 = nu_pcg_u32(&pcg) % NUX_SCREEN_WIDTH;
-        nux_i32_t x1 = nu_pcg_u32(&pcg) % NUX_SCREEN_WIDTH;
-        nux_i32_t y0 = nu_pcg_u32(&pcg) % NUX_SCREEN_HEIGHT;
-        nux_i32_t y1 = nu_pcg_u32(&pcg) % NUX_SCREEN_HEIGHT;
-        nux_line(env, x0, y0, x1, y1, 1);
-    }
+    nux_triangle(env, 50, 50, 100, 70, 80, 200, 1);
 
     nux_f32_t *time        = (nux_f32_t *)(inst->memory + NUX_MAP_TIME);
     *time                  = *time + delta_time(inst);

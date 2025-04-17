@@ -74,10 +74,9 @@ static const nu_sv_t shader_screen_blit_frag = NU_SV(
 "\n"
 "void main()\n"
 "{\n"
-"    vec2 filtered_uv = uv_filtering(uv, textureSize(t_surface, 0));\n"
+"    vec2 filtered_uv = uv_filtering(vec2(uv.x, 1 - uv.y), textureSize(t_surface, 0));\n"
 "    vec4 color_index = texture(t_surface, filtered_uv);\n"
 "    out_color = texture(t_palette, vec2(color_index.x, 0.5));\n"
-"    // out_color = vec4(color_index.x) * 255;\n"
 "}\n"
 );
 static const nu_sv_t shader_screen_blit_vert = NU_SV(
