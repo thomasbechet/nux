@@ -20,9 +20,9 @@ typedef struct
 
 typedef enum
 {
-    NUX_INSPECT_I32,
-    NUX_INSPECT_F32,
-} nux_inspect_type_t;
+    NUX_DEBUG_I32,
+    NUX_DEBUG_F32,
+} nux_debug_type_t;
 
 typedef enum
 {
@@ -53,11 +53,11 @@ NUX_API nux_u32_t nux_platform_read(nux_instance_t inst, void *p, nux_u32_t n);
 NUX_API void      nux_platform_log(nux_instance_t  inst,
                                    const nux_c8_t *log,
                                    nux_u32_t       n);
-NUX_API void      nux_platform_inspect(nux_instance_t     inst,
-                                       const nux_c8_t    *name,
-                                       nux_u32_t          n,
-                                       nux_inspect_type_t type,
-                                       void              *p);
+NUX_API void      nux_platform_debug(nux_instance_t   inst,
+                                     const nux_c8_t  *name,
+                                     nux_u32_t        n,
+                                     nux_debug_type_t type,
+                                     void            *p);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////
@@ -81,7 +81,7 @@ NUX_API void  nux_instance_set_axis(nux_instance_t inst,
                                     nux_axis_t     axis,
                                     nux_f32_t      value);
 NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t inst);
-NUX_API const nux_u8_t *nux_instance_get_framebuffer(nux_instance_t inst);
+NUX_API const nux_u8_t *nux_instance_get_screen(nux_instance_t inst);
 NUX_API const nux_u8_t *nux_instance_get_palette(nux_instance_t inst);
 
 //////////////////////////////////////////////////////////////////////////

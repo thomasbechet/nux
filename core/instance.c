@@ -74,7 +74,7 @@ nux_instance_tick (nux_instance_t inst)
     nux_env_t env = init_env(inst);
 
     // Init
-    nux_u32_t *frame_index = (nux_u32_t *)(inst->memory + NUX_MAP_FRAME_INDEX);
+    nux_u32_t *frame_index = (nux_u32_t *)(inst->memory + NUX_MAP_FRAME);
     if (*frame_index == 0 && inst->init)
     {
         inst->init(env);
@@ -116,9 +116,9 @@ nux_instance_get_error (nux_instance_t inst)
     return nux_error_message(inst->env.error);
 }
 const nux_u8_t *
-nux_instance_get_framebuffer (nux_instance_t inst)
+nux_instance_get_screen (nux_instance_t inst)
 {
-    return inst->memory + NUX_MAP_FRAMEBUFFER;
+    return inst->memory + NUX_MAP_SCREEN;
 }
 const nux_u8_t *
 nux_instance_get_palette (nux_instance_t inst)
@@ -148,36 +148,41 @@ nux_error_message (nux_error_t error)
 }
 
 void
-nux_trace (nux_env_t env, const nux_c8_t *text)
+nux_log (nux_env_t env, const nux_c8_t *text)
 {
     nux_platform_log(env->inst, text, nu_strnlen(text, 1024));
 }
 
 void
-nux_inspect_i32 (nux_env_t env, const nux_c8_t *name, nux_i32_t *p)
+nux_dbgi32 (nux_env_t env, const nux_c8_t *name, nux_i32_t *p)
 {
-    nux_platform_inspect(
-        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_INSPECT_I32, p);
+    nux_platform_debug(
+        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_I32, p);
 }
 void
-nux_inspect_f32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)
+nux_dbgf32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)
 {
-    nux_platform_inspect(
-        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_INSPECT_F32, p);
+    nux_platform_debug(
+        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_F32, p);
 }
 
 nux_u32_t
-nux_console_info (nux_env_t env, nux_console_info_t info)
+nux_stat (nux_env_t env, nux_console_info_t info)
 {
     return 0;
 }
 nux_f32_t
-nux_global_time (nux_env_t env)
+nux_gtime (nux_env_t env)
 {
-    return *(nux_f32_t *)(env->inst->memory + NUX_MAP_TIME);
+    return NUX_MEMGET(env, NUX_MAP_TIME, nux_f32_t);
 }
 nux_f32_t
-nux_delta_time (nux_env_t env)
+nux_dtime (nux_env_t env)
 {
     return delta_time(env->inst);
+}
+nux_u32_t
+nux_frame (nux_env_t env)
+{
+    return NUX_MEMGET(env, NUX_MAP_FRAME, nux_u32_t);
 }

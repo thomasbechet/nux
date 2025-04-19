@@ -9,7 +9,7 @@ static m3ApiRawFunction(trace)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArgMem(const nux_c8_t *, text);
-    nux_trace(env, text);
+    nux_log(env, text);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(inspect_i32)
@@ -20,7 +20,7 @@ static m3ApiRawFunction(inspect_i32)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArgMem(const nux_c8_t *, name);
     m3ApiGetArgMem(nux_i32_t *, p);
-    nux_inspect_i32(env, name, p);
+    nux_dbgi32(env, name, p);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(inspect_f32)
@@ -31,7 +31,7 @@ static m3ApiRawFunction(inspect_f32)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiGetArgMem(const nux_c8_t *, name);
     m3ApiGetArgMem(nux_f32_t *, p);
-    nux_inspect_f32(env, name, p);
+    nux_dbgf32(env, name, p);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(console_info)
@@ -42,7 +42,7 @@ static m3ApiRawFunction(console_info)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_u32_t);
     m3ApiGetArg(nux_console_info_t, info);
-    m3ApiReturn(nux_console_info(env, info));
+    m3ApiReturn(nux_stat(env, info));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(global_time)
@@ -52,7 +52,7 @@ static m3ApiRawFunction(global_time)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_f32_t);
-    m3ApiReturn(nux_global_time(env));
+    m3ApiReturn(nux_gtime(env));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(delta_time)
@@ -62,7 +62,7 @@ static m3ApiRawFunction(delta_time)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_f32_t);
-    m3ApiReturn(nux_delta_time(env));
+    m3ApiReturn(nux_dtime(env));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(button)
@@ -73,7 +73,7 @@ static m3ApiRawFunction(button)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_u32_t);
     m3ApiGetArg(nux_u32_t, player);
-    m3ApiReturn(nux_button(env, player));
+    m3ApiReturn(nux_btn(env, player));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(axis)
@@ -85,7 +85,7 @@ static m3ApiRawFunction(axis)
     m3ApiReturnType(nux_f32_t);
     m3ApiGetArg(nux_u32_t, player);
     m3ApiGetArg(nux_axis_t, axis);
-    m3ApiReturn(nux_axis(env, player, axis));
+    m3ApiReturn(nux_axs(env, player, axis));
     m3ApiSuccess();
 }
 

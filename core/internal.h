@@ -9,13 +9,11 @@
 #include <wasm3.h>
 #endif
 
-// texture color : 8bpp (index of 256 color palette)
-// texture mask  : 1bpp (visible or not)
-// texture alpha : 8bpp (0-255 blending function ?)
-// texture light : 8bpp (0-255 black to white)
-//
-// (A - B) * C + D
-// (1 - 0) * C + 0
+#define NUX_MEMPTR(env, addr, type) (type *)((env)->inst->memory + (addr))
+#define NUX_MEMGET(env, addr, type) \
+    *(const type *)((env)->inst->memory + (addr))
+#define NUX_MEMSET(env, addr, type, val) \
+    *(type *)((env)->inst->memory + (addr)) = (val)
 
 struct nux_env
 {
@@ -23,10 +21,6 @@ struct nux_env
     nu_v2u_t       cursor;
     nux_error_t    error;
     nux_c8_t       error_message[256];
-
-    nu_v3_t   positions[4];
-    nu_v2_t   uvs[4];
-    nux_u32_t vertex_index;
 };
 
 struct nux_instance

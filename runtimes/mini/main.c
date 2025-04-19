@@ -87,10 +87,10 @@ nux_platform_log (nux_instance_t inst, const nux_c8_t *log, nux_u32_t n)
     printf("%.*s\n", (int)n, log);
 }
 void
-nux_platform_inspect (nux_instance_t     inst,
+nux_platform_debug (nux_instance_t     inst,
                       const nux_c8_t    *name,
                       nux_u32_t          n,
-                      nux_inspect_type_t type,
+                      nux_debug_type_t type,
                       void              *p)
 {
 }

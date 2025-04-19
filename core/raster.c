@@ -16,16 +16,23 @@ nux_fill (nux_env_t env,
     {
         for (nux_i32_t x = minx; x <= maxx; ++x)
         {
-            nux_point(env, x, y, color);
+            nux_pset(env, x, y, color);
         }
     }
 }
 void
-nux_point (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
+nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
 {
     NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return);
     NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return);
-    env->inst->memory[NUX_MAP_FRAMEBUFFER + y * NUX_SCREEN_WIDTH + x] = color;
+    env->inst->memory[NUX_MAP_SCREEN + y * NUX_SCREEN_WIDTH + x] = color;
+}
+nux_u8_t
+nux_pget (nux_env_t env, nux_i32_t x, nux_i32_t y)
+{
+    NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return 0);
+    NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return 0);
+    return env->inst->memory[NUX_MAP_SCREEN + y * NUX_SCREEN_WIDTH + x];
 }
 void
 nux_line (nux_env_t env,
@@ -43,7 +50,7 @@ nux_line (nux_env_t env,
     nu_i32_t e2;
     for (;;)
     {
-        nux_point(env, x0, y0, c);
+        nux_pset(env, x0, y0, c);
         if (x0 == x1 && y0 == y1)
         {
             break;
@@ -77,7 +84,7 @@ fill_triangle (nux_env_t env,
     nu_v2i_t v2 = nu_v2i(x2, y2);
     if (y0 == y1 && y0 == y2)
     {
-        nux_point(env, x0, y0, c);
+        nux_pset(env, x0, y0, c);
     }
     if (y0 > y1)
     {
@@ -162,7 +169,7 @@ bresenham1:
 processline:
     for (nu_i32_t x = NU_MIN(curx0, curx1); x <= NU_MAX(curx0, curx1); ++x)
     {
-        nux_point(env, x, cury1, c);
+        nux_pset(env, x, cury1, c);
     }
     if (cury1 == v2.y)
     {
@@ -205,19 +212,19 @@ fill_top_triangle (
     }
 }
 void
-nux_triangle (nux_env_t env,
-              nux_i32_t x0,
-              nux_i32_t y0,
-              nux_i32_t x1,
-              nux_i32_t y1,
-              nux_i32_t x2,
-              nux_i32_t y2,
-              nux_u8_t  c)
+nux_filltri (nux_env_t env,
+             nux_i32_t x0,
+             nux_i32_t y0,
+             nux_i32_t x1,
+             nux_i32_t y1,
+             nux_i32_t x2,
+             nux_i32_t y2,
+             nux_u8_t  c)
 {
     fill_triangle(env, x0, y0, x1, y1, x2, y2, c);
-    nux_point(env, x0, y0, 3);
-    nux_point(env, x1, y1, 4);
-    nux_point(env, x2, y2, 5);
+    nux_pset(env, x0, y0, 3);
+    nux_pset(env, x1, y1, 4);
+    nux_pset(env, x2, y2, 5);
     return;
 
     // nu_v2i_t v0 = nu_v2i(x0, y0);

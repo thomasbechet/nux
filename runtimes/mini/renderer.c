@@ -191,7 +191,7 @@ renderer_init (void)
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_SRGB,
-                 NUX_PALETTE_LENGTH,
+                 NUX_PALETTE_LEN,
                  1,
                  0,
                  GL_RGB,
@@ -252,7 +252,7 @@ renderer_render_instance (nux_instance_t inst,
                     NUX_SCREEN_HEIGHT,
                     GL_RED,
                     GL_UNSIGNED_BYTE,
-                    nux_instance_get_framebuffer(inst));
+                    nux_instance_get_screen(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Update palette
@@ -261,7 +261,7 @@ renderer_render_instance (nux_instance_t inst,
                     0,
                     0,
                     0,
-                    NUX_PALETTE_LENGTH,
+                    NUX_PALETTE_LEN,
                     1,
                     GL_RGB,
                     GL_UNSIGNED_BYTE,

@@ -6,18 +6,18 @@
 void
 plot4points (nux_env_t env, int cx, int cy, int x, int y, nux_u8_t c)
 {
-    nux_point(env, cx + x, cy + y, c);
+    nux_pset(env, cx + x, cy + y, c);
     if (x != 0)
     {
-        nux_point(env, cx - x, cy + y, c);
+        nux_pset(env, cx - x, cy + y, c);
     }
     if (y != 0)
     {
-        nux_point(env, cx + x, cy - y, c);
+        nux_pset(env, cx + x, cy - y, c);
     }
     if (x != 0 && y != 0)
     {
-        nux_point(env, cx - x, cy - y, c);
+        nux_pset(env, cx - x, cy - y, c);
     }
 }
 void
@@ -66,10 +66,10 @@ plot_circle (nux_env_t env, int xm, int ym, int r, nux_u8_t c)
     int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
     do
     {
-        nux_point(env, xm - x, ym + y, c); /*   I. Quadrant */
-        nux_point(env, xm - y, ym - x, c); /*  II. Quadrant */
-        nux_point(env, xm + x, ym - y, c); /* III. Quadrant */
-        nux_point(env, xm + y, ym + x, c); /*  IV. Quadrant */
+        nux_pset(env, xm - x, ym + y, c); /*   I. Quadrant */
+        nux_pset(env, xm - y, ym - x, c); /*  II. Quadrant */
+        nux_pset(env, xm + x, ym - y, c); /* III. Quadrant */
+        nux_pset(env, xm + y, ym + x, c); /*  IV. Quadrant */
         r = err;
         if (r > x)
         {
@@ -90,10 +90,10 @@ raster_circle (nux_env_t env, int x0, int y0, int radius, nux_c8_t c)
     int x     = 0;
     int y     = radius;
 
-    nux_point(env, x0, y0 + radius, c);
-    nux_point(env, x0, y0 - radius, c);
-    nux_point(env, x0 + radius, y0, c);
-    nux_point(env, x0 - radius, y0, c);
+    nux_pset(env, x0, y0 + radius, c);
+    nux_pset(env, x0, y0 - radius, c);
+    nux_pset(env, x0 + radius, y0, c);
+    nux_pset(env, x0 - radius, y0, c);
     while (x < y)
     {
         // ddF_x == 2 * x + 1;
@@ -108,37 +108,38 @@ raster_circle (nux_env_t env, int x0, int y0, int radius, nux_c8_t c)
         x++;
         ddF_x += 2;
         f += ddF_x;
-        nux_point(env, x0 + x, y0 + y, c);
-        nux_point(env, x0 - x, y0 + y, c);
-        nux_point(env, x0 + x, y0 - y, c);
-        nux_point(env, x0 - x, y0 - y, c);
-        nux_point(env, x0 + y, y0 + x, c);
-        nux_point(env, x0 - y, y0 + x, c);
-        nux_point(env, x0 + y, y0 - x, c);
-        nux_point(env, x0 - y, y0 - x, c);
+        nux_pset(env, x0 + x, y0 + y, c);
+        nux_pset(env, x0 - x, y0 + y, c);
+        nux_pset(env, x0 + x, y0 - y, c);
+        nux_pset(env, x0 - x, y0 - y, c);
+        nux_pset(env, x0 + y, y0 + x, c);
+        nux_pset(env, x0 - y, y0 + x, c);
+        nux_pset(env, x0 + y, y0 - x, c);
+        nux_pset(env, x0 - y, y0 - x, c);
     }
 }
 
 void
 loop_init (nux_env_t env)
 {
-    nux_palset(env, 0, 0x0B3954);
-    nux_palset(env, 1, 0xBFD7EA);
-    nux_palset(env, 2, 0xFF6663);
-    nux_palset(env, 3, 0xFF0000);
-    nux_palset(env, 4, 0x00FF00);
-    nux_palset(env, 5, 0x0000FF);
-    nux_palset(env, 6, 0);
+    nux_pal(env, 0, 0x0B3954);
+    nux_pal(env, 1, 0xBFD7EA);
+    nux_pal(env, 2, 0xFF6663);
+    nux_pal(env, 3, 0xFF0000);
+    nux_pal(env, 4, 0x00FF00);
+    nux_pal(env, 5, 0x0000FF);
+    nux_pal(env, 6, 0);
+    nux_pal(env, 7, 0xFFFFFF);
 }
 void
 loop_update (nux_env_t env)
 {
-    nux_clear(env, 6);
+    nux_cls(env, 6);
     nu_v2i_t v0 = nu_v2i(50, 50);
-    nu_v2i_t v1 = nu_v2i(100 + nu_cos(nux_global_time(env) * 0.5) * 50,
-                         70 + nu_sin(nux_global_time(env) * 0.5) * 50);
+    nu_v2i_t v1 = nu_v2i(100 + nu_cos(nux_gtime(env) * 0.5) * 50,
+                         70 + nu_sin(nux_gtime(env) * 0.5) * 50);
     nu_v2i_t v2 = nu_v2i(80, 200);
-    nux_triangle(env, v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, 1);
+    nux_filltri(env, v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, 1);
     nux_line(env, 150, 150, 300, 20, 2);
     for (int i = 0; i < 256; ++i)
     {
@@ -148,4 +149,9 @@ loop_update (nux_env_t env)
     // circle(env, 100, 100, 50, 3);
     // plot_circle(env, 100, 100, 50, 3);
     raster_circle(env, 100, 100, 50, 3);
+
+    for (int y = 0; y < NUX_SCREEN_HEIGHT; y += 8)
+    {
+        nux_text(env, 10, y, "Hello World !", y % 5);
+    }
 }

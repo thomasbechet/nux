@@ -60,7 +60,7 @@ typedef enum
     NUX_AXIS_MAX         = 6,
     NUX_NODE_MAX         = (1 << 16) - 1,
     NUX_NAME_MAX         = 64,
-    NUX_PALETTE_LENGTH   = 256,
+    NUX_PALETTE_LEN      = 256,
 } nux_constants_t;
 
 typedef enum
@@ -126,57 +126,61 @@ typedef enum
 
 typedef enum
 {
-    NUX_MAP_FRAMEBUFFER = 0x0,
-    NUX_MAP_PALETTE
-    = NUX_MAP_FRAMEBUFFER + (NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT),
-    NUX_MAP_GAMEPAD_BUTTONS
-    = NUX_MAP_PALETTE + NUX_PALETTE_LENGTH * sizeof(nux_u32_t),
-    NUX_MAP_GAMEPAD_AXIS
-    = NUX_MAP_GAMEPAD_BUTTONS + NUX_PLAYER_MAX * sizeof(nux_u32_t),
+    NUX_MAP_SCREEN  = 0x0,
+    NUX_MAP_PALETTE = NUX_MAP_SCREEN + (NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT),
+    NUX_MAP_BUTTONS = NUX_MAP_PALETTE + NUX_PALETTE_LEN * sizeof(nux_u32_t),
+    NUX_MAP_AXIS    = NUX_MAP_BUTTONS + NUX_PLAYER_MAX * sizeof(nux_u32_t),
     NUX_MAP_TIME
-    = NUX_MAP_GAMEPAD_AXIS + NUX_PLAYER_MAX * sizeof(nux_f32_t) * NUX_AXIS_MAX,
-    NUX_MAP_FRAME_INDEX = NUX_MAP_TIME + sizeof(nux_f32_t),
+    = NUX_MAP_AXIS + NUX_PLAYER_MAX * sizeof(nux_f32_t) * NUX_AXIS_MAX,
+    NUX_MAP_FRAME     = NUX_MAP_TIME + sizeof(nux_f32_t),
+    NUX_MAP_DRAWSTATE = NUX_MAP_FRAME + sizeof(nux_u32_t),
+    NUX_MAP_CURSOR    = NUX_MAP_DRAWSTATE,
+    NUX_MAP_CURSORX   = NUX_MAP_CURSOR + 0,
+    NUX_MAP_CURSORY   = NUX_MAP_CURSOR + sizeof(nux_i32_t),
 } nux_map_t;
 
 // Debug
-void      nux_trace(nux_env_t env, const nux_c8_t *text);
-void      nux_inspect_i32(nux_env_t env, const nux_c8_t *name, nux_i32_t *p);
-void      nux_inspect_f32(nux_env_t env, const nux_c8_t *name, nux_f32_t *p);
-nux_u32_t nux_console_info(nux_env_t env, nux_console_info_t info);
-nux_f32_t nux_global_time(nux_env_t env);
-nux_f32_t nux_delta_time(nux_env_t env);
+void      nux_log(nux_env_t env, const nux_c8_t *text);
+void      nux_dbgi32(nux_env_t env, const nux_c8_t *name, nux_i32_t *p);
+void      nux_dbgf32(nux_env_t env, const nux_c8_t *name, nux_f32_t *p);
+nux_u32_t nux_stat(nux_env_t env, nux_console_info_t info);
+nux_f32_t nux_gtime(nux_env_t env);
+nux_f32_t nux_dtime(nux_env_t env);
+nux_u32_t nux_frame(nux_env_t env);
 
 // Memory
-void nux_palset(nux_env_t env, nux_u8_t index, nux_u32_t color);
-void nux_clear(nux_env_t env, nux_u32_t color);
-void nux_fill(nux_env_t env,
-              nux_i32_t x0,
-              nux_i32_t y0,
-              nux_i32_t x1,
-              nux_i32_t y1,
-              nux_u8_t  color);
-void nux_point(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color);
-void nux_line(nux_env_t env,
-              nux_i32_t x0,
-              nux_i32_t y0,
-              nux_i32_t x1,
-              nux_i32_t y1,
-              nux_u8_t  color);
-void nux_triangle(nux_env_t env,
+void     nux_pal(nux_env_t env, nux_u8_t index, nux_u32_t color);
+void     nux_cls(nux_env_t env, nux_u32_t color);
+void     nux_fill(nux_env_t env,
                   nux_i32_t x0,
                   nux_i32_t y0,
                   nux_i32_t x1,
                   nux_i32_t y1,
-                  nux_i32_t x2,
-                  nux_i32_t y2,
                   nux_u8_t  color);
-void nux_begin3d(nux_env_t env, nux_primitive_t primitive);
-void nux_end3d(nux_env_t env);
-void nux_vertex(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_uv(nux_env_t env, nux_f32_t u, nux_f32_t v);
+void     nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color);
+nux_u8_t nux_pget(nux_env_t env, nux_i32_t x, nux_i32_t y);
+void     nux_line(nux_env_t env,
+                  nux_i32_t x0,
+                  nux_i32_t y0,
+                  nux_i32_t x1,
+                  nux_i32_t y1,
+                  nux_u8_t  color);
+void     nux_filltri(nux_env_t env,
+                     nux_i32_t x0,
+                     nux_i32_t y0,
+                     nux_i32_t x1,
+                     nux_i32_t y1,
+                     nux_i32_t x2,
+                     nux_i32_t y2,
+                     nux_u8_t  color);
+void     nux_text(
+        nux_env_t env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
+nux_i32_t cursorx(nux_env_t env);
+nux_i32_t cursory(nux_env_t env);
+void      cursor(nux_env_t env, nux_i32_t x, nux_i32_t y);
 
 // Input
-nux_u32_t nux_button(nux_env_t env, nux_u32_t player);
-nux_f32_t nux_axis(nux_env_t env, nux_u32_t player, nux_axis_t axis);
+nux_u32_t nux_btn(nux_env_t env, nux_u32_t player);
+nux_f32_t nux_axs(nux_env_t env, nux_u32_t player, nux_axis_t axis);
 
 #endif

@@ -10,7 +10,7 @@ if __name__ == "__main__":
     parser.add_argument("rootdir")
     args = parser.parse_args()
 
-    font_path = os.path.join(args.rootdir, "runtimes/native/data/fonts/PublicPixel.ttf")
+    font_path = os.path.join(args.rootdir, "runtimes/native/fonts/PublicPixel.ttf")
     font = ImageFont.truetype(font_path, 8)
     left, top, right, bottom = font.getbbox("A", stroke_width=0)
     w = right - left + 1
@@ -21,9 +21,12 @@ if __name__ == "__main__":
 
     ba = bitarray()
 
+    chars = [0] * 256
+
     ascii = " !\"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~"
-        # print(len(ascii))
-    for c in ascii:
+    # print(len(ascii))
+    for i, c in enumerate(ascii):
+        chars[ord(c)] = i
         draw.text((0, 0), c, font=font)
     
         for i in range(w * h):
@@ -36,12 +39,12 @@ if __name__ == "__main__":
     
         draw.rectangle((0, 0, w, h), fill=(0, 0, 0, 0))
     
-    output = "runtimes/native/runtime/fonts_data.c.inc"
+    output = "runtimes/native/fonts_data.c.inc"
     with open(os.path.join(args.rootdir, output), "w") as f:
         print("#include <nulib/nulib.h>", file=f)
         print("#define DEFAULT_FONT_DATA_WIDTH ", w, file=f);
         print("#define DEFAULT_FONT_DATA_HEIGHT", h, file=f);
-        print("static const nu_byte_t default_font_data_chars[] = {", ','.join(['0x{:02x}'.format(x) for x in bytes(ascii, 'utf-8')]), "};", file=f)
+        print("static const nu_byte_t default_font_data_chars[] = {", ','.join(['{: 3d}'.format(x) for x in chars]), "};", file=f)
         print("static const nu_byte_t default_font_data[] = {", ','.join(['0x{:02x}'.format(x) for x in ba.tobytes()]), "};", file=f)
         f.close()
         subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
