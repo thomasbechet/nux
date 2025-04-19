@@ -68,20 +68,47 @@ nux_print (nux_env_t env, const nux_c8_t *text, nux_u8_t c)
     nux_text(env, x, y, text, c);
     nux_cursor(env, x, y + DEFAULT_FONT_DATA_HEIGHT);
 }
+#ifdef NUX_BUILD_VARARGS
+void
+nux_textfmt (nux_env_t       env,
+             nux_i32_t       x,
+             nux_i32_t       y,
+             nux_u8_t        c,
+             const nux_c8_t *fmt,
+             ...)
+{
+    nux_c8_t buf[128];
+    va_list  args;
+    va_start(args, fmt);
+    nu_vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    nux_text(env, x, y, buf, c);
+}
+void
+nux_printfmt (nux_env_t env, nux_u8_t c, const nux_c8_t *fmt, ...)
+{
+    nux_c8_t buf[128];
+    va_list  args;
+    va_start(args, fmt);
+    nu_vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    nux_print(env, buf, c);
+}
+#endif
 
 nux_i32_t
 nux_cursorx (nux_env_t env)
 {
-    return NUX_MEMGET(env, NUX_MAP_CURSORX, nux_i32_t);
+    return NUX_MEMGET(env->inst, NUX_MAP_CURSORX, nux_i32_t);
 }
 nux_i32_t
 nux_cursory (nux_env_t env)
 {
-    return NUX_MEMGET(env, NUX_MAP_CURSORY, nux_i32_t);
+    return NUX_MEMGET(env->inst, NUX_MAP_CURSORY, nux_i32_t);
 }
 void
 nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
 {
-    NUX_MEMSET(env, NUX_MAP_CURSORX, nux_i32_t, x);
-    NUX_MEMSET(env, NUX_MAP_CURSORY, nux_i32_t, y);
+    NUX_MEMSET(env->inst, NUX_MAP_CURSORX, nux_i32_t, x);
+    NUX_MEMSET(env->inst, NUX_MAP_CURSORY, nux_i32_t, y);
 }

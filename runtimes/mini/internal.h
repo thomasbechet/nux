@@ -36,7 +36,7 @@ nu_status_t  window_init(void);
 void         window_free(void);
 RGFW_window *window_get_win(void);
 void         window_poll_events(void);
-void         window_swap_buffers(void);
+nu_u32_t     window_swap_buffers(void);
 nu_v2u_t     window_get_size(void);
 nu_f32_t     window_get_scale_factor(void);
 nu_v2_t      window_get_mouse_scroll(void);

@@ -120,9 +120,8 @@ typedef enum
 
 typedef enum
 {
-    NUX_CONSOLE_MEMORY_CAPACITY = 0,
-    NUX_CONSOLE_MEMORY_USAGE    = 1,
-} nux_console_info_t;
+    NUX_STAT_FPS = 1,
+} nux_stat_t;
 
 typedef enum
 {
@@ -137,13 +136,14 @@ typedef enum
     NUX_MAP_CURSOR    = NUX_MAP_DRAWSTATE,
     NUX_MAP_CURSORX   = NUX_MAP_CURSOR + 0,
     NUX_MAP_CURSORY   = NUX_MAP_CURSOR + sizeof(nux_i32_t),
+    NUX_MAP_STAT_FPS  = NUX_MAP_CURSORY + sizeof(nux_f32_t),
 } nux_map_t;
 
 // Debug
 void      nux_trace(nux_env_t env, const nux_c8_t *text);
 void      nux_dbgi32(nux_env_t env, const nux_c8_t *name, nux_i32_t *p);
 void      nux_dbgf32(nux_env_t env, const nux_c8_t *name, nux_f32_t *p);
-nux_u32_t nux_stat(nux_env_t env, nux_console_info_t info);
+nux_u32_t nux_stat(nux_env_t env, nux_stat_t info);
 nux_f32_t nux_gtime(nux_env_t env);
 nux_f32_t nux_dtime(nux_env_t env);
 nux_u32_t nux_frame(nux_env_t env);
@@ -179,6 +179,15 @@ void      nux_print(nux_env_t env, const nux_c8_t *text, nux_u8_t c);
 nux_i32_t nux_cursorx(nux_env_t env);
 nux_i32_t nux_cursory(nux_env_t env);
 void      nux_cursor(nux_env_t env, nux_i32_t x, nux_i32_t y);
+#ifdef NUX_BUILD_VARARGS
+void nux_textfmt(nux_env_t       env,
+                 nux_i32_t       x,
+                 nux_i32_t       y,
+                 nux_u8_t        c,
+                 const nux_c8_t *fmt,
+                 ...);
+void nux_printfmt(nux_env_t env, nux_u8_t c, const nux_c8_t *fmt, ...);
+#endif
 
 // Input
 nux_u32_t nux_btn(nux_env_t env, nux_u32_t player);

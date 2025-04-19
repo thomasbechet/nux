@@ -41,7 +41,7 @@ static m3ApiRawFunction(stat)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_u32_t);
-    m3ApiGetArg(nux_console_info_t, info);
+    m3ApiGetArg(nux_stat_t, info);
     m3ApiReturn(nux_stat(env, info));
     m3ApiSuccess();
 }

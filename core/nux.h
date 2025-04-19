@@ -80,6 +80,9 @@ NUX_API void  nux_instance_set_axis(nux_instance_t inst,
                                     nux_u32_t      player,
                                     nux_axis_t     axis,
                                     nux_f32_t      value);
+NUX_API void  nux_instance_set_stat(nux_instance_t inst,
+                                    nux_stat_t     stat,
+                                    nux_u32_t      value);
 NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t inst);
 NUX_API const nux_u8_t *nux_instance_get_screen(nux_instance_t inst);
 NUX_API const nux_u8_t *nux_instance_get_palette(nux_instance_t inst);

@@ -141,17 +141,24 @@ loop_update (nux_env_t env)
     nu_v2i_t v2 = nu_v2i(80, 200);
     nux_filltri(env, v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, 1);
     nux_line(env, 150, 150, 300, 20, 2);
-    for (int i = 0; i < 256; ++i)
-    {
-        const nu_u32_t size = 8;
-        nux_fill(env, i * size, 0, i * size + size - 1, size - 1, i);
-    }
     // circle(env, 100, 100, 50, 3);
     // plot_circle(env, 100, 100, 50, 3);
-    raster_circle(env, 100, 100, 50, 3);
-
-    for (int i = 0; i < 30; ++i)
+    static int radius = 50;
+    if (nux_btn(env, 0) & NUX_BUTTON_A)
     {
-        nux_print(env, "Hello World !", i % 5);
+        radius += 1;
+    }
+    if (nux_btn(env, 0) & NUX_BUTTON_B)
+    {
+        radius -= 1;
+        radius = NU_MAX(radius, 5);
+    }
+    raster_circle(env, 100, 100, radius, 3);
+
+    nux_cursor(env, 0, 0);
+    nux_printfmt(env, 7, "FPS:%d", nux_stat(env, NUX_STAT_FPS));
+    for (int i = 0; i < 5; ++i)
+    {
+        nux_printfmt(env, 7, "%d", i);
     }
 }

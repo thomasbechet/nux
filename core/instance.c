@@ -1,10 +1,5 @@
 #include "internal.h"
 
-static nux_f32_t
-delta_time (nux_instance_t inst)
-{
-    return 1.0 / (nu_f32_t)inst->tps;
-}
 static nux_env_t
 init_env (nux_instance_t inst)
 {
@@ -27,23 +22,24 @@ nux_set_error (nux_env_t env, nux_error_t error)
 nux_instance_t
 nux_instance_init (const nux_instance_config_t *config)
 {
-    // Instance allocation
+    // Allocate instance
     nux_instance_t inst = nux_platform_malloc(
         config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));
     NU_CHECK(inst, return NU_NULL);
     nu_memset(inst, 0, sizeof(struct nux_instance));
     inst->userdata = config->userdata;
     inst->running  = NU_TRUE;
-    inst->tps      = 60;
     inst->init     = config->init;
     inst->update   = config->update;
 
-    // State allocation
+    // Allocate state
     inst->memory_capa = NU_MEM_16M;
     inst->memory      = nux_platform_malloc(
         config->userdata, NUX_MEMORY_USAGE_STATE, inst->memory_capa);
     NU_CHECK(inst->memory, goto cleanup0);
     nu_memset(inst->memory, 0, inst->memory_capa);
+
+    // Initialize state
 
     // Wasm initialization
     // nux_status_t res = nux_wasm_init(inst, config);
@@ -90,7 +86,7 @@ nux_instance_tick (nux_instance_t inst)
 
     // Frame integration
     nux_f32_t *time = (nux_f32_t *)(inst->memory + NUX_MAP_TIME);
-    *time           = *time + delta_time(inst);
+    *time           = *time + nux_dtime(env);
     ++(*frame_index);
 }
 nux_status_t
@@ -111,6 +107,16 @@ void *
 nux_instance_get_userdata (nux_instance_t inst)
 {
     return inst->userdata;
+}
+void
+nux_instance_set_stat (nux_instance_t inst, nux_stat_t stat, nux_u32_t value)
+{
+    switch (stat)
+    {
+        case NUX_STAT_FPS:
+            NUX_MEMSET(inst, NUX_MAP_STAT_FPS, nux_u32_t, value);
+            break;
+    }
 }
 const nux_c8_t *
 nux_instance_get_error (nux_instance_t inst)
@@ -169,22 +175,27 @@ nux_dbgf32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)
 }
 
 nux_u32_t
-nux_stat (nux_env_t env, nux_console_info_t info)
+nux_stat (nux_env_t env, nux_stat_t info)
 {
+    switch (info)
+    {
+        case NUX_STAT_FPS:
+            return NUX_MEMGET(env->inst, NUX_MAP_STAT_FPS, nux_u32_t);
+    }
     return 0;
 }
 nux_f32_t
 nux_gtime (nux_env_t env)
 {
-    return NUX_MEMGET(env, NUX_MAP_TIME, nux_f32_t);
+    return NUX_MEMGET(env->inst, NUX_MAP_TIME, nux_f32_t);
 }
 nux_f32_t
 nux_dtime (nux_env_t env)
 {
-    return delta_time(env->inst);
+    return 1. / 60;
 }
 nux_u32_t
 nux_frame (nux_env_t env)
 {
-    return NUX_MEMGET(env, NUX_MAP_FRAME, nux_u32_t);
+    return NUX_MEMGET(env->inst, NUX_MAP_FRAME, nux_u32_t);
 }

@@ -9,6 +9,7 @@
 
 #define NUX_API extern
 
+#define NUX_BUILD_VARARGS
 #define NUX_BUILD_WASM3
 
 #endif

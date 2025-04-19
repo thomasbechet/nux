@@ -9,11 +9,10 @@
 #include <wasm3.h>
 #endif
 
-#define NUX_MEMPTR(env, addr, type) (type *)((env)->inst->memory + (addr))
-#define NUX_MEMGET(env, addr, type) \
-    *(const type *)((env)->inst->memory + (addr))
-#define NUX_MEMSET(env, addr, type, val) \
-    *(type *)((env)->inst->memory + (addr)) = (val)
+#define NUX_MEMPTR(inst, addr, type) (type *)((inst)->memory + (addr))
+#define NUX_MEMGET(inst, addr, type) *(const type *)((inst)->memory + (addr))
+#define NUX_MEMSET(inst, addr, type, val) \
+    *(type *)((inst)->memory + (addr)) = (val)
 
 struct nux_env
 {
@@ -24,10 +23,8 @@ struct nux_env
 
 struct nux_instance
 {
-    void *userdata;
-
+    void     *userdata;
     nu_bool_t running;
-    nux_u32_t tps;
 
     nux_u8_t *memory;
     nux_u32_t memory_capa;

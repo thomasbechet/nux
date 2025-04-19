@@ -20,6 +20,7 @@ static struct
     nu_f32_t          scale_factor;
     nu_v2_t           mouse_scroll;
     nu_v2u_t          size;
+    nu_u64_t          prev_time;
 } window;
 
 static void
@@ -50,6 +51,7 @@ window_init (void)
         return NU_FAILURE;
     }
     RGFW_window_swapInterval(window.win, 1);
+    window.prev_time = RGFW_getTimeNS();
 
     // Initialize viewport
     window.size         = nu_v2u(width, height);
@@ -335,10 +337,15 @@ window_poll_events (void)
         }
     }
 }
-void
+nu_u32_t
 window_swap_buffers (void)
 {
     RGFW_window_swapBuffers(window.win);
+    nu_u64_t time_ns = RGFW_getTimeNS();
+    nu_u64_t delta   = time_ns - window.prev_time;
+    nu_u32_t fps     = (nu_u32_t)(1. / ((nu_f32_t)delta * 1e-9));
+    window.prev_time = time_ns;
+    return fps;
 }
 nu_v2u_t
 window_get_size (void)

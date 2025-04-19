@@ -87,11 +87,11 @@ nux_platform_log (nux_instance_t inst, const nux_c8_t *log, nux_u32_t n)
     printf("%.*s\n", (int)n, log);
 }
 void
-nux_platform_debug (nux_instance_t     inst,
-                      const nux_c8_t    *name,
-                      nux_u32_t          n,
-                      nux_debug_type_t type,
-                      void              *p)
+nux_platform_debug (nux_instance_t   inst,
+                    const nux_c8_t  *name,
+                    nux_u32_t        n,
+                    nux_debug_type_t type,
+                    void            *p)
 {
 }
 nux_status_t
@@ -131,12 +131,15 @@ main (int argc, char **argv)
 
     // Main loop
     nu_bool_t running = NU_TRUE;
+    nu_u32_t  fps     = 0;
     while (running)
     {
         // Retrieve window events
         window_poll_events();
+        window_update_inputs(instance);
 
         // Update instance
+        nux_instance_set_stat(instance, NUX_STAT_FPS, fps);
         nux_instance_tick(instance);
 
         // Clear window
@@ -149,7 +152,7 @@ main (int argc, char **argv)
         renderer_render_instance(instance, viewport, size);
 
         // Swap buffers
-        window_swap_buffers();
+        fps = window_swap_buffers();
 
         // Process runtime events
         runtime_command_t cmd;
