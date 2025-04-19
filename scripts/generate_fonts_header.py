@@ -10,7 +10,7 @@ if __name__ == "__main__":
     parser.add_argument("rootdir")
     args = parser.parse_args()
 
-    font_path = os.path.join(args.rootdir, "runtimes/native/fonts/PublicPixel.ttf")
+    font_path = os.path.join(args.rootdir, "core/fonts/PublicPixel.ttf")
     font = ImageFont.truetype(font_path, 8)
     left, top, right, bottom = font.getbbox("A", stroke_width=0)
     w = right - left + 1
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     
         draw.rectangle((0, 0, w, h), fill=(0, 0, 0, 0))
     
-    output = "runtimes/native/fonts_data.c.inc"
+    output = "core/fonts_data.c.inc"
     with open(os.path.join(args.rootdir, output), "w") as f:
         print("#include <nulib/nulib.h>", file=f)
         print("#define DEFAULT_FONT_DATA_WIDTH ", w, file=f);

@@ -4,9 +4,12 @@
 
 static struct
 {
+    GLuint render_surface_program;
     GLuint screen_blit_program;
-    GLuint surface_texture;
+    GLuint indices_texture;
     GLuint palette_texture;
+    GLuint surface_texture;
+    GLuint surface_fbo;
 } renderer;
 
 static const GLchar *
@@ -156,7 +159,7 @@ renderer_init (void)
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(message_callback, NU_NULL);
 
-    // Compile shaders
+    // Compile blit screen
     glEnableVertexAttribArray(0);
     status = compile_program(shader_screen_blit_vert,
                              shader_screen_blit_frag,
@@ -165,13 +168,24 @@ renderer_init (void)
     glUseProgram(renderer.screen_blit_program);
     glUniform1i(glGetUniformLocation(renderer.screen_blit_program, "t_surface"),
                 0);
-    glUniform1i(glGetUniformLocation(renderer.screen_blit_program, "t_palette"),
-                1);
     glUseProgram(0);
 
-    // Create surface
-    glGenTextures(1, &renderer.surface_texture);
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    // Compile surface render
+    glEnableVertexAttribArray(0);
+    status = compile_program(shader_surface_render_vert,
+                             shader_surface_render_frag,
+                             &renderer.render_surface_program);
+    NU_CHECK(status, goto cleanup0);
+    glUseProgram(renderer.render_surface_program);
+    glUniform1i(
+        glGetUniformLocation(renderer.render_surface_program, "t_indices"), 0);
+    glUniform1i(
+        glGetUniformLocation(renderer.render_surface_program, "t_palette"), 1);
+    glUseProgram(0);
+
+    // Create indices
+    glGenTextures(1, &renderer.indices_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.indices_texture);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_R8,
@@ -181,8 +195,8 @@ renderer_init (void)
                  GL_RED,
                  GL_UNSIGNED_BYTE,
                  NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Create palette
@@ -190,7 +204,7 @@ renderer_init (void)
     glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_SRGB,
+                 GL_RGB,
                  NUX_PALETTE_LEN,
                  1,
                  0,
@@ -200,6 +214,34 @@ renderer_init (void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create surface
+    glGenTextures(1, &renderer.surface_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_SRGB,
+                 NUX_SCREEN_WIDTH,
+                 NUX_SCREEN_HEIGHT,
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create surface fbo
+    glGenFramebuffers(1, &renderer.surface_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D,
+                           renderer.surface_texture,
+                           0);
+    NU_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER)
+              == GL_FRAMEBUFFER_COMPLETE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return status;
 
@@ -216,7 +258,26 @@ renderer_free (void)
     {
         glDeleteProgram(renderer.screen_blit_program);
     }
-    glDeleteTextures(1, &renderer.surface_texture);
+    if (renderer.render_surface_program)
+    {
+        glDeleteProgram(renderer.render_surface_program);
+    }
+    if (renderer.surface_fbo)
+    {
+        glDeleteFramebuffers(1, &renderer.surface_fbo);
+    }
+    if (renderer.indices_texture)
+    {
+        glDeleteTextures(1, &renderer.indices_texture);
+    }
+    if (renderer.palette_texture)
+    {
+        glDeleteTextures(1, &renderer.palette_texture);
+    }
+    if (renderer.surface_texture)
+    {
+        glDeleteTextures(1, &renderer.surface_texture);
+    }
 }
 void
 renderer_clear (nu_b2i_t viewport, nu_v2u_t window_size)
@@ -242,8 +303,8 @@ renderer_render_instance (nux_instance_t inst,
                           nu_b2i_t       viewport,
                           nu_v2u_t       window_size)
 {
-    // Update surface texture
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    // Update indices
+    glBindTexture(GL_TEXTURE_2D, renderer.indices_texture);
     glTexSubImage2D(GL_TEXTURE_2D,
                     0,
                     0,
@@ -268,6 +329,18 @@ renderer_render_instance (nux_instance_t inst,
                     nux_instance_get_palette(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    // Render surface
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
+    glUseProgram(renderer.render_surface_program);
+    glViewport(0, 0, NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+    glActiveTexture(GL_TEXTURE0 + 0);
+    glBindTexture(GL_TEXTURE_2D, renderer.indices_texture);
+    glActiveTexture(GL_TEXTURE0 + 1);
+    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glUseProgram(0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     // Blit surface to screen
     nu_v2i_t pos  = viewport.min;
     nu_v2u_t size = nu_b2i_size(viewport);
@@ -282,8 +355,6 @@ renderer_render_instance (nux_instance_t inst,
     glViewport(pos.x, pos.y, size.x, size.y);
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
-    glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);

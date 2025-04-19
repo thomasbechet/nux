@@ -150,8 +150,8 @@ loop_update (nux_env_t env)
     // plot_circle(env, 100, 100, 50, 3);
     raster_circle(env, 100, 100, 50, 3);
 
-    for (int y = 0; y < NUX_SCREEN_HEIGHT; y += 8)
+    for (int i = 0; i < 30; ++i)
     {
-        nux_text(env, 10, y, "Hello World !", y % 5);
+        nux_print(env, "Hello World !", i % 5);
     }
 }

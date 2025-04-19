@@ -144,7 +144,8 @@ main (int argc, char **argv)
         renderer_clear(nu_b2i_xywh(0, 0, size.x, size.y), size);
 
         nu_b2i_t viewport = nu_b2i_xywh(0, 0, size.x, size.y);
-        viewport = apply_viewport_mode(viewport, VIEWPORT_FIXED_BEST_FIT);
+        // viewport = apply_viewport_mode(viewport, VIEWPORT_FIXED_BEST_FIT);
+        viewport = apply_viewport_mode(viewport, VIEWPORT_STRETCH_KEEP_ASPECT);
         renderer_render_instance(instance, viewport, size);
 
         // Swap buffers

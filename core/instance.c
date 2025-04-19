@@ -8,9 +8,8 @@ delta_time (nux_instance_t inst)
 static nux_env_t
 init_env (nux_instance_t inst)
 {
-    inst->env.inst   = inst;
-    inst->env.cursor = NU_V2U_ZEROS;
-    inst->env.error  = NUX_ERROR_NONE;
+    inst->env.inst  = inst;
+    inst->env.error = NUX_ERROR_NONE;
     nu_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
     return &inst->env;
 }
@@ -72,6 +71,9 @@ void
 nux_instance_tick (nux_instance_t inst)
 {
     nux_env_t env = init_env(inst);
+
+    // Init draw state
+    nux_cursor(env, 0, 0);
 
     // Init
     nux_u32_t *frame_index = (nux_u32_t *)(inst->memory + NUX_MAP_FRAME);
@@ -148,7 +150,7 @@ nux_error_message (nux_error_t error)
 }
 
 void
-nux_log (nux_env_t env, const nux_c8_t *text)
+nux_trace (nux_env_t env, const nux_c8_t *text)
 {
     nux_platform_log(env->inst, text, nu_strnlen(text, 1024));
 }

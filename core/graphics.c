@@ -60,19 +60,27 @@ nux_text (
         extent = nu_b2i_translate(extent, nu_v2i(DEFAULT_FONT_DATA_WIDTH, 0));
     }
 }
+void
+nux_print (nux_env_t env, const nux_c8_t *text, nux_u8_t c)
+{
+    nux_i32_t x = nux_cursorx(env);
+    nux_i32_t y = nux_cursory(env);
+    nux_text(env, x, y, text, c);
+    nux_cursor(env, x, y + DEFAULT_FONT_DATA_HEIGHT);
+}
 
 nux_i32_t
-cursorx (nux_env_t env)
+nux_cursorx (nux_env_t env)
 {
     return NUX_MEMGET(env, NUX_MAP_CURSORX, nux_i32_t);
 }
 nux_i32_t
-cursory (nux_env_t env)
+nux_cursory (nux_env_t env)
 {
     return NUX_MEMGET(env, NUX_MAP_CURSORY, nux_i32_t);
 }
 void
-cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
+nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
 {
     NUX_MEMSET(env, NUX_MAP_CURSORX, nux_i32_t, x);
     NUX_MEMSET(env, NUX_MAP_CURSORY, nux_i32_t, y);

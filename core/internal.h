@@ -18,7 +18,6 @@
 struct nux_env
 {
     nux_instance_t inst;
-    nu_v2u_t       cursor;
     nux_error_t    error;
     nux_c8_t       error_message[256];
 };

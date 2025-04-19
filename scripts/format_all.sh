@@ -7,7 +7,6 @@ if [[ ! -d $ROOT_DIR ]]; then
 fi
 
 find $ROOT_DIR/core -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
-find $ROOT_DIR/runtimes/native/runtime -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
 find $ROOT_DIR/runtimes/native/cli -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
 find $ROOT_DIR/runtimes/native/sdk  -type f -regex '.*\(h\|c\)' -exec clang-format -i {} \;
 find $ROOT_DIR/examples/ -type f -regex '.*\(h\|c\)^' -exec clang-format -i {} \;

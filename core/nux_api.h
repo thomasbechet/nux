@@ -140,7 +140,7 @@ typedef enum
 } nux_map_t;
 
 // Debug
-void      nux_log(nux_env_t env, const nux_c8_t *text);
+void      nux_trace(nux_env_t env, const nux_c8_t *text);
 void      nux_dbgi32(nux_env_t env, const nux_c8_t *name, nux_i32_t *p);
 void      nux_dbgf32(nux_env_t env, const nux_c8_t *name, nux_f32_t *p);
 nux_u32_t nux_stat(nux_env_t env, nux_console_info_t info);
@@ -175,9 +175,10 @@ void     nux_filltri(nux_env_t env,
                      nux_u8_t  color);
 void     nux_text(
         nux_env_t env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
-nux_i32_t cursorx(nux_env_t env);
-nux_i32_t cursory(nux_env_t env);
-void      cursor(nux_env_t env, nux_i32_t x, nux_i32_t y);
+void      nux_print(nux_env_t env, const nux_c8_t *text, nux_u8_t c);
+nux_i32_t nux_cursorx(nux_env_t env);
+nux_i32_t nux_cursory(nux_env_t env);
+void      nux_cursor(nux_env_t env, nux_i32_t x, nux_i32_t y);
 
 // Input
 nux_u32_t nux_btn(nux_env_t env, nux_u32_t player);

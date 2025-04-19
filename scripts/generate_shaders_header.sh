@@ -6,8 +6,8 @@ if [[ ! -d $ROOT_DIR ]]; then
     exit 1
 fi
 
-SHADERS=$ROOT_DIR/runtimes/native/shaders
-OUTPUT=$ROOT_DIR/runtimes/native/shaders_data.c.inc
+SHADERS=$ROOT_DIR/runtimes/mini/shaders
+OUTPUT=$ROOT_DIR/runtimes/mini/shaders_data.c.inc
 
 printf "#include <nulib/nulib.h>\n" > $OUTPUT
 

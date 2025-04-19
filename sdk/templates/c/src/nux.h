@@ -56,15 +56,16 @@ void update();
 
 typedef enum
 {
-    SCREEN_WIDTH     = 480,
-    SCREEN_HEIGHT    = 360,
+    SCREEN_WIDTH     = 320,
+    SCREEN_HEIGHT    = 240,
     TEXTURE_MIN_SIZE = 32,
     TEXTURE_MAX_SIZE = 256,
     PLAYER_MAX       = 4,
     BUTTON_MAX       = 10,
     AXIS_MAX         = 6,
     NODE_MAX         = (1 << 16) - 1,
-    NAME_MAX         = 64
+    NAME_MAX         = 64,
+    PALETTE_LEN      = 256
 } constants_t;
 
 typedef enum
@@ -128,26 +129,67 @@ typedef enum
     CONSOLE_MEMORY_USAGE    = 1
 } console_info_t;
 
+typedef enum
+{
+    MAP_SCREEN  = 0x0,
+    MAP_PALETTE = NUX_MAP_SCREEN + (NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT),
+    MAP_BUTTONS = NUX_MAP_PALETTE + (NUX_PALETTE_LEN * (sizeof(nux_u32_t))),
+    MAP_AXIS    = NUX_MAP_BUTTONS + (NUX_PLAYER_MAX * (sizeof(nux_u32_t))),
+    MAP_TIME
+    = NUX_MAP_AXIS + ((NUX_PLAYER_MAX * (sizeof(nux_f32_t))) * NUX_AXIS_MAX),
+    MAP_FRAME     = NUX_MAP_TIME + (sizeof(nux_f32_t)),
+    MAP_DRAWSTATE = NUX_MAP_FRAME + (sizeof(nux_u32_t)),
+    MAP_CURSOR    = NUX_MAP_DRAWSTATE,
+    MAP_CURSORX   = NUX_MAP_CURSOR + 0,
+    MAP_CURSORY   = NUX_MAP_CURSOR + (sizeof(nux_i32_t))
+} map_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                           SYSCALL                            //////
 //////////////////////////////////////////////////////////////////////////
 
 WASM_EXPORT("trace")
 void trace(const void *text);
-WASM_EXPORT("inspect_i32")
-void inspect_i32(const void *name, u32 *p);
-WASM_EXPORT("inspect_f32")
-void inspect_f32(const void *name, f32 *p);
-WASM_EXPORT("console_info")
-u32 console_info(u32 info);
-WASM_EXPORT("global_time")
-f32 global_time();
-WASM_EXPORT("delta_time")
-f32 delta_time();
-WASM_EXPORT("button")
-u32 button(u32 player);
-WASM_EXPORT("axis")
-f32 axis(u32 player, u32 axis);
+WASM_EXPORT("dbgi32")
+void dbgi32(const void *name, u32 *p);
+WASM_EXPORT("dbgf32")
+void dbgf32(const void *name, f32 *p);
+WASM_EXPORT("stat")
+u32 stat(u32 info);
+WASM_EXPORT("gtime")
+f32 gtime();
+WASM_EXPORT("dtime")
+f32 dtime();
+WASM_EXPORT("frame")
+u32 frame();
+WASM_EXPORT("pal")
+void pal(u32 index, u32 color);
+WASM_EXPORT("cls")
+void cls(u32 color);
+WASM_EXPORT("fill")
+void fill(u32 x0, u32 y0, u32 x1, u32 y1, u32 color);
+WASM_EXPORT("pset")
+void pset(u32 x, u32 y, u32 color);
+WASM_EXPORT("pget")
+pget(u32 x, u32 y);
+WASM_EXPORT("line")
+void line(u32 x0, u32 y0, u32 x1, u32 y1, u32 color);
+WASM_EXPORT("filltri")
+void filltri(u32 x0, u32 y0, u32 x1, u32 y1, u32 x2, u32 y2, u32 color);
+WASM_EXPORT("text")
+void text(u32 x, u32 y, const void *text, u32 c);
+WASM_EXPORT("print")
+void print(const void *text, u32 c);
+WASM_EXPORT("cursorx")
+cursorx();
+WASM_EXPORT("cursory")
+cursory();
+WASM_EXPORT("cursor")
+void cursor(u32 x, u32 y);
+WASM_EXPORT("btn")
+u32 btn(u32 player);
+WASM_EXPORT("axs")
+f32 axs(u32 player, u32 axis);
 
 #ifdef __cplusplus
 }
