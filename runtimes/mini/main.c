@@ -116,8 +116,11 @@ nux_platform_read (nux_instance_t inst, void *p, nux_u32_t n)
 int
 main (int argc, char **argv)
 {
-    nux_instance_config_t config   = {};
-    nux_instance_t        instance = nux_instance_init(&config);
+    nux_instance_config_t config = {
+        .init   = loop_init,
+        .update = loop_update,
+    };
+    nux_instance_t instance = nux_instance_init(&config);
 
     // Initialize runtime
     nu_status_t status;

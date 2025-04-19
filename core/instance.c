@@ -36,6 +36,8 @@ nux_instance_init (const nux_instance_config_t *config)
     inst->userdata = config->userdata;
     inst->running  = NU_TRUE;
     inst->tps      = 60;
+    inst->init     = config->init;
+    inst->update   = config->update;
 
     // State allocation
     inst->memory_capa = NU_MEM_16M;
@@ -70,16 +72,23 @@ void
 nux_instance_tick (nux_instance_t inst)
 {
     nux_env_t env = init_env(inst);
-    nux_palset(env, 0, 0x000000);
-    nux_palset(env, 1, 0xFF0000);
-    nux_palset(env, 2, 0x0000FF);
-    // nux_wasm_update(env);
-    nux_clear(env, 0);
-    nux_triangle(env, 50, 50, 100, 70, 80, 200, 1);
 
-    nux_f32_t *time        = (nux_f32_t *)(inst->memory + NUX_MAP_TIME);
-    *time                  = *time + delta_time(inst);
+    // Init
     nux_u32_t *frame_index = (nux_u32_t *)(inst->memory + NUX_MAP_FRAME_INDEX);
+    if (*frame_index == 0 && inst->init)
+    {
+        inst->init(env);
+    }
+
+    // Update
+    if (inst->update)
+    {
+        inst->update(env);
+    }
+
+    // Frame integration
+    nux_f32_t *time = (nux_f32_t *)(inst->memory + NUX_MAP_TIME);
+    *time           = *time + delta_time(inst);
     ++(*frame_index);
 }
 nux_status_t

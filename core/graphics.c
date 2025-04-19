@@ -3,7 +3,6 @@
 void
 nux_palset (nux_env_t env, nux_u8_t index, nux_u32_t color)
 {
-    // TODO: validate
     nux_u8_t *pal      = env->inst->memory + NUX_MAP_PALETTE;
     pal[index * 3 + 0] = (color & 0xFF0000) >> 16;
     pal[index * 3 + 1] = (color & 0x00FF00) >> 8;

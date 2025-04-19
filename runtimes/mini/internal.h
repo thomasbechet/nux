@@ -43,4 +43,7 @@ nu_v2_t      window_get_mouse_scroll(void);
 nu_bool_t    window_poll_command(runtime_command_t *cmd);
 void         window_update_inputs(nux_instance_t inst);
 
+void loop_init(nux_env_t env);
+void loop_update(nux_env_t env);
+
 #endif

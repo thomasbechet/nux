@@ -21,5 +21,5 @@ void main()
 {
     vec2 filtered_uv = uv_filtering(vec2(uv.x, 1 - uv.y), textureSize(t_surface, 0));
     vec4 color_index = texture(t_surface, filtered_uv);
-    out_color = texture(t_palette, vec2(color_index.x, 0.5));
+    out_color = texture(t_palette, vec2(color_index.x, 0));
 }

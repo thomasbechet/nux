@@ -9,10 +9,13 @@
 //////////////////////////////////////////////////////////////////////////
 
 typedef struct nux_instance *nux_instance_t;
+typedef void (*nux_callback_t)(nux_env_t);
 
 typedef struct
 {
-    void *userdata;
+    void          *userdata;
+    nux_callback_t init;
+    nux_callback_t update;
 } nux_instance_config_t;
 
 typedef enum

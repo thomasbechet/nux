@@ -40,6 +40,8 @@ struct nux_instance
     nux_u32_t memory_capa;
 
     struct nux_env env;
+    nux_callback_t init;
+    nux_callback_t update;
 
     struct
     {
