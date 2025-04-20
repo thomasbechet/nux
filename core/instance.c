@@ -72,7 +72,7 @@ nux_instance_tick (nux_instance_t inst)
     nux_cursor(env, 0, 0);
 
     // Init
-    nux_u32_t *frame_index = (nux_u32_t *)(inst->memory + NUX_MAP_FRAME);
+    nux_u32_t *frame_index = (nux_u32_t *)(inst->memory + NUX_RAM_FRAME);
     if (*frame_index == 0 && inst->init)
     {
         inst->init(env);
@@ -85,7 +85,7 @@ nux_instance_tick (nux_instance_t inst)
     }
 
     // Frame integration
-    nux_f32_t *time = (nux_f32_t *)(inst->memory + NUX_MAP_TIME);
+    nux_f32_t *time = (nux_f32_t *)(inst->memory + NUX_RAM_TIME);
     *time           = *time + nux_dt(env);
     ++(*frame_index);
 }
@@ -114,7 +114,7 @@ nux_instance_set_stat (nux_instance_t inst, nux_stat_t stat, nux_u32_t value)
     switch (stat)
     {
         case NUX_STAT_FPS:
-            NUX_MEMSET(inst, NUX_MAP_STAT_FPS, nux_u32_t, value);
+            NUX_MEMSET(inst, NUX_RAM_STAT_FPS, nux_u32_t, value);
             break;
     }
 }
@@ -126,12 +126,12 @@ nux_instance_get_error (nux_instance_t inst)
 const nux_u8_t *
 nux_instance_get_screen (nux_instance_t inst)
 {
-    return inst->memory + NUX_MAP_SCREEN;
+    return inst->memory + NUX_RAM_SCREEN;
 }
 const nux_u8_t *
 nux_instance_get_palette (nux_instance_t inst)
 {
-    return inst->memory + NUX_MAP_PALETTE;
+    return inst->memory + NUX_RAM_PALETTE;
 }
 
 const nux_c8_t *
@@ -180,14 +180,14 @@ nux_stat (nux_env_t env, nux_stat_t info)
     switch (info)
     {
         case NUX_STAT_FPS:
-            return NUX_MEMGET(env->inst, NUX_MAP_STAT_FPS, nux_u32_t);
+            return NUX_MEMGET(env->inst, NUX_RAM_STAT_FPS, nux_u32_t);
     }
     return 0;
 }
 nux_f32_t
 nux_time (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_MAP_TIME, nux_f32_t);
+    return NUX_MEMGET(env->inst, NUX_RAM_TIME, nux_f32_t);
 }
 nux_f32_t
 nux_dt (nux_env_t env)
@@ -197,5 +197,5 @@ nux_dt (nux_env_t env)
 nux_u32_t
 nux_frame (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_MAP_FRAME, nux_u32_t);
+    return NUX_MEMGET(env->inst, NUX_RAM_FRAME, nux_u32_t);
 }

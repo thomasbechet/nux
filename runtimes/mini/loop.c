@@ -27,7 +27,7 @@ init_debug_camera (nu_v3_t pos)
     nux__freecam.pitch = 0;
     nux__freecam.yaw   = 0;
 
-    nux__freecam.fov   = 90;
+    nux__freecam.fov   = 50;
     nux__freecam.speed = 10;
 }
 
@@ -456,7 +456,8 @@ loop_init (nux_env_t env)
 void
 loop_update (nux_env_t env)
 {
-    nux_cls(env, 6);
+    nux_cls(env, 0);
+    nux_clsz(env);
     nu_v2i_t v0 = nu_v2i(50, 50);
     nu_v2i_t v1 = nu_v2i(100 + nu_cos(nux_time(env) * 0.5) * 50,
                          70 + nu_sin(nux_time(env) * 0.5) * 50);
@@ -481,8 +482,4 @@ loop_update (nux_env_t env)
     nux_cursor(env, 0, 0);
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
     nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
-    for (int i = 0; i < 5; ++i)
-    {
-        nux_printfmt(env, 7, "%d", i);
-    }
 }

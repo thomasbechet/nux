@@ -25,14 +25,31 @@ nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
 {
     NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return);
     NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return);
-    env->inst->memory[NUX_MAP_SCREEN + y * NUX_SCREEN_WIDTH + x] = color;
+    env->inst->memory[NUX_RAM_SCREEN + y * NUX_SCREEN_WIDTH + x] = color;
 }
 nux_u8_t
 nux_pget (nux_env_t env, nux_i32_t x, nux_i32_t y)
 {
     NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return 0);
     NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return 0);
-    return env->inst->memory[NUX_MAP_SCREEN + y * NUX_SCREEN_WIDTH + x];
+    return env->inst->memory[NUX_RAM_SCREEN + y * NUX_SCREEN_WIDTH + x];
+}
+void
+nux_zset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth)
+{
+    NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return);
+    NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return);
+    nux_f32_t *z = NUX_MEMPTR(env->inst, NUX_RAM_ZBUFFER, nux_f32_t);
+    z[y * NUX_SCREEN_WIDTH + x] = depth;
+}
+nux_f32_t
+nux_zget (nux_env_t env, nux_i32_t x, nux_i32_t y)
+{
+    NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return 0);
+    NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return 0);
+    const nux_f32_t *z
+        = NUX_MEMPTR(env->inst, NUX_RAM_ZBUFFER, const nux_f32_t);
+    return z[y * NUX_SCREEN_WIDTH + x];
 }
 void
 nux_line (nux_env_t env,

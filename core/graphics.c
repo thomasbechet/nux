@@ -5,7 +5,7 @@
 void
 nux_pal (nux_env_t env, nux_u8_t index, nux_u32_t color)
 {
-    nux_u8_t *pal      = NUX_MEMPTR(env->inst, NUX_MAP_PALETTE, nux_u8_t);
+    nux_u8_t *pal      = NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, nux_u8_t);
     pal[index * 3 + 0] = (color & 0xFF0000) >> 16;
     pal[index * 3 + 1] = (color & 0x00FF00) >> 8;
     pal[index * 3 + 2] = (color & 0x0000FF) >> 0;
@@ -14,6 +14,15 @@ void
 nux_cls (nux_env_t env, nux_u32_t color)
 {
     nux_fill(env, 0, 0, NUX_SCREEN_WIDTH - 1, NUX_SCREEN_HEIGHT - 1, color);
+}
+void
+nux_clsz (nux_env_t env)
+{
+    nux_f32_t *z = NUX_MEMPTR(env->inst, NUX_RAM_ZBUFFER, nux_f32_t);
+    for (nux_u32_t p = 0; p < NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT; ++p)
+    {
+        z[p] = NU_FLT_MAX;
+    }
 }
 void
 nux_text (
@@ -94,21 +103,31 @@ nux_printfmt (nux_env_t env, nux_u8_t c, const nux_c8_t *fmt, ...)
     va_end(args);
     nux_print(env, buf, c);
 }
+void
+nux_tracefmt (nux_env_t env, const nux_c8_t *fmt, ...)
+{
+    nux_c8_t buf[128];
+    va_list  args;
+    va_start(args, fmt);
+    nu_vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    nux_trace(env, buf);
+}
 #endif
 
 nux_i32_t
 nux_cursorx (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_MAP_CURSORX, nux_i32_t);
+    return NUX_MEMGET(env->inst, NUX_RAM_CURSORX, nux_i32_t);
 }
 nux_i32_t
 nux_cursory (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_MAP_CURSORY, nux_i32_t);
+    return NUX_MEMGET(env->inst, NUX_RAM_CURSORY, nux_i32_t);
 }
 void
 nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
 {
-    NUX_MEMSET(env->inst, NUX_MAP_CURSORX, nux_i32_t, x);
-    NUX_MEMSET(env->inst, NUX_MAP_CURSORY, nux_i32_t, y);
+    NUX_MEMSET(env->inst, NUX_RAM_CURSORX, nux_i32_t, x);
+    NUX_MEMSET(env->inst, NUX_RAM_CURSORY, nux_i32_t, y);
 }
