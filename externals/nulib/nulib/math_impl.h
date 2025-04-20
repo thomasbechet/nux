@@ -129,6 +129,14 @@ nu_v2_add (nu_v2_t a, nu_v2_t b)
     return ret;
 }
 nu_v2_t
+nu_v2_adds (nu_v2_t a, nu_f32_t s)
+{
+    nu_v2_t ret;
+    ret.x = a.x + s;
+    ret.y = a.y + s;
+    return ret;
+}
+nu_v2_t
 nu_v2_sub (nu_v2_t a, nu_v2_t b)
 {
     nu_v2_t ret;
@@ -352,6 +360,26 @@ nu_v4_v3 (nu_v3_t v, nu_f32_t w)
 {
     return nu_v4(v.x, v.y, v.z, w);
 }
+nu_v4_t
+nu_v4_add (nu_v4_t a, nu_v4_t b)
+{
+    nu_v4_t ret;
+    ret.x = a.x + b.x;
+    ret.y = a.y + b.y;
+    ret.z = a.z + b.z;
+    ret.w = a.w + b.w;
+    return ret;
+}
+nu_v4_t
+nu_v4_muls (nu_v4_t a, nu_f32_t s)
+{
+    nu_v4_t ret;
+    ret.x = a.x * s;
+    ret.y = a.y * s;
+    ret.z = a.z * s;
+    ret.w = a.w * s;
+    return ret;
+}
 nu_f32_t
 nu_v4_dot (nu_v4_t a, nu_v4_t b)
 {
@@ -377,6 +405,12 @@ nu_v4_zw (nu_v4_t v)
     ret.x = v.z;
     ret.y = v.w;
     return ret;
+}
+nu_v4_t
+nu_v4_lerp (nu_v4_t a, nu_v4_t b, nu_f32_t t)
+{
+    // (1 - t) * a + t * b
+    return nu_v4_add(nu_v4_muls(a, 1 - t), nu_v4_muls(b, t));
 }
 
 nu_v2i_t

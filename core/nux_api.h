@@ -1,6 +1,8 @@
 #ifndef NUX_API_H
 #define NUX_API_H
 
+#include "nux_config.h"
+
 #ifdef NUX_INCLUDE_FIXED_TYPES
 #else
 typedef unsigned char nux_u8_t;
@@ -139,16 +141,14 @@ typedef enum
     NUX_MAP_STAT_FPS  = NUX_MAP_CURSORY + sizeof(nux_f32_t),
 } nux_map_t;
 
-// Debug
 void      nux_trace(nux_env_t env, const nux_c8_t *text);
 void      nux_dbgi32(nux_env_t env, const nux_c8_t *name, nux_i32_t *p);
 void      nux_dbgf32(nux_env_t env, const nux_c8_t *name, nux_f32_t *p);
 nux_u32_t nux_stat(nux_env_t env, nux_stat_t info);
-nux_f32_t nux_gtime(nux_env_t env);
-nux_f32_t nux_dtime(nux_env_t env);
+nux_f32_t nux_time(nux_env_t env);
+nux_f32_t nux_dt(nux_env_t env);
 nux_u32_t nux_frame(nux_env_t env);
 
-// Memory
 void     nux_pal(nux_env_t env, nux_u8_t index, nux_u32_t color);
 void     nux_cls(nux_env_t env, nux_u32_t color);
 void     nux_fill(nux_env_t env,

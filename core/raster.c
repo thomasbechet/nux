@@ -84,17 +84,23 @@ fill_triangle (nux_env_t env,
     nu_v2i_t v2 = nu_v2i(x2, y2);
     if (y0 == y1 && y0 == y2)
     {
-        nux_pset(env, x0, y0, c);
+        nux_line(env,
+                 NU_MIN(x0, NU_MIN(x1, x2)),
+                 y0,
+                 NU_MAX(x0, NU_MAX(x1, x2)),
+                 y0,
+                 c);
+        return;
     }
-    if (y0 > y1)
+    if (v0.y > v1.y)
     {
         NU_SWAP(v0, v1, nu_v2i_t);
     }
-    if (y0 > y2)
+    if (v0.y > v2.y)
     {
         NU_SWAP(v0, v2, nu_v2i_t);
     }
-    if (y1 > y2)
+    if (v1.y > v2.y)
     {
         NU_SWAP(v1, v2, nu_v2i_t);
     }
@@ -135,7 +141,6 @@ bresenham0:
             curx0 = v1.x;
             cury0 = v1.y;
             lower = NU_TRUE;
-            goto bresenham1;
         }
         e20 = 2 * err0;
         if (e20 >= dy0)
@@ -150,6 +155,7 @@ bresenham0:
             goto bresenham1;
         }
     }
+
 bresenham1:
     for (;;)
     {
@@ -166,8 +172,9 @@ bresenham1:
             goto processline;
         }
     }
+
 processline:
-    for (nu_i32_t x = NU_MIN(curx0, curx1); x <= NU_MAX(curx0, curx1); ++x)
+    for (nu_i32_t x = NU_MIN(curx0, curx1); x < NU_MAX(curx0, curx1); ++x)
     {
         nux_pset(env, x, cury1, c);
     }
@@ -177,40 +184,40 @@ processline:
     }
     goto bresenham0;
 }
-static inline void
-fill_bottom_triangle (
-    nux_env_t env, nu_v2i_t v0, nu_v2i_t v1, nu_v2i_t v2, nux_u8_t c)
-{
-    nux_f32_t invslope1 = (nux_f32_t)(v1.x - v0.x) / (v1.y - v0.y);
-    nux_f32_t invslope2 = (nux_f32_t)(v2.x - v0.x) / (v2.y - v0.y);
-
-    nux_f32_t curx1 = v0.x;
-    nux_f32_t curx2 = v0.x;
-
-    for (nux_i32_t y = v0.y; y <= v1.y; ++y)
-    {
-        nux_line(env, curx1, y, curx2, y, c);
-        curx1 += invslope1;
-        curx2 += invslope2;
-    }
-}
-static inline void
-fill_top_triangle (
-    nux_env_t env, nu_v2i_t v0, nu_v2i_t v1, nu_v2i_t v2, nux_u8_t c)
-{
-    nux_f32_t invslope1 = (nux_f32_t)(v2.x - v0.x) / (v2.y - v0.y);
-    nux_f32_t invslope2 = (nux_f32_t)(v2.x - v1.x) / (v2.y - v1.y);
-
-    nux_f32_t curx1 = v2.x;
-    nux_f32_t curx2 = v2.x;
-
-    for (nux_i32_t y = v2.y; y > v0.y; y--)
-    {
-        nux_line(env, curx1, y, curx2, y, c);
-        curx1 -= invslope1;
-        curx2 -= invslope2;
-    }
-}
+// static inline void
+// fill_bottom_triangle (
+//     nux_env_t env, nu_v2i_t v0, nu_v2i_t v1, nu_v2i_t v2, nux_u8_t c)
+// {
+//     nux_f32_t invslope1 = (nux_f32_t)(v1.x - v0.x) / (v1.y - v0.y);
+//     nux_f32_t invslope2 = (nux_f32_t)(v2.x - v0.x) / (v2.y - v0.y);
+//
+//     nux_f32_t curx1 = v0.x;
+//     nux_f32_t curx2 = v0.x;
+//
+//     for (nux_i32_t y = v0.y; y <= v1.y; ++y)
+//     {
+//         nux_line(env, curx1, y, curx2, y, c);
+//         curx1 += invslope1;
+//         curx2 += invslope2;
+//     }
+// }
+// static inline void
+// fill_top_triangle (
+//     nux_env_t env, nu_v2i_t v0, nu_v2i_t v1, nu_v2i_t v2, nux_u8_t c)
+// {
+//     nux_f32_t invslope1 = (nux_f32_t)(v2.x - v0.x) / (v2.y - v0.y);
+//     nux_f32_t invslope2 = (nux_f32_t)(v2.x - v1.x) / (v2.y - v1.y);
+//
+//     nux_f32_t curx1 = v2.x;
+//     nux_f32_t curx2 = v2.x;
+//
+//     for (nux_i32_t y = v2.y; y > v0.y; y--)
+//     {
+//         nux_line(env, curx1, y, curx2, y, c);
+//         curx1 -= invslope1;
+//         curx2 -= invslope2;
+//     }
+// }
 void
 nux_filltri (nux_env_t env,
              nux_i32_t x0,
@@ -222,9 +229,6 @@ nux_filltri (nux_env_t env,
              nux_u8_t  c)
 {
     fill_triangle(env, x0, y0, x1, y1, x2, y2, c);
-    nux_pset(env, x0, y0, 3);
-    nux_pset(env, x1, y1, 4);
-    nux_pset(env, x2, y2, 5);
     return;
 
     // nu_v2i_t v0 = nu_v2i(x0, y0);

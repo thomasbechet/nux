@@ -52,7 +52,7 @@ static m3ApiRawFunction(gtime)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_f32_t);
-    m3ApiReturn(nux_gtime(env));
+    m3ApiReturn(nux_time(env));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(dtime)
@@ -62,7 +62,7 @@ static m3ApiRawFunction(dtime)
 #endif
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_f32_t);
-    m3ApiReturn(nux_dtime(env));
+    m3ApiReturn(nux_dt(env));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(frame)

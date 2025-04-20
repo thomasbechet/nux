@@ -86,7 +86,7 @@ nux_instance_tick (nux_instance_t inst)
 
     // Frame integration
     nux_f32_t *time = (nux_f32_t *)(inst->memory + NUX_MAP_TIME);
-    *time           = *time + nux_dtime(env);
+    *time           = *time + nux_dt(env);
     ++(*frame_index);
 }
 nux_status_t
@@ -185,12 +185,12 @@ nux_stat (nux_env_t env, nux_stat_t info)
     return 0;
 }
 nux_f32_t
-nux_gtime (nux_env_t env)
+nux_time (nux_env_t env)
 {
     return NUX_MEMGET(env->inst, NUX_MAP_TIME, nux_f32_t);
 }
 nux_f32_t
-nux_dtime (nux_env_t env)
+nux_dt (nux_env_t env)
 {
     return 1. / 60;
 }
