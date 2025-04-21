@@ -85,6 +85,162 @@ nux_line (nux_env_t env,
         }
     }
 }
+static nu_i32_t
+coverage (nu_v2i_t a, nu_v2i_t b, nu_v2i_t c)
+{
+    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+}
+
+// void
+// nux_triangle (nux_env_t env,
+//               nux_i32_t x0,
+//               nux_i32_t y0,
+//               nux_f32_t z0,
+//               nux_i32_t x1,
+//               nux_i32_t y1,
+//               nux_f32_t z1,
+//               nux_i32_t x2,
+//               nux_i32_t y2,
+//               nux_f32_t z2,
+//               nux_u8_t  c)
+// {
+//     // v0.y <= v1.y <= v2.y
+//     nu_v2i_t v0 = nu_v2i(x0, y0);
+//     nu_v2i_t v1 = nu_v2i(x1, y1);
+//     nu_v2i_t v2 = nu_v2i(x2, y2);
+//     if (y0 == y1 && y0 == y2)
+//     {
+//         nux_line(env,
+//                  NU_MIN(x0, NU_MIN(x1, x2)),
+//                  y0,
+//                  NU_MAX(x0, NU_MAX(x1, x2)),
+//                  y0,
+//                  c);
+//         return;
+//     }
+//     if (v0.y > v1.y)
+//     {
+//         NU_SWAP(v0, v1, nu_v2i_t);
+//     }
+//     if (v0.y > v2.y)
+//     {
+//         NU_SWAP(v0, v2, nu_v2i_t);
+//     }
+//     if (v1.y > v2.y)
+//     {
+//         NU_SWAP(v1, v2, nu_v2i_t);
+//     }
+//
+//     // 3 bresenham iterations :
+//     //  v0 -> v1 (bresenham0) (check transition to v2)
+//     //  v1 -> v2 (bresenham1)
+//     //  v0 -> v2 (bresenham1) (longest iteration)
+//
+//     nu_i32_t  dx0  = NU_ABS(v1.x - v0.x);
+//     nu_i32_t  dx1  = NU_ABS(v2.x - v0.x);
+//     nu_i32_t  sx0  = v0.x < v1.x ? 1 : -1;
+//     nu_i32_t  sx1  = v0.x < v2.x ? 1 : -1;
+//     nu_i32_t  dy0  = -NU_ABS(v1.y - v0.y);
+//     nu_i32_t  dy1  = -NU_ABS(v2.y - v0.y);
+//     nu_i32_t  sy0  = v0.y < v1.y ? 1 : -1;
+//     nu_i32_t  sy1  = v0.y < v2.y ? 1 : -1;
+//     nu_i32_t  err0 = dx0 + dy0;
+//     nu_i32_t  err1 = dx1 + dy1;
+//     nu_i32_t  e20, e21;
+//     nu_i32_t  curx0 = v0.x;
+//     nu_i32_t  curx1 = v0.x;
+//     nu_i32_t  cury0 = v0.y;
+//     nu_i32_t  cury1 = v0.y;
+//     nu_bool_t lower = NU_FALSE;
+//
+//     nu_f32_t pixel_coverage = coverage(v0, v1, v2);
+//     if (pixel_coverage < 0)
+//     {
+//         return;
+//     }
+//
+// bresenham0:
+//     for (;;)
+//     {
+//         if (curx0 == v1.x && cury0 == v1.y && !lower)
+//         {
+//             // End of first iteration, transition to v1 -> v2
+//             dx0   = NU_ABS(v2.x - v1.x);
+//             sx0   = v1.x < v2.x ? 1 : -1;
+//             dy0   = -NU_ABS(v2.y - v1.y);
+//             sy0   = v1.y < v2.y ? 1 : -1;
+//             err0  = dx0 + dy0;
+//             curx0 = v1.x;
+//             cury0 = v1.y;
+//             lower = NU_TRUE;
+//         }
+//         e20 = 2 * err0;
+//         if (e20 >= dy0)
+//         {
+//             err0 += dy0;
+//             curx0 += sx0;
+//         }
+//         if (e20 <= dx0)
+//         {
+//             err0 += dx0;
+//             cury0 += sy0;
+//             goto bresenham1;
+//         }
+//     }
+//
+// bresenham1:
+//     for (;;)
+//     {
+//         e21 = 2 * err1;
+//         if (e21 >= dy1)
+//         {
+//             err1 += dy1;
+//             curx1 += sx1;
+//         }
+//         if (e21 <= dx1)
+//         {
+//             err1 += dx1;
+//             cury1 += sy1;
+//             goto processline;
+//         }
+//     }
+//
+// processline:
+//     for (nu_i32_t x = NU_MIN(curx0, curx1); x < NU_MAX(curx0, curx1); ++x)
+//     {
+//         if (x < 0 || x >= NUX_SCREEN_WIDTH || cury1 < 0
+//             || cury1 >= NUX_SCREEN_HEIGHT)
+//         {
+//             continue;
+//         }
+//
+//         // float inv_vw0 = 1.0f / v0.w;
+//         // float inv_vw1 = 1.0f / v1.w;
+//         // float inv_vw2 = 1.0f / v2.w;
+//
+//         nu_v2i_t sample = nu_v2i(x, cury1);
+//         nu_f32_t w0     = coverage(v1, v2, sample);
+//         nu_f32_t w1     = coverage(v2, v0, sample);
+//         // nu_f32_t w2     = coverage(v0, v1, sample);
+//
+//         const nu_f32_t area_inv = 1.0f / pixel_coverage;
+//         w0 *= area_inv;
+//         w1 *= area_inv;
+//         nu_f32_t w2 = 1.0f - w0 - w1;
+//
+//         nu_f32_t depth = (w0 * z0 + w1 * z1 + w2 * z2);
+//         if (depth < nux_zget(env, x, cury1))
+//         {
+//             nux_zset(env, x, cury1, depth);
+//             nux_pset(env, x, cury1, c);
+//         }
+//     }
+//     if (cury1 == v2.y)
+//     {
+//         return;
+//     }
+//     goto bresenham0;
+// }
 static inline void
 fill_triangle (nux_env_t env,
                nux_i32_t x0,

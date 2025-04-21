@@ -350,6 +350,12 @@ pos_to_viewport (const nu_b2i_t vp, nu_v2_t v)
     return v;
 }
 
+static nu_f32_t
+pixel_coverage (nu_v2_t a, nu_v2_t b, nu_v2_t c)
+{
+    return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
+}
+
 static void
 render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
 {
@@ -404,6 +410,9 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
             nu_v4_t v0 = vertices[indices[v + 0]];
             nu_v4_t v1 = vertices[indices[v + 1]];
             nu_v4_t v2 = vertices[indices[v + 2]];
+
+            nu_u32_t xmin = NU_MAX(0, NU_MIN(v0.x, NU_MIN(v1.x, v2.x)));
+            nu_u32_t ymin = NU_MAX(0, NU_MIN(v0.y, NU_MIN(v1.y, v2.y)));
 
             nu_v2_t v0vp = pos_to_viewport(vp, nu_v2(v0.x, v0.y));
             nu_v2_t v1vp = pos_to_viewport(vp, nu_v2(v1.x, v1.y));
