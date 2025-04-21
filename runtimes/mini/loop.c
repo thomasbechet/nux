@@ -235,24 +235,23 @@ vertex_shader (const nu_m4_t transform, nu_v3_t position)
     return nu_m4_mulv(transform, nu_v4_v3(position, 1));
 }
 static void
-clip_edge_near (nu_v4_t v0,
-                nu_v4_t v1,
-                // nu_v2_t  uv0,
-                // nu_v2_t  uv1,
-                nu_v4_t *vclip
-                // nu_v2_t *uvclip
-)
+clip_edge_near (nu_v4_t  v0,
+                nu_v4_t  v1,
+                nu_v2_t  uv0,
+                nu_v2_t  uv1,
+                nu_v4_t *vclip,
+                nu_v2_t *uvclip)
 {
     const nu_v4_t near_plane = nu_v4(0, 0, 1, 1);
     nu_f32_t      d0         = nu_v4_dot(v0, near_plane);
     nu_f32_t      d1         = nu_v4_dot(v1, near_plane);
     nu_f32_t      s          = d0 / (d0 - d1);
     *vclip                   = nu_v4_lerp(v0, v1, s);
-    // *uvclip                  = nu_v2_lerp(uv0, uv1, s);
+    *uvclip                  = nu_v2_lerp(uv0, uv1, s);
 }
 static nu_bool_t
-clip_triangle (nu_v4_t vertices[4],
-               // nu_v2_t   uvs[4],
+clip_triangle (nu_v4_t   vertices[4],
+               nu_v2_t   uvs[4],
                nu_u32_t  indices[6],
                nu_u32_t *indices_count)
 {
@@ -284,47 +283,47 @@ clip_triangle (nu_v4_t vertices[4],
     // Clip vertices
     for (nu_u32_t i = 0; i < 3; i++)
     {
-        nu_v4_t *vec, *vec_prev, *vec_next;
-        // nu_v2_t  *uv, *uv_prev, *uv_next;
+        nu_v4_t  *vec, *vec_prev, *vec_next;
+        nu_v2_t  *uv, *uv_prev, *uv_next;
         nu_bool_t out, out_prev, out_next;
         vec = &vertices[i];
-        // uv  = &uvs[i];
+        uv  = &uvs[i];
         out = outside[i];
 
         vec_next = &vertices[(i + 1) % 3];
-        // uv_next  = &uvs[(i + 1) % 3];
+        uv_next  = &uvs[(i + 1) % 3];
         out_next = outside[(i + 1) % 3];
 
         vec_prev = &vertices[(i + 2) % 3];
-        // uv_prev  = &uvs[(i + 2) % 3];
+        uv_prev  = &uvs[(i + 2) % 3];
         out_prev = outside[(i + 2) % 3];
 
         if (out)
         {
             if (out_next) // 2 out case 1
             {
-                // clip_edge_near(*vec, *vec_prev, *uv, *uv_prev, vec, uv);
-                clip_edge_near(*vec, *vec_prev, vec);
+                clip_edge_near(*vec, *vec_prev, *uv, *uv_prev, vec, uv);
+                // clip_edge_near(*vec, *vec_prev, vec);
             }
             else if (out_prev) // 2 out case 2
             {
-                // clip_edge_near(*vec, *vec_next, *uv, *uv_next, vec, uv);
-                clip_edge_near(*vec, *vec_next, vec);
+                clip_edge_near(*vec, *vec_next, *uv, *uv_next, vec, uv);
+                // clip_edge_near(*vec, *vec_next, vec);
             }
             else // 1 out
             {
                 // Produce new vertex
-                // clip_edge_near(
-                //     *vec, *vec_next, *uv, *uv_next, &vertices[3], &uvs[3]);
-                clip_edge_near(*vec, *vec_next, &vertices[3]);
+                clip_edge_near(
+                    *vec, *vec_next, *uv, *uv_next, &vertices[3], &uvs[3]);
+                // clip_edge_near(*vec, *vec_next, &vertices[3]);
                 *indices_count = 6;
                 indices[3]     = i;
                 indices[4]     = 3; // New vertex
                 indices[5]     = (i + 1) % 3;
 
                 // Clip existing vertex
-                // clip_edge_near(*vec, *vec_prev, *uv, *uv_prev, vec, uv);
-                clip_edge_near(*vec, *vec_prev, vec);
+                clip_edge_near(*vec, *vec_prev, *uv, *uv_prev, vec, uv);
+                // clip_edge_near(*vec, *vec_prev, vec);
 
                 return NU_TRUE;
             }
@@ -373,26 +372,44 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
     const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
     const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
 
-    const nu_v3_t positions[]
+    const nu_v3_t cube_positions[]
         = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
             v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
             v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
 
+    const nu_v2_t cube_uvs[] = {
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } }, { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 0, 0 } }, { { 0, 1 } }, { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } }, { { 1, 0 } },
+        { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } },
+        { { 0, 1 } }, { { 1, 1 } }, { { 1, 1 } }, { { 1, 0 } }, { { 0, 0 } },
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } },
+    };
+
+    const nu_u8_t  cube_texture[4]   = { 1, 2, 2, 1 };
+    const nu_v2u_t cube_texture_size = nu_v2u(2, 2);
+
     const nu_b2i_t vp = nu_b2i_xywh(0, 0, NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
 
     // Iterate over triangles
-    for (nu_u32_t i = 0; i < NU_ARRAY_SIZE(positions); i += 3)
+    for (nu_u32_t i = 0; i < NU_ARRAY_SIZE(cube_positions); i += 3)
     {
         // Apply vertex shader
         nu_v4_t vertices[4];
-        vertices[0] = vertex_shader(mvp, positions[i + 0]);
-        vertices[1] = vertex_shader(mvp, positions[i + 1]);
-        vertices[2] = vertex_shader(mvp, positions[i + 2]);
+        nu_v2_t uvs[4];
+        vertices[0] = vertex_shader(mvp, cube_positions[i + 0]);
+        vertices[1] = vertex_shader(mvp, cube_positions[i + 1]);
+        vertices[2] = vertex_shader(mvp, cube_positions[i + 2]);
+        uvs[0]      = cube_uvs[i + 0];
+        uvs[1]      = cube_uvs[i + 1];
+        uvs[2]      = cube_uvs[i + 2];
 
         // Clip vertices
         nu_u32_t indices[6]    = { 0, 1, 2 };
         nu_u32_t indices_count = 3;
-        if (!clip_triangle(vertices, indices, &indices_count))
+        if (!clip_triangle(vertices, uvs, indices, &indices_count))
         {
             continue;
         }
@@ -407,9 +424,12 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
         // Iterate over clipped triangles
         for (nu_u32_t v = 0; v < indices_count; v += 3)
         {
-            nu_v4_t v0 = vertices[indices[v + 0]];
-            nu_v4_t v1 = vertices[indices[v + 1]];
-            nu_v4_t v2 = vertices[indices[v + 2]];
+            nu_v4_t v0  = vertices[indices[v + 0]];
+            nu_v4_t v1  = vertices[indices[v + 1]];
+            nu_v4_t v2  = vertices[indices[v + 2]];
+            nu_v2_t uv0 = uvs[indices[v + 0]];
+            nu_v2_t uv1 = uvs[indices[v + 1]];
+            nu_v2_t uv2 = uvs[indices[v + 2]];
 
             nu_v2_t v0vp = pos_to_viewport(vp, nu_v2(v0.x, v0.y));
             nu_v2_t v1vp = pos_to_viewport(vp, nu_v2(v1.x, v1.y));
@@ -459,16 +479,27 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
                     // b *= inv_sum_abc;
                     // c *= inv_sum_abc;
 
-                    /* depth test */
-                    // float depth = (a * v0[3] + b * v1[3] + c * v2[3]);
-
                     if (included)
                     {
                         nu_f32_t depth = (w0 * v0.z + w1 * v1.z + w2 * v2.z);
                         if (depth < nux_zget(env, x, y))
                         {
                             nux_zset(env, x, y, depth);
-                            nux_pset(env, x, y, i % 7);
+
+                            // Texture sampling
+                            nu_f32_t px = (w0 * uv0.x + w1 * uv1.x + w2 * uv2.x)
+                                          * cube_texture_size.x;
+                            nu_f32_t py = (w0 * uv0.y + w1 * uv1.y + w2 * uv2.y)
+                                          * cube_texture_size.y;
+
+                            nu_v2u_t texsize = cube_texture_size;
+
+                            nu_u32_t uvx = NU_MIN(texsize.x - 1, (nu_u32_t)px);
+                            nu_u32_t uvy = NU_MIN(texsize.y - 1,
+                                                  texsize.y - 1 - (nu_u32_t)py);
+
+                            nux_pset(
+                                env, x, y, cube_texture[uvy * texsize.x + uvx]);
                         }
                     }
                 }
@@ -494,7 +525,7 @@ render_cubes (nux_env_t env, nu_m4_t view_proj)
     {
         nu_u32_t x     = i % (stresstest ? 25 * 25 : 5);
         nu_u32_t y     = i / (stresstest ? 25 * 25 : 5);
-        nu_m4_t  model = nu_m4_translate(nu_v3(x * 5, i % 10, y * 5));
+        nu_m4_t  model = nu_m4_translate(nu_v3(x * 2, 0, y * 2));
         model = nu_m4_mul(model, nu_m4_rotate_y(nu_radian(nux_time(env) * 0)));
         render_cube(env, view_proj, model);
     }
@@ -542,4 +573,5 @@ loop_update (nux_env_t env)
     nux_cursor(env, 0, 0);
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
     nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
+    exit(0);
 }
