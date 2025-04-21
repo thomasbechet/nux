@@ -443,10 +443,9 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
 
             nu_i32_t xmin = NU_MAX(0, NU_MIN(v0vp.x, NU_MIN(v1vp.x, v2vp.x)));
             nu_i32_t ymin = NU_MAX(0, NU_MIN(v0vp.y, NU_MIN(v1vp.y, v2vp.y)));
-
-            nu_i32_t xmax = NU_MIN(NUX_SCREEN_WIDTH - 1,
+            nu_i32_t xmax = NU_MIN(NUX_SCREEN_WIDTH,
                                    NU_MAX(v0vp.x, NU_MAX(v1vp.x, v2vp.x)));
-            nu_i32_t ymax = NU_MIN(NUX_SCREEN_HEIGHT - 1,
+            nu_i32_t ymax = NU_MIN(NUX_SCREEN_HEIGHT,
                                    NU_MAX(v0vp.y, NU_MAX(v1vp.y, v2vp.y)));
 
             for (nu_i32_t y = ymin; y < ymax; ++y)
@@ -520,12 +519,14 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
 static void
 render_cubes (nux_env_t env, nu_m4_t view_proj)
 {
-    const nu_bool_t stresstest = NU_TRUE;
+    const nu_bool_t stresstest = NU_FALSE;
     for (nu_u32_t i = 0; i < (stresstest ? (25 * 25 * 25) : 25); ++i)
     {
         nu_u32_t x     = i % (stresstest ? 25 * 25 : 5);
         nu_u32_t y     = i / (stresstest ? 25 * 25 : 5);
-        nu_m4_t  model = nu_m4_translate(nu_v3(x * 2, 0, y * 2));
+        nu_m4_t  model = nu_m4_identity();
+        model = nu_m4_mul(model, nu_m4_translate(nu_v3(x * 2, i % 10, y * 2)));
+        model = nu_m4_mul(model, nu_m4_scale(nu_v3s(2)));
         model = nu_m4_mul(model, nu_m4_rotate_y(nu_radian(nux_time(env) * 0)));
         render_cube(env, view_proj, model);
     }
@@ -573,5 +574,10 @@ loop_update (nux_env_t env)
     nux_cursor(env, 0, 0);
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
     nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
-    exit(0);
+    nux_print(env, "TEST", 7);
+    nux_print(env, "TEST", 7);
+    nux_print(env, "TEST", 7);
+    nux_print(env, "TEST", 7);
+    nux_print(env, "TEST", 7);
+    nux_print(env, "TEST", 7);
 }
