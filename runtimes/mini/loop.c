@@ -385,8 +385,8 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
     {
         // Apply vertex shader
         nu_v4_t vertices[4];
-        vertices[1] = vertex_shader(mvp, positions[i + 0]);
-        vertices[0] = vertex_shader(mvp, positions[i + 1]);
+        vertices[0] = vertex_shader(mvp, positions[i + 0]);
+        vertices[1] = vertex_shader(mvp, positions[i + 1]);
         vertices[2] = vertex_shader(mvp, positions[i + 2]);
 
         // Clip vertices
@@ -411,15 +411,71 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
             nu_v4_t v1 = vertices[indices[v + 1]];
             nu_v4_t v2 = vertices[indices[v + 2]];
 
-            nu_u32_t xmin = NU_MAX(0, NU_MIN(v0.x, NU_MIN(v1.x, v2.x)));
-            nu_u32_t ymin = NU_MAX(0, NU_MIN(v0.y, NU_MIN(v1.y, v2.y)));
-
             nu_v2_t v0vp = pos_to_viewport(vp, nu_v2(v0.x, v0.y));
             nu_v2_t v1vp = pos_to_viewport(vp, nu_v2(v1.x, v1.y));
             nu_v2_t v2vp = pos_to_viewport(vp, nu_v2(v2.x, v2.y));
 
-            nux_filltri(
-                env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, v2vp.x, v2vp.y, i % 7);
+            nu_f32_t area = pixel_coverage(v0vp, v1vp, v2vp);
+            if (area <= 0)
+            {
+                continue;
+            }
+
+            nu_i32_t xmin = NU_MAX(0, NU_MIN(v0vp.x, NU_MIN(v1vp.x, v2vp.x)));
+            nu_i32_t ymin = NU_MAX(0, NU_MIN(v0vp.y, NU_MIN(v1vp.y, v2vp.y)));
+
+            nu_i32_t xmax = NU_MIN(NUX_SCREEN_WIDTH - 1,
+                                   NU_MAX(v0vp.x, NU_MAX(v1vp.x, v2vp.x)));
+            nu_i32_t ymax = NU_MIN(NUX_SCREEN_HEIGHT - 1,
+                                   NU_MAX(v0vp.y, NU_MAX(v1vp.y, v2vp.y)));
+
+            for (nu_i32_t y = ymin; y < ymax; ++y)
+            {
+                for (nu_i32_t x = xmin; x < xmax; x++)
+                {
+                    nu_v2_t sample = nu_v2(x + 0.5, y + 0.5);
+
+                    // Compute weights
+                    nu_f32_t w0 = pixel_coverage(v1vp, v2vp, sample);
+                    nu_f32_t w1 = pixel_coverage(v2vp, v0vp, sample);
+                    nu_f32_t w2 = pixel_coverage(v0vp, v1vp, sample);
+
+                    nu_bool_t included = NU_TRUE;
+                    // included &= (w0 == 0.0f) ? t0 : (w0 > 0.0f);
+                    // included &= (w1 == 0.0f) ? t1 : (w1 > 0.0f);
+                    // included &= (w2 == 0.0f) ? t2 : (w2 > 0.0f);
+                    included = (w0 > 0 && w1 > 0 && w2 > 0);
+
+                    const float area_inv = 1.0f / area;
+                    w0 *= area_inv;
+                    w1 *= area_inv;
+                    w2 = 1.0f - w0 - w1;
+
+                    // nu_f32_t a           = w0 * inv_vw0;
+                    // nu_f32_t b           = w1 * inv_vw1;
+                    // nu_f32_t c           = w2 * inv_vw2;
+                    // nu_f32_t inv_sum_abc = 1.0f / (a + b + c);
+                    // a *= inv_sum_abc;
+                    // b *= inv_sum_abc;
+                    // c *= inv_sum_abc;
+
+                    /* depth test */
+                    // float depth = (a * v0[3] + b * v1[3] + c * v2[3]);
+
+                    if (included)
+                    {
+                        nu_f32_t depth = (w0 * v0.z + w1 * v1.z + w2 * v2.z);
+                        if (depth < nux_zget(env, x, y))
+                        {
+                            nux_zset(env, x, y, depth);
+                            nux_pset(env, x, y, i % 7);
+                        }
+                    }
+                }
+            }
+
+            // nux_filltri(
+            //     env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, v2vp.x, v2vp.y, i % 7);
 
             // nux_line(env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, 3);
             // nux_line(env, v0vp.x, v0vp.y, v2vp.x, v2vp.y, 3);
@@ -433,11 +489,12 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
 static void
 render_cubes (nux_env_t env, nu_m4_t view_proj)
 {
-    for (nu_u32_t i = 0; i < 25; ++i)
+    const nu_bool_t stresstest = NU_TRUE;
+    for (nu_u32_t i = 0; i < (stresstest ? (25 * 25 * 25) : 25); ++i)
     {
-        nu_u32_t x     = i % 5;
-        nu_u32_t y     = i / 5;
-        nu_m4_t  model = nu_m4_translate(nu_v3(x * 2, 0, y * 2));
+        nu_u32_t x     = i % (stresstest ? 25 * 25 : 5);
+        nu_u32_t y     = i / (stresstest ? 25 * 25 : 5);
+        nu_m4_t  model = nu_m4_translate(nu_v3(x * 5, i % 10, y * 5));
         model = nu_m4_mul(model, nu_m4_rotate_y(nu_radian(nux_time(env) * 0)));
         render_cube(env, view_proj, model);
     }
