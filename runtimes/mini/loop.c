@@ -333,7 +333,7 @@ clip_triangle (nu_v4_t   vertices[4],
     return NU_TRUE;
 }
 
-static nu_v2_t
+static nu_v2i_t
 pos_to_viewport (const nu_b2i_t vp, nu_v2_t v)
 {
     // (p + 1) / 2
@@ -346,11 +346,11 @@ pos_to_viewport (const nu_b2i_t vp, nu_v2_t v)
 
     v.y = NUX_SCREEN_HEIGHT - v.y;
 
-    return v;
+    return nu_v2i(v.x, v.y);
 }
 
-static nu_f32_t
-pixel_coverage (nu_v2_t a, nu_v2_t b, nu_v2_t c)
+static nu_i32_t
+pixel_coverage (nu_v2i_t a, nu_v2i_t b, nu_v2i_t c)
 {
     return (c.x - a.x) * (b.y - a.y) - (c.y - a.y) * (b.x - a.x);
 }
@@ -431,9 +431,9 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
             nu_v2_t uv1 = uvs[indices[v + 1]];
             nu_v2_t uv2 = uvs[indices[v + 2]];
 
-            nu_v2_t v0vp = pos_to_viewport(vp, nu_v2(v0.x, v0.y));
-            nu_v2_t v1vp = pos_to_viewport(vp, nu_v2(v1.x, v1.y));
-            nu_v2_t v2vp = pos_to_viewport(vp, nu_v2(v2.x, v2.y));
+            nu_v2i_t v0vp = pos_to_viewport(vp, nu_v2(v0.x, v0.y));
+            nu_v2i_t v1vp = pos_to_viewport(vp, nu_v2(v1.x, v1.y));
+            nu_v2i_t v2vp = pos_to_viewport(vp, nu_v2(v2.x, v2.y));
 
             nu_f32_t area = pixel_coverage(v0vp, v1vp, v2vp);
             if (area <= 0)
@@ -452,7 +452,7 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
             {
                 for (nu_i32_t x = xmin; x < xmax; x++)
                 {
-                    nu_v2_t sample = nu_v2(x + 0.5, y + 0.5);
+                    nu_v2i_t sample = nu_v2i(x, y);
 
                     // Compute weights
                     nu_f32_t w0 = pixel_coverage(v1vp, v2vp, sample);
@@ -465,10 +465,10 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
                     // included &= (w2 == 0.0f) ? t2 : (w2 > 0.0f);
                     included = (w0 > 0 && w1 > 0 && w2 > 0);
 
-                    const float area_inv = 1.0f / area;
+                    const nu_f32_t area_inv = 1.0 / area;
                     w0 *= area_inv;
                     w1 *= area_inv;
-                    w2 = 1.0f - w0 - w1;
+                    w2 = 1.0 - w0 - w1;
 
                     // nu_f32_t a           = w0 * inv_vw0;
                     // nu_f32_t b           = w1 * inv_vw1;
@@ -480,6 +480,7 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
 
                     if (included)
                     {
+                        // Depth test
                         nu_f32_t depth = (w0 * v0.z + w1 * v1.z + w2 * v2.z);
                         if (depth < nux_zget(env, x, y))
                         {
@@ -502,24 +503,21 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
                         }
                     }
                 }
+
+                // nux_line(env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, 3);
+                // nux_line(env, v0vp.x, v0vp.y, v2vp.x, v2vp.y, 3);
+                // nux_line(env, v1vp.x, v1vp.y, v2vp.x, v2vp.y, 3);
+                // nux_pset(env, v0vp.x, v0vp.y, 4);
+                // nux_pset(env, v1vp.x, v1vp.y, 4);
+                // nux_pset(env, v2vp.x, v2vp.y, 4);
             }
-
-            // nux_filltri(
-            //     env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, v2vp.x, v2vp.y, i % 7);
-
-            // nux_line(env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, 3);
-            // nux_line(env, v0vp.x, v0vp.y, v2vp.x, v2vp.y, 3);
-            // nux_line(env, v1vp.x, v1vp.y, v2vp.x, v2vp.y, 3);
-            // nux_pset(env, v0vp.x, v0vp.y, 4);
-            // nux_pset(env, v1vp.x, v1vp.y, 4);
-            // nux_pset(env, v2vp.x, v2vp.y, 4);
         }
     }
 }
 static void
 render_cubes (nux_env_t env, nu_m4_t view_proj)
 {
-    const nu_bool_t stresstest = NU_FALSE;
+    const nu_bool_t stresstest = NU_TRUE;
     for (nu_u32_t i = 0; i < (stresstest ? (25 * 25 * 25) : 25); ++i)
     {
         nu_u32_t x     = i % (stresstest ? 25 * 25 : 5);
@@ -548,7 +546,7 @@ loop_init (nux_env_t env)
 void
 loop_update (nux_env_t env)
 {
-    nux_cls(env, 0);
+    nux_cls(env, 6);
     nux_clsz(env);
     nu_v2i_t v0 = nu_v2i(50, 50);
     nu_v2i_t v1 = nu_v2i(100 + nu_cos(nux_time(env) * 0.5) * 50,
