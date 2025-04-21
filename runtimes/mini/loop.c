@@ -13,65 +13,61 @@ static struct
 
     nu_f32_t fov;
     nu_f32_t speed;
-} nux__freecam;
+} freecam;
 
 void
 init_debug_camera (nu_v3_t pos)
 {
-    nux__freecam.player = 0;
+    freecam.player = 0;
 
-    nux__freecam.pos   = pos;
-    nux__freecam.vel   = NU_V3_ZEROS;
-    nux__freecam.acc   = NU_V3_ZEROS;
-    nux__freecam.rot   = nu_q4_identity();
-    nux__freecam.pitch = 0;
-    nux__freecam.yaw   = 0;
+    freecam.pos   = pos;
+    freecam.vel   = NU_V3_ZEROS;
+    freecam.acc   = NU_V3_ZEROS;
+    freecam.rot   = nu_q4_identity();
+    freecam.pitch = 0;
+    freecam.yaw   = 0;
 
-    nux__freecam.fov   = 50;
-    nux__freecam.speed = 10;
+    freecam.fov   = 50;
+    freecam.speed = 10;
 }
 
 nu_m4_t
 debug_camera (nux_env_t env, nu_f32_t dt)
 {
-    nu_v3_t look
-        = nu_v3(nux_axs(env, nux__freecam.player, NUX_AXIS_RIGHTX) * 100,
-                nux_axs(env, nux__freecam.player, NUX_AXIS_RIGHTY) * 100,
-                0);
+    nu_v3_t look = nu_v3(nux_axs(env, freecam.player, NUX_AXIS_RIGHTX) * 100,
+                         nux_axs(env, freecam.player, NUX_AXIS_RIGHTY) * 100,
+                         0);
 
-    nu_v3_t move = nu_v3(nux_axs(env, nux__freecam.player, NUX_AXIS_LEFTX),
+    nu_v3_t move = nu_v3(nux_axs(env, freecam.player, NUX_AXIS_LEFTX),
                          0,
-                         nux_axs(env, nux__freecam.player, NUX_AXIS_LEFTY));
-    move.y += nux_btn(env, nux__freecam.player) & NUX_BUTTON_Y ? 1 : 0;
-    move.y -= nux_btn(env, nux__freecam.player) & NUX_BUTTON_B ? 1 : 0;
+                         nux_axs(env, freecam.player, NUX_AXIS_LEFTY));
+    move.y += nux_btn(env, freecam.player) & NUX_BUTTON_Y ? 1 : 0;
+    move.y -= nux_btn(env, freecam.player) & NUX_BUTTON_B ? 1 : 0;
     move = nu_v3_normalize(move);
 
     // Translation
     nu_v3_t direction = NU_V3_ZEROS;
 
     direction = nu_v3_add(
-        direction,
-        nu_v3_muls(nu_q4_mulv3(nux__freecam.rot, NU_V3_FORWARD), move.z));
+        direction, nu_v3_muls(nu_q4_mulv3(freecam.rot, NU_V3_FORWARD), move.z));
     direction = nu_v3_add(
-        direction,
-        nu_v3_muls(nu_q4_mulv3(nux__freecam.rot, NU_V3_RIGHT), move.x));
+        direction, nu_v3_muls(nu_q4_mulv3(freecam.rot, NU_V3_RIGHT), move.x));
     direction = nu_v3_add(direction, nu_v3_muls(NU_V3_UP, move.y));
     direction = nu_v3_normalize(direction);
 
     // Rotation
     if (look.x != 0)
     {
-        nux__freecam.yaw += look.x * dt;
+        freecam.yaw += look.x * dt;
     }
     if (look.y != 0)
     {
-        nux__freecam.pitch -= look.y * dt;
+        freecam.pitch -= look.y * dt;
     }
-    nux__freecam.pitch = NU_CLAMP(nux__freecam.pitch, -90.0, 90.0);
-    nux__freecam.rot   = nu_q4_axis(NU_V3_UP, -nu_radian(nux__freecam.yaw));
-    nux__freecam.rot
-        = nu_q4_mul(nux__freecam.rot,
-                    nu_q4_axis(NU_V3_RIGHT, -nu_radian(nux__freecam.pitch)));
+    freecam.pitch = NU_CLAMP(freecam.pitch, -90.0, 90.0);
+    freecam.rot   = nu_q4_axis(NU_V3_UP, -nu_radian(freecam.yaw));
+    freecam.rot   = nu_q4_mul(freecam.rot,
+                            nu_q4_axis(NU_V3_RIGHT, -nu_radian(freecam.pitch)));
 
     // Compute sum of forces
     const nu_f32_t mass  = 10.0;
@@ -84,27 +80,25 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     }
 
     // Apply drag
-    force = nu_v3_add(force, nu_v3_muls(nux__freecam.vel, -0.5f));
+    force = nu_v3_add(force, nu_v3_muls(freecam.vel, -0.5f));
 
     // Integrate
-    nux__freecam.pos
-        = nu_v3_add(nux__freecam.pos,
-                    nu_v3_add(nu_v3_muls(nux__freecam.vel, dt),
-                              nu_v3_muls(nux__freecam.acc, 0.5f * dt * dt)));
+    freecam.pos     = nu_v3_add(freecam.pos,
+                            nu_v3_add(nu_v3_muls(freecam.vel, dt),
+                                      nu_v3_muls(freecam.acc, 0.5f * dt * dt)));
     nu_v3_t new_acc = nu_v3_muls(force, mass);
     nu_v3_t new_vel = nu_v3_add(
-        nux__freecam.vel,
-        nu_v3_muls(nu_v3_add(nux__freecam.acc, new_acc), 0.5f * dt));
+        freecam.vel, nu_v3_muls(nu_v3_add(freecam.acc, new_acc), 0.5f * dt));
     if (nu_v3_norm(new_vel) < 0.1)
     {
         new_vel = NU_V3_ZEROS;
     }
-    nux__freecam.acc = new_acc;
-    nux__freecam.vel = new_vel;
+    freecam.acc = new_acc;
+    freecam.vel = new_vel;
 
-    nu_v3_t pos     = nux__freecam.pos;
-    nu_v3_t forward = nu_q4_mulv3(nux__freecam.rot, NU_V3_FORWARD);
-    nu_v3_t up      = nu_v3_normalize(nu_q4_mulv3(nux__freecam.rot, NU_V3_UP));
+    nu_v3_t pos     = freecam.pos;
+    nu_v3_t forward = nu_q4_mulv3(freecam.rot, NU_V3_FORWARD);
+    nu_v3_t up      = nu_v3_normalize(nu_q4_mulv3(freecam.rot, NU_V3_UP));
 
     nu_m4_t view = nu_lookat(pos, nu_v3_add(pos, forward), up);
     nu_m4_t proj = nu_perspective(nu_radian(60.0),

@@ -63,6 +63,9 @@ nux_text (
             if (bit_set)
             {
                 nux_pset(env, px, py, c);
+
+                // Apply shadow
+                nux_pset(env, px + 1, py + 1, c + 1);
             }
         }
 
