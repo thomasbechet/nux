@@ -50,10 +50,10 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 225,
 
     // 4:3
-    NUX_SCREEN_WIDTH  = 320,
-    NUX_SCREEN_HEIGHT = 240,
     // NUX_SCREEN_WIDTH  = 320,
-    // NUX_SCREEN_HEIGHT = 200,
+    // NUX_SCREEN_HEIGHT = 240,
+    NUX_SCREEN_WIDTH  = 320,
+    NUX_SCREEN_HEIGHT = 200,
 
     NUX_TEXTURE_MIN_SIZE = 32,
     NUX_TEXTURE_MAX_SIZE = 256,
@@ -183,6 +183,8 @@ void      nux_line(nux_env_t env,
                    nux_i32_t x1,
                    nux_i32_t y1,
                    nux_u8_t  color);
+void      nux_circ(
+         nux_env_t env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c);
 
 // 3D API
 void nux_draw3d(nux_env_t env, nux_u32_t flags);

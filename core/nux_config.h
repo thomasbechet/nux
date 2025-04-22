@@ -12,4 +12,6 @@
 #define NUX_BUILD_VARARGS
 #define NUX_BUILD_WASM3
 
+// #define NUX_BENCHMARK 0
+
 #endif
