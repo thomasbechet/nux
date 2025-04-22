@@ -131,9 +131,9 @@ nux_instance_get_screen (nux_instance_t inst)
     return inst->memory + NUX_RAM_SCREEN;
 }
 const nux_u8_t *
-nux_instance_get_palette (nux_instance_t inst)
+nux_instance_get_colormap (nux_instance_t inst)
 {
-    return inst->memory + NUX_RAM_PALETTE;
+    return inst->memory + NUX_RAM_COLORMAP;
 }
 
 const nux_c8_t *

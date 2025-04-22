@@ -100,14 +100,14 @@ static const nu_sv_t shader_surface_render_frag = NU_SV(
 "in vec2 uv;\n"
 "\n"
 "uniform sampler2D t_indices;\n"
-"uniform sampler2D t_palette;\n"
+"uniform sampler2D t_colormap;\n"
 "\n"
 "void main()\n"
 "{\n"
 "    vec2 invuv = vec2(uv.x, 1 - uv.y);\n"
 "    vec4 color_index = texture(t_indices, invuv);\n"
 "    // vec4 color_index = texture(t_surface, invuv);\n"
-"    out_color = texture(t_palette, vec2(color_index.x, 0));\n"
+"    out_color = texture(t_colormap, vec2(color_index.x, 0));\n"
 "}\n"
 );
 static const nu_sv_t shader_surface_render_vert = NU_SV(

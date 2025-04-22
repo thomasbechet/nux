@@ -1,15 +1,15 @@
 layout = [
     ('screen', 320 * 240),
     ('zbuffer', 320 * 240 * 4),
-    ('palette', 256 * 3),
-    ('draw_palette', 256),
+    ('colormap', 256 * 3),
+    ('palette', 256),
     ('buttons', 8 * 4),
     ('axis', 8 * 4 * 6),
     ('time', 4),
     ('frame', 4),
     ('cursorx', 4),
     ('cursory', 4),
-    ('stat_fps', 4)
+    ('stat_fps', 4),
 ]
 
 string = ''

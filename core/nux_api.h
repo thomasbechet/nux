@@ -63,6 +63,7 @@ typedef enum
     NUX_NODE_MAX         = (1 << 16) - 1,
     NUX_NAME_MAX         = 64,
     NUX_PALETTE_LEN      = 256,
+    NUX_COLORMAP_LEN     = 256,
 } nux_constants_t;
 
 typedef enum
@@ -127,17 +128,17 @@ typedef enum
 
 typedef enum
 {
-    NUX_RAM_SCREEN       = 0x0,
-    NUX_RAM_ZBUFFER      = 0x12c00,
-    NUX_RAM_PALETTE      = 0x5dc00,
-    NUX_RAM_DRAW_PALETTE = 0x5df00,
-    NUX_RAM_BUTTONS      = 0x5e000,
-    NUX_RAM_AXIS         = 0x5e020,
-    NUX_RAM_TIME         = 0x5e0e0,
-    NUX_RAM_FRAME        = 0x5e0e4,
-    NUX_RAM_CURSORX      = 0x5e0e8,
-    NUX_RAM_CURSORY      = 0x5e0ec,
-    NUX_RAM_STAT_FPS     = 0x5e0f0,
+    NUX_RAM_SCREEN   = 0x0,
+    NUX_RAM_ZBUFFER  = 0x12c00,
+    NUX_RAM_COLORMAP = 0x5dc00,
+    NUX_RAM_PALETTE  = 0x5df00,
+    NUX_RAM_BUTTONS  = 0x5e000,
+    NUX_RAM_AXIS     = 0x5e020,
+    NUX_RAM_TIME     = 0x5e0e0,
+    NUX_RAM_FRAME    = 0x5e0e4,
+    NUX_RAM_CURSORX  = 0x5e0e8,
+    NUX_RAM_CURSORY  = 0x5e0ec,
+    NUX_RAM_STAT_FPS = 0x5e0f0,
 } nux_ram_layout_t;
 
 // Debug API

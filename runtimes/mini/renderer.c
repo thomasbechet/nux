@@ -7,7 +7,7 @@ static struct
     GLuint render_surface_program;
     GLuint screen_blit_program;
     GLuint indices_texture;
-    GLuint palette_texture;
+    GLuint colormap_texture;
     GLuint surface_texture;
     GLuint surface_fbo;
 } renderer;
@@ -180,7 +180,7 @@ renderer_init (void)
     glUniform1i(
         glGetUniformLocation(renderer.render_surface_program, "t_indices"), 0);
     glUniform1i(
-        glGetUniformLocation(renderer.render_surface_program, "t_palette"), 1);
+        glGetUniformLocation(renderer.render_surface_program, "t_colormap"), 1);
     glUseProgram(0);
 
     // Create indices
@@ -199,9 +199,9 @@ renderer_init (void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Create palette
-    glGenTextures(1, &renderer.palette_texture);
-    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
+    // Create colormap
+    glGenTextures(1, &renderer.colormap_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.colormap_texture);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_RGB,
@@ -270,9 +270,9 @@ renderer_free (void)
     {
         glDeleteTextures(1, &renderer.indices_texture);
     }
-    if (renderer.palette_texture)
+    if (renderer.colormap_texture)
     {
-        glDeleteTextures(1, &renderer.palette_texture);
+        glDeleteTextures(1, &renderer.colormap_texture);
     }
     if (renderer.surface_texture)
     {
@@ -316,17 +316,17 @@ renderer_render_instance (nux_instance_t inst,
                     nux_instance_get_screen(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Update palette
-    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
+    // Update colormap
+    glBindTexture(GL_TEXTURE_2D, renderer.colormap_texture);
     glTexSubImage2D(GL_TEXTURE_2D,
                     0,
                     0,
                     0,
-                    NUX_PALETTE_LEN,
+                    NUX_COLORMAP_LEN,
                     1,
                     GL_RGB,
                     GL_UNSIGNED_BYTE,
-                    nux_instance_get_palette(inst));
+                    nux_instance_get_colormap(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
 
     // Render surface
@@ -336,7 +336,7 @@ renderer_render_instance (nux_instance_t inst,
     glActiveTexture(GL_TEXTURE0 + 0);
     glBindTexture(GL_TEXTURE_2D, renderer.indices_texture);
     glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D, renderer.palette_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.colormap_texture);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glUseProgram(0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
