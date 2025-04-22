@@ -220,4 +220,6 @@ void nux_tracefmt(nux_env_t env, const nux_c8_t *fmt, ...);
 nux_u32_t nux_btn(nux_env_t env, nux_u32_t player);
 nux_f32_t nux_axs(nux_env_t env, nux_u32_t player, nux_axis_t axis);
 
+void nux_render_cubes(nux_env_t env, const nux_f32_t *view_proj);
+
 #endif

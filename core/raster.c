@@ -444,3 +444,343 @@ nux_filltri (nux_env_t env,
     //     fill_top_triangle(env, v1, v3, v2, c);
     // }
 }
+
+static nu_v4_t
+vertex_shader (const nu_m4_t transform, nu_v3_t position)
+{
+    return nu_m4_mulv(transform, nu_v4_v3(position, 1));
+}
+static void
+clip_edge_near (nu_v4_t  v0,
+                nu_v4_t  v1,
+                nu_v2_t  uv0,
+                nu_v2_t  uv1,
+                nu_v4_t *vclip,
+                nu_v2_t *uvclip)
+{
+    const nu_v4_t near_plane = nu_v4(0, 0, 1, 1);
+    nu_f32_t      d0         = nu_v4_dot(v0, near_plane);
+    nu_f32_t      d1         = nu_v4_dot(v1, near_plane);
+    nu_f32_t      s          = d0 / (d0 - d1);
+    *vclip                   = nu_v4_lerp(v0, v1, s);
+    *uvclip                  = nu_v2_lerp(uv0, uv1, s);
+}
+static nu_bool_t
+clip_triangle (nu_v4_t   vertices[4],
+               nu_v2_t   uvs[4],
+               nu_u32_t  indices[6],
+               nu_u32_t *indices_count)
+{
+    // Default triangle output
+    *indices_count = 3;
+    indices[0]     = 0;
+    indices[1]     = 1;
+    indices[2]     = 2;
+
+    // Compute outsides
+    nu_bool_t outside[3];
+    for (nu_u32_t i = 0; i < 3; ++i)
+    {
+        outside[i] = (vertices[i].w <= 0) || (vertices[i].z < -vertices[i].w);
+    }
+
+    // Early test out
+    if ((outside[0] & outside[1] & outside[2]) != 0)
+    {
+        return NU_FALSE;
+    }
+
+    // Early test in
+    if ((outside[0] | outside[1] | outside[2]) == 0)
+    {
+        return NU_TRUE;
+    }
+
+    // Clip vertices
+    for (nu_u32_t i = 0; i < 3; i++)
+    {
+        nu_v4_t  *vec, *vec_prev, *vec_next;
+        nu_v2_t  *uv, *uv_prev, *uv_next;
+        nu_bool_t out, out_prev, out_next;
+        vec = &vertices[i];
+        uv  = &uvs[i];
+        out = outside[i];
+
+        vec_next = &vertices[(i + 1) % 3];
+        uv_next  = &uvs[(i + 1) % 3];
+        out_next = outside[(i + 1) % 3];
+
+        vec_prev = &vertices[(i + 2) % 3];
+        uv_prev  = &uvs[(i + 2) % 3];
+        out_prev = outside[(i + 2) % 3];
+
+        if (out)
+        {
+            if (out_next) // 2 out case 1
+            {
+                clip_edge_near(*vec, *vec_prev, *uv, *uv_prev, vec, uv);
+                // clip_edge_near(*vec, *vec_prev, vec);
+            }
+            else if (out_prev) // 2 out case 2
+            {
+                clip_edge_near(*vec, *vec_next, *uv, *uv_next, vec, uv);
+                // clip_edge_near(*vec, *vec_next, vec);
+            }
+            else // 1 out
+            {
+                // Produce new vertex
+                clip_edge_near(
+                    *vec, *vec_next, *uv, *uv_next, &vertices[3], &uvs[3]);
+                // clip_edge_near(*vec, *vec_next, &vertices[3]);
+                *indices_count = 6;
+                indices[3]     = i;
+                indices[4]     = 3; // New vertex
+                indices[5]     = (i + 1) % 3;
+
+                // Clip existing vertex
+                clip_edge_near(*vec, *vec_prev, *uv, *uv_prev, vec, uv);
+                // clip_edge_near(*vec, *vec_prev, vec);
+
+                return NU_TRUE;
+            }
+        }
+    }
+
+    return NU_TRUE;
+}
+
+static inline nu_v2i_t
+pos_to_viewport (const nu_b2i_t vp, nu_v2_t v)
+{
+    // (p + 1) / 2
+    v = nu_v2_adds(v, 1);
+    v = nu_v2_muls(v, 0.5);
+
+    // Convert to viewport
+    v = nu_v2_mul(v, nu_v2_v2u(nu_b2i_size(vp)));
+    v = nu_v2_add(v, nu_v2(vp.min.x, vp.min.y));
+
+    v.y = NUX_SCREEN_HEIGHT - v.y;
+
+    return nu_v2i(v.x, v.y);
+}
+
+static inline nu_i32_t
+pixel_coverage (nu_v2i_t a, nu_v2i_t b, nu_f32_t x, nu_f32_t y)
+{
+    return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
+}
+
+static void
+render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
+{
+    nu_m4_t mvp = nu_m4_mul(view_proj, model);
+
+    const nu_b3_t box = nu_b3(nu_v3s(-.5), nu_v3s(.5));
+
+    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
+    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
+    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
+    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
+
+    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
+    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
+    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
+    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
+
+    const nu_v3_t cube_positions[]
+        = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
+            v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
+            v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
+
+    const nu_v2_t cube_uvs[] = {
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } }, { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 0, 0 } }, { { 0, 1 } }, { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } }, { { 1, 0 } },
+        { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } },
+        { { 0, 1 } }, { { 1, 1 } }, { { 1, 1 } }, { { 1, 0 } }, { { 0, 0 } },
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } },
+    };
+
+    const nu_u8_t  cube_texture[4]   = { 1, 2, 2, 1 };
+    const nu_v2u_t cube_texture_size = nu_v2u(2, 2);
+
+    const nu_b2i_t vp = nu_b2i_xywh(0, 0, NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+
+    // Iterate over triangles
+    for (nu_u32_t i = 0; i < NU_ARRAY_SIZE(cube_positions); i += 3)
+    {
+        // Apply vertex shader
+        nu_v4_t vertices[4];
+        nu_v2_t uvs[4];
+        vertices[0] = vertex_shader(mvp, cube_positions[i + 0]);
+        vertices[1] = vertex_shader(mvp, cube_positions[i + 1]);
+        vertices[2] = vertex_shader(mvp, cube_positions[i + 2]);
+        uvs[0]      = cube_uvs[i + 0];
+        uvs[1]      = cube_uvs[i + 1];
+        uvs[2]      = cube_uvs[i + 2];
+
+        // Clip vertices
+        nu_u32_t indices[6]    = { 0, 1, 2 };
+        nu_u32_t indices_count = 3;
+        if (!clip_triangle(vertices, uvs, indices, &indices_count))
+        {
+            continue;
+        }
+
+        // Perspective divide (NDC)
+        nu_u32_t total_vertex = (indices_count > 3) ? 4 : 3;
+        for (nu_u32_t i = 0; i < total_vertex; i++)
+        {
+            vertices[i].x /= vertices[i].w;
+            vertices[i].y /= vertices[i].w;
+            vertices[i].z /= vertices[i].w;
+        }
+
+        // Iterate over clipped triangles
+        for (nu_u32_t v = 0; v < indices_count; v += 3)
+        {
+            nu_v4_t v0  = vertices[indices[v + 0]];
+            nu_v4_t v1  = vertices[indices[v + 1]];
+            nu_v4_t v2  = vertices[indices[v + 2]];
+            nu_v2_t uv0 = uvs[indices[v + 0]];
+            nu_v2_t uv1 = uvs[indices[v + 1]];
+            nu_v2_t uv2 = uvs[indices[v + 2]];
+
+            // Keep inv weights for perspective correction
+            nu_f32_t inv_vw0 = 1. / v0.w;
+            nu_f32_t inv_vw1 = 1. / v1.w;
+            nu_f32_t inv_vw2 = 1. / v2.w;
+
+            nu_v2i_t v0vp = pos_to_viewport(vp, nu_v2(v0.x, v0.y));
+            nu_v2i_t v1vp = pos_to_viewport(vp, nu_v2(v1.x, v1.y));
+            nu_v2i_t v2vp = pos_to_viewport(vp, nu_v2(v2.x, v2.y));
+
+            nu_f32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
+            if (area <= 0)
+            {
+                continue;
+            }
+
+            nu_i32_t xmin = NU_MAX(0, NU_MIN(v0vp.x, NU_MIN(v1vp.x, v2vp.x)));
+            nu_i32_t ymin = NU_MAX(0, NU_MIN(v0vp.y, NU_MIN(v1vp.y, v2vp.y)));
+            nu_i32_t xmax = NU_MIN(NUX_SCREEN_WIDTH,
+                                   NU_MAX(v0vp.x, NU_MAX(v1vp.x, v2vp.x)));
+            nu_i32_t ymax = NU_MIN(NUX_SCREEN_HEIGHT,
+                                   NU_MAX(v0vp.y, NU_MAX(v1vp.y, v2vp.y)));
+
+            for (nu_i32_t y = ymin; y < ymax; ++y)
+            {
+                for (nu_i32_t x = xmin; x < xmax; x++)
+                {
+                    // Compute weights
+                    nu_f32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
+                    nu_f32_t w1 = pixel_coverage(v2vp, v0vp, x, y);
+                    nu_f32_t w2 = pixel_coverage(v0vp, v1vp, x, y);
+
+                    nu_bool_t included = NU_TRUE;
+                    // included &= (w0 == 0.0f) ? t0 : (w0 > 0.0f);
+                    // included &= (w1 == 0.0f) ? t1 : (w1 > 0.0f);
+                    // included &= (w2 == 0.0f) ? t2 : (w2 > 0.0f);
+                    included = (w0 > 0 && w1 > 0 && w2 > 0);
+
+                    const nu_f32_t area_inv = 1.0 / area;
+                    w0 *= area_inv;
+                    w1 *= area_inv;
+                    w2 = 1.0 - w0 - w1;
+
+                    nu_f32_t a           = w0 * inv_vw0;
+                    nu_f32_t b           = w1 * inv_vw1;
+                    nu_f32_t c           = w2 * inv_vw2;
+                    nu_f32_t inv_sum_abc = 1.0 / (a + b + c);
+                    a *= inv_sum_abc;
+                    b *= inv_sum_abc;
+                    c *= inv_sum_abc;
+
+                    if (included)
+                    {
+                        // Depth test
+                        nu_f32_t depth = (w0 * v0.z + w1 * v1.z + w2 * v2.z);
+                        if (depth < nux_zget(env, x, y))
+                        {
+                            nux_zset(env, x, y, depth);
+
+                            // Texture sampling
+                            // nu_f32_t px = (w0 * uv0.x + w1 * uv1.x + w2 *
+                            // uv2.x)
+                            //               * cube_texture_size.x;
+                            // nu_f32_t py = (w0 * uv0.y + w1 * uv1.y + w2 *
+                            // uv2.y)
+                            //               * cube_texture_size.y;
+
+                            nu_f32_t px = (a * uv0.x + b * uv1.x + c * uv2.x)
+                                          * cube_texture_size.x;
+                            nu_f32_t py = (a * uv0.y + b * uv1.y + c * uv2.y)
+                                          * cube_texture_size.y;
+
+                            nu_v2u_t texsize = cube_texture_size;
+
+                            nu_u32_t uvx = NU_MIN(texsize.x - 1, (nu_u32_t)px);
+                            nu_u32_t uvy = NU_MIN(texsize.y - 1,
+                                                  texsize.y - 1 - (nu_u32_t)py);
+
+                            // nux_pset(
+                            //     env, x, y, cube_texture[uvy * texsize.x +
+                            //     uvx]);
+                            env->inst->memory[NUX_RAM_SCREEN
+                                              + y * NUX_SCREEN_WIDTH + x]
+                                = cube_texture[uvy * texsize.x + uvx];
+                        }
+                    }
+                }
+
+                // nux_line(env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, 3);
+                // nux_line(env, v0vp.x, v0vp.y, v2vp.x, v2vp.y, 3);
+                // nux_line(env, v1vp.x, v1vp.y, v2vp.x, v2vp.y, 3);
+                // nux_pset(env, v0vp.x, v0vp.y, 4);
+                // nux_pset(env, v1vp.x, v1vp.y, 4);
+                // nux_pset(env, v2vp.x, v2vp.y, 4);
+            }
+        }
+    }
+}
+#include <time.h>
+
+void
+nux_render_cubes (nux_env_t env, const nux_f32_t *view_proj)
+{
+    clock_t t;
+    t = clock();
+
+    nu_m4_t         vp         = nu_m4(view_proj);
+    const nu_bool_t stresstest = NU_TRUE;
+    for (nu_u32_t x = 0; x < 25; ++x)
+    {
+        for (nu_u32_t y = 0; y < 25; ++y)
+        {
+            for (nu_u32_t z = 0; z < 25; ++z)
+            {
+                nu_m4_t model = nu_m4_identity();
+                model         = nu_m4_mul(
+                    model, nu_m4_translate(nu_v3(x * 2.5, y * 2.5, z * 2.5)));
+                model = nu_m4_mul(model, nu_m4_scale(nu_v3s(2)));
+                model = nu_m4_mul(model,
+                                  nu_m4_rotate_y(nu_radian(nux_time(env) * 0)));
+                render_cube(env, vp, model);
+            }
+        }
+    }
+
+    static double sum   = 0;
+    static int    frame = 0;
+    t                   = clock() - t;
+    sum += ((double)t) / CLOCKS_PER_SEC; // in seconds
+    ++frame;
+    if (frame == 100)
+    {
+        printf("%lf\n", sum / 100);
+        exit(0);
+    }
+}
