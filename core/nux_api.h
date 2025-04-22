@@ -127,23 +127,17 @@ typedef enum
 
 typedef enum
 {
-    NUX_RAM_SCREEN  = 0x0,
-    NUX_RAM_ZBUFFER = NUX_RAM_SCREEN + (NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT),
-    NUX_RAM_PALETTE
-    = NUX_RAM_ZBUFFER
-      + (NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT * sizeof(nux_f32_t)),
-    NUX_RAM_DRAW_PALETTE
-    = NUX_RAM_PALETTE + NUX_PALETTE_LEN * sizeof(nux_u8_t) * 3,
-    NUX_RAM_BUTTONS = NUX_RAM_DRAW_PALETTE + NUX_PALETTE_LEN * sizeof(nux_u8_t),
-    NUX_RAM_AXIS    = NUX_RAM_BUTTONS + NUX_PLAYER_MAX * sizeof(nux_u32_t),
-    NUX_RAM_TIME
-    = NUX_RAM_AXIS + NUX_PLAYER_MAX * sizeof(nux_f32_t) * NUX_AXIS_MAX,
-    NUX_RAM_FRAME     = NUX_RAM_TIME + sizeof(nux_f32_t),
-    NUX_RAM_DRAWSTATE = NUX_RAM_FRAME + sizeof(nux_u32_t),
-    NUX_RAM_CURSOR    = NUX_RAM_DRAWSTATE,
-    NUX_RAM_CURSORX   = NUX_RAM_CURSOR + 0,
-    NUX_RAM_CURSORY   = NUX_RAM_CURSOR + sizeof(nux_i32_t),
-    NUX_RAM_STAT_FPS  = NUX_RAM_CURSORY + sizeof(nux_f32_t),
+    NUX_RAM_SCREEN       = 0x0,
+    NUX_RAM_ZBUFFER      = 0x12c00,
+    NUX_RAM_PALETTE      = 0x5dc00,
+    NUX_RAM_DRAW_PALETTE = 0x5df00,
+    NUX_RAM_BUTTONS      = 0x5e000,
+    NUX_RAM_AXIS         = 0x5e020,
+    NUX_RAM_TIME         = 0x5e0e0,
+    NUX_RAM_FRAME        = 0x5e0e4,
+    NUX_RAM_CURSORX      = 0x5e0e8,
+    NUX_RAM_CURSORY      = 0x5e0ec,
+    NUX_RAM_STAT_FPS     = 0x5e0f0,
 } nux_ram_layout_t;
 
 // Debug API
