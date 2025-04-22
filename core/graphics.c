@@ -3,12 +3,29 @@
 #include "fonts_data.c.inc"
 
 void
-nux_pal (nux_env_t env, nux_u8_t index, nux_u32_t color)
+nux_pal (nux_env_t env, nux_u8_t index, nux_u8_t color)
 {
-    nux_u8_t *pal      = NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, nux_u8_t);
-    pal[index * 3 + 0] = (color & 0xFF0000) >> 16;
-    pal[index * 3 + 1] = (color & 0x00FF00) >> 8;
-    pal[index * 3 + 2] = (color & 0x0000FF) >> 0;
+    nux_u8_t *pal = NUX_MEMPTR(env->inst, NUX_RAM_DRAW_PALETTE, nux_u8_t);
+    pal[index]    = color;
+}
+void
+nux_palt (nux_env_t env, nux_u8_t c)
+{
+}
+void
+nux_palr (nux_env_t env)
+{
+    nux_u8_t *pal = NUX_MEMPTR(env->inst, NUX_RAM_DRAW_PALETTE, nux_u8_t);
+    for (nux_u32_t i = 0; i < NUX_PALETTE_LEN; ++i)
+    {
+        pal[i] = i;
+    }
+    nux_palt(env, 0);
+}
+nux_u8_t
+nux_palc (nux_env_t env, nux_u8_t index)
+{
+    return NUX_MEMPTR(env->inst, NUX_RAM_DRAW_PALETTE, const nux_u8_t)[index];
 }
 void
 nux_cls (nux_env_t env, nux_u32_t color)
@@ -133,4 +150,19 @@ nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
 {
     NUX_MEMSET(env->inst, NUX_RAM_CURSORX, nux_i32_t, x);
     NUX_MEMSET(env->inst, NUX_RAM_CURSORY, nux_i32_t, y);
+}
+nux_u32_t
+nux_cget (nux_env_t env, nux_u8_t index)
+{
+    nux_u8_t *pal = NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, nux_u8_t);
+    return (nux_u32_t)pal[index * 3 + 0] << 16
+           | (nux_u32_t)pal[index * 3 + 1] << 8 | (nux_u32_t)pal[index * 3 + 2];
+}
+void
+nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
+{
+    nux_u8_t *pal      = NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, nux_u8_t);
+    pal[index * 3 + 0] = (color & 0xFF0000) >> 16;
+    pal[index * 3 + 1] = (color & 0x00FF00) >> 8;
+    pal[index * 3 + 2] = (color & 0x0000FF) >> 0;
 }

@@ -227,7 +227,7 @@ static m3ApiRawFunction(btn)
     nux_env_t env = m3_GetUserData(runtime);
     m3ApiReturnType(nux_u32_t);
     m3ApiGetArg(nux_u32_t, player);
-    m3ApiReturn(nux_btn(env, player));
+    m3ApiReturn(nux_button(env, player));
     m3ApiSuccess();
 }
 static m3ApiRawFunction(axs)
@@ -239,7 +239,7 @@ static m3ApiRawFunction(axs)
     m3ApiReturnType(nux_f32_t);
     m3ApiGetArg(nux_u32_t, player);
     m3ApiGetArg(nux_axis_t, axis);
-    m3ApiReturn(nux_axs(env, player, axis));
+    m3ApiReturn(nux_axis(env, player, axis));
     m3ApiSuccess();
 }
 

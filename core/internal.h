@@ -9,7 +9,7 @@
 #include <wasm3.h>
 #endif
 
-#define NUX_MEMPTR(inst, addr, type) (type *)((inst)->memory + (addr))
+#define NUX_MEMPTR(inst, addr, type) ((type *)((inst)->memory + (addr)))
 #define NUX_MEMGET(inst, addr, type) *(const type *)((inst)->memory + (addr))
 #define NUX_MEMSET(inst, addr, type, val) \
     *(type *)((inst)->memory + (addr)) = (val)

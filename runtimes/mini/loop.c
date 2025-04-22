@@ -34,15 +34,15 @@ init_debug_camera (nu_v3_t pos)
 nu_m4_t
 debug_camera (nux_env_t env, nu_f32_t dt)
 {
-    nu_v3_t look = nu_v3(nux_axs(env, freecam.player, NUX_AXIS_RIGHTX) * 100,
-                         nux_axs(env, freecam.player, NUX_AXIS_RIGHTY) * 100,
+    nu_v3_t look = nu_v3(nux_axis(env, freecam.player, NUX_AXIS_RIGHTX) * 100,
+                         nux_axis(env, freecam.player, NUX_AXIS_RIGHTY) * 100,
                          0);
 
-    nu_v3_t move = nu_v3(nux_axs(env, freecam.player, NUX_AXIS_LEFTX),
+    nu_v3_t move = nu_v3(nux_axis(env, freecam.player, NUX_AXIS_LEFTX),
                          0,
-                         nux_axs(env, freecam.player, NUX_AXIS_LEFTY));
-    move.y += nux_btn(env, freecam.player) & NUX_BUTTON_Y ? 1 : 0;
-    move.y -= nux_btn(env, freecam.player) & NUX_BUTTON_B ? 1 : 0;
+                         nux_axis(env, freecam.player, NUX_AXIS_LEFTY));
+    move.y += nux_button(env, freecam.player) & NUX_BUTTON_Y ? 1 : 0;
+    move.y -= nux_button(env, freecam.player) & NUX_BUTTON_B ? 1 : 0;
     move = nu_v3_normalize(move);
 
     // Translation
@@ -113,14 +113,14 @@ debug_camera (nux_env_t env, nu_f32_t dt)
 void
 loop_init (nux_env_t env)
 {
-    nux_pal(env, 0, 0x0B3954);
-    nux_pal(env, 1, 0xBFD7EA);
-    nux_pal(env, 2, 0xFF6663);
-    nux_pal(env, 3, 0xFF0000);
-    nux_pal(env, 4, 0x00FF00);
-    nux_pal(env, 5, 0x0000FF);
-    nux_pal(env, 6, 0);
-    nux_pal(env, 7, 0xFFFFFF);
+    nux_cset(env, 0, 0x0B3954);
+    nux_cset(env, 1, 0xBFD7EA);
+    nux_cset(env, 2, 0xFF6663);
+    nux_cset(env, 3, 0xFF0000);
+    nux_cset(env, 4, 0x00FF00);
+    nux_cset(env, 5, 0x0000FF);
+    nux_cset(env, 6, 0);
+    nux_cset(env, 7, 0xFFFFFF);
     init_debug_camera(NU_V3_ZEROS);
 }
 void
@@ -163,10 +163,6 @@ loop_update (nux_env_t env)
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
     nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
     nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
-    for (int i = 0; i < 30; ++i)
-    {
-        // nux_print(env, "HWIEUFHWwiefuhaiuHFIWEUFHIWUHAf", 7);
-    }
 
     nux_circ(env, 50, 50, 10, 5);
 }

@@ -40,6 +40,8 @@ nux_instance_init (const nux_instance_config_t *config)
     nu_memset(inst->memory, 0, inst->memory_capa);
 
     // Initialize state
+    nux_env_t env = init_env(inst);
+    nux_palr(env);
 
     // Wasm initialization
     // nux_status_t res = nux_wasm_init(inst, config);
