@@ -30,7 +30,7 @@ nux_palc (nux_env_t env, nux_u8_t index)
 void
 nux_cls (nux_env_t env, nux_u32_t color)
 {
-    nux_fill(env, 0, 0, NUX_SCREEN_WIDTH - 1, NUX_SCREEN_HEIGHT - 1, color);
+    nux_rectfill(env, 0, 0, NUX_SCREEN_WIDTH - 1, NUX_SCREEN_HEIGHT - 1, color);
 }
 void
 nux_clsz (nux_env_t env)

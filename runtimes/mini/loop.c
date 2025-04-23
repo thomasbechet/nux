@@ -28,7 +28,7 @@ init_debug_camera (nu_v3_t pos)
     freecam.yaw   = 0;
 
     freecam.fov   = 50;
-    freecam.speed = 10;
+    freecam.speed = 50;
 }
 
 nu_m4_t
@@ -76,11 +76,11 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     // Apply movement
     if (nu_v3_norm(direction) > 0.001)
     {
-        force = nu_v3_add(force, nu_v3_muls(direction, 5));
+        force = nu_v3_add(force, nu_v3_muls(direction, 9));
     }
 
     // Apply drag
-    force = nu_v3_add(force, nu_v3_muls(freecam.vel, -0.5f));
+    force = nu_v3_add(force, nu_v3_muls(freecam.vel, -0.2f));
 
     // Integrate
     freecam.pos     = nu_v3_add(freecam.pos,
@@ -132,7 +132,7 @@ loop_update (nux_env_t env)
     nu_v2i_t v1 = nu_v2i(100 + nu_cos(nux_time(env) * 0.5) * 50,
                          70 + nu_sin(nux_time(env) * 0.5) * 50);
     nu_v2i_t v2 = nu_v2i(80, 200);
-    nux_filltri(env, v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, 1);
+    nux_trifill(env, v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, 1);
     nux_line(env, 150, 150, 300, 20, 2);
     // circle(env, 100, 100, 50, 3);
     // plot_circle(env, 100, 100, 50, 3);
@@ -165,4 +165,7 @@ loop_update (nux_env_t env)
     nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
 
     nux_circ(env, 50, 50, 10, 5);
+    nux_rectfill(env, 200, 100, 250, 150, 2);
+    nux_rect(env, 200, 100, 250, 150, 1);
+    nux_text(env, 203, 101, "Hello", 7);
 }

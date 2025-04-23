@@ -107,7 +107,7 @@ static m3ApiRawFunction(fill)
     m3ApiGetArg(nux_i32_t, x1);
     m3ApiGetArg(nux_i32_t, y1);
     m3ApiGetArg(nux_u8_t, color);
-    nux_fill(env, x0, y0, x1, y1, color);
+    nux_rectfill(env, x0, y0, x1, y1, color);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(pset)
@@ -161,7 +161,7 @@ static m3ApiRawFunction(filltri)
     m3ApiGetArg(nux_i32_t, x2);
     m3ApiGetArg(nux_i32_t, y2);
     m3ApiGetArg(nux_u8_t, color);
-    nux_filltri(env, x0, y0, x1, y1, x2, y2, color);
+    nux_trifill(env, x0, y0, x1, y1, x2, y2, color);
     m3ApiSuccess();
 }
 static m3ApiRawFunction(text)

@@ -153,20 +153,20 @@ nux_f32_t nux_dt(nux_env_t env);
 nux_u32_t nux_frame(nux_env_t env);
 
 // 2D API
-void nux_fill(nux_env_t env,
-              nux_i32_t x0,
-              nux_i32_t y0,
-              nux_i32_t x1,
-              nux_i32_t y1,
-              nux_u8_t  color);
-void nux_filltri(nux_env_t env,
+void nux_rectfill(nux_env_t env,
+                  nux_i32_t x0,
+                  nux_i32_t y0,
+                  nux_i32_t x1,
+                  nux_i32_t y1,
+                  nux_u8_t  c);
+void nux_trifill(nux_env_t env,
                  nux_i32_t x0,
                  nux_i32_t y0,
                  nux_i32_t x1,
                  nux_i32_t y1,
                  nux_i32_t x2,
                  nux_i32_t y2,
-                 nux_u8_t  color);
+                 nux_u8_t  c);
 void nux_text(
     nux_env_t env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
 void      nux_print(nux_env_t env, const nux_c8_t *text, nux_u8_t c);
@@ -181,9 +181,16 @@ void      nux_line(nux_env_t env,
                    nux_u8_t  color);
 void      nux_circ(
          nux_env_t env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c);
+void nux_rect(nux_env_t env,
+              nux_i32_t x0,
+              nux_i32_t y0,
+              nux_i32_t x1,
+              nux_i32_t y1,
+              nux_u8_t  c);
 
 // 3D API
 void nux_cam(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_camlook(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
 
 // Draw State API
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);
@@ -192,12 +199,12 @@ void      nux_palr(nux_env_t env);
 nux_u8_t  nux_palc(nux_env_t env, nux_u8_t index);
 void      nux_cls(nux_env_t env, nux_u32_t color);
 void      nux_clsz(nux_env_t env);
-void      nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color);
+void      nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t c);
 nux_u8_t  nux_pget(nux_env_t env, nux_i32_t x, nux_i32_t y);
 void      nux_zset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth);
 nux_f32_t nux_zget(nux_env_t env, nux_i32_t x, nux_i32_t y);
 nux_u32_t nux_cget(nux_env_t env, nux_u8_t index);
-void      nux_cset(nux_env_t env, nux_u8_t index, nux_u32_t color);
+void      nux_cset(nux_env_t env, nux_u8_t index, nux_u32_t c);
 
 #ifdef NUX_BUILD_VARARGS
 void nux_textfmt(nux_env_t       env,

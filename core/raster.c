@@ -1,12 +1,12 @@
 #include "internal.h"
 
 void
-nux_fill (nux_env_t env,
-          nux_i32_t x0,
-          nux_i32_t y0,
-          nux_i32_t x1,
-          nux_i32_t y1,
-          nux_u8_t  color)
+nux_rectfill (nux_env_t env,
+              nux_i32_t x0,
+              nux_i32_t y0,
+              nux_i32_t x1,
+              nux_i32_t y1,
+              nux_u8_t  color)
 {
     nux_i32_t minx = NU_MIN(x0, x1);
     nux_i32_t miny = NU_MIN(y0, y1);
@@ -88,7 +88,7 @@ nux_line (nux_env_t env,
 }
 
 void
-nux_filltri (nux_env_t env,
+nux_trifill (nux_env_t env,
              nux_i32_t x0,
              nux_i32_t y0,
              nux_i32_t x1,
@@ -223,6 +223,29 @@ nux_circ (nux_env_t env, nu_i32_t xm, nu_i32_t ym, nu_i32_t r, nux_u8_t c)
             err += ++y * 2 + 1; /* e_xy+e_y < 0 */
         }
     } while (x < 0);
+}
+void
+nux_rect (nux_env_t env,
+          nux_i32_t x0,
+          nux_i32_t y0,
+          nux_i32_t x1,
+          nux_i32_t y1,
+          nux_u8_t  c)
+{
+    nux_i32_t xmin = NU_MIN(x0, x1);
+    nux_i32_t xmax = NU_MAX(x0, x1);
+    nux_i32_t ymin = NU_MIN(y0, y1);
+    nux_i32_t ymax = NU_MAX(y0, y1);
+    for (nux_i32_t x = xmin; x <= xmax; ++x)
+    {
+        nux_pset(env, x, y0, c);
+        nux_pset(env, x, y1, c);
+    }
+    for (nux_i32_t y = ymin; y <= ymax; ++y)
+    {
+        nux_pset(env, x0, y, c);
+        nux_pset(env, x1, y, c);
+    }
 }
 
 static inline nu_v4_t
