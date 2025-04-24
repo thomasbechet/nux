@@ -10,9 +10,11 @@ layout = [
     ('cursorx', 4),
     ('cursory', 4),
     ('stat_fps', 4),
-    ('cam_pos', 4 * 3),
-    ('cam_rot', 4 * 9),
+    ('cam_eye', 4 * 3),
+    ('cam_center', 4 * 3),
+    ('cam_up', 4 * 3),
     ('cam_fov', 4),
+    ('cam_viewport', 4 * 4),
 ]
 
 string = ''

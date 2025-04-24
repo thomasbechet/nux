@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "nulib/nulib/math.h"
 
 void
 nux_rectfill (nux_env_t env,
@@ -550,28 +551,30 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
 #endif
 
 void
-nux_render_cubes (nux_env_t env, const nux_f32_t *view_proj)
+nux_render_cubes (nux_env_t env)
 {
 #ifdef NUX_BENCHMARK
     clock_t t;
     t = clock();
 #endif
 
-    // const nu_f32_t *camrot = NUX_
-
-    const nu_f32_t *
+    const nu_f32_t *cameye
         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nu_f32_t);
     const nu_f32_t *camcenter
         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nu_f32_t);
     const nu_f32_t *camup
         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nu_f32_t);
-    nu_f32_t fov  = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nu_f32_t);
-    nu_m4_t  view = nu_lookat(nu_v3(cameye[0], cameye[1], cameye[2]),
+    nu_f32_t        fov = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nu_f32_t);
+    const nu_u32_t *viewport
+        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, const nu_u32_t);
+
+    nu_m4_t view = nu_lookat(nu_v3(cameye[0], cameye[1], cameye[2]),
                              nu_v3(camcenter[0], camcenter[1], camcenter[2]),
                              nu_v3(camup[0], camup[1], camup[2]));
-    // nu_m4_t proj = nu_perspective(nu_radian(fov), )
+    nu_m4_t proj = nu_perspective(
+        nu_radian(fov), (nu_f32_t)viewport[2] / viewport[3], 0.01, 500);
 
-    nu_m4_t         vp         = nu_m4(view_proj);
+    nu_m4_t         vp         = nu_m4_mul(proj, view);
     const nu_bool_t stresstest = NU_TRUE;
     const nu_size_t size       = 20;
     const nu_f32_t  space      = 10;

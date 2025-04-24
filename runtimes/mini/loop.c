@@ -31,7 +31,7 @@ init_debug_camera (nu_v3_t pos)
     freecam.speed = 50;
 }
 
-nu_m4_t
+static void
 debug_camera (nux_env_t env, nu_f32_t dt)
 {
     nu_v3_t look = nu_v3(nux_axis(env, freecam.player, NUX_AXIS_RIGHTX) * 100,
@@ -96,18 +96,13 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     freecam.acc = new_acc;
     freecam.vel = new_vel;
 
-    nu_v3_t pos     = freecam.pos;
-    nu_v3_t forward = nu_q4_mulv3(freecam.rot, NU_V3_FORWARD);
-    nu_v3_t up      = nu_v3_normalize(nu_q4_mulv3(freecam.rot, NU_V3_UP));
+    nu_v3_t pos    = freecam.pos;
+    nu_v3_t center = nu_v3_add(pos, nu_q4_mulv3(freecam.rot, NU_V3_FORWARD));
+    nu_v3_t up     = nu_v3_normalize(nu_q4_mulv3(freecam.rot, NU_V3_UP));
 
-    nu_m4_t view = nu_lookat(pos, nu_v3_add(pos, forward), up);
-    nu_m4_t proj = nu_perspective(nu_radian(60.0),
-                                  (nu_f32_t)NUX_SCREEN_WIDTH
-                                      / (nu_f32_t)NUX_SCREEN_HEIGHT,
-                                  0.5f,
-                                  10000);
-
-    return nu_m4_mul(proj, view);
+    nux_cameye(env, pos.x, pos.y, pos.z);
+    nux_camcenter(env, center.x, center.y, center.z);
+    nux_camup(env, up.x, up.y, up.z);
 }
 
 void
@@ -138,17 +133,12 @@ loop_update (nux_env_t env)
     // plot_circle(env, 100, 100, 50, 3);
 
 #ifdef NUX_BENCHMARK
-    nu_m4_t view = nu_lookat(nu_v3(70, 70, 70), nu_v3s(0), NU_V3_UP);
-    nu_m4_t proj = nu_perspective(nu_radian(60.0),
-                                  (nu_f32_t)NUX_SCREEN_WIDTH
-                                      / (nu_f32_t)NUX_SCREEN_HEIGHT,
-                                  0.5f,
-                                  10000);
-    nu_m4_t vp   = nu_m4_mul(proj, view);
+    nux_campos(env, 70, 70, 70);
+    nux_camcenter(env, 0, 0, 0);
 #else
-    nu_m4_t vp = debug_camera(env, nux_dt(env));
+    debug_camera(env, nux_dt(env));
 #endif
-    nux_render_cubes(env, vp.data);
+    nux_render_cubes(env);
 
     static nux_u32_t avg_fps = 0;
     static nu_f32_t  sum_fps = 0;

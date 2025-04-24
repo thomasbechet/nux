@@ -128,20 +128,22 @@ typedef enum
 
 typedef enum
 {
-    NUX_RAM_SCREEN   = 0x0,
-    NUX_RAM_ZBUFFER  = 0x12c00,
-    NUX_RAM_COLORMAP = 0x5dc00,
-    NUX_RAM_PALETTE  = 0x5df00,
-    NUX_RAM_BUTTONS  = 0x5e000,
-    NUX_RAM_AXIS     = 0x5e020,
-    NUX_RAM_TIME     = 0x5e0e0,
-    NUX_RAM_FRAME    = 0x5e0e4,
-    NUX_RAM_CURSORX  = 0x5e0e8,
-    NUX_RAM_CURSORY  = 0x5e0ec,
-    NUX_RAM_STAT_FPS = 0x5e0f0,
-    NUX_RAM_CAM_POS  = 0x5e0f4,
-    NUX_RAM_CAM_ROT  = 0x5e100,
-    NUX_RAM_CAM_FOV  = 0x5e124,
+    NUX_RAM_SCREEN       = 0x0,
+    NUX_RAM_ZBUFFER      = 0x12c00,
+    NUX_RAM_COLORMAP     = 0x5dc00,
+    NUX_RAM_PALETTE      = 0x5df00,
+    NUX_RAM_BUTTONS      = 0x5e000,
+    NUX_RAM_AXIS         = 0x5e020,
+    NUX_RAM_TIME         = 0x5e0e0,
+    NUX_RAM_FRAME        = 0x5e0e4,
+    NUX_RAM_CURSORX      = 0x5e0e8,
+    NUX_RAM_CURSORY      = 0x5e0ec,
+    NUX_RAM_STAT_FPS     = 0x5e0f0,
+    NUX_RAM_CAM_EYE      = 0x5e0f4,
+    NUX_RAM_CAM_CENTER   = 0x5e100,
+    NUX_RAM_CAM_UP       = 0x5e10c,
+    NUX_RAM_CAM_FOV      = 0x5e118,
+    NUX_RAM_CAM_VIEWPORT = 0x5e11c,
 } nux_ram_layout_t;
 
 // Debug API
@@ -192,8 +194,11 @@ void nux_rect(nux_env_t env,
               nux_u8_t  c);
 
 // 3D API
-void nux_campos(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_camrot(nux_env_t env, const nux_f32_t *mrot);
+void nux_cameye(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_camcenter(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_camup(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_camviewport(
+    nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 void nux_camfov(nux_env_t env, nux_f32_t fov);
 
 // Draw State API
@@ -225,6 +230,6 @@ void nux_tracefmt(nux_env_t env, const nux_c8_t *fmt, ...);
 nux_u32_t nux_button(nux_env_t env, nux_u32_t player);
 nux_f32_t nux_axis(nux_env_t env, nux_u32_t player, nux_axis_t axis);
 
-void nux_render_cubes(nux_env_t env, const nux_f32_t *view_proj);
+void nux_render_cubes(nux_env_t env);
 
 #endif

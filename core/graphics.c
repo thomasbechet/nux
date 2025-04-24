@@ -167,17 +167,34 @@ nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
     map[index * 3 + 2] = (color & 0x0000FF) >> 0;
 }
 void
-nux_campos (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
+nux_cameye (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_POS, nux_f32_t)[0] = x;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_POS, nux_f32_t)[1] = y;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_POS, nux_f32_t)[2] = z;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, nux_f32_t)[0] = x;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, nux_f32_t)[1] = y;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, nux_f32_t)[2] = z;
 }
 void
-nux_camrot (nux_env_t env, const nux_f32_t *mrot)
+nux_camcenter (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
-    nu_f32_t *camrot = NUX_MEMPTR(env->inst, NUX_RAM_CAM_ROT, nu_f32_t);
-    nu_memcpy(camrot, mrot, NU_M3_SIZE * sizeof(*mrot));
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, nux_f32_t)[0] = x;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, nux_f32_t)[1] = y;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, nux_f32_t)[2] = z;
+}
+void
+nux_camup (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
+{
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, nux_f32_t)[0] = x;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, nux_f32_t)[1] = y;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, nux_f32_t)[2] = z;
+}
+void
+nux_camviewport (
+    nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
+{
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[0] = x;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[1] = y;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[2] = w;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[3] = h;
 }
 void
 nux_camfov (nux_env_t env, nux_f32_t fov)
