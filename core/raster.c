@@ -354,11 +354,12 @@ clip_triangle (nu_v4_t vertices[4], nu_v2_t uvs[4], nu_u32_t indices[6])
 }
 
 static inline nu_v2i_t
-pos_to_viewport (nu_u32_t vpw, nu_u32_t vph, nu_f32_t x, nu_f32_t y)
+pos_to_viewport (nu_b2i_t vp, nu_f32_t x, nu_f32_t y)
 {
-    nu_i32_t px = (x + 1) * 0.5 * vpw;
-    nu_i32_t py = vph - ((y + 1) * 0.5 * vph);
-    return nu_v2i(px, py);
+    nu_v2u_t size = nu_b2i_size(vp);
+    nu_i32_t px   = (x + 1) * 0.5 * (nu_f32_t)size.x;
+    nu_i32_t py   = size.y - (y + 1) * 0.5 * (nu_f32_t)size.y;
+    return nu_v2i(vp.min.x + px, vp.min.y + py);
 }
 
 static inline nu_i32_t
@@ -368,7 +369,7 @@ pixel_coverage (nu_v2i_t a, nu_v2i_t b, nu_i32_t x, nu_i32_t y)
 }
 
 static void
-render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
+render_cube (nux_env_t env, nu_b2i_t vp, nu_m4_t view_proj, nu_m4_t model)
 {
     nu_m4_t mvp = nu_m4_mul(view_proj, model);
 
@@ -403,8 +404,6 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
     const nu_u8_t cube_texture[16]
         = { 1, 2, 3, 2, 3, 2, 1, 2, 1, 0, 5, 6, 1, 3, 3, 0 };
     const nu_v2u_t cube_texture_size = nu_v2u(4, 4);
-
-    const nu_b2i_t vp = nu_b2i_xywh(0, 0, NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
 
     // Iterate over triangles
     for (nu_u32_t i = 0; i < NU_ARRAY_SIZE(cube_positions); i += 3)
@@ -442,12 +441,9 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
             nu_v4_t v1 = vertices[indices[v + 1]];
             nu_v4_t v2 = vertices[indices[v + 2]];
 
-            nu_v2i_t v0vp = pos_to_viewport(
-                NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT, v0.x, v0.y);
-            nu_v2i_t v1vp = pos_to_viewport(
-                NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT, v1.x, v1.y);
-            nu_v2i_t v2vp = pos_to_viewport(
-                NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT, v2.x, v2.y);
+            nu_v2i_t v0vp = pos_to_viewport(vp, v0.x, v0.y);
+            nu_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
+            nu_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
 
             nu_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
             if (area <= 0)
@@ -464,12 +460,14 @@ render_cube (nux_env_t env, nu_m4_t view_proj, nu_m4_t model)
             nu_f32_t inv_vw1 = 1. / v1.w;
             nu_f32_t inv_vw2 = 1. / v2.w;
 
-            nu_i32_t xmin = NU_MAX(0, NU_MIN(v0vp.x, NU_MIN(v1vp.x, v2vp.x)));
-            nu_i32_t ymin = NU_MAX(0, NU_MIN(v0vp.y, NU_MIN(v1vp.y, v2vp.y)));
-            nu_i32_t xmax = NU_MIN(NUX_SCREEN_WIDTH,
-                                   NU_MAX(v0vp.x, NU_MAX(v1vp.x, v2vp.x)));
-            nu_i32_t ymax = NU_MIN(NUX_SCREEN_HEIGHT,
-                                   NU_MAX(v0vp.y, NU_MAX(v1vp.y, v2vp.y)));
+            nu_i32_t xmin
+                = NU_MAX(vp.min.x, NU_MIN(v0vp.x, NU_MIN(v1vp.x, v2vp.x)));
+            nu_i32_t ymin
+                = NU_MAX(vp.min.y, NU_MIN(v0vp.y, NU_MIN(v1vp.y, v2vp.y)));
+            nu_i32_t xmax
+                = NU_MIN(vp.max.x, NU_MAX(v0vp.x, NU_MAX(v1vp.x, v2vp.x)));
+            nu_i32_t ymax
+                = NU_MIN(vp.max.y, NU_MAX(v0vp.y, NU_MAX(v1vp.y, v2vp.y)));
 
             for (nu_i32_t y = ymin; y < ymax; ++y)
             {
@@ -591,7 +589,12 @@ nux_render_cubes (nux_env_t env)
                 model = nu_m4_mul(model, nu_m4_scale(nu_v3s(3)));
                 model = nu_m4_mul(model,
                                   nu_m4_rotate_y(nu_radian(nux_time(env) * 0)));
-                render_cube(env, vp, model);
+                render_cube(
+                    env,
+                    nu_b2i_xywh(
+                        viewport[0], viewport[1], viewport[2], viewport[3]),
+                    vp,
+                    model);
             }
         }
     }

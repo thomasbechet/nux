@@ -129,8 +129,8 @@ loop_update (nux_env_t env)
     nu_v2i_t v2 = nu_v2i(80, 200);
     nux_trifill(env, v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, 1);
     nux_line(env, 150, 150, 300, 20, 2);
-    // circle(env, 100, 100, 50, 3);
-    // plot_circle(env, 100, 100, 50, 3);
+
+    // nux_camviewport(env, 100, 100, 100, 100);
 
 #ifdef NUX_BENCHMARK
     nux_campos(env, 70, 70, 70);
