@@ -557,6 +557,20 @@ nux_render_cubes (nux_env_t env, const nux_f32_t *view_proj)
     t = clock();
 #endif
 
+    // const nu_f32_t *camrot = NUX_
+
+    const nu_f32_t *
+        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nu_f32_t);
+    const nu_f32_t *camcenter
+        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nu_f32_t);
+    const nu_f32_t *camup
+        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nu_f32_t);
+    nu_f32_t fov  = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nu_f32_t);
+    nu_m4_t  view = nu_lookat(nu_v3(cameye[0], cameye[1], cameye[2]),
+                             nu_v3(camcenter[0], camcenter[1], camcenter[2]),
+                             nu_v3(camup[0], camup[1], camup[2]));
+    // nu_m4_t proj = nu_perspective(nu_radian(fov), )
+
     nu_m4_t         vp         = nu_m4(view_proj);
     const nu_bool_t stresstest = NU_TRUE;
     const nu_size_t size       = 20;

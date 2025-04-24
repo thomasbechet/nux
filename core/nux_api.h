@@ -139,6 +139,9 @@ typedef enum
     NUX_RAM_CURSORX  = 0x5e0e8,
     NUX_RAM_CURSORY  = 0x5e0ec,
     NUX_RAM_STAT_FPS = 0x5e0f0,
+    NUX_RAM_CAM_POS  = 0x5e0f4,
+    NUX_RAM_CAM_ROT  = 0x5e100,
+    NUX_RAM_CAM_FOV  = 0x5e124,
 } nux_ram_layout_t;
 
 // Debug API
@@ -189,8 +192,9 @@ void nux_rect(nux_env_t env,
               nux_u8_t  c);
 
 // 3D API
-void nux_cam(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_camlook(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_campos(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_camrot(nux_env_t env, const nux_f32_t *mrot);
+void nux_camfov(nux_env_t env, nux_f32_t fov);
 
 // Draw State API
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);

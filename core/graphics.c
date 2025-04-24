@@ -166,3 +166,21 @@ nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
     map[index * 3 + 1] = (color & 0x00FF00) >> 8;
     map[index * 3 + 2] = (color & 0x0000FF) >> 0;
 }
+void
+nux_campos (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
+{
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_POS, nux_f32_t)[0] = x;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_POS, nux_f32_t)[1] = y;
+    NUX_MEMPTR(env->inst, NUX_RAM_CAM_POS, nux_f32_t)[2] = z;
+}
+void
+nux_camrot (nux_env_t env, const nux_f32_t *mrot)
+{
+    nu_f32_t *camrot = NUX_MEMPTR(env->inst, NUX_RAM_CAM_ROT, nu_f32_t);
+    nu_memcpy(camrot, mrot, NU_M3_SIZE * sizeof(*mrot));
+}
+void
+nux_camfov (nux_env_t env, nux_f32_t fov)
+{
+    NUX_MEMSET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t, fov);
+}
