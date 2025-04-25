@@ -80,7 +80,7 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     }
 
     // Apply drag
-    force = nu_v3_add(force, nu_v3_muls(freecam.vel, -0.2f));
+    force = nu_v3_add(force, nu_v3_muls(freecam.vel, -0.5));
 
     // Integrate
     freecam.pos     = nu_v3_add(freecam.pos,
@@ -105,6 +105,10 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     nux_camup(env, up.x, up.y, up.z);
 }
 
+#ifdef NUX_BENCHMARK
+#include <time.h>
+#endif
+
 void
 loop_init (nux_env_t env)
 {
@@ -123,11 +127,6 @@ loop_update (nux_env_t env)
 {
     nux_cls(env, 0);
     nux_clsz(env);
-    nu_v2i_t v0 = nu_v2i(50, 50);
-    nu_v2i_t v1 = nu_v2i(100 + nu_cos(nux_time(env) * 0.5) * 50,
-                         70 + nu_sin(nux_time(env) * 0.5) * 50);
-    nu_v2i_t v2 = nu_v2i(80, 200);
-    nux_trifill(env, v0.x, v0.y, v1.x, v1.y, v2.x, v2.y, 1);
     nux_line(env, 150, 150, 300, 20, 2);
 
     // nux_camviewport(env, 100, 100, 100, 100);
@@ -138,8 +137,6 @@ loop_update (nux_env_t env)
 #else
     debug_camera(env, nux_dt(env));
 #endif
-    nux_render_cubes(env);
-
     static nux_u32_t avg_fps = 0;
     static nu_f32_t  sum_fps = 0;
     sum_fps += nux_stat(env, NUX_STAT_FPS);
@@ -158,4 +155,66 @@ loop_update (nux_env_t env)
     nux_rectfill(env, 200, 100, 250, 150, 2);
     nux_rect(env, 200, 100, 250, 150, 1);
     nux_text(env, 203, 101, "Hello", 7);
+
+    const nu_b3_t box = nu_b3(nu_v3s(-.5), nu_v3s(.5));
+
+    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
+    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
+    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
+    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
+
+    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
+    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
+    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
+    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
+
+    const nu_v3_t cube_positions[]
+        = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
+            v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
+            v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
+
+    const nu_v2_t cube_uvs[] = {
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } }, { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 0, 0 } }, { { 0, 1 } }, { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } }, { { 1, 0 } },
+        { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } },
+        { { 0, 1 } }, { { 1, 1 } }, { { 1, 1 } }, { { 1, 0 } }, { { 0, 0 } },
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } },
+    };
+
+    const nu_u8_t cube_texture[16]
+        = { 1, 2, 3, 2, 3, 2, 1, 2, 1, 0, 5, 6, 1, 3, 3, 0 };
+    const nu_v2u_t cube_texture_size = nu_v2u(4, 4);
+
+#ifdef NUX_BENCHMARK
+    clock_t t;
+    t = clock();
+#endif
+
+    nu_m4_t model = nu_m4_scale(nu_v3s(10));
+    nux_mesht(env,
+              (const nux_f32_t *)cube_positions,
+              (const nux_f32_t *)cube_uvs,
+              NU_ARRAY_SIZE(cube_positions),
+              cube_texture,
+              4,
+              4,
+              model.data);
+
+#ifdef NUX_BENCHMARK
+    static double sum   = 0;
+    static int    frame = 0;
+    t                   = clock() - t;
+    sum += ((double)t) / CLOCKS_PER_SEC; // in seconds
+    ++frame;
+    if (frame == 100)
+    {
+        printf("%lf\n", sum / 100);
+        frame = 0;
+        sum   = 0;
+        exit(0);
+    }
+#endif
 }

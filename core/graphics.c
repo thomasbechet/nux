@@ -201,3 +201,9 @@ nux_camfov (nux_env_t env, nux_f32_t fov)
 {
     NUX_MEMSET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t, fov);
 }
+void
+nux_model (nux_env_t env, const nux_f32_t *m)
+{
+    nu_f32_t *model = NUX_MEMPTR(env->inst, NUX_RAM_MODEL, nu_f32_t);
+    nu_memcpy(model, m, NU_M4_SIZE * sizeof(nu_f32_t));
+}

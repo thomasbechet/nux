@@ -15,6 +15,7 @@ layout = [
     ('cam_up', 4 * 3),
     ('cam_fov', 4),
     ('cam_viewport', 4 * 4),
+    ('model', 4 * 16),
 ]
 
 string = ''

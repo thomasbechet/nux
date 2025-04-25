@@ -84,18 +84,15 @@ typedef enum
 
 typedef enum
 {
+    NUX_VERTEX_TRIANGLES = 6,
+    NUX_VERTEX_LINES     = 6,
+    NUX_VERTEX_POINTS    = 6,
+
     NUX_VERTEX_POSITION = 1 << 0,
     NUX_VERTEX_UV       = 1 << 1,
     NUX_VERTEX_COLOR    = 1 << 2,
     NUX_VERTEX_INDICES  = 1 << 3,
 } nux_vertex_attribute_t;
-
-typedef enum
-{
-    NUX_PRIMITIVE_TRIANGLES = 0,
-    NUX_PRIMITIVE_LINES     = 1,
-    NUX_PRIMITIVE_POINTS    = 2,
-} nux_primitive_t;
 
 typedef enum
 {
@@ -144,6 +141,7 @@ typedef enum
     NUX_RAM_CAM_UP       = 0x5e10c,
     NUX_RAM_CAM_FOV      = 0x5e118,
     NUX_RAM_CAM_VIEWPORT = 0x5e11c,
+    NUX_RAM_MODEL        = 0x5e12c,
 } nux_ram_layout_t;
 
 // Debug API
@@ -200,6 +198,14 @@ void nux_camup(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
 void nux_camviewport(
     nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 void nux_camfov(nux_env_t env, nux_f32_t fov);
+void nux_mesht(nux_env_t        env,
+               const nux_f32_t *positions,
+               const nux_f32_t *uvs,
+               nux_u32_t        count,
+               const nux_u8_t  *tex,
+               nux_u32_t        texw,
+               nux_u32_t        texh,
+               const nux_f32_t *m);
 
 // Draw State API
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);
@@ -229,7 +235,5 @@ void nux_tracefmt(nux_env_t env, const nux_c8_t *fmt, ...);
 // Input
 nux_u32_t nux_button(nux_env_t env, nux_u32_t player);
 nux_f32_t nux_axis(nux_env_t env, nux_u32_t player, nux_axis_t axis);
-
-void nux_render_cubes(nux_env_t env);
 
 #endif
