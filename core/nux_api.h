@@ -26,8 +26,8 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 1080,
 
     // 16:10, too high ?
-    // NUX_SCREEN_WIDTH  = 640,
-    // NUX_SCREEN_HEIGHT = 400,
+    NUX_SCREEN_WIDTH  = 640,
+    NUX_SCREEN_HEIGHT = 400,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 640,

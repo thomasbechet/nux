@@ -305,11 +305,12 @@ clip_triangle (nu_v4_t vertices[4], nu_v2_t uvs[4], nu_u32_t indices[6])
     }
 
     // Clip vertices
-    for (nu_u32_t i = 0; i < 3; i++)
+    for (nu_u32_t i = 0; i < 3; ++i)
     {
         nu_v4_t  *vec, *vec_prev, *vec_next;
         nu_v2_t  *uv, *uv_prev, *uv_next;
         nu_bool_t out, out_prev, out_next;
+
         vec = &vertices[i];
         uv  = &uvs[i];
         out = outside[i];
@@ -324,11 +325,11 @@ clip_triangle (nu_v4_t vertices[4], nu_v2_t uvs[4], nu_u32_t indices[6])
 
         if (out)
         {
-            if (out_next) // 2 out case 1
+            if (out_next) // 2 out : case 1
             {
                 clip_edge_near(*vec, *vec_prev, *uv, *uv_prev, vec, uv);
             }
-            else if (out_prev) // 2 out case 2
+            else if (out_prev) // 2 out : case 2
             {
                 clip_edge_near(*vec, *vec_next, *uv, *uv_next, vec, uv);
             }
@@ -442,6 +443,10 @@ nux_mesht (nux_env_t        env,
             nu_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
             nu_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
 
+            // nux_line(env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, 3);
+            // nux_line(env, v0vp.x, v0vp.y, v2vp.x, v2vp.y, 3);
+            // nux_line(env, v1vp.x, v1vp.y, v2vp.x, v2vp.y, 3);
+
             nu_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
             if (area <= 0)
             {
@@ -470,10 +475,12 @@ nux_mesht (nux_env_t        env,
             {
                 nu_f32_t *row_depth
                     = &((nu_f32_t *)(env->inst->memory
-                                     + NUX_RAM_ZBUFFER))[y * NUX_SCREEN_WIDTH];
+                                     + NUX_RAM_ZBUFFER))[y *
+                                     NUX_SCREEN_WIDTH];
                 nu_u8_t *row_pixel
-                    = env->inst->memory + NUX_RAM_SCREEN + y * NUX_SCREEN_WIDTH;
-                for (nu_i32_t x = xmin; x < xmax; ++x)
+                    = env->inst->memory + NUX_RAM_SCREEN + y *
+                    NUX_SCREEN_WIDTH;
+                for (nu_i32_t x = xmin; x <= xmax; ++x)
                 {
                     // Compute weights
                     nu_i32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
