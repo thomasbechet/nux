@@ -392,7 +392,7 @@ nux_mesht (nux_env_t        env,
                              nu_v3(camcenter[0], camcenter[1], camcenter[2]),
                              nu_v3(camup[0], camup[1], camup[2]));
     nu_m4_t proj = nu_perspective(
-        nu_radian(fov), (nu_f32_t)viewport[2] / viewport[3], 1, 500);
+        nu_radian(fov), (nu_f32_t)viewport[2] / viewport[3], 0.05, 300);
     nu_m4_t  view_proj = nu_m4_mul(proj, view);
     nu_m4_t  model     = nu_m4(m);
     nu_m4_t  mvp       = nu_m4_mul(view_proj, model);
@@ -448,7 +448,7 @@ nux_mesht (nux_env_t        env,
             // nux_line(env, v1vp.x, v1vp.y, v2vp.x, v2vp.y, 3);
 
             nu_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
-            if (area <= 0)
+            if (area < 0)
             {
                 continue;
             }
@@ -491,7 +491,7 @@ nux_mesht (nux_env_t        env,
                     // included &= (w0 == 0) ? t0 : (w0 > 0);
                     // included &= (w1 == 0) ? t1 : (w1 > 0);
                     // included &= (w2 == 0) ? t2 : (w2 > 0);
-                    included = (w0 >= 0 && w1 >= 0 && w2 >= 0);
+                    included = (w0 > 0 && w1 > 0 && w2 > 0);
                     if (!included)
                     {
                         continue;
@@ -505,6 +505,8 @@ nux_mesht (nux_env_t        env,
                     nu_f32_t b = (nu_f32_t)w1 / (nu_f32_t)area;
                     nu_f32_t c = 1 - a - b;
 
+                    nu_f32_t depth = (a * v0.z + b * v1.z + c * v2.z);
+
                     a *= inv_vw0;
                     b *= inv_vw1;
                     c *= inv_vw2;
@@ -515,10 +517,14 @@ nux_mesht (nux_env_t        env,
                     c *= inv_sum_abc;
 
                     // Depth test
-                    nu_f32_t depth = (a * v0.z + b * v1.z + c * v2.z);
-                    if (depth < row_depth[x])
+                    nu_f32_t *pdepth = &(
+                        (nu_f32_t *)(env->inst->memory
+                                     + NUX_RAM_ZBUFFER))[y * NUX_SCREEN_WIDTH
+                                                         + x];
+                    if (depth < *pdepth)
                     {
-                        row_depth[x] = depth;
+                        // row_depth[x] = depth;
+                        *pdepth = depth;
 
                         // Texture sampling
                         // nu_f32_t px = (w0 * uv0.x + w1 * uv1.x + w2 *
@@ -532,6 +538,9 @@ nux_mesht (nux_env_t        env,
                             = (a * uv0.x + b * uv1.x + c * uv2.x) * texw;
                         nu_u32_t py
                             = (a * uv0.y + b * uv1.y + c * uv2.y) * texh;
+
+                        px %= texw;
+                        py %= texh;
 
                         nu_u32_t uvx = NU_MIN(texw - 1, px);
                         nu_u32_t uvy = NU_MIN(texh - 1, texh - 1 - py);

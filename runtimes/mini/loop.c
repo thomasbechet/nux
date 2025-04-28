@@ -105,6 +105,29 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     nux_camup(env, up.x, up.y, up.z);
 }
 
+static void
+blit_colormap (nux_env_t env)
+{
+    for (int i = 0; i < NUX_PALETTE_LEN; ++i)
+    {
+        const nux_u32_t tw     = 30;
+        const nux_u32_t th     = 10;
+        const nux_u32_t tr     = 5;
+        nux_u32_t       x      = i % tr;
+        nux_u32_t       y      = i / tr;
+        nux_u32_t       origin = NUX_SCREEN_WIDTH - tw * tr;
+        nux_u32_t       px     = x * tw;
+        nux_u32_t       py     = y * th;
+        nux_rectfill(env,
+                     origin + px,
+                     py,
+                     origin + (x + 1) * tw - 1,
+                     (y + 1) * th - 1,
+                     i);
+        nux_textfmt(env, origin + px + 1, py, 7, "%d", i);
+    }
+}
+
 #ifdef NUX_BENCHMARK
 #include <time.h>
 #endif
@@ -112,14 +135,8 @@ debug_camera (nux_env_t env, nu_f32_t dt)
 void
 loop_init (nux_env_t env)
 {
-    nux_cset(env, 0, 0x0B3954);
-    nux_cset(env, 1, 0xBFD7EA);
-    nux_cset(env, 2, 0xFF6663);
-    nux_cset(env, 3, 0xFF0000);
-    nux_cset(env, 4, 0x00FF00);
-    nux_cset(env, 5, 0x0000FF);
-    nux_cset(env, 6, 0);
-    nux_cset(env, 7, 0xFFFFFF);
+    load_blk_colormap(env);
+    // load_clown_colormap(env);
     init_debug_camera(NU_V3_ZEROS);
 }
 void
@@ -128,33 +145,6 @@ loop_update (nux_env_t env)
     nux_cls(env, 0);
     nux_clsz(env);
     nux_line(env, 150, 150, 300, 20, 2);
-
-    // nux_camviewport(env, 100, 100, 100, 100);
-
-#ifdef NUX_BENCHMARK
-    nux_campos(env, 70, 70, 70);
-    nux_camcenter(env, 0, 0, 0);
-#else
-    debug_camera(env, nux_dt(env));
-#endif
-    static nux_u32_t avg_fps = 0;
-    static nu_f32_t  sum_fps = 0;
-    sum_fps += nux_stat(env, NUX_STAT_FPS);
-    if (nux_frame(env) % 10 == 0)
-    {
-        avg_fps = (nux_u32_t)(sum_fps / 10.);
-        sum_fps = 0;
-    }
-
-    nux_cursor(env, 0, 0);
-    nux_printfmt(env, 7, "FPS:%d", avg_fps);
-    nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
-    nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
-
-    nux_circ(env, 50, 50, 10, 5);
-    nux_rectfill(env, 200, 100, 250, 150, 2);
-    nux_rect(env, 200, 100, 250, 150, 1);
-    nux_text(env, 203, 101, "Hello", 7);
 
     const nu_b3_t box = nu_b3(nu_v3s(-.5), nu_v3s(.5));
 
@@ -239,4 +229,28 @@ loop_update (nux_env_t env)
         exit(0);
     }
 #endif
+
+    // nux_camviewport(env, 100, 100, 100, 100);
+
+#ifdef NUX_BENCHMARK
+    nux_campos(env, 70, 70, 70);
+    nux_camcenter(env, 0, 0, 0);
+#else
+    debug_camera(env, nux_dt(env));
+#endif
+    static nux_u32_t avg_fps = 0;
+    static nu_f32_t  sum_fps = 0;
+    sum_fps += nux_stat(env, NUX_STAT_FPS);
+    if (nux_frame(env) % 10 == 0)
+    {
+        avg_fps = (nux_u32_t)(sum_fps / 10.);
+        sum_fps = 0;
+    }
+
+    nux_cursor(env, 0, 0);
+    nux_printfmt(env, 7, "FPS:%d", avg_fps);
+    nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
+    nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+
+    blit_colormap(env);
 }

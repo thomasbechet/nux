@@ -1,0 +1,9 @@
+#include <nux.h>
+
+static nux_u8_t {{ name }}_texture[] = {
+    {% for index in pixels -%}
+        {{ index }}{{ ',' if not loop.last else '' }}
+    {% endfor -%}
+};
+static nux_u32_t {{ name }}_texture_wdith  = {{ width }};
+static nux_u32_t {{ name }}_texture_height = {{ height }};

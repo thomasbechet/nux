@@ -1,0 +1,54 @@
+#include <nux.h>
+
+{% for obj in objects -%}
+static nux_f32_t {{ name }}_{{ obj.name }}_positions[] = {
+    {% for x, y, z in obj.positions -%}
+        {{ x }},{{ y }},{{ z }}{{ ',' if not loop.last else '' }}
+    {% endfor -%}
+};
+static nux_f32_t {{ name }}_{{ obj.name }}_uvs[] = {
+    {% for u, v in obj.uvs -%}
+        {{ u }},{{ v }}{{ ',' if not loop.last else '' }}
+    {% endfor -%}
+};
+static nux_u8_t {{ name }}_{{ obj.name }}_texture[] = {
+    {% for index in obj.tex -%}
+        {{ index }}{{ ',' if not loop.last else '' }}
+    {% endfor -%}
+};
+{% endfor -%}
+
+static struct { 
+    const nux_f32_t *positions;
+    const nux_f32_t *uvs;
+    nux_u32_t count;
+    const nux_u8_t *tex;
+    nux_u32_t texw;
+    nux_u32_t texh;
+} {{ name }}_objects[] = {
+{% for obj in objects -%}
+    { 
+        .positions = {{ name }}_{{ obj.name }}_positions,
+        .uvs = {{ name }}_{{ obj.name }}_uvs,
+        .count = {{ obj.count }},
+        .tex = {{ name }}_{{ obj.name }}_texture,
+        .texw = {{ obj.texw }},
+        .texh = {{ obj.texh }}
+    }{{ ',' if not loop.last else '' }}
+{% endfor -%}
+};
+static nux_u32_t {{ name }}_objects_count = {{ objects_count }};
+void draw_{{ name }}(nux_env_t env, const nux_f32_t *m)
+{
+    for (nux_u32_t i = 0; i < {{ name }}_objects_count; ++i)
+    {
+        nux_mesht(env,
+                  {{ name }}_objects[i].positions,
+                  {{ name }}_objects[i].uvs,
+                  {{ name }}_objects[i].count,
+                  {{ name }}_objects[i].tex,
+                  {{ name }}_objects[i].texw,
+                  {{ name }}_objects[i].texh,
+                  m);
+    }
+}
