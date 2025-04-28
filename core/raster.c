@@ -491,7 +491,7 @@ nux_mesht (nux_env_t        env,
                     // included &= (w0 == 0) ? t0 : (w0 > 0);
                     // included &= (w1 == 0) ? t1 : (w1 > 0);
                     // included &= (w2 == 0) ? t2 : (w2 > 0);
-                    included = (w0 > 0 && w1 > 0 && w2 > 0);
+                    included = (w0 >= 0 && w1 >= 0 && w2 >= 0);
                     if (!included)
                     {
                         continue;
