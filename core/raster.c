@@ -475,11 +475,9 @@ nux_mesht (nux_env_t        env,
             {
                 nu_f32_t *row_depth
                     = &((nu_f32_t *)(env->inst->memory
-                                     + NUX_RAM_ZBUFFER))[y *
-                                     NUX_SCREEN_WIDTH];
+                                     + NUX_RAM_ZBUFFER))[y * NUX_SCREEN_WIDTH];
                 nu_u8_t *row_pixel
-                    = env->inst->memory + NUX_RAM_SCREEN + y *
-                    NUX_SCREEN_WIDTH;
+                    = env->inst->memory + NUX_RAM_SCREEN + y * NUX_SCREEN_WIDTH;
                 for (nu_i32_t x = xmin; x <= xmax; ++x)
                 {
                     // Compute weights
