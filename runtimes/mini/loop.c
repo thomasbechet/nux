@@ -186,6 +186,7 @@ loop_update (nux_env_t env)
     // Draw sponza
     nu_m4_t model = nu_m4_scale(nu_v3s(1));
     draw_sponza2(env, model.data);
+    // draw_sibenik(env, model.data);
 
     // nu_m4_t model = nu_m4_scale(nu_v3s(1));
     // for (int i = 0; i < 50; ++i)
@@ -251,6 +252,7 @@ loop_update (nux_env_t env)
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
     nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
     nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+    nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
     blit_colormap(env);
 }

@@ -25,17 +25,21 @@ typedef enum
     // NUX_SCREEN_WIDTH  = 1920,
     // NUX_SCREEN_HEIGHT = 1080,
 
+    //
+    // NUX_SCREEN_WIDTH  = 800,
+    // NUX_SCREEN_HEIGHT = 600,
+
     // 16:10, too high ?
-    NUX_SCREEN_WIDTH  = 640,
-    NUX_SCREEN_HEIGHT = 400,
+    // NUX_SCREEN_WIDTH  = 640,
+    // NUX_SCREEN_HEIGHT = 400,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 640,
     // NUX_SCREEN_HEIGHT = 480,
 
     // 16:10
-    // NUX_SCREEN_WIDTH  = 512,
-    // NUX_SCREEN_HEIGHT = 320,
+    NUX_SCREEN_WIDTH  = 512,
+    NUX_SCREEN_HEIGHT = 320,
 
     // 16:10
     // NUX_SCREEN_WIDTH  = 480,
@@ -126,23 +130,36 @@ typedef enum
 typedef enum
 {
     NUX_RAM_SCREEN       = 0x0,
-    NUX_RAM_ZBUFFER      = 0x4b000,
-    NUX_RAM_COLORMAP     = 0x177000,
-    NUX_RAM_PALETTE      = 0x177300,
-    NUX_RAM_BUTTONS      = 0x177400,
-    NUX_RAM_AXIS         = 0x177420,
-    NUX_RAM_TIME         = 0x1774e0,
-    NUX_RAM_FRAME        = 0x1774e4,
-    NUX_RAM_CURSORX      = 0x1774e8,
-    NUX_RAM_CURSORY      = 0x1774ec,
-    NUX_RAM_STAT_FPS     = 0x1774f0,
-    NUX_RAM_CAM_EYE      = 0x1774f4,
-    NUX_RAM_CAM_CENTER   = 0x177500,
-    NUX_RAM_CAM_UP       = 0x17750c,
-    NUX_RAM_CAM_FOV      = 0x177518,
-    NUX_RAM_CAM_VIEWPORT = 0x17751c,
-    NUX_RAM_MODEL        = 0x17752c,
+    NUX_RAM_ZBUFFER      = 0x75300,
+    NUX_RAM_COLORMAP     = 0x249f00,
+    NUX_RAM_PALETTE      = 0x24a200,
+    NUX_RAM_BUTTONS      = 0x24a300,
+    NUX_RAM_AXIS         = 0x24a320,
+    NUX_RAM_TIME         = 0x24a3e0,
+    NUX_RAM_FRAME        = 0x24a3e4,
+    NUX_RAM_CURSORX      = 0x24a3e8,
+    NUX_RAM_CURSORY      = 0x24a3ec,
+    NUX_RAM_STAT_FPS     = 0x24a3f0,
+    NUX_RAM_CAM_EYE      = 0x24a3f4,
+    NUX_RAM_CAM_CENTER   = 0x24a400,
+    NUX_RAM_CAM_UP       = 0x24a40c,
+    NUX_RAM_CAM_FOV      = 0x24a418,
+    NUX_RAM_CAM_VIEWPORT = 0x24a41c,
+    NUX_RAM_MODEL        = 0x24a42c,
 } nux_ram_layout_t;
+
+typedef enum
+{
+    NUX_V3F,
+    NUX_V3F_T2F,
+    NUX_V3F_T2F_N3F,
+} nux_vertex_format_t;
+
+typedef enum
+{
+    NUX_TRIANGLES,
+    NUX_LINES,
+} nux_vertex_primitive_t;
 
 // Debug API
 void nux_trace(nux_env_t env, const nux_c8_t *text);
@@ -151,6 +168,7 @@ void nux_dbgf32(nux_env_t env, const nux_c8_t *name, nux_f32_t *p);
 
 // System API
 nux_u32_t nux_stat(nux_env_t env, nux_stat_t info);
+nux_u32_t nux_tricount(nux_env_t env);
 nux_f32_t nux_time(nux_env_t env);
 nux_f32_t nux_dt(nux_env_t env);
 nux_u32_t nux_frame(nux_env_t env);
@@ -206,6 +224,12 @@ void nux_mesht(nux_env_t        env,
                nux_u32_t        texw,
                nux_u32_t        texh,
                const nux_f32_t *m);
+
+void nux_bind_texture(nux_env_t       env,
+                      const nux_u8_t *data,
+                      const nux_u8_t *pal,
+                      nux_u32_t       w,
+                      nux_u32_t       h);
 
 // Draw State API
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);

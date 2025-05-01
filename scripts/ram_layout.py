@@ -1,8 +1,8 @@
 layout = [
     # ('screen', 320 * 240),
     # ('zbuffer', 320 * 240 * 4),
-    ('screen', 640 * 480),
-    ('zbuffer', 640 * 480* 4),
+    ('screen', 512 * 320 * 3),
+    ('zbuffer', 512 * 320 * 4),
     ('colormap', 256 * 3),
     ('palette', 256),
     ('buttons', 8 * 4),
@@ -26,5 +26,6 @@ for i, l in enumerate(layout):
     constant = 'NUX_RAM_' + l[0].upper()
     string += constant + '=' + '0x{:x},'.format(addr) + '\n'
     addr += l[1]
+string += 'NUX_RAM_USER=0x{:x}'.format(addr) 
 
 print(string)

@@ -6,6 +6,7 @@ init_env (nux_instance_t inst)
     inst->env.inst  = inst;
     inst->env.error = NUX_ERROR_NONE;
     nu_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
+    inst->env.tricount = 0;
     return &inst->env;
 }
 
@@ -190,6 +191,11 @@ nux_stat (nux_env_t env, nux_stat_t info)
             return NUX_MEMGET(env->inst, NUX_RAM_STAT_FPS, nux_u32_t);
     }
     return 0;
+}
+nux_u32_t
+nux_tricount (nux_env_t env)
+{
+    return env->tricount;
 }
 nux_f32_t
 nux_time (nux_env_t env)

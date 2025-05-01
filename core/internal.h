@@ -19,6 +19,7 @@ struct nux_env
     nux_instance_t inst;
     nux_error_t    error;
     nux_c8_t       error_message[256];
+    nux_u32_t      tricount;
 };
 
 struct nux_instance

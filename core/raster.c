@@ -368,6 +368,24 @@ pixel_coverage (nu_v2i_t a, nu_v2i_t b, nu_i32_t x, nu_i32_t y)
     return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
 }
 
+static inline nux_u32_t
+sample_texture (const nux_u8_t *tex,
+                const nux_u8_t *pal,
+                nux_u32_t       w,
+                nux_u32_t       h,
+                nux_u32_t       x,
+                nu_u32_t        y)
+{
+    x %= w;
+    y %= h;
+
+    nu_u32_t uvx = NU_MIN(w - 1, x);
+    nu_u32_t uvy = NU_MIN(h - 1, h - 1 - y);
+
+    // nu_u8_t c = nux_palc(env, tex[uvy * w + uvx]);
+    return 0;
+}
+
 void
 nux_mesht (nux_env_t        env,
            const nux_f32_t *positions,
@@ -405,14 +423,37 @@ nux_mesht (nux_env_t        env,
         // Apply vertex shader
         nu_v4_t vertex_positions[4];
         nu_v2_t vertex_uvs[4];
+
+        // Transform to world
         for (nu_u32_t j = 0; j < 3; ++j)
         {
-            vertex_positions[j] = vertex_shader(mvp,
-                                                positions[(i + j) * 3 + 0],
-                                                positions[(i + j) * 3 + 1],
-                                                positions[(i + j) * 3 + 2]);
-            vertex_uvs[j].x     = uvs[(i + j) * 2 + 0];
-            vertex_uvs[j].y     = uvs[(i + j) * 2 + 1];
+            // vertex_positions[j] = vertex_shader(mvp,
+            //                                     positions[(i + j) * 3 + 0],
+            //                                     positions[(i + j) * 3 + 1],
+            //                                     positions[(i + j) * 3 + 2]);
+            vertex_positions[j] = nu_m4_mulv(model,
+                                             nu_v4(positions[(i + j) * 3 + 0],
+                                                   positions[(i + j) * 3 + 1],
+                                                   positions[(i + j) * 3 + 2],
+                                                   1));
+        }
+
+        // Compute normal
+        nu_v3_t normal = nu_triangle_normal(nu_v3_v4(vertex_positions[0]),
+                                            nu_v3_v4(vertex_positions[1]),
+                                            nu_v3_v4(vertex_positions[2]));
+
+        // Transform to NDC
+        for (nu_u32_t j = 0; j < 3; ++j)
+        {
+            vertex_positions[j] = nu_m4_mulv(view_proj, vertex_positions[j]);
+        }
+
+        // Read uvs
+        for (nu_u32_t j = 0; j < 3; ++j)
+        {
+            vertex_uvs[j].x = uvs[(i + j) * 2 + 0];
+            vertex_uvs[j].y = uvs[(i + j) * 2 + 1];
         }
 
         // Clip vertices
@@ -439,9 +480,32 @@ nux_mesht (nux_env_t        env,
             nu_v4_t v1 = vertex_positions[indices[v + 1]];
             nu_v4_t v2 = vertex_positions[indices[v + 2]];
 
+            nu_v2_t uv0 = vertex_uvs[indices[v + 0]];
+            nu_v2_t uv1 = vertex_uvs[indices[v + 1]];
+            nu_v2_t uv2 = vertex_uvs[indices[v + 2]];
+
             nu_v2i_t v0vp = pos_to_viewport(vp, v0.x, v0.y);
             nu_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
             nu_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
+
+            // if (v0vp.y > v1vp.y)
+            // {
+            //     NU_SWAP(v0vp, v1vp, nu_v2i_t);
+            //     NU_SWAP(v0, v1, nu_v4_t);
+            //     NU_SWAP(uv0, uv1, nu_v2_t);
+            // }
+            // if (v0vp.y > v2vp.y)
+            // {
+            //     NU_SWAP(v0vp, v2vp, nu_v2i_t);
+            //     NU_SWAP(v0, v2, nu_v4_t);
+            //     NU_SWAP(uv0, uv2, nu_v2_t);
+            // }
+            // if (v1vp.y > v2vp.y)
+            // {
+            //     NU_SWAP(v1vp, v2vp, nu_v2i_t);
+            //     NU_SWAP(v1, v2, nu_v4_t);
+            //     NU_SWAP(uv1, uv2, nu_v2_t);
+            // }
 
             // nux_line(env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, 3);
             // nux_line(env, v0vp.x, v0vp.y, v2vp.x, v2vp.y, 3);
@@ -453,9 +517,7 @@ nux_mesht (nux_env_t        env,
                 continue;
             }
 
-            nu_v2_t uv0 = vertex_uvs[indices[v + 0]];
-            nu_v2_t uv1 = vertex_uvs[indices[v + 1]];
-            nu_v2_t uv2 = vertex_uvs[indices[v + 2]];
+            env->tricount += 1;
 
             // Keep inv weights for perspective correction
             nu_f32_t inv_vw0 = 1. / v0.w;
@@ -481,23 +543,18 @@ nux_mesht (nux_env_t        env,
                 for (nu_i32_t x = xmin; x <= xmax; ++x)
                 {
                     // Compute weights
+                    // nu_i32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
+                    // nu_i32_t w1 = pixel_coverage(v2vp, v0vp, x, y);
+                    // nu_i32_t w2 = pixel_coverage(v0vp, v1vp, x, y);
                     nu_i32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
                     nu_i32_t w1 = pixel_coverage(v2vp, v0vp, x, y);
                     nu_i32_t w2 = pixel_coverage(v0vp, v1vp, x, y);
 
-                    nu_bool_t included = NU_TRUE;
-                    // included &= (w0 == 0) ? t0 : (w0 > 0);
-                    // included &= (w1 == 0) ? t1 : (w1 > 0);
-                    // included &= (w2 == 0) ? t2 : (w2 > 0);
-                    included = (w0 >= 0 && w1 >= 0 && w2 >= 0);
+                    nu_bool_t included = (w0 >= 0 && w1 >= 0 && w2 >= 0);
                     if (!included)
                     {
                         continue;
                     }
-                    // if (!(w0 >= 0 && w1 >= 0 && w2 >= 0))
-                    // {
-                    //     continue;
-                    // }
 
                     nu_f32_t a = (nu_f32_t)w0 / (nu_f32_t)area;
                     nu_f32_t b = (nu_f32_t)w1 / (nu_f32_t)area;
@@ -543,7 +600,15 @@ nux_mesht (nux_env_t        env,
                         nu_u32_t uvx = NU_MIN(texw - 1, px);
                         nu_u32_t uvy = NU_MIN(texh - 1, texh - 1 - py);
 
-                        row_pixel[x] = nux_palc(env, tex[uvy * texw + uvx]);
+                        nu_u8_t c = nux_palc(env, tex[uvy * texw + uvx]);
+
+                        if (nu_v3_dot(normal, nu_v3_normalize(nu_v3(1, 1, 1)))
+                            < 0.5)
+                        {
+                            c = c > 32 ? 1 : 0;
+                        }
+
+                        row_pixel[x] = c;
                     }
                 }
             }
