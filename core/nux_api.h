@@ -38,12 +38,12 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 480,
 
     // 16:10
-    NUX_SCREEN_WIDTH  = 512,
-    NUX_SCREEN_HEIGHT = 320,
+    // NUX_SCREEN_WIDTH  = 512,
+    // NUX_SCREEN_HEIGHT = 320,
 
     // 16:10
-    // NUX_SCREEN_WIDTH  = 480,
-    // NUX_SCREEN_HEIGHT = 300,
+    NUX_SCREEN_WIDTH  = 480,
+    NUX_SCREEN_HEIGHT = 300,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 480,
@@ -229,6 +229,11 @@ void nux_mesh(nux_env_t        env,
               const nux_f32_t *uvs,
               nux_u32_t        count,
               const nux_f32_t *m);
+void nux_mesh_wire(nux_env_t        env,
+                   const nux_f32_t *positions,
+                   const nux_f32_t *uvs,
+                   nux_u32_t        count,
+                   const nux_f32_t *m);
 
 // Draw State API
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);

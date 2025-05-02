@@ -38,7 +38,7 @@ static struct {
 {% endfor -%}
 };
 static nux_u32_t {{ name }}_objects_count = {{ objects_count }};
-void draw_{{ name }}(nux_env_t env, const nux_f32_t *m)
+void draw_{{ name }}(nux_env_t env, const nux_f32_t *m, nux_u32_t wireframe)
 {
     for (nux_u32_t i = 0; i < {{ name }}_objects_count; ++i)
     {
@@ -47,10 +47,21 @@ void draw_{{ name }}(nux_env_t env, const nux_f32_t *m)
             {{ name }}_objects[i].texw,
             {{ name }}_objects[i].texh,
             NUX_TEXTURE_RGB);
-        nux_mesh(env,
+        if (wireframe)
+        {
+             nux_mesh(env,
                 {{ name }}_objects[i].positions,
                 {{ name }}_objects[i].uvs,
                 {{ name }}_objects[i].count,
                 m);
+        }
+        else
+        {
+             nux_mesh_wire(env,
+                {{ name }}_objects[i].positions,
+                {{ name }}_objects[i].uvs,
+                {{ name }}_objects[i].count,
+                m);
+        }
     }
 }

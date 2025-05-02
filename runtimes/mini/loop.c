@@ -185,36 +185,9 @@ loop_update (nux_env_t env)
 
     // Draw sponza
     nu_m4_t model = nu_m4_scale(nu_v3s(1));
-    draw_sponza2(env, model.data);
+    draw_sponza2(env, model.data, 1);
+    draw_sponza2(env, model.data, 0);
     // draw_sibenik(env, model.data);
-
-    // nu_m4_t model = nu_m4_scale(nu_v3s(1));
-    // for (int i = 0; i < 50; ++i)
-    // {
-    //     // model = nu_m4_mul(nu_m4_scale(nu_v3s(2)), model);
-    //     nu_m4_t        model = nu_m4_identity();
-    //     const nu_f32_t space = 5;
-    //     model                = nu_m4_mul(
-    //         model, nu_m4_translate(nu_v3(i % 10 * space, 0, i / 10 *
-    //         space)));
-    //     model = nu_m4_mul(model, nu_m4_rotate_y(nu_radian(nux_time(env) *
-    //     10))); model = nu_m4_mul(model, nu_m4_scale(nu_v3s(2)));
-    //
-    //     nux_mesht(env,
-    //               // (const nux_f32_t *)cube_positions,
-    //               // (const nux_f32_t *)cube_uvs,
-    //               // NU_ARRAY_SIZE(cube_positions),
-    //               suzane_mesh_positions,
-    //               suzane_mesh_uvs,
-    //               suzane_mesh_count,
-    //               // horror_texture,
-    //               // horror_texture_wdith,
-    //               // horror_texture_height,
-    //               prototype_texture,
-    //               prototype_texture_wdith,
-    //               prototype_texture_height,
-    //               model.data);
-    // }
 
 #ifdef NUX_BENCHMARK
     static double sum   = 0;

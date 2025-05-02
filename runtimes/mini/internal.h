@@ -48,6 +48,6 @@ void loop_update(nux_env_t env);
 
 void load_blk_colormap(nux_env_t env);
 void draw_sibenik(nux_env_t env, const nux_f32_t *m);
-void draw_sponza2(nux_env_t env, const nux_f32_t *m);
+void draw_sponza2(nux_env_t env, const nux_f32_t *m, nux_u32_t wireframe);
 
 #endif

@@ -7,8 +7,8 @@ def compile_texture(name, path, palette=None):
     img = Image.open(path).convert('RGB')
 
     w, h = img.size
-    # if w > 128 or h > 128:
-    #     img.resize((128, 128))
+    if w > 128 or h > 128:
+        img.resize((128, 128))
     
     if palette:
         pal = generate_palette(palette)
