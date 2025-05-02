@@ -72,3 +72,6 @@ build/**/*
 
 # Vscode
 .vscode
+
+runtimes/mini/sponza2_model.inc.c
+runtimes/mini/sibenik_model.inc.c

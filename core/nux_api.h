@@ -38,12 +38,12 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 480,
 
     // 16:10
-    // NUX_SCREEN_WIDTH  = 512,
-    // NUX_SCREEN_HEIGHT = 320,
+    NUX_SCREEN_WIDTH  = 512,
+    NUX_SCREEN_HEIGHT = 320,
 
     // 16:10
-    NUX_SCREEN_WIDTH  = 480,
-    NUX_SCREEN_HEIGHT = 300,
+    // NUX_SCREEN_WIDTH  = 480,
+    // NUX_SCREEN_HEIGHT = 300,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 480,
@@ -130,23 +130,24 @@ typedef enum
 typedef enum
 {
     NUX_RAM_SCREEN       = 0x0,
-    NUX_RAM_ZBUFFER      = 0x78000,
-    NUX_RAM_COLORMAP     = 0x118000,
-    NUX_RAM_PALETTE      = 0x118300,
-    NUX_RAM_BUTTONS      = 0x118400,
-    NUX_RAM_AXIS         = 0x118420,
-    NUX_RAM_TIME         = 0x1184e0,
-    NUX_RAM_FRAME        = 0x1184e4,
-    NUX_RAM_CURSORX      = 0x1184e8,
-    NUX_RAM_CURSORY      = 0x1184ec,
-    NUX_RAM_STAT_FPS     = 0x1184f0,
-    NUX_RAM_CAM_EYE      = 0x1184f4,
-    NUX_RAM_CAM_CENTER   = 0x118500,
-    NUX_RAM_CAM_UP       = 0x11850c,
-    NUX_RAM_CAM_FOV      = 0x118518,
-    NUX_RAM_CAM_VIEWPORT = 0x11851c,
-    NUX_RAM_MODEL        = 0x11852c,
-    NUX_RAM_USER         = 0x11856c
+    NUX_RAM_ZBUFFER      = 0x50000,
+    NUX_RAM_COLORMAP     = 0xf0000,
+    NUX_RAM_PALETTE      = 0xf0200,
+    NUX_RAM_BUTTONS      = 0xf0300,
+    NUX_RAM_AXIS         = 0xf0320,
+    NUX_RAM_TIME         = 0xf03e0,
+    NUX_RAM_FRAME        = 0xf03e4,
+    NUX_RAM_CURSORX      = 0xf03e8,
+    NUX_RAM_CURSORY      = 0xf03ec,
+    NUX_RAM_STAT_FPS     = 0xf03f0,
+    NUX_RAM_CAM_EYE      = 0xf03f4,
+    NUX_RAM_CAM_CENTER   = 0xf0400,
+    NUX_RAM_CAM_UP       = 0xf040c,
+    NUX_RAM_CAM_FOV      = 0xf0418,
+    NUX_RAM_CAM_VIEWPORT = 0xf041c,
+    NUX_RAM_MODEL        = 0xf042c,
+    NUX_RAM_USER         = 0xf046c
+
 } nux_ram_layout_t;
 
 typedef enum
@@ -240,7 +241,7 @@ void      nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t c);
 void      nux_zset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth);
 nux_f32_t nux_zget(nux_env_t env, nux_i32_t x, nux_i32_t y);
 nux_u32_t nux_cget(nux_env_t env, nux_u8_t index);
-void      nux_cset(nux_env_t env, nux_u8_t index, nux_u32_t c);
+void      nux_cset(nux_env_t env, nux_u8_t index, nux_u16_t c);
 
 nux_u8_t *nux_screen(nux_env_t env);
 void      nux_set_target_color(nux_env_t env,

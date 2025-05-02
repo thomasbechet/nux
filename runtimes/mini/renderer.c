@@ -176,8 +176,10 @@ renderer_init (void)
                  NUX_SCREEN_WIDTH,
                  NUX_SCREEN_HEIGHT,
                  0,
-                 GL_RGB,
-                 GL_UNSIGNED_BYTE,
+                 // GL_BGRA,
+                 // GL_RGBA,
+                 GL_BGRA,
+                 GL_UNSIGNED_SHORT_1_5_5_5_REV,
                  NU_NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -251,8 +253,8 @@ renderer_render_instance (nux_instance_t inst,
                     0,
                     NUX_SCREEN_WIDTH,
                     NUX_SCREEN_HEIGHT,
-                    GL_RGB,
-                    GL_UNSIGNED_BYTE,
+                    GL_BGRA,
+                    GL_UNSIGNED_SHORT_1_5_5_5_REV,
                     nux_instance_get_screen(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
 

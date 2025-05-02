@@ -82,7 +82,7 @@ nux_text (
                 nux_pset(env, px, py, c);
 
                 // Apply shadow
-                nux_pset(env, px + 1, py + 1, c + 1);
+                nux_pset(env, px + 1, py + 1, 0);
             }
         }
 
@@ -151,17 +151,17 @@ nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
     NUX_MEMSET(env->inst, NUX_RAM_CURSORX, nux_i32_t, x);
     NUX_MEMSET(env->inst, NUX_RAM_CURSORY, nux_i32_t, y);
 }
-nux_u32_t
+nux_u16_t
 nux_cget (nux_env_t env, nux_u8_t index)
 {
     nux_u8_t *map = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
-    return NUX_RGB(map + index * 3);
+    return NUX_DECODE_COLOR(map, index);
 }
 void
-nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
+nux_cset (nux_env_t env, nux_u8_t index, nux_u16_t color)
 {
     nux_u8_t *map = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
-    NUX_WRITE_RGB(&map[index * 3], color);
+    NUX_ENCODE_COLOR(map, index, color);
 }
 void
 nux_cameye (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)

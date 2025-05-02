@@ -14,12 +14,17 @@
 #define NUX_MEMSET(inst, addr, type, val) \
     *(type *)((inst)->memory + (addr)) = (val)
 
-#define NUX_RGB(p) \
-    (nux_u32_t)(p)[0] << 16 | (nux_u32_t)(p)[1] << 8 | (nux_u32_t)(p)[2];
-#define NUX_WRITE_RGB(p, rgb)        \
-    (p)[0] = (rgb & 0xFF0000) >> 16; \
-    (p)[1] = (rgb & 0x00FF00) >> 8;  \
-    (p)[2] = (rgb & 0x0000FF) >> 0;
+#define NUX_MAKE_COLOR(r, g, b) \
+    (nux_u16_t)((b % 32) + ((g % 32) << 5) + ((r % 32) << 10))
+#define NUX_SPLIT_COLOR(c, r, g, b) \
+    (r) = ((c) & 0x7C00) >> 10;     \
+    (g) = ((c) & 0x3E0) >> 5;       \
+    (b) = (c) & 0x1F;
+#define NUX_DECODE_COLOR(p, i) \
+    ((((nux_u16_t)(p)[(i) * 2 + 1])) << 8) | ((nux_u16_t)(p)[(i) * 2 + 0])
+#define NUX_ENCODE_COLOR(p, i, c) \
+    (p)[(i) * 2 + 1] = (c) >> 8;  \
+    (p)[(i) * 2 + 0] = (c) & 0xFF;
 
 struct nux_env
 {

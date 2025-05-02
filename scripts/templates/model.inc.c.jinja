@@ -12,8 +12,8 @@ static nux_f32_t {{ name }}_{{ obj.name }}_uvs[] = {
     {% endfor -%}
 };
 static nux_u8_t {{ name }}_{{ obj.name }}_texture[] = {
-    {% for index in obj.tex -%}
-        {{ index }}{{ ',' if not loop.last else '' }}
+    {% for data in obj.tex -%}
+        {{ '0x{:X}'.format(data) }}{{ ',' if not loop.last else '' }}
     {% endfor -%}
 };
 {% endfor -%}

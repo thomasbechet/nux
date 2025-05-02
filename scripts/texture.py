@@ -17,7 +17,17 @@ def compile_texture(name, path, palette=None):
 
     pixels = list(img.getdata())
     if not palette: # Flatten pixels RGB
-        pixels = [c for rgb in pixels for c in rgb] 
+        pbytes = []
+        for (r, g, b) in pixels:
+            def convert(x):
+                return (x * 249 + 1024) >> 11
+            rgb = (convert(b) + (convert(g) << 5) + (convert(r) << 10))
+            assert(rgb >= 0)
+            l = (rgb & 0xFF)
+            h = ((rgb >> 8) & 0xFF) 
+            pbytes.append(l)
+            pbytes.append(h)
+            pixels = pbytes
     width, height = img.size
     
     return pixels, width, height

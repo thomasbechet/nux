@@ -26,9 +26,9 @@ nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
     NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return);
     NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return);
 
-    nux_u32_t c = nux_cget(env, nux_palc(env, color));
-    NUX_WRITE_RGB(
-        &env->inst->memory[NUX_RAM_SCREEN + (y * NUX_SCREEN_WIDTH + x) * 3], c);
+    nux_u16_t c = nux_cget(env, nux_palc(env, color));
+    NUX_ENCODE_COLOR(
+        env->inst->memory + NUX_RAM_SCREEN, y * NUX_SCREEN_WIDTH + x, c);
 }
 void
 nux_zset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth)
@@ -363,7 +363,7 @@ pixel_coverage (nu_v2i_t a, nu_v2i_t b, nu_i32_t x, nu_i32_t y)
     return (x - a.x) * (b.y - a.y) - (y - a.y) * (b.x - a.x);
 }
 
-static inline nux_u32_t
+static inline nux_u16_t
 sample_texture (nux_env_t env, nux_f32_t u, nux_f32_t v)
 {
     nu_u32_t tw = env->texture_size.x;
@@ -385,21 +385,21 @@ sample_texture (nux_env_t env, nux_f32_t u, nux_f32_t v)
         case NUX_TEXTURE_PAL:
             return nux_cget(env, nux_palc(env, env->texture_data[y * tw + x]));
         case NUX_TEXTURE_RGB:
-            return NUX_RGB(env->texture_data + (y * tw + x) * 3);
+            return NUX_DECODE_COLOR(env->texture_data, y * tw + x);
         default:
             return 0;
     }
 }
 
-static inline nux_u32_t
-blend_color (nux_u32_t src, nux_u32_t dst, nux_f32_t a)
+static inline nux_u16_t
+blend_color (nux_u16_t src, nux_u16_t dst, nux_f32_t a)
 {
-    nu_u8_t rgb[3];
-    NUX_WRITE_RGB(rgb, src);
-    rgb[0] = (nux_f32_t)rgb[0] * a;
-    rgb[1] = (nux_f32_t)rgb[1] * a;
-    rgb[2] = (nux_f32_t)rgb[2] * a;
-    return NUX_RGB(rgb);
+    nu_u8_t r, g, b;
+    NUX_SPLIT_COLOR(src, r, g, b);
+    r = (nux_f32_t)r * a;
+    g = (nux_f32_t)g * a;
+    b = (nux_f32_t)b * a;
+    return NUX_MAKE_COLOR(r, g, b);
 }
 
 void
@@ -501,34 +501,11 @@ nux_mesh (nux_env_t        env,
             nu_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
             nu_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
 
-            // if (v0vp.y > v1vp.y)
-            // {
-            //     NU_SWAP(v0vp, v1vp, nu_v2i_t);
-            //     NU_SWAP(v0, v1, nu_v4_t);
-            //     NU_SWAP(uv0, uv1, nu_v2_t);
-            // }
-            // if (v0vp.y > v2vp.y)
-            // {
-            //     NU_SWAP(v0vp, v2vp, nu_v2i_t);
-            //     NU_SWAP(v0, v2, nu_v4_t);
-            //     NU_SWAP(uv0, uv2, nu_v2_t);
-            // }
-            // if (v1vp.y > v2vp.y)
-            // {
-            //     NU_SWAP(v1vp, v2vp, nu_v2i_t);
-            //     NU_SWAP(v1, v2, nu_v4_t);
-            //     NU_SWAP(uv1, uv2, nu_v2_t);
-            // }
-
-            // nux_line(env, v0vp.x, v0vp.y, v1vp.x, v1vp.y, 3);
-            // nux_line(env, v0vp.x, v0vp.y, v2vp.x, v2vp.y, 3);
-            // nux_line(env, v1vp.x, v1vp.y, v2vp.x, v2vp.y, 3);
-
             nu_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
-            if (area < 0)
-            {
-                continue;
-            }
+            // if (area < 0)
+            // {
+            //     continue;
+            // }
 
             env->tricount += 1;
 
@@ -593,21 +570,32 @@ nux_mesh (nux_env_t        env,
 
                         nux_f32_t u = a * uv0.x + b * uv1.x + c * uv2.x;
                         nux_f32_t v = a * uv0.y + b * uv1.y + c * uv2.y;
-                        nux_u32_t c = sample_texture(env, u, v);
+                        nux_u16_t c = sample_texture(env, u, v);
 
-                        nu_f32_t t = nux_time(env);
-                        nu_v3_t  sun
-                            = nu_v3_normalize(nu_v3(nu_sin(t), 1, nu_cos(t)));
-                        nu_f32_t dot = NU_MAX(0.5, nu_v3_dot(normal, sun));
-                        c            = blend_color(c, 0, dot);
+                        // nu_f32_t t = nux_time(env);
+                        // nu_v3_t  sun
+                        //     = nu_v3_normalize(nu_v3(nu_sin(t), 1,
+                        //     nu_cos(t)));
+                        // nu_f32_t dot = NU_MAX(0.5, nu_v3_dot(normal, sun));
+                        // c            = blend_color(c, 0, dot);
 
-                        NUX_WRITE_RGB(
-                            &env->inst
-                                 ->memory[NUX_RAM_SCREEN
-                                          + (y * NUX_SCREEN_WIDTH + x) * 3],
-                            c);
+                        NUX_ENCODE_COLOR(env->inst->memory + NUX_RAM_SCREEN,
+                                         y * NUX_SCREEN_WIDTH + x,
+                                         c);
                     }
                 }
+            }
+
+            {
+                nu_u32_t x0 = NU_CLAMP(v0vp.x, 0, NUX_SCREEN_WIDTH);
+                nu_u32_t x1 = NU_CLAMP(v1vp.x, 0, NUX_SCREEN_WIDTH);
+                nu_u32_t x2 = NU_CLAMP(v2vp.x, 0, NUX_SCREEN_WIDTH);
+                nu_u32_t y0 = NU_CLAMP(v0vp.y, 0, NUX_SCREEN_HEIGHT);
+                nu_u32_t y1 = NU_CLAMP(v1vp.y, 0, NUX_SCREEN_HEIGHT);
+                nu_u32_t y2 = NU_CLAMP(v2vp.y, 0, NUX_SCREEN_HEIGHT);
+                nux_line(env, x0, y0, x1, y1, 0);
+                nux_line(env, x0, y0, x2, y2, 0);
+                nux_line(env, x1, y1, x2, y2, 0);
             }
         }
     }
