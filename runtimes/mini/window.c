@@ -50,7 +50,7 @@ window_init (void)
         fprintf(stderr, "Failed to create RGFW window");
         return NU_FAILURE;
     }
-    RGFW_window_swapInterval(window.win, 1);
+    // RGFW_window_swapInterval(window.win, 1);
     window.prev_time = RGFW_getTimeNS();
 
     // Initialize viewport

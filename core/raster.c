@@ -716,3 +716,63 @@ nux_mesh_wire (nux_env_t        env,
 {
     raster_wire_triangles(env, positions, uvs, count, m);
 }
+void
+nux_draw_cube (
+    nux_env_t env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz, const nux_f32_t *m)
+{
+    const nu_b3_t box = nu_b3(NU_V3_ZEROS, nu_v3(sx / 2, sy / 2, sz / 2));
+
+    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
+    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
+    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
+    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
+
+    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
+    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
+    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
+    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
+
+    const nu_v3_t positions[]
+        = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
+            v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
+            v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
+
+    const nu_v2_t uvs[] = {
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } }, { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 0, 0 } }, { { 0, 1 } }, { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } }, { { 1, 0 } },
+        { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } },
+        { { 0, 1 } }, { { 1, 1 } }, { { 1, 1 } }, { { 1, 0 } }, { { 0, 0 } },
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } },
+    };
+
+    nux_mesh(env,
+             (const nux_f32_t *)positions,
+             (const nux_f32_t *)uvs,
+             NU_ARRAY_SIZE(positions),
+             m);
+}
+void
+nux_draw_plane (nux_env_t env, nux_f32_t w, nux_f32_t h, const nux_f32_t *m)
+{
+    const nu_v3_t v0 = nu_v3(0, 0, 0);
+    const nu_v3_t v1 = nu_v3(w, 0, 0);
+    const nu_v3_t v2 = nu_v3(w, 0, h);
+    const nu_v3_t v3 = nu_v3(0, 0, h);
+
+    const nu_v3_t positions[] = {
+        // v0, v1, v2, v2, v3, v0,
+        v0, v2, v1, v3, v2, v0,
+    };
+
+    const nu_v2_t uvs[] = { { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } },
+                            { { 0, 1 } }, { { 1, 1 } }, { { 0, 0 } } };
+
+    nux_mesh(env,
+             (const nux_f32_t *)positions,
+             (const nux_f32_t *)uvs,
+             NU_ARRAY_SIZE(positions),
+             m);
+}

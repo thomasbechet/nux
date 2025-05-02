@@ -1,8 +1,8 @@
 layout = [
-    # ('screen', 320 * 240),
-    # ('zbuffer', 320 * 240 * 4),
-    ('screen', 512 * 320 * 2),
-    ('zbuffer', 512 * 320 * 4),
+    # ('screen', 512 * 320 * 2),
+    # ('zbuffer', 512 * 320 * 4),
+    ('screen', 512 * 320 * 2 * 4),
+    ('zbuffer', 512 * 320 * 4 * 4),
     ('colormap', 256 * 2),
     ('palette', 256),
     ('buttons', 8 * 4),

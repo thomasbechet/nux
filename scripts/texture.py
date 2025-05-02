@@ -3,6 +3,9 @@ from jinja2 import Environment, FileSystemLoader
 from colormap import load_palette
 import argparse
 
+def convert(x):
+    return (x * 249 + 1024) >> 11
+
 def compile_texture(name, path, palette=None):
     img = Image.open(path).convert('RGB')
 
@@ -19,8 +22,6 @@ def compile_texture(name, path, palette=None):
     if not palette: # Flatten pixels RGB
         pbytes = []
         for (r, g, b) in pixels:
-            def convert(x):
-                return (x * 249 + 1024) >> 11
             rgb = (convert(b) + (convert(g) << 5) + (convert(r) << 10))
             assert(rgb >= 0)
             l = (rgb & 0xFF)
@@ -36,7 +37,11 @@ def generate_palette(path):
     pal = load_palette(path)
     palette = []
     for p in pal:
-        palette.extend([p[0], p[1], p[2]])
+        palette.extend([
+            convert(p[0]), 
+            convert(p[1]), 
+            convert(p[2])]
+            )
     for _ in range(256 - len(pal)):
         palette.extend(pal[0][:3])
         # palette.extend([0, 0, 0])

@@ -5,7 +5,7 @@ static nux_u32_t {{ name }}_colormap[] = {
         {{ '0x{:02x}{:02x}{:02x}'.format(r, g, b) }}{{ ',' if not loop.last else '' }}
     {% endfor -%}
 };
-static void load_{{ name }}_colormap(nux_env_t env)
+void load_{{ name }}_colormap(nux_env_t env)
 {
     for (nux_u8_t i = 0; i < sizeof({{ name }}_colormap) / sizeof({{ name }}_colormap[0]); ++i)
     {

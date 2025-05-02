@@ -130,24 +130,23 @@ typedef enum
 typedef enum
 {
     NUX_RAM_SCREEN       = 0x0,
-    NUX_RAM_ZBUFFER      = 0x50000,
-    NUX_RAM_COLORMAP     = 0xf0000,
-    NUX_RAM_PALETTE      = 0xf0200,
-    NUX_RAM_BUTTONS      = 0xf0300,
-    NUX_RAM_AXIS         = 0xf0320,
-    NUX_RAM_TIME         = 0xf03e0,
-    NUX_RAM_FRAME        = 0xf03e4,
-    NUX_RAM_CURSORX      = 0xf03e8,
-    NUX_RAM_CURSORY      = 0xf03ec,
-    NUX_RAM_STAT_FPS     = 0xf03f0,
-    NUX_RAM_CAM_EYE      = 0xf03f4,
-    NUX_RAM_CAM_CENTER   = 0xf0400,
-    NUX_RAM_CAM_UP       = 0xf040c,
-    NUX_RAM_CAM_FOV      = 0xf0418,
-    NUX_RAM_CAM_VIEWPORT = 0xf041c,
-    NUX_RAM_MODEL        = 0xf042c,
-    NUX_RAM_USER         = 0xf046c
-
+    NUX_RAM_ZBUFFER      = 0x140000,
+    NUX_RAM_COLORMAP     = 0x3c0000,
+    NUX_RAM_PALETTE      = 0x3c0200,
+    NUX_RAM_BUTTONS      = 0x3c0300,
+    NUX_RAM_AXIS         = 0x3c0320,
+    NUX_RAM_TIME         = 0x3c03e0,
+    NUX_RAM_FRAME        = 0x3c03e4,
+    NUX_RAM_CURSORX      = 0x3c03e8,
+    NUX_RAM_CURSORY      = 0x3c03ec,
+    NUX_RAM_STAT_FPS     = 0x3c03f0,
+    NUX_RAM_CAM_EYE      = 0x3c03f4,
+    NUX_RAM_CAM_CENTER   = 0x3c0400,
+    NUX_RAM_CAM_UP       = 0x3c040c,
+    NUX_RAM_CAM_FOV      = 0x3c0418,
+    NUX_RAM_CAM_VIEWPORT = 0x3c041c,
+    NUX_RAM_MODEL        = 0x3c042c,
+    NUX_RAM_USER         = 0x3c046c
 } nux_ram_layout_t;
 
 typedef enum
@@ -234,6 +233,15 @@ void nux_mesh_wire(nux_env_t        env,
                    const nux_f32_t *uvs,
                    nux_u32_t        count,
                    const nux_f32_t *m);
+void nux_draw_cube(nux_env_t        env,
+                   nux_f32_t        sx,
+                   nux_f32_t        sy,
+                   nux_f32_t        sz,
+                   const nux_f32_t *m);
+void nux_draw_plane(nux_env_t        env,
+                    nux_f32_t        w,
+                    nux_f32_t        h,
+                    const nux_f32_t *m);
 
 // Draw State API
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);

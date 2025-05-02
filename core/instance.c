@@ -200,7 +200,7 @@ nux_time (nux_env_t env)
 nux_f32_t
 nux_dt (nux_env_t env)
 {
-    return 1. / 60;
+    return 1. / 144;
 }
 nux_u32_t
 nux_frame (nux_env_t env)

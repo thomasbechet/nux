@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "nux_api.h"
 
 static struct
 {
@@ -34,10 +35,13 @@ init_debug_camera (nu_v3_t pos)
 static void
 debug_camera (nux_env_t env, nu_f32_t dt)
 {
+    // nux_f32_t vel = nu_v3_norm(freecam.vel);
+    // nux_f32_t bob = nu_sin(nux_time(env) * 0.1 * vel * (2 * NU_PI));
+    nux_f32_t bob = 0;
+
     nu_v3_t look = nu_v3(nux_axis(env, freecam.player, NUX_AXIS_RIGHTX) * 100,
                          nux_axis(env, freecam.player, NUX_AXIS_RIGHTY) * 100,
                          0);
-
     nu_v3_t move = nu_v3(nux_axis(env, freecam.player, NUX_AXIS_LEFTX),
                          0,
                          nux_axis(env, freecam.player, NUX_AXIS_LEFTY));
@@ -76,11 +80,11 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     // Apply movement
     if (nu_v3_norm(direction) > 0.001)
     {
-        force = nu_v3_add(force, nu_v3_muls(direction, 9));
+        force = nu_v3_add(force, nu_v3_muls(direction, 3));
     }
 
     // Apply drag
-    force = nu_v3_add(force, nu_v3_muls(freecam.vel, -0.5));
+    force = nu_v3_add(force, nu_v3_muls(freecam.vel, -1));
 
     // Integrate
     freecam.pos     = nu_v3_add(freecam.pos,
@@ -100,7 +104,7 @@ debug_camera (nux_env_t env, nu_f32_t dt)
     nu_v3_t center = nu_v3_add(pos, nu_q4_mulv3(freecam.rot, NU_V3_FORWARD));
     nu_v3_t up     = nu_v3_normalize(nu_q4_mulv3(freecam.rot, NU_V3_UP));
 
-    nux_cameye(env, pos.x, pos.y, pos.z);
+    nux_cameye(env, pos.x + bob * 0.1, pos.y + bob * 0.1, pos.z);
     nux_camcenter(env, center.x, center.y, center.z);
     nux_camup(env, up.x, up.y, up.z);
 }
@@ -146,48 +150,30 @@ loop_update (nux_env_t env)
     nux_clsz(env);
     nux_line(env, 150, 150, 300, 20, 2);
 
-    const nu_b3_t box = nu_b3(nu_v3s(-.5), nu_v3s(.5));
-
-    const nu_v3_t v0 = nu_v3(box.min.x, box.min.y, box.min.z);
-    const nu_v3_t v1 = nu_v3(box.max.x, box.min.y, box.min.z);
-    const nu_v3_t v2 = nu_v3(box.max.x, box.min.y, box.max.z);
-    const nu_v3_t v3 = nu_v3(box.min.x, box.min.y, box.max.z);
-
-    const nu_v3_t v4 = nu_v3(box.min.x, box.max.y, box.min.z);
-    const nu_v3_t v5 = nu_v3(box.max.x, box.max.y, box.min.z);
-    const nu_v3_t v6 = nu_v3(box.max.x, box.max.y, box.max.z);
-    const nu_v3_t v7 = nu_v3(box.min.x, box.max.y, box.max.z);
-
-    const nu_v3_t cube_positions[]
-        = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
-            v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
-            v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
-
-    const nu_v2_t cube_uvs[] = {
-        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
-        { { 0, 0 } }, { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } }, { { 1, 1 } },
-        { { 0, 0 } }, { { 0, 1 } }, { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } },
-        { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } }, { { 1, 0 } },
-        { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } },
-        { { 0, 1 } }, { { 1, 1 } }, { { 1, 1 } }, { { 1, 0 } }, { { 0, 0 } },
-        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
-        { { 0, 0 } },
-    };
-
-    const nu_u8_t cube_texture[16]
-        = { 1, 2, 3, 2, 3, 2, 1, 2, 1, 0, 5, 6, 1, 3, 3, 0 };
-    const nu_v2u_t cube_texture_size = nu_v2u(4, 4);
-
 #ifdef NUX_BENCHMARK
     clock_t t;
     t = clock();
 #endif
 
-    // Draw sponza
     nu_m4_t model = nu_m4_scale(nu_v3s(1));
-    draw_sponza2(env, model.data, 1);
-    draw_sponza2(env, model.data, 0);
-    // draw_sibenik(env, model.data);
+    for (int i = 0; i < 10; ++i)
+    {
+        draw_red(env, model.data, 1);
+        // draw_red(env, model.data, 0);
+        model = nu_m4_mul(model, nu_m4_translate(nu_v3(1.5, 0, 0)));
+    }
+    model          = nu_m4_translate(nu_v3(-3, 0, -2.5));
+    nux_u8_t color = 26;
+    nux_bind_texture(env, &color, 1, 1, NUX_TEXTURE_PAL);
+    nux_draw_plane(env, 20, 5, model.data);
+
+    nux_clsz(env);
+    nux_cameye(env, 0, 0, 0);
+    nux_camcenter(env, 0, 0, -1);
+    nux_camup(env, 0, 1, 0);
+    color = 15;
+    model = nu_m4_translate(nu_v3(0.2, -0.2, -1));
+    nux_draw_cube(env, 0.2, 0.2, 1, model.data);
 
 #ifdef NUX_BENCHMARK
     static double sum   = 0;
