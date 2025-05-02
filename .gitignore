@@ -68,6 +68,7 @@ build/**/*
 
 # Python
 **/venv
+**/__pycache__
 
 # Vscode
 .vscode

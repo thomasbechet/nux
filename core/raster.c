@@ -25,15 +25,10 @@ nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
 {
     NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return);
     NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return);
-    env->inst->memory[NUX_RAM_SCREEN + y * NUX_SCREEN_WIDTH + x]
-        = nux_palc(env, color);
-}
-nux_u8_t
-nux_pget (nux_env_t env, nux_i32_t x, nux_i32_t y)
-{
-    NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return 0);
-    NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return 0);
-    return env->inst->memory[NUX_RAM_SCREEN + y * NUX_SCREEN_WIDTH + x];
+
+    nux_u32_t c = nux_cget(env, nux_palc(env, color));
+    NUX_WRITE_RGB(
+        &env->inst->memory[NUX_RAM_SCREEN + (y * NUX_SCREEN_WIDTH + x) * 3], c);
 }
 void
 nux_zset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth)
@@ -369,32 +364,50 @@ pixel_coverage (nu_v2i_t a, nu_v2i_t b, nu_i32_t x, nu_i32_t y)
 }
 
 static inline nux_u32_t
-sample_texture (const nux_u8_t *tex,
-                const nux_u8_t *pal,
-                nux_u32_t       w,
-                nux_u32_t       h,
-                nux_u32_t       x,
-                nu_u32_t        y)
+sample_texture (nux_env_t env, nux_f32_t u, nux_f32_t v)
 {
-    x %= w;
-    y %= h;
+    nu_u32_t tw = env->texture_size.x;
+    nu_u32_t th = env->texture_size.y;
 
-    nu_u32_t uvx = NU_MIN(w - 1, x);
-    nu_u32_t uvy = NU_MIN(h - 1, h - 1 - y);
+    // Point based filtering
+    nux_i32_t x = (nux_i32_t)(u * (nu_f32_t)tw);
+    nux_i32_t y = (nux_i32_t)(v * (nu_f32_t)th);
 
-    // nu_u8_t c = nux_palc(env, tex[uvy * w + uvx]);
-    return 0;
+    // Texture wrapping
+    x = ((x % tw) + tw) % tw;
+    y = ((y % th) + th) % th;
+
+    // Inverse y coordinate
+    y = th - y - 1;
+
+    switch (env->texture_type)
+    {
+        case NUX_TEXTURE_PAL:
+            return nux_cget(env, nux_palc(env, env->texture_data[y * tw + x]));
+        case NUX_TEXTURE_RGB:
+            return NUX_RGB(env->texture_data + (y * tw + x) * 3);
+        default:
+            return 0;
+    }
+}
+
+static inline nux_u32_t
+blend_color (nux_u32_t src, nux_u32_t dst, nux_f32_t a)
+{
+    nu_u8_t rgb[3];
+    NUX_WRITE_RGB(rgb, src);
+    rgb[0] = (nux_f32_t)rgb[0] * a;
+    rgb[1] = (nux_f32_t)rgb[1] * a;
+    rgb[2] = (nux_f32_t)rgb[2] * a;
+    return NUX_RGB(rgb);
 }
 
 void
-nux_mesht (nux_env_t        env,
-           const nux_f32_t *positions,
-           const nux_f32_t *uvs,
-           nux_u32_t        count,
-           const nux_u8_t  *tex,
-           nux_u32_t        texw,
-           nux_u32_t        texh,
-           const nux_f32_t *m)
+nux_mesh (nux_env_t        env,
+          const nux_f32_t *positions,
+          const nux_f32_t *uvs,
+          nux_u32_t        count,
+          const nux_f32_t *m)
 {
     const nu_f32_t *cameye
         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nu_f32_t);
@@ -543,9 +556,6 @@ nux_mesht (nux_env_t        env,
                 for (nu_i32_t x = xmin; x <= xmax; ++x)
                 {
                     // Compute weights
-                    // nu_i32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
-                    // nu_i32_t w1 = pixel_coverage(v2vp, v0vp, x, y);
-                    // nu_i32_t w2 = pixel_coverage(v0vp, v1vp, x, y);
                     nu_i32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
                     nu_i32_t w1 = pixel_coverage(v2vp, v0vp, x, y);
                     nu_i32_t w2 = pixel_coverage(v0vp, v1vp, x, y);
@@ -581,34 +591,21 @@ nux_mesht (nux_env_t        env,
                         // row_depth[x] = depth;
                         *pdepth = depth;
 
-                        // Texture sampling
-                        // nu_f32_t px = (w0 * uv0.x + w1 * uv1.x + w2 *
-                        // uv2.x)
-                        //               * cube_texture_size.x;
-                        // nu_f32_t py = (w0 * uv0.y + w1 * uv1.y + w2 *
-                        // uv2.y)
-                        //               * cube_texture_size.y;
+                        nux_f32_t u = a * uv0.x + b * uv1.x + c * uv2.x;
+                        nux_f32_t v = a * uv0.y + b * uv1.y + c * uv2.y;
+                        nux_u32_t c = sample_texture(env, u, v);
 
-                        nu_u32_t px
-                            = (a * uv0.x + b * uv1.x + c * uv2.x) * texw;
-                        nu_u32_t py
-                            = (a * uv0.y + b * uv1.y + c * uv2.y) * texh;
+                        nu_f32_t t = nux_time(env);
+                        nu_v3_t  sun
+                            = nu_v3_normalize(nu_v3(nu_sin(t), 1, nu_cos(t)));
+                        nu_f32_t dot = NU_MAX(0.5, nu_v3_dot(normal, sun));
+                        c            = blend_color(c, 0, dot);
 
-                        px %= texw;
-                        py %= texh;
-
-                        nu_u32_t uvx = NU_MIN(texw - 1, px);
-                        nu_u32_t uvy = NU_MIN(texh - 1, texh - 1 - py);
-
-                        nu_u8_t c = nux_palc(env, tex[uvy * texw + uvx]);
-
-                        if (nu_v3_dot(normal, nu_v3_normalize(nu_v3(1, 1, 1)))
-                            < 0.5)
-                        {
-                            c = c > 32 ? 1 : 0;
-                        }
-
-                        row_pixel[x] = c;
+                        NUX_WRITE_RGB(
+                            &env->inst
+                                 ->memory[NUX_RAM_SCREEN
+                                          + (y * NUX_SCREEN_WIDTH + x) * 3],
+                            c);
                     }
                 }
             }

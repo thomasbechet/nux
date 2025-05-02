@@ -4,10 +4,7 @@
 
 static struct
 {
-    GLuint render_surface_program;
     GLuint screen_blit_program;
-    GLuint indices_texture;
-    GLuint colormap_texture;
     GLuint surface_texture;
     GLuint surface_fbo;
 } renderer;
@@ -170,51 +167,6 @@ renderer_init (void)
                 0);
     glUseProgram(0);
 
-    // Compile surface render
-    glEnableVertexAttribArray(0);
-    status = compile_program(shader_surface_render_vert,
-                             shader_surface_render_frag,
-                             &renderer.render_surface_program);
-    NU_CHECK(status, goto cleanup0);
-    glUseProgram(renderer.render_surface_program);
-    glUniform1i(
-        glGetUniformLocation(renderer.render_surface_program, "t_indices"), 0);
-    glUniform1i(
-        glGetUniformLocation(renderer.render_surface_program, "t_colormap"), 1);
-    glUseProgram(0);
-
-    // Create indices
-    glGenTextures(1, &renderer.indices_texture);
-    glBindTexture(GL_TEXTURE_2D, renderer.indices_texture);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_R8,
-                 NUX_SCREEN_WIDTH,
-                 NUX_SCREEN_HEIGHT,
-                 0,
-                 GL_RED,
-                 GL_UNSIGNED_BYTE,
-                 NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Create colormap
-    glGenTextures(1, &renderer.colormap_texture);
-    glBindTexture(GL_TEXTURE_2D, renderer.colormap_texture);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGB,
-                 NUX_PALETTE_LEN,
-                 1,
-                 0,
-                 GL_RGB,
-                 GL_UNSIGNED_BYTE,
-                 NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     // Create surface
     glGenTextures(1, &renderer.surface_texture);
     glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
@@ -258,21 +210,9 @@ renderer_free (void)
     {
         glDeleteProgram(renderer.screen_blit_program);
     }
-    if (renderer.render_surface_program)
-    {
-        glDeleteProgram(renderer.render_surface_program);
-    }
     if (renderer.surface_fbo)
     {
         glDeleteFramebuffers(1, &renderer.surface_fbo);
-    }
-    if (renderer.indices_texture)
-    {
-        glDeleteTextures(1, &renderer.indices_texture);
-    }
-    if (renderer.colormap_texture)
-    {
-        glDeleteTextures(1, &renderer.colormap_texture);
     }
     if (renderer.surface_texture)
     {
@@ -303,43 +243,18 @@ renderer_render_instance (nux_instance_t inst,
                           nu_b2i_t       viewport,
                           nu_v2u_t       window_size)
 {
-    // Update indices
-    glBindTexture(GL_TEXTURE_2D, renderer.indices_texture);
+    // Update surface
+    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
     glTexSubImage2D(GL_TEXTURE_2D,
                     0,
                     0,
                     0,
                     NUX_SCREEN_WIDTH,
                     NUX_SCREEN_HEIGHT,
-                    GL_RED,
+                    GL_RGB,
                     GL_UNSIGNED_BYTE,
                     nux_instance_get_screen(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Update colormap
-    glBindTexture(GL_TEXTURE_2D, renderer.colormap_texture);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    0,
-                    0,
-                    NUX_COLORMAP_LEN,
-                    1,
-                    GL_RGB,
-                    GL_UNSIGNED_BYTE,
-                    nux_instance_get_colormap(inst));
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Render surface
-    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
-    glUseProgram(renderer.render_surface_program);
-    glViewport(0, 0, NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
-    glActiveTexture(GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D, renderer.indices_texture);
-    glActiveTexture(GL_TEXTURE0 + 1);
-    glBindTexture(GL_TEXTURE_2D, renderer.colormap_texture);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glUseProgram(0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Blit surface to screen
     nu_v2i_t pos  = viewport.min;

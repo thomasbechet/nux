@@ -6,22 +6,23 @@ import os
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("mesh")
+    parser.add_argument("model")
     parser.add_argument("name")
     parser.add_argument("palette")
     args = parser.parse_args()
 
-    scene = pywavefront.Wavefront(args.mesh)
+    scene = pywavefront.Wavefront(args.model)
     objects = []
 
     for name, material in scene.materials.items():
         if not material.texture:
             continue
 
-        # texpath = os.path.dirname(args.mesh) + '/' + material.texture.path
+        # texpath = os.path.dirname(args.model) + '/' + material.texture.path
         texpath = material.texture.path.lower()
         texname = args.name + material.texture.name.replace('.', '_').replace('/', '_') 
-        pixels, width, height = compile_texture(texname, texpath, args.palette)
+        # pixels, width, height = compile_texture(texname, texpath, args.palette)
+        pixels, width, height = compile_texture(texname, texpath)
 
         vertex_format = material.vertex_format
         obj = {}
@@ -49,6 +50,6 @@ if __name__ == "__main__":
         objects.append(obj)
 
     env = Environment(loader=FileSystemLoader("templates"))
-    template = env.get_template("mesh.inc.c.jinja")
+    template = env.get_template("model.inc.c.jinja")
     print(template.render(name=args.name, objects=objects, objects_count=len(objects)))
 

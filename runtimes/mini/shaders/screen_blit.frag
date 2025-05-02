@@ -18,6 +18,7 @@ vec2 uv_filtering(in vec2 uv, in vec2 texture_size)
 
 void main()
 {
-    vec2 filtered_uv = uv_filtering(uv, textureSize(t_surface, 0));
+    vec2 surface_size = textureSize(t_surface, 0);
+    vec2 filtered_uv = uv_filtering(vec2(uv.x, 1 - uv.y), surface_size);
     out_color = texture(t_surface, filtered_uv);
 }

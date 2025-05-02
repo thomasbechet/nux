@@ -155,16 +155,13 @@ nux_u32_t
 nux_cget (nux_env_t env, nux_u8_t index)
 {
     nux_u8_t *map = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
-    return (nux_u32_t)map[index * 3 + 0] << 16
-           | (nux_u32_t)map[index * 3 + 1] << 8 | (nux_u32_t)map[index * 3 + 2];
+    return NUX_RGB(map + index * 3);
 }
 void
 nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
 {
-    nux_u8_t *map      = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
-    map[index * 3 + 0] = (color & 0xFF0000) >> 16;
-    map[index * 3 + 1] = (color & 0x00FF00) >> 8;
-    map[index * 3 + 2] = (color & 0x0000FF) >> 0;
+    nux_u8_t *map = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
+    NUX_WRITE_RGB(&map[index * 3], color);
 }
 void
 nux_cameye (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
@@ -201,9 +198,28 @@ nux_camfov (nux_env_t env, nux_f32_t fov)
 {
     NUX_MEMSET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t, fov);
 }
-void
-nux_model (nux_env_t env, const nux_f32_t *m)
+
+nux_u8_t *
+nux_screen (nux_env_t env)
 {
-    nu_f32_t *model = NUX_MEMPTR(env->inst, NUX_RAM_MODEL, nu_f32_t);
-    nu_memcpy(model, m, NU_M4_SIZE * sizeof(nu_f32_t));
+    return NUX_MEMPTR(env->inst, NUX_RAM_SCREEN, nux_u8_t);
+}
+void
+nux_set_target_color (nux_env_t env, nux_u8_t *data, nux_u32_t w, nux_u32_t h)
+{
+    env->target_color        = data;
+    env->target_color_size.x = w;
+    env->target_color_size.y = h;
+}
+void
+nux_bind_texture (nux_env_t          env,
+                  const nux_u8_t    *data,
+                  nux_u32_t          w,
+                  nux_u32_t          h,
+                  nux_texture_type_t type)
+{
+    env->texture_data   = data;
+    env->texture_size.x = w;
+    env->texture_size.y = h;
+    env->texture_type   = type;
 }

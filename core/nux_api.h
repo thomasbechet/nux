@@ -38,12 +38,12 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 480,
 
     // 16:10
-    NUX_SCREEN_WIDTH  = 512,
-    NUX_SCREEN_HEIGHT = 320,
+    // NUX_SCREEN_WIDTH  = 512,
+    // NUX_SCREEN_HEIGHT = 320,
 
     // 16:10
-    // NUX_SCREEN_WIDTH  = 480,
-    // NUX_SCREEN_HEIGHT = 300,
+    NUX_SCREEN_WIDTH  = 480,
+    NUX_SCREEN_HEIGHT = 300,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 480,
@@ -130,22 +130,23 @@ typedef enum
 typedef enum
 {
     NUX_RAM_SCREEN       = 0x0,
-    NUX_RAM_ZBUFFER      = 0x75300,
-    NUX_RAM_COLORMAP     = 0x249f00,
-    NUX_RAM_PALETTE      = 0x24a200,
-    NUX_RAM_BUTTONS      = 0x24a300,
-    NUX_RAM_AXIS         = 0x24a320,
-    NUX_RAM_TIME         = 0x24a3e0,
-    NUX_RAM_FRAME        = 0x24a3e4,
-    NUX_RAM_CURSORX      = 0x24a3e8,
-    NUX_RAM_CURSORY      = 0x24a3ec,
-    NUX_RAM_STAT_FPS     = 0x24a3f0,
-    NUX_RAM_CAM_EYE      = 0x24a3f4,
-    NUX_RAM_CAM_CENTER   = 0x24a400,
-    NUX_RAM_CAM_UP       = 0x24a40c,
-    NUX_RAM_CAM_FOV      = 0x24a418,
-    NUX_RAM_CAM_VIEWPORT = 0x24a41c,
-    NUX_RAM_MODEL        = 0x24a42c,
+    NUX_RAM_ZBUFFER      = 0x78000,
+    NUX_RAM_COLORMAP     = 0x118000,
+    NUX_RAM_PALETTE      = 0x118300,
+    NUX_RAM_BUTTONS      = 0x118400,
+    NUX_RAM_AXIS         = 0x118420,
+    NUX_RAM_TIME         = 0x1184e0,
+    NUX_RAM_FRAME        = 0x1184e4,
+    NUX_RAM_CURSORX      = 0x1184e8,
+    NUX_RAM_CURSORY      = 0x1184ec,
+    NUX_RAM_STAT_FPS     = 0x1184f0,
+    NUX_RAM_CAM_EYE      = 0x1184f4,
+    NUX_RAM_CAM_CENTER   = 0x118500,
+    NUX_RAM_CAM_UP       = 0x11850c,
+    NUX_RAM_CAM_FOV      = 0x118518,
+    NUX_RAM_CAM_VIEWPORT = 0x11851c,
+    NUX_RAM_MODEL        = 0x11852c,
+    NUX_RAM_USER         = 0x11856c
 } nux_ram_layout_t;
 
 typedef enum
@@ -160,6 +161,12 @@ typedef enum
     NUX_TRIANGLES,
     NUX_LINES,
 } nux_vertex_primitive_t;
+
+typedef enum
+{
+    NUX_TEXTURE_PAL,
+    NUX_TEXTURE_RGB,
+} nux_texture_type_t;
 
 // Debug API
 void nux_trace(nux_env_t env, const nux_c8_t *text);
@@ -216,20 +223,11 @@ void nux_camup(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
 void nux_camviewport(
     nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 void nux_camfov(nux_env_t env, nux_f32_t fov);
-void nux_mesht(nux_env_t        env,
-               const nux_f32_t *positions,
-               const nux_f32_t *uvs,
-               nux_u32_t        count,
-               const nux_u8_t  *tex,
-               nux_u32_t        texw,
-               nux_u32_t        texh,
-               const nux_f32_t *m);
-
-void nux_bind_texture(nux_env_t       env,
-                      const nux_u8_t *data,
-                      const nux_u8_t *pal,
-                      nux_u32_t       w,
-                      nux_u32_t       h);
+void nux_mesh(nux_env_t        env,
+              const nux_f32_t *positions,
+              const nux_f32_t *uvs,
+              nux_u32_t        count,
+              const nux_f32_t *m);
 
 // Draw State API
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);
@@ -239,11 +237,21 @@ nux_u8_t  nux_palc(nux_env_t env, nux_u8_t index);
 void      nux_cls(nux_env_t env, nux_u32_t color);
 void      nux_clsz(nux_env_t env);
 void      nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t c);
-nux_u8_t  nux_pget(nux_env_t env, nux_i32_t x, nux_i32_t y);
 void      nux_zset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth);
 nux_f32_t nux_zget(nux_env_t env, nux_i32_t x, nux_i32_t y);
 nux_u32_t nux_cget(nux_env_t env, nux_u8_t index);
 void      nux_cset(nux_env_t env, nux_u8_t index, nux_u32_t c);
+
+nux_u8_t *nux_screen(nux_env_t env);
+void      nux_set_target_color(nux_env_t env,
+                               nux_u8_t *data,
+                               nux_u32_t w,
+                               nux_u32_t h);
+void      nux_bind_texture(nux_env_t          env,
+                           const nux_u8_t    *data,
+                           nux_u32_t          w,
+                           nux_u32_t          h,
+                           nux_texture_type_t type);
 
 #ifdef NUX_BUILD_VARARGS
 void nux_textfmt(nux_env_t       env,

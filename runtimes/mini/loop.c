@@ -254,5 +254,5 @@ loop_update (nux_env_t env)
     nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
-    blit_colormap(env);
+    // blit_colormap(env);
 }

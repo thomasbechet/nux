@@ -14,12 +14,31 @@
 #define NUX_MEMSET(inst, addr, type, val) \
     *(type *)((inst)->memory + (addr)) = (val)
 
+#define NUX_RGB(p) \
+    (nux_u32_t)(p)[0] << 16 | (nux_u32_t)(p)[1] << 8 | (nux_u32_t)(p)[2];
+#define NUX_WRITE_RGB(p, rgb)        \
+    (p)[0] = (rgb & 0xFF0000) >> 16; \
+    (p)[1] = (rgb & 0x00FF00) >> 8;  \
+    (p)[2] = (rgb & 0x0000FF) >> 0;
+
 struct nux_env
 {
+    // Non persistent state
     nux_instance_t inst;
-    nux_error_t    error;
-    nux_c8_t       error_message[256];
-    nux_u32_t      tricount;
+
+    // Error handling
+    nux_error_t error;
+    nux_c8_t    error_message[256];
+
+    // Stats
+    nux_u32_t tricount;
+
+    // Draw state
+    nux_u8_t          *target_color;
+    nu_v2u_t           target_color_size;
+    const nux_u8_t    *texture_data;
+    nu_v2u_t           texture_size;
+    nux_texture_type_t texture_type;
 };
 
 struct nux_instance

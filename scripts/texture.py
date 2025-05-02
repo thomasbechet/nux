@@ -3,21 +3,24 @@ from jinja2 import Environment, FileSystemLoader
 from colormap import load_palette
 import argparse
 
-def compile_texture(name, path, palette):
+def compile_texture(name, path, palette=None):
     img = Image.open(path).convert('RGB')
-    pal = generate_palette(palette)
 
     w, h = img.size
-    if w > 128 or h > 128:
-        img.resize((128, 128))
+    # if w > 128 or h > 128:
+    #     img.resize((128, 128))
     
-    conv = img.quantize(palette=pal, dither=0)
-    # conv = conv.resize((32, 32))
-    pixels = list(conv.getdata())
-    width, height = conv.size
+    if palette:
+        pal = generate_palette(palette)
+        img = img.quantize(palette=pal, dither=0)
+        # img = img.resize((32, 32))
+
+    pixels = list(img.getdata())
+    if not palette: # Flatten pixels RGB
+        pixels = [c for rgb in pixels for c in rgb] 
+    width, height = img.size
     
     return pixels, width, height
-
 
 def generate_palette(path):
     pal = load_palette(path)

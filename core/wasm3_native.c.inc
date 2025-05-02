@@ -122,18 +122,6 @@ static m3ApiRawFunction(pset)
     nux_pset(env, x, y, color);
     m3ApiSuccess();
 }
-static m3ApiRawFunction(pget)
-{
-#ifdef NUX_BUILD_TRACE
-    printf("TRACE pget\n");
-#endif
-    nux_env_t env = m3_GetUserData(runtime);
-    m3ApiReturnType(nux_u8_t);
-    m3ApiGetArg(nux_i32_t, x);
-    m3ApiGetArg(nux_i32_t, y);
-    m3ApiReturn(nux_pget(env, x, y));
-    m3ApiSuccess();
-}
 static m3ApiRawFunction(line)
 {
 #ifdef NUX_BUILD_TRACE
@@ -257,7 +245,6 @@ link_raw_functions (IM3Module module)
     m3_LinkRawFunction(module, "*", "cls", "v(i)", cls);
     m3_LinkRawFunction(module, "*", "fill", "v(iiiii)", fill);
     m3_LinkRawFunction(module, "*", "pset", "v(iii)", pset);
-    m3_LinkRawFunction(module, "*", "pget", "(ii)", pget);
     m3_LinkRawFunction(module, "*", "line", "v(iiiii)", line);
     m3_LinkRawFunction(module, "*", "filltri", "v(iiiiiii)", filltri);
     m3_LinkRawFunction(module, "*", "text", "v(ii*i)", text);
