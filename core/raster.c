@@ -763,7 +763,6 @@ nux_draw_plane (nux_env_t env, nux_f32_t w, nux_f32_t h, const nux_f32_t *m)
     const nu_v3_t v3 = nu_v3(0, 0, h);
 
     const nu_v3_t positions[] = {
-        // v0, v1, v2, v2, v3, v0,
         v0, v2, v1, v3, v2, v0,
     };
 

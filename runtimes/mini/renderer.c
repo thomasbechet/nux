@@ -5,8 +5,10 @@
 static struct
 {
     GLuint screen_blit_program;
-    GLuint surface_texture;
-    GLuint surface_fbo;
+    GLuint surface2d_texture;
+    GLuint surface2d_fbo;
+    GLuint surface3d_texture;
+    GLuint surface3d_fbo;
 } renderer;
 
 static const GLchar *
@@ -167,9 +169,9 @@ renderer_init (void)
                 0);
     glUseProgram(0);
 
-    // Create surface
-    glGenTextures(1, &renderer.surface_texture);
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    // Create surface 2D
+    glGenTextures(1, &renderer.surface2d_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface2d_texture);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_SRGB,
@@ -185,13 +187,41 @@ renderer_init (void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Create surface fbo
-    glGenFramebuffers(1, &renderer.surface_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
+    // Create surface 3D
+    glGenTextures(1, &renderer.surface3d_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface3d_texture);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_SRGB,
+                 1920,
+                 1080,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create surface 2d fbo
+    glGenFramebuffers(1, &renderer.surface2d_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface2d_fbo);
     glFramebufferTexture2D(GL_FRAMEBUFFER,
                            GL_COLOR_ATTACHMENT0,
                            GL_TEXTURE_2D,
-                           renderer.surface_texture,
+                           renderer.surface2d_texture,
+                           0);
+    NU_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER)
+              == GL_FRAMEBUFFER_COMPLETE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Create surface 3d fbo
+    glGenFramebuffers(1, &renderer.surface3d_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface3d_fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER,
+                           GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D,
+                           renderer.surface3d_texture,
                            0);
     NU_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER)
               == GL_FRAMEBUFFER_COMPLETE);
@@ -212,13 +242,21 @@ renderer_free (void)
     {
         glDeleteProgram(renderer.screen_blit_program);
     }
-    if (renderer.surface_fbo)
+    if (renderer.surface2d_fbo)
     {
-        glDeleteFramebuffers(1, &renderer.surface_fbo);
+        glDeleteFramebuffers(1, &renderer.surface2d_fbo);
     }
-    if (renderer.surface_texture)
+    if (renderer.surface2d_texture)
     {
-        glDeleteTextures(1, &renderer.surface_texture);
+        glDeleteTextures(1, &renderer.surface2d_texture);
+    }
+    if (renderer.surface3d_fbo)
+    {
+        glDeleteFramebuffers(1, &renderer.surface3d_fbo);
+    }
+    if (renderer.surface3d_texture)
+    {
+        glDeleteTextures(1, &renderer.surface3d_texture);
     }
 }
 void
@@ -246,7 +284,7 @@ renderer_render_instance (nux_instance_t inst,
                           nu_v2u_t       window_size)
 {
     // Update surface
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface2d_texture);
     glTexSubImage2D(GL_TEXTURE_2D,
                     0,
                     0,
@@ -271,7 +309,7 @@ renderer_render_instance (nux_instance_t inst,
     glEnable(GL_FRAMEBUFFER_SRGB);
     glViewport(pos.x, pos.y, size.x, size.y);
     glActiveTexture(GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.surface3d_texture);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);
