@@ -366,8 +366,10 @@ pixel_coverage (nu_v2i_t a, nu_v2i_t b, nu_i32_t x, nu_i32_t y)
 static inline nux_u16_t
 sample_texture (nux_env_t env, nux_f32_t u, nux_f32_t v)
 {
-    nu_u32_t tw = env->texture_size.x;
-    nu_u32_t th = env->texture_size.y;
+    nux_u32_t tx = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[0];
+    nux_u32_t ty = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[1];
+    nux_u32_t tw = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[2];
+    nux_u32_t th = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[3];
 
     // Point based filtering
     nux_i32_t x = (nux_i32_t)(u * (nu_f32_t)tw);
@@ -380,15 +382,19 @@ sample_texture (nux_env_t env, nux_f32_t u, nux_f32_t v)
     // Inverse y coordinate
     y = th - y - 1;
 
-    switch (env->texture_type)
-    {
-        case NUX_TEXTURE_PAL:
-            return nux_cget(env, nux_palc(env, env->texture_data[y * tw + x]));
-        case NUX_TEXTURE_RGB:
-            return NUX_DECODE_COLOR(env->texture_data, y * tw + x);
-        default:
-            return 0;
-    }
+    // switch (env->texture_type)
+    // {
+    //     case NUX_TEXTURE_PAL:
+    //         return nux_cget(env, nux_palc(env, env->texture_data[y * tw +
+    //         x]));
+    //     case NUX_TEXTURE_RGB:
+    //         return NUX_DECODE_COLOR(env->texture_data, y * tw + x);
+    //     default:
+    //         return 0;
+    // }
+    nux_u8_t *base = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t)
+                     + (ty * NUX_TEXTURE_ATLAS_WIDTH + tx) * NUX_COLOR_BYTES;
+    return NUX_DECODE_COLOR(base, y * NUX_TEXTURE_ATLAS_WIDTH + x);
 }
 
 static inline nux_u16_t

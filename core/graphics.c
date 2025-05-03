@@ -205,21 +205,40 @@ nux_screen (nux_env_t env)
     return NUX_MEMPTR(env->inst, NUX_RAM_SCREEN, nux_u8_t);
 }
 void
-nux_set_target_color (nux_env_t env, nux_u8_t *data, nux_u32_t w, nux_u32_t h)
-{
-    env->target_color        = data;
-    env->target_color_size.x = w;
-    env->target_color_size.y = h;
-}
-void
 nux_bind_texture (nux_env_t          env,
-                  const nux_u8_t    *data,
+                  nux_u32_t          x,
+                  nux_u32_t          y,
                   nux_u32_t          w,
                   nux_u32_t          h,
                   nux_texture_type_t type)
 {
-    env->texture_data   = data;
-    env->texture_size.x = w;
-    env->texture_size.y = h;
-    env->texture_type   = type;
+    nu_u32_t *view = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nu_u32_t);
+    view[0]        = x;
+    view[1]        = y;
+    view[2]        = w;
+    view[3]        = h;
+}
+void
+nux_write_texture (nux_env_t       env,
+                   nux_u32_t       x,
+                   nux_u32_t       y,
+                   nux_u32_t       w,
+                   nux_u32_t       h,
+                   const nux_u8_t *data)
+{
+    // Clamp to region
+    x = NU_MIN(x, NUX_TEXTURE_ATLAS_WIDTH - 1);
+    y = NU_MIN(y, NUX_TEXTURE_ATLAS_HEIGHT - 1);
+    w = NU_MIN(w, NUX_TEXTURE_ATLAS_WIDTH - x - 1);
+    h = NU_MIN(h, NUX_TEXTURE_ATLAS_HEIGHT - y - 1);
+
+    // Copy row by row
+    nux_u8_t *tex = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t);
+    for (nux_u32_t i = 0; i < h; ++i)
+    {
+        nux_u8_t *dst
+            = tex + ((y + i) * NUX_TEXTURE_ATLAS_WIDTH + x) * NUX_COLOR_BYTES;
+        const nux_u8_t *src = data + (i * w * NUX_COLOR_BYTES);
+        nu_memcpy(dst, src, w * NUX_COLOR_BYTES);
+    }
 }

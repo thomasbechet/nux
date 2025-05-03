@@ -1,5 +1,4 @@
 #include "internal.h"
-#include "nux_api.h"
 
 static struct
 {
@@ -140,7 +139,6 @@ void
 loop_init (nux_env_t env)
 {
     load_blk_colormap(env);
-    // load_clown_colormap(env);
     init_debug_camera(NU_V3_ZEROS);
 }
 void
@@ -148,7 +146,6 @@ loop_update (nux_env_t env)
 {
     nux_cls(env, 0);
     nux_clsz(env);
-    nux_line(env, 150, 150, 300, 20, 2);
 
 #ifdef NUX_BENCHMARK
     clock_t t;
@@ -156,24 +153,22 @@ loop_update (nux_env_t env)
 #endif
 
     nu_m4_t model = nu_m4_scale(nu_v3s(1));
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 5; ++i)
     {
         draw_red(env, model.data, 1);
         // draw_red(env, model.data, 0);
-        model = nu_m4_mul(model, nu_m4_translate(nu_v3(1.5, 0, 0)));
+        model = nu_m4_mul(model, nu_m4_translate(nu_v3(1.2, 0, 0)));
     }
-    model          = nu_m4_translate(nu_v3(-3, 0, -2.5));
-    nux_u8_t color = 26;
-    nux_bind_texture(env, &color, 1, 1, NUX_TEXTURE_PAL);
-    nux_draw_plane(env, 20, 5, model.data);
-
-    nux_clsz(env);
-    nux_cameye(env, 0, 0, 0);
-    nux_camcenter(env, 0, 0, -1);
-    nux_camup(env, 0, 1, 0);
-    color = 15;
-    model = nu_m4_translate(nu_v3(0.2, -0.2, -1));
-    nux_draw_cube(env, 0.2, 0.2, 1, model.data);
+    nux_camfov(env, 50);
+    for (int i = 1; i < 10; ++i)
+    {
+        model = nu_m4_translate(nu_v3(0, 1, i * 5));
+        nux_draw_cube(env, 2, 2, 0.1, model.data);
+    }
+    model = nu_m4_translate(nu_v3(-8, 0, 0));
+    draw_krabe(env, model.data, 0);
+    model = nu_m4_translate(nu_v3(-3, 0, 0));
+    draw_krabe(env, model.data, 1);
 
 #ifdef NUX_BENCHMARK
     static double sum   = 0;
@@ -213,5 +208,5 @@ loop_update (nux_env_t env)
     nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
-    blit_colormap(env);
+    // blit_colormap(env);
 }

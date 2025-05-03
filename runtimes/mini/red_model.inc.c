@@ -271034,8 +271034,13 @@ void draw_red(nux_env_t env, const nux_f32_t *m, nux_u32_t wireframe)
 {
     for (nux_u32_t i = 0; i < red_objects_count; ++i)
     {
+        nux_write_texture(env,
+            0, 0, 
+            red_objects[i].texw, 
+            red_objects[i].texh,
+            red_objects[i].tex);
         nux_bind_texture(env,
-            red_objects[i].tex,
+            0, 0,
             red_objects[i].texw,
             red_objects[i].texh,
             NUX_TEXTURE_RGB);

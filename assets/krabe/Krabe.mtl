@@ -1,0 +1,48 @@
+newmtl Krabe
+Ka 0.5647059 0.5647059 0.5647059
+Kd 0.5647059 0.5647059 0.5647059
+d 1
+Tr 1
+map_Ka Krabe.png
+map_Kd Krabe.png
+map_d Krabe.png
+newmtl shot01
+Ka 0.972549 0.972549 0.972549
+Kd 0.972549 0.972549 0.972549
+d 1
+Tr 1
+map_Ka shot01.png
+map_Kd shot01.png
+map_d shot01.png
+newmtl 17___Default
+Ka 0.972549 0.972549 0.972549
+Kd 0.972549 0.972549 0.972549
+d 1
+Tr 1
+map_Ka 17___Default.png
+map_Kd 17___Default.png
+map_d 17___Default.png
+newmtl 14___Default
+Ka 0.972549 0.972549 0.972549
+Kd 0.972549 0.972549 0.972549
+d 1
+Tr 1
+map_Ka 14___Default.png
+map_Kd 14___Default.png
+map_d 14___Default.png
+newmtl 15___Default
+Ka 0.972549 0.972549 0.972549
+Kd 0.972549 0.972549 0.972549
+d 1
+Tr 1
+map_Ka 15___Default.png
+map_Kd 15___Default.png
+map_d 15___Default.png
+newmtl ring
+Ka 0.972549 0.972549 0.972549
+Kd 0.972549 0.972549 0.972549
+d 1
+Tr 1
+map_Ka ring.png
+map_Kd ring.png
+map_d ring.png

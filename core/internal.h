@@ -37,13 +37,6 @@ struct nux_env
 
     // Stats
     nux_u32_t tricount;
-
-    // Draw state
-    nux_u8_t          *target_color;
-    nu_v2u_t           target_color_size;
-    const nux_u8_t    *texture_data;
-    nu_v2u_t           texture_size;
-    nux_texture_type_t texture_type;
 };
 
 struct nux_instance

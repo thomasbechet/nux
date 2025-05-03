@@ -34,7 +34,7 @@ nux_instance_init (const nux_instance_config_t *config)
     inst->update   = config->update;
 
     // Allocate state
-    inst->memory_capa = NU_MEM_16M;
+    inst->memory_capa = NU_MEM_128M;
     inst->memory      = nux_platform_malloc(
         config->userdata, NUX_MEMORY_USAGE_STATE, inst->memory_capa);
     NU_CHECK(inst->memory, goto cleanup0);
@@ -200,7 +200,7 @@ nux_time (nux_env_t env)
 nux_f32_t
 nux_dt (nux_env_t env)
 {
-    return 1. / 144;
+    return 1. / 60;
 }
 nux_u32_t
 nux_frame (nux_env_t env)
