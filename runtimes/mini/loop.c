@@ -185,8 +185,6 @@ loop_update (nux_env_t env)
     }
 #endif
 
-    // nux_camviewport(env, 100, 100, 100, 100);
-
 #ifdef NUX_BENCHMARK
     nux_campos(env, 70, 70, 70);
     nux_camcenter(env, 0, 0, 0);
@@ -208,5 +206,5 @@ loop_update (nux_env_t env)
     nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
-    // blit_colormap(env);
+    blit_colormap(env);
 }
