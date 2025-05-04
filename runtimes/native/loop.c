@@ -152,12 +152,14 @@ loop_update (nux_env_t env)
     t = clock();
 #endif
 
-    nu_m4_t model = nu_m4_scale(nu_v3s(1));
-    for (int i = 0; i < 5; ++i)
+    nu_m4_t   model;
+    nux_i32_t count = 10;
+    nux_dbgi32(env, "count", &count);
+    for (int i = 0; i < count; ++i)
     {
+        model = nu_m4_mul(nu_m4_translate(nu_v3(1.2 * (i % 5), 0, (i / 5) * 2)),
+                          nu_m4_scale(NU_V3_ONES));
         draw_red(env, model.data, 1);
-        // draw_red(env, model.data, 0);
-        model = nu_m4_mul(model, nu_m4_translate(nu_v3(1.2, 0, 0)));
     }
     nux_camfov(env, 50);
     for (int i = 1; i < 10; ++i)
@@ -169,8 +171,10 @@ loop_update (nux_env_t env)
     draw_krabe(env, model.data, 0);
     model = nu_m4_translate(nu_v3(-3, 0, 0));
     draw_krabe(env, model.data, 1);
-    model
-        = nu_m4_mul(nu_m4_translate(nu_v3(0, 1, -3)), nu_m4_scale(nu_v3s(0.2)));
+    nux_f32_t y = 0.6;
+    nux_dbgf32(env, "y", &y);
+    model = nu_m4_mul(nu_m4_translate(nu_v3(0, y, 0.5)),
+                      nu_m4_scale(nu_v3s(0.08)));
     draw_lavalamp(env, model.data, 1);
 
 #ifdef NUX_BENCHMARK
@@ -209,5 +213,5 @@ loop_update (nux_env_t env)
     nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
     nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
-    blit_colormap(env);
+    // blit_colormap(env);
 }

@@ -26,6 +26,8 @@
 #define NU_PI              3.14159265359
 #define NU_FLT_MAX         3.402823E+38
 #define NU_FLT_MIN         1.175494e-38
+#define NU_I32_MAX         2147483647
+#define NU_I32_MIN         -2147483648
 
 #define NU_MIN(a, b)          (((a) < (b)) ? (a) : (b))
 #define NU_MAX(a, b)          (((a) > (b)) ? (a) : (b))

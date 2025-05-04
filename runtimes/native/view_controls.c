@@ -1,4 +1,4 @@
-#include "runtime.h"
+#include "internal.h"
 
 static const nu_char_t *button_to_name[NUX_BUTTON_MAX]
     = { "A", "X", "Y", "B", "UP", "DOWN", "LEFT", "RIGHT", "LB", "RB" };

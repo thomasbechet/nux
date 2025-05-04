@@ -20,6 +20,7 @@ static struct
     nu_f32_t          scale_factor;
     nu_v2_t           mouse_scroll;
     nu_v2u_t          size;
+    nu_u64_t          prev_time;
 } window;
 
 static void
@@ -32,8 +33,8 @@ nu_status_t
 window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = 1280;
-    const nu_int_t height = 800;
+    const nu_int_t width  = 1200;
+    const nu_int_t height = 700;
 
     // Initialize values
     window.fullscreen        = NU_FALSE;
@@ -43,13 +44,14 @@ window_init (void)
     // Create window
     RGFW_windowFlags flags = RGFW_windowCenter;
     window.win
-        = RGFW_createWindow("name", RGFW_RECT(0, 0, width, height), flags);
+        = RGFW_createWindow("nux", RGFW_RECT(0, 0, width, height), flags);
     if (!window.win)
     {
-        logger_log(NU_LOG_ERROR, "Failed to create RGFW window");
+        fprintf(stderr, "Failed to create RGFW window");
         return NU_FAILURE;
     }
-    RGFW_window_swapInterval(window.win, 1);
+    // RGFW_window_swapInterval(window.win, 1);
+    window.prev_time = RGFW_getTimeNS();
 
     // Initialize viewport
     window.size         = nu_v2u(width, height);
@@ -208,11 +210,6 @@ window_poll_events (void)
                     {
                         window.axis[0][axis] = axvalue;
                     }
-                    if (window.win->event.keyChar)
-                    {
-                        gui_char_event(window.win, window.win->event.keyChar);
-                    }
-                    gui_key_event(window.win->event.key, NU_TRUE);
                 }
                 break;
                 case RGFW_keyReleased: {
@@ -244,7 +241,6 @@ window_poll_events (void)
                     {
                         window.axis[0][axis] = 0;
                     }
-                    gui_key_event(window.win->event.key, NU_FALSE);
                 }
                 break;
                 case RGFW_gamepadButtonPressed: {
@@ -266,31 +262,21 @@ window_poll_events (void)
                 }
                 break;
                 case RGFW_gamepadConnected:
-                    logger_log(NU_LOG_INFO,
-                               "Gamepad (%i) connected %s\n",
-                               window.win->event.gamepad,
-                               RGFW_getGamepadName(window.win,
-                                                   window.win->event.gamepad));
+                    printf("Gamepad (%i) connected %s\n",
+                           window.win->event.gamepad,
+                           RGFW_getGamepadName(window.win,
+                                               window.win->event.gamepad));
                     break;
                 case RGFW_gamepadDisconnected:
-                    logger_log(NU_LOG_INFO,
-                               "Gamepad (%i) disconnected %s\n",
-                               window.win->event.gamepad,
-                               RGFW_getGamepadName(window.win,
-                                                   window.win->event.gamepad));
+                    printf("Gamepad (%i) disconnected %s\n",
+                           window.win->event.gamepad,
+                           RGFW_getGamepadName(window.win,
+                                               window.win->event.gamepad));
                     break;
 
                 case RGFW_mouseButtonPressed:
-                    gui_mouse_button_callback(window.win,
-                                              window.win->event.button,
-                                              window.win->event.scroll,
-                                              NU_TRUE);
                     break;
                 case RGFW_mouseButtonReleased:
-                    gui_mouse_button_callback(window.win,
-                                              window.win->event.button,
-                                              window.win->event.scroll,
-                                              NU_FALSE);
                     break;
                 case RGFW_windowResized:
                     resize_callback(window.win, window.win->r);
@@ -351,10 +337,15 @@ window_poll_events (void)
         }
     }
 }
-void
+nu_u32_t
 window_swap_buffers (void)
 {
     RGFW_window_swapBuffers(window.win);
+    nu_u64_t time_ns = RGFW_getTimeNS();
+    nu_u64_t delta   = time_ns - window.prev_time;
+    nu_u32_t fps     = (nu_u32_t)(1. / ((nu_f32_t)delta * 1e-9));
+    window.prev_time = time_ns;
+    return fps;
 }
 nu_v2u_t
 window_get_size (void)

@@ -29,19 +29,20 @@ instance_init (runtime_instance_t *instance, nu_sv_t path)
     instance_free(instance);
 
     nux_instance_config_t config = {
-        .userdata                = instance,
-        .command_buffer_capacity = 1024,
+        .userdata = instance,
+        .init     = loop_init,
+        .update   = loop_update,
     };
 
     nu_sv_to_cstr(path, instance->path, NU_PATH_MAX);
-    instance->active              = NU_TRUE;
-    instance->config              = config;
-    instance->instance            = NU_NULL;
-    instance->save_state          = NU_NULL;
-    instance->pause               = NU_FALSE;
-    instance->viewport            = nk_rect(0, 0, 10, 10);
-    instance->viewport_mode       = VIEWPORT_STRETCH_KEEP_ASPECT;
-    instance->inspect_value_count = 0;
+    instance->active            = NU_TRUE;
+    instance->config            = config;
+    instance->instance          = NU_NULL;
+    instance->save_state        = NU_NULL;
+    instance->pause             = NU_FALSE;
+    instance->viewport          = nk_rect(0, 0, 10, 10);
+    instance->viewport_mode     = VIEWPORT_FIXED_BEST_FIT;
+    instance->debug_value_count = 0;
 
     // instance->save_state = native_malloc(vm_config_state_memsize(config));
     // NU_ASSERT(instance->save_state);
@@ -141,10 +142,11 @@ runtime_run (const runtime_config_t *config)
     NU_CHECK(status, goto cleanup0);
     status = renderer_init();
     NU_CHECK(status, goto cleanup1);
-    status = gui_init(config);
+    status = gui_init();
     NU_CHECK(status, goto cleanup2);
 
     runtime.running = NU_TRUE;
+    nu_u32_t fps    = 0;
 
     // Initialize base
     if (config->path.len)
@@ -166,6 +168,8 @@ runtime_run (const runtime_config_t *config)
             {
                 // Update inputs
                 window_update_inputs(instance->instance);
+                // Update stats
+                nux_instance_set_stat(instance->instance, NUX_STAT_FPS, fps);
                 // Tick
                 nux_instance_tick(instance->instance);
             }
@@ -202,7 +206,7 @@ runtime_run (const runtime_config_t *config)
         gui_render();
 
         // Swap buffers
-        window_swap_buffers();
+        fps = window_swap_buffers();
 
         // Process runtime events
         runtime_command_t cmd;
@@ -279,19 +283,8 @@ native_free (void *p)
 {
     free(p);
 }
-
 void *
-nux_platform_malloc (void *userdata, nux_memory_usage_t usage, nux_u32_t n)
-{
-    return native_malloc(n);
-}
-void
-nux_platform_free (void *userdata, void *p)
-{
-    native_free(p);
-}
-void *
-nux_platform_realloc (void *userdata, void *p, nux_u32_t n)
+native_realloc (void *p, nu_size_t n)
 {
     return realloc(p, n);
 }

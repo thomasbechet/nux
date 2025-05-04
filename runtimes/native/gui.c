@@ -233,7 +233,7 @@ gui_device_create (void)
 }
 
 nu_status_t
-gui_init (const runtime_config_t *config)
+gui_init (void)
 {
     gui.win = window_get_win();
     nk_init_default(&gui.ctx, 0);

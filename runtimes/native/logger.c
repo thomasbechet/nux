@@ -1,12 +1,12 @@
 #include "internal.h"
 
-static runtime_log_callback_t logger;
-
-void
-runtime_set_logger_callback (runtime_log_callback_t callback)
-{
-    logger = callback;
-}
+// static runtime_log_callback_t logger;
+//
+// void
+// runtime_set_logger_callback (runtime_log_callback_t callback)
+// {
+//     logger = callback;
+// }
 void
 logger_log (nu_log_level_t level, const nu_char_t *fmt, ...)
 {
@@ -18,11 +18,5 @@ logger_log (nu_log_level_t level, const nu_char_t *fmt, ...)
 void
 logger_vlog (nu_log_level_t level, const nu_char_t *fmt, va_list args)
 {
-    logger(level, fmt, args);
-}
-
-void
-nux_platform_log (nux_instance_t inst, const nux_c8_t *log, nux_u32_t n)
-{
-    logger_log(NU_LOG_INFO, "%.*s", n, log);
+    // logger(level, fmt, args);
 }

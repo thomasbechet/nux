@@ -5,7 +5,8 @@ static struct
     nu_bool_t initialized;
     union
     {
-        nu_f32_t edit_float[32];
+        nu_i32_t edit_i32[32];
+        nu_f32_t edit_f32[32];
     };
     nu_f32_t  edit_step[32];
     nu_f32_t  edit_step_pixel[32];
@@ -18,7 +19,7 @@ init (void)
     for (nu_size_t i = 0; i < NU_ARRAY_SIZE(app.edit_override); ++i)
     {
         app.edit_override[i]   = NU_FALSE;
-        app.edit_float[i]      = 0;
+        app.edit_f32[i]        = 0;
         app.edit_step[i]       = 1;
         app.edit_step_pixel[i] = 0.5;
     }
@@ -47,9 +48,9 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
                  NK_WINDOW_NO_SCROLLBAR | NK_WINDOW_TITLE))
     {
         // Values
-        for (nu_size_t i = 0; i < instance->inspect_value_count; ++i)
+        for (nu_size_t i = 0; i < instance->debug_value_count; ++i)
         {
-            inspect_value_t *value = instance->inspect_values + i;
+            debug_value_t *value = instance->debug_values + i;
             if (nk_tree_push_hashed(
                     ctx,
                     NK_TREE_TAB,
@@ -64,11 +65,42 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
                 nk_labelf(ctx, NK_TEXT_LEFT, "0x%X", value->addr);
                 switch (value->type)
                 {
-                    case NUX_INSPECT_I32:
+                    case NUX_DEBUG_I32: {
                         nk_labelf(
                             ctx, NK_TEXT_LEFT, "Value: %d", value->value.i32);
-                        break;
-                    case NUX_INSPECT_F32: {
+                        nk_labelf(ctx, NK_TEXT_LEFT, "%d", value->value.i32);
+                        nk_layout_row_template_begin(ctx, row);
+                        nk_layout_row_template_push_dynamic(ctx);
+                        nk_layout_row_template_push_static(ctx, row);
+                        nk_layout_row_template_push_static(ctx, row);
+                        nk_layout_row_template_end(ctx);
+                        nk_property_int(ctx,
+                                        value->name,
+                                        NU_I32_MIN,
+                                        &app.edit_i32[i],
+                                        NU_I32_MAX,
+                                        app.edit_step[i],
+                                        app.edit_step_pixel[i]);
+                        nk_button_label(ctx, "+");
+                        nk_button_label(ctx, "-");
+
+                        nk_layout_row_dynamic(ctx, row, 3);
+                        if (nk_button_label(ctx, "Read"))
+                        {
+                            app.edit_i32[i] = value->value.i32;
+                        }
+                        nu_bool_t override_button
+                            = nk_button_label(ctx, "Write");
+                        nk_checkbox_label(
+                            ctx, "Override", &app.edit_override[i]);
+                        if (app.edit_override[i] || override_button)
+                        {
+                            value->value.i32 = app.edit_i32[i];
+                            value->override  = NU_TRUE;
+                        }
+                    }
+                    break;
+                    case NUX_DEBUG_F32: {
                         nk_labelf(ctx, NK_TEXT_LEFT, "Value");
                         nk_labelf(ctx, NK_TEXT_LEFT, "%lf", value->value.f32);
                         nk_layout_row_template_begin(ctx, row);
@@ -79,26 +111,29 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
                         nk_property_float(ctx,
                                           value->name,
                                           NU_FLT_MIN,
-                                          &app.edit_float[i],
+                                          &app.edit_f32[i],
                                           NU_FLT_MAX,
                                           app.edit_step[i],
                                           app.edit_step_pixel[i]);
                         nk_button_label(ctx, "+");
                         nk_button_label(ctx, "-");
+
+                        nk_layout_row_dynamic(ctx, row, 3);
+                        if (nk_button_label(ctx, "Read"))
+                        {
+                            app.edit_f32[i] = value->value.f32;
+                        }
+                        nu_bool_t override_button
+                            = nk_button_label(ctx, "Write");
+                        nk_checkbox_label(
+                            ctx, "Override", &app.edit_override[i]);
+                        if (app.edit_override[i] || override_button)
+                        {
+                            value->value.f32 = app.edit_f32[i];
+                            value->override  = NU_TRUE;
+                        }
                     }
                     break;
-                }
-                nk_layout_row_dynamic(ctx, row, 3);
-                if (nk_button_label(ctx, "Read"))
-                {
-                    app.edit_float[i] = value->value.f32;
-                }
-                nu_bool_t override_button = nk_button_label(ctx, "Write");
-                nk_checkbox_label(ctx, "Override", &app.edit_override[i]);
-                if (app.edit_override[i] || override_button)
-                {
-                    value->value.f32 = app.edit_float[i];
-                    value->override  = NU_TRUE;
                 }
 
                 nk_tree_pop(ctx);

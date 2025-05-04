@@ -1,4 +1,4 @@
-#include "runtime.h"
+#include "internal.h"
 
 void
 view_settings (struct nk_context *ctx, struct nk_rect bounds)
