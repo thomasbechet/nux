@@ -122,5 +122,6 @@ void loop_update(nux_env_t env);
 void load_blk_colormap(nux_env_t env);
 void draw_red(nux_env_t env, const nux_f32_t *m, nux_u32_t wireframe);
 void draw_krabe(nux_env_t env, const nux_f32_t *m, nux_u32_t wireframe);
+void draw_lavalamp(nux_env_t env, const nux_f32_t *m, nux_u32_t wireframe);
 
 #endif

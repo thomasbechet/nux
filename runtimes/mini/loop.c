@@ -169,6 +169,9 @@ loop_update (nux_env_t env)
     draw_krabe(env, model.data, 0);
     model = nu_m4_translate(nu_v3(-3, 0, 0));
     draw_krabe(env, model.data, 1);
+    model
+        = nu_m4_mul(nu_m4_translate(nu_v3(0, 1, -3)), nu_m4_scale(nu_v3s(0.2)));
+    draw_lavalamp(env, model.data, 1);
 
 #ifdef NUX_BENCHMARK
     static double sum   = 0;
