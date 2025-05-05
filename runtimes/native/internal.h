@@ -12,8 +12,6 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #include <nuklear/nuklear.h>
 #include <glad/gl.h>
-#define RGFW_EXPORT
-#include <rgfw/RGFW.h>
 #define NU_STDLIB
 #include <nulib/nulib.h>
 
@@ -87,16 +85,18 @@ void        renderer_render_instance(nux_instance_t inst,
                                      nu_b2i_t       viewport,
                                      nu_v2u_t       window_size);
 
-nu_status_t  window_init(void);
-void         window_free(void);
-RGFW_window *window_get_win(void);
-void         window_poll_events(void);
-nu_u32_t     window_swap_buffers(void);
-nu_v2u_t     window_get_size(void);
-nu_f32_t     window_get_scale_factor(void);
-nu_v2_t      window_get_mouse_scroll(void);
-nu_bool_t    window_poll_command(runtime_command_t *cmd);
-void         window_update_inputs(nux_instance_t inst);
+nu_status_t window_init(void);
+void        window_free(void);
+void        window_poll_events(void);
+nu_u32_t    window_swap_buffers(void);
+nu_v2u_t    window_get_size(void);
+nu_f32_t    window_get_scale_factor(void);
+nu_v2_t     window_get_mouse_scroll(void);
+nu_v2_t     window_get_mouse_position(void);
+nu_f64_t    window_get_time(void);
+nu_bool_t   window_is_mouse_pressed(int button);
+nu_bool_t   window_poll_command(runtime_command_t *cmd);
+void        window_update_inputs(nux_instance_t inst);
 
 void view_home(struct nk_context *ctx, struct nk_rect bounds);
 void view_controls(struct nk_context *ctx, struct nk_rect bounds);
@@ -108,12 +108,9 @@ void        gui_free(void);
 void        gui_update(void);
 void        gui_render(void);
 
-void      gui_char_event(struct RGFW_window *win, unsigned int codepoint);
-void      gui_key_event(RGFW_key key, nu_bool_t pressed);
-void      gui_mouse_button_callback(struct RGFW_window *win,
-                                    int                 button,
-                                    double              scroll,
-                                    int                 pressed);
+void      gui_char_event(unsigned int codepoint);
+void      gui_key_event(int key, nu_bool_t pressed, int mode);
+void      gui_mouse_button_callback(int button, double scroll, int pressed);
 nu_bool_t gui_is_double_click(void);
 
 void loop_init(nux_env_t env);

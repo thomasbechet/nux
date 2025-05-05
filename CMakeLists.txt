@@ -27,7 +27,7 @@ else ()
 endif ()
 
 # Add externals
-add_subdirectory(externals/glfw-3.4)
+add_subdirectory(externals/glfw-3.4 EXCLUDE_FROM_ALL)
 
 # Configure flags
 include(CheckCCompilerFlag)

@@ -10,7 +10,7 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_IMPLEMENTATION
 #include <nuklear/nuklear.h>
-#include <rgfw/RGFW.h>
+#include <GLFW/glfw3.h> // for keycodes
 
 #ifndef NK_TEXT_MAX
 #define NK_TEXT_MAX 256
@@ -57,7 +57,6 @@ static struct
     GLint                       uniform_proj;
     GLuint                      font_tex;
 
-    RGFW_window         *win;
     int                  width, height;
     int                  display_width, display_height;
     struct nk_context    ctx;
@@ -87,12 +86,6 @@ static const struct
               { .name = "Debug", .update = view_debug }
 #endif
 };
-
-static double
-get_time (void)
-{
-    return ((double)RGFW_getTimeNS() / 1000000000.);
-}
 
 static void
 upload_atlas (const void *image, int width, int height)
@@ -235,7 +228,6 @@ gui_device_create (void)
 nu_status_t
 gui_init (void)
 {
-    gui.win = window_get_win();
     nk_init_default(&gui.ctx, 0);
     // gui.ctx.clip.copy     = nk_glfw3_clipboard_copy;
     // gui.ctx.clip.paste    = nk_glfw3_clipboard_paste;
@@ -245,7 +237,7 @@ gui_init (void)
     gui.is_double_click_down = nk_false;
     gui.double_click_pos     = nk_vec2(0, 0);
 
-    gui.delta_time_seconds_last = (float)get_time();
+    gui.delta_time_seconds_last = (float)window_get_time();
     gui.key_event_count         = 0;
 
     struct nk_font_atlas *atlas;
@@ -270,7 +262,7 @@ gui_new_frame (void)
     struct nk_context *ctx = &gui.ctx;
 
     /* update the timer */
-    float delta_time_now        = (float)get_time();
+    float delta_time_now        = (float)window_get_time();
     gui.ctx.delta_time_seconds  = delta_time_now - gui.delta_time_seconds_last;
     gui.delta_time_seconds_last = delta_time_now;
 
@@ -308,7 +300,7 @@ gui_new_frame (void)
     }
     gui.key_event_count = 0;
 
-    RGFW_point pos = RGFW_window_getMousePoint(gui.win);
+    nu_v2_t pos = window_get_mouse_position();
     nk_input_motion(ctx, (int)pos.x / gui_scale, (int)pos.y / gui_scale);
     nk_input_scroll(ctx, gui.scroll);
 #ifdef NK_GL3_MOUSE_GRABBING
@@ -324,17 +316,17 @@ gui_new_frame (void)
                     NK_BUTTON_LEFT,
                     (int)pos.x / gui_scale,
                     (int)pos.y / gui_scale,
-                    RGFW_isMousePressed(gui.win, RGFW_mouseLeft));
+                    window_is_mouse_pressed(GLFW_MOUSE_BUTTON_LEFT));
     nk_input_button(ctx,
                     NK_BUTTON_MIDDLE,
                     (int)pos.x / gui_scale,
                     (int)pos.y / gui_scale,
-                    RGFW_isMousePressed(gui.win, RGFW_mouseMiddle));
+                    window_is_mouse_pressed(GLFW_MOUSE_BUTTON_MIDDLE));
     nk_input_button(ctx,
                     NK_BUTTON_RIGHT,
                     (int)pos.x / gui_scale,
                     (int)pos.y / gui_scale,
-                    RGFW_isMousePressed(gui.win, RGFW_mouseRight));
+                    window_is_mouse_pressed(GLFW_MOUSE_BUTTON_RIGHT));
     nk_input_button(ctx,
                     NK_BUTTON_DOUBLE,
                     (int)gui.double_click_pos.x,
@@ -533,7 +525,7 @@ gui_render (void)
 }
 
 void
-gui_char_event (RGFW_window *win, unsigned int codepoint)
+gui_char_event (unsigned int codepoint)
 {
     if (gui.text_len < NK_TEXT_MAX)
     {
@@ -541,77 +533,75 @@ gui_char_event (RGFW_window *win, unsigned int codepoint)
     }
 }
 void
-gui_key_event (RGFW_key key, nu_bool_t pressed)
+gui_key_event (int key, nu_bool_t pressed, int mode)
 {
     enum nk_keys nkkey = NK_KEY_NONE;
     switch (key)
     {
-        case RGFW_delete:
+        case GLFW_KEY_DELETE:
             nkkey = NK_KEY_DEL;
             break;
-        case RGFW_KP_Return:
-        case RGFW_return:
+        case GLFW_KEY_ENTER:
             nkkey = NK_KEY_ENTER;
             break;
-        case RGFW_tab:
+        case GLFW_KEY_TAB:
             nkkey = NK_KEY_TAB;
             break;
-        case RGFW_backSpace:
+        case GLFW_KEY_BACKSPACE:
             nkkey = NK_KEY_BACKSPACE;
             break;
-        case RGFW_up:
+        case GLFW_KEY_UP:
             nkkey = NK_KEY_UP;
             break;
-        case RGFW_down:
+        case GLFW_KEY_DOWN:
             nkkey = NK_KEY_DOWN;
             break;
-        case RGFW_left:
+        case GLFW_KEY_LEFT:
             nkkey = NK_KEY_LEFT;
             break;
-        case RGFW_right:
+        case GLFW_KEY_RIGHT:
             nkkey = NK_KEY_RIGHT;
             break;
-        case RGFW_home:
+        case GLFW_KEY_HOME:
             nkkey = NK_KEY_TEXT_START;
             break;
-        case RGFW_end:
+        case GLFW_KEY_END:
             nkkey = NK_KEY_TEXT_END;
             break;
-        case RGFW_pageUp:
+        case GLFW_KEY_PAGE_UP:
             nkkey = NK_KEY_SCROLL_UP;
             break;
-        case RGFW_pageDown:
+        case GLFW_KEY_PAGE_DOWN:
             nkkey = NK_KEY_SCROLL_DOWN;
             break;
-        case RGFW_shiftR:
-        case RGFW_shiftL:
+        case GLFW_KEY_RIGHT_SHIFT:
+        case GLFW_KEY_LEFT_SHIFT:
             nkkey = NK_KEY_SHIFT;
             break;
     }
-    if (RGFW_isPressed(gui.win, RGFW_controlL)
-        || RGFW_isPressed(gui.win, RGFW_controlR))
+    if (mode == GLFW_MOD_CONTROL)
     {
         switch (key)
         {
-            case RGFW_c:
+            case GLFW_KEY_C:
                 nkkey = NK_KEY_COPY;
                 break;
-            case RGFW_v:
+            case GLFW_KEY_V:
                 nkkey = NK_KEY_PASTE;
                 break;
-            case RGFW_x:
+            case GLFW_KEY_X:
                 nkkey = NK_KEY_CUT;
                 break;
-            case RGFW_z:
+            case GLFW_KEY_Z:
                 nkkey = NK_KEY_TEXT_UNDO;
                 break;
-            case RGFW_r:
+            case GLFW_KEY_R:
                 nkkey = NK_KEY_TEXT_REDO;
                 break;
-            case RGFW_left:
+            case GLFW_KEY_LEFT:
                 nkkey = NK_KEY_TEXT_WORD_LEFT;
                 break;
-            case RGFW_right:
+            case GLFW_KEY_RIGHT:
                 nkkey = NK_KEY_TEXT_WORD_RIGHT;
                 break;
         }
@@ -630,37 +620,34 @@ gui_key_event (RGFW_key key, nu_bool_t pressed)
     gui.key_events[gui.key_event_count].pressed = pressed;
     ++gui.key_event_count;
 }
-void
-gui_mouse_button_callback (RGFW_window *win,
-                           int          button,
-                           double       scroll,
-                           int          pressed)
-{
-    if (button == RGFW_mouseScrollDown || button == RGFW_mouseScrollUp)
-    {
-        gui.scroll = nk_vec2(0, scroll);
-    }
-    if (button != RGFW_mouseLeft)
-    {
-        return;
-    }
-    RGFW_point p = RGFW_window_getMousePoint(win);
-    if (pressed)
-    {
-        double time = get_time();
-        double dt   = time - gui.last_button_click;
-        if (dt > NK_DOUBLE_CLICK_LO && dt < NK_DOUBLE_CLICK_HI)
-        {
-            gui.is_double_click_down = nk_true;
-            gui.double_click_pos     = nk_vec2((float)p.x, (float)p.y);
-        }
-        gui.last_button_click = time;
-    }
-    else
-    {
-        gui.is_double_click_down = nk_false;
-    }
-}
+// void
+// gui_mouse_button_callback (int button, double scroll, int pressed)
+// {
+//     if (button == RGFW_mouseScrollDown || button == RGFW_mouseScrollUp)
+//     {
+//         gui.scroll = nk_vec2(0, scroll);
+//     }
+//     if (button != RGFW_mouseLeft)
+//     {
+//         return;
+//     }
+//     nu_v2_t p = window_get_mouse_position();
+//     if (pressed)
+//     {
+//         double time = window_get_time();
+//         double dt   = time - gui.last_button_click;
+//         if (dt > NK_DOUBLE_CLICK_LO && dt < NK_DOUBLE_CLICK_HI)
+//         {
+//             gui.is_double_click_down = nk_true;
+//             gui.double_click_pos     = nk_vec2((float)p.x, (float)p.y);
+//         }
+//         gui.last_button_click = time;
+//     }
+//     else
+//     {
+//         gui.is_double_click_down = nk_false;
+//     }
+// }
 nu_bool_t
 gui_is_double_click (void)
 {

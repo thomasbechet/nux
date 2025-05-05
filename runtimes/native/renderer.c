@@ -1,5 +1,6 @@
 #include "internal.h"
 
+#include <GLFW/glfw3.h>
 #include "shaders_data.c.inc"
 
 static struct
@@ -146,7 +147,7 @@ renderer_init (void)
     nu_status_t status = NU_SUCCESS;
 
     // Initialize GL functions
-    if (!gladLoadGL((GLADloadfunc)RGFW_getProcAddress))
+    if (!gladLoadGL(glfwGetProcAddress))
     {
         fprintf(stderr, "Failed to load GL functions");
         return NU_FAILURE;
