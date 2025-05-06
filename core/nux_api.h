@@ -25,13 +25,13 @@ typedef enum
     // NUX_SCREEN_WIDTH  = 1920,
     // NUX_SCREEN_HEIGHT = 1080,
 
-    //
-    // NUX_SCREEN_WIDTH  = 800,
-    // NUX_SCREEN_HEIGHT = 600,
+    // 10:10
+    // NUX_SCREEN_WIDTH  = 1024,
+    // NUX_SCREEN_HEIGHT = 640,
 
     // 16:10, too high ?
-    // NUX_SCREEN_WIDTH  = 640,
-    // NUX_SCREEN_HEIGHT = 400,
+    NUX_SCREEN_WIDTH  = 640,
+    NUX_SCREEN_HEIGHT = 400,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 640,
@@ -42,8 +42,8 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 320,
 
     // 16:10
-    NUX_SCREEN_WIDTH  = 480,
-    NUX_SCREEN_HEIGHT = 300,
+    // NUX_SCREEN_WIDTH  = 480,
+    // NUX_SCREEN_HEIGHT = 300,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 480,
@@ -130,25 +130,25 @@ typedef enum
 typedef enum
 {
     NUX_RAM_SCREEN       = 0x0,
-    NUX_RAM_ZBUFFER      = 0x119400,
-    NUX_RAM_COLORMAP     = 0x34bc00,
-    NUX_RAM_PALETTE      = 0x34be00,
-    NUX_RAM_TEXTURE      = 0x34bf00,
-    NUX_RAM_BUTTONS      = 0x234bf00,
-    NUX_RAM_AXIS         = 0x234bf20,
-    NUX_RAM_TIME         = 0x234bfe0,
-    NUX_RAM_FRAME        = 0x234bfe4,
-    NUX_RAM_CURSORX      = 0x234bfe8,
-    NUX_RAM_CURSORY      = 0x234bfec,
-    NUX_RAM_STAT_FPS     = 0x234bff0,
-    NUX_RAM_TEXTURE_VIEW = 0x234bff4,
-    NUX_RAM_CAM_EYE      = 0x234c004,
-    NUX_RAM_CAM_CENTER   = 0x234c010,
-    NUX_RAM_CAM_UP       = 0x234c01c,
-    NUX_RAM_CAM_FOV      = 0x234c028,
-    NUX_RAM_CAM_VIEWPORT = 0x234c02c,
-    NUX_RAM_MODEL        = 0x234c03c,
-    NUX_RAM_USER         = 0x234c07c
+    NUX_RAM_ZBUFFER      = 0x800000,
+    NUX_RAM_COLORMAP     = 0x1800000,
+    NUX_RAM_PALETTE      = 0x1800200,
+    NUX_RAM_TEXTURE      = 0x1800300,
+    NUX_RAM_BUTTONS      = 0x3800300,
+    NUX_RAM_AXIS         = 0x3800320,
+    NUX_RAM_TIME         = 0x38003e0,
+    NUX_RAM_FRAME        = 0x38003e4,
+    NUX_RAM_CURSORX      = 0x38003e8,
+    NUX_RAM_CURSORY      = 0x38003ec,
+    NUX_RAM_STAT_FPS     = 0x38003f0,
+    NUX_RAM_TEXTURE_VIEW = 0x38003f4,
+    NUX_RAM_CAM_EYE      = 0x3800404,
+    NUX_RAM_CAM_CENTER   = 0x3800410,
+    NUX_RAM_CAM_UP       = 0x380041c,
+    NUX_RAM_CAM_FOV      = 0x3800428,
+    NUX_RAM_CAM_VIEWPORT = 0x380042c,
+    NUX_RAM_MODEL        = 0x380043c,
+    NUX_RAM_USER         = 0x380047c
 } nux_ram_layout_t;
 
 typedef enum

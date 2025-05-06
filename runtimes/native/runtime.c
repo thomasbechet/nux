@@ -41,7 +41,7 @@ instance_init (runtime_instance_t *instance, nu_sv_t path)
     instance->save_state        = NU_NULL;
     instance->pause             = NU_FALSE;
     instance->viewport          = nk_rect(0, 0, 10, 10);
-    instance->viewport_mode     = VIEWPORT_FIXED_BEST_FIT;
+    instance->viewport_mode     = VIEWPORT_STRETCH_KEEP_ASPECT;
     instance->debug_value_count = 0;
 
     // instance->save_state = native_malloc(vm_config_state_memsize(config));
