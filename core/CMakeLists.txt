@@ -41,6 +41,7 @@ project(core LANGUAGES C)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)
 include_directories(${CMAKE_SOURCE_DIR}/externals/wasm3/source)
+include_directories(${CMAKE_SOURCE_DIR}/externals/tiny-fixedpoint-c/src)
 
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)
@@ -70,7 +71,10 @@ set(WASM3_SOURCES
     "${CMAKE_SOURCE_DIR}/externals/wasm3/source/m3_module.c"
     "${CMAKE_SOURCE_DIR}/externals/wasm3/source/m3_parse.c"
 )
+set(FP_SOURCES
+    "${CMAKE_SOURCE_DIR}/externals/tiny-fixedpoint-c/src/fixedpoint.c"
+)
 # file(GLOB WASM3_SOURCES ${CMAKE_SOURCE_DIR}/externals/wasm3/source/*.c)
 # add_library(${PROJECT_NAME} ${SOURCES} ${WAMR_RUNTIME_LIB_SOURCE})
 # target_link_libraries(${PROJECT_NAME} m3)
-add_library(${PROJECT_NAME} ${SOURCES} ${WASM3_SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES} ${WASM3_SOURCES} ${FP_SOURCES})
