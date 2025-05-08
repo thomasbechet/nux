@@ -23,29 +23,11 @@ nux_rectfill (nux_env_t env,
 void
 nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
 {
-    NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return);
-    NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return);
+    NU_CHECK(x >= 0 && x < NUX_CANVAS_WIDTH, return);
+    NU_CHECK(y >= 0 && y < NUX_CANVAS_HEIGHT, return);
 
-    nux_u16_t c = nux_cget(env, nux_palc(env, color));
-    NUX_ENCODE_COLOR(
-        env->inst->memory + NUX_RAM_SCREEN, y * NUX_SCREEN_WIDTH + x, c);
-}
-void
-nux_zset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth)
-{
-    NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return);
-    NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return);
-    nux_f32_t *z = NUX_MEMPTR(env->inst, NUX_RAM_ZBUFFER, nux_f32_t);
-    z[y * NUX_SCREEN_WIDTH + x] = depth;
-}
-nux_f32_t
-nux_zget (nux_env_t env, nux_i32_t x, nux_i32_t y)
-{
-    NU_CHECK(x >= 0 && x < NUX_SCREEN_WIDTH, return 0);
-    NU_CHECK(y >= 0 && y < NUX_SCREEN_HEIGHT, return 0);
-    const nux_f32_t *z
-        = NUX_MEMPTR(env->inst, NUX_RAM_ZBUFFER, const nux_f32_t);
-    return z[y * NUX_SCREEN_WIDTH + x];
+    nux_u8_t *canvas                 = env->inst->state + NUX_RAM_CANVAS;
+    canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(env, color);
 }
 void
 nux_line (nux_env_t env,
@@ -382,230 +364,215 @@ sample_texture (nux_env_t env, nux_f32_t u, nux_f32_t v)
     // Inverse y coordinate
     y = th - y - 1;
 
-    // switch (env->texture_type)
-    // {
-    //     case NUX_TEXTURE_PAL:
-    //         return nux_cget(env, nux_palc(env, env->texture_data[y * tw +
-    //         x]));
-    //     case NUX_TEXTURE_RGB:
-    //         return NUX_DECODE_COLOR(env->texture_data, y * tw + x);
-    //     default:
-    //         return 0;
-    // }
     nux_u8_t *base = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t)
-                     + (ty * NUX_TEXTURE_ATLAS_WIDTH + tx) * NUX_COLOR_BYTES;
-    return NUX_DECODE_COLOR(base, y * NUX_TEXTURE_ATLAS_WIDTH + x);
+                     + (ty * NUX_TEXTURE_WIDTH + tx);
+    return base[y * NUX_TEXTURE_WIDTH + x];
 }
 
-static inline nux_u16_t
-blend_color (nux_u16_t src, nux_u16_t dst, nux_f32_t a)
-{
-    nu_u8_t r, g, b;
-    NUX_SPLIT_COLOR(src, r, g, b);
-    r = (nux_f32_t)r * a;
-    g = (nux_f32_t)g * a;
-    b = (nux_f32_t)b * a;
-    return NUX_MAKE_COLOR(r, g, b);
-}
-
-static void
-raster_fill_triangles (nux_env_t        env,
-                       const nux_f32_t *positions,
-                       const nux_f32_t *uvs,
-                       nux_u32_t        count,
-                       const nux_f32_t *m)
-{
-    const nu_f32_t *cameye
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nu_f32_t);
-    const nu_f32_t *camcenter
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nu_f32_t);
-    const nu_f32_t *camup
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nu_f32_t);
-    nu_f32_t        fov = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nu_f32_t);
-    const nu_u32_t *viewport
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, const nu_u32_t);
-
-    nu_m4_t view = nu_lookat(nu_v3(cameye[0], cameye[1], cameye[2]),
-                             nu_v3(camcenter[0], camcenter[1], camcenter[2]),
-                             nu_v3(camup[0], camup[1], camup[2]));
-    nu_m4_t proj = nu_perspective(
-        nu_radian(fov), (nu_f32_t)viewport[2] / viewport[3], 0.05, 300);
-    nu_m4_t  view_proj = nu_m4_mul(proj, view);
-    nu_m4_t  model     = nu_m4(m);
-    nu_m4_t  mvp       = nu_m4_mul(view_proj, model);
-    nu_b2i_t vp
-        = nu_b2i_xywh(viewport[0], viewport[1], viewport[2], viewport[3]);
-
-    // Iterate over triangles
-    for (nu_u32_t i = 0; i < count; i += 3)
-    {
-        // Apply vertex shader
-        nu_v4_t vertex_positions[4];
-        nu_v2_t vertex_uvs[4];
-
-        // Transform to world
-        for (nu_u32_t j = 0; j < 3; ++j)
-        {
-            // vertex_positions[j] = vertex_shader(mvp,
-            //                                     positions[(i + j) * 3 + 0],
-            //                                     positions[(i + j) * 3 + 1],
-            //                                     positions[(i + j) * 3 + 2]);
-            vertex_positions[j] = nu_m4_mulv(model,
-                                             nu_v4(positions[(i + j) * 3 + 0],
-                                                   positions[(i + j) * 3 + 1],
-                                                   positions[(i + j) * 3 + 2],
-                                                   1));
-        }
-
-        // Compute normal
-        nu_v3_t normal = nu_triangle_normal(nu_v3_v4(vertex_positions[0]),
-                                            nu_v3_v4(vertex_positions[1]),
-                                            nu_v3_v4(vertex_positions[2]));
-
-        // Transform to NDC
-        for (nu_u32_t j = 0; j < 3; ++j)
-        {
-            vertex_positions[j] = nu_m4_mulv(view_proj, vertex_positions[j]);
-        }
-
-        // Read uvs
-        for (nu_u32_t j = 0; j < 3; ++j)
-        {
-            vertex_uvs[j].x = uvs[(i + j) * 2 + 0];
-            vertex_uvs[j].y = uvs[(i + j) * 2 + 1];
-        }
-
-        // Clip vertices
-        nu_u32_t indices[6];
-        nu_u32_t indices_count
-            = clip_triangle(vertex_positions, vertex_uvs, indices);
-        if (!indices_count)
-        {
-            continue;
-        }
-
-        // Perspective divide (NDC)
-        for (nu_u32_t i = 0; i < 4; i++)
-        {
-            vertex_positions[i].x /= vertex_positions[i].w;
-            vertex_positions[i].y /= vertex_positions[i].w;
-            vertex_positions[i].z /= vertex_positions[i].w;
-        }
-
-        // Iterate over clipped triangles
-        for (nu_u32_t v = 0; v < indices_count; v += 3)
-        {
-            nu_v4_t v0 = vertex_positions[indices[v + 0]];
-            nu_v4_t v1 = vertex_positions[indices[v + 1]];
-            nu_v4_t v2 = vertex_positions[indices[v + 2]];
-
-            nu_v2_t uv0 = vertex_uvs[indices[v + 0]];
-            nu_v2_t uv1 = vertex_uvs[indices[v + 1]];
-            nu_v2_t uv2 = vertex_uvs[indices[v + 2]];
-
-            nu_v2i_t v0vp = pos_to_viewport(vp, v0.x, v0.y);
-            nu_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
-            nu_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
-
-            nu_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
-            if (area < 0)
-            {
-                continue;
-            }
-
-            env->tricount += 1;
-
-            // Keep inv weights for perspective correction
-            nu_f32_t inv_vw0 = 1. / v0.w;
-            nu_f32_t inv_vw1 = 1. / v1.w;
-            nu_f32_t inv_vw2 = 1. / v2.w;
-
-            nu_i32_t xmin
-                = NU_MAX(vp.min.x, NU_MIN(v0vp.x, NU_MIN(v1vp.x, v2vp.x)));
-            nu_i32_t ymin
-                = NU_MAX(vp.min.y, NU_MIN(v0vp.y, NU_MIN(v1vp.y, v2vp.y)));
-            nu_i32_t xmax
-                = NU_MIN(vp.max.x, NU_MAX(v0vp.x, NU_MAX(v1vp.x, v2vp.x)));
-            nu_i32_t ymax
-                = NU_MIN(vp.max.y, NU_MAX(v0vp.y, NU_MAX(v1vp.y, v2vp.y)));
-
-            for (nu_i32_t y = ymin; y < ymax; ++y)
-            {
-                nu_f32_t *row_depth
-                    = &((nu_f32_t *)(env->inst->memory
-                                     + NUX_RAM_ZBUFFER))[y * NUX_SCREEN_WIDTH];
-                nu_u8_t *row_pixel
-                    = env->inst->memory + NUX_RAM_SCREEN + y * NUX_SCREEN_WIDTH;
-                for (nu_i32_t x = xmin; x <= xmax; ++x)
-                {
-                    // Compute weights
-                    nu_i32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
-                    nu_i32_t w1 = pixel_coverage(v2vp, v0vp, x, y);
-                    nu_i32_t w2 = pixel_coverage(v0vp, v1vp, x, y);
-
-                    nu_bool_t included = (w0 >= 0 && w1 >= 0 && w2 >= 0);
-                    if (!included)
-                    {
-                        continue;
-                    }
-
-                    nu_f32_t a = (nu_f32_t)w0 / (nu_f32_t)area;
-                    nu_f32_t b = (nu_f32_t)w1 / (nu_f32_t)area;
-                    nu_f32_t c = 1 - a - b;
-
-                    nu_f32_t depth = (a * v0.z + b * v1.z + c * v2.z);
-
-                    a *= inv_vw0;
-                    b *= inv_vw1;
-                    c *= inv_vw2;
-
-                    nu_f32_t inv_sum_abc = 1.0 / (a + b + c);
-                    a *= inv_sum_abc;
-                    b *= inv_sum_abc;
-                    c *= inv_sum_abc;
-
-                    // Depth test
-                    nu_f32_t *pdepth = &(
-                        (nu_f32_t *)(env->inst->memory
-                                     + NUX_RAM_ZBUFFER))[y * NUX_SCREEN_WIDTH
-                                                         + x];
-                    if (depth < *pdepth)
-                    {
-                        // row_depth[x] = depth;
-                        *pdepth = depth;
-
-                        nux_f32_t u = a * uv0.x + b * uv1.x + c * uv2.x;
-                        nux_f32_t v = a * uv0.y + b * uv1.y + c * uv2.y;
-                        nux_u16_t c = sample_texture(env, u, v);
-
-                        // nu_f32_t t = nux_time(env);
-                        // nu_v3_t  sun
-                        //     = nu_v3_normalize(nu_v3(nu_sin(t), 1,
-                        //     nu_cos(t)));
-                        // nu_f32_t dot = NU_MAX(0.5, nu_v3_dot(normal, sun));
-                        // c            = blend_color(c, 0, dot);
-
-                        NUX_ENCODE_COLOR(env->inst->memory + NUX_RAM_SCREEN,
-                                         y * NUX_SCREEN_WIDTH + x,
-                                         c);
-                    }
-                }
-            }
-
-            // {
-            //     nu_u32_t x0 = NU_CLAMP(v0vp.x, 0, NUX_SCREEN_WIDTH);
-            //     nu_u32_t x1 = NU_CLAMP(v1vp.x, 0, NUX_SCREEN_WIDTH);
-            //     nu_u32_t x2 = NU_CLAMP(v2vp.x, 0, NUX_SCREEN_WIDTH);
-            //     nu_u32_t y0 = NU_CLAMP(v0vp.y, 0, NUX_SCREEN_HEIGHT);
-            //     nu_u32_t y1 = NU_CLAMP(v1vp.y, 0, NUX_SCREEN_HEIGHT);
-            //     nu_u32_t y2 = NU_CLAMP(v2vp.y, 0, NUX_SCREEN_HEIGHT);
-            //     nux_line(env, x0, y0, x1, y1, 0);
-            //     nux_line(env, x0, y0, x2, y2, 0);
-            //     nux_line(env, x1, y1, x2, y2, 0);
-            // }
-        }
-    }
-}
+// static void
+// raster_fill_triangles (nux_env_t        env,
+//                        const nux_f32_t *positions,
+//                        const nux_f32_t *uvs,
+//                        nux_u32_t        count,
+//                        const nux_f32_t *m)
+// {
+//     const nu_f32_t *cameye
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nu_f32_t);
+//     const nu_f32_t *camcenter
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nu_f32_t);
+//     const nu_f32_t *camup
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nu_f32_t);
+//     nu_f32_t        fov = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nu_f32_t);
+//     const nu_u32_t *viewport
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, const nu_u32_t);
+//
+//     nu_m4_t view = nu_lookat(nu_v3(cameye[0], cameye[1], cameye[2]),
+//                              nu_v3(camcenter[0], camcenter[1], camcenter[2]),
+//                              nu_v3(camup[0], camup[1], camup[2]));
+//     nu_m4_t proj = nu_perspective(
+//         nu_radian(fov), (nu_f32_t)viewport[2] / viewport[3], 0.05, 300);
+//     nu_m4_t  view_proj = nu_m4_mul(proj, view);
+//     nu_m4_t  model     = nu_m4(m);
+//     nu_m4_t  mvp       = nu_m4_mul(view_proj, model);
+//     nu_b2i_t vp
+//         = nu_b2i_xywh(viewport[0], viewport[1], viewport[2], viewport[3]);
+//
+//     // Iterate over triangles
+//     for (nu_u32_t i = 0; i < count; i += 3)
+//     {
+//         // Apply vertex shader
+//         nu_v4_t vertex_positions[4];
+//         nu_v2_t vertex_uvs[4];
+//
+//         // Transform to world
+//         for (nu_u32_t j = 0; j < 3; ++j)
+//         {
+//             // vertex_positions[j] = vertex_shader(mvp,
+//             //                                     positions[(i + j) * 3 +
+//             0],
+//             //                                     positions[(i + j) * 3 +
+//             1],
+//             //                                     positions[(i + j) * 3 +
+//             2]); vertex_positions[j] = nu_m4_mulv(model,
+//                                              nu_v4(positions[(i + j) * 3 +
+//                                              0],
+//                                                    positions[(i + j) * 3 +
+//                                                    1], positions[(i + j) * 3
+//                                                    + 2], 1));
+//         }
+//
+//         // Compute normal
+//         nu_v3_t normal = nu_triangle_normal(nu_v3_v4(vertex_positions[0]),
+//                                             nu_v3_v4(vertex_positions[1]),
+//                                             nu_v3_v4(vertex_positions[2]));
+//
+//         // Transform to NDC
+//         for (nu_u32_t j = 0; j < 3; ++j)
+//         {
+//             vertex_positions[j] = nu_m4_mulv(view_proj, vertex_positions[j]);
+//         }
+//
+//         // Read uvs
+//         for (nu_u32_t j = 0; j < 3; ++j)
+//         {
+//             vertex_uvs[j].x = uvs[(i + j) * 2 + 0];
+//             vertex_uvs[j].y = uvs[(i + j) * 2 + 1];
+//         }
+//
+//         // Clip vertices
+//         nu_u32_t indices[6];
+//         nu_u32_t indices_count
+//             = clip_triangle(vertex_positions, vertex_uvs, indices);
+//         if (!indices_count)
+//         {
+//             continue;
+//         }
+//
+//         // Perspective divide (NDC)
+//         for (nu_u32_t i = 0; i < 4; i++)
+//         {
+//             vertex_positions[i].x /= vertex_positions[i].w;
+//             vertex_positions[i].y /= vertex_positions[i].w;
+//             vertex_positions[i].z /= vertex_positions[i].w;
+//         }
+//
+//         // Iterate over clipped triangles
+//         for (nu_u32_t v = 0; v < indices_count; v += 3)
+//         {
+//             nu_v4_t v0 = vertex_positions[indices[v + 0]];
+//             nu_v4_t v1 = vertex_positions[indices[v + 1]];
+//             nu_v4_t v2 = vertex_positions[indices[v + 2]];
+//
+//             nu_v2_t uv0 = vertex_uvs[indices[v + 0]];
+//             nu_v2_t uv1 = vertex_uvs[indices[v + 1]];
+//             nu_v2_t uv2 = vertex_uvs[indices[v + 2]];
+//
+//             nu_v2i_t v0vp = pos_to_viewport(vp, v0.x, v0.y);
+//             nu_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
+//             nu_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
+//
+//             nu_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
+//             if (area < 0)
+//             {
+//                 continue;
+//             }
+//
+//             env->tricount += 1;
+//
+//             // Keep inv weights for perspective correction
+//             nu_f32_t inv_vw0 = 1. / v0.w;
+//             nu_f32_t inv_vw1 = 1. / v1.w;
+//             nu_f32_t inv_vw2 = 1. / v2.w;
+//
+//             nu_i32_t xmin
+//                 = NU_MAX(vp.min.x, NU_MIN(v0vp.x, NU_MIN(v1vp.x, v2vp.x)));
+//             nu_i32_t ymin
+//                 = NU_MAX(vp.min.y, NU_MIN(v0vp.y, NU_MIN(v1vp.y, v2vp.y)));
+//             nu_i32_t xmax
+//                 = NU_MIN(vp.max.x, NU_MAX(v0vp.x, NU_MAX(v1vp.x, v2vp.x)));
+//             nu_i32_t ymax
+//                 = NU_MIN(vp.max.y, NU_MAX(v0vp.y, NU_MAX(v1vp.y, v2vp.y)));
+//
+//             for (nu_i32_t y = ymin; y < ymax; ++y)
+//             {
+//                 nu_f32_t *row_depth
+//                     = &((nu_f32_t *)(env->inst->state
+//                                      + NUX_RAM_ZBUFFER))[y *
+//                                      NUX_CANVAS_WIDTH];
+//                 nu_u8_t *row_pixel
+//                     = env->inst->state + NUX_RAM_CANVAS + y *
+//                     NUX_CANVAS_WIDTH;
+//                 for (nu_i32_t x = xmin; x <= xmax; ++x)
+//                 {
+//                     // Compute weights
+//                     nu_i32_t w0 = pixel_coverage(v1vp, v2vp, x, y);
+//                     nu_i32_t w1 = pixel_coverage(v2vp, v0vp, x, y);
+//                     nu_i32_t w2 = pixel_coverage(v0vp, v1vp, x, y);
+//
+//                     nu_bool_t included = (w0 >= 0 && w1 >= 0 && w2 >= 0);
+//                     if (!included)
+//                     {
+//                         continue;
+//                     }
+//
+//                     nu_f32_t a = (nu_f32_t)w0 / (nu_f32_t)area;
+//                     nu_f32_t b = (nu_f32_t)w1 / (nu_f32_t)area;
+//                     nu_f32_t c = 1 - a - b;
+//
+//                     nu_f32_t depth = (a * v0.z + b * v1.z + c * v2.z);
+//
+//                     a *= inv_vw0;
+//                     b *= inv_vw1;
+//                     c *= inv_vw2;
+//
+//                     nu_f32_t inv_sum_abc = 1.0 / (a + b + c);
+//                     a *= inv_sum_abc;
+//                     b *= inv_sum_abc;
+//                     c *= inv_sum_abc;
+//
+//                     // Depth test
+//                     nu_f32_t *pdepth = &(
+//                         (nu_f32_t *)(env->inst->state
+//                                      + NUX_RAM_ZBUFFER))[y * NUX_CANVAS_WIDTH
+//                                                          + x];
+//                     if (depth < *pdepth)
+//                     {
+//                         // row_depth[x] = depth;
+//                         *pdepth = depth;
+//
+//                         nux_f32_t u = a * uv0.x + b * uv1.x + c * uv2.x;
+//                         nux_f32_t v = a * uv0.y + b * uv1.y + c * uv2.y;
+//                         nux_u16_t c = sample_texture(env, u, v);
+//
+//                         // nu_f32_t t = nux_time(env);
+//                         // nu_v3_t  sun
+//                         //     = nu_v3_normalize(nu_v3(nu_sin(t), 1,
+//                         //     nu_cos(t)));
+//                         // nu_f32_t dot = NU_MAX(0.5, nu_v3_dot(normal,
+//                         sun));
+//                         // c            = blend_color(c, 0, dot);
+//
+//                         NUX_ENCODE_COLOR(env->inst->state + NUX_RAM_CANVAS,
+//                                          y * NUX_CANVAS_WIDTH + x,
+//                                          c);
+//                     }
+//                 }
+//             }
+//
+//             // {
+//             //     nu_u32_t x0 = NU_CLAMP(v0vp.x, 0, NUX_SCREEN_WIDTH);
+//             //     nu_u32_t x1 = NU_CLAMP(v1vp.x, 0, NUX_SCREEN_WIDTH);
+//             //     nu_u32_t x2 = NU_CLAMP(v2vp.x, 0, NUX_SCREEN_WIDTH);
+//             //     nu_u32_t y0 = NU_CLAMP(v0vp.y, 0, NUX_SCREEN_HEIGHT);
+//             //     nu_u32_t y1 = NU_CLAMP(v1vp.y, 0, NUX_SCREEN_HEIGHT);
+//             //     nu_u32_t y2 = NU_CLAMP(v2vp.y, 0, NUX_SCREEN_HEIGHT);
+//             //     nux_line(env, x0, y0, x1, y1, 0);
+//             //     nux_line(env, x0, y0, x2, y2, 0);
+//             //     nux_line(env, x1, y1, x2, y2, 0);
+//             // }
+//         }
+//     }
+// }
 static void
 raster_wire_triangles (nux_env_t        env,
                        const nux_f32_t *positions,
@@ -691,12 +658,12 @@ raster_wire_triangles (nux_env_t        env,
                 continue;
             }
 
-            nu_u32_t x0 = NU_CLAMP(v0vp.x, 0, NUX_SCREEN_WIDTH);
-            nu_u32_t x1 = NU_CLAMP(v1vp.x, 0, NUX_SCREEN_WIDTH);
-            nu_u32_t x2 = NU_CLAMP(v2vp.x, 0, NUX_SCREEN_WIDTH);
-            nu_u32_t y0 = NU_CLAMP(v0vp.y, 0, NUX_SCREEN_HEIGHT);
-            nu_u32_t y1 = NU_CLAMP(v1vp.y, 0, NUX_SCREEN_HEIGHT);
-            nu_u32_t y2 = NU_CLAMP(v2vp.y, 0, NUX_SCREEN_HEIGHT);
+            nu_u32_t x0 = NU_CLAMP(v0vp.x, 0, NUX_CANVAS_WIDTH);
+            nu_u32_t x1 = NU_CLAMP(v1vp.x, 0, NUX_CANVAS_WIDTH);
+            nu_u32_t x2 = NU_CLAMP(v2vp.x, 0, NUX_CANVAS_WIDTH);
+            nu_u32_t y0 = NU_CLAMP(v0vp.y, 0, NUX_CANVAS_HEIGHT);
+            nu_u32_t y1 = NU_CLAMP(v1vp.y, 0, NUX_CANVAS_HEIGHT);
+            nu_u32_t y2 = NU_CLAMP(v2vp.y, 0, NUX_CANVAS_HEIGHT);
             nux_line(env, x0, y0, x1, y1, 7);
             nux_line(env, x0, y0, x2, y2, 7);
             nux_line(env, x1, y1, x2, y2, 7);
@@ -711,7 +678,6 @@ nux_mesh (nux_env_t        env,
           nux_u32_t        count,
           const nux_f32_t *m)
 {
-    raster_fill_triangles(env, positions, uvs, count, m);
 }
 void
 nux_mesh_wire (nux_env_t        env,
@@ -720,7 +686,6 @@ nux_mesh_wire (nux_env_t        env,
                nux_u32_t        count,
                const nux_f32_t *m)
 {
-    raster_wire_triangles(env, positions, uvs, count, m);
 }
 void
 nux_draw_cube (

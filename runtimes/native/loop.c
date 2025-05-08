@@ -111,14 +111,14 @@ debug_camera (nux_env_t env, nu_f32_t dt)
 static void
 blit_colormap (nux_env_t env)
 {
-    for (int i = 0; i < NUX_PALETTE_LEN; ++i)
+    for (int i = 0; i < NUX_PALETTE_SIZE; ++i)
     {
         const nux_u32_t tw     = 30;
         const nux_u32_t th     = 10;
         const nux_u32_t tr     = 5;
         nux_u32_t       x      = i % tr;
         nux_u32_t       y      = i / tr;
-        nux_u32_t       origin = NUX_SCREEN_WIDTH - tw * tr;
+        nux_u32_t       origin = NUX_CANVAS_WIDTH - tw * tr;
         nux_u32_t       px     = x * tw;
         nux_u32_t       py     = y * th;
         nux_rectfill(env,
@@ -145,7 +145,6 @@ void
 loop_update (nux_env_t env)
 {
     nux_cls(env, 0);
-    nux_clsz(env);
 
 #ifdef NUX_BENCHMARK
     clock_t t;
@@ -159,7 +158,7 @@ loop_update (nux_env_t env)
     {
         model = nu_m4_mul(nu_m4_translate(nu_v3(1.2 * (i % 5), 0, (i / 5) * 2)),
                           nu_m4_scale(NU_V3_ONES));
-        draw_red(env, model.data, 1);
+        // draw_red(env, model.data, 1);
     }
     nux_camfov(env, 50);
     for (int i = 1; i < 10; ++i)
@@ -168,14 +167,14 @@ loop_update (nux_env_t env)
         nux_draw_cube(env, 2, 2, 0.1, model.data);
     }
     model = nu_m4_translate(nu_v3(-8, 0, 0));
-    draw_krabe(env, model.data, 0);
+    // draw_krabe(env, model.data, 0);
     model = nu_m4_translate(nu_v3(-3, 0, 0));
-    draw_krabe(env, model.data, 1);
+    // draw_krabe(env, model.data, 1);
     nux_f32_t y = 0.6;
     nux_dbgf32(env, "y", &y);
     model = nu_m4_mul(nu_m4_translate(nu_v3(0, y, 0.5)),
                       nu_m4_scale(nu_v3s(0.08)));
-    draw_lavalamp(env, model.data, 1);
+    // draw_lavalamp(env, model.data, 1);
 
 #ifdef NUX_BENCHMARK
     static double sum   = 0;
@@ -210,7 +209,7 @@ loop_update (nux_env_t env)
     nux_cursor(env, 0, 0);
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
     nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
-    nux_printfmt(env, 7, "RES:%dx%d", NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+    nux_printfmt(env, 7, "RES:%dx%d", NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
     // blit_colormap(env);

@@ -26,8 +26,10 @@ typedef enum
 
 typedef enum
 {
-    NUX_MEMORY_USAGE_STATE,
     NUX_MEMORY_USAGE_CORE,
+    NUX_MEMORY_USAGE_STATE,
+    NUX_MEMORY_USAGE_GPU_BUFFER,
+    NUX_MEMORY_USAGE_GPU_COMMAND,
 } nux_memory_usage_t;
 
 typedef struct
@@ -35,6 +37,15 @@ typedef struct
     nux_u32_t version;
     nux_u32_t entry_count;
 } nux_cart_header_t;
+
+typedef struct
+{
+    nux_u32_t count;
+    struct
+    {
+
+    } data;
+} nux_gpu_command_t;
 
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Callbacks                     //////
@@ -83,8 +94,11 @@ NUX_API void  nux_instance_set_axis(nux_instance_t inst,
 NUX_API void  nux_instance_set_stat(nux_instance_t inst,
                                     nux_stat_t     stat,
                                     nux_u32_t      value);
-NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t inst);
-NUX_API const nux_u8_t *nux_instance_get_screen(nux_instance_t inst);
+NUX_API const nux_c8_t  *nux_instance_get_error(nux_instance_t inst);
+NUX_API const nux_u8_t  *nux_instance_get_canvas(nux_instance_t inst);
+NUX_API const nux_u8_t  *nux_instance_get_texture(nux_instance_t inst);
+NUX_API const nux_u8_t  *nux_instance_get_colormap(nux_instance_t inst);
+NUX_API const nux_u32_t *nux_instance_get_buffer(nux_instance_t inst);
 
 //////////////////////////////////////////////////////////////////////////
 //////                           Helper API                         //////

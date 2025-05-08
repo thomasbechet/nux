@@ -21,8 +21,7 @@ if __name__ == "__main__":
         # texpath = os.path.dirname(args.model) + '/' + material.texture.path
         texpath = material.texture.path.lower()
         texname = args.name + material.texture.name.replace('.', '_').replace('/', '_') 
-        # pixels, width, height = compile_texture(texname, texpath, args.palette)
-        pixels, width, height = compile_texture(texname, texpath)
+        pixels, width, height = compile_texture(texname, texpath, args.palette)
 
         vertex_format = material.vertex_format
         obj = {}

@@ -42,8 +42,8 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 320,
 
     // 16:10
-    NUX_SCREEN_WIDTH  = 480,
-    NUX_SCREEN_HEIGHT = 300,
+    NUX_CANVAS_WIDTH  = 480,
+    NUX_CANVAS_HEIGHT = 300,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 480,
@@ -59,15 +59,17 @@ typedef enum
     // NUX_SCREEN_WIDTH  = 320,
     // NUX_SCREEN_HEIGHT = 200,
 
-    NUX_TEXTURE_ATLAS_WIDTH  = 4096,
-    NUX_TEXTURE_ATLAS_HEIGHT = 4096,
-    NUX_PLAYER_MAX           = 4,
-    NUX_BUTTON_MAX           = 10,
-    NUX_AXIS_MAX             = 6,
-    NUX_NAME_MAX             = 64,
-    NUX_PALETTE_LEN          = 256,
-    NUX_COLORMAP_LEN         = 256,
-    NUX_COLOR_BYTES          = 2,
+    NUX_TEXTURE_WIDTH    = 4096,
+    NUX_TEXTURE_HEIGHT   = 4096,
+    NUX_PLAYER_MAX       = 4,
+    NUX_BUTTON_MAX       = 10,
+    NUX_AXIS_MAX         = 6,
+    NUX_NAME_MAX         = 64,
+    NUX_PALETTE_SIZE     = 256,
+    NUX_COLORMAP_SIZE    = 256,
+    NUX_MEMORY_SIZE      = (1 << 27), // 128M
+    NUX_GPU_BUFFER_SIZE  = (1 << 24), // 16M
+    NUX_GPU_COMMAND_SIZE = 1024,
 } nux_constants_t;
 
 typedef enum
@@ -129,26 +131,25 @@ typedef enum
 
 typedef enum
 {
-    NUX_RAM_SCREEN       = 0x0,
-    NUX_RAM_ZBUFFER      = 0x800000,
-    NUX_RAM_COLORMAP     = 0x1800000,
-    NUX_RAM_PALETTE      = 0x1800200,
-    NUX_RAM_TEXTURE      = 0x1800300,
-    NUX_RAM_BUTTONS      = 0x3800300,
-    NUX_RAM_AXIS         = 0x3800320,
-    NUX_RAM_TIME         = 0x38003e0,
-    NUX_RAM_FRAME        = 0x38003e4,
-    NUX_RAM_CURSORX      = 0x38003e8,
-    NUX_RAM_CURSORY      = 0x38003ec,
-    NUX_RAM_STAT_FPS     = 0x38003f0,
-    NUX_RAM_TEXTURE_VIEW = 0x38003f4,
-    NUX_RAM_CAM_EYE      = 0x3800404,
-    NUX_RAM_CAM_CENTER   = 0x3800410,
-    NUX_RAM_CAM_UP       = 0x380041c,
-    NUX_RAM_CAM_FOV      = 0x3800428,
-    NUX_RAM_CAM_VIEWPORT = 0x380042c,
-    NUX_RAM_MODEL        = 0x380043c,
-    NUX_RAM_USER         = 0x380047c
+    NUX_RAM_CANVAS       = 0x0,
+    NUX_RAM_COLORMAP     = 0x3d090,
+    NUX_RAM_PALETTE      = 0x3d490,
+    NUX_RAM_TEXTURE      = 0x3d590,
+    NUX_RAM_BUTTONS      = 0x103d590,
+    NUX_RAM_AXIS         = 0x103d5b0,
+    NUX_RAM_TIME         = 0x103d670,
+    NUX_RAM_FRAME        = 0x103d674,
+    NUX_RAM_CURSORX      = 0x103d678,
+    NUX_RAM_CURSORY      = 0x103d67c,
+    NUX_RAM_STAT_FPS     = 0x103d680,
+    NUX_RAM_TEXTURE_VIEW = 0x103d684,
+    NUX_RAM_CAM_EYE      = 0x103d694,
+    NUX_RAM_CAM_CENTER   = 0x103d6a0,
+    NUX_RAM_CAM_UP       = 0x103d6ac,
+    NUX_RAM_CAM_FOV      = 0x103d6b8,
+    NUX_RAM_CAM_VIEWPORT = 0x103d6bc,
+    NUX_RAM_MODEL        = 0x103d6cc,
+    NUX_RAM_USER         = 0x103d70c
 } nux_ram_layout_t;
 
 typedef enum
@@ -166,8 +167,9 @@ typedef enum
 
 typedef enum
 {
-    NUX_TEXTURE_PAL,
-    NUX_TEXTURE_RGB,
+    NUX_TEXTURE_COLOR,
+    NUX_TEXTURE_ALPHA,
+    NUX_TEXTURE_NORMAL,
 } nux_texture_type_t;
 
 // Debug API
@@ -182,7 +184,7 @@ nux_f32_t nux_time(nux_env_t env);
 nux_f32_t nux_dt(nux_env_t env);
 nux_u32_t nux_frame(nux_env_t env);
 
-// 2D API
+// Canvas API
 void nux_rectfill(nux_env_t env,
                   nux_i32_t x0,
                   nux_i32_t y0,
@@ -251,10 +253,7 @@ void      nux_palt(nux_env_t env, nux_u8_t c);
 void      nux_palr(nux_env_t env);
 nux_u8_t  nux_palc(nux_env_t env, nux_u8_t index);
 void      nux_cls(nux_env_t env, nux_u32_t color);
-void      nux_clsz(nux_env_t env);
 void      nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t c);
-void      nux_zset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_f32_t depth);
-nux_f32_t nux_zget(nux_env_t env, nux_i32_t x, nux_i32_t y);
 nux_u32_t nux_cget(nux_env_t env, nux_u8_t index);
 void      nux_cset(nux_env_t env, nux_u8_t index, nux_u16_t c);
 

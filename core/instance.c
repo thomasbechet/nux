@@ -34,11 +34,22 @@ nux_instance_init (const nux_instance_config_t *config)
     inst->update   = config->update;
 
     // Allocate state
-    inst->memory_capa = NU_MEM_128M;
-    inst->memory      = nux_platform_malloc(
-        config->userdata, NUX_MEMORY_USAGE_STATE, inst->memory_capa);
-    NU_CHECK(inst->memory, goto cleanup0);
-    nu_memset(inst->memory, 0, inst->memory_capa);
+    inst->state = nux_platform_malloc(
+        config->userdata, NUX_MEMORY_USAGE_STATE, NUX_MEMORY_SIZE);
+    NU_CHECK(inst->state, goto cleanup0);
+    nu_memset(inst->state, 0, NUX_MEMORY_SIZE);
+
+    // Allocate gpu buffer and commands
+    inst->gpu_buffer
+        = nux_platform_malloc(config->userdata,
+                              NUX_MEMORY_USAGE_GPU_BUFFER,
+                              NUX_GPU_BUFFER_SIZE * sizeof(*inst->gpu_buffer));
+    NU_CHECK(inst->gpu_buffer, goto cleanup0);
+    inst->gpu_commands = nux_platform_malloc(config->userdata,
+                                             NUX_MEMORY_USAGE_GPU_COMMAND,
+                                             NUX_GPU_COMMAND_SIZE
+                                                 * sizeof(*inst->gpu_commands));
+    NU_CHECK(inst->gpu_commands, goto cleanup0);
 
     // Initialize state
     nux_env_t env = init_env(inst);
@@ -47,11 +58,7 @@ nux_instance_init (const nux_instance_config_t *config)
     nux_cameye(env, 0, 0, 0);
     nux_camcenter(env, 0, 0, -1);
     nux_camup(env, 0, 1, 0);
-    nux_camviewport(env, 0, 0, NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
-
-    // Wasm initialization
-    // nux_status_t res = nux_wasm_init(inst, config);
-    // NU_CHECK(res, goto cleanup0);
+    nux_camviewport(env, 0, 0, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
 
     return inst;
 cleanup0:
@@ -61,14 +68,18 @@ cleanup0:
 void
 nux_instance_free (nux_instance_t inst)
 {
-    // Wasm
-    // nux_wasm_free(inst);
-    // State
-    if (inst->memory)
+    if (inst->gpu_commands)
     {
-        nux_platform_free(inst->userdata, inst->memory);
+        nux_platform_free(inst->userdata, inst->gpu_commands);
     }
-    // Instance
+    if (inst->gpu_buffer)
+    {
+        nux_platform_free(inst->userdata, inst->gpu_buffer);
+    }
+    if (inst->state)
+    {
+        nux_platform_free(inst->userdata, inst->state);
+    }
     nux_platform_free(inst->userdata, inst);
 }
 void
@@ -80,7 +91,7 @@ nux_instance_tick (nux_instance_t inst)
     nux_cursor(env, 0, 0);
 
     // Init
-    nux_u32_t *frame_index = (nux_u32_t *)(inst->memory + NUX_RAM_FRAME);
+    nux_u32_t *frame_index = (nux_u32_t *)(inst->state + NUX_RAM_FRAME);
     if (*frame_index == 0 && inst->init)
     {
         inst->init(env);
@@ -93,7 +104,7 @@ nux_instance_tick (nux_instance_t inst)
     }
 
     // Frame integration
-    nux_f32_t *time = (nux_f32_t *)(inst->memory + NUX_RAM_TIME);
+    nux_f32_t *time = (nux_f32_t *)(inst->state + NUX_RAM_TIME);
     *time           = *time + nux_dt(env);
     ++(*frame_index);
 }
@@ -132,9 +143,19 @@ nux_instance_get_error (nux_instance_t inst)
     return nux_error_message(inst->env.error);
 }
 const nux_u8_t *
-nux_instance_get_screen (nux_instance_t inst)
+nux_instance_get_canvas (nux_instance_t inst)
 {
-    return inst->memory + NUX_RAM_SCREEN;
+    return inst->state + NUX_RAM_CANVAS;
+}
+const nux_u8_t *
+nux_instance_get_texture (nux_instance_t inst)
+{
+    return inst->state + NUX_RAM_TEXTURE;
+}
+const nux_u8_t *
+nux_instance_get_colormap (nux_instance_t inst)
+{
+    return inst->state + NUX_RAM_COLORMAP;
 }
 
 const nux_c8_t *

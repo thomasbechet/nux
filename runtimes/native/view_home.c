@@ -89,7 +89,7 @@ file_dialog (file_dialog_t     *fd,
                 nu_sv_to_cstr(nu_path_basename(file), basename, NU_PATH_MAX);
 
                 // Must be checked before selectable label update
-                if (selected && gui_is_double_click())
+                if (selected && window_is_double_click())
                 {
                     if (nu_path_isdir(file))
                     {

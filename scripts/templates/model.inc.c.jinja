@@ -38,20 +38,28 @@ static struct {
 {% endfor -%}
 };
 static nux_u32_t {{ name }}_objects_count = {{ objects_count }};
+static nux_u32_t {{ name }}_tex_x;
+static nux_u32_t {{ name }}_tex_y;
+void {{ name }}_load_texture(nux_env_t env, nux_u32_t x, nux_u32_t y)
+{
+    nux_write_texture(env,
+        x, y, 
+        {{ name }}_objects[i].texw, 
+        {{ name }}_objects[i].texh,
+        {{ name }}_objects[i].tex);
+    {{ name }}_tex_x = x;
+    {{ name }}_tex_y = y;
+}
 void draw_{{ name }}(nux_env_t env, const nux_f32_t *m, nux_u32_t wireframe)
 {
     for (nux_u32_t i = 0; i < {{ name }}_objects_count; ++i)
     {
-        nux_write_texture(env,
-            0, 0, 
-            {{ name }}_objects[i].texw, 
-            {{ name }}_objects[i].texh,
-            {{ name }}_objects[i].tex);
         nux_bind_texture(env,
-            0, 0,
+            {{ name }}_tex_x, 
+            {{ name }}_tex_y, 
             {{ name }}_objects[i].texw,
             {{ name }}_objects[i].texh,
-            NUX_TEXTURE_RGB);
+            NUX_TEXTURE_COLOR);
         if (wireframe)
         {
              nux_mesh(env,

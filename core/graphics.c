@@ -16,7 +16,7 @@ void
 nux_palr (nux_env_t env)
 {
     nux_u8_t *pal = NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, nux_u8_t);
-    for (nux_u32_t i = 0; i < NUX_PALETTE_LEN; ++i)
+    for (nux_u32_t i = 0; i < NUX_PALETTE_SIZE; ++i)
     {
         pal[i] = i;
     }
@@ -30,16 +30,7 @@ nux_palc (nux_env_t env, nux_u8_t index)
 void
 nux_cls (nux_env_t env, nux_u32_t color)
 {
-    nux_rectfill(env, 0, 0, NUX_SCREEN_WIDTH - 1, NUX_SCREEN_HEIGHT - 1, color);
-}
-void
-nux_clsz (nux_env_t env)
-{
-    nux_f32_t *z = NUX_MEMPTR(env->inst, NUX_RAM_ZBUFFER, nux_f32_t);
-    for (nux_u32_t p = 0; p < NUX_SCREEN_WIDTH * NUX_SCREEN_HEIGHT; ++p)
-    {
-        z[p] = NU_FLT_MAX;
-    }
+    nux_rectfill(env, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1, color);
 }
 void
 nux_text (
@@ -151,17 +142,20 @@ nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
     NUX_MEMSET(env->inst, NUX_RAM_CURSORX, nux_i32_t, x);
     NUX_MEMSET(env->inst, NUX_RAM_CURSORY, nux_i32_t, y);
 }
-nux_u16_t
+nux_u32_t
 nux_cget (nux_env_t env, nux_u8_t index)
 {
     nux_u8_t *map = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
-    return NUX_DECODE_COLOR(map, index);
+    return (map[index * 3 + 0] << 16 | map[index * 3 + 1] << 8
+            | map[index * 3 + 0]);
 }
 void
-nux_cset (nux_env_t env, nux_u8_t index, nux_u16_t color)
+nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
 {
-    nux_u8_t *map = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
-    NUX_ENCODE_COLOR(map, index, color);
+    nux_u8_t *map      = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
+    map[index * 3 + 0] = (color & 0xFF0000) >> 16;
+    map[index * 3 + 1] = (color & 0xFF00) >> 8;
+    map[index * 3 + 2] = color & 0xFF;
 }
 void
 nux_cameye (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
@@ -202,7 +196,7 @@ nux_camfov (nux_env_t env, nux_f32_t fov)
 nux_u8_t *
 nux_screen (nux_env_t env)
 {
-    return NUX_MEMPTR(env->inst, NUX_RAM_SCREEN, nux_u8_t);
+    return NUX_MEMPTR(env->inst, NUX_RAM_CANVAS, nux_u8_t);
 }
 void
 nux_bind_texture (nux_env_t          env,
@@ -227,18 +221,42 @@ nux_write_texture (nux_env_t       env,
                    const nux_u8_t *data)
 {
     // Clamp to region
-    x = NU_MIN(x, NUX_TEXTURE_ATLAS_WIDTH - 1);
-    y = NU_MIN(y, NUX_TEXTURE_ATLAS_HEIGHT - 1);
-    w = NU_MIN(w, NUX_TEXTURE_ATLAS_WIDTH - x - 1);
-    h = NU_MIN(h, NUX_TEXTURE_ATLAS_HEIGHT - y - 1);
+    x = NU_MIN(x, NUX_TEXTURE_WIDTH - 1);
+    y = NU_MIN(y, NUX_TEXTURE_HEIGHT - 1);
+    w = NU_MIN(w, NUX_TEXTURE_WIDTH - x - 1);
+    h = NU_MIN(h, NUX_TEXTURE_HEIGHT - y - 1);
 
     // Copy row by row
     nux_u8_t *tex = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t);
     for (nux_u32_t i = 0; i < h; ++i)
     {
-        nux_u8_t *dst
-            = tex + ((y + i) * NUX_TEXTURE_ATLAS_WIDTH + x) * NUX_COLOR_BYTES;
-        const nux_u8_t *src = data + (i * w * NUX_COLOR_BYTES);
-        nu_memcpy(dst, src, w * NUX_COLOR_BYTES);
+        nux_u8_t       *dst = tex + ((y + i) * NUX_TEXTURE_WIDTH + x);
+        const nux_u8_t *src = data + (i * w);
+        nu_memcpy(dst, src, w);
     }
+}
+
+nux_u32_t
+nux_push_gpu_data (nux_env_t env, const nux_f32_t *data, nux_u32_t count)
+{
+    if (env->inst->gpu_buffer_size + count >= NUX_GPU_BUFFER_SIZE)
+    {
+        return 0;
+    }
+    nux_u32_t index = env->inst->gpu_buffer_size;
+    nu_memcpy(env->inst->gpu_buffer + index, data, sizeof(*data) * count);
+    env->inst->gpu_buffer_size += count;
+    return index;
+}
+nux_gpu_command_t *
+nux_push_gpu_command (nux_env_t env)
+{
+    if (env->inst->gpu_commands_size >= NUX_GPU_COMMAND_SIZE)
+    {
+        return NU_NULL;
+    }
+    nux_gpu_command_t *cmd
+        = &env->inst->gpu_commands[env->inst->gpu_commands_size];
+    ++env->inst->gpu_commands_size;
+    return cmd;
 }

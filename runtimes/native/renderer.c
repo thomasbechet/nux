@@ -1,80 +1,20 @@
 #include "internal.h"
 
-#include <GLFW/glfw3.h>
+#include <glad/gl.h>
 #include "shaders_data.c.inc"
 
 static struct
 {
-    GLuint screen_blit_program;
-    GLuint surface_texture;
-    GLuint surface_fbo;
+    GLuint canvas;
+    GLuint colormap;
+    GLuint texture;
+    GLuint buffer;
+
+    GLuint canvas_blit_program;
+    GLuint canvas_fbo;
+    GLuint empty_vao;
 } renderer;
 
-static const GLchar *
-message_type_string (GLenum type)
-{
-    switch (type)
-    {
-        case GL_DEBUG_TYPE_ERROR:
-            return "ERROR";
-        case GL_DEBUG_TYPE_MARKER:
-            return "MARKER";
-        case GL_DEBUG_TYPE_OTHER:
-            return "OTHER";
-        case GL_DEBUG_TYPE_PERFORMANCE:
-            return "PERFORMANCE";
-        case GL_DEBUG_TYPE_PORTABILITY:
-            return "PORTABILITY";
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-            return "UNDEFINED_BEHAVIOR";
-    }
-    return "";
-}
-static void GLAPIENTRY
-message_callback (GLenum        source,
-                  GLenum        type,
-                  GLuint        id,
-                  GLenum        severity,
-                  GLsizei       length,
-                  const GLchar *message,
-                  const void   *userParam)
-{
-    (void)source;
-    (void)id;
-    (void)length;
-    if (type == GL_DEBUG_TYPE_OTHER) // Skip other messages
-    {
-        return;
-    }
-    switch (severity)
-    {
-        case GL_DEBUG_SEVERITY_HIGH:
-            fprintf(stderr,
-                    "GL: %s, message = %s",
-                    message_type_string(type),
-                    message);
-            break;
-        case GL_DEBUG_SEVERITY_MEDIUM:
-            fprintf(stderr,
-                    "GL: %s, message = %s",
-                    message_type_string(type),
-                    message);
-            break;
-        case GL_DEBUG_SEVERITY_LOW:
-            fprintf(stderr,
-                    "GL: %s, message = %s",
-                    message_type_string(type),
-                    message);
-            break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION:
-            fprintf(stderr,
-                    "GL: %s, message = %s",
-                    message_type_string(type),
-                    message);
-            break;
-    }
-    NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
-}
 static nu_status_t
 compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
 {
@@ -146,57 +86,74 @@ renderer_init (void)
 {
     nu_status_t status = NU_SUCCESS;
 
-    // Initialize GL functions
-    if (!gladLoadGL(glfwGetProcAddress))
-    {
-        fprintf(stderr, "Failed to load GL functions");
-        return NU_FAILURE;
-    }
-
-    // During init, enable debug output
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(message_callback, NU_NULL);
-
-    // Compile blit screen
-    glEnableVertexAttribArray(0);
-    status = compile_program(shader_screen_blit_vert,
-                             shader_screen_blit_frag,
-                             &renderer.screen_blit_program);
+    // Compile canvas blit program
+    status = compile_program(shader_canvas_blit_vert,
+                             shader_canvas_blit_frag,
+                             &renderer.canvas_blit_program);
     NU_CHECK(status, goto cleanup0);
-    glUseProgram(renderer.screen_blit_program);
-    glUniform1i(glGetUniformLocation(renderer.screen_blit_program, "t_surface"),
+    glUseProgram(renderer.canvas_blit_program);
+    glUniform1i(glGetUniformLocation(renderer.canvas_blit_program, "t_canvas"),
                 0);
+    glUniform1i(
+        glGetUniformLocation(renderer.canvas_blit_program, "t_colormap"), 1);
     glUseProgram(0);
 
-    // Create surface
-    glGenTextures(1, &renderer.surface_texture);
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    // Compile uber program
+
+    // Create canvas
+    glGenTextures(1, &renderer.canvas);
+    glBindTexture(GL_TEXTURE_2D, renderer.canvas);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_SRGB,
-                 NUX_SCREEN_WIDTH,
-                 NUX_SCREEN_HEIGHT,
+                 GL_R8UI,
+                 NUX_CANVAS_WIDTH,
+                 NUX_CANVAS_HEIGHT,
                  0,
-                 // GL_BGRA,
-                 // GL_RGBA,
-                 GL_BGRA,
-                 GL_UNSIGNED_SHORT_1_5_5_5_REV,
+                 GL_RED_INTEGER,
+                 GL_UNSIGNED_BYTE,
                  NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    // Create surface fbo
-    glGenFramebuffers(1, &renderer.surface_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, renderer.surface_fbo);
-    glFramebufferTexture2D(GL_FRAMEBUFFER,
-                           GL_COLOR_ATTACHMENT0,
-                           GL_TEXTURE_2D,
-                           renderer.surface_texture,
-                           0);
-    NU_ASSERT(glCheckFramebufferStatus(GL_FRAMEBUFFER)
-              == GL_FRAMEBUFFER_COMPLETE);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    // Create texture
+    glGenTextures(1, &renderer.texture);
+    glBindTexture(GL_TEXTURE_2D, renderer.texture);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_R8UI,
+                 NUX_TEXTURE_WIDTH,
+                 NUX_TEXTURE_HEIGHT,
+                 0,
+                 GL_RED_INTEGER,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create colormap
+    glGenTextures(1, &renderer.colormap);
+    glBindTexture(GL_TEXTURE_2D, renderer.colormap);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGB8,
+                 NUX_COLORMAP_SIZE,
+                 1,
+                 0,
+                 GL_RGB,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Create buffer
+    // glGenBuffers(1, &renderer.buffer);
+    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer.buffer);
+
+    // Create empty vao
+    glGenVertexArrays(1, &renderer.empty_vao);
 
     return status;
 
@@ -209,17 +166,29 @@ cleanup0:
 void
 renderer_free (void)
 {
-    if (renderer.screen_blit_program)
+    if (renderer.empty_vao)
     {
-        glDeleteProgram(renderer.screen_blit_program);
+        glDeleteVertexArrays(1, &renderer.empty_vao);
     }
-    if (renderer.surface_fbo)
+    if (renderer.canvas_blit_program)
     {
-        glDeleteFramebuffers(1, &renderer.surface_fbo);
+        glDeleteProgram(renderer.canvas_blit_program);
     }
-    if (renderer.surface_texture)
+    // if (renderer.canvas_fbo)
+    // {
+    //     glDeleteFramebuffers(1, &renderer.canvas_fbo);
+    // }
+    if (renderer.canvas)
     {
-        glDeleteTextures(1, &renderer.surface_texture);
+        glDeleteTextures(1, &renderer.canvas);
+    }
+    if (renderer.texture)
+    {
+        glDeleteTextures(1, &renderer.texture);
+    }
+    if (renderer.colormap)
+    {
+        glDeleteTextures(1, &renderer.colormap);
     }
 }
 void
@@ -246,34 +215,68 @@ renderer_render_instance (nux_instance_t inst,
                           nu_b2i_t       viewport,
                           nu_v2u_t       window_size)
 {
-    // Update surface
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    // Update canvas
+    glBindTexture(GL_TEXTURE_2D, renderer.canvas);
     glTexSubImage2D(GL_TEXTURE_2D,
                     0,
                     0,
                     0,
-                    NUX_SCREEN_WIDTH,
-                    NUX_SCREEN_HEIGHT,
-                    GL_BGRA,
-                    GL_UNSIGNED_SHORT_1_5_5_5_REV,
-                    nux_instance_get_screen(inst));
+                    NUX_CANVAS_WIDTH,
+                    NUX_CANVAS_HEIGHT,
+                    GL_RED_INTEGER,
+                    GL_UNSIGNED_BYTE,
+                    nux_instance_get_canvas(inst));
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Update texture
+    glBindTexture(GL_TEXTURE_2D, renderer.texture);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    NUX_TEXTURE_WIDTH,
+                    NUX_TEXTURE_HEIGHT,
+                    GL_RED_INTEGER,
+                    GL_UNSIGNED_BYTE,
+                    nux_instance_get_texture(inst));
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Update colormap
+    glBindTexture(GL_TEXTURE_2D, renderer.colormap);
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0,
+                    0,
+                    0,
+                    NUX_COLORMAP_SIZE,
+                    1,
+                    GL_RGB,
+                    GL_UNSIGNED_BYTE,
+                    nux_instance_get_colormap(inst));
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    // Update buffer
+
+    // Execute commands
 
     // Blit surface to screen
     nu_v2i_t pos  = viewport.min;
     nu_v2u_t size = nu_b2i_size(viewport);
-    // Patch pos (bottom left in opengl)
-    pos.y = window_size.y - (pos.y + size.y);
+    pos.y
+        = window_size.y - (pos.y + size.y); // Patch pos (bottom left in opengl)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glUseProgram(renderer.screen_blit_program);
+    glUseProgram(renderer.canvas_blit_program);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glViewport(pos.x, pos.y, size.x, size.y);
-    glActiveTexture(GL_TEXTURE0 + 0);
-    glBindTexture(GL_TEXTURE_2D, renderer.surface_texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer.canvas);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, renderer.colormap);
+    glBindVertexArray(renderer.empty_vao);
     glDrawArrays(GL_TRIANGLES, 0, 3);
+    glBindVertexArray(0);
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);
 }

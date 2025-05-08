@@ -2,9 +2,15 @@
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
-#include <GLFW/glfw3.h>
 
-#define MAX_COMMAND 64
+#define NK_IMPLEMENTATION
+#define NK_GLFW_GL3_IMPLEMENTATION
+#include <nuklear/nuklear.h>
+#include <nuklear/nuklear_glfw_gl3.h>
+
+#define MAX_COMMAND        64
+#define MAX_VERTEX_BUFFER  512 * 1024
+#define MAX_ELEMENT_BUFFER 128 * 1024
 
 static struct
 {
@@ -15,12 +21,76 @@ static struct
     nu_f32_t          axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
     runtime_command_t cmds[MAX_COMMAND];
     nu_size_t         cmds_count;
-    nu_f32_t          scale_factor;
-    nu_v2_t           mouse_scroll;
-    nu_v2_t           mouse_position;
     nu_v2u_t          size;
     nu_f64_t          prev_time;
+    struct nk_glfw    nk_glfw;
 } window;
+
+static const GLchar *
+gl_message_type_string (GLenum type)
+{
+    switch (type)
+    {
+        case GL_DEBUG_TYPE_ERROR:
+            return "ERROR";
+        case GL_DEBUG_TYPE_MARKER:
+            return "MARKER";
+        case GL_DEBUG_TYPE_OTHER:
+            return "OTHER";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "PERFORMANCE";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "PORTABILITY";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "UNDEFINED_BEHAVIOR";
+    }
+    return "";
+}
+static void GLAPIENTRY
+gl_message_callback (GLenum        source,
+                     GLenum        type,
+                     GLuint        id,
+                     GLenum        severity,
+                     GLsizei       length,
+                     const GLchar *message,
+                     const void   *userParam)
+{
+    (void)source;
+    (void)id;
+    (void)length;
+    if (type == GL_DEBUG_TYPE_OTHER) // Skip other messages
+    {
+        return;
+    }
+    switch (severity)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:
+            fprintf(stderr,
+                    "GL: %s, message = %s",
+                    gl_message_type_string(type),
+                    message);
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            fprintf(stderr,
+                    "GL: %s, message = %s",
+                    gl_message_type_string(type),
+                    message);
+            break;
+        case GL_DEBUG_SEVERITY_LOW:
+            fprintf(stderr,
+                    "GL: %s, message = %s",
+                    gl_message_type_string(type),
+                    message);
+            break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            fprintf(stderr,
+                    "GL: %s, message = %s",
+                    gl_message_type_string(type),
+                    message);
+            break;
+    }
+    // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
+}
 
 static nux_button_t
 key_to_button (nu_u32_t code)
@@ -180,6 +250,8 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
             window.axis[0][axis] = 0;
         }
     }
+
+    nk_glfw3_key_callback(win, key, scancode, action, mods);
 }
 
 nu_status_t
@@ -195,6 +267,8 @@ window_init (void)
     window.cmds_count        = 0;
 
     // Initialized GLFW
+    glfwInitHint(GLFW_PLATFORM,
+                 GLFW_PLATFORM_X11); // Wayland not supported by renderdoc
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to init GLFW");
@@ -202,7 +276,9 @@ window_init (void)
     }
 
     // Create window
-    glfwWindowHint(GLFW_SCALE_TO_MONITOR, 1);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     window.win = glfwCreateWindow(width, height, "nux", NU_NULL, NU_NULL);
     if (!window.win)
     {
@@ -216,22 +292,44 @@ window_init (void)
     glfwSetFramebufferSizeCallback(window.win, resize_callback);
     glfwSetKeyCallback(window.win, key_callback);
 
+    // Initialize GL functions
+    if (!gladLoadGL(glfwGetProcAddress))
+    {
+        fprintf(stderr, "Failed to load GL functions");
+        return NU_FAILURE;
+    }
+
+    // Setup debug callbacks
+    // During init, enable debug output
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(gl_message_callback, NU_NULL);
+
     // Initialize viewport
     int w, h;
     glfwGetFramebufferSize(window.win, &w, &h);
-    window.size         = nu_v2u(w, h);
-    window.scale_factor = 1;
+    window.size = nu_v2u(w, h);
+
+    // Initialize nuklear context
+    glfwSetScrollCallback(window.win, nk_gflw3_scroll_callback);
+    glfwSetCharCallback(window.win, nk_glfw3_char_callback);
+    glfwSetMouseButtonCallback(window.win, nk_glfw3_mouse_button_callback);
+    nk_glfw3_init(&window.nk_glfw, window.win, NK_GLFW3_DEFAULT);
+
+    struct nk_font_atlas *atlas;
+    nk_glfw3_font_stash_begin(&window.nk_glfw, &atlas);
+    nk_glfw3_font_stash_end(&window.nk_glfw);
 
     return NU_SUCCESS;
 }
 void
 window_free (void)
 {
+    nk_glfw3_shutdown(&window.nk_glfw);
     glfwDestroyWindow(window.win);
     glfwTerminate();
 }
 void
-window_poll_events (void)
+window_begin_frame (void)
 {
     glfwPollEvents();
 
@@ -312,10 +410,20 @@ window_poll_events (void)
             // window.axis[player][NUX_AXIS_RIGHTY] = -ax.y;
         }
     }
+
+    // Begin nuklear context
+    nk_glfw3_new_frame(&window.nk_glfw);
 }
 nu_u32_t
-window_swap_buffers (void)
+window_end_frame (void)
 {
+    // Render GUI
+    nk_glfw3_render(&window.nk_glfw,
+                    NK_ANTI_ALIASING_ON,
+                    MAX_VERTEX_BUFFER,
+                    MAX_ELEMENT_BUFFER);
+
+    // Swap buffers
     glfwSwapBuffers(window.win);
     nu_f64_t time    = glfwGetTime();
     nu_f64_t delta   = time - window.prev_time;
@@ -328,34 +436,15 @@ window_get_size (void)
 {
     return window.size;
 }
-nu_f32_t
-window_get_scale_factor (void)
+struct nk_context *
+window_nk_context (void)
 {
-    return window.scale_factor;
-}
-nu_v2_t
-window_get_mouse_scroll (void)
-{
-    return window.mouse_scroll;
-}
-nu_v2_t
-window_get_mouse_position (void)
-{
-    double x, y;
-    float  sx, sy;
-    glfwGetCursorPos(window.win, &x, &y);
-    glfwGetWindowContentScale(window.win, &sx, &sy);
-    return nu_v2(x * sx, y * sy);
-}
-nu_f64_t
-window_get_time (void)
-{
-    return glfwGetTime();
+    return &window.nk_glfw.ctx;
 }
 nu_bool_t
-window_is_mouse_pressed (int button)
+window_is_double_click (void)
 {
-    return glfwGetMouseButton(window.win, button) == GLFW_PRESS;
+    return window.nk_glfw.is_double_click_down;
 }
 nu_bool_t
 window_poll_command (runtime_command_t *cmd)
@@ -367,9 +456,8 @@ window_poll_command (runtime_command_t *cmd)
     *cmd = window.cmds[--window.cmds_count];
     return NU_TRUE;
 }
-
 void
-window_update_inputs (nux_instance_t inst)
+window_set_instance_inputs (nux_instance_t inst)
 {
     nux_instance_set_buttons(inst, 0, window.buttons[0]);
     for (nu_size_t a = 0; a < NUX_AXIS_MAX; ++a)

@@ -1,38 +1,14 @@
-#version 330
-
-layout(location = 0) in uint pos;
-layout(location = 1) in uint tex;
-layout(location = 2) in uint size;
-
-uniform sampler2D texture0;
-uniform uvec2 viewport_size;
+#version 330 core
 
 out vec2 uv;
 
-const vec2 offsets[6] = vec2[](
-    vec2(0, 0),
-    vec2(0, 1),
-    vec2(1, 1),
-    vec2(1, 1),
-    vec2(1, 0),
-    vec2(0, 0)
-);
-
 void main()
 {
-    // Extract vertex data
-    vec2 vertex_pos = vec2(float(pos & 0xffffu), float(pos >> 16u)); 
-    vec2 vertex_tex = vec2(float(tex & 0xffffu), float(tex >> 16u));
-    vec2 vertex_size = vec2(float(size & 0xffffu), float(size >> 16u));
+    float x = float((gl_VertexID & 1) << 2);
+    float y = float((gl_VertexID & 2) << 1);
 
-    // Compute vertex offset based on the vertex index
-    vec2 vertex_offset = offsets[gl_VertexID];
+    uv.x = x * 0.5;
+    uv.y = y * 0.5;
 
-    // Apply offset and normalize
-    vec2 position = (vertex_pos + vertex_size * vertex_offset) / vec2(viewport_size); 
-    position.y = 1 - position.y;
-    gl_Position = vec4(position * 2 - 1, 0, 1);
-
-    // Set output
-    uv = floor(vertex_tex + vertex_size * vertex_offset) / vec2(textureSize(texture0, 0));
+    gl_Position = vec4(x - 1.0, y - 1.0, 0.0, 1.0);
 }

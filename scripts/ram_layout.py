@@ -1,9 +1,8 @@
 layout = [
-    ('screen', 1024 * 1024 * 2 * 4),
-    ('zbuffer', 1024 * 1024 * 4 * 4),
-    ('colormap', 256 * 2),
+    ('canvas', 500 * 500),
+    ('colormap', 256 * 3),
     ('palette', 256),
-    ('texture', 4096 * 4096 * 2),
+    ('texture', 4096 * 4096),
     ('buttons', 8 * 4),
     ('axis', 8 * 4 * 6),
     ('time', 4),

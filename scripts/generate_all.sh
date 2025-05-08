@@ -11,7 +11,7 @@ python $ROOT_DIR/scripts/generate_fonts_header.py $ROOT_DIR
 echo "GENERATING SYSCALL HEADER"
 python $ROOT_DIR/scripts/generate_syscall_headers.py $ROOT_DIR
 echo "GENERATING SHADERS HEADER"
-bash $ROOT_DIR/scripts/generate_shaders_header.sh $ROOT_DIR
+python $ROOT_DIR/scripts/generate_shaders_header.py $ROOT_DIR
 echo "GENERATING TEMPLATES HEADER"
 bash $ROOT_DIR/scripts/generate_templates_header.sh $ROOT_DIR
 echo "FORMATTING ALL"

@@ -6,7 +6,7 @@ nux_instance_set_buttons (nux_instance_t inst,
                           nux_u32_t      state)
 {
     // TODO: validate ?
-    nux_u32_t *buttons = (nux_u32_t *)(inst->memory + NUX_RAM_BUTTONS);
+    nux_u32_t *buttons = (nux_u32_t *)(inst->state + NUX_RAM_BUTTONS);
     buttons[player]    = state;
 }
 void
@@ -16,7 +16,7 @@ nux_instance_set_axis (nux_instance_t inst,
                        nux_f32_t      value)
 {
     // TODO: validate ?
-    nux_f32_t *ax = (nux_f32_t *)(inst->memory + NUX_RAM_AXIS);
+    nux_f32_t *ax = (nux_f32_t *)(inst->state + NUX_RAM_AXIS);
     ax[player * NUX_AXIS_MAX + axis] = value;
 }
 

@@ -73,7 +73,7 @@ apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
     nu_v2_t global_pos  = nu_v2(viewport.min.x, viewport.min.y);
     nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(viewport));
 
-    nu_v2_t  screen       = nu_v2(NUX_SCREEN_WIDTH, NUX_SCREEN_HEIGHT);
+    nu_v2_t  screen       = nu_v2(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     nu_f32_t aspect_ratio = screen.x / screen.y;
 
     nu_v2_t vsize = NU_V2_ZEROS;
@@ -142,8 +142,6 @@ runtime_run (const runtime_config_t *config)
     NU_CHECK(status, goto cleanup0);
     status = renderer_init();
     NU_CHECK(status, goto cleanup1);
-    status = gui_init();
-    NU_CHECK(status, goto cleanup2);
 
     runtime.running = NU_TRUE;
     nu_u32_t fps    = 0;
@@ -158,7 +156,7 @@ runtime_run (const runtime_config_t *config)
     while (runtime.running)
     {
         // Retrieve window events
-        window_poll_events();
+        window_begin_frame();
 
         // Update active instances
         for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
@@ -167,7 +165,7 @@ runtime_run (const runtime_config_t *config)
             if (instance->active && !instance->pause)
             {
                 // Update inputs
-                window_update_inputs(instance->instance);
+                window_set_instance_inputs(instance->instance);
                 // Update stats
                 nux_instance_set_stat(instance->instance, NUX_STAT_FPS, fps);
                 // Tick
@@ -202,11 +200,8 @@ runtime_run (const runtime_config_t *config)
             }
         }
 
-        // Draw GUI
-        gui_render();
-
         // Swap buffers
-        fps = window_swap_buffers();
+        fps = window_end_frame();
 
         // Process runtime events
         runtime_command_t cmd;
@@ -231,8 +226,6 @@ runtime_run (const runtime_config_t *config)
         instance_free(runtime.instances + i);
     }
 
-    gui_free();
-cleanup2:
     renderer_free();
 cleanup1:
     window_free();
