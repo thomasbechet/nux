@@ -5,6 +5,7 @@
 
 #ifdef NUX_INCLUDE_FIXED_TYPES
 #else
+typedef int           nux_b32_t;
 typedef unsigned char nux_u8_t;
 typedef char          nux_c8_t;
 typedef int           nux_i16_t;

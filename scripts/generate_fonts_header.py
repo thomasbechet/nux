@@ -41,10 +41,10 @@ if __name__ == "__main__":
     
     output = "core/fonts_data.c.inc"
     with open(os.path.join(args.rootdir, output), "w") as f:
-        print("#include <nulib/nulib.h>", file=f)
+        print('#include "internal.h"', file=f)
         print("#define DEFAULT_FONT_DATA_WIDTH ", w, file=f);
         print("#define DEFAULT_FONT_DATA_HEIGHT", h, file=f);
-        print("static const nu_byte_t default_font_data_chars[] = {", ','.join(['{: 3d}'.format(x) for x in chars]), "};", file=f)
-        print("static const nu_byte_t default_font_data[] = {", ','.join(['0x{:02x}'.format(x) for x in ba.tobytes()]), "};", file=f)
+        print("static const nux_u8_t default_font_data_chars[] = {", ','.join(['{: 3d}'.format(x) for x in chars]), "};", file=f)
+        print("static const nux_u8_t default_font_data[] = {", ','.join(['0x{:02x}'.format(x) for x in ba.tobytes()]), "};", file=f)
         f.close()
         subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)

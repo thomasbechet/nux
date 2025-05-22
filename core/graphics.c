@@ -36,34 +36,30 @@ void
 nux_text (
     nux_env_t env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c)
 {
-    const nu_size_t pixel_per_glyph
+    const nux_u32_t pixel_per_glyph
         = DEFAULT_FONT_DATA_WIDTH * DEFAULT_FONT_DATA_HEIGHT;
 
-    nu_sv_t  sv = nu_sv(text, nu_strnlen(text, 1024));
-    nu_b2i_t extent
-        = nu_b2i_xywh(x, y, DEFAULT_FONT_DATA_WIDTH, DEFAULT_FONT_DATA_HEIGHT);
-    nu_size_t  it = 0;
-    nu_wchar_t wchar;
-    while (nu_sv_next(sv, &it, &wchar))
+    nux_u32_t len = nux_strnlen(text, 1024);
+    nux_b2i_t extent
+        = nux_b2i_xywh(x, y, DEFAULT_FONT_DATA_WIDTH, DEFAULT_FONT_DATA_HEIGHT);
+    const nux_c8_t *end = text + len;
+    const nux_c8_t *it  = text;
+    for (; it < end; ++it)
     {
-        if (wchar > 256)
+        if (*it == '\n')
         {
+            extent = nux_b2i_moveto(
+                extent, nux_v2i(x, extent.min.y + DEFAULT_FONT_DATA_HEIGHT));
             continue;
         }
-        if (wchar == '\n')
-        {
-            extent = nu_b2i_moveto(
-                extent, nu_v2i(x, extent.min.y + DEFAULT_FONT_DATA_HEIGHT));
-            continue;
-        }
-        nu_size_t index = default_font_data_chars[wchar];
+        nux_u32_t index = default_font_data_chars[(nux_u8_t)(*it)];
 
-        for (nu_size_t p = 0; p < pixel_per_glyph; ++p)
+        for (nux_u32_t p = 0; p < pixel_per_glyph; ++p)
         {
-            nu_size_t bit_offset = index * pixel_per_glyph + p;
-            NU_ASSERT((bit_offset / 8) < sizeof(default_font_data));
-            nu_byte_t byte    = default_font_data[bit_offset / 8];
-            nu_byte_t bit_set = (byte & (1 << (7 - (p % 8)))) != 0;
+            nux_u32_t bit_offset = index * pixel_per_glyph + p;
+            NUX_ASSERT((bit_offset / 8) < sizeof(default_font_data));
+            nux_u8_t  byte    = default_font_data[bit_offset / 8];
+            nux_b32_t bit_set = (byte & (1 << (7 - (p % 8)))) != 0;
 
             nux_i32_t px = extent.min.x + p % DEFAULT_FONT_DATA_WIDTH;
             nux_i32_t py = extent.min.y + p / DEFAULT_FONT_DATA_WIDTH;
@@ -77,7 +73,7 @@ nux_text (
             }
         }
 
-        extent = nu_b2i_translate(extent, nu_v2i(DEFAULT_FONT_DATA_WIDTH, 0));
+        extent = nux_b2i_translate(extent, nux_v2i(DEFAULT_FONT_DATA_WIDTH, 0));
     }
 }
 void
@@ -100,7 +96,7 @@ nux_textfmt (nux_env_t       env,
     nux_c8_t buf[128];
     va_list  args;
     va_start(args, fmt);
-    nu_vsnprintf(buf, sizeof(buf), fmt, args);
+    nux_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
     nux_text(env, x, y, buf, c);
 }
@@ -110,7 +106,7 @@ nux_printfmt (nux_env_t env, nux_u8_t c, const nux_c8_t *fmt, ...)
     nux_c8_t buf[128];
     va_list  args;
     va_start(args, fmt);
-    nu_vsnprintf(buf, sizeof(buf), fmt, args);
+    nux_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
     nux_print(env, buf, c);
 }
@@ -120,7 +116,7 @@ nux_tracefmt (nux_env_t env, const nux_c8_t *fmt, ...)
     nux_c8_t buf[128];
     va_list  args;
     va_start(args, fmt);
-    nu_vsnprintf(buf, sizeof(buf), fmt, args);
+    nux_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
     nux_trace(env, buf);
 }
@@ -206,11 +202,11 @@ nux_bind_texture (nux_env_t          env,
                   nux_u32_t          h,
                   nux_texture_type_t type)
 {
-    nu_u32_t *view = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nu_u32_t);
-    view[0]        = x;
-    view[1]        = y;
-    view[2]        = w;
-    view[3]        = h;
+    nux_u32_t *view = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t);
+    view[0]         = x;
+    view[1]         = y;
+    view[2]         = w;
+    view[3]         = h;
 }
 void
 nux_write_texture (nux_env_t       env,
@@ -221,10 +217,10 @@ nux_write_texture (nux_env_t       env,
                    const nux_u8_t *data)
 {
     // Clamp to region
-    x = NU_MIN(x, NUX_TEXTURE_WIDTH - 1);
-    y = NU_MIN(y, NUX_TEXTURE_HEIGHT - 1);
-    w = NU_MIN(w, NUX_TEXTURE_WIDTH - x - 1);
-    h = NU_MIN(h, NUX_TEXTURE_HEIGHT - y - 1);
+    x = NUX_MIN(x, NUX_TEXTURE_WIDTH - 1);
+    y = NUX_MIN(y, NUX_TEXTURE_HEIGHT - 1);
+    w = NUX_MIN(w, NUX_TEXTURE_WIDTH - x - 1);
+    h = NUX_MIN(h, NUX_TEXTURE_HEIGHT - y - 1);
 
     // Copy row by row
     nux_u8_t *tex = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t);
@@ -232,31 +228,6 @@ nux_write_texture (nux_env_t       env,
     {
         nux_u8_t       *dst = tex + ((y + i) * NUX_TEXTURE_WIDTH + x);
         const nux_u8_t *src = data + (i * w);
-        nu_memcpy(dst, src, w);
+        nux_memcpy(dst, src, w);
     }
-}
-
-nux_u32_t
-nux_push_gpu_data (nux_env_t env, const nux_f32_t *data, nux_u32_t count)
-{
-    if (env->inst->gpu_buffer_size + count >= NUX_GPU_BUFFER_SIZE)
-    {
-        return 0;
-    }
-    nux_u32_t index = env->inst->gpu_buffer_size;
-    nu_memcpy(env->inst->gpu_buffer + index, data, sizeof(*data) * count);
-    env->inst->gpu_buffer_size += count;
-    return index;
-}
-nux_gpu_command_t *
-nux_push_gpu_command (nux_env_t env)
-{
-    if (env->inst->gpu_commands_size >= NUX_GPU_COMMAND_SIZE)
-    {
-        return NU_NULL;
-    }
-    nux_gpu_command_t *cmd
-        = &env->inst->gpu_commands[env->inst->gpu_commands_size];
-    ++env->inst->gpu_commands_size;
-    return cmd;
 }

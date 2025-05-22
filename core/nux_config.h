@@ -14,4 +14,7 @@
 
 // #define NUX_BENCHMARK 1
 
+#define NUX_DEBUG
+#define NUX_STDLIB
+
 #endif

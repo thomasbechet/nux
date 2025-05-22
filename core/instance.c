@@ -5,7 +5,7 @@ init_env (nux_instance_t inst)
 {
     inst->env.inst  = inst;
     inst->env.error = NUX_ERROR_NONE;
-    nu_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
+    nux_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
     inst->env.tricount = 0;
     return &inst->env;
 }
@@ -14,10 +14,10 @@ void
 nux_set_error (nux_env_t env, nux_error_t error)
 {
     env->error = error;
-    nu_snprintf(env->error_message,
-                sizeof(env->error_message),
-                "%s",
-                nux_error_message(error));
+    nux_snprintf(env->error_message,
+                 sizeof(env->error_message),
+                 "%s",
+                 nux_error_message(error));
 }
 
 nux_instance_t
@@ -26,30 +26,18 @@ nux_instance_init (const nux_instance_config_t *config)
     // Allocate instance
     nux_instance_t inst = nux_platform_malloc(
         config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));
-    NU_CHECK(inst, return NU_NULL);
-    nu_memset(inst, 0, sizeof(struct nux_instance));
+    NUX_CHECK(inst, return NUX_NULL);
+    nux_memset(inst, 0, sizeof(struct nux_instance));
     inst->userdata = config->userdata;
-    inst->running  = NU_TRUE;
+    inst->running  = NUX_TRUE;
     inst->init     = config->init;
     inst->update   = config->update;
 
     // Allocate state
     inst->state = nux_platform_malloc(
         config->userdata, NUX_MEMORY_USAGE_STATE, NUX_MEMORY_SIZE);
-    NU_CHECK(inst->state, goto cleanup0);
-    nu_memset(inst->state, 0, NUX_MEMORY_SIZE);
-
-    // Allocate gpu buffer and commands
-    inst->gpu_buffer
-        = nux_platform_malloc(config->userdata,
-                              NUX_MEMORY_USAGE_GPU_BUFFER,
-                              NUX_GPU_BUFFER_SIZE * sizeof(*inst->gpu_buffer));
-    NU_CHECK(inst->gpu_buffer, goto cleanup0);
-    inst->gpu_commands = nux_platform_malloc(config->userdata,
-                                             NUX_MEMORY_USAGE_GPU_COMMAND,
-                                             NUX_GPU_COMMAND_SIZE
-                                                 * sizeof(*inst->gpu_commands));
-    NU_CHECK(inst->gpu_commands, goto cleanup0);
+    NUX_CHECK(inst->state, goto cleanup0);
+    nux_memset(inst->state, 0, NUX_MEMORY_SIZE);
 
     // Initialize state
     nux_env_t env = init_env(inst);
@@ -63,19 +51,11 @@ nux_instance_init (const nux_instance_config_t *config)
     return inst;
 cleanup0:
     nux_instance_free(inst);
-    return NU_NULL;
+    return NUX_NULL;
 }
 void
 nux_instance_free (nux_instance_t inst)
 {
-    if (inst->gpu_commands)
-    {
-        nux_platform_free(inst->userdata, inst->gpu_commands);
-    }
-    if (inst->gpu_buffer)
-    {
-        nux_platform_free(inst->userdata, inst->gpu_buffer);
-    }
     if (inst->state)
     {
         nux_platform_free(inst->userdata, inst->state);
@@ -176,26 +156,26 @@ nux_error_message (nux_error_t error)
         case NUX_ERROR_CART_MOUNT:
             return "cartridge mount";
     }
-    return NU_NULL;
+    return NUX_NULL;
 }
 
 void
 nux_trace (nux_env_t env, const nux_c8_t *text)
 {
-    nux_platform_log(env->inst, text, nu_strnlen(text, 1024));
+    nux_platform_log(env->inst, text, nux_strnlen(text, 1024));
 }
 
 void
 nux_dbgi32 (nux_env_t env, const nux_c8_t *name, nux_i32_t *p)
 {
     nux_platform_debug(
-        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_I32, p);
+        env->inst, name, nux_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_I32, p);
 }
 void
 nux_dbgf32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)
 {
     nux_platform_debug(
-        env->inst, name, nu_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_F32, p);
+        env->inst, name, nux_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_F32, p);
 }
 
 nux_u32_t

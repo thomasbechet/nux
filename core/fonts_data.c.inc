@@ -1,7 +1,7 @@
-#include <nulib/nulib.h>
+#include "internal.h"
 #define DEFAULT_FONT_DATA_WIDTH  9
 #define DEFAULT_FONT_DATA_HEIGHT 8
-static const nu_byte_t default_font_data_chars[]
+static const nux_u8_t default_font_data_chars[]
     = { 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
         0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  3,
         4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
@@ -17,7 +17,7 @@ static const nu_byte_t default_font_data_chars[]
         0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
         0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
         0,  0,  0,  0 };
-static const nu_byte_t default_font_data[]
+static const nux_u8_t default_font_data[]
     = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x18, 0x1e,
         0x0f, 0x07, 0x81, 0x80, 0x00, 0x60, 0x00, 0x36, 0x1b, 0x04, 0x84, 0x80,
         0x00, 0x00, 0x00, 0x00, 0x36, 0x3f, 0x8d, 0x86, 0xc3, 0x63, 0xf8, 0xd8,

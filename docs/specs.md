@@ -15,11 +15,25 @@ NUX console supports multiple specs based on the cartridge options.
 - 1 colormap : 256 RGB colors
 - 1 palette  : 256 indices
 
-## Textures
 
-- palette textures : index in palette
-- colored textures : full RGB colors
+# ? Load / Save state
+# ? Determinism
+- floating point patch required => patch lua
+# Portability
+- play on browser
+- single file game
+- use lua as script language
+- can be compiled natively
+# Retrostyle
+- nearest filtering
+- low res canvas (2D)
+- low poly
+- fixed viewport resolution
+- small cartridge size
+- pixel perfect
+# Fantasy console
+- in game 
 
-## Framebuffers
 
-- Full RGB colors
+- use lua as config files
+

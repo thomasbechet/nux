@@ -1,0 +1,34 @@
+#include "internal.h"
+
+nux_u32_t
+nux_strnlen (const nux_c8_t *s, nux_u32_t n)
+{
+    nux_u32_t i = 0;
+    for (; (i < n) && s[i]; ++i)
+        ;
+    return i;
+}
+void
+nux_strncpy (nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n)
+{
+    nux_u32_t i = 0;
+    while (i++ != n && (*dst++ = *src++))
+        ;
+}
+void
+nux_snprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...)
+{
+#ifdef NUX_STDLIB
+    va_list args;
+    va_start(args, format);
+    nux_vsnprintf(buf, n, format, args);
+    va_end(args);
+#endif
+}
+void
+nux_vsnprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, va_list args)
+{
+#ifdef NUX_STDLIB
+    vsnprintf(buf, n, format, args);
+#endif
+}

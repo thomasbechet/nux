@@ -13,6 +13,9 @@ typedef void (*nux_callback_t)(nux_env_t);
 
 typedef struct
 {
+    nux_u32_t max_texture_mem;
+    nux_u32_t max_texture_count;
+
     void          *userdata;
     nux_callback_t init;
     nux_callback_t update;
