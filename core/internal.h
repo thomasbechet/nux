@@ -12,6 +12,10 @@
 #include <math.h>
 #endif
 
+////////////////////////////
+///        MACROS        ///
+////////////////////////////
+
 #define NUX_TRUE  1
 #define NUX_FALSE 0
 #define NUX_NULL  0
@@ -36,6 +40,8 @@
 #define NUX_ASSERT(x) (void)((x))
 #endif
 
+// math.c
+
 #define NUX_MIN(a, b)          (((a) < (b)) ? (a) : (b))
 #define NUX_MAX(a, b)          (((a) > (b)) ? (a) : (b))
 #define NUX_CLAMP(x, min, max) (NUX_MAX(min, NUX_MIN(max, x)))
@@ -49,19 +55,11 @@
         y      = SWAP;    \
     } while (0)
 
-nux_u32_t nux_strnlen(const nux_c8_t *s, nux_u32_t n);
-void      nux_strncpy(nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n);
-void      nux_snprintf(nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...);
-void      nux_vsnprintf(nux_c8_t       *buf,
-                        nux_u32_t       n,
-                        const nux_c8_t *format,
-                        va_list         args);
-
-nux_i32_t nux_memcmp(const void *p0, const void *p1, nux_u32_t n);
-void     *nux_memset(void *dst, nux_u32_t c, nux_u32_t n);
-void      nux_memcpy(void *dst, const void *src, nux_u32_t n);
-void      nux_memswp(void *a, void *b, nux_u32_t n);
-void     *nux_memalign(void *ptr, nux_u32_t align);
+#define NUX_PI      3.14159265359
+#define NUX_FLT_MAX 3.402823E+38
+#define NUX_FLT_MIN 1.175494e-38
+#define NUX_I32_MAX 2147483647
+#define NUX_I32_MIN -2147483648
 
 #define NUX_V2_SIZE 2
 #define NUX_V3_SIZE 3
@@ -69,12 +67,6 @@ void     *nux_memalign(void *ptr, nux_u32_t align);
 #define NUX_Q4_SIZE 4
 #define NUX_M3_SIZE 9
 #define NUX_M4_SIZE 16
-
-#define NUX_PI      3.14159265359
-#define NUX_FLT_MAX 3.402823E+38
-#define NUX_FLT_MIN 1.175494e-38
-#define NUX_I32_MAX 2147483647
-#define NUX_I32_MIN -2147483648
 
 #define NUX_V2_DEFINE(name, type)                                        \
     typedef union                                                        \
@@ -145,6 +137,66 @@ void     *nux_memalign(void *ptr, nux_u32_t align);
     nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);          \
     type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
 
+#define NUX_VEC(type)       \
+    struct                  \
+    {                       \
+        type     *data;     \
+        nux_u32_t capacity; \
+        nux_u32_t size;     \
+    }
+#define NUX_VEC_INIT(v, ptr, capa) \
+    {                              \
+        (v)->data     = (ptr);     \
+        (v)->capacity = (capa);    \
+        (v)->size     = 0;         \
+    }
+#define NUX_VEC_PUSH(v) \
+    ((v)->size >= (v)->capacity ? NU_NULL : &(v)->data[(v)->size++])
+#define NUX_VEC_CLEAR(v) (v)->size = 0
+
+#define NUX_MEMPTR(inst, addr, type) ((type *)((inst)->state + (addr)))
+#define NUX_MEMGET(inst, addr, type) *(const type *)((inst)->state + (addr))
+#define NUX_MEMSET(inst, addr, type, val) \
+    *(type *)((inst)->state + (addr)) = (val)
+
+////////////////////////////
+///        TYPES         ///
+////////////////////////////
+
+struct nux_env
+{
+    // Non persistent state
+    nux_instance_t inst;
+
+    // Error handling
+    nux_error_t error;
+    nux_c8_t    error_message[256];
+
+    // Stats
+    nux_u32_t tricount;
+};
+
+typedef struct
+{
+    nux_u32_t width;
+    nux_u32_t height;
+    nux_u8_t *data;
+} nux_texture_t;
+
+struct nux_instance
+{
+    void     *userdata;
+    nux_b32_t running;
+
+    NUX_VEC(nux_texture_t) textures;
+
+    nux_u8_t *state;
+
+    struct nux_env env;
+    nux_callback_t init;
+    nux_callback_t update;
+};
+
 NUX_V2_DEFINE(v2i, nux_i32_t);
 NUX_V2_DEFINE(v2u, nux_u32_t);
 NUX_V2_DEFINE(v2, nux_f32_t);
@@ -154,9 +206,6 @@ NUX_V3_DEFINE(v3, nux_f32_t);
 NUX_V4_DEFINE(v4i, nux_i32_t);
 NUX_V4_DEFINE(v4u, nux_u32_t);
 NUX_V4_DEFINE(v4, nux_f32_t);
-
-nux_v3_t  nux_v3_normalize(nux_v3_t a);
-nux_f32_t nux_v4_norm(nux_v4_t a);
 
 typedef struct
 {
@@ -217,6 +266,12 @@ typedef union
     nux_f32_t data[NUX_M4_SIZE];
 } nux_m4_t;
 
+////////////////////////////
+///      FUNCTIONS       ///
+////////////////////////////
+
+// math.c
+
 nux_u32_t nux_log2(nux_u32_t n);
 nux_f32_t nux_log10(nux_f32_t x);
 nux_f32_t nux_fabs(nux_f32_t f);
@@ -234,16 +289,30 @@ nux_b2i_t nux_b2i_xywh(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 nux_b2i_t nux_b2i_translate(nux_b2i_t b, nux_v2i_t t);
 nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 
-nux_q4_t  nux_q4(nux_f32_t x, nux_f32_t y, nux_f32_t z, nux_f32_t w);
-nux_q4_t  nux_q4_identity(void);
-nux_v4_t  nux_q4_vec4(nux_q4_t a);
-nux_f32_t nux_q4_norm(nux_q4_t a);
-nux_q4_t  nux_q4_axis(nux_v3_t axis, nux_f32_t angle);
-nux_q4_t  nux_q4_mul(nux_q4_t a, nux_q4_t b);
-nux_v3_t  nux_q4_mulv3(nux_q4_t a, nux_v3_t v);
-nux_q4_t  nux_q4_mul_axis(nux_q4_t q, nux_v3_t axis, nux_f32_t angle);
-nux_m4_t  nux_q4_mat4(nux_q4_t q);
-nux_m4_t  nux_q4_mulm4(nux_q4_t a, nux_m4_t m);
+// string.c
+
+nux_u32_t nux_strnlen(const nux_c8_t *s, nux_u32_t n);
+void      nux_strncpy(nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n);
+void      nux_snprintf(nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...);
+void      nux_vsnprintf(nux_c8_t       *buf,
+                        nux_u32_t       n,
+                        const nux_c8_t *format,
+                        va_list         args);
+
+// memory.c
+
+nux_i32_t nux_memcmp(const void *p0, const void *p1, nux_u32_t n);
+void     *nux_memset(void *dst, nux_u32_t c, nux_u32_t n);
+void      nux_memcpy(void *dst, const void *src, nux_u32_t n);
+void      nux_memswp(void *a, void *b, nux_u32_t n);
+void     *nux_memalign(void *ptr, nux_u32_t align);
+
+// vector.c
+
+nux_v3_t  nux_v3_normalize(nux_v3_t a);
+nux_f32_t nux_v4_norm(nux_v4_t a);
+
+// matrix.c
 
 nux_m3_t nux_m3_zero(void);
 nux_m3_t nux_m3_identity(void);
@@ -262,67 +331,35 @@ nux_v4_t nux_m4_mulv(nux_m4_t a, nux_v4_t v);
 nux_v3_t nux_m4_mulv3(nux_m4_t a, nux_v3_t v);
 nux_m4_t nux_m4_trs(nux_v3_t t, nux_q4_t r, nux_v3_t s);
 
-#define NUX_VEC(type)       \
-    struct                  \
-    {                       \
-        type     *data;     \
-        nux_u32_t capacity; \
-        nux_u32_t size;     \
-    }
-#define NUX_VEC_INIT(v, ptr, capa) \
-    {                              \
-        (v)->data     = (ptr);     \
-        (v)->capacity = (capa);    \
-        (v)->size     = 0;         \
-    }
-#define NUX_VEC_PUSH(v) \
-    ((v)->size >= (v)->capacity ? NU_NULL : &(v)->data[(v)->size++])
-#define NUX_VEC_CLEAR(v) (v)->size = 0
+// quaternion.c
 
-#define NUX_MEMPTR(inst, addr, type) ((type *)((inst)->state + (addr)))
-#define NUX_MEMGET(inst, addr, type) *(const type *)((inst)->state + (addr))
-#define NUX_MEMSET(inst, addr, type, val) \
-    *(type *)((inst)->state + (addr)) = (val)
+nux_q4_t  nux_q4(nux_f32_t x, nux_f32_t y, nux_f32_t z, nux_f32_t w);
+nux_q4_t  nux_q4_identity(void);
+nux_v4_t  nux_q4_vec4(nux_q4_t a);
+nux_f32_t nux_q4_norm(nux_q4_t a);
+nux_q4_t  nux_q4_axis(nux_v3_t axis, nux_f32_t angle);
+nux_q4_t  nux_q4_mul(nux_q4_t a, nux_q4_t b);
+nux_v3_t  nux_q4_mulv3(nux_q4_t a, nux_v3_t v);
+nux_q4_t  nux_q4_mul_axis(nux_q4_t q, nux_v3_t axis, nux_f32_t angle);
+nux_m4_t  nux_q4_mat4(nux_q4_t q);
+nux_m4_t  nux_q4_mulm4(nux_q4_t a, nux_m4_t m);
 
-struct nux_env
-{
-    // Non persistent state
-    nux_instance_t inst;
+// camera.c
 
-    // Error handling
-    nux_error_t error;
-    nux_c8_t    error_message[256];
+nux_m4_t nux_perspective(nux_f32_t fov,
+                         nux_f32_t aspect_ratio,
+                         nux_f32_t z_near,
+                         nux_f32_t z_far);
+nux_m4_t nux_ortho(nux_f32_t left,
+                   nux_f32_t right,
+                   nux_f32_t bottom,
+                   nux_f32_t top,
+                   nux_f32_t near,
+                   nux_f32_t far);
+nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 
-    // Stats
-    nux_u32_t tricount;
-};
-
-typedef struct
-{
-    nux_u32_t width;
-    nux_u32_t height;
-    nux_u8_t *data;
-} nux_texture_t;
-
-struct nux_instance
-{
-    void     *userdata;
-    nux_b32_t running;
-
-    NUX_VEC(nux_texture_t) textures;
-
-    nux_u8_t *state;
-
-    struct nux_env env;
-    nux_callback_t init;
-    nux_callback_t update;
-};
+// instance.c
 
 void nux_set_error(nux_env_t env, nux_error_t error);
-
-nux_u32_t          nux_push_gpu_data(nux_env_t        env,
-                                     const nux_f32_t *data,
-                                     nux_u32_t        count);
-nux_gpu_command_t *nux_push_gpu_command(nux_env_t env);
 
 #endif

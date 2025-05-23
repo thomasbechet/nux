@@ -1,7 +1,7 @@
 #include "internal.h"
 
 nux_i32_t
-nu_memcmp (const void *p0, const void *p1, nux_u32_t n)
+nux_memcmp (const void *p0, const void *p1, nux_u32_t n)
 {
     const nux_u8_t *b0 = (const nux_u8_t *)p0;
     const nux_u8_t *b1 = (const nux_u8_t *)p1;
@@ -15,7 +15,7 @@ nu_memcmp (const void *p0, const void *p1, nux_u32_t n)
     return 0;
 }
 void *
-nu_memset (void *dst, nux_u32_t c, nux_u32_t n)
+nux_memset (void *dst, nux_u32_t c, nux_u32_t n)
 {
     if (n != 0)
     {
@@ -28,7 +28,7 @@ nu_memset (void *dst, nux_u32_t c, nux_u32_t n)
     return (dst);
 }
 void
-nu_memcpy (void *dst, const void *src, nux_u32_t n)
+nux_memcpy (void *dst, const void *src, nux_u32_t n)
 {
     nux_u8_t       *u8_dst = (nux_u8_t *)dst;
     const nux_u8_t *u8_src = (const nux_u8_t *)src;
@@ -38,7 +38,7 @@ nu_memcpy (void *dst, const void *src, nux_u32_t n)
     }
 }
 void
-nu_memswp (void *a, void *b, nux_u32_t n)
+nux_memswp (void *a, void *b, nux_u32_t n)
 {
     nux_u8_t *a_swap = (nux_u8_t *)a, *b_swap = (nux_u8_t *)b;
     nux_u8_t *a_end = (nux_u8_t *)a + n;
@@ -52,7 +52,7 @@ nu_memswp (void *a, void *b, nux_u32_t n)
     }
 }
 void *
-nu_memalign (void *ptr, nux_u32_t align)
+nux_memalign (void *ptr, nux_u32_t align)
 {
     NUX_ASSERT(align > 0);
     return (void *)(((nux_u64_t)ptr + align - 1) & ~(align - 1));

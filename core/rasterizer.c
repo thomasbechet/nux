@@ -585,103 +585,106 @@ nux_rect (nux_env_t env,
 //         }
 //     }
 // }
-static void
-raster_wire_triangles (nux_env_t        env,
-                       const nux_f32_t *positions,
-                       const nux_f32_t *uvs,
-                       nux_u32_t        count,
-                       const nux_f32_t *m)
-{
-    const nux_f32_t *cameye
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nux_f32_t);
-    const nux_f32_t *camcenter
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nux_f32_t);
-    const nux_f32_t *camup
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nux_f32_t);
-    nux_f32_t        fov = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t);
-    const nux_u32_t *viewport
-        = NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, const nux_u32_t);
-
-    nux_m4_t view = nu_lookat(nux_v3(cameye[0], cameye[1], cameye[2]),
-                              nux_v3(camcenter[0], camcenter[1], camcenter[2]),
-                              nux_v3(camup[0], camup[1], camup[2]));
-    nux_m4_t proj = nu_perspective(
-        nu_radian(fov), (nux_f32_t)viewport[2] / viewport[3], 0.05, 300);
-    nux_m4_t view_proj = nux_m4_mul(proj, view);
-    nux_m4_t model     = nux_m4(m);
-    nux_m4_t mvp       = nux_m4_mul(view_proj, model);
-    nu_b2i_t vp
-        = nu_b2i_xywh(viewport[0], viewport[1], viewport[2], viewport[3]);
-
-    // Iterate over triangles
-    for (nux_u32_t i = 0; i < count; i += 3)
-    {
-        // Apply vertex shader
-        nux_v4_t vertex_positions[4];
-        nux_v2_t vertex_uvs[4];
-
-        // Transform to world
-        for (nux_u32_t j = 0; j < 3; ++j)
-        {
-            vertex_positions[j] = nux_m4_mulv(model,
-                                              nux_v4(positions[(i + j) * 3 + 0],
-                                                     positions[(i + j) * 3 + 1],
-                                                     positions[(i + j) * 3 + 2],
-                                                     1));
-        }
-
-        // Transform to NDC
-        for (nux_u32_t j = 0; j < 3; ++j)
-        {
-            vertex_positions[j] = nux_m4_mulv(view_proj, vertex_positions[j]);
-        }
-
-        // Clip vertices
-        nux_u32_t indices[6];
-        nux_u32_t indices_count
-            = clip_triangle(vertex_positions, vertex_uvs, indices);
-        if (!indices_count)
-        {
-            continue;
-        }
-
-        // Perspective divide (NDC)
-        for (nux_u32_t i = 0; i < 4; i++)
-        {
-            vertex_positions[i].x /= vertex_positions[i].w;
-            vertex_positions[i].y /= vertex_positions[i].w;
-            vertex_positions[i].z /= vertex_positions[i].w;
-        }
-
-        // Iterate over clipped triangles
-        for (nux_u32_t v = 0; v < indices_count; v += 3)
-        {
-            nux_v4_t v0 = vertex_positions[indices[v + 0]];
-            nux_v4_t v1 = vertex_positions[indices[v + 1]];
-            nux_v4_t v2 = vertex_positions[indices[v + 2]];
-
-            nux_v2i_t v0vp = pos_to_viewport(vp, v0.x, v0.y);
-            nux_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
-            nux_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
-
-            nux_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
-            if (area < 0)
-            {
-                continue;
-            }
-
-            nux_u32_t x0 = NUX_CLAMP(v0vp.x, 0, NUX_CANVAS_WIDTH);
-            nux_u32_t x1 = NUX_CLAMP(v1vp.x, 0, NUX_CANVAS_WIDTH);
-            nux_u32_t x2 = NUX_CLAMP(v2vp.x, 0, NUX_CANVAS_WIDTH);
-            nux_u32_t y0 = NUX_CLAMP(v0vp.y, 0, NUX_CANVAS_HEIGHT);
-            nux_u32_t y1 = NUX_CLAMP(v1vp.y, 0, NUX_CANVAS_HEIGHT);
-            nux_u32_t y2 = NUX_CLAMP(v2vp.y, 0, NUX_CANVAS_HEIGHT);
-            nux_line(env, x0, y0, x1, y1, 7);
-            nux_line(env, x0, y0, x2, y2, 7);
-            nux_line(env, x1, y1, x2, y2, 7);
-        }
-    }
-}
+// static void
+// raster_wire_triangles (nux_env_t        env,
+//                        const nux_f32_t *positions,
+//                        const nux_f32_t *uvs,
+//                        nux_u32_t        count,
+//                        const nux_f32_t *m)
+// {
+//     const nux_f32_t *cameye
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nux_f32_t);
+//     const nux_f32_t *camcenter
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nux_f32_t);
+//     const nux_f32_t *camup
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nux_f32_t);
+//     nux_f32_t        fov = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t);
+//     const nux_u32_t *viewport
+//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, const nux_u32_t);
+//
+//     nux_m4_t view = nux_lookat(nux_v3(cameye[0], cameye[1], cameye[2]),
+//                                nux_v3(camcenter[0], camcenter[1],
+//                                camcenter[2]), nux_v3(camup[0], camup[1],
+//                                camup[2]));
+//     nux_m4_t proj = nux_perspective(
+//         nux_radian(fov), (nux_f32_t)viewport[2] / viewport[3], 0.05, 300);
+//     nux_m4_t  view_proj = nux_m4_mul(proj, view);
+//     nux_m4_t  model     = nux_m4(m);
+//     nux_m4_t  mvp       = nux_m4_mul(view_proj, model);
+//     nux_b2i_t vp
+//         = nux_b2i_xywh(viewport[0], viewport[1], viewport[2], viewport[3]);
+//
+//     // Iterate over triangles
+//     for (nux_u32_t i = 0; i < count; i += 3)
+//     {
+//         // Apply vertex shader
+//         nux_v4_t vertex_positions[4];
+//         nux_v2_t vertex_uvs[4];
+//
+//         // Transform to world
+//         for (nux_u32_t j = 0; j < 3; ++j)
+//         {
+//             vertex_positions[j] = nux_m4_mulv(model,
+//                                               nux_v4(positions[(i + j) * 3 +
+//                                               0],
+//                                                      positions[(i + j) * 3 +
+//                                                      1], positions[(i + j) *
+//                                                      3 + 2], 1));
+//         }
+//
+//         // Transform to NDC
+//         for (nux_u32_t j = 0; j < 3; ++j)
+//         {
+//             vertex_positions[j] = nux_m4_mulv(view_proj,
+//             vertex_positions[j]);
+//         }
+//
+//         // Clip vertices
+//         nux_u32_t indices[6];
+//         nux_u32_t indices_count
+//             = clip_triangle(vertex_positions, vertex_uvs, indices);
+//         if (!indices_count)
+//         {
+//             continue;
+//         }
+//
+//         // Perspective divide (NDC)
+//         for (nux_u32_t i = 0; i < 4; i++)
+//         {
+//             vertex_positions[i].x /= vertex_positions[i].w;
+//             vertex_positions[i].y /= vertex_positions[i].w;
+//             vertex_positions[i].z /= vertex_positions[i].w;
+//         }
+//
+//         // Iterate over clipped triangles
+//         for (nux_u32_t v = 0; v < indices_count; v += 3)
+//         {
+//             nux_v4_t v0 = vertex_positions[indices[v + 0]];
+//             nux_v4_t v1 = vertex_positions[indices[v + 1]];
+//             nux_v4_t v2 = vertex_positions[indices[v + 2]];
+//
+//             nux_v2i_t v0vp = pos_to_viewport(vp, v0.x, v0.y);
+//             nux_v2i_t v1vp = pos_to_viewport(vp, v1.x, v1.y);
+//             nux_v2i_t v2vp = pos_to_viewport(vp, v2.x, v2.y);
+//
+//             nux_i32_t area = pixel_coverage(v0vp, v1vp, v2vp.x, v2vp.y);
+//             if (area < 0)
+//             {
+//                 continue;
+//             }
+//
+//             nux_u32_t x0 = NUX_CLAMP(v0vp.x, 0, NUX_CANVAS_WIDTH);
+//             nux_u32_t x1 = NUX_CLAMP(v1vp.x, 0, NUX_CANVAS_WIDTH);
+//             nux_u32_t x2 = NUX_CLAMP(v2vp.x, 0, NUX_CANVAS_WIDTH);
+//             nux_u32_t y0 = NUX_CLAMP(v0vp.y, 0, NUX_CANVAS_HEIGHT);
+//             nux_u32_t y1 = NUX_CLAMP(v1vp.y, 0, NUX_CANVAS_HEIGHT);
+//             nux_u32_t y2 = NUX_CLAMP(v2vp.y, 0, NUX_CANVAS_HEIGHT);
+//             nux_line(env, x0, y0, x1, y1, 7);
+//             nux_line(env, x0, y0, x2, y2, 7);
+//             nux_line(env, x1, y1, x2, y2, 7);
+//         }
+//     }
+// }
 
 void
 nux_mesh (nux_env_t        env,
