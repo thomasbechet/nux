@@ -195,12 +195,6 @@ view_home (struct nk_context *ctx, struct nk_rect bounds)
             nk_label(
                 ctx, "Actions:", NK_TEXT_ALIGN_LEFT | NK_TEXT_ALIGN_MIDDLE);
 
-            if (nk_button_label(ctx, "Save"))
-            {
-            }
-            if (nk_button_label(ctx, "Load"))
-            {
-            }
             if (nk_button_label(ctx, instance->pause ? "Resume" : "Pause"))
             {
                 instance->pause = !instance->pause;

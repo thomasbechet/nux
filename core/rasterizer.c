@@ -26,7 +26,7 @@ nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
     NUX_CHECK(x >= 0 && x < NUX_CANVAS_WIDTH, return);
     NUX_CHECK(y >= 0 && y < NUX_CANVAS_HEIGHT, return);
 
-    nux_u8_t *canvas                 = env->inst->state + NUX_RAM_CANVAS;
+    nux_u8_t *canvas                 = env->inst->canvas;
     canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(env, color);
 }
 void

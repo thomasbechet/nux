@@ -211,9 +211,9 @@ renderer_clear (nu_b2i_t viewport, nu_v2u_t window_size)
     glDisable(GL_SCISSOR_TEST);
 }
 void
-renderer_render_instance (nux_instance_t inst,
-                          nu_b2i_t       viewport,
-                          nu_v2u_t       window_size)
+renderer_render_instance (nux_instance_t *inst,
+                          nu_b2i_t        viewport,
+                          nu_v2u_t        window_size)
 {
     // Update canvas
     glBindTexture(GL_TEXTURE_2D, renderer.canvas);

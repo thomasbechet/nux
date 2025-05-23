@@ -8,13 +8,13 @@
 //////                               Types                          //////
 //////////////////////////////////////////////////////////////////////////
 
-typedef struct nux_instance *nux_instance_t;
+typedef struct nux_instance nux_instance_t;
 typedef void (*nux_callback_t)(nux_env_t);
 
 typedef struct
 {
-    nux_u32_t max_texture_mem;
-    nux_u32_t max_texture_count;
+    nux_u32_t max_object_count;
+    nux_u32_t memory_size;
 
     void          *userdata;
     nux_callback_t init;
@@ -59,62 +59,49 @@ NUX_API void        *nux_platform_malloc(void              *userdata,
                                          nux_u32_t          n);
 NUX_API void         nux_platform_free(void *userdata, void *p);
 NUX_API void        *nux_platform_realloc(void *userdata, void *p, nux_u32_t n);
-NUX_API nux_status_t nux_platform_mount(nux_instance_t  inst,
+NUX_API nux_status_t nux_platform_mount(void           *userdata,
                                         const nux_c8_t *name,
                                         nux_u32_t       n);
-NUX_API nux_status_t nux_platform_seek(nux_instance_t inst, nux_u32_t n);
-NUX_API nux_u32_t nux_platform_read(nux_instance_t inst, void *p, nux_u32_t n);
-NUX_API void      nux_platform_log(nux_instance_t  inst,
-                                   const nux_c8_t *log,
-                                   nux_u32_t       n);
-NUX_API void      nux_platform_debug(nux_instance_t   inst,
-                                     const nux_c8_t  *name,
-                                     nux_u32_t        n,
-                                     nux_debug_type_t type,
-                                     void            *p);
+NUX_API nux_status_t nux_platform_seek(void *userdata, nux_u32_t n);
+NUX_API nux_u32_t    nux_platform_read(void *userdata, void *p, nux_u32_t n);
+NUX_API void nux_platform_log(void *userdata, const nux_c8_t *log, nux_u32_t n);
+NUX_API void nux_platform_debug(void            *userdata,
+                                const nux_c8_t  *name,
+                                nux_u32_t        n,
+                                nux_debug_type_t type,
+                                void            *p);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_instance_t nux_instance_init(const nux_instance_config_t *config);
-NUX_API void           nux_instance_free(nux_instance_t inst);
-NUX_API void           nux_instance_tick(nux_instance_t inst);
-NUX_API nux_status_t   nux_instance_load(nux_instance_t  inst,
-                                         const nux_c8_t *cart,
-                                         nux_u32_t       n);
-NUX_API void  nux_instance_save_state(nux_instance_t inst, nux_u8_t *state);
-NUX_API void  nux_instance_load_state(nux_instance_t  inst,
-                                      const nux_u8_t *state);
-NUX_API void *nux_instance_get_userdata(nux_instance_t inst);
-NUX_API void  nux_instance_set_buttons(nux_instance_t inst,
-                                       nux_u32_t      player,
-                                       nux_u32_t      state);
-NUX_API void  nux_instance_set_axis(nux_instance_t inst,
-                                    nux_u32_t      player,
-                                    nux_axis_t     axis,
-                                    nux_f32_t      value);
-NUX_API void  nux_instance_set_stat(nux_instance_t inst,
-                                    nux_stat_t     stat,
-                                    nux_u32_t      value);
-NUX_API const nux_c8_t  *nux_instance_get_error(nux_instance_t inst);
-NUX_API const nux_u8_t  *nux_instance_get_canvas(nux_instance_t inst);
-NUX_API const nux_u8_t  *nux_instance_get_texture(nux_instance_t inst);
-NUX_API const nux_u8_t  *nux_instance_get_colormap(nux_instance_t inst);
-NUX_API const nux_u32_t *nux_instance_get_buffer(nux_instance_t inst);
+NUX_API nux_instance_t  *nux_instance_init(const nux_instance_config_t *config);
+NUX_API void             nux_instance_free(nux_instance_t *inst);
+NUX_API void             nux_instance_tick(nux_instance_t *inst);
+NUX_API nux_status_t     nux_instance_load(nux_instance_t *inst,
+                                           const nux_c8_t *cart,
+                                           nux_u32_t       n);
+NUX_API void            *nux_instance_get_userdata(nux_instance_t *inst);
+NUX_API void             nux_instance_set_buttons(nux_instance_t *inst,
+                                                  nux_u32_t       player,
+                                                  nux_u32_t       state);
+NUX_API void             nux_instance_set_axis(nux_instance_t *inst,
+                                               nux_u32_t       player,
+                                               nux_axis_t      axis,
+                                               nux_f32_t       value);
+NUX_API void             nux_instance_set_stat(nux_instance_t *inst,
+                                               nux_stat_t      stat,
+                                               nux_u32_t       value);
+NUX_API const nux_c8_t  *nux_instance_get_error(nux_instance_t *inst);
+NUX_API const nux_u8_t  *nux_instance_get_canvas(nux_instance_t *inst);
+NUX_API const nux_u8_t  *nux_instance_get_texture(nux_instance_t *inst);
+NUX_API const nux_u8_t  *nux_instance_get_colormap(nux_instance_t *inst);
+NUX_API const nux_u32_t *nux_instance_get_buffer(nux_instance_t *inst);
 
 //////////////////////////////////////////////////////////////////////////
 //////                           Helper API                         //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_u32_t       nux_texture_memsize(nux_u32_t size);
-NUX_API nux_u32_t       nux_vertex_memsize(nux_vertex_attribute_t attributes,
-                                           nux_u32_t              count);
-NUX_API nux_u32_t       nux_vertex_offset(nux_vertex_attribute_t attributes,
-                                          nux_vertex_attribute_t attribute,
-                                          nux_u32_t              count);
 NUX_API const nux_c8_t *nux_error_message(nux_error_t error);
-NUX_API nux_status_t    nux_cart_parse_header(const void        *data,
-                                              nux_cart_header_t *header);
 
 #endif

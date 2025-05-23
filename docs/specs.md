@@ -2,20 +2,6 @@
 
 NUX console supports multiple specs based on the cartridge options.
 
-### Frame Rate
-
-| Name       | Value      |
-| ---------- | ---------- |
-| Resolution | 512x320    |
-| FPS        | 60         |
-| Memory     | 64Mb       |
-
-## Color Palette
-
-- 1 colormap : 256 RGB colors
-- 1 palette  : 256 indices
-
-
 # ? Load / Save state
 # ? Determinism
 - floating point patch required => patch lua
@@ -32,7 +18,7 @@ NUX console supports multiple specs based on the cartridge options.
 - small cartridge size
 - pixel perfect
 # Fantasy console
-- in game 
+- integrated IDE
 
 
 - use lua as config files

@@ -16,12 +16,12 @@ nux_platform_realloc (void *userdata, void *p, nux_u32_t n)
     return native_realloc(p, n);
 }
 void
-nux_platform_log (nux_instance_t inst, const nux_c8_t *log, nux_u32_t n)
+nux_platform_log (void *userdata, const nux_c8_t *log, nux_u32_t n)
 {
     logger_log(NU_LOG_INFO, "%.*s", n, log);
 }
 void
-nux_platform_debug (nux_instance_t   inst,
+nux_platform_debug (void            *userdata,
                     const nux_c8_t  *name,
                     nux_u32_t        n,
                     nux_debug_type_t type,
@@ -29,7 +29,7 @@ nux_platform_debug (nux_instance_t   inst,
 {
     // Find existing value at address
     intptr_t            addr     = (intptr_t)p;
-    runtime_instance_t *instance = nux_instance_get_userdata(inst);
+    runtime_instance_t *instance = userdata;
     debug_value_t      *value    = NU_NULL;
     for (nu_size_t i = 0; i < instance->debug_value_count; ++i)
     {

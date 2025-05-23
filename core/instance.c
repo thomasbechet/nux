@@ -1,7 +1,8 @@
 #include "internal.h"
+#include "nux.h"
 
 static nux_env_t
-init_env (nux_instance_t inst)
+init_env (nux_instance_t *inst)
 {
     inst->env.inst  = inst;
     inst->env.error = NUX_ERROR_NONE;
@@ -10,6 +11,11 @@ init_env (nux_instance_t inst)
     return &inst->env;
 }
 
+void *
+nux_malloc (nux_env_t env, nux_u32_t size)
+{
+    return NUX_VEC_PUSHN(&env->inst->memory, size);
+}
 void
 nux_set_error (nux_env_t env, nux_error_t error)
 {
@@ -19,12 +25,55 @@ nux_set_error (nux_env_t env, nux_error_t error)
                  "%s",
                  nux_error_message(error));
 }
+void *
+nux_add_object (nux_env_t env, nux_object_type_t type, nux_u32_t *id)
+{
+    nux_u32_t  index;
+    nux_u32_t *free = NUX_VEC_POP(&env->inst->free_objects);
+    if (free)
+    {
+        index = *free;
+    }
+    else
+    {
+        index = env->inst->objects.size;
+        if (NUX_VEC_PUSH(&env->inst->objects) == NUX_NULL)
+        {
+            return NUX_NULL;
+        }
+    }
+    env->inst->objects.data[index].type = type;
+    *id                                 = index;
+    return &env->inst->objects.data[index].data;
+}
+nux_status_t
+nux_remove_object (nux_env_t env, nux_u32_t id)
+{
+    if (id <= env->inst->objects.size
+        || env->inst->objects.data[id].type == NUX_OBJECT_NULL)
+    {
+        return NUX_FAILURE;
+    }
+    env->inst->objects.data[id].type        = NUX_OBJECT_NULL;
+    *NUX_VEC_PUSH(&env->inst->free_objects) = id;
+    return NUX_SUCCESS;
+}
+void *
+nux_check_object (nux_env_t env, nux_u32_t id, nux_object_type_t type)
+{
+    if (id <= env->inst->objects.size
+        || env->inst->objects.data[id].type != type)
+    {
+        return NUX_NULL;
+    }
+    return &env->inst->objects.data[id].data;
+}
 
-nux_instance_t
+nux_instance_t *
 nux_instance_init (const nux_instance_config_t *config)
 {
     // Allocate instance
-    nux_instance_t inst = nux_platform_malloc(
+    nux_instance_t *inst = nux_platform_malloc(
         config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));
     NUX_CHECK(inst, return NUX_NULL);
     nux_memset(inst, 0, sizeof(struct nux_instance));
@@ -33,11 +82,36 @@ nux_instance_init (const nux_instance_config_t *config)
     inst->init     = config->init;
     inst->update   = config->update;
 
-    // Allocate state
-    inst->state = nux_platform_malloc(
+    // Allocate memory
+    void *p = nux_platform_malloc(
         config->userdata, NUX_MEMORY_USAGE_STATE, NUX_MEMORY_SIZE);
-    NUX_CHECK(inst->state, goto cleanup0);
-    nux_memset(inst->state, 0, NUX_MEMORY_SIZE);
+    NUX_CHECK(p, goto cleanup0);
+    nux_memset(p, 0, NUX_MEMORY_SIZE);
+    NUX_VEC_INIT(&inst->memory, p, NUX_MEMORY_SIZE);
+
+    // Allocate objects pool
+    p = nux_platform_malloc(config->userdata,
+                            NUX_MEMORY_USAGE_STATE,
+                            sizeof(*inst->objects.data)
+                                * config->max_object_count);
+    NUX_CHECK(p, goto cleanup0);
+    NUX_VEC_INIT(&inst->objects, p, config->max_object_count);
+    p = nux_platform_malloc(config->userdata,
+                            NUX_MEMORY_USAGE_STATE,
+                            sizeof(*inst->free_objects.data)
+                                * config->max_object_count);
+    NUX_CHECK(p, goto cleanup0);
+    NUX_VEC_INIT(&inst->free_objects, p, config->max_object_count);
+    for (nux_u32_t i = 0; i < inst->objects.capa; ++i)
+    {
+        inst->objects.data[i].type = NUX_OBJECT_NULL;
+    }
+
+    // Allocate canvas
+    inst->canvas = nux_platform_malloc(config->userdata,
+                                       NUX_MEMORY_USAGE_CORE,
+                                       NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
+    NUX_CHECK(inst->canvas, goto cleanup0);
 
     // Initialize state
     nux_env_t env = init_env(inst);
@@ -54,16 +128,28 @@ cleanup0:
     return NUX_NULL;
 }
 void
-nux_instance_free (nux_instance_t inst)
+nux_instance_free (nux_instance_t *inst)
 {
-    if (inst->state)
+    if (inst->canvas)
     {
-        nux_platform_free(inst->userdata, inst->state);
+        nux_platform_free(inst->userdata, inst->canvas);
+    }
+    if (inst->free_objects.data)
+    {
+        nux_platform_free(inst->userdata, inst->free_objects.data);
+    }
+    if (inst->objects.data)
+    {
+        nux_platform_free(inst->userdata, inst->objects.data);
+    }
+    if (inst->memory.data)
+    {
+        nux_platform_free(inst->userdata, inst->memory.data);
     }
     nux_platform_free(inst->userdata, inst);
 }
 void
-nux_instance_tick (nux_instance_t inst)
+nux_instance_tick (nux_instance_t *inst)
 {
     nux_env_t env = init_env(inst);
 
@@ -71,8 +157,7 @@ nux_instance_tick (nux_instance_t inst)
     nux_cursor(env, 0, 0);
 
     // Init
-    nux_u32_t *frame_index = (nux_u32_t *)(inst->state + NUX_RAM_FRAME);
-    if (*frame_index == 0 && inst->init)
+    if (env->inst->frame == 0 && inst->init)
     {
         inst->init(env);
     }
@@ -84,58 +169,43 @@ nux_instance_tick (nux_instance_t inst)
     }
 
     // Frame integration
-    nux_f32_t *time = (nux_f32_t *)(inst->state + NUX_RAM_TIME);
-    *time           = *time + nux_dt(env);
-    ++(*frame_index);
+    inst->time += nux_dt(env);
+    ++inst->frame;
 }
 nux_status_t
-nux_instance_load (nux_instance_t inst, const nux_c8_t *cart, nux_u32_t n)
+nux_instance_load (nux_instance_t *inst, const nux_c8_t *cart, nux_u32_t n)
 {
-    nux_env_t env = init_env(inst);
     return NUX_SUCCESS;
 }
-void
-nux_instance_save_state (nux_instance_t inst, nux_u8_t *state)
-{
-}
-void
-nux_instance_load_state (nux_instance_t inst, const nux_u8_t *state)
-{
-}
 void *
-nux_instance_get_userdata (nux_instance_t inst)
+nux_instance_get_userdata (nux_instance_t *inst)
 {
     return inst->userdata;
 }
 void
-nux_instance_set_stat (nux_instance_t inst, nux_stat_t stat, nux_u32_t value)
+nux_instance_set_stat (nux_instance_t *inst, nux_stat_t stat, nux_u32_t value)
 {
-    switch (stat)
-    {
-        case NUX_STAT_FPS:
-            NUX_MEMSET(inst, NUX_RAM_STAT_FPS, nux_u32_t, value);
-            break;
-    }
+    inst->stats[stat] = value;
 }
 const nux_c8_t *
-nux_instance_get_error (nux_instance_t inst)
+nux_instance_get_error (nux_instance_t *inst)
 {
     return nux_error_message(inst->env.error);
 }
 const nux_u8_t *
-nux_instance_get_canvas (nux_instance_t inst)
+nux_instance_get_canvas (nux_instance_t *inst)
 {
-    return inst->state + NUX_RAM_CANVAS;
+    return inst->canvas;
 }
 const nux_u8_t *
-nux_instance_get_texture (nux_instance_t inst)
+nux_instance_get_texture (nux_instance_t *inst)
 {
-    return inst->state + NUX_RAM_TEXTURE;
+    return NUX_NULL;
 }
 const nux_u8_t *
-nux_instance_get_colormap (nux_instance_t inst)
+nux_instance_get_colormap (nux_instance_t *inst)
 {
-    return inst->state + NUX_RAM_COLORMAP;
+    return (const nux_u8_t *)inst->colormap;
 }
 
 const nux_c8_t *
@@ -162,31 +232,32 @@ nux_error_message (nux_error_t error)
 void
 nux_trace (nux_env_t env, const nux_c8_t *text)
 {
-    nux_platform_log(env->inst, text, nux_strnlen(text, 1024));
+    nux_platform_log(env->inst->userdata, text, nux_strnlen(text, 1024));
 }
 
 void
 nux_dbgi32 (nux_env_t env, const nux_c8_t *name, nux_i32_t *p)
 {
-    nux_platform_debug(
-        env->inst, name, nux_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_I32, p);
+    nux_platform_debug(env->inst->userdata,
+                       name,
+                       nux_strnlen(name, NUX_NAME_MAX),
+                       NUX_DEBUG_I32,
+                       p);
 }
 void
 nux_dbgf32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)
 {
-    nux_platform_debug(
-        env->inst, name, nux_strnlen(name, NUX_NAME_MAX), NUX_DEBUG_F32, p);
+    nux_platform_debug(env->inst->userdata,
+                       name,
+                       nux_strnlen(name, NUX_NAME_MAX),
+                       NUX_DEBUG_F32,
+                       p);
 }
 
 nux_u32_t
-nux_stat (nux_env_t env, nux_stat_t info)
+nux_stat (nux_env_t env, nux_stat_t stat)
 {
-    switch (info)
-    {
-        case NUX_STAT_FPS:
-            return NUX_MEMGET(env->inst, NUX_RAM_STAT_FPS, nux_u32_t);
-    }
-    return 0;
+    return env->inst->stats[stat];
 }
 nux_u32_t
 nux_tricount (nux_env_t env)
@@ -196,7 +267,7 @@ nux_tricount (nux_env_t env)
 nux_f32_t
 nux_time (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_RAM_TIME, nux_f32_t);
+    return env->inst->time;
 }
 nux_f32_t
 nux_dt (nux_env_t env)
@@ -206,5 +277,5 @@ nux_dt (nux_env_t env)
 nux_u32_t
 nux_frame (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_RAM_FRAME, nux_u32_t);
+    return env->inst->frame;
 }

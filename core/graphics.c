@@ -5,8 +5,7 @@
 void
 nux_pal (nux_env_t env, nux_u8_t index, nux_u8_t color)
 {
-    nux_u8_t *pal = NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, nux_u8_t);
-    pal[index]    = color;
+    env->inst->pal[index] = color;
 }
 void
 nux_palt (nux_env_t env, nux_u8_t c)
@@ -15,17 +14,16 @@ nux_palt (nux_env_t env, nux_u8_t c)
 void
 nux_palr (nux_env_t env)
 {
-    nux_u8_t *pal = NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, nux_u8_t);
     for (nux_u32_t i = 0; i < NUX_PALETTE_SIZE; ++i)
     {
-        pal[i] = i;
+        env->inst->pal[i] = i;
     }
     nux_palt(env, 0);
 }
 nux_u8_t
 nux_palc (nux_env_t env, nux_u8_t index)
 {
-    return NUX_MEMPTR(env->inst, NUX_RAM_PALETTE, const nux_u8_t)[index];
+    return env->inst->pal[index];
 }
 void
 nux_cls (nux_env_t env, nux_u32_t color)
@@ -125,30 +123,29 @@ nux_tracefmt (nux_env_t env, const nux_c8_t *fmt, ...)
 nux_i32_t
 nux_cursorx (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_RAM_CURSORX, nux_i32_t);
+    return env->inst->cursor.x;
 }
 nux_i32_t
 nux_cursory (nux_env_t env)
 {
-    return NUX_MEMGET(env->inst, NUX_RAM_CURSORY, nux_i32_t);
+    return env->inst->cursor.y;
 }
 void
 nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
 {
-    NUX_MEMSET(env->inst, NUX_RAM_CURSORX, nux_i32_t, x);
-    NUX_MEMSET(env->inst, NUX_RAM_CURSORY, nux_i32_t, y);
+    env->inst->cursor = nux_v2i(x, y);
 }
 nux_u32_t
 nux_cget (nux_env_t env, nux_u8_t index)
 {
-    nux_u8_t *map = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
+    const nux_u8_t *map = (const nux_u8_t *)env->inst->colormap;
     return (map[index * 3 + 0] << 16 | map[index * 3 + 1] << 8
             | map[index * 3 + 0]);
 }
 void
 nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
 {
-    nux_u8_t *map      = NUX_MEMPTR(env->inst, NUX_RAM_COLORMAP, nux_u8_t);
+    nux_u8_t *map      = (nux_u8_t *)env->inst->colormap;
     map[index * 3 + 0] = (color & 0xFF0000) >> 16;
     map[index * 3 + 1] = (color & 0xFF00) >> 8;
     map[index * 3 + 2] = color & 0xFF;
@@ -156,43 +153,34 @@ nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
 void
 nux_cameye (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, nux_f32_t)[0] = x;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, nux_f32_t)[1] = y;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, nux_f32_t)[2] = z;
+    env->inst->cam_eye = nux_v3(x, y, z);
 }
 void
 nux_camcenter (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, nux_f32_t)[0] = x;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, nux_f32_t)[1] = y;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, nux_f32_t)[2] = z;
+    env->inst->cam_center = nux_v3(x, y, z);
 }
 void
 nux_camup (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, nux_f32_t)[0] = x;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, nux_f32_t)[1] = y;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, nux_f32_t)[2] = z;
+    env->inst->cam_up = nux_v3(x, y, z);
 }
 void
 nux_camviewport (
     nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
 {
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[0] = x;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[1] = y;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[2] = w;
-    NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, nux_u32_t)[3] = h;
+    env->inst->cam_viewport = nux_b2i_xywh(x, y, w, h);
 }
 void
 nux_camfov (nux_env_t env, nux_f32_t fov)
 {
-    NUX_MEMSET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t, fov);
+    env->inst->cam_fov = fov;
 }
 
 nux_u8_t *
 nux_screen (nux_env_t env)
 {
-    return NUX_MEMPTR(env->inst, NUX_RAM_CANVAS, nux_u8_t);
+    return env->inst->canvas;
 }
 void
 nux_bind_texture (nux_env_t          env,
@@ -202,11 +190,7 @@ nux_bind_texture (nux_env_t          env,
                   nux_u32_t          h,
                   nux_texture_type_t type)
 {
-    nux_u32_t *view = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t);
-    view[0]         = x;
-    view[1]         = y;
-    view[2]         = w;
-    view[3]         = h;
+    env->inst->tex_view = nux_b2i_xywh(x, y, w, h);
 }
 void
 nux_write_texture (nux_env_t       env,
@@ -223,11 +207,11 @@ nux_write_texture (nux_env_t       env,
     h = NUX_MIN(h, NUX_TEXTURE_HEIGHT - y - 1);
 
     // Copy row by row
-    nux_u8_t *tex = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t);
-    for (nux_u32_t i = 0; i < h; ++i)
-    {
-        nux_u8_t       *dst = tex + ((y + i) * NUX_TEXTURE_WIDTH + x);
-        const nux_u8_t *src = data + (i * w);
-        nux_memcpy(dst, src, w);
-    }
+    // nux_u8_t *tex = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t);
+    // for (nux_u32_t i = 0; i < h; ++i)
+    // {
+    //     nux_u8_t       *dst = tex + ((y + i) * NUX_TEXTURE_WIDTH + x);
+    //     const nux_u8_t *src = data + (i * w);
+    //     nux_memcpy(dst, src, w);
+    // }
 }

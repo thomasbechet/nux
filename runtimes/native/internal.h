@@ -47,8 +47,7 @@ typedef struct
     nu_char_t             path[NU_PATH_MAX];
     nu_bool_t             active;
     nux_instance_config_t config;
-    nux_instance_t        instance;
-    nu_byte_t            *save_state;
+    nux_instance_t       *instance;
     nu_bool_t             pause;
     struct nk_rect        viewport;
     viewport_mode_t       viewport_mode;
@@ -79,9 +78,9 @@ void                runtime_quit(void);
 nu_status_t renderer_init(void);
 void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
-void        renderer_render_instance(nux_instance_t inst,
-                                     nu_b2i_t       viewport,
-                                     nu_v2u_t       window_size);
+void        renderer_render_instance(nux_instance_t *inst,
+                                     nu_b2i_t        viewport,
+                                     nu_v2u_t        window_size);
 
 nu_status_t        window_init(void);
 void               window_free(void);
@@ -91,7 +90,7 @@ nu_v2u_t           window_get_size(void);
 struct nk_context *window_nk_context(void);
 nu_bool_t          window_is_double_click(void);
 nu_bool_t          window_poll_command(runtime_command_t *cmd);
-void               window_set_instance_inputs(nux_instance_t inst);
+void               window_set_instance_inputs(nux_instance_t *inst);
 
 void view_home(struct nk_context *ctx, struct nk_rect bounds);
 void view_controls(struct nk_context *ctx, struct nk_rect bounds);

@@ -127,31 +127,9 @@ typedef enum
 
 typedef enum
 {
-    NUX_STAT_FPS = 1,
+    NUX_STAT_FPS,
+    NUX_STAT_MAX
 } nux_stat_t;
-
-typedef enum
-{
-    NUX_RAM_CANVAS       = 0x0,
-    NUX_RAM_COLORMAP     = 0x3d090,
-    NUX_RAM_PALETTE      = 0x3d490,
-    NUX_RAM_TEXTURE      = 0x3d590,
-    NUX_RAM_BUTTONS      = 0x103d590,
-    NUX_RAM_AXIS         = 0x103d5b0,
-    NUX_RAM_TIME         = 0x103d670,
-    NUX_RAM_FRAME        = 0x103d674,
-    NUX_RAM_CURSORX      = 0x103d678,
-    NUX_RAM_CURSORY      = 0x103d67c,
-    NUX_RAM_STAT_FPS     = 0x103d680,
-    NUX_RAM_TEXTURE_VIEW = 0x103d684,
-    NUX_RAM_CAM_EYE      = 0x103d694,
-    NUX_RAM_CAM_CENTER   = 0x103d6a0,
-    NUX_RAM_CAM_UP       = 0x103d6ac,
-    NUX_RAM_CAM_FOV      = 0x103d6b8,
-    NUX_RAM_CAM_VIEWPORT = 0x103d6bc,
-    NUX_RAM_MODEL        = 0x103d6cc,
-    NUX_RAM_USER         = 0x103d70c
-} nux_ram_layout_t;
 
 typedef enum
 {
@@ -249,6 +227,7 @@ void nux_draw_plane(nux_env_t        env,
                     const nux_f32_t *m);
 
 // Draw State API
+
 void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);
 void      nux_palt(nux_env_t env, nux_u8_t c);
 void      nux_palr(nux_env_t env);
@@ -292,7 +271,10 @@ void nux_tracefmt(nux_env_t env, const nux_c8_t *fmt, ...);
 #endif
 
 // Input
+
 nux_u32_t nux_button(nux_env_t env, nux_u32_t player);
 nux_f32_t nux_axis(nux_env_t env, nux_u32_t player, nux_axis_t axis);
+
+nux_u32_t nux_new_texture(nux_env_t env, nux_u32_t w, nux_u32_t h);
 
 #endif

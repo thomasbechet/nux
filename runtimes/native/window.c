@@ -457,7 +457,7 @@ window_poll_command (runtime_command_t *cmd)
     return NU_TRUE;
 }
 void
-window_set_instance_inputs (nux_instance_t inst)
+window_set_instance_inputs (nux_instance_t *inst)
 {
     nux_instance_set_buttons(inst, 0, window.buttons[0]);
     for (nu_size_t a = 0; a < NUX_AXIS_MAX; ++a)

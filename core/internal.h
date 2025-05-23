@@ -137,65 +137,34 @@
     nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);          \
     type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
 
-#define NUX_VEC(type)       \
-    struct                  \
-    {                       \
-        type     *data;     \
-        nux_u32_t capacity; \
-        nux_u32_t size;     \
+#define NUX_VEC(type)   \
+    struct              \
+    {                   \
+        type     *data; \
+        nux_u32_t capa; \
+        nux_u32_t size; \
     }
-#define NUX_VEC_INIT(v, ptr, capa) \
-    {                              \
-        (v)->data     = (ptr);     \
-        (v)->capacity = (capa);    \
-        (v)->size     = 0;         \
+#define NUX_VEC_INIT(v, ptr, cap) \
+    {                             \
+        (v)->data = (ptr);        \
+        (v)->capa = (cap);        \
+        (v)->size = 0;            \
     }
 #define NUX_VEC_PUSH(v) \
-    ((v)->size >= (v)->capacity ? NU_NULL : &(v)->data[(v)->size++])
+    ((v)->size >= (v)->capa ? NUX_NULL : &(v)->data[(v)->size++])
+#define NUX_VEC_PUSHN(v, n) \
+    ((v)->size + n >= (v)->capa ? NUX_NULL : &(v)->data[(v)->size += n])
 #define NUX_VEC_CLEAR(v) (v)->size = 0
+#define NUX_VEC_POP(v)   (v)->size ? &(v)->data[(v)->size--] : NUX_NULL
+#define NUX_VEC_GET(v, index) \
+    ((index) >= (v)->size ? NUX_NULL : &(v)->data[index])
 
-#define NUX_MEMPTR(inst, addr, type) ((type *)((inst)->state + (addr)))
-#define NUX_MEMGET(inst, addr, type) *(const type *)((inst)->state + (addr))
-#define NUX_MEMSET(inst, addr, type, val) \
-    *(type *)((inst)->state + (addr)) = (val)
+// Vector data structure should be enought to cover all engine cases.
+// Try not to create too much abstraction (i.e. pools)
 
 ////////////////////////////
 ///        TYPES         ///
 ////////////////////////////
-
-struct nux_env
-{
-    // Non persistent state
-    nux_instance_t inst;
-
-    // Error handling
-    nux_error_t error;
-    nux_c8_t    error_message[256];
-
-    // Stats
-    nux_u32_t tricount;
-};
-
-typedef struct
-{
-    nux_u32_t width;
-    nux_u32_t height;
-    nux_u8_t *data;
-} nux_texture_t;
-
-struct nux_instance
-{
-    void     *userdata;
-    nux_b32_t running;
-
-    NUX_VEC(nux_texture_t) textures;
-
-    nux_u8_t *state;
-
-    struct nux_env env;
-    nux_callback_t init;
-    nux_callback_t update;
-};
 
 NUX_V2_DEFINE(v2i, nux_i32_t);
 NUX_V2_DEFINE(v2u, nux_u32_t);
@@ -265,6 +234,82 @@ typedef union
     };
     nux_f32_t data[NUX_M4_SIZE];
 } nux_m4_t;
+
+struct nux_env
+{
+    nux_instance_t *inst;
+
+    // Error handling
+    nux_error_t error;
+    nux_c8_t    error_message[256];
+
+    // Stats
+    nux_u32_t tricount;
+};
+
+typedef struct
+{
+    nux_u32_t width;
+    nux_u32_t height;
+    nux_u8_t *data;
+} nux_texture_t;
+
+typedef struct
+{
+    void     *data;
+    nux_u32_t size;
+    nux_u32_t first_object;
+} nux_section_t;
+
+typedef enum
+{
+    NUX_OBJECT_NULL,
+    NUX_OBJECT_SECTION,
+    NUX_OBJECT_TEXTURE,
+} nux_object_type_t;
+
+typedef struct
+{
+    nux_u32_t         next;
+    nux_u32_t         prev;
+    nux_object_type_t type;
+    union
+    {
+        nux_section_t section;
+        nux_texture_t texture;
+    } data;
+} nux_object_t;
+
+struct nux_instance
+{
+    void     *userdata;
+    nux_b32_t running;
+    nux_u64_t frame;
+    nux_f32_t time;
+    nux_u8_t  pal[NUX_PALETTE_SIZE];
+    nux_u32_t colormap[NUX_COLORMAP_SIZE];
+    nux_v2i_t cursor;
+    nux_v3_t  cam_eye;
+    nux_v3_t  cam_center;
+    nux_v3_t  cam_up;
+    nux_b2i_t cam_viewport;
+    nux_f32_t cam_fov;
+    nux_u8_t *canvas;
+    nux_b2i_t tex_view;
+
+    nux_u32_t buttons[NUX_PLAYER_MAX];
+    nux_f32_t axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
+
+    nux_u32_t stats[NUX_STAT_MAX];
+
+    NUX_VEC(nux_u8_t) memory;
+    NUX_VEC(nux_object_t) objects;
+    NUX_VEC(nux_u32_t) free_objects;
+
+    struct nux_env env;
+    nux_callback_t init;
+    nux_callback_t update;
+};
 
 ////////////////////////////
 ///      FUNCTIONS       ///
@@ -360,6 +405,16 @@ nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 
 // instance.c
 
-void nux_set_error(nux_env_t env, nux_error_t error);
+/**
+ * Allocate memory in the current section
+ * @param size requested memory size
+ * @return pointer to memory
+ */
+void *nux_malloc(nux_env_t env, nux_u32_t size);
+void  nux_set_error(nux_env_t env, nux_error_t error);
+
+void *nux_add_object(nux_env_t env, nux_object_type_t type, nux_u32_t *id);
+nux_status_t nux_remove_object(nux_env_t env, nux_u32_t id);
+void *nux_check_object(nux_env_t env, nux_u32_t id, nux_object_type_t type);
 
 #endif
