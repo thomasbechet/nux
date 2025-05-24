@@ -237,27 +237,26 @@ void      nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t c);
 nux_u32_t nux_cget(nux_env_t env, nux_u8_t index);
 void      nux_cset(nux_env_t env, nux_u8_t index, nux_u16_t c);
 
-nux_u8_t *nux_screen(nux_env_t env);
-void      nux_bind_texture(nux_env_t          env,
-                           nux_u32_t          x,
-                           nux_u32_t          y,
-                           nux_u32_t          w,
-                           nux_u32_t          h,
-                           nux_texture_type_t type);
-void      nux_write_texture(nux_env_t       env,
-                            nux_u32_t       x,
-                            nux_u32_t       y,
-                            nux_u32_t       w,
-                            nux_u32_t       h,
-                            const nux_u8_t *data);
-void      nux_copy_texture(nux_env_t       env,
-                           nux_u32_t       srcx,
-                           nux_u32_t       srcy,
-                           nux_u32_t       dstx,
-                           nux_u32_t       dsty,
-                           nux_u32_t       w,
-                           nux_u32_t       h,
-                           const nux_u8_t *data);
+void nux_bind_texture(nux_env_t          env,
+                      nux_u32_t          x,
+                      nux_u32_t          y,
+                      nux_u32_t          w,
+                      nux_u32_t          h,
+                      nux_texture_type_t type);
+void nux_write_texture(nux_env_t       env,
+                       nux_u32_t       x,
+                       nux_u32_t       y,
+                       nux_u32_t       w,
+                       nux_u32_t       h,
+                       const nux_u8_t *data);
+void nux_copy_texture(nux_env_t       env,
+                      nux_u32_t       srcx,
+                      nux_u32_t       srcy,
+                      nux_u32_t       dstx,
+                      nux_u32_t       dsty,
+                      nux_u32_t       w,
+                      nux_u32_t       h,
+                      const nux_u8_t *data);
 
 #ifdef NUX_BUILD_VARARGS
 void nux_textfmt(nux_env_t       env,

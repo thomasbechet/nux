@@ -6,6 +6,7 @@ import shutil
 import sys
 import re
 import os
+import json
 
 functions = []
 enums = []
@@ -35,10 +36,14 @@ class EnumValue:
 
 def parse_function(node):
     func = Func()
+    # print(node.type)
     func.name = node.type.declname.replace('nux_', '')
     func.returntype = node.type.type.names[0]
     for param in node.args.params[1:]:
         arg = Arg()
+        if (isinstance(param, c_ast.EllipsisParam)):
+            # Ignore functions with variadics
+            return
         arg.name = param.name
         if type(param.type) is c_ast.PtrDecl:
             arg.isptr = True
@@ -72,6 +77,7 @@ class TypeDefVisitor(c_ast.NodeVisitor):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("rootdir")
+    parser.add_argument("--dump", dest="dump", action="store_true")
     args = parser.parse_args()
 
     api_header = os.path.join(args.rootdir, "core/nux_api.h")
@@ -85,7 +91,6 @@ if __name__ == "__main__":
     typedef float nux_f32_t;\n
     typedef int nux_status_t;\n
     """
-    # prelude = ""
 
     fixed = "\n".join([line if not re.findall("//|#include|#ifdef|#ifndef|#else|#endif|#define", line) else "" for line in src.splitlines()])
     ast = c_parser.CParser().parse(prelude + fixed)
@@ -93,6 +98,15 @@ if __name__ == "__main__":
     v.visit(ast)
     v = TypeDefVisitor()
     v.visit(ast)
+
+    if args.dump:
+        print("Functions")
+        for function in functions:
+            print(function.name, "->", function.returntype)
+            for arg in function.args:
+                print("-", arg.name, arg.typename)
+                print(json.dumps(arg.__dict__))
+        exit(0)
 
     env = Environment(loader=FileSystemLoader(os.path.join(args.rootdir, "scripts/templates")))
     # nux.h
