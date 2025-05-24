@@ -11,58 +11,37 @@ import json
 functions = []
 enums = []
 
-class Func:
-    def __init__(self):
-        self.name = ""
-        self.returntype = "" 
-        self.args = []
-
-class Arg:
-    def __init__(self):
-        self.name = ""
-        self.typename = ""
-        self.isconst = False
-        self.isptr = False
-
-class Enum:
-    def __init__(self):
-        self.name = ""
-        self.values = []
-
-class EnumValue:
-    def __init__(self):
-        self.name = ""
-        self.value = ""
-
 def parse_function(node):
-    func = Func()
+    func = {}
     # print(node.type)
-    func.name = node.type.declname.replace('nux_', '')
-    func.returntype = node.type.type.names[0]
+    func["name"] = node.type.declname.replace('nux_', '')
+    func["returntype"] = node.type.type.names[0]
+    func["args"] = []
     for param in node.args.params[1:]:
-        arg = Arg()
         if (isinstance(param, c_ast.EllipsisParam)):
             # Ignore functions with variadics
             return
-        arg.name = param.name
+        arg = {}
+        arg["name"] = param.name
         if type(param.type) is c_ast.PtrDecl:
-            arg.isptr = True
+            arg["isptr"] = True
             if param.quals:
-                arg.isconst = True
-            arg.typename = param.type.type.type.names[0]
+                arg["isconst"] = True
+            arg["typename"] = param.type.type.type.names[0]
         else:
-            arg.typename = param.type.type.names[0]
-        func.args.append(arg)
+            arg["typename"] = param.type.type.names[0]
+        func["args"].append(arg)
     functions.append(func)
 
 def parse_enum(node):
-    enum = Enum()
-    enum.name = node.name.replace("nux_", "")
+    enum = {}
+    enum["name"] = node.name.replace("nux_", "")
+    enum["values"] = []
     for e in node.type.type.values.enumerators:
-        val = EnumValue()
-        val.name = e.name.replace("NUX_", "")
-        val.value = c_generator.CGenerator().visit(e.value)
-        enum.values.append(val)
+        val = {}
+        val["name"] = e.name.replace("NUX_", "")
+        val["value"] = c_generator.CGenerator().visit(e.value)
+        enum["values"].append(val)
     enums.append(enum)
 
 class FuncDefVisitor(c_ast.NodeVisitor):
@@ -74,12 +53,7 @@ class TypeDefVisitor(c_ast.NodeVisitor):
         if type(node.type.type) is c_ast.Enum:
             parse_enum(node)
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("rootdir")
-    parser.add_argument("--dump", dest="dump", action="store_true")
-    args = parser.parse_args()
-
+def parse_header(args):
     api_header = os.path.join(args.rootdir, "core/nux_api.h")
     with open(api_header, 'r') as file:
         src = file.read()
@@ -99,15 +73,11 @@ if __name__ == "__main__":
     v = TypeDefVisitor()
     v.visit(ast)
 
-    if args.dump:
-        print("Functions")
-        for function in functions:
-            print(function.name, "->", function.returntype)
-            for arg in function.args:
-                print("-", arg.name, arg.typename)
-                print(json.dumps(arg.__dict__))
-        exit(0)
+def dump():
+    print(json.dumps(functions, indent=4))
+    print(json.dumps(enums, indent=4))
 
+def generate_files(args):
     env = Environment(loader=FileSystemLoader(os.path.join(args.rootdir, "scripts/templates")))
     # nux.h
     template = env.get_template("nux.h.jinja")
@@ -135,5 +105,20 @@ if __name__ == "__main__":
         f.write(r)
         f.close()
         subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("rootdir")
+    parser.add_argument("--dump", dest="dump", action="store_true")
+    args = parser.parse_args()
+
+    parse_header(args)
+
+    if args.dump:
+        dump()
+    else:
+        generate_files(args)
+
+
     
 
