@@ -3,16 +3,16 @@
 #include "fonts_data.c.inc"
 
 void
-nux_pal (nux_env_t env, nux_u8_t index, nux_u8_t color)
+nux_pal (nux_env_t *env, nux_u8_t index, nux_u8_t color)
 {
     env->inst->pal[index] = color;
 }
 void
-nux_palt (nux_env_t env, nux_u8_t c)
+nux_palt (nux_env_t *env, nux_u8_t c)
 {
 }
 void
-nux_palr (nux_env_t env)
+nux_palr (nux_env_t *env)
 {
     for (nux_u32_t i = 0; i < NUX_PALETTE_SIZE; ++i)
     {
@@ -21,18 +21,18 @@ nux_palr (nux_env_t env)
     nux_palt(env, 0);
 }
 nux_u8_t
-nux_palc (nux_env_t env, nux_u8_t index)
+nux_palc (nux_env_t *env, nux_u8_t index)
 {
     return env->inst->pal[index];
 }
 void
-nux_cls (nux_env_t env, nux_u32_t color)
+nux_cls (nux_env_t *env, nux_u32_t color)
 {
     nux_rectfill(env, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1, color);
 }
 void
 nux_text (
-    nux_env_t env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c)
+    nux_env_t *env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c)
 {
     const nux_u32_t pixel_per_glyph
         = DEFAULT_FONT_DATA_WIDTH * DEFAULT_FONT_DATA_HEIGHT;
@@ -75,7 +75,7 @@ nux_text (
     }
 }
 void
-nux_print (nux_env_t env, const nux_c8_t *text, nux_u8_t c)
+nux_print (nux_env_t *env, const nux_c8_t *text, nux_u8_t c)
 {
     nux_i32_t x = nux_cursorx(env);
     nux_i32_t y = nux_cursory(env);
@@ -84,7 +84,7 @@ nux_print (nux_env_t env, const nux_c8_t *text, nux_u8_t c)
 }
 #ifdef NUX_BUILD_VARARGS
 void
-nux_textfmt (nux_env_t       env,
+nux_textfmt (nux_env_t      *env,
              nux_i32_t       x,
              nux_i32_t       y,
              nux_u8_t        c,
@@ -99,7 +99,7 @@ nux_textfmt (nux_env_t       env,
     nux_text(env, x, y, buf, c);
 }
 void
-nux_printfmt (nux_env_t env, nux_u8_t c, const nux_c8_t *fmt, ...)
+nux_printfmt (nux_env_t *env, nux_u8_t c, const nux_c8_t *fmt, ...)
 {
     nux_c8_t buf[128];
     va_list  args;
@@ -109,7 +109,7 @@ nux_printfmt (nux_env_t env, nux_u8_t c, const nux_c8_t *fmt, ...)
     nux_print(env, buf, c);
 }
 void
-nux_tracefmt (nux_env_t env, const nux_c8_t *fmt, ...)
+nux_tracefmt (nux_env_t *env, const nux_c8_t *fmt, ...)
 {
     nux_c8_t buf[128];
     va_list  args;
@@ -121,29 +121,29 @@ nux_tracefmt (nux_env_t env, const nux_c8_t *fmt, ...)
 #endif
 
 nux_i32_t
-nux_cursorx (nux_env_t env)
+nux_cursorx (nux_env_t *env)
 {
     return env->inst->cursor.x;
 }
 nux_i32_t
-nux_cursory (nux_env_t env)
+nux_cursory (nux_env_t *env)
 {
     return env->inst->cursor.y;
 }
 void
-nux_cursor (nux_env_t env, nux_i32_t x, nux_i32_t y)
+nux_cursor (nux_env_t *env, nux_i32_t x, nux_i32_t y)
 {
     env->inst->cursor = nux_v2i(x, y);
 }
 nux_u32_t
-nux_cget (nux_env_t env, nux_u8_t index)
+nux_cget (nux_env_t *env, nux_u8_t index)
 {
     const nux_u8_t *map = (const nux_u8_t *)env->inst->colormap;
     return (map[index * 3 + 0] << 16 | map[index * 3 + 1] << 8
             | map[index * 3 + 0]);
 }
 void
-nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
+nux_cset (nux_env_t *env, nux_u8_t index, nux_u32_t color)
 {
     nux_u8_t *map      = (nux_u8_t *)env->inst->colormap;
     map[index * 3 + 0] = (color & 0xFF0000) >> 16;
@@ -151,39 +151,39 @@ nux_cset (nux_env_t env, nux_u8_t index, nux_u32_t color)
     map[index * 3 + 2] = color & 0xFF;
 }
 void
-nux_cameye (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
+nux_cameye (nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
     env->inst->cam_eye = nux_v3(x, y, z);
 }
 void
-nux_camcenter (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
+nux_camcenter (nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
     env->inst->cam_center = nux_v3(x, y, z);
 }
 void
-nux_camup (nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
+nux_camup (nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z)
 {
     env->inst->cam_up = nux_v3(x, y, z);
 }
 void
 nux_camviewport (
-    nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
+    nux_env_t *env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
 {
     env->inst->cam_viewport = nux_b2i_xywh(x, y, w, h);
 }
 void
-nux_camfov (nux_env_t env, nux_f32_t fov)
+nux_camfov (nux_env_t *env, nux_f32_t fov)
 {
     env->inst->cam_fov = fov;
 }
 
 nux_u8_t *
-nux_screen (nux_env_t env)
+nux_screen (nux_env_t *env)
 {
     return env->inst->canvas;
 }
 void
-nux_bind_texture (nux_env_t          env,
+nux_bind_texture (nux_env_t         *env,
                   nux_u32_t          x,
                   nux_u32_t          y,
                   nux_u32_t          w,
@@ -193,7 +193,7 @@ nux_bind_texture (nux_env_t          env,
     env->inst->tex_view = nux_b2i_xywh(x, y, w, h);
 }
 void
-nux_write_texture (nux_env_t       env,
+nux_write_texture (nux_env_t      *env,
                    nux_u32_t       x,
                    nux_u32_t       y,
                    nux_u32_t       w,

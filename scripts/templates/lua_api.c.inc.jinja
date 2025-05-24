@@ -21,7 +21,7 @@
 static int l_{{ function.name }}(lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     {%- for arg in function.args -%}
     {%- endfor -%}

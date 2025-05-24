@@ -4,7 +4,7 @@ static int
 l_trace (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -12,7 +12,7 @@ static int
 l_dbgi32 (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -20,7 +20,7 @@ static int
 l_dbgf32 (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -28,7 +28,7 @@ static int
 l_stat (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -36,7 +36,7 @@ static int
 l_tricount (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -44,7 +44,7 @@ static int
 l_time (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -52,7 +52,7 @@ static int
 l_dt (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -60,7 +60,7 @@ static int
 l_frame (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -68,7 +68,7 @@ static int
 l_rectfill (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -76,7 +76,7 @@ static int
 l_trifill (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -84,7 +84,7 @@ static int
 l_text (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -92,7 +92,7 @@ static int
 l_print (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -100,7 +100,7 @@ static int
 l_cursorx (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -108,7 +108,7 @@ static int
 l_cursory (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -116,7 +116,7 @@ static int
 l_cursor (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -124,7 +124,7 @@ static int
 l_line (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -132,7 +132,7 @@ static int
 l_circ (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -140,7 +140,7 @@ static int
 l_rect (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -148,7 +148,7 @@ static int
 l_cameye (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -156,7 +156,7 @@ static int
 l_camcenter (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -164,7 +164,7 @@ static int
 l_camup (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -172,7 +172,7 @@ static int
 l_camviewport (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -180,7 +180,7 @@ static int
 l_camfov (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -188,7 +188,7 @@ static int
 l_mesh (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -196,7 +196,7 @@ static int
 l_mesh_wire (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -204,7 +204,7 @@ static int
 l_draw_cube (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -212,7 +212,7 @@ static int
 l_draw_plane (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -220,7 +220,7 @@ static int
 l_pal (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -228,7 +228,7 @@ static int
 l_palt (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -236,7 +236,7 @@ static int
 l_palr (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -244,7 +244,7 @@ static int
 l_palc (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -252,7 +252,7 @@ static int
 l_cls (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -260,7 +260,7 @@ static int
 l_pset (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -268,7 +268,7 @@ static int
 l_cget (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -276,7 +276,7 @@ static int
 l_cset (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -284,7 +284,7 @@ static int
 l_bind_texture (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -292,7 +292,7 @@ static int
 l_write_texture (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -300,7 +300,7 @@ static int
 l_copy_texture (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 0;
 }
@@ -308,7 +308,7 @@ static int
 l_button (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -316,7 +316,7 @@ static int
 l_axis (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }
@@ -324,7 +324,7 @@ static int
 l_new_texture (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t env = lua_touserdata(L, -1);
+    nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
 }

@@ -18,7 +18,7 @@ typedef float         nux_f32_t;
 typedef double        nux_f64_t;
 #endif
 
-typedef struct nux_env *nux_env_t;
+typedef struct nux_env nux_env_t;
 
 typedef enum
 {
@@ -152,104 +152,104 @@ typedef enum
 } nux_texture_type_t;
 
 // Debug API
-void nux_trace(nux_env_t env, const nux_c8_t *text);
-void nux_dbgi32(nux_env_t env, const nux_c8_t *name, nux_i32_t *p);
-void nux_dbgf32(nux_env_t env, const nux_c8_t *name, nux_f32_t *p);
+void nux_trace(nux_env_t *env, const nux_c8_t *text);
+void nux_dbgi32(nux_env_t *env, const nux_c8_t *name, nux_i32_t *p);
+void nux_dbgf32(nux_env_t *env, const nux_c8_t *name, nux_f32_t *p);
 
 // System API
-nux_u32_t nux_stat(nux_env_t env, nux_stat_t info);
-nux_u32_t nux_tricount(nux_env_t env);
-nux_f32_t nux_time(nux_env_t env);
-nux_f32_t nux_dt(nux_env_t env);
-nux_u32_t nux_frame(nux_env_t env);
+nux_u32_t nux_stat(nux_env_t *env, nux_stat_t info);
+nux_u32_t nux_tricount(nux_env_t *env);
+nux_f32_t nux_time(nux_env_t *env);
+nux_f32_t nux_dt(nux_env_t *env);
+nux_u32_t nux_frame(nux_env_t *env);
 
 // Canvas API
-void nux_rectfill(nux_env_t env,
-                  nux_i32_t x0,
-                  nux_i32_t y0,
-                  nux_i32_t x1,
-                  nux_i32_t y1,
-                  nux_u8_t  c);
-void nux_trifill(nux_env_t env,
-                 nux_i32_t x0,
-                 nux_i32_t y0,
-                 nux_i32_t x1,
-                 nux_i32_t y1,
-                 nux_i32_t x2,
-                 nux_i32_t y2,
-                 nux_u8_t  c);
+void nux_rectfill(nux_env_t *env,
+                  nux_i32_t  x0,
+                  nux_i32_t  y0,
+                  nux_i32_t  x1,
+                  nux_i32_t  y1,
+                  nux_u8_t   c);
+void nux_trifill(nux_env_t *env,
+                 nux_i32_t  x0,
+                 nux_i32_t  y0,
+                 nux_i32_t  x1,
+                 nux_i32_t  y1,
+                 nux_i32_t  x2,
+                 nux_i32_t  y2,
+                 nux_u8_t   c);
 void nux_text(
-    nux_env_t env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
-void      nux_print(nux_env_t env, const nux_c8_t *text, nux_u8_t c);
-nux_i32_t nux_cursorx(nux_env_t env);
-nux_i32_t nux_cursory(nux_env_t env);
-void      nux_cursor(nux_env_t env, nux_i32_t x, nux_i32_t y);
-void      nux_line(nux_env_t env,
-                   nux_i32_t x0,
-                   nux_i32_t y0,
-                   nux_i32_t x1,
-                   nux_i32_t y1,
-                   nux_u8_t  color);
+    nux_env_t *env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
+void      nux_print(nux_env_t *env, const nux_c8_t *text, nux_u8_t c);
+nux_i32_t nux_cursorx(nux_env_t *env);
+nux_i32_t nux_cursory(nux_env_t *env);
+void      nux_cursor(nux_env_t *env, nux_i32_t x, nux_i32_t y);
+void      nux_line(nux_env_t *env,
+                   nux_i32_t  x0,
+                   nux_i32_t  y0,
+                   nux_i32_t  x1,
+                   nux_i32_t  y1,
+                   nux_u8_t   color);
 void      nux_circ(
-         nux_env_t env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c);
-void nux_rect(nux_env_t env,
-              nux_i32_t x0,
-              nux_i32_t y0,
-              nux_i32_t x1,
-              nux_i32_t y1,
-              nux_u8_t  c);
+         nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c);
+void nux_rect(nux_env_t *env,
+              nux_i32_t  x0,
+              nux_i32_t  y0,
+              nux_i32_t  x1,
+              nux_i32_t  y1,
+              nux_u8_t   c);
 
 // 3D API
-void nux_cameye(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_camcenter(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_camup(nux_env_t env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_cameye(nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_camcenter(nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
+void nux_camup(nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
 void nux_camviewport(
-    nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
-void nux_camfov(nux_env_t env, nux_f32_t fov);
-void nux_mesh(nux_env_t        env,
+    nux_env_t *env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
+void nux_camfov(nux_env_t *env, nux_f32_t fov);
+void nux_mesh(nux_env_t       *env,
               const nux_f32_t *positions,
               const nux_f32_t *uvs,
               nux_u32_t        count,
               const nux_f32_t *m);
-void nux_mesh_wire(nux_env_t        env,
+void nux_mesh_wire(nux_env_t       *env,
                    const nux_f32_t *positions,
                    const nux_f32_t *uvs,
                    nux_u32_t        count,
                    const nux_f32_t *m);
-void nux_draw_cube(nux_env_t        env,
+void nux_draw_cube(nux_env_t       *env,
                    nux_f32_t        sx,
                    nux_f32_t        sy,
                    nux_f32_t        sz,
                    const nux_f32_t *m);
-void nux_draw_plane(nux_env_t        env,
+void nux_draw_plane(nux_env_t       *env,
                     nux_f32_t        w,
                     nux_f32_t        h,
                     const nux_f32_t *m);
 
 // Draw State API
 
-void      nux_pal(nux_env_t env, nux_u8_t index, nux_u8_t color);
-void      nux_palt(nux_env_t env, nux_u8_t c);
-void      nux_palr(nux_env_t env);
-nux_u8_t  nux_palc(nux_env_t env, nux_u8_t index);
-void      nux_cls(nux_env_t env, nux_u32_t color);
-void      nux_pset(nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t c);
-nux_u32_t nux_cget(nux_env_t env, nux_u8_t index);
-void      nux_cset(nux_env_t env, nux_u8_t index, nux_u16_t c);
+void      nux_pal(nux_env_t *env, nux_u8_t index, nux_u8_t color);
+void      nux_palt(nux_env_t *env, nux_u8_t c);
+void      nux_palr(nux_env_t *env);
+nux_u8_t  nux_palc(nux_env_t *env, nux_u8_t index);
+void      nux_cls(nux_env_t *env, nux_u32_t color);
+void      nux_pset(nux_env_t *env, nux_i32_t x, nux_i32_t y, nux_u8_t c);
+nux_u32_t nux_cget(nux_env_t *env, nux_u8_t index);
+void      nux_cset(nux_env_t *env, nux_u8_t index, nux_u16_t c);
 
-void nux_bind_texture(nux_env_t          env,
+void nux_bind_texture(nux_env_t         *env,
                       nux_u32_t          x,
                       nux_u32_t          y,
                       nux_u32_t          w,
                       nux_u32_t          h,
                       nux_texture_type_t type);
-void nux_write_texture(nux_env_t       env,
+void nux_write_texture(nux_env_t      *env,
                        nux_u32_t       x,
                        nux_u32_t       y,
                        nux_u32_t       w,
                        nux_u32_t       h,
                        const nux_u8_t *data);
-void nux_copy_texture(nux_env_t       env,
+void nux_copy_texture(nux_env_t      *env,
                       nux_u32_t       srcx,
                       nux_u32_t       srcy,
                       nux_u32_t       dstx,
@@ -259,21 +259,21 @@ void nux_copy_texture(nux_env_t       env,
                       const nux_u8_t *data);
 
 #ifdef NUX_BUILD_VARARGS
-void nux_textfmt(nux_env_t       env,
+void nux_textfmt(nux_env_t      *env,
                  nux_i32_t       x,
                  nux_i32_t       y,
                  nux_u8_t        c,
                  const nux_c8_t *fmt,
                  ...);
-void nux_printfmt(nux_env_t env, nux_u8_t c, const nux_c8_t *fmt, ...);
-void nux_tracefmt(nux_env_t env, const nux_c8_t *fmt, ...);
+void nux_printfmt(nux_env_t *env, nux_u8_t c, const nux_c8_t *fmt, ...);
+void nux_tracefmt(nux_env_t *env, const nux_c8_t *fmt, ...);
 #endif
 
 // Input
 
-nux_u32_t nux_button(nux_env_t env, nux_u32_t player);
-nux_f32_t nux_axis(nux_env_t env, nux_u32_t player, nux_axis_t axis);
+nux_u32_t nux_button(nux_env_t *env, nux_u32_t player);
+nux_f32_t nux_axis(nux_env_t *env, nux_u32_t player, nux_axis_t axis);
 
-nux_u32_t nux_new_texture(nux_env_t env, nux_u32_t w, nux_u32_t h);
+nux_u32_t nux_new_texture(nux_env_t *env, nux_u32_t w, nux_u32_t h);
 
 #endif

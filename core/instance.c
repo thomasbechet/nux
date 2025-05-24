@@ -2,7 +2,7 @@
 
 #include "lua_api.c.inc"
 
-static nux_env_t
+static nux_env_t *
 init_env (nux_instance_t *inst)
 {
     inst->env.inst  = inst;
@@ -13,12 +13,12 @@ init_env (nux_instance_t *inst)
 }
 
 void *
-nux_malloc (nux_env_t env, nux_u32_t size)
+nux_malloc (nux_env_t *env, nux_u32_t size)
 {
     return NUX_VEC_PUSHN(&env->inst->memory, size);
 }
 void
-nux_set_error (nux_env_t env, nux_error_t error)
+nux_set_error (nux_env_t *env, nux_error_t error)
 {
     env->error = error;
     nux_snprintf(env->error_message,
@@ -27,7 +27,7 @@ nux_set_error (nux_env_t env, nux_error_t error)
                  nux_error_message(error));
 }
 void *
-nux_add_object (nux_env_t env, nux_object_type_t type, nux_u32_t *id)
+nux_add_object (nux_env_t *env, nux_object_type_t type, nux_u32_t *id)
 {
     nux_u32_t  index;
     nux_u32_t *free = NUX_VEC_POP(&env->inst->free_objects);
@@ -48,7 +48,7 @@ nux_add_object (nux_env_t env, nux_object_type_t type, nux_u32_t *id)
     return &env->inst->objects.data[index].data;
 }
 nux_status_t
-nux_remove_object (nux_env_t env, nux_u32_t id)
+nux_remove_object (nux_env_t *env, nux_u32_t id)
 {
     if (id <= env->inst->objects.size
         || env->inst->objects.data[id].type == NUX_OBJECT_NULL)
@@ -60,7 +60,7 @@ nux_remove_object (nux_env_t env, nux_u32_t id)
     return NUX_SUCCESS;
 }
 void *
-nux_check_object (nux_env_t env, nux_u32_t id, nux_object_type_t type)
+nux_check_object (nux_env_t *env, nux_u32_t id, nux_object_type_t type)
 {
     if (id <= env->inst->objects.size
         || env->inst->objects.data[id].type != type)
@@ -115,7 +115,7 @@ nux_instance_init (const nux_instance_config_t *config)
     NUX_CHECK(inst->canvas, goto cleanup0);
 
     // Initialize state
-    nux_env_t env = init_env(inst);
+    nux_env_t *env = init_env(inst);
     nux_palr(env);
     nux_camfov(env, 60);
     nux_cameye(env, 0, 0, 0);
@@ -174,7 +174,7 @@ nux_instance_free (nux_instance_t *inst)
 void
 nux_instance_tick (nux_instance_t *inst)
 {
-    nux_env_t env = init_env(inst);
+    nux_env_t *env = init_env(inst);
 
     // Init draw state
     nux_cursor(env, 0, 0);
@@ -253,13 +253,13 @@ nux_error_message (nux_error_t error)
 }
 
 void
-nux_trace (nux_env_t env, const nux_c8_t *text)
+nux_trace (nux_env_t *env, const nux_c8_t *text)
 {
     nux_platform_log(env->inst->userdata, text, nux_strnlen(text, 1024));
 }
 
 void
-nux_dbgi32 (nux_env_t env, const nux_c8_t *name, nux_i32_t *p)
+nux_dbgi32 (nux_env_t *env, const nux_c8_t *name, nux_i32_t *p)
 {
     nux_platform_debug(env->inst->userdata,
                        name,
@@ -268,7 +268,7 @@ nux_dbgi32 (nux_env_t env, const nux_c8_t *name, nux_i32_t *p)
                        p);
 }
 void
-nux_dbgf32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)
+nux_dbgf32 (nux_env_t *env, const nux_c8_t *name, nux_f32_t *p)
 {
     nux_platform_debug(env->inst->userdata,
                        name,
@@ -278,27 +278,27 @@ nux_dbgf32 (nux_env_t env, const nux_c8_t *name, nux_f32_t *p)
 }
 
 nux_u32_t
-nux_stat (nux_env_t env, nux_stat_t stat)
+nux_stat (nux_env_t *env, nux_stat_t stat)
 {
     return env->inst->stats[stat];
 }
 nux_u32_t
-nux_tricount (nux_env_t env)
+nux_tricount (nux_env_t *env)
 {
     return env->tricount;
 }
 nux_f32_t
-nux_time (nux_env_t env)
+nux_time (nux_env_t *env)
 {
     return env->inst->time;
 }
 nux_f32_t
-nux_dt (nux_env_t env)
+nux_dt (nux_env_t *env)
 {
     return 1. / 60;
 }
 nux_u32_t
-nux_frame (nux_env_t env)
+nux_frame (nux_env_t *env)
 {
     return env->inst->frame;
 }

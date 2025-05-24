@@ -1,12 +1,12 @@
 #include "internal.h"
 
 void
-nux_rectfill (nux_env_t env,
-              nux_i32_t x0,
-              nux_i32_t y0,
-              nux_i32_t x1,
-              nux_i32_t y1,
-              nux_u8_t  color)
+nux_rectfill (nux_env_t *env,
+              nux_i32_t  x0,
+              nux_i32_t  y0,
+              nux_i32_t  x1,
+              nux_i32_t  y1,
+              nux_u8_t   color)
 {
     nux_i32_t minx = NUX_MIN(x0, x1);
     nux_i32_t miny = NUX_MIN(y0, y1);
@@ -21,7 +21,7 @@ nux_rectfill (nux_env_t env,
     }
 }
 void
-nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
+nux_pset (nux_env_t *env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
 {
     NUX_CHECK(x >= 0 && x < NUX_CANVAS_WIDTH, return);
     NUX_CHECK(y >= 0 && y < NUX_CANVAS_HEIGHT, return);
@@ -30,12 +30,12 @@ nux_pset (nux_env_t env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
     canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(env, color);
 }
 void
-nux_line (nux_env_t env,
-          nux_i32_t x0,
-          nux_i32_t y0,
-          nux_i32_t x1,
-          nux_i32_t y1,
-          nux_u8_t  c)
+nux_line (nux_env_t *env,
+          nux_i32_t  x0,
+          nux_i32_t  y0,
+          nux_i32_t  x1,
+          nux_i32_t  y1,
+          nux_u8_t   c)
 {
     nux_i32_t dx  = NUX_ABS(x1 - x0);
     nux_i32_t sx  = x0 < x1 ? 1 : -1;
@@ -65,14 +65,14 @@ nux_line (nux_env_t env,
 }
 
 void
-nux_trifill (nux_env_t env,
-             nux_i32_t x0,
-             nux_i32_t y0,
-             nux_i32_t x1,
-             nux_i32_t y1,
-             nux_i32_t x2,
-             nux_i32_t y2,
-             nux_u8_t  c)
+nux_trifill (nux_env_t *env,
+             nux_i32_t  x0,
+             nux_i32_t  y0,
+             nux_i32_t  x1,
+             nux_i32_t  y1,
+             nux_i32_t  x2,
+             nux_i32_t  y2,
+             nux_u8_t   c)
 {
     // v0.y <= v1.y <= v2.y
     nux_v2i_t v0 = nux_v2i(x0, y0);
@@ -181,7 +181,7 @@ processline:
     goto bresenham0;
 }
 void
-nux_circ (nux_env_t env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
+nux_circ (nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
 {
     int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
     do
@@ -202,12 +202,12 @@ nux_circ (nux_env_t env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
     } while (x < 0);
 }
 void
-nux_rect (nux_env_t env,
-          nux_i32_t x0,
-          nux_i32_t y0,
-          nux_i32_t x1,
-          nux_i32_t y1,
-          nux_u8_t  c)
+nux_rect (nux_env_t *env,
+          nux_i32_t  x0,
+          nux_i32_t  y0,
+          nux_i32_t  x1,
+          nux_i32_t  y1,
+          nux_u8_t   c)
 {
     nux_i32_t xmin = NUX_MIN(x0, x1);
     nux_i32_t xmax = NUX_MAX(x0, x1);
@@ -352,7 +352,7 @@ nux_rect (nux_env_t env,
 // }
 //
 // static inline nux_u16_t
-// sample_texture (nux_env_t env, nux_f32_t u, nux_f32_t v)
+// sample_texture (nux_env_t *env, nux_f32_t u, nux_f32_t v)
 // {
 //     nux_u32_t tx = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[0];
 //     nux_u32_t ty = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[1];
@@ -687,7 +687,7 @@ nux_rect (nux_env_t env,
 // }
 
 void
-nux_mesh (nux_env_t        env,
+nux_mesh (nux_env_t       *env,
           const nux_f32_t *positions,
           const nux_f32_t *uvs,
           nux_u32_t        count,
@@ -695,7 +695,7 @@ nux_mesh (nux_env_t        env,
 {
 }
 void
-nux_mesh_wire (nux_env_t        env,
+nux_mesh_wire (nux_env_t       *env,
                const nux_f32_t *positions,
                const nux_f32_t *uvs,
                nux_u32_t        count,
@@ -703,8 +703,11 @@ nux_mesh_wire (nux_env_t        env,
 {
 }
 void
-nux_draw_cube (
-    nux_env_t env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz, const nux_f32_t *m)
+nux_draw_cube (nux_env_t       *env,
+               nux_f32_t        sx,
+               nux_f32_t        sy,
+               nux_f32_t        sz,
+               const nux_f32_t *m)
 {
     // const nu_b3_t box = nu_b3(NU_V3_ZEROS, nux_v3(sx / 2, sy / 2, sz / 2));
     //
@@ -741,7 +744,7 @@ nux_draw_cube (
     //          m);
 }
 void
-nux_draw_plane (nux_env_t env, nux_f32_t w, nux_f32_t h, const nux_f32_t *m)
+nux_draw_plane (nux_env_t *env, nux_f32_t w, nux_f32_t h, const nux_f32_t *m)
 {
     const nux_v3_t v0 = nux_v3(0, 0, 0);
     const nux_v3_t v1 = nux_v3(w, 0, 0);

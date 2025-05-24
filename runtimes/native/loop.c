@@ -32,7 +32,7 @@ init_debug_camera (nu_v3_t pos)
 }
 
 static void
-debug_camera (nux_env_t env, nu_f32_t dt)
+debug_camera (nux_env_t *env, nu_f32_t dt)
 {
     // nux_f32_t vel = nu_v3_norm(freecam.vel);
     // nux_f32_t bob = nu_sin(nux_time(env) * 0.1 * vel * (2 * NU_PI));
@@ -109,7 +109,7 @@ debug_camera (nux_env_t env, nu_f32_t dt)
 }
 
 static void
-blit_colormap (nux_env_t env)
+blit_colormap (nux_env_t *env)
 {
     for (int i = 0; i < NUX_PALETTE_SIZE; ++i)
     {
@@ -136,13 +136,13 @@ blit_colormap (nux_env_t env)
 #endif
 
 void
-loop_init (nux_env_t env)
+loop_init (nux_env_t *env)
 {
     load_blk_colormap(env);
     init_debug_camera(NU_V3_ZEROS);
 }
 void
-loop_update (nux_env_t env)
+loop_update (nux_env_t *env)
 {
     nux_cls(env, 0);
 

@@ -417,12 +417,12 @@ nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
  * @param size requested memory size
  * @return pointer to memory
  */
-void *nux_malloc(nux_env_t env, nux_u32_t size);
-void  nux_set_error(nux_env_t env, nux_error_t error);
+void *nux_malloc(nux_env_t *env, nux_u32_t size);
+void  nux_set_error(nux_env_t *env, nux_error_t error);
 
-void *nux_add_object(nux_env_t env, nux_object_type_t type, nux_u32_t *id);
-nux_status_t nux_remove_object(nux_env_t env, nux_u32_t id);
-void *nux_check_object(nux_env_t env, nux_u32_t id, nux_object_type_t type);
+void *nux_add_object(nux_env_t *env, nux_object_type_t type, nux_u32_t *id);
+nux_status_t nux_remove_object(nux_env_t *env, nux_u32_t id);
+void *nux_check_object(nux_env_t *env, nux_u32_t id, nux_object_type_t type);
 
 nux_status_t nux_register_lua(nux_instance_t *inst);
 
