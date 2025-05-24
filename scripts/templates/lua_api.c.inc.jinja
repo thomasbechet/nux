@@ -1,0 +1,45 @@
+#include "internal.h"
+
+{% set checkmap = {
+    "nux_i8_t": "luaL_checkinteger",
+    "nux_u8_t": "luaL_checkinteger",
+    "nux_i32_t": "luaL_checkinteger",
+    "nux_u32_t": "luaL_checkinteger",
+    "nux_f32_t": "luaL_checknumber",
+} %}
+
+{% set retmap = {
+    "nux_i8_t": "lua_pushinteger",
+    "nux_u8_t": "lua_pushinteger",
+    "nux_i32_t": "lua_pushinteger",
+    "nux_u32_t": "lua_pushinteger",
+    "nux_f32_t": "lua_pushnumber",
+    "nux_status_t": "lua_pushinteger"
+} %}
+
+{% for function in functions %}
+static int l_{{ function.name }}(lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t env = lua_touserdata(L, -1);
+    lua_pushnumber(L, nux_frame(env));
+    {%- for arg in function.args -%}
+    {%- endfor -%}
+    return {{ "0" if function.returntype == "void" else "1" }};
+}
+{%- endfor %}
+
+static const struct luaL_Reg nuxlib[] = {
+{% for function in functions %}
+    { "{{ function.name }}", l_{{ function.name }} },
+{%- endfor %}
+    { NUX_NULL, NUX_NULL }
+};
+
+nux_status_t nux_register_lua(nux_instance_t *inst)
+{
+    lua_newtable(inst->L);
+    luaL_setfuncs(inst->L, nuxlib, 0);
+    lua_setglobal(inst->L, "nux");
+    return NUX_SUCCESS;
+}

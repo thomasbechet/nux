@@ -12,6 +12,10 @@
 #include <math.h>
 #endif
 
+#include <lua.h>
+#include <lualib.h>
+#include <lauxlib.h>
+
 ////////////////////////////
 ///        MACROS        ///
 ////////////////////////////
@@ -264,6 +268,7 @@ typedef struct
 typedef enum
 {
     NUX_OBJECT_NULL,
+    NUX_OBJECT_LUA,
     NUX_OBJECT_SECTION,
     NUX_OBJECT_TEXTURE,
 } nux_object_type_t;
@@ -305,6 +310,8 @@ struct nux_instance
     NUX_VEC(nux_u8_t) memory;
     NUX_VEC(nux_object_t) objects;
     NUX_VEC(nux_u32_t) free_objects;
+
+    lua_State *L;
 
     struct nux_env env;
     nux_callback_t init;
@@ -416,5 +423,7 @@ void  nux_set_error(nux_env_t env, nux_error_t error);
 void *nux_add_object(nux_env_t env, nux_object_type_t type, nux_u32_t *id);
 nux_status_t nux_remove_object(nux_env_t env, nux_u32_t id);
 void *nux_check_object(nux_env_t env, nux_u32_t id, nux_object_type_t type);
+
+nux_status_t nux_register_lua(nux_instance_t *inst);
 
 #endif

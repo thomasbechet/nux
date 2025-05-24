@@ -1,5 +1,6 @@
 #include "internal.h"
-#include "nux.h"
+
+#include "lua_api.c.inc"
 
 static nux_env_t
 init_env (nux_instance_t *inst)
@@ -122,6 +123,24 @@ nux_instance_init (const nux_instance_config_t *config)
     nux_camup(env, 0, 1, 0);
     nux_camviewport(env, 0, 0, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
 
+    // Initialize Lua VM
+    inst->L = luaL_newstate();
+    NUX_CHECK(inst->L, goto cleanup0);
+
+    // Set env variable
+    lua_pushlightuserdata(inst->L, &inst->env);
+    lua_rawseti(inst->L, LUA_REGISTRYINDEX, 1);
+
+    // Load api
+    luaL_openlibs(inst->L);
+    nux_register_lua(inst);
+
+    if (luaL_dofile(inst->L, "main.lua") != LUA_OK)
+    {
+        fprintf(stderr, lua_tostring(inst->L, -1));
+        fprintf(stderr, "\n");
+    }
+
     return inst;
 cleanup0:
     nux_instance_free(inst);
@@ -130,6 +149,10 @@ cleanup0:
 void
 nux_instance_free (nux_instance_t *inst)
 {
+    if (inst->L)
+    {
+        lua_close(inst->L);
+    }
     if (inst->canvas)
     {
         nux_platform_free(inst->userdata, inst->canvas);
