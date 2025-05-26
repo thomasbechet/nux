@@ -1,6 +1,7 @@
 #include "internal.h"
 
 #include <glad/gl.h>
+
 #include "shaders_data.c.inc"
 
 static struct

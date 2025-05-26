@@ -285,6 +285,11 @@ typedef struct
     } data;
 } nux_object_t;
 
+typedef struct
+{
+    nux_m4_t view_pr
+} nux_gpu_uniform_buffer_t;
+
 struct nux_instance
 {
     void     *userdata;
@@ -300,7 +305,6 @@ struct nux_instance
     nux_b2i_t cam_viewport;
     nux_f32_t cam_fov;
     nux_u8_t *canvas;
-    nux_b2i_t tex_view;
 
     nux_u32_t buttons[NUX_PLAYER_MAX];
     nux_f32_t axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];

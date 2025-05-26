@@ -23,6 +23,12 @@ typedef struct
 
 typedef enum
 {
+    NUX_GPU_TEXTURE_MAX         = 128,
+    NUX_GPU_UNIFORM_BUFFER_SIZE = 4096,
+} nux_gpu_constants_t;
+
+typedef enum
+{
     NUX_DEBUG_I32,
     NUX_DEBUG_F32,
 } nux_debug_type_t;
@@ -41,12 +47,55 @@ typedef struct
     nux_u32_t entry_count;
 } nux_cart_header_t;
 
+typedef enum
+{
+    NUX_GPU_RGBA,
+    NUX_GPU_R,
+} nux_gpu_texture_format_t;
+
+typedef enum
+{
+    NUX_GPU_UPDATE_TEXTURE,
+    NUX_GPU_UPDATE_STORAGE_BUFFER,
+    NUX_GPU_UPDATE_UNIFORM_BUFFER,
+    NUX_GPU_DRAW,
+} nux_gpu_command_type_t;
+
 typedef struct
 {
-    nux_u32_t count;
-    struct
-    {
+    nux_u16_t                slot;
+    nux_gpu_texture_format_t format;
+    nux_u16_t                texture_width;
+    nux_u16_t                texture_height;
+    nux_u16_t                write_x;
+    nux_u16_t                write_y;
+    nux_u16_t                write_width;
+    nux_u16_t                write_height;
+    const void              *data;
+} nux_gpu_update_texture_t;
 
+typedef struct
+{
+    nux_b32_t       is_uniform_buffer;
+    nux_u32_t       offset;
+    nux_u32_t       size;
+    const nux_u8_t *data;
+} nux_gpu_update_buffer_t;
+
+typedef struct
+{
+    nux_u16_t texture0;
+    nux_u32_t primitive;
+    nux_u32_t count;
+} nux_gpu_draw_t;
+
+typedef struct
+{
+    nux_gpu_command_type_t type;
+    union
+    {
+        nux_gpu_update_texture_t update_texture;
+        nux_gpu_update_buffer_t  update_buffer;
     } data;
 } nux_gpu_command_t;
 

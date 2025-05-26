@@ -212,5 +212,7 @@ loop_update (nux_env_t *env)
     nux_printfmt(env, 7, "RES:%dx%d", NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
+    nux_circ(env, 50, 50, 10, 7);
+
     // blit_colormap(env);
 }
