@@ -57,4 +57,3 @@ float4 fragmentMain(VOut input) : SV_Target
 {
     return texture0.Sample(sampler, uint2(0));
 }
-

@@ -109,54 +109,52 @@ typedef enum
 //////                       Platform Callbacks                     //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API void        *nux_platform_malloc(void              *userdata,
-                                         nux_memory_usage_t usage,
-                                         nux_u32_t          n);
-NUX_API void         nux_platform_free(void *userdata, void *p);
-NUX_API void        *nux_platform_realloc(void *userdata, void *p, nux_u32_t n);
-NUX_API nux_status_t nux_platform_mount(void           *userdata,
-                                        const nux_c8_t *name,
-                                        nux_u32_t       n);
-NUX_API nux_status_t nux_platform_seek(void *userdata, nux_u32_t n);
-NUX_API nux_u32_t    nux_platform_read(void *userdata, void *p, nux_u32_t n);
-NUX_API void nux_platform_log(void *userdata, const nux_c8_t *log, nux_u32_t n);
-NUX_API void nux_platform_debug(void            *userdata,
-                                const nux_c8_t  *name,
-                                nux_u32_t        n,
-                                nux_debug_type_t type,
-                                void            *p);
-NUX_API nux_status_t nux_platform_compile_pipeline(void *userdata,
-                                                   nux_gpu_shader_type_t type,
-                                                   void                 *vertex,
-                                                   void *fragment);
+NUX_API void        *nux_os_malloc(void              *userdata,
+                                   nux_memory_usage_t usage,
+                                   nux_u32_t          n);
+NUX_API void         nux_os_free(void *userdata, void *p);
+NUX_API void        *nux_os_realloc(void *userdata, void *p, nux_u32_t n);
+NUX_API void         nux_os_debug(void            *userdata,
+                                  const nux_c8_t  *name,
+                                  nux_u32_t        n,
+                                  nux_debug_type_t type,
+                                  void            *p);
+NUX_API nux_status_t nux_os_mount(void           *userdata,
+                                  const nux_c8_t *name,
+                                  nux_u32_t       n);
+NUX_API nux_status_t nux_os_seek(void *userdata, nux_u32_t n);
+NUX_API nux_u32_t    nux_os_read(void *userdata, void *p, nux_u32_t n);
+NUX_API void nux_os_log(void *userdata, const nux_c8_t *log, nux_u32_t n);
+NUX_API nux_status_t nux_os_compile_pipeline(void                 *userdata,
+                                             nux_gpu_shader_type_t type,
+                                             void                 *vertex,
+                                             void                 *fragment);
+NUX_API nux_status_t nux_os_create_texture(void *userdata, nux_u32_t id);
+NUX_API nux_status_t nux_os_delete_texture(void *userdata, nux_u32_t id);
+NUX_API nux_status_t nux_os_create_storage_buffer(void *userdata, nux_u32_t id);
+NUX_API nux_status_t nux_os_delete_storage_buffer(void *userdata, nux_u32_t id);
+NUX_API nux_status_t nux_os_create_uniform_buffer(void *userdata, nux_u32_t id);
+NUX_API nux_status_t nux_os_delete_uniform_buffer(void *userdata, nux_u32_t id);
+NUX_API void         nux_os_update_inputs(void      *user,
+                                          nux_u32_t *buttons,
+                                          nux_f32_t *axis);
+NUX_API void         nux_os_update_stats(void *userdata, nux_u32_t *stats);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
 NUX_API
-nux_instance_t          *nux_instance_init(const nux_instance_config_t *config);
-NUX_API void             nux_instance_free(nux_instance_t *inst);
-NUX_API void             nux_instance_tick(nux_instance_t *inst);
-NUX_API nux_status_t     nux_instance_load(nux_instance_t *inst,
-                                           const nux_c8_t *cart,
-                                           nux_u32_t       n);
-NUX_API void            *nux_instance_get_userdata(nux_instance_t *inst);
-NUX_API void             nux_instance_set_buttons(nux_instance_t *inst,
-                                                  nux_u32_t       player,
-                                                  nux_u32_t       state);
-NUX_API void             nux_instance_set_axis(nux_instance_t *inst,
-                                               nux_u32_t       player,
-                                               nux_axis_t      axis,
-                                               nux_f32_t       value);
-NUX_API void             nux_instance_set_stat(nux_instance_t *inst,
-                                               nux_stat_t      stat,
-                                               nux_u32_t       value);
-NUX_API const nux_c8_t  *nux_instance_get_error(nux_instance_t *inst);
-NUX_API const nux_u8_t  *nux_instance_get_canvas(nux_instance_t *inst);
-NUX_API const nux_u8_t  *nux_instance_get_texture(nux_instance_t *inst);
-NUX_API const nux_u8_t  *nux_instance_get_colormap(nux_instance_t *inst);
-NUX_API const nux_u32_t *nux_instance_get_buffer(nux_instance_t *inst);
+nux_instance_t         *nux_instance_init(const nux_instance_config_t *config);
+NUX_API void            nux_instance_free(nux_instance_t *inst);
+NUX_API void            nux_instance_tick(nux_instance_t *inst);
+NUX_API nux_status_t    nux_instance_load(nux_instance_t *inst,
+                                          const nux_c8_t *cart,
+                                          nux_u32_t       n);
+NUX_API const nux_c8_t *nux_instance_get_error(nux_instance_t *inst);
+NUX_API const nux_u8_t *nux_instance_get_canvas(nux_instance_t *inst);
+NUX_API const nux_u8_t *nux_instance_get_texture(nux_instance_t *inst);
+NUX_API const nux_u8_t *nux_instance_get_colormap(nux_instance_t *inst);
 
 //////////////////////////////////////////////////////////////////////////
 //////                           Helper API                         //////

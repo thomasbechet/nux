@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "nux.h"
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
@@ -457,11 +458,12 @@ window_poll_command (runtime_command_t *cmd)
     return NU_TRUE;
 }
 void
-window_set_instance_inputs (nux_instance_t *inst)
+nux_os_update_inputs (void *userdata, nux_u32_t *buttons, nux_f32_t *axis)
 {
-    nux_instance_set_buttons(inst, 0, window.buttons[0]);
+    runtime_instance_t *inst = userdata;
+    buttons[0]               = window.buttons[0];
     for (nu_size_t a = 0; a < NUX_AXIS_MAX; ++a)
     {
-        nux_instance_set_axis(inst, 0, a, window.axis[0][a]);
+        axis[a] = window.axis[0][a];
     }
 }

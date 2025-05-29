@@ -90,7 +90,6 @@ nu_v2u_t           window_get_size(void);
 struct nk_context *window_nk_context(void);
 nu_bool_t          window_is_double_click(void);
 nu_bool_t          window_poll_command(runtime_command_t *cmd);
-void               window_set_instance_inputs(nux_instance_t *inst);
 
 void view_home(struct nk_context *ctx, struct nk_rect bounds);
 void view_controls(struct nk_context *ctx, struct nk_rect bounds);

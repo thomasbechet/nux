@@ -309,7 +309,7 @@ struct nux_instance
     nux_u8_t *canvas;
 
     nux_u32_t buttons[NUX_PLAYER_MAX];
-    nux_f32_t axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
+    nux_f32_t axis[NUX_PLAYER_MAX * NUX_AXIS_MAX];
 
     nux_u32_t stats[NUX_STAT_MAX];
 

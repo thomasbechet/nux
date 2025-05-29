@@ -1,9 +1,11 @@
 #include "internal.h"
+#include "nux.h"
 
 static struct
 {
     runtime_instance_t instances[4];
     nu_bool_t          running;
+    nu_u32_t           fps;
 } runtime;
 
 static void
@@ -139,7 +141,6 @@ runtime_run (const runtime_config_t *config)
     NU_CHECK(status, goto cleanup1);
 
     runtime.running = NU_TRUE;
-    nu_u32_t fps    = 0;
 
     // Initialize base
     if (config->path.len)
@@ -159,10 +160,6 @@ runtime_run (const runtime_config_t *config)
             runtime_instance_t *instance = runtime.instances + i;
             if (instance->active && !instance->pause)
             {
-                // Update inputs
-                window_set_instance_inputs(instance->instance);
-                // Update stats
-                nux_instance_set_stat(instance->instance, NUX_STAT_FPS, fps);
                 // Tick
                 nux_instance_tick(instance->instance);
             }
@@ -196,7 +193,7 @@ runtime_run (const runtime_config_t *config)
         }
 
         // Swap buffers
-        fps = window_end_frame();
+        runtime.fps = window_end_frame();
 
         // Process runtime events
         runtime_command_t cmd;
@@ -275,4 +272,95 @@ void *
 native_realloc (void *p, nu_size_t n)
 {
     return realloc(p, n);
+}
+
+void *
+nux_os_malloc (void *userdata, nux_memory_usage_t usage, nux_u32_t n)
+{
+    return native_malloc(n);
+}
+void
+nux_os_free (void *userdata, void *p)
+{
+    native_free(p);
+}
+void *
+nux_os_realloc (void *userdata, void *p, nux_u32_t n)
+{
+    return native_realloc(p, n);
+}
+void
+nux_os_log (void *userdata, const nux_c8_t *log, nux_u32_t n)
+{
+    logger_log(NU_LOG_INFO, "%.*s", n, log);
+}
+void
+nux_os_debug (void            *userdata,
+              const nux_c8_t  *name,
+              nux_u32_t        n,
+              nux_debug_type_t type,
+              void            *p)
+{
+    // Find existing value at address
+    intptr_t            addr     = (intptr_t)p;
+    runtime_instance_t *instance = userdata;
+    debug_value_t      *value    = NU_NULL;
+    for (nu_size_t i = 0; i < instance->debug_value_count; ++i)
+    {
+        // if (instance->debug_values[i].addr == addr)
+        // {
+        //     value = instance->debug_values + i;
+        // }
+        if (nu_strneq(instance->debug_values[i].name, name, NUX_NAME_MAX))
+        {
+            value = instance->debug_values + i;
+        }
+    }
+    // Register new value
+    if (!value)
+    {
+        if (instance->debug_value_count
+            >= NU_ARRAY_SIZE(instance->debug_values))
+        {
+            logger_log(NU_LOG_ERROR, "Max inspect value count reach");
+            return;
+        }
+        value       = &instance->debug_values[instance->debug_value_count++];
+        value->type = type;
+        value->addr = addr;
+        value->override = NU_FALSE;
+        nu_strncpy(value->name, name, sizeof(value->name));
+    }
+    // Read / Write value
+    if (value->override)
+    {
+        switch (type)
+        {
+            case NUX_DEBUG_I32:
+                *((nu_i32_t *)p) = value->value.i32;
+                break;
+            case NUX_DEBUG_F32:
+                *((nu_f32_t *)p) = value->value.f32;
+                break;
+        }
+        value->override = NU_FALSE;
+    }
+    else
+    {
+        switch (type)
+        {
+            case NUX_DEBUG_I32:
+                value->value.i32 = *(const nu_i32_t *)p;
+                break;
+            case NUX_DEBUG_F32:
+                value->value.f32 = *(const nu_f32_t *)p;
+                break;
+        }
+    }
+}
+void
+nux_os_update_stats (void *userdata, nux_u32_t *stats)
+{
+    runtime_instance_t *inst = userdata;
+    stats[NUX_STAT_FPS]      = runtime.fps;
 }

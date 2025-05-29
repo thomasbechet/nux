@@ -74,7 +74,7 @@ nux_instance_t *
 nux_instance_init (const nux_instance_config_t *config)
 {
     // Allocate instance
-    nux_instance_t *inst = nux_platform_malloc(
+    nux_instance_t *inst = nux_os_malloc(
         config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));
     NUX_CHECK(inst, return NUX_NULL);
     nux_memset(inst, 0, sizeof(struct nux_instance));
@@ -84,23 +84,22 @@ nux_instance_init (const nux_instance_config_t *config)
     inst->update   = config->update;
 
     // Allocate memory
-    void *p = nux_platform_malloc(
+    void *p = nux_os_malloc(
         config->userdata, NUX_MEMORY_USAGE_STATE, NUX_MEMORY_SIZE);
     NUX_CHECK(p, goto cleanup0);
     nux_memset(p, 0, NUX_MEMORY_SIZE);
     NUX_VEC_INIT(&inst->memory, p, NUX_MEMORY_SIZE);
 
     // Allocate objects pool
-    p = nux_platform_malloc(config->userdata,
-                            NUX_MEMORY_USAGE_STATE,
-                            sizeof(*inst->objects.data)
-                                * config->max_object_count);
+    p = nux_os_malloc(config->userdata,
+                      NUX_MEMORY_USAGE_STATE,
+                      sizeof(*inst->objects.data) * config->max_object_count);
     NUX_CHECK(p, goto cleanup0);
     NUX_VEC_INIT(&inst->objects, p, config->max_object_count);
-    p = nux_platform_malloc(config->userdata,
-                            NUX_MEMORY_USAGE_STATE,
-                            sizeof(*inst->free_objects.data)
-                                * config->max_object_count);
+    p = nux_os_malloc(config->userdata,
+                      NUX_MEMORY_USAGE_STATE,
+                      sizeof(*inst->free_objects.data)
+                          * config->max_object_count);
     NUX_CHECK(p, goto cleanup0);
     NUX_VEC_INIT(&inst->free_objects, p, config->max_object_count);
     for (nux_u32_t i = 0; i < inst->objects.capa; ++i)
@@ -109,9 +108,9 @@ nux_instance_init (const nux_instance_config_t *config)
     }
 
     // Allocate canvas
-    inst->canvas = nux_platform_malloc(config->userdata,
-                                       NUX_MEMORY_USAGE_CORE,
-                                       NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
+    inst->canvas = nux_os_malloc(config->userdata,
+                                 NUX_MEMORY_USAGE_CORE,
+                                 NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
     NUX_CHECK(inst->canvas, goto cleanup0);
 
     // Initialize state
@@ -155,21 +154,21 @@ nux_instance_free (nux_instance_t *inst)
     }
     if (inst->canvas)
     {
-        nux_platform_free(inst->userdata, inst->canvas);
+        nux_os_free(inst->userdata, inst->canvas);
     }
     if (inst->free_objects.data)
     {
-        nux_platform_free(inst->userdata, inst->free_objects.data);
+        nux_os_free(inst->userdata, inst->free_objects.data);
     }
     if (inst->objects.data)
     {
-        nux_platform_free(inst->userdata, inst->objects.data);
+        nux_os_free(inst->userdata, inst->objects.data);
     }
     if (inst->memory.data)
     {
-        nux_platform_free(inst->userdata, inst->memory.data);
+        nux_os_free(inst->userdata, inst->memory.data);
     }
-    nux_platform_free(inst->userdata, inst);
+    nux_os_free(inst->userdata, inst);
 }
 void
 nux_instance_tick (nux_instance_t *inst)
@@ -185,6 +184,13 @@ nux_instance_tick (nux_instance_t *inst)
         inst->init(env);
     }
 
+    // Update stats
+    nux_os_update_stats(env->inst->userdata, env->inst->stats);
+
+    // Update inputs
+    nux_os_update_inputs(
+        env->inst->userdata, env->inst->buttons, env->inst->axis);
+
     // Update
     if (inst->update)
     {
@@ -199,11 +205,6 @@ nux_status_t
 nux_instance_load (nux_instance_t *inst, const nux_c8_t *cart, nux_u32_t n)
 {
     return NUX_SUCCESS;
-}
-void *
-nux_instance_get_userdata (nux_instance_t *inst)
-{
-    return inst->userdata;
 }
 void
 nux_instance_set_stat (nux_instance_t *inst, nux_stat_t stat, nux_u32_t value)
@@ -255,26 +256,26 @@ nux_error_message (nux_error_t error)
 void
 nux_trace (nux_env_t *env, const nux_c8_t *text)
 {
-    nux_platform_log(env->inst->userdata, text, nux_strnlen(text, 1024));
+    nux_os_log(env->inst->userdata, text, nux_strnlen(text, 1024));
 }
 
 void
 nux_dbgi32 (nux_env_t *env, const nux_c8_t *name, nux_i32_t *p)
 {
-    nux_platform_debug(env->inst->userdata,
-                       name,
-                       nux_strnlen(name, NUX_NAME_MAX),
-                       NUX_DEBUG_I32,
-                       p);
+    nux_os_debug(env->inst->userdata,
+                 name,
+                 nux_strnlen(name, NUX_NAME_MAX),
+                 NUX_DEBUG_I32,
+                 p);
 }
 void
 nux_dbgf32 (nux_env_t *env, const nux_c8_t *name, nux_f32_t *p)
 {
-    nux_platform_debug(env->inst->userdata,
-                       name,
-                       nux_strnlen(name, NUX_NAME_MAX),
-                       NUX_DEBUG_F32,
-                       p);
+    nux_os_debug(env->inst->userdata,
+                 name,
+                 nux_strnlen(name, NUX_NAME_MAX),
+                 NUX_DEBUG_F32,
+                 p);
 }
 
 nux_u32_t
