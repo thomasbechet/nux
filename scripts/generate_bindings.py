@@ -1,5 +1,4 @@
 from pycparser import c_ast, c_parser, c_generator, parse_file
-from jinja2 import Environment, FileSystemLoader
 import subprocess
 import argparse
 import shutil
@@ -7,6 +6,7 @@ import sys
 import re
 import os
 import json
+from template import apply_template
 
 functions = []
 enums = []
@@ -78,16 +78,9 @@ def dump():
     print(json.dumps(enums, indent=4))
 
 def generate_files(args):
-    env = Environment(loader=FileSystemLoader(os.path.join(args.rootdir, "scripts/templates")))
 
     # lua_api.c.inc
-    template = env.get_template("lua_api.c.inc.jinja")
-    r = template.render(functions=functions, enums=enums)
-    output = "core/lua_api.c.inc"
-    with open(os.path.join(args.rootdir, output), "w") as f:
-        f.write(r)
-        f.close()
-        subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
+    apply_template(args.rootdir, "lua_api.c.inc.jinja", "core/lua_api.c.inc", functions=functions, enums=enums)
 
     # # nux.h
     # template = env.get_template("nux.h.jinja")

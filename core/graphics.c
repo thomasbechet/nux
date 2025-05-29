@@ -183,16 +183,6 @@ nux_screen (nux_env_t *env)
     return env->inst->canvas;
 }
 void
-nux_bind_texture (nux_env_t         *env,
-                  nux_u32_t          x,
-                  nux_u32_t          y,
-                  nux_u32_t          w,
-                  nux_u32_t          h,
-                  nux_texture_type_t type)
-{
-    env->inst->tex_view = nux_b2i_xywh(x, y, w, h);
-}
-void
 nux_write_texture (nux_env_t      *env,
                    nux_u32_t       x,
                    nux_u32_t       y,

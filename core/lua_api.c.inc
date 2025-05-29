@@ -281,30 +281,6 @@ l_cset (lua_State *L)
     return 0;
 }
 static int
-l_bind_texture (lua_State *L)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env = lua_touserdata(L, -1);
-    lua_pushnumber(L, nux_frame(env));
-    return 0;
-}
-static int
-l_write_texture (lua_State *L)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env = lua_touserdata(L, -1);
-    lua_pushnumber(L, nux_frame(env));
-    return 0;
-}
-static int
-l_copy_texture (lua_State *L)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env = lua_touserdata(L, -1);
-    lua_pushnumber(L, nux_frame(env));
-    return 0;
-}
-static int
 l_button (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
@@ -327,6 +303,14 @@ l_new_texture (lua_State *L)
     nux_env_t *env = lua_touserdata(L, -1);
     lua_pushnumber(L, nux_frame(env));
     return 1;
+}
+static int
+l_bind_texture (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env = lua_touserdata(L, -1);
+    lua_pushnumber(L, nux_frame(env));
+    return 0;
 }
 
 static const struct luaL_Reg nuxlib[] = {
@@ -366,12 +350,10 @@ static const struct luaL_Reg nuxlib[] = {
     { "pset", l_pset },
     { "cget", l_cget },
     { "cset", l_cset },
-    { "bind_texture", l_bind_texture },
-    { "write_texture", l_write_texture },
-    { "copy_texture", l_copy_texture },
     { "button", l_button },
     { "axis", l_axis },
     { "new_texture", l_new_texture },
+    { "bind_texture", l_bind_texture },
     { NUX_NULL, NUX_NULL }
 };
 

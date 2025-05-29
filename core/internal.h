@@ -287,7 +287,9 @@ typedef struct
 
 typedef struct
 {
-    nux_m4_t view_pr
+    nux_m4_t view;
+    nux_m4_t proj;
+    nux_m4_t model;
 } nux_gpu_uniform_buffer_t;
 
 struct nux_instance

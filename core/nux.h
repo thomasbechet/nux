@@ -99,6 +99,12 @@ typedef struct
     } data;
 } nux_gpu_command_t;
 
+typedef enum
+{
+    NUX_GPU_SHADER_GLSL,
+    NUX_GPU_SHADER_SPIRV,
+} nux_gpu_shader_type_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Callbacks                     //////
 //////////////////////////////////////////////////////////////////////////
@@ -119,12 +125,17 @@ NUX_API void nux_platform_debug(void            *userdata,
                                 nux_u32_t        n,
                                 nux_debug_type_t type,
                                 void            *p);
+NUX_API nux_status_t nux_platform_compile_pipeline(void *userdata,
+                                                   nux_gpu_shader_type_t type,
+                                                   void                 *vertex,
+                                                   void *fragment);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_instance_t  *nux_instance_init(const nux_instance_config_t *config);
+NUX_API
+nux_instance_t          *nux_instance_init(const nux_instance_config_t *config);
 NUX_API void             nux_instance_free(nux_instance_t *inst);
 NUX_API void             nux_instance_tick(nux_instance_t *inst);
 NUX_API nux_status_t     nux_instance_load(nux_instance_t *inst,
