@@ -16,6 +16,7 @@ typedef long          nux_i64_t;
 typedef unsigned long nux_u64_t;
 typedef float         nux_f32_t;
 typedef double        nux_f64_t;
+typedef long long int nux_intptr_t;
 #endif
 
 typedef struct nux_env nux_env_t;

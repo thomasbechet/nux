@@ -1,5 +1,6 @@
 project(core LANGUAGES C)
 
+include_directories(${CMAKE_SOURCE_DIR}/externals/lua)
 include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)
 
 # add_compile_options(-fsanitize=address)

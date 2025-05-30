@@ -55,5 +55,5 @@ void *
 nux_memalign (void *ptr, nux_u32_t align)
 {
     NUX_ASSERT(align > 0);
-    return (void *)(((nux_u64_t)ptr + align - 1) & ~(align - 1));
+    return (void *)(((nux_intptr_t)ptr + align - 1) & ~(align - 1));
 }

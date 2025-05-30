@@ -268,8 +268,8 @@ window_init (void)
     window.cmds_count        = 0;
 
     // Initialized GLFW
-    glfwInitHint(GLFW_PLATFORM,
-                 GLFW_PLATFORM_X11); // Wayland not supported by renderdoc
+    // glfwInitHint(GLFW_PLATFORM,
+    //              GLFW_PLATFORM_X11); // Wayland not supported by renderdoc
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to init GLFW");

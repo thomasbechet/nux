@@ -154,7 +154,7 @@ nux_instance_init (const nux_instance_config_t *config)
 
     if (luaL_dofile(inst->L, "main.lua") != LUA_OK)
     {
-        fprintf(stderr, lua_tostring(inst->L, -1));
+        fprintf(stderr, "%s\n", lua_tostring(inst->L, -1));
         fprintf(stderr, "\n");
     }
 
