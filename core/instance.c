@@ -26,6 +26,21 @@ nux_set_error (nux_env_t *env, nux_error_t error)
                  "%s",
                  nux_error_message(error));
 }
+const nux_c8_t *
+nux_error_message (nux_error_t error)
+{
+    switch (error)
+    {
+        case NUX_ERROR_NONE:
+        case NUX_ERROR_OUT_OF_MEMORY:
+        case NUX_ERROR_INVALID_TEXTURE_SIZE:
+        case NUX_ERROR_WASM_RUNTIME:
+        case NUX_ERROR_CART_EOF:
+        case NUX_ERROR_CART_MOUNT:
+            return "error";
+    }
+    return NUX_NULL;
+}
 void *
 nux_add_object (nux_env_t *env, nux_object_type_t type, nux_u32_t *id)
 {
@@ -122,6 +137,9 @@ nux_instance_init (const nux_instance_config_t *config)
     nux_camup(env, 0, 1, 0);
     nux_camviewport(env, 0, 0, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
 
+    // Initialize graphics
+    nux_graphics_init(inst);
+
     // Initialize Lua VM
     inst->L = luaL_newstate();
     NUX_CHECK(inst->L, goto cleanup0);
@@ -168,6 +186,7 @@ nux_instance_free (nux_instance_t *inst)
     {
         nux_os_free(inst->userdata, inst->memory.data);
     }
+    nux_graphics_free(inst);
     nux_os_free(inst->userdata, inst);
 }
 void
@@ -205,52 +224,6 @@ nux_status_t
 nux_instance_load (nux_instance_t *inst, const nux_c8_t *cart, nux_u32_t n)
 {
     return NUX_SUCCESS;
-}
-void
-nux_instance_set_stat (nux_instance_t *inst, nux_stat_t stat, nux_u32_t value)
-{
-    inst->stats[stat] = value;
-}
-const nux_c8_t *
-nux_instance_get_error (nux_instance_t *inst)
-{
-    return nux_error_message(inst->env.error);
-}
-const nux_u8_t *
-nux_instance_get_canvas (nux_instance_t *inst)
-{
-    return inst->canvas;
-}
-const nux_u8_t *
-nux_instance_get_texture (nux_instance_t *inst)
-{
-    return NUX_NULL;
-}
-const nux_u8_t *
-nux_instance_get_colormap (nux_instance_t *inst)
-{
-    return (const nux_u8_t *)inst->colormap;
-}
-
-const nux_c8_t *
-nux_error_message (nux_error_t error)
-{
-    switch (error)
-    {
-        case NUX_ERROR_NONE:
-            return "none";
-        case NUX_ERROR_OUT_OF_MEMORY:
-            return "allocation";
-        case NUX_ERROR_INVALID_TEXTURE_SIZE:
-            return "invalid texture size";
-        case NUX_ERROR_WASM_RUNTIME:
-            return "wasm runtime";
-        case NUX_ERROR_CART_EOF:
-            return "cartridge EOF";
-        case NUX_ERROR_CART_MOUNT:
-            return "cartridge mount";
-    }
-    return NUX_NULL;
 }
 
 void

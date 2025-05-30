@@ -1,7 +1,6 @@
 #include "internal.h"
 
-#include <glad/gl.h>
-
+#include "nux.h"
 #include "shaders_data.c.inc"
 
 static struct
@@ -80,6 +79,77 @@ cleanup1:
     glDeleteShader(vertex_shader);
 cleanup0:
     return status;
+}
+
+nux_status_t
+nux_os_create_pipeline (void                   *userdata,
+                        nux_u32_t               slot,
+                        nux_gpu_shader_source_t type,
+                        const nux_c8_t         *vertex,
+                        nux_u32_t               vertex_len,
+                        const nux_c8_t         *fragment,
+                        nux_u32_t               fragment_len)
+{
+    runtime_instance_t *inst = userdata;
+    NU_CHECK(slot >= NU_ARRAY_SIZE(inst->shaders), return NUX_FAILURE);
+    nu_status_t status = compile_program(nu_sv(vertex, vertex_len),
+                                         nu_sv(fragment, fragment_len),
+                                         &inst->shaders[slot]);
+    NU_CHECK(status, return NUX_FAILURE);
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_os_update_texture (void                    *userdata,
+                       nux_u32_t                slot,
+                       nux_gpu_texture_format_t format,
+                       nux_u32_t                texw,
+                       nux_u32_t                texh,
+                       nux_u32_t                x,
+                       nux_u32_t                y,
+                       nux_u32_t                w,
+                       nux_u32_t                h,
+                       const void              *data)
+{
+    runtime_instance_t *inst = userdata;
+    NU_CHECK(slot >= NU_ARRAY_SIZE(inst->textures), return NUX_FAILURE);
+    texture_t *tex = inst->textures + slot;
+
+    // Detect if texture must be recreated
+    if (tex->format != format || tex->w != texw || tex->h != texh)
+    {
+        glGenTextures(1, &tex->handle);
+        glBindTexture(GL_TEXTURE_2D, tex->handle);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     GL_R8UI,
+                     texw,
+                     texh,
+                     0,
+                     GL_RED_INTEGER,
+                     GL_UNSIGNED_BYTE,
+                     NU_NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    // Update texture
+    if (data)
+    {
+        glBindTexture(GL_TEXTURE_2D, tex->handle);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0,
+                        x,
+                        y,
+                        w,
+                        h,
+                        GL_RED_INTEGER,
+                        GL_UNSIGNED_BYTE,
+                        data);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    return NUX_SUCCESS;
 }
 
 nu_status_t
@@ -217,43 +287,43 @@ renderer_render_instance (nux_instance_t *inst,
                           nu_v2u_t        window_size)
 {
     // Update canvas
-    glBindTexture(GL_TEXTURE_2D, renderer.canvas);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    0,
-                    0,
-                    NUX_CANVAS_WIDTH,
-                    NUX_CANVAS_HEIGHT,
-                    GL_RED_INTEGER,
-                    GL_UNSIGNED_BYTE,
-                    nux_instance_get_canvas(inst));
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // glBindTexture(GL_TEXTURE_2D, renderer.canvas);
+    // glTexSubImage2D(GL_TEXTURE_2D,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 NUX_CANVAS_WIDTH,
+    //                 NUX_CANVAS_HEIGHT,
+    //                 GL_RED_INTEGER,
+    //                 GL_UNSIGNED_BYTE,
+    //                 nux_instance_get_canvas(inst));
+    // glBindTexture(GL_TEXTURE_2D, 0);
 
     // Update texture
-    glBindTexture(GL_TEXTURE_2D, renderer.texture);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    0,
-                    0,
-                    NUX_TEXTURE_WIDTH,
-                    NUX_TEXTURE_HEIGHT,
-                    GL_RED_INTEGER,
-                    GL_UNSIGNED_BYTE,
-                    nux_instance_get_texture(inst));
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // glBindTexture(GL_TEXTURE_2D, renderer.texture);
+    // glTexSubImage2D(GL_TEXTURE_2D,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 NUX_TEXTURE_WIDTH,
+    //                 NUX_TEXTURE_HEIGHT,
+    //                 GL_RED_INTEGER,
+    //                 GL_UNSIGNED_BYTE,
+    //                 nux_instance_get_texture(inst));
+    // glBindTexture(GL_TEXTURE_2D, 0);
 
     // Update colormap
-    glBindTexture(GL_TEXTURE_2D, renderer.colormap);
-    glTexSubImage2D(GL_TEXTURE_2D,
-                    0,
-                    0,
-                    0,
-                    NUX_COLORMAP_SIZE,
-                    1,
-                    GL_RGB,
-                    GL_UNSIGNED_BYTE,
-                    nux_instance_get_colormap(inst));
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // glBindTexture(GL_TEXTURE_2D, renderer.colormap);
+    // glTexSubImage2D(GL_TEXTURE_2D,
+    //                 0,
+    //                 0,
+    //                 0,
+    //                 NUX_COLORMAP_SIZE,
+    //                 1,
+    //                 GL_RGB,
+    //                 GL_UNSIGNED_BYTE,
+    //                 nux_instance_get_colormap(inst));
+    // glBindTexture(GL_TEXTURE_2D, 0);
 
     // Update buffer
 

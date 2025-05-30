@@ -1,9 +1,9 @@
 #include "internal.h"
 {% for shader in shaders %}
-static const nux_u8_t shader_{{ shader.name }}_vert[] = {
+static const nux_c8_t shader_{{ shader.name }}_vert[] = {
     {{ shader.vertex | join(',') }} 
 };
-static const nux_u8_t shader_{{ shader.name }}_frag[] = {
+static const nux_c8_t shader_{{ shader.name }}_frag[] = {
     {{ shader.fragment | join(',') }} 
 };
 {%- endfor %}

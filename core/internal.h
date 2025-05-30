@@ -416,6 +416,11 @@ nux_m4_t nux_ortho(nux_f32_t left,
                    nux_f32_t far);
 nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 
+// graphics.c
+
+nux_status_t nux_graphics_init(nux_instance_t *inst);
+nux_status_t nux_graphics_free(nux_instance_t *inst);
+
 // instance.c
 
 /**
@@ -430,6 +435,7 @@ void *nux_add_object(nux_env_t *env, nux_object_type_t type, nux_u32_t *id);
 nux_status_t nux_remove_object(nux_env_t *env, nux_u32_t id);
 void *nux_check_object(nux_env_t *env, nux_u32_t id, nux_object_type_t type);
 
-nux_status_t nux_register_lua(nux_instance_t *inst);
+nux_status_t    nux_register_lua(nux_instance_t *inst);
+const nux_c8_t *nux_error_message(nux_error_t error);
 
 #endif

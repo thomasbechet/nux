@@ -12,6 +12,7 @@
 #include <nuklear/nuklear.h>
 #define NU_STDLIB
 #include <nulib/nulib.h>
+#include <glad/gl.h>
 
 typedef enum
 {
@@ -44,6 +45,14 @@ typedef struct
 
 typedef struct
 {
+    GLuint                   handle;
+    nux_u32_t                w;
+    nux_u32_t                h;
+    nux_gpu_texture_format_t format;
+} texture_t;
+
+typedef struct
+{
     nu_char_t             path[NU_PATH_MAX];
     nu_bool_t             active;
     nux_instance_config_t config;
@@ -53,6 +62,8 @@ typedef struct
     viewport_mode_t       viewport_mode;
     debug_value_t         debug_values[256];
     nu_size_t             debug_value_count;
+    GLuint                shaders[64];
+    texture_t             textures[64];
 } runtime_instance_t;
 
 typedef struct

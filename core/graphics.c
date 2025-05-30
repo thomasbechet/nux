@@ -1,6 +1,34 @@
 #include "internal.h"
 
 #include "fonts_data.c.inc"
+#include "shaders_data.c.inc"
+
+nux_status_t
+nux_graphics_init (nux_instance_t *inst)
+{
+    NUX_CHECK(nux_os_create_pipeline(inst->userdata,
+                                     0,
+                                     NUX_GPU_SHADER_GLSL,
+                                     shader_main_vert,
+                                     NUX_ARRAY_SIZE(shader_main_vert),
+                                     shader_main_frag,
+                                     NUX_ARRAY_SIZE(shader_main_frag)),
+              return NUX_FAILURE);
+    NUX_CHECK(nux_os_create_pipeline(inst->userdata,
+                                     1,
+                                     NUX_GPU_SHADER_GLSL,
+                                     shader_canvas_vert,
+                                     NUX_ARRAY_SIZE(shader_canvas_vert),
+                                     shader_canvas_frag,
+                                     NUX_ARRAY_SIZE(shader_canvas_frag)),
+              return NUX_FAILURE);
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_graphics_free (nux_instance_t *inst)
+{
+    return NUX_SUCCESS;
+}
 
 void
 nux_pal (nux_env_t *env, nux_u8_t index, nux_u8_t color)
