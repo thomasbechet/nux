@@ -216,6 +216,9 @@ nux_instance_tick (nux_instance_t *inst)
         inst->update(env);
     }
 
+    // Render
+    nux_graphics_render(inst);
+
     // Frame integration
     inst->time += nux_dt(env);
     ++inst->frame;

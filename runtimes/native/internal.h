@@ -89,9 +89,12 @@ void                runtime_quit(void);
 nu_status_t renderer_init(void);
 void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
-void        renderer_render_instance(nux_instance_t *inst,
-                                     nu_b2i_t        viewport,
-                                     nu_v2u_t        window_size);
+void        renderer_render_begin(nux_instance_t *inst,
+                                  nu_b2i_t        viewport,
+                                  nu_v2u_t        window_size);
+void        renderer_render_end(nux_instance_t *inst,
+                                nu_b2i_t        viewport,
+                                nu_v2u_t        window_size);
 
 nu_status_t        window_init(void);
 void               window_free(void);

@@ -268,8 +268,10 @@ window_init (void)
     window.cmds_count        = 0;
 
     // Initialized GLFW
-    // glfwInitHint(GLFW_PLATFORM,
-    //              GLFW_PLATFORM_X11); // Wayland not supported by renderdoc
+#ifdef NUX_PLATFORM_UNIX
+    glfwInitHint(GLFW_PLATFORM,
+                 GLFW_PLATFORM_X11); // Wayland not supported by renderdoc
+#endif
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to init GLFW");

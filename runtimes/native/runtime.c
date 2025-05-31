@@ -152,43 +152,33 @@ runtime_run (const runtime_config_t *config)
         // Retrieve window events
         window_begin_frame();
 
+        // Clear window
+        nu_v2u_t size = window_get_size();
+        renderer_clear(nu_b2i_xywh(0, 0, size.x, size.y), size);
+
         // Update active instances
         for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
         {
             runtime_instance_t *instance = runtime.instances + i;
             if (instance->active && !instance->pause)
             {
+                nu_b2i_t viewport = nu_b2i_xywh(instance->viewport.x,
+                                                instance->viewport.y,
+                                                instance->viewport.w,
+                                                instance->viewport.h);
+                viewport
+                    = apply_viewport_mode(viewport, instance->viewport_mode);
+                renderer_render_begin(instance->instance, viewport, size);
+
                 // Tick
                 nux_instance_tick(instance->instance);
+
+                renderer_render_end(instance->instance, viewport, size);
             }
         }
 
         // Update GUI
         gui_update();
-
-        // Clear window
-        nu_v2u_t size = window_get_size();
-        renderer_clear(nu_b2i_xywh(0, 0, size.x, size.y), size);
-
-        // Draw instances
-        for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
-        {
-            runtime_instance_t *instance = runtime.instances + i;
-            if (instance->active)
-            {
-                if (instance->viewport_mode != VIEWPORT_HIDDEN)
-                {
-                    nu_b2i_t viewport = nu_b2i_xywh(instance->viewport.x,
-                                                    instance->viewport.y,
-                                                    instance->viewport.w,
-                                                    instance->viewport.h);
-                    viewport          = apply_viewport_mode(viewport,
-                                                   instance->viewport_mode);
-                    renderer_render_instance(
-                        instance->instance, viewport, size);
-                }
-            }
-        }
 
         // Swap buffers
         runtime.fps = window_end_frame();

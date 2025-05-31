@@ -3,11 +3,17 @@
 #include "fonts_data.c.inc"
 #include "shaders_data.c.inc"
 
+#define PIPELINE_CANVAS  0
+#define PIPELINE_MAIN    1
+#define TEXTURE_COLORMAP 0
+#define TEXTURE_CANVAS   1
+
 nux_status_t
 nux_graphics_init (nux_instance_t *inst)
 {
+    // Create pipelines
     NUX_CHECK(nux_os_create_pipeline(inst->userdata,
-                                     0,
+                                     PIPELINE_MAIN,
                                      NUX_GPU_SHADER_GLSL,
                                      shader_main_vert,
                                      NUX_ARRAY_SIZE(shader_main_vert),
@@ -15,18 +21,98 @@ nux_graphics_init (nux_instance_t *inst)
                                      NUX_ARRAY_SIZE(shader_main_frag)),
               return NUX_FAILURE);
     NUX_CHECK(nux_os_create_pipeline(inst->userdata,
-                                     1,
+                                     PIPELINE_CANVAS,
                                      NUX_GPU_SHADER_GLSL,
                                      shader_canvas_vert,
                                      NUX_ARRAY_SIZE(shader_canvas_vert),
                                      shader_canvas_frag,
                                      NUX_ARRAY_SIZE(shader_canvas_frag)),
               return NUX_FAILURE);
+
+    // Create textures
+    NUX_CHECK(nux_os_update_texture(inst->userdata,
+                                    TEXTURE_COLORMAP,
+                                    NUX_GPU_TEXTURE_RGBA,
+                                    NUX_COLORMAP_SIZE,
+                                    1,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    NUX_NULL),
+              return NUX_FAILURE);
+    NUX_CHECK(nux_os_update_texture(inst->userdata,
+                                    TEXTURE_CANVAS,
+                                    NUX_GPU_TEXTURE_INDEX,
+                                    NUX_CANVAS_WIDTH,
+                                    NUX_CANVAS_HEIGHT,
+                                    0,
+                                    0,
+                                    0,
+                                    0,
+                                    NUX_NULL),
+              return NUX_FAILURE);
+
     return NUX_SUCCESS;
 }
 nux_status_t
 nux_graphics_free (nux_instance_t *inst)
 {
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_graphics_render (nux_instance_t *inst)
+{
+    // Update colormap
+    NUX_CHECK(nux_os_update_texture(inst->userdata,
+                                    TEXTURE_COLORMAP,
+                                    NUX_GPU_TEXTURE_RGBA,
+                                    NUX_COLORMAP_SIZE,
+                                    1,
+                                    0,
+                                    0,
+                                    NUX_COLORMAP_SIZE,
+                                    1,
+                                    inst->colormap),
+              return NUX_FAILURE);
+
+    // Update canvas
+    NUX_CHECK(nux_os_update_texture(inst->userdata,
+                                    TEXTURE_CANVAS,
+                                    NUX_GPU_TEXTURE_INDEX,
+                                    NUX_CANVAS_WIDTH,
+                                    NUX_CANVAS_HEIGHT,
+                                    0,
+                                    0,
+                                    NUX_CANVAS_WIDTH,
+                                    NUX_CANVAS_HEIGHT,
+                                    inst->canvas),
+              return NUX_FAILURE);
+
+    // Blit canvas
+    nux_gpu_command_t cmds[32];
+    nux_u32_t         count = 0;
+
+    cmds[count].type                    = NUX_GPU_BIND_PIPELINE;
+    cmds[count].data.bind_pipeline.slot = PIPELINE_CANVAS;
+    ++count;
+
+    cmds[count].type                      = NUX_GPU_BIND_TEXTURE;
+    cmds[count].data.bind_texture.slot    = TEXTURE_CANVAS;
+    cmds[count].data.bind_texture.binding = 0;
+    ++count;
+
+    cmds[count].type                      = NUX_GPU_BIND_TEXTURE;
+    cmds[count].data.bind_texture.slot    = TEXTURE_COLORMAP;
+    cmds[count].data.bind_texture.binding = 1;
+    ++count;
+
+    cmds[count].type            = NUX_GPU_DRAW;
+    cmds[count].data.draw.count = 3;
+    ++count;
+
+    nux_os_submit_commands(inst->userdata, cmds, count);
+
     return NUX_SUCCESS;
 }
 

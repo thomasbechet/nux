@@ -1,6 +1,5 @@
 #include "internal.h"
 
-#include "nux.h"
 #include "shaders_data.c.inc"
 
 static struct
@@ -14,6 +13,8 @@ static struct
     GLuint canvas_fbo;
     GLuint empty_vao;
 } renderer;
+
+// static nu_v2u_t resolution;
 
 static nu_status_t
 compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
@@ -91,7 +92,7 @@ nux_os_create_pipeline (void                   *userdata,
                         nux_u32_t               fragment_len)
 {
     runtime_instance_t *inst = userdata;
-    NU_CHECK(slot >= NU_ARRAY_SIZE(inst->shaders), return NUX_FAILURE);
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->shaders), return NUX_FAILURE);
     nu_status_t status = compile_program(nu_sv(vertex, vertex_len),
                                          nu_sv(fragment, fragment_len),
                                          &inst->shaders[slot]);
@@ -111,21 +112,38 @@ nux_os_update_texture (void                    *userdata,
                        const void              *data)
 {
     runtime_instance_t *inst = userdata;
-    NU_CHECK(slot >= NU_ARRAY_SIZE(inst->textures), return NUX_FAILURE);
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->textures), return NUX_FAILURE);
     texture_t *tex = inst->textures + slot;
 
-    // Detect if texture must be recreated
+    GLuint internal_format;
+    GLuint texture_format;
+    switch (format)
+    {
+        case NUX_GPU_TEXTURE_RGBA:
+            internal_format = GL_RGBA8;
+            texture_format  = GL_RGB;
+            break;
+        case NUX_GPU_TEXTURE_INDEX:
+            internal_format = GL_R8UI;
+            texture_format  = GL_RED_INTEGER;
+            break;
+    }
+
+    // Format update
     if (tex->format != format || tex->w != texw || tex->h != texh)
     {
-        glGenTextures(1, &tex->handle);
+        if (!tex->handle)
+        {
+            glGenTextures(1, &tex->handle);
+        }
         glBindTexture(GL_TEXTURE_2D, tex->handle);
         glTexImage2D(GL_TEXTURE_2D,
                      0,
-                     GL_R8UI,
+                     internal_format,
                      texw,
                      texh,
                      0,
-                     GL_RED_INTEGER,
+                     texture_format,
                      GL_UNSIGNED_BYTE,
                      NU_NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -143,13 +161,47 @@ nux_os_update_texture (void                    *userdata,
                         y,
                         w,
                         h,
-                        GL_RED_INTEGER,
+                        texture_format,
                         GL_UNSIGNED_BYTE,
                         data);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     return NUX_SUCCESS;
+}
+void
+nux_os_submit_commands (void                    *userdata,
+                        const nux_gpu_command_t *commands,
+                        nux_u32_t                count)
+{
+    runtime_instance_t *inst = userdata;
+    for (nux_u32_t i = 0; i < count; ++i)
+    {
+        const nux_gpu_command_t *cmd = commands + i;
+        switch (cmd->type)
+        {
+            case NUX_GPU_BIND_PIPELINE: {
+                glUseProgram(inst->shaders[cmd->data.bind_pipeline.slot]);
+                // glUniform2f(0, resolution.x, resolution.y);
+                glUniform1i(0, 0);
+                glUniform1i(1, 1);
+            }
+            break;
+            case NUX_GPU_BIND_TEXTURE: {
+                glActiveTexture(GL_TEXTURE0 + cmd->data.bind_texture.binding);
+                glBindTexture(
+                    GL_TEXTURE_2D,
+                    inst->textures[cmd->data.bind_texture.slot].handle);
+            }
+            break;
+            case NUX_GPU_DRAW: {
+                glBindVertexArray(renderer.empty_vao);
+                glDrawArrays(GL_TRIANGLES, 0, cmd->data.draw.count);
+                glBindVertexArray(0);
+            }
+            break;
+        }
+    }
 }
 
 nu_status_t
@@ -158,66 +210,65 @@ renderer_init (void)
     nu_status_t status = NU_SUCCESS;
 
     // Compile canvas blit program
-    status = compile_program(shader_canvas_blit_vert,
-                             shader_canvas_blit_frag,
-                             &renderer.canvas_blit_program);
-    NU_CHECK(status, goto cleanup0);
-    glUseProgram(renderer.canvas_blit_program);
-    glUniform1i(glGetUniformLocation(renderer.canvas_blit_program, "t_canvas"),
-                0);
-    glUniform1i(
-        glGetUniformLocation(renderer.canvas_blit_program, "t_colormap"), 1);
-    glUseProgram(0);
-
-    // Compile uber program
+    // status = compile_program(shader_canvas_blit_vert,
+    //                          shader_canvas_blit_frag,
+    //                          &renderer.canvas_blit_program);
+    // NU_CHECK(status, goto cleanup0);
+    // glUseProgram(renderer.canvas_blit_program);
+    // glUniform1i(glGetUniformLocation(renderer.canvas_blit_program,
+    // "t_canvas"),
+    //             0);
+    // glUniform1i(
+    //     glGetUniformLocation(renderer.canvas_blit_program, "t_colormap"), 1);
+    // glUseProgram(0);
 
     // Create canvas
-    glGenTextures(1, &renderer.canvas);
-    glBindTexture(GL_TEXTURE_2D, renderer.canvas);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_R8UI,
-                 NUX_CANVAS_WIDTH,
-                 NUX_CANVAS_HEIGHT,
-                 0,
-                 GL_RED_INTEGER,
-                 GL_UNSIGNED_BYTE,
-                 NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // glGenTextures(1, &renderer.canvas);
+    // glBindTexture(GL_TEXTURE_2D, renderer.canvas);
+    // glTexImage2D(GL_TEXTURE_2D,
+    //              0,
+    //              GL_R8UI,
+    //              NUX_CANVAS_WIDTH,
+    //              NUX_CANVAS_HEIGHT,
+    //              0,
+    //              GL_RED_INTEGER,
+    //              GL_UNSIGNED_BYTE,
+    //              NU_NULL);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glBindTexture(GL_TEXTURE_2D, 0);
 
     // Create texture
-    glGenTextures(1, &renderer.texture);
-    glBindTexture(GL_TEXTURE_2D, renderer.texture);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_R8UI,
-                 NUX_TEXTURE_WIDTH,
-                 NUX_TEXTURE_HEIGHT,
-                 0,
-                 GL_RED_INTEGER,
-                 GL_UNSIGNED_BYTE,
-                 NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // glGenTextures(1, &renderer.texture);
+    // glBindTexture(GL_TEXTURE_2D, renderer.texture);
+    // glTexImage2D(GL_TEXTURE_2D,
+    //              0,
+    //              GL_R8UI,
+    //              NUX_TEXTURE_WIDTH,
+    //              NUX_TEXTURE_HEIGHT,
+    //              0,
+    //              GL_RED_INTEGER,
+    //              GL_UNSIGNED_BYTE,
+    //              NU_NULL);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glBindTexture(GL_TEXTURE_2D, 0);
 
     // Create colormap
-    glGenTextures(1, &renderer.colormap);
-    glBindTexture(GL_TEXTURE_2D, renderer.colormap);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGB8,
-                 NUX_COLORMAP_SIZE,
-                 1,
-                 0,
-                 GL_RGB,
-                 GL_UNSIGNED_BYTE,
-                 NU_NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    // glGenTextures(1, &renderer.colormap);
+    // glBindTexture(GL_TEXTURE_2D, renderer.colormap);
+    // glTexImage2D(GL_TEXTURE_2D,
+    //              0,
+    //              GL_RGB8,
+    //              NUX_COLORMAP_SIZE,
+    //              1,
+    //              0,
+    //              GL_RGB,
+    //              GL_UNSIGNED_BYTE,
+    //              NU_NULL);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // glBindTexture(GL_TEXTURE_2D, 0);
 
     // Create buffer
     // glGenBuffers(1, &renderer.buffer);
@@ -228,11 +279,10 @@ renderer_init (void)
 
     return status;
 
-cleanup0:
-    renderer_free();
-    return status;
+    // renderer_free();
+    // return status;
 
-    return NU_SUCCESS;
+    // return NU_SUCCESS;
 }
 void
 renderer_free (void)
@@ -282,9 +332,9 @@ renderer_clear (nu_b2i_t viewport, nu_v2u_t window_size)
     glDisable(GL_SCISSOR_TEST);
 }
 void
-renderer_render_instance (nux_instance_t *inst,
-                          nu_b2i_t        viewport,
-                          nu_v2u_t        window_size)
+renderer_render_begin (nux_instance_t *inst,
+                       nu_b2i_t        viewport,
+                       nu_v2u_t        window_size)
 {
     // Update canvas
     // glBindTexture(GL_TEXTURE_2D, renderer.canvas);
@@ -335,19 +385,30 @@ renderer_render_instance (nux_instance_t *inst,
     pos.y
         = window_size.y - (pos.y + size.y); // Patch pos (bottom left in opengl)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glUseProgram(renderer.canvas_blit_program);
+    // glUseProgram(renderer.canvas_blit_program);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glViewport(pos.x, pos.y, size.x, size.y);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer.canvas);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, renderer.colormap);
-    glBindVertexArray(renderer.empty_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    glBindVertexArray(0);
+
+    // resolution = size;
+
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, renderer.canvas);
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, renderer.colormap);
+    // glBindVertexArray(renderer.empty_vao);
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    // glBindVertexArray(0);
+    // glDisable(GL_FRAMEBUFFER_SRGB);
+    // glUseProgram(0);
+}
+void
+renderer_render_end (nux_instance_t *inst,
+                     nu_b2i_t        viewport,
+                     nu_v2u_t        window_size)
+{
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);
 }

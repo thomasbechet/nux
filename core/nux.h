@@ -49,21 +49,36 @@ typedef struct
 
 typedef enum
 {
-    NUX_GPU_RGBA,
-    NUX_GPU_R,
+    NUX_GPU_TEXTURE_RGBA,
+    NUX_GPU_TEXTURE_INDEX,
 } nux_gpu_texture_format_t;
 
 typedef enum
 {
-    NUX_GPU_UPDATE_TEXTURE,
-    NUX_GPU_UPDATE_STORAGE_BUFFER,
-    NUX_GPU_UPDATE_UNIFORM_BUFFER,
+    NUX_GPU_FILTER_LINEAR,
+    NUX_GPU_FILTER_NEAREST
+} nux_gpu_filter_t;
+
+typedef enum
+{
+    NUX_GPU_BIND_PIPELINE,
+    NUX_GPU_BIND_TEXTURE,
     NUX_GPU_DRAW,
 } nux_gpu_command_type_t;
 
 typedef struct
 {
-    nux_u16_t texture0;
+    nux_u32_t slot;
+} nux_gpu_bind_pipeline_t;
+
+typedef struct
+{
+    nux_u32_t slot;
+    nux_u32_t binding;
+} nux_gpu_bind_texture_t;
+
+typedef struct
+{
     nux_u32_t primitive;
     nux_u32_t count;
 } nux_gpu_draw_t;
@@ -73,7 +88,9 @@ typedef struct
     nux_gpu_command_type_t type;
     union
     {
-        nux_gpu_draw_t draw;
+        nux_gpu_bind_pipeline_t bind_pipeline;
+        nux_gpu_bind_texture_t  bind_texture;
+        nux_gpu_draw_t          draw;
     } data;
 } nux_gpu_command_t;
 

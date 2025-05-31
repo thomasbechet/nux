@@ -420,6 +420,7 @@ nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 
 nux_status_t nux_graphics_init(nux_instance_t *inst);
 nux_status_t nux_graphics_free(nux_instance_t *inst);
+nux_status_t nux_graphics_render(nux_instance_t *inst);
 
 // instance.c
 
