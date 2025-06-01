@@ -23,8 +23,9 @@ typedef struct
 
 typedef enum
 {
-    NUX_GPU_TEXTURE_MAX         = 128,
-    NUX_GPU_UNIFORM_BUFFER_SIZE = 4096,
+    NUX_GPU_TEXTURE_MAX        = 128,
+    NUX_GPU_PROGRAM_MAX        = 128,
+    NUX_GPU_STORAGE_BUFFER_MAX = 8,
 } nux_gpu_constants_t;
 
 typedef enum
@@ -49,15 +50,23 @@ typedef struct
 
 typedef enum
 {
-    NUX_GPU_TEXTURE_RGBA,
-    NUX_GPU_TEXTURE_INDEX,
+    NUX_GPU_TEXTURE_FORMAT_RGBA,
+    NUX_GPU_TEXTURE_FORMAT_INDEX,
 } nux_gpu_texture_format_t;
 
 typedef enum
 {
-    NUX_GPU_FILTER_LINEAR,
-    NUX_GPU_FILTER_NEAREST
-} nux_gpu_filter_t;
+    NUX_GPU_TEXTURE_FILTER_LINEAR,
+    NUX_GPU_TEXTURE_FILTER_NEAREST
+} nux_gpu_texture_filter_t;
+
+typedef struct
+{
+    nux_gpu_texture_format_t format;
+    nux_gpu_texture_filter_t filter;
+    nux_u32_t                width;
+    nux_u32_t                height;
+} nux_gpu_texture_info_t;
 
 typedef enum
 {
@@ -127,16 +136,24 @@ NUX_API nux_status_t nux_os_create_pipeline(void                   *userdata,
                                             nux_u32_t               vertex_len,
                                             const nux_c8_t         *fragment,
                                             nux_u32_t fragment_len);
-NUX_API nux_status_t nux_os_update_texture(void                    *userdata,
-                                           nux_u32_t                slot,
-                                           nux_gpu_texture_format_t format,
-                                           nux_u32_t                texw,
-                                           nux_u32_t                texh,
-                                           nux_u32_t                x,
-                                           nux_u32_t                y,
-                                           nux_u32_t                w,
-                                           nux_u32_t                h,
-                                           const void              *data);
+NUX_API nux_status_t nux_os_create_texture(void     *userdata,
+                                           nux_u32_t slot,
+                                           const nux_gpu_texture_info_t *info);
+NUX_API nux_status_t nux_os_update_texture(void       *userdata,
+                                           nux_u32_t   slot,
+                                           nux_u32_t   x,
+                                           nux_u32_t   y,
+                                           nux_u32_t   w,
+                                           nux_u32_t   h,
+                                           const void *data);
+NUX_API nux_status_t nux_os_create_storage_buffer(void     *userdata,
+                                                  nux_u32_t slot,
+                                                  nux_u32_t size);
+NUX_API nux_status_t nux_os_update_storage_buffer(void            *userdata,
+                                                  nux_u32_t        slot,
+                                                  nux_u32_t        first,
+                                                  nux_u32_t        count,
+                                                  const nux_f32_t *data);
 NUX_API void         nux_os_submit_commands(void                    *userdata,
                                             const nux_gpu_command_t *commands,
                                             nux_u32_t                count);

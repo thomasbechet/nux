@@ -313,6 +313,9 @@ struct nux_instance
 
     nux_u32_t stats[NUX_STAT_MAX];
 
+    nux_gpu_texture_info_t canvas_info;
+    nux_gpu_texture_info_t colormap_info;
+
     NUX_VEC(nux_u8_t) memory;
     NUX_VEC(nux_object_t) objects;
     NUX_VEC(nux_u32_t) free_objects;

@@ -61,7 +61,7 @@ VOut vertexMain(
 [shader("fragment")]
 float4 fragmentMain(VOut input) : SV_Target
 {
-    const float2 textureSize = float2(320, 200);
+    const float2 textureSize = float2(480, 300);
     float2 uv = float2(input.uv.x, 1 - input.uv.y);
     uv = uvFiltering(uv, textureSize);
     return bilinearFiltering(uv, textureSize);

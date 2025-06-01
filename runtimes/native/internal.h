@@ -45,11 +45,17 @@ typedef struct
 
 typedef struct
 {
-    GLuint                   handle;
-    nux_u32_t                w;
-    nux_u32_t                h;
-    nux_gpu_texture_format_t format;
+    GLuint                 handle;
+    nux_gpu_texture_info_t info;
+    GLuint                 internal_format;
+    GLuint                 format;
+    GLuint                 filtering;
 } texture_t;
+
+typedef struct
+{
+    GLuint handle;
+} storage_buffer_t;
 
 typedef struct
 {
@@ -62,8 +68,9 @@ typedef struct
     viewport_mode_t       viewport_mode;
     debug_value_t         debug_values[256];
     nu_size_t             debug_value_count;
-    GLuint                shaders[64];
-    texture_t             textures[64];
+    GLuint                programs[NUX_GPU_PROGRAM_MAX];
+    texture_t             textures[NUX_GPU_TEXTURE_MAX];
+    storage_buffer_t      storage_buffers[NUX_GPU_STORAGE_BUFFER_MAX];
 } runtime_instance_t;
 
 typedef struct

@@ -92,80 +92,121 @@ nux_os_create_pipeline (void                   *userdata,
                         nux_u32_t               fragment_len)
 {
     runtime_instance_t *inst = userdata;
-    NU_CHECK(slot < NU_ARRAY_SIZE(inst->shaders), return NUX_FAILURE);
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->programs), return NUX_FAILURE);
     nu_status_t status = compile_program(nu_sv(vertex, vertex_len),
                                          nu_sv(fragment, fragment_len),
-                                         &inst->shaders[slot]);
+                                         &inst->programs[slot]);
     NU_CHECK(status, return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_update_texture (void                    *userdata,
-                       nux_u32_t                slot,
-                       nux_gpu_texture_format_t format,
-                       nux_u32_t                texw,
-                       nux_u32_t                texh,
-                       nux_u32_t                x,
-                       nux_u32_t                y,
-                       nux_u32_t                w,
-                       nux_u32_t                h,
-                       const void              *data)
+nux_os_create_texture (void                         *userdata,
+                       nux_u32_t                     slot,
+                       const nux_gpu_texture_info_t *info)
 {
     runtime_instance_t *inst = userdata;
     NU_CHECK(slot < NU_ARRAY_SIZE(inst->textures), return NUX_FAILURE);
     texture_t *tex = inst->textures + slot;
 
-    GLuint internal_format;
-    GLuint texture_format;
-    switch (format)
+    switch (info->format)
     {
-        case NUX_GPU_TEXTURE_RGBA:
-            internal_format = GL_RGBA8;
-            texture_format  = GL_RGB;
+        case NUX_GPU_TEXTURE_FORMAT_RGBA:
+            tex->internal_format = GL_RGBA8;
+            tex->format          = GL_RGB;
             break;
-        case NUX_GPU_TEXTURE_INDEX:
-            internal_format = GL_R8UI;
-            texture_format  = GL_RED_INTEGER;
+        case NUX_GPU_TEXTURE_FORMAT_INDEX:
+            tex->internal_format = GL_R8UI;
+            tex->format          = GL_RED_INTEGER;
             break;
     }
 
-    // Format update
-    if (tex->format != format || tex->w != texw || tex->h != texh)
+    switch (info->filter)
     {
-        if (!tex->handle)
-        {
-            glGenTextures(1, &tex->handle);
-        }
-        glBindTexture(GL_TEXTURE_2D, tex->handle);
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     internal_format,
-                     texw,
-                     texh,
-                     0,
-                     texture_format,
-                     GL_UNSIGNED_BYTE,
-                     NU_NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        case NUX_GPU_TEXTURE_FILTER_LINEAR:
+            tex->filtering = GL_LINEAR;
+            break;
+        case NUX_GPU_TEXTURE_FILTER_NEAREST:
+            tex->filtering = GL_NEAREST;
+            break;
     }
 
-    // Update texture
-    if (data)
+    if (!tex->handle)
     {
-        glBindTexture(GL_TEXTURE_2D, tex->handle);
-        glTexSubImage2D(GL_TEXTURE_2D,
-                        0,
-                        x,
-                        y,
-                        w,
-                        h,
-                        texture_format,
-                        GL_UNSIGNED_BYTE,
-                        data);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glGenTextures(1, &tex->handle);
     }
+    glBindTexture(GL_TEXTURE_2D, tex->handle);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 tex->internal_format,
+                 info->width,
+                 info->height,
+                 0,
+                 tex->format,
+                 GL_UNSIGNED_BYTE,
+                 NU_NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tex->filtering);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, tex->filtering);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_os_update_texture (void       *userdata,
+                       nux_u32_t   slot,
+                       nux_u32_t   x,
+                       nux_u32_t   y,
+                       nux_u32_t   w,
+                       nux_u32_t   h,
+                       const void *data)
+{
+    runtime_instance_t *inst = userdata;
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->textures), return NUX_FAILURE);
+    texture_t *tex = inst->textures + slot;
+
+    glBindTexture(GL_TEXTURE_2D, tex->handle);
+    glTexSubImage2D(
+        GL_TEXTURE_2D, 0, x, y, w, h, tex->format, GL_UNSIGNED_BYTE, data);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_os_create_storage_buffer (void *userdata, nux_u32_t slot, nux_u32_t size)
+{
+    runtime_instance_t *inst = userdata;
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->storage_buffers), return NUX_FAILURE);
+    storage_buffer_t *buffer = inst->storage_buffers + slot;
+
+    if (!buffer->handle)
+    {
+        glGenTextures(1, &buffer->handle);
+    }
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->handle);
+    glBufferData(GL_SHADER_STORAGE_BUFFER,
+                 sizeof(nux_f32_t) * size,
+                 NU_NULL,
+                 GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_os_update_storage_buffer (void            *userdata,
+                              nux_u32_t        slot,
+                              nux_u32_t        first,
+                              nux_u32_t        count,
+                              const nux_f32_t *data)
+{
+    runtime_instance_t *inst = userdata;
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->storage_buffers), return NUX_FAILURE);
+    storage_buffer_t *buffer = inst->storage_buffers + slot;
+
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->handle);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER,
+                    first * sizeof(nux_f32_t),
+                    count * sizeof(nux_f32_t),
+                    data);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     return NUX_SUCCESS;
 }
@@ -181,8 +222,7 @@ nux_os_submit_commands (void                    *userdata,
         switch (cmd->type)
         {
             case NUX_GPU_BIND_PIPELINE: {
-                glUseProgram(inst->shaders[cmd->data.bind_pipeline.slot]);
-                // glUniform2f(0, resolution.x, resolution.y);
+                glUseProgram(inst->programs[cmd->data.bind_pipeline.slot]);
                 glUniform1i(0, 0);
                 glUniform1i(1, 1);
             }

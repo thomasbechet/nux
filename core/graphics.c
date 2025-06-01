@@ -11,6 +11,7 @@
 nux_status_t
 nux_graphics_init (nux_instance_t *inst)
 {
+
     // Create pipelines
     NUX_CHECK(nux_os_create_pipeline(inst->userdata,
                                      PIPELINE_MAIN,
@@ -30,27 +31,22 @@ nux_graphics_init (nux_instance_t *inst)
               return NUX_FAILURE);
 
     // Create textures
-    NUX_CHECK(nux_os_update_texture(inst->userdata,
-                                    TEXTURE_COLORMAP,
-                                    NUX_GPU_TEXTURE_RGBA,
-                                    NUX_COLORMAP_SIZE,
-                                    1,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    NUX_NULL),
+    inst->colormap_info
+        = (nux_gpu_texture_info_t) { .format = NUX_GPU_TEXTURE_FORMAT_RGBA,
+                                     .filter = NUX_GPU_TEXTURE_FILTER_NEAREST,
+                                     .width  = NUX_COLORMAP_SIZE,
+                                     .height = 1 };
+    NUX_CHECK(nux_os_create_texture(
+                  inst->userdata, TEXTURE_COLORMAP, &inst->colormap_info),
               return NUX_FAILURE);
-    NUX_CHECK(nux_os_update_texture(inst->userdata,
-                                    TEXTURE_CANVAS,
-                                    NUX_GPU_TEXTURE_INDEX,
-                                    NUX_CANVAS_WIDTH,
-                                    NUX_CANVAS_HEIGHT,
-                                    0,
-                                    0,
-                                    0,
-                                    0,
-                                    NUX_NULL),
+
+    inst->canvas_info
+        = (nux_gpu_texture_info_t) { .format = NUX_GPU_TEXTURE_FORMAT_INDEX,
+                                     .filter = NUX_GPU_TEXTURE_FILTER_NEAREST,
+                                     .width  = NUX_CANVAS_WIDTH,
+                                     .height = NUX_CANVAS_HEIGHT };
+    NUX_CHECK(nux_os_create_texture(
+                  inst->userdata, TEXTURE_CANVAS, &inst->canvas_info),
               return NUX_FAILURE);
 
     return NUX_SUCCESS;
@@ -66,26 +62,20 @@ nux_graphics_render (nux_instance_t *inst)
     // Update colormap
     NUX_CHECK(nux_os_update_texture(inst->userdata,
                                     TEXTURE_COLORMAP,
-                                    NUX_GPU_TEXTURE_RGBA,
-                                    NUX_COLORMAP_SIZE,
-                                    1,
                                     0,
                                     0,
-                                    NUX_COLORMAP_SIZE,
-                                    1,
+                                    inst->colormap_info.width,
+                                    inst->colormap_info.height,
                                     inst->colormap),
               return NUX_FAILURE);
 
     // Update canvas
     NUX_CHECK(nux_os_update_texture(inst->userdata,
                                     TEXTURE_CANVAS,
-                                    NUX_GPU_TEXTURE_INDEX,
-                                    NUX_CANVAS_WIDTH,
-                                    NUX_CANVAS_HEIGHT,
                                     0,
                                     0,
-                                    NUX_CANVAS_WIDTH,
-                                    NUX_CANVAS_HEIGHT,
+                                    inst->canvas_info.width,
+                                    inst->canvas_info.height,
                                     inst->canvas),
               return NUX_FAILURE);
 
@@ -291,11 +281,6 @@ nux_camfov (nux_env_t *env, nux_f32_t fov)
     env->inst->cam_fov = fov;
 }
 
-nux_u8_t *
-nux_screen (nux_env_t *env)
-{
-    return env->inst->canvas;
-}
 void
 nux_write_texture (nux_env_t      *env,
                    nux_u32_t       x,
