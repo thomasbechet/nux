@@ -55,7 +55,8 @@ typedef struct
 typedef struct
 {
     GLuint handle;
-} storage_buffer_t;
+    GLuint buffer_type;
+} buffer_t;
 
 typedef struct
 {
@@ -70,7 +71,7 @@ typedef struct
     nu_size_t             debug_value_count;
     GLuint                programs[NUX_GPU_PROGRAM_MAX];
     texture_t             textures[NUX_GPU_TEXTURE_MAX];
-    storage_buffer_t      storage_buffers[NUX_GPU_STORAGE_BUFFER_MAX];
+    buffer_t              buffers[NUX_GPU_BUFFER_MAX];
 } runtime_instance_t;
 
 typedef struct

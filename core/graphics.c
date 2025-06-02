@@ -3,15 +3,18 @@
 #include "fonts_data.c.inc"
 #include "shaders_data.c.inc"
 
-#define PIPELINE_CANVAS  0
-#define PIPELINE_MAIN    1
-#define TEXTURE_COLORMAP 0
-#define TEXTURE_CANVAS   1
+#define PIPELINE_CANVAS             0
+#define PIPELINE_MAIN               1
+#define TEXTURE_COLORMAP            0
+#define TEXTURE_CANVAS              1
+#define UNIFORM_BUFFER              0
+#define VERTEX_STORAGE_BUFFER       1
+#define VERTEX_SIZE                 5
+#define VERTEX_STORAGE_DEFAULT_SIZE 1024
 
 nux_status_t
 nux_graphics_init (nux_instance_t *inst)
 {
-
     // Create pipelines
     NUX_CHECK(nux_os_create_pipeline(inst->userdata,
                                      PIPELINE_MAIN,
@@ -49,6 +52,23 @@ nux_graphics_init (nux_instance_t *inst)
                   inst->userdata, TEXTURE_CANVAS, &inst->canvas_info),
               return NUX_FAILURE);
 
+    // Create buffers
+    NUX_CHECK(nux_os_create_buffer(inst->userdata,
+                                   UNIFORM_BUFFER,
+                                   NUX_GPU_BUFFER_UNIFORM,
+                                   sizeof(nux_gpu_uniform_buffer_t)),
+              return NUX_FAILURE);
+
+    NUX_CHECK(nux_os_create_buffer(inst->userdata,
+                                   VERTEX_STORAGE_BUFFER,
+                                   NUX_GPU_BUFFER_STORAGE,
+                                   VERTEX_SIZE * VERTEX_STORAGE_DEFAULT_SIZE),
+              return NUX_FAILURE);
+    inst->vertex_storage_head = 0;
+
+    inst->test_cube = nux_generate_cube(&inst->env, 1, 1, 1);
+    NUX_ASSERT(inst->test_cube);
+
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -79,9 +99,28 @@ nux_graphics_render (nux_instance_t *inst)
                                     inst->canvas),
               return NUX_FAILURE);
 
+    // Update storage buffer
+    nux_gpu_uniform_buffer_t uniform_buffer;
+    uniform_buffer.view  = nux_lookat(nux_v3s(5), nux_v3s(0), nux_v3(0, 1, 0));
+    uniform_buffer.proj  = nux_perspective(nux_radian(60), 1, 0.1, 100);
+    uniform_buffer.model = nux_m4_identity();
+    nux_os_update_buffer(inst->userdata,
+                         UNIFORM_BUFFER,
+                         0,
+                         sizeof(uniform_buffer),
+                         &uniform_buffer);
+
     // Blit canvas
     nux_gpu_command_t cmds[32];
     nux_u32_t         count = 0;
+
+    cmds[count].type                    = NUX_GPU_BIND_PIPELINE;
+    cmds[count].data.bind_pipeline.slot = PIPELINE_MAIN;
+    ++count;
+
+    cmds[count].type            = NUX_GPU_DRAW;
+    cmds[count].data.draw.count = 36;
+    ++count;
 
     cmds[count].type                    = NUX_GPU_BIND_PIPELINE;
     cmds[count].data.bind_pipeline.slot = PIPELINE_CANVAS;
@@ -103,6 +142,26 @@ nux_graphics_render (nux_instance_t *inst)
 
     nux_os_submit_commands(inst->userdata, cmds, count);
 
+    return NUX_SUCCESS;
+}
+
+nux_status_t
+nux_graphics_push_vertices (nux_instance_t  *inst,
+                            nux_u32_t        vcount,
+                            const nux_f32_t *data,
+                            nux_u32_t       *first)
+{
+    NUX_CHECK(inst->vertex_storage_head + vcount < VERTEX_STORAGE_DEFAULT_SIZE,
+              return NUX_FAILURE);
+    NUX_CHECK(nux_os_update_buffer(inst->userdata,
+                                   VERTEX_STORAGE_BUFFER,
+                                   inst->vertex_storage_head * VERTEX_SIZE
+                                       * sizeof(nux_f32_t),
+                                   vcount * VERTEX_SIZE * sizeof(nux_f32_t),
+                                   data),
+              return NUX_FAILURE);
+    *first = inst->vertex_storage_head;
+    inst->vertex_storage_head += vcount;
     return NUX_SUCCESS;
 }
 
@@ -303,4 +362,62 @@ nux_write_texture (nux_env_t      *env,
     //     const nux_u8_t *src = data + (i * w);
     //     nux_memcpy(dst, src, w);
     // }
+}
+
+nux_u32_t
+nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
+{
+    const nux_b3_t box = nux_b3(nux_v3s(0), nux_v3(sx / 2, sy / 2, sz / 2));
+
+    const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
+    const nux_v3_t v1 = nux_v3(box.max.x, box.min.y, box.min.z);
+    const nux_v3_t v2 = nux_v3(box.max.x, box.min.y, box.max.z);
+    const nux_v3_t v3 = nux_v3(box.min.x, box.min.y, box.max.z);
+
+    const nux_v3_t v4 = nux_v3(box.min.x, box.max.y, box.min.z);
+    const nux_v3_t v5 = nux_v3(box.max.x, box.max.y, box.min.z);
+    const nux_v3_t v6 = nux_v3(box.max.x, box.max.y, box.max.z);
+    const nux_v3_t v7 = nux_v3(box.min.x, box.max.y, box.max.z);
+
+    const nux_v3_t positions[]
+        = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
+            v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
+            v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
+
+    const nux_v2_t uvs[] = {
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } }, { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 0, 0 } }, { { 0, 1 } }, { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } },
+        { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } }, { { 1, 0 } },
+        { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } },
+        { { 0, 1 } }, { { 1, 1 } }, { { 1, 1 } }, { { 1, 0 } }, { { 0, 0 } },
+        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
+        { { 0, 0 } },
+    };
+
+    nux_u32_t   id;
+    nux_mesh_t *mesh = nux_add_object(env, NUX_OBJECT_MESH, &id);
+    NUX_CHECK(mesh, return NUX_NULL);
+    mesh->count = NUX_ARRAY_SIZE(positions);
+    mesh->data  = nux_malloc(env, sizeof(nux_f32_t) * 5 * mesh->count);
+    NUX_CHECK(mesh->data, goto cleanup0);
+
+    for (nux_u32_t i = 0; i < mesh->count; ++i)
+    {
+        mesh->data[i * 5 + 0] = positions[i].x;
+        mesh->data[i * 5 + 1] = positions[i].y;
+        mesh->data[i * 5 + 2] = positions[i].z;
+        mesh->data[i * 5 + 3] = uvs[i].x;
+        mesh->data[i * 5 + 4] = uvs[i].y;
+    }
+
+    NUX_CHECK(nux_graphics_push_vertices(
+                  env->inst, mesh->count, mesh->data, &mesh->first),
+              return NUX_FAILURE);
+
+    return NUX_SUCCESS;
+
+cleanup0:
+    nux_remove_object(env, id);
+    return NUX_FAILURE;
 }

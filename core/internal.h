@@ -25,11 +25,27 @@
 #define NUX_NULL  0
 #define NUX_NOOP
 
+#define NUX_UNUSED0()
+#define NUX_UNUSED1(a)             (void)(a)
+#define NUX_UNUSED2(a, b)          (void)(a), NUX_UNUSED1(b)
+#define NUX_UNUSED3(a, b, c)       (void)(a), NUX_UNUSED2(b, c)
+#define NUX_UNUSED4(a, b, c, d)    (void)(a), NUX_UNUSED3(b, c, d)
+#define NUX_UNUSED5(a, b, c, d, e) (void)(a), NUX_UNUSED4(b, c, d, e)
+
+#ifdef NUX_DEBUG
+#define NUX_CHECK(check, action) \
+    NUX_ASSERT((check));         \
+    if (!(check))                \
+    {                            \
+        action;                  \
+    }
+#else
 #define NUX_CHECK(check, action) \
     if (!(check))                \
     {                            \
         action;                  \
     }
+#endif
 
 #define NUX_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define NUX_ARRAY_FILL(arr, size, value) \
@@ -141,6 +157,14 @@
     nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);          \
     type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
 
+#define NUX_B3_DEFINE(name, type) \
+    typedef struct                \
+    {                             \
+        type min;                 \
+        type max;                 \
+    } nux_##name##_t;             \
+    nux_##name##_t nux_##name(type min, type max);
+
 #define NUX_VEC(type)   \
     struct              \
     {                   \
@@ -179,6 +203,9 @@ NUX_V3_DEFINE(v3, nux_f32_t);
 NUX_V4_DEFINE(v4i, nux_i32_t);
 NUX_V4_DEFINE(v4u, nux_u32_t);
 NUX_V4_DEFINE(v4, nux_f32_t);
+
+NUX_B3_DEFINE(b3, nux_v3_t);
+NUX_B3_DEFINE(b3i, nux_v3i_t);
 
 typedef struct
 {
@@ -260,6 +287,13 @@ typedef struct
 
 typedef struct
 {
+    nux_f32_t *data;
+    nux_u32_t  first;
+    nux_u32_t  count;
+} nux_mesh_t;
+
+typedef struct
+{
     void     *data;
     nux_u32_t size;
     nux_u32_t first_object;
@@ -267,10 +301,11 @@ typedef struct
 
 typedef enum
 {
-    NUX_OBJECT_NULL,
+    NUX_OBJECT_NULL = 0,
     NUX_OBJECT_LUA,
     NUX_OBJECT_SECTION,
     NUX_OBJECT_TEXTURE,
+    NUX_OBJECT_MESH,
 } nux_object_type_t;
 
 typedef struct
@@ -282,6 +317,7 @@ typedef struct
     {
         nux_section_t section;
         nux_texture_t texture;
+        nux_mesh_t    mesh;
     } data;
 } nux_object_t;
 
@@ -315,6 +351,9 @@ struct nux_instance
 
     nux_gpu_texture_info_t canvas_info;
     nux_gpu_texture_info_t colormap_info;
+    nux_u32_t              vertex_storage_head;
+
+    nux_u32_t test_cube;
 
     NUX_VEC(nux_u8_t) memory;
     NUX_VEC(nux_object_t) objects;
@@ -424,6 +463,16 @@ nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 nux_status_t nux_graphics_init(nux_instance_t *inst);
 nux_status_t nux_graphics_free(nux_instance_t *inst);
 nux_status_t nux_graphics_render(nux_instance_t *inst);
+
+nux_status_t nux_graphics_push_vertices(nux_instance_t  *inst,
+                                        nux_u32_t        vcount,
+                                        const nux_f32_t *data,
+                                        nux_u32_t       *first);
+
+nux_u32_t nux_generate_cube(nux_env_t *env,
+                            nux_f32_t  sx,
+                            nux_f32_t  sy,
+                            nux_f32_t  sz);
 
 // instance.c
 

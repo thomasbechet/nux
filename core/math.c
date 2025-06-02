@@ -107,3 +107,16 @@ nux_b2i_moveto (nux_b2i_t b, nux_v2i_t p)
 {
     return nux_b2i_translate(b, nux_v2i_sub(p, b.min));
 }
+
+#define NUX_B3_IMPL(name, type)                                         \
+    nux_##name##_t nux_##name(type min, type max)                       \
+    {                                                                   \
+        NUX_ASSERT(max.x >= min.x && max.y >= min.y && max.z >= min.z); \
+        nux_##name##_t b;                                               \
+        b.min = min;                                                    \
+        b.max = max;                                                    \
+        return b;                                                       \
+    }
+
+NUX_B3_IMPL(b3, nux_v3_t);
+NUX_B3_IMPL(b3i, nux_v3i_t);

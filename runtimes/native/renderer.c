@@ -4,17 +4,8 @@
 
 static struct
 {
-    GLuint canvas;
-    GLuint colormap;
-    GLuint texture;
-    GLuint buffer;
-
-    GLuint canvas_blit_program;
-    GLuint canvas_fbo;
     GLuint empty_vao;
 } renderer;
-
-// static nu_v2u_t resolution;
 
 static nu_status_t
 compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
@@ -171,42 +162,50 @@ nux_os_update_texture (void       *userdata,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_create_storage_buffer (void *userdata, nux_u32_t slot, nux_u32_t size)
+nux_os_create_buffer (void                 *userdata,
+                      nux_u32_t             slot,
+                      nux_gpu_buffer_type_t type,
+                      nux_u32_t             size)
 {
     runtime_instance_t *inst = userdata;
-    NU_CHECK(slot < NU_ARRAY_SIZE(inst->storage_buffers), return NUX_FAILURE);
-    storage_buffer_t *buffer = inst->storage_buffers + slot;
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->buffers), return NUX_FAILURE);
+    buffer_t *buffer = inst->buffers + slot;
+
+    switch (type)
+    {
+        case NUX_GPU_BUFFER_UNIFORM:
+            buffer->buffer_type = GL_SHADER_STORAGE_BUFFER;
+            break;
+        case NUX_GPU_BUFFER_STORAGE:
+            buffer->buffer_type = GL_UNIFORM_BUFFER;
+            break;
+    }
 
     if (!buffer->handle)
     {
-        glGenTextures(1, &buffer->handle);
+        glGenBuffers(1, &buffer->handle);
     }
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->handle);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,
-                 sizeof(nux_f32_t) * size,
-                 NU_NULL,
-                 GL_DYNAMIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    glBindBuffer(buffer->buffer_type, buffer->handle);
+    glBufferData(buffer->buffer_type, size, NU_NULL, GL_DYNAMIC_DRAW);
+    glBindBufferBase(buffer->buffer_type, 0, buffer->handle);
+    glBindBuffer(buffer->buffer_type, 0);
 
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_update_storage_buffer (void            *userdata,
-                              nux_u32_t        slot,
-                              nux_u32_t        first,
-                              nux_u32_t        count,
-                              const nux_f32_t *data)
+nux_os_update_buffer (void       *userdata,
+                      nux_u32_t   slot,
+                      nux_u32_t   offset,
+                      nux_u32_t   size,
+                      const void *data)
 {
     runtime_instance_t *inst = userdata;
-    NU_CHECK(slot < NU_ARRAY_SIZE(inst->storage_buffers), return NUX_FAILURE);
-    storage_buffer_t *buffer = inst->storage_buffers + slot;
+    NU_CHECK(slot < NU_ARRAY_SIZE(inst->buffers), return NUX_FAILURE);
+    buffer_t *buffer = inst->buffers + slot;
 
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, buffer->handle);
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER,
-                    first * sizeof(nux_f32_t),
-                    count * sizeof(nux_f32_t),
-                    data);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    glBindBuffer(buffer->buffer_type, buffer->handle);
+    glBufferSubData(buffer->buffer_type, offset, size, data);
+    glBindBuffer(buffer->buffer_type, 0);
 
     return NUX_SUCCESS;
 }
@@ -223,8 +222,6 @@ nux_os_submit_commands (void                    *userdata,
         {
             case NUX_GPU_BIND_PIPELINE: {
                 glUseProgram(inst->programs[cmd->data.bind_pipeline.slot]);
-                glUniform1i(0, 0);
-                glUniform1i(1, 1);
             }
             break;
             case NUX_GPU_BIND_TEXTURE: {
@@ -232,6 +229,15 @@ nux_os_submit_commands (void                    *userdata,
                 glBindTexture(
                     GL_TEXTURE_2D,
                     inst->textures[cmd->data.bind_texture.slot].handle);
+                glUniform1i(cmd->data.bind_texture.binding,
+                            cmd->data.bind_texture.binding);
+            }
+            break;
+            case NUX_GPU_BIND_BUFFER: {
+                buffer_t *buffer = inst->buffers + cmd->data.bind_buffer.slot;
+                glBindBufferBase(buffer->buffer_type,
+                                 cmd->data.bind_buffer.binding,
+                                 buffer->handle);
             }
             break;
             case NUX_GPU_DRAW: {
@@ -249,80 +255,10 @@ renderer_init (void)
 {
     nu_status_t status = NU_SUCCESS;
 
-    // Compile canvas blit program
-    // status = compile_program(shader_canvas_blit_vert,
-    //                          shader_canvas_blit_frag,
-    //                          &renderer.canvas_blit_program);
-    // NU_CHECK(status, goto cleanup0);
-    // glUseProgram(renderer.canvas_blit_program);
-    // glUniform1i(glGetUniformLocation(renderer.canvas_blit_program,
-    // "t_canvas"),
-    //             0);
-    // glUniform1i(
-    //     glGetUniformLocation(renderer.canvas_blit_program, "t_colormap"), 1);
-    // glUseProgram(0);
-
-    // Create canvas
-    // glGenTextures(1, &renderer.canvas);
-    // glBindTexture(GL_TEXTURE_2D, renderer.canvas);
-    // glTexImage2D(GL_TEXTURE_2D,
-    //              0,
-    //              GL_R8UI,
-    //              NUX_CANVAS_WIDTH,
-    //              NUX_CANVAS_HEIGHT,
-    //              0,
-    //              GL_RED_INTEGER,
-    //              GL_UNSIGNED_BYTE,
-    //              NU_NULL);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Create texture
-    // glGenTextures(1, &renderer.texture);
-    // glBindTexture(GL_TEXTURE_2D, renderer.texture);
-    // glTexImage2D(GL_TEXTURE_2D,
-    //              0,
-    //              GL_R8UI,
-    //              NUX_TEXTURE_WIDTH,
-    //              NUX_TEXTURE_HEIGHT,
-    //              0,
-    //              GL_RED_INTEGER,
-    //              GL_UNSIGNED_BYTE,
-    //              NU_NULL);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Create colormap
-    // glGenTextures(1, &renderer.colormap);
-    // glBindTexture(GL_TEXTURE_2D, renderer.colormap);
-    // glTexImage2D(GL_TEXTURE_2D,
-    //              0,
-    //              GL_RGB8,
-    //              NUX_COLORMAP_SIZE,
-    //              1,
-    //              0,
-    //              GL_RGB,
-    //              GL_UNSIGNED_BYTE,
-    //              NU_NULL);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Create buffer
-    // glGenBuffers(1, &renderer.buffer);
-    // glBindBuffer(GL_SHADER_STORAGE_BUFFER, renderer.buffer);
-
     // Create empty vao
     glGenVertexArrays(1, &renderer.empty_vao);
 
     return status;
-
-    // renderer_free();
-    // return status;
-
-    // return NU_SUCCESS;
 }
 void
 renderer_free (void)
@@ -330,26 +266,6 @@ renderer_free (void)
     if (renderer.empty_vao)
     {
         glDeleteVertexArrays(1, &renderer.empty_vao);
-    }
-    if (renderer.canvas_blit_program)
-    {
-        glDeleteProgram(renderer.canvas_blit_program);
-    }
-    // if (renderer.canvas_fbo)
-    // {
-    //     glDeleteFramebuffers(1, &renderer.canvas_fbo);
-    // }
-    if (renderer.canvas)
-    {
-        glDeleteTextures(1, &renderer.canvas);
-    }
-    if (renderer.texture)
-    {
-        glDeleteTextures(1, &renderer.texture);
-    }
-    if (renderer.colormap)
-    {
-        glDeleteTextures(1, &renderer.colormap);
     }
 }
 void
@@ -376,73 +292,17 @@ renderer_render_begin (nux_instance_t *inst,
                        nu_b2i_t        viewport,
                        nu_v2u_t        window_size)
 {
-    // Update canvas
-    // glBindTexture(GL_TEXTURE_2D, renderer.canvas);
-    // glTexSubImage2D(GL_TEXTURE_2D,
-    //                 0,
-    //                 0,
-    //                 0,
-    //                 NUX_CANVAS_WIDTH,
-    //                 NUX_CANVAS_HEIGHT,
-    //                 GL_RED_INTEGER,
-    //                 GL_UNSIGNED_BYTE,
-    //                 nux_instance_get_canvas(inst));
-    // glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Update texture
-    // glBindTexture(GL_TEXTURE_2D, renderer.texture);
-    // glTexSubImage2D(GL_TEXTURE_2D,
-    //                 0,
-    //                 0,
-    //                 0,
-    //                 NUX_TEXTURE_WIDTH,
-    //                 NUX_TEXTURE_HEIGHT,
-    //                 GL_RED_INTEGER,
-    //                 GL_UNSIGNED_BYTE,
-    //                 nux_instance_get_texture(inst));
-    // glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Update colormap
-    // glBindTexture(GL_TEXTURE_2D, renderer.colormap);
-    // glTexSubImage2D(GL_TEXTURE_2D,
-    //                 0,
-    //                 0,
-    //                 0,
-    //                 NUX_COLORMAP_SIZE,
-    //                 1,
-    //                 GL_RGB,
-    //                 GL_UNSIGNED_BYTE,
-    //                 nux_instance_get_colormap(inst));
-    // glBindTexture(GL_TEXTURE_2D, 0);
-
-    // Update buffer
-
-    // Execute commands
-
     // Blit surface to screen
     nu_v2i_t pos  = viewport.min;
     nu_v2u_t size = nu_b2i_size(viewport);
     pos.y
         = window_size.y - (pos.y + size.y); // Patch pos (bottom left in opengl)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    // glUseProgram(renderer.canvas_blit_program);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_BLEND);
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glViewport(pos.x, pos.y, size.x, size.y);
-
-    // resolution = size;
-
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, renderer.canvas);
-    // glActiveTexture(GL_TEXTURE1);
-    // glBindTexture(GL_TEXTURE_2D, renderer.colormap);
-    // glBindVertexArray(renderer.empty_vao);
-    // glDrawArrays(GL_TRIANGLES, 0, 3);
-    // glBindVertexArray(0);
-    // glDisable(GL_FRAMEBUFFER_SRGB);
-    // glUseProgram(0);
 }
 void
 renderer_render_end (nux_instance_t *inst,

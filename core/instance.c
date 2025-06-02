@@ -88,6 +88,9 @@ nux_check_object (nux_env_t *env, nux_u32_t id, nux_object_type_t type)
 nux_instance_t *
 nux_instance_init (const nux_instance_config_t *config)
 {
+    NUX_ASSERT(config->max_object_count);
+    NUX_ASSERT(config->memory_size);
+
     // Allocate instance
     nux_instance_t *inst = nux_os_malloc(
         config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));

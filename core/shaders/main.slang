@@ -18,22 +18,24 @@ struct Vertex
     float2 texcoord;
 }
 
-StructuredBuffer<float>  storage;
-ConstantBuffer<Uniform>  uniform;
-Texture2D                texture0;
-SamplerState             sampler;
+uniform uint drawID;
+
+StructuredBuffer<float>  iStorage;
+ConstantBuffer<Uniform>  iUniform;
+// Texture2D                texture0;
+// SamplerState             sampler;
 
 Vertex pullVertex(uint idx)
 {
     Vertex vertex = {}; 
     vertex.position = float3(
-        storage[idx * 5 + 0],
-        storage[idx * 5 + 1],
-        storage[idx * 5 + 2]
+        iStorage[idx * 5 + 0],
+        iStorage[idx * 5 + 1],
+        iStorage[idx * 5 + 2]
     );
     vertex.texcoord = float2(
-        storage[idx * 5 + 3],
-        storage[idx * 5 + 4]
+        iStorage[idx * 5 + 3],
+        iStorage[idx * 5 + 4]
     );
     return vertex;
 }
@@ -55,5 +57,6 @@ VOut vertexMain(
 [shader("fragment")]
 float4 fragmentMain(VOut input) : SV_Target
 {
-    return texture0.Sample(sampler, uint2(0));
+    // return texture0.Sample(sampler, uint2(0));
+    return float4(1, 0, 0, 1);
 }

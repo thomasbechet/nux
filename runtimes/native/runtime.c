@@ -27,9 +27,11 @@ instance_init (runtime_instance_t *instance, nu_sv_t path)
     instance_free(instance);
 
     nux_instance_config_t config = {
-        .userdata = instance,
-        .init     = loop_init,
-        .update   = loop_update,
+        .userdata         = instance,
+        .init             = loop_init,
+        .update           = loop_update,
+        .memory_size      = NU_MEM_16M,
+        .max_object_count = 1024,
     };
 
     nu_sv_to_cstr(path, instance->path, NU_PATH_MAX);
@@ -40,9 +42,6 @@ instance_init (runtime_instance_t *instance, nu_sv_t path)
     instance->viewport          = nk_rect(0, 0, 10, 10);
     instance->viewport_mode     = VIEWPORT_STRETCH_KEEP_ASPECT;
     instance->debug_value_count = 0;
-
-    // instance->save_state = native_malloc(vm_config_state_memsize(config));
-    // NU_ASSERT(instance->save_state);
 
     instance->instance = nux_instance_init(&config);
     NU_CHECK(instance->instance, goto cleanup0);
