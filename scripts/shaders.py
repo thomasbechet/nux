@@ -14,7 +14,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     shaders = []
-    for file in list(glob.glob(os.path.join(args.rootdir, "core/shaders/*.slang"))):
+    slang_files = [
+        "core/shaders/main.slang",
+        "core/shaders/canvas.slang",
+    ]
+    for slang_file in slang_files:
+        file = os.path.join(args.rootdir, slang_file)
         name = os.path.splitext(os.path.basename(file))[0]
         def tohex(code):
             l = ["0x{:02x}".format(x) for x in code.encode()]

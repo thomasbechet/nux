@@ -39,7 +39,7 @@ instance_init (runtime_instance_t *instance, nu_sv_t path)
     instance->config            = config;
     instance->instance          = NU_NULL;
     instance->pause             = NU_FALSE;
-    instance->viewport          = nk_rect(0, 0, 10, 10);
+    instance->viewport_ui       = nk_rect(0, 0, 10, 10);
     instance->viewport_mode     = VIEWPORT_STRETCH_KEEP_ASPECT;
     instance->debug_value_count = 0;
 
@@ -61,9 +61,14 @@ cleanup0:
     instance_free(instance);
     return NU_FAILURE;
 }
-static nu_b2i_t
-apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
+static void
+apply_viewport_mode (runtime_instance_t *instance)
 {
+    nu_b2i_t viewport = nu_b2i_xywh(instance->viewport_ui.x,
+                                    instance->viewport_ui.y,
+                                    instance->viewport_ui.w,
+                                    instance->viewport_ui.h);
+
     nu_v2_t global_pos  = nu_v2(viewport.min.x, viewport.min.y);
     nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(viewport));
 
@@ -71,7 +76,7 @@ apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
     nu_f32_t aspect_ratio = screen.x / screen.y;
 
     nu_v2_t vsize = NU_V2_ZEROS;
-    switch (mode)
+    switch (instance->viewport_mode)
     {
         case VIEWPORT_FIXED: {
             vsize = nu_v2(screen.x, screen.y);
@@ -124,7 +129,8 @@ apply_viewport_mode (nu_b2i_t viewport, viewport_mode_t mode)
     nu_v2_t vpos = nu_v2_sub(global_size, vsize);
     vpos         = nu_v2_divs(vpos, 2);
     vpos         = nu_v2_add(vpos, global_pos);
-    return nu_b2i_xywh(vpos.x, vpos.y, vsize.x, vsize.y);
+
+    instance->viewport = nu_b2i_xywh(vpos.x, vpos.y, vsize.x, vsize.y);
 }
 
 nu_status_t
@@ -152,8 +158,9 @@ runtime_run (const runtime_config_t *config)
         window_begin_frame();
 
         // Clear window
-        nu_v2u_t size = window_get_size();
-        renderer_clear(nu_b2i_xywh(0, 0, size.x, size.y), size);
+        nu_v2u_t window_size = window_get_size();
+        renderer_clear(nu_b2i_xywh(0, 0, window_size.x, window_size.y),
+                       window_size);
 
         // Update active instances
         for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
@@ -161,18 +168,17 @@ runtime_run (const runtime_config_t *config)
             runtime_instance_t *instance = runtime.instances + i;
             if (instance->active && !instance->pause)
             {
-                nu_b2i_t viewport = nu_b2i_xywh(instance->viewport.x,
-                                                instance->viewport.y,
-                                                instance->viewport.w,
-                                                instance->viewport.h);
-                viewport
-                    = apply_viewport_mode(viewport, instance->viewport_mode);
-                renderer_render_begin(instance->instance, viewport, size);
+                // Compute viewport
+                apply_viewport_mode(instance);
+
+                // Begin render
+                renderer_render_begin(instance, window_size);
 
                 // Tick
                 nux_instance_tick(instance->instance);
 
-                renderer_render_end(instance->instance, viewport, size);
+                // End render
+                renderer_render_end(instance, window_size);
             }
         }
 
@@ -348,6 +354,9 @@ nux_os_debug (void            *userdata,
 void
 nux_os_update_stats (void *userdata, nux_u32_t *stats)
 {
-    runtime_instance_t *inst = userdata;
-    stats[NUX_STAT_FPS]      = runtime.fps;
+    runtime_instance_t *inst      = userdata;
+    stats[NUX_STAT_FPS]           = runtime.fps;
+    nu_v2u_t screen_size          = nu_b2i_size(inst->viewport);
+    stats[NUX_STAT_SCREEN_WIDTH]  = screen_size.x;
+    stats[NUX_STAT_SCREEN_HEIGHT] = screen_size.y;
 }

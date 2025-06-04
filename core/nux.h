@@ -70,58 +70,60 @@ typedef struct
 
 typedef enum
 {
-    NUX_GPU_BIND_PIPELINE,
-    NUX_GPU_BIND_TEXTURE,
-    NUX_GPU_BIND_BUFFER,
-    NUX_GPU_DRAW,
+    NUX_GPU_BEGIN_RENDERPASS,
+    NUX_GPU_DRAW_MAIN,
+    NUX_GPU_DRAW_CANVAS,
 } nux_gpu_command_type_t;
 
 typedef enum
 {
-    NUX_GPU_BUFFER_UNIFORM,
-    NUX_GPU_BUFFER_STORAGE,
+    NUX_GPU_BUFFER_UNIFORM = 0,
+    NUX_GPU_BUFFER_STORAGE = 1,
 } nux_gpu_buffer_type_t;
 
-typedef struct
+typedef enum
 {
-    nux_u32_t slot;
-} nux_gpu_bind_pipeline_t;
+    NUX_GPU_PIPELINE_MAIN,
+    NUX_GPU_PIPELINE_CANVAS,
+} nux_gpu_pipeline_type_t;
 
 typedef struct
 {
-    nux_u32_t slot;
-    nux_u32_t binding;
-} nux_gpu_bind_texture_t;
+    nux_u32_t storage;
+    nux_u32_t uniform;
+    nux_u32_t vertex_count;
+} nux_gpu_draw_main_t;
 
 typedef struct
 {
-    nux_u32_t slot;
-    nux_u32_t binding;
-} nux_gpu_bind_buffer_t;
+    nux_u32_t colormap;
+    nux_u32_t canvas;
+    nux_u32_t uniform;
+} nux_gpu_draw_canvas_t;
 
 typedef struct
 {
-    nux_u32_t primitive;
-    nux_u32_t count;
-} nux_gpu_draw_t;
+    nux_u32_t framebuffer;
+    nux_u32_t pipeline;
+    nux_u32_t viewport[4];
+    nux_u32_t scissor[4];
+} nux_gpu_begin_renderpass_t;
 
 typedef struct
 {
     nux_gpu_command_type_t type;
     union
     {
-        nux_gpu_bind_pipeline_t bind_pipeline;
-        nux_gpu_bind_texture_t  bind_texture;
-        nux_gpu_bind_buffer_t   bind_buffer;
-        nux_gpu_draw_t          draw;
-    } data;
+        nux_gpu_begin_renderpass_t begin_renderpass;
+        nux_gpu_draw_main_t        draw_main;
+        nux_gpu_draw_canvas_t      draw_canvas;
+    };
 } nux_gpu_command_t;
 
-typedef enum
+typedef struct
 {
-    NUX_GPU_SHADER_GLSL,
-    NUX_GPU_SHADER_SPIRV,
-} nux_gpu_shader_source_t;
+    nux_gpu_command_type_t type : 2;
+} nux_gpu_command2_t;
 
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Callbacks                     //////
@@ -143,13 +145,6 @@ NUX_API nux_status_t nux_os_mount(void           *userdata,
 NUX_API nux_status_t nux_os_seek(void *userdata, nux_u32_t n);
 NUX_API nux_u32_t    nux_os_read(void *userdata, void *p, nux_u32_t n);
 NUX_API void nux_os_log(void *userdata, const nux_c8_t *log, nux_u32_t n);
-NUX_API nux_status_t nux_os_create_pipeline(void                   *userdata,
-                                            nux_u32_t               slot,
-                                            nux_gpu_shader_source_t type,
-                                            const nux_c8_t         *vertex,
-                                            nux_u32_t               vertex_len,
-                                            const nux_c8_t         *fragment,
-                                            nux_u32_t fragment_len);
 NUX_API nux_status_t nux_os_create_texture(void     *userdata,
                                            nux_u32_t slot,
                                            const nux_gpu_texture_info_t *info);

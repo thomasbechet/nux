@@ -65,8 +65,9 @@ typedef struct
     nux_instance_config_t config;
     nux_instance_t       *instance;
     nu_bool_t             pause;
-    struct nk_rect        viewport;
+    struct nk_rect        viewport_ui;
     viewport_mode_t       viewport_mode;
+    nu_b2i_t              viewport;
     debug_value_t         debug_values[256];
     nu_size_t             debug_value_count;
     GLuint                programs[NUX_GPU_PROGRAM_MAX];
@@ -97,12 +98,8 @@ void                runtime_quit(void);
 nu_status_t renderer_init(void);
 void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
-void        renderer_render_begin(nux_instance_t *inst,
-                                  nu_b2i_t        viewport,
-                                  nu_v2u_t        window_size);
-void        renderer_render_end(nux_instance_t *inst,
-                                nu_b2i_t        viewport,
-                                nu_v2u_t        window_size);
+void renderer_render_begin(runtime_instance_t *inst, nu_v2u_t window_size);
+void renderer_render_end(runtime_instance_t *inst, nu_v2u_t window_size);
 
 nu_status_t        window_init(void);
 void               window_free(void);

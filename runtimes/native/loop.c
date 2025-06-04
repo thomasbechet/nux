@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "nux_api.h"
 
 static struct
 {
@@ -208,11 +209,24 @@ loop_update (nux_env_t *env)
 
     nux_cursor(env, 0, 0);
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
-    nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
-    nux_printfmt(env, 7, "RES:%dx%d", NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
-    nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
+    // nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
+    // nux_printfmt(env, 7, "RES:%dx%d", NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
+    // nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
-    nux_circ(env, 50, 50, 10, 7);
+    // nux_circ(env, 50, 50, 10, 7);
 
-    // blit_colormap(env);
+    // nux_line(env,
+    //          NUX_CANVAS_WIDTH / 2,
+    //          0,
+    //          NUX_CANVAS_WIDTH / 2,
+    //          NUX_CANVAS_HEIGHT,
+    //          7);
+    // nux_line(env,
+    //          0,
+    //          NUX_CANVAS_HEIGHT / 2,
+    //          NUX_CANVAS_WIDTH,
+    //          NUX_CANVAS_HEIGHT / 2,
+    //          7);
+
+    blit_colormap(env);
 }

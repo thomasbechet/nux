@@ -282,6 +282,7 @@ window_init (void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_SAMPLES, 4);
     window.win = glfwCreateWindow(width, height, "nux", NU_NULL, NU_NULL);
     if (!window.win)
     {
@@ -294,6 +295,9 @@ window_init (void)
     glfwMakeContextCurrent(window.win);
     glfwSetFramebufferSizeCallback(window.win, resize_callback);
     glfwSetKeyCallback(window.win, key_callback);
+
+    // Configure vsync
+    // glfwSwapInterval(0);
 
     // Initialize GL functions
     if (!gladLoadGL(glfwGetProcAddress))

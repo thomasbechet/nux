@@ -32,20 +32,20 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 640,
 
     // 16:10, too high ?
-    // NUX_SCREEN_WIDTH  = 640,
-    // NUX_SCREEN_HEIGHT = 400,
+    // NUX_CANVAS_WIDTH  = 640,
+    // NUX_CANVAS_HEIGHT = 400,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 640,
     // NUX_SCREEN_HEIGHT = 480,
 
     // 16:10
-    // NUX_SCREEN_WIDTH  = 512,
-    // NUX_SCREEN_HEIGHT = 320,
+    NUX_CANVAS_WIDTH  = 512,
+    NUX_CANVAS_HEIGHT = 320,
 
     // 16:10
-    NUX_CANVAS_WIDTH  = 480,
-    NUX_CANVAS_HEIGHT = 300,
+    // NUX_CANVAS_WIDTH  = 480,
+    // NUX_CANVAS_HEIGHT = 300,
 
     // 4:3
     // NUX_SCREEN_WIDTH  = 480,
@@ -129,6 +129,8 @@ typedef enum
 typedef enum
 {
     NUX_STAT_FPS,
+    NUX_STAT_SCREEN_WIDTH,
+    NUX_STAT_SCREEN_HEIGHT,
     NUX_STAT_MAX
 } nux_stat_t;
 

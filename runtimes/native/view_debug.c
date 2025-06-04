@@ -165,5 +165,5 @@ view_debug (struct nk_context *ctx, struct nk_rect bounds)
     }
     nk_end(ctx);
 
-    instance->viewport = central_bounds;
+    instance->viewport_ui = central_bounds;
 }

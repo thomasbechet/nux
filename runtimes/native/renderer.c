@@ -1,6 +1,6 @@
 #include "internal.h"
 
-#include "shaders_data.c.inc"
+#include <shaders_data.c.inc>
 
 static struct
 {
@@ -76,18 +76,41 @@ cleanup0:
 nux_status_t
 nux_os_create_pipeline (void                   *userdata,
                         nux_u32_t               slot,
-                        nux_gpu_shader_source_t type,
-                        const nux_c8_t         *vertex,
-                        nux_u32_t               vertex_len,
-                        const nux_c8_t         *fragment,
-                        nux_u32_t               fragment_len)
+                        nux_gpu_pipeline_type_t type)
 {
     runtime_instance_t *inst = userdata;
     NU_CHECK(slot < NU_ARRAY_SIZE(inst->programs), return NUX_FAILURE);
-    nu_status_t status = compile_program(nu_sv(vertex, vertex_len),
-                                         nu_sv(fragment, fragment_len),
-                                         &inst->programs[slot]);
+
+    nu_status_t status;
+    switch (type)
+    {
+        case NUX_GPU_PIPELINE_MAIN: {
+            status = compile_program(
+                nu_sv(shader_main_vert, NU_ARRAY_SIZE(shader_main_vert)),
+                nu_sv(shader_main_frag, NU_ARRAY_SIZE(shader_main_frag)),
+                &inst->programs[slot]);
+            GLuint index = glGetProgramResourceIndex(
+                inst->programs[slot], GL_UNIFORM_BLOCK, "Constants_std140");
+            glUniformBlockBinding(inst->programs[slot], index, 1);
+            index = glGetProgramResourceIndex(inst->programs[slot],
+                                              GL_SHADER_STORAGE_BLOCK,
+                                              "StructuredBuffer");
+            glShaderStorageBlockBinding(inst->programs[slot], index, 2);
+        }
+        break;
+        case NUX_GPU_PIPELINE_CANVAS: {
+            status = compile_program(
+                nu_sv(shader_canvas_vert, NU_ARRAY_SIZE(shader_canvas_vert)),
+                nu_sv(shader_canvas_frag, NU_ARRAY_SIZE(shader_canvas_frag)),
+                &inst->programs[slot]);
+            GLuint index = glGetProgramResourceIndex(
+                inst->programs[slot], GL_UNIFORM_BLOCK, "Constants_std140");
+            glUniformBlockBinding(inst->programs[slot], index, 1);
+        }
+        break;
+    }
     NU_CHECK(status, return NUX_FAILURE);
+
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -174,10 +197,10 @@ nux_os_create_buffer (void                 *userdata,
     switch (type)
     {
         case NUX_GPU_BUFFER_UNIFORM:
-            buffer->buffer_type = GL_SHADER_STORAGE_BUFFER;
+            buffer->buffer_type = GL_UNIFORM_BUFFER;
             break;
         case NUX_GPU_BUFFER_STORAGE:
-            buffer->buffer_type = GL_UNIFORM_BUFFER;
+            buffer->buffer_type = GL_SHADER_STORAGE_BUFFER;
             break;
     }
 
@@ -187,7 +210,6 @@ nux_os_create_buffer (void                 *userdata,
     }
     glBindBuffer(buffer->buffer_type, buffer->handle);
     glBufferData(buffer->buffer_type, size, NU_NULL, GL_DYNAMIC_DRAW);
-    glBindBufferBase(buffer->buffer_type, 0, buffer->handle);
     glBindBuffer(buffer->buffer_type, 0);
 
     return NUX_SUCCESS;
@@ -220,29 +242,45 @@ nux_os_submit_commands (void                    *userdata,
         const nux_gpu_command_t *cmd = commands + i;
         switch (cmd->type)
         {
-            case NUX_GPU_BIND_PIPELINE: {
-                glUseProgram(inst->programs[cmd->data.bind_pipeline.slot]);
+            case NUX_GPU_BEGIN_RENDERPASS: {
+                glUseProgram(inst->programs[cmd->begin_renderpass.pipeline]);
             }
             break;
-            case NUX_GPU_BIND_TEXTURE: {
-                glActiveTexture(GL_TEXTURE0 + cmd->data.bind_texture.binding);
-                glBindTexture(
-                    GL_TEXTURE_2D,
-                    inst->textures[cmd->data.bind_texture.slot].handle);
-                glUniform1i(cmd->data.bind_texture.binding,
-                            cmd->data.bind_texture.binding);
-            }
-            break;
-            case NUX_GPU_BIND_BUFFER: {
-                buffer_t *buffer = inst->buffers + cmd->data.bind_buffer.slot;
-                glBindBufferBase(buffer->buffer_type,
-                                 cmd->data.bind_buffer.binding,
-                                 buffer->handle);
-            }
-            break;
-            case NUX_GPU_DRAW: {
+            case NUX_GPU_DRAW_MAIN: {
+                buffer_t *buffer = inst->buffers + cmd->draw_main.uniform;
+                assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
+                glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+
+                glEnable(GL_DEPTH_TEST);
+                glEnable(GL_MULTISAMPLE);
+
+                buffer = inst->buffers + cmd->draw_main.storage;
+                assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
+                glBindBufferBase(buffer->buffer_type, 2, buffer->handle);
+
                 glBindVertexArray(renderer.empty_vao);
-                glDrawArrays(GL_TRIANGLES, 0, cmd->data.draw.count);
+                glDrawArrays(GL_TRIANGLES, 0, cmd->draw_main.vertex_count);
+                glBindVertexArray(0);
+
+                glDisable(GL_DEPTH_TEST);
+                glDisable(GL_MULTISAMPLE);
+            }
+            break;
+            case NUX_GPU_DRAW_CANVAS: {
+                buffer_t *buffer = inst->buffers + cmd->draw_canvas.uniform;
+                assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
+                glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D,
+                              inst->textures[cmd->draw_canvas.canvas].handle);
+                glUniform1i(1, 0);
+                glActiveTexture(GL_TEXTURE1);
+                glBindTexture(GL_TEXTURE_2D,
+                              inst->textures[cmd->draw_canvas.colormap].handle);
+                glUniform1i(2, 1);
+                glBindVertexArray(renderer.empty_vao);
+                glDrawArrays(GL_TRIANGLES, 0, 3);
                 glBindVertexArray(0);
             }
             break;
@@ -288,13 +326,11 @@ renderer_clear (nu_b2i_t viewport, nu_v2u_t window_size)
     glDisable(GL_SCISSOR_TEST);
 }
 void
-renderer_render_begin (nux_instance_t *inst,
-                       nu_b2i_t        viewport,
-                       nu_v2u_t        window_size)
+renderer_render_begin (runtime_instance_t *inst, nu_v2u_t window_size)
 {
     // Blit surface to screen
-    nu_v2i_t pos  = viewport.min;
-    nu_v2u_t size = nu_b2i_size(viewport);
+    nu_v2i_t pos  = inst->viewport.min;
+    nu_v2u_t size = nu_b2i_size(inst->viewport);
     pos.y
         = window_size.y - (pos.y + size.y); // Patch pos (bottom left in opengl)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -305,9 +341,7 @@ renderer_render_begin (nux_instance_t *inst,
     glViewport(pos.x, pos.y, size.x, size.y);
 }
 void
-renderer_render_end (nux_instance_t *inst,
-                     nu_b2i_t        viewport,
-                     nu_v2u_t        window_size)
+renderer_render_end (runtime_instance_t *inst, nu_v2u_t window_size)
 {
     glDisable(GL_FRAMEBUFFER_SRGB);
     glUseProgram(0);

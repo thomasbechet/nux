@@ -94,7 +94,7 @@ nux_instance_init (const nux_instance_config_t *config)
     // Allocate instance
     nux_instance_t *inst = nux_os_malloc(
         config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));
-    NUX_CHECK(inst, return NUX_NULL);
+    NUX_CHECK(inst, "Failed to allocate instance core memory", return NUX_NULL);
     nux_memset(inst, 0, sizeof(struct nux_instance));
     inst->userdata = config->userdata;
     inst->running  = NUX_TRUE;
@@ -104,7 +104,7 @@ nux_instance_init (const nux_instance_config_t *config)
     // Allocate memory
     void *p = nux_os_malloc(
         config->userdata, NUX_MEMORY_USAGE_STATE, NUX_MEMORY_SIZE);
-    NUX_CHECK(p, goto cleanup0);
+    NUX_CHECK(p, "Failed to allocate instance state memory", goto cleanup0);
     nux_memset(p, 0, NUX_MEMORY_SIZE);
     NUX_VEC_INIT(&inst->memory, p, NUX_MEMORY_SIZE);
 
@@ -112,13 +112,13 @@ nux_instance_init (const nux_instance_config_t *config)
     p = nux_os_malloc(config->userdata,
                       NUX_MEMORY_USAGE_STATE,
                       sizeof(*inst->objects.data) * config->max_object_count);
-    NUX_CHECK(p, goto cleanup0);
+    NUX_CHECK(p, "Failed to allocate objects pool", goto cleanup0);
     NUX_VEC_INIT(&inst->objects, p, config->max_object_count);
     p = nux_os_malloc(config->userdata,
                       NUX_MEMORY_USAGE_STATE,
                       sizeof(*inst->free_objects.data)
                           * config->max_object_count);
-    NUX_CHECK(p, goto cleanup0);
+    NUX_CHECK(p, "Failed to allocate objects pool freelist", goto cleanup0);
     NUX_VEC_INIT(&inst->free_objects, p, config->max_object_count);
     for (nux_u32_t i = 0; i < inst->objects.capa; ++i)
     {
@@ -129,7 +129,7 @@ nux_instance_init (const nux_instance_config_t *config)
     inst->canvas = nux_os_malloc(config->userdata,
                                  NUX_MEMORY_USAGE_CORE,
                                  NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
-    NUX_CHECK(inst->canvas, goto cleanup0);
+    NUX_CHECK(inst->canvas, "Failed to allocate canvas", goto cleanup0);
 
     // Initialize state
     nux_env_t *env = init_env(inst);
@@ -145,7 +145,7 @@ nux_instance_init (const nux_instance_config_t *config)
 
     // Initialize Lua VM
     inst->L = luaL_newstate();
-    NUX_CHECK(inst->L, goto cleanup0);
+    NUX_CHECK(inst->L, "Failed to initialize lua VM", goto cleanup0);
 
     // Set env variable
     lua_pushlightuserdata(inst->L, &inst->env);

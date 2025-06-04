@@ -33,17 +33,17 @@
 #define NUX_UNUSED5(a, b, c, d, e) (void)(a), NUX_UNUSED4(b, c, d, e)
 
 #ifdef NUX_DEBUG
-#define NUX_CHECK(check, action) \
-    NUX_ASSERT((check));         \
-    if (!(check))                \
-    {                            \
-        action;                  \
+#define NUX_CHECK(check, message, action) \
+    NUX_ASSERT((check));                  \
+    if (!(check))                         \
+    {                                     \
+        action;                           \
     }
 #else
-#define NUX_CHECK(check, action) \
-    if (!(check))                \
-    {                            \
-        action;                  \
+#define NUX_CHECK(check, message, action) \
+    if (!(check))                         \
+    {                                     \
+        action;                           \
     }
 #endif
 
@@ -323,9 +323,12 @@ typedef struct
 
 typedef struct
 {
-    nux_m4_t view;
-    nux_m4_t proj;
-    nux_m4_t model;
+    nux_m4_t  view;
+    nux_m4_t  proj;
+    nux_m4_t  model;
+    nux_v2u_t canvas_size;
+    nux_v2u_t screen_size;
+    nux_f32_t time;
 } nux_gpu_uniform_buffer_t;
 
 struct nux_instance
