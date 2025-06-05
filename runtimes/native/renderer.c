@@ -74,9 +74,9 @@ cleanup0:
 }
 
 nux_status_t
-nux_os_create_pipeline (void                   *userdata,
-                        nux_u32_t               slot,
-                        nux_gpu_pipeline_type_t type)
+nux_os_create_pipeline (void               *userdata,
+                        nux_u32_t           slot,
+                        nux_gpu_pass_type_t type)
 {
     runtime_instance_t *inst = userdata;
     NU_CHECK(slot < NU_ARRAY_SIZE(inst->programs), return NUX_FAILURE);
@@ -84,7 +84,7 @@ nux_os_create_pipeline (void                   *userdata,
     nu_status_t status;
     switch (type)
     {
-        case NUX_GPU_PIPELINE_MAIN: {
+        case NUX_GPU_PASS_MAIN: {
             status = compile_program(
                 nu_sv(shader_main_vert, NU_ARRAY_SIZE(shader_main_vert)),
                 nu_sv(shader_main_frag, NU_ARRAY_SIZE(shader_main_frag)),
@@ -98,7 +98,7 @@ nux_os_create_pipeline (void                   *userdata,
             glShaderStorageBlockBinding(inst->programs[slot], index, 2);
         }
         break;
-        case NUX_GPU_PIPELINE_CANVAS: {
+        case NUX_GPU_PASS_CANVAS: {
             status = compile_program(
                 nu_sv(shader_canvas_vert, NU_ARRAY_SIZE(shader_canvas_vert)),
                 nu_sv(shader_canvas_frag, NU_ARRAY_SIZE(shader_canvas_frag)),
@@ -232,59 +232,65 @@ nux_os_update_buffer (void       *userdata,
     return NUX_SUCCESS;
 }
 void
-nux_os_submit_commands (void                    *userdata,
-                        const nux_gpu_command_t *commands,
-                        nux_u32_t                count)
+nux_os_gpu_submit_pass (void                    *userdata,
+                        const nux_gpu_pass_t    *pass,
+                        const nux_gpu_command_t *cmds)
 {
     runtime_instance_t *inst = userdata;
-    for (nux_u32_t i = 0; i < count; ++i)
+    switch (pass->type)
     {
-        const nux_gpu_command_t *cmd = commands + i;
-        switch (cmd->type)
-        {
-            case NUX_GPU_BEGIN_RENDERPASS: {
-                glUseProgram(inst->programs[cmd->begin_renderpass.pipeline]);
-            }
-            break;
-            case NUX_GPU_DRAW_MAIN: {
-                buffer_t *buffer = inst->buffers + cmd->draw_main.uniform;
-                assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
-                glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+        case NUX_GPU_PASS_MAIN: {
+            glUseProgram(inst->programs[pass->pipeline]);
 
-                glEnable(GL_DEPTH_TEST);
-                glEnable(GL_MULTISAMPLE);
+            buffer_t *buffer = inst->buffers + pass->constants_buffer;
+            assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
+            glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+
+            glEnable(GL_DEPTH_TEST);
+            glEnable(GL_MULTISAMPLE);
+
+            for (nux_u32_t i = 0; i < pass->command_count; ++i)
+            {
+                const nux_gpu_command_t *cmd = cmds + i;
 
                 buffer = inst->buffers + cmd->draw_main.storage;
                 assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
                 glBindBufferBase(buffer->buffer_type, 2, buffer->handle);
 
                 glBindVertexArray(renderer.empty_vao);
-                glDrawArrays(GL_TRIANGLES, 0, cmd->draw_main.vertex_count);
+                glDrawArrays(GL_TRIANGLES, 0, cmd->main.vertex_count);
                 glBindVertexArray(0);
-
-                glDisable(GL_DEPTH_TEST);
-                glDisable(GL_MULTISAMPLE);
             }
-            break;
-            case NUX_GPU_DRAW_CANVAS: {
-                buffer_t *buffer = inst->buffers + cmd->draw_canvas.uniform;
-                assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
-                glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+
+            glDisable(GL_DEPTH_TEST);
+            glDisable(GL_MULTISAMPLE);
+        }
+        break;
+        case NUX_GPU_PASS_CANVAS: {
+            glUseProgram(inst->programs[pass->pipeline]);
+
+            buffer_t *buffer = inst->buffers + pass->constants_buffer;
+            assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
+            glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+
+            for (nux_u32_t i = 0; i < pass->command_count; ++i)
+            {
+                const nux_gpu_command_t *cmd = cmds + i;
 
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D,
-                              inst->textures[cmd->draw_canvas.canvas].handle);
+                              inst->textures[cmd->canvas.texture].handle);
                 glUniform1i(1, 0);
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D,
-                              inst->textures[cmd->draw_canvas.colormap].handle);
+                              inst->textures[cmd->canvas.colormap].handle);
                 glUniform1i(2, 1);
                 glBindVertexArray(renderer.empty_vao);
                 glDrawArrays(GL_TRIANGLES, 0, 3);
                 glBindVertexArray(0);
             }
-            break;
         }
+        break;
     }
 }
 

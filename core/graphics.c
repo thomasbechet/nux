@@ -17,11 +17,11 @@ nux_graphics_init (nux_instance_t *inst)
 {
     // Create pipelines
     NUX_CHECK(nux_os_create_pipeline(
-                  inst->userdata, PIPELINE_MAIN, NUX_GPU_PIPELINE_MAIN),
+                  inst->userdata, PIPELINE_MAIN, NUX_GPU_PASS_MAIN),
               "Failed to create main pipeline",
               return NUX_FAILURE);
     NUX_CHECK(nux_os_create_pipeline(
-                  inst->userdata, PIPELINE_CANVAS, NUX_GPU_PIPELINE_CANVAS),
+                  inst->userdata, PIPELINE_CANVAS, NUX_GPU_PASS_CANVAS),
               "Failed to create canvas pipeline",
               return NUX_FAILURE);
 
@@ -116,23 +116,37 @@ nux_graphics_render (nux_instance_t *inst)
                          sizeof(uniform_buffer),
                          &uniform_buffer);
 
+    // Render cube
+    {
+        nux_gpu_command_t cmds[] = { { .main.texture  = 0,
+                                       .main.colormap = 0,
+                                       .main.storage  = VERTEX_STORAGE_BUFFER,
+                                       .main.vertex_base  = 0,
+                                       .main.vertex_count = 36 } };
+        nux_gpu_pass_t    pass   = {
+                 .type                = NUX_GPU_PASS_MAIN,
+                 .pipeline            = PIPELINE_MAIN,
+                 .main.uniform_buffer = UNIFORM_BUFFER,
+                 .count               = NUX_ARRAY_SIZE(cmds),
+        };
+        nux_os_gpu_submit_pass(inst->userdata, &pass, cmds);
+    }
+
     // Blit canvas
-    nux_gpu_command_t cmds[4]         = { 0 };
-    cmds[2].type                      = NUX_GPU_BEGIN_RENDERPASS;
-    cmds[2].begin_renderpass.pipeline = PIPELINE_MAIN;
-    cmds[3].type                      = NUX_GPU_DRAW_MAIN;
-    cmds[3].draw_main.uniform         = UNIFORM_BUFFER;
-    cmds[3].draw_main.storage         = VERTEX_STORAGE_BUFFER;
-    cmds[3].draw_main.vertex_count    = 36;
-
-    cmds[0].type                      = NUX_GPU_BEGIN_RENDERPASS;
-    cmds[0].begin_renderpass.pipeline = PIPELINE_CANVAS;
-    cmds[1].type                      = NUX_GPU_DRAW_CANVAS;
-    cmds[1].draw_canvas.canvas        = TEXTURE_CANVAS;
-    cmds[1].draw_canvas.colormap      = TEXTURE_COLORMAP;
-    cmds[1].draw_canvas.uniform       = UNIFORM_BUFFER;
-
-    nux_os_submit_commands(inst->userdata, cmds, NUX_ARRAY_SIZE(cmds));
+    {
+        nux_gpu_command_t cmds[] = { {
+            .canvas.texture      = TEXTURE_CANVAS,
+            .canvas.colormap     = TEXTURE_COLORMAP,
+            .canvas.vertex_count = 3,
+        } };
+        nux_gpu_pass_t    pass   = {
+                 .type                  = NUX_GPU_PASS_CANVAS,
+                 .pipeline              = PIPELINE_CANVAS,
+                 .canvas.uniform_buffer = UNIFORM_BUFFER,
+                 .count                 = NUX_ARRAY_SIZE(cmds),
+        };
+        nux_os_gpu_submit_pass(inst->userdata, &pass, cmds);
+    }
 
     return NUX_SUCCESS;
 }
