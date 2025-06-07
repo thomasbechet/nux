@@ -149,10 +149,9 @@ typedef enum
 
 typedef enum
 {
-    NUX_TEXTURE_COLOR, // 8bits indexed color
-    NUX_TEXTURE_ALPHA, // 8bits alpha channel
-    NUX_TEXTURE_NORMAL,
-} nux_texture_type_t;
+    NUX_TEXTURE_FORMAT_RGBA,
+    NUX_TEXTURE_FORMAT_INDEX,
+} nux_texture_format_t;
 
 // Debug API
 void nux_trace(nux_env_t *env, const nux_c8_t *text);
@@ -202,33 +201,6 @@ void nux_rect(nux_env_t *env,
               nux_i32_t  y1,
               nux_u8_t   c);
 
-// 3D API
-void nux_cameye(nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_camcenter(nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_camup(nux_env_t *env, nux_f32_t x, nux_f32_t y, nux_f32_t z);
-void nux_camviewport(
-    nux_env_t *env, nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
-void nux_camfov(nux_env_t *env, nux_f32_t fov);
-void nux_mesh(nux_env_t       *env,
-              const nux_f32_t *positions,
-              const nux_f32_t *uvs,
-              nux_u32_t        count,
-              const nux_f32_t *m);
-void nux_mesh_wire(nux_env_t       *env,
-                   const nux_f32_t *positions,
-                   const nux_f32_t *uvs,
-                   nux_u32_t        count,
-                   const nux_f32_t *m);
-void nux_draw_cube(nux_env_t       *env,
-                   nux_f32_t        sx,
-                   nux_f32_t        sy,
-                   nux_f32_t        sz,
-                   const nux_f32_t *m);
-void nux_draw_plane(nux_env_t       *env,
-                    nux_f32_t        w,
-                    nux_f32_t        h,
-                    const nux_f32_t *m);
-
 // Draw State API
 
 void      nux_pal(nux_env_t *env, nux_u8_t index, nux_u8_t color);
@@ -256,10 +228,10 @@ void nux_tracefmt(nux_env_t *env, const nux_c8_t *fmt, ...);
 nux_u32_t nux_button(nux_env_t *env, nux_u32_t player);
 nux_f32_t nux_axis(nux_env_t *env, nux_u32_t player, nux_axis_t axis);
 
-nux_u32_t nux_new_texture(nux_env_t         *env,
-                          nux_texture_type_t type,
-                          nux_u32_t          w,
-                          nux_u32_t          h);
-void      nux_bind_texture(nux_env_t *env, nux_u32_t texture);
+nux_u32_t nux_new_texture(nux_env_t           *env,
+                          nux_texture_format_t format,
+                          nux_u32_t            w,
+                          nux_u32_t            h);
+nux_u32_t nux_new_framebuffer(nux_env_t *env, nux_u32_t w, nux_u32_t h);
 
 #endif

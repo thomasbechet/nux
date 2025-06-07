@@ -134,11 +134,6 @@ nux_instance_init (const nux_instance_config_t *config)
     // Initialize state
     nux_env_t *env = init_env(inst);
     nux_palr(env);
-    nux_camfov(env, 60);
-    nux_cameye(env, 0, 0, 0);
-    nux_camcenter(env, 0, 0, -1);
-    nux_camup(env, 0, 1, 0);
-    nux_camviewport(env, 0, 0, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
 
     // Initialize graphics
     nux_graphics_init(inst);

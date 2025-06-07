@@ -104,9 +104,9 @@ debug_camera (nux_env_t *env, nu_f32_t dt)
     nu_v3_t center = nu_v3_add(pos, nu_q4_mulv3(freecam.rot, NU_V3_FORWARD));
     nu_v3_t up     = nu_v3_normalize(nu_q4_mulv3(freecam.rot, NU_V3_UP));
 
-    nux_cameye(env, pos.x + bob * 0.1, pos.y + bob * 0.1, pos.z);
-    nux_camcenter(env, center.x, center.y, center.z);
-    nux_camup(env, up.x, up.y, up.z);
+    // nux_cameye(env, pos.x + bob * 0.1, pos.y + bob * 0.1, pos.z);
+    // nux_camcenter(env, center.x, center.y, center.z);
+    // nux_camup(env, up.x, up.y, up.z);
 }
 
 static void
@@ -152,30 +152,10 @@ loop_update (nux_env_t *env)
     t = clock();
 #endif
 
-    nu_m4_t   model;
-    nux_i32_t count = 10;
-    nux_dbgi32(env, "count", &count);
-    for (int i = 0; i < count; ++i)
-    {
-        model = nu_m4_mul(nu_m4_translate(nu_v3(1.2 * (i % 5), 0, (i / 5) * 2)),
-                          nu_m4_scale(NU_V3_ONES));
-        // draw_red(env, model.data, 1);
-    }
-    nux_camfov(env, 50);
-    for (int i = 1; i < 10; ++i)
-    {
-        model = nu_m4_translate(nu_v3(0, 1, i * 5));
-        nux_draw_cube(env, 2, 2, 0.1, model.data);
-    }
-    model = nu_m4_translate(nu_v3(-8, 0, 0));
-    // draw_krabe(env, model.data, 0);
-    model = nu_m4_translate(nu_v3(-3, 0, 0));
     // draw_krabe(env, model.data, 1);
+    // draw_lavalamp(env, model.data, 1);
     nux_f32_t y = 0.6;
     nux_dbgf32(env, "y", &y);
-    model = nu_m4_mul(nu_m4_translate(nu_v3(0, y, 0.5)),
-                      nu_m4_scale(nu_v3s(0.08)));
-    // draw_lavalamp(env, model.data, 1);
 
 #ifdef NUX_BENCHMARK
     static double sum   = 0;
@@ -209,11 +189,11 @@ loop_update (nux_env_t *env)
 
     nux_cursor(env, 0, 0);
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
-    // nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
-    // nux_printfmt(env, 7, "RES:%dx%d", NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
-    // nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
+    nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
+    nux_printfmt(env, 7, "RES:%dx%d", NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
+    nux_printfmt(env, 7, "TRI:%d", nux_tricount(env));
 
-    // nux_circ(env, 50, 50, 10, 7);
+    nux_circ(env, 50, 50, 10, 7);
 
     // nux_line(env,
     //          NUX_CANVAS_WIDTH / 2,
@@ -228,5 +208,5 @@ loop_update (nux_env_t *env)
     //          NUX_CANVAS_HEIGHT / 2,
     //          7);
 
-    blit_colormap(env);
+    // blit_colormap(env);
 }

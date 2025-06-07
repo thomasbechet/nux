@@ -4,17 +4,17 @@
 #include "nux.h"
 
 #ifdef NUX_STDLIB
-#include <stdint.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
-#include <stdarg.h>
 #include <math.h>
+#include <stdarg.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #endif
 
+#include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <lauxlib.h>
 
 ////////////////////////////
 ///        MACROS        ///
@@ -280,10 +280,25 @@ struct nux_env
 
 typedef struct
 {
-    nux_u32_t width;
-    nux_u32_t height;
-    nux_u8_t *data;
+    void     *data;
+    nux_u32_t size;
+    nux_u32_t first_object;
+} nux_section_t;
+
+typedef struct
+{
+    nux_u32_t            slot;
+    nux_texture_format_t format;
+    nux_u32_t            width;
+    nux_u32_t            height;
+    nux_u8_t            *data;
 } nux_texture_t;
+
+typedef struct
+{
+    nux_u32_t slot;
+    nux_u32_t texture;
+} nux_rendertarget_t;
 
 typedef struct
 {
@@ -292,19 +307,13 @@ typedef struct
     nux_u32_t  count;
 } nux_mesh_t;
 
-typedef struct
-{
-    void     *data;
-    nux_u32_t size;
-    nux_u32_t first_object;
-} nux_section_t;
-
 typedef enum
 {
     NUX_OBJECT_NULL = 0,
     NUX_OBJECT_LUA,
     NUX_OBJECT_SECTION,
     NUX_OBJECT_TEXTURE,
+    NUX_OBJECT_RENDERTARGET,
     NUX_OBJECT_MESH,
 } nux_object_type_t;
 
@@ -329,7 +338,13 @@ typedef struct
     nux_v2u_t canvas_size;
     nux_v2u_t screen_size;
     nux_f32_t time;
-} nux_gpu_uniform_buffer_t;
+    nux_u32_t _pad[3];
+} nux_gpu_constants_buffer_t;
+
+typedef struct
+{
+    nux_u32_t texture_type;
+} nux_gpu_draw_constants_t;
 
 struct nux_instance
 {

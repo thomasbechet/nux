@@ -62,7 +62,7 @@ cleanup0:
     return NU_FAILURE;
 }
 static void
-apply_viewport_mode (runtime_instance_t *instance)
+apply_viewport_mode (runtime_instance_t *instance, nu_v2u_t window_size)
 {
     nu_b2i_t viewport = nu_b2i_xywh(instance->viewport_ui.x,
                                     instance->viewport_ui.y,
@@ -130,6 +130,9 @@ apply_viewport_mode (runtime_instance_t *instance)
     vpos         = nu_v2_divs(vpos, 2);
     vpos         = nu_v2_add(vpos, global_pos);
 
+    // Patch pos (bottom left in opengl)
+    vpos.y = window_size.y - (vpos.y + vsize.y);
+
     instance->viewport = nu_b2i_xywh(vpos.x, vpos.y, vsize.x, vsize.y);
 }
 
@@ -169,16 +172,10 @@ runtime_run (const runtime_config_t *config)
             if (instance->active && !instance->pause)
             {
                 // Compute viewport
-                apply_viewport_mode(instance);
-
-                // Begin render
-                renderer_render_begin(instance, window_size);
+                apply_viewport_mode(instance, window_size);
 
                 // Tick
                 nux_instance_tick(instance->instance);
-
-                // End render
-                renderer_render_end(instance, window_size);
             }
         }
 

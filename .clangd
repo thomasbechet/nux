@@ -1,5 +1,6 @@
 CompileFlags:
   Add: 
+    - -xc
     # Includes for examples
     - "-I../../../runtimes/native/data/templates/c/src/"
     - "-I../../../externals/"

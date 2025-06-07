@@ -18,11 +18,6 @@ float4 sampleColor(float2 uv)
     return colormap.Sample(sampler1, float2(float(idx) / 255.0, 0));
 }
 
-float4 mix(float4 a, float4 b, float c)
-{
-    return b * c + a * (1 - c);
-}
-
 // https://www.shadertoy.com/view/4s3fDB
 float4 bilinearFiltering(float2 uv, float2 res)
 {

@@ -23,9 +23,10 @@ typedef struct
 
 typedef enum
 {
-    NUX_GPU_PROGRAM_MAX = 128,
-    NUX_GPU_TEXTURE_MAX = 128,
-    NUX_GPU_BUFFER_MAX  = 8,
+    NUX_GPU_PIPELINE_MAX    = 128,
+    NUX_GPU_FRAMEBUFFER_MAX = 32,
+    NUX_GPU_TEXTURE_MAX     = 128,
+    NUX_GPU_BUFFER_MAX      = 8,
 } nux_gpu_constants_t;
 
 typedef enum
@@ -50,19 +51,13 @@ typedef struct
 
 typedef enum
 {
-    NUX_GPU_TEXTURE_FORMAT_RGBA,
-    NUX_GPU_TEXTURE_FORMAT_INDEX,
-} nux_gpu_texture_format_t;
-
-typedef enum
-{
     NUX_GPU_TEXTURE_FILTER_LINEAR,
     NUX_GPU_TEXTURE_FILTER_NEAREST
 } nux_gpu_texture_filter_t;
 
 typedef struct
 {
-    nux_gpu_texture_format_t format;
+    nux_texture_format_t     format;
     nux_gpu_texture_filter_t filter;
     nux_u32_t                width;
     nux_u32_t                height;
@@ -85,7 +80,7 @@ typedef struct
     nux_gpu_pass_type_t type;
     nux_u32_t           pipeline;
     nux_u32_t           count;
-    nux_u32_t           target;
+    nux_u32_t           framebuffer;
     union
     {
         struct
@@ -140,6 +135,9 @@ NUX_API void nux_os_log(void *userdata, const nux_c8_t *log, nux_u32_t n);
 NUX_API nux_status_t nux_os_create_pipeline(void               *userdata,
                                             nux_u32_t           slot,
                                             nux_gpu_pass_type_t type);
+NUX_API nux_status_t nux_os_create_framebuffer(void     *userdata,
+                                               nux_u32_t slot,
+                                               nux_u32_t texture);
 NUX_API nux_status_t nux_os_create_texture(void     *userdata,
                                            nux_u32_t slot,
                                            const nux_gpu_texture_info_t *info);

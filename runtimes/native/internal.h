@@ -45,6 +45,16 @@ typedef struct
 
 typedef struct
 {
+    GLuint handle;
+} pipeline_t;
+
+typedef struct
+{
+    GLuint handle;
+} framebuffer_t;
+
+typedef struct
+{
     GLuint                 handle;
     nux_gpu_texture_info_t info;
     GLuint                 internal_format;
@@ -70,7 +80,8 @@ typedef struct
     nu_b2i_t              viewport;
     debug_value_t         debug_values[256];
     nu_size_t             debug_value_count;
-    GLuint                programs[NUX_GPU_PROGRAM_MAX];
+    pipeline_t            pipelines[NUX_GPU_PIPELINE_MAX];
+    framebuffer_t         framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
     texture_t             textures[NUX_GPU_TEXTURE_MAX];
     buffer_t              buffers[NUX_GPU_BUFFER_MAX];
 } runtime_instance_t;
@@ -99,7 +110,6 @@ nu_status_t renderer_init(void);
 void        renderer_free(void);
 void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
 void renderer_render_begin(runtime_instance_t *inst, nu_v2u_t window_size);
-void renderer_render_end(runtime_instance_t *inst, nu_v2u_t window_size);
 
 nu_status_t        window_init(void);
 void               window_free(void);
