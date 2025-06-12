@@ -160,7 +160,6 @@ void nux_dbgf32(nux_env_t *env, const nux_c8_t *name, nux_f32_t *p);
 
 // System API
 nux_u32_t nux_stat(nux_env_t *env, nux_stat_t info);
-nux_u32_t nux_tricount(nux_env_t *env);
 nux_f32_t nux_time(nux_env_t *env);
 nux_f32_t nux_dt(nux_env_t *env);
 nux_u32_t nux_frame(nux_env_t *env);
@@ -232,6 +231,13 @@ nux_u32_t nux_new_texture(nux_env_t           *env,
                           nux_texture_format_t format,
                           nux_u32_t            w,
                           nux_u32_t            h);
-nux_u32_t nux_new_framebuffer(nux_env_t *env, nux_u32_t w, nux_u32_t h);
+nux_u32_t nux_new_render_target(nux_env_t *env, nux_u32_t w, nux_u32_t h);
+
+void nux_set_render_target(nux_env_t *env, nux_u32_t id);
+void nux_blit(nux_env_t *env, nux_u32_t id);
+// void nux_draw_cube(nux_env_t *env);
+
+nux_u32_t nux_new_arena(nux_env_t *env, nux_u32_t capa);
+void      nux_reset_arena(nux_env_t *env);
 
 #endif

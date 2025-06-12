@@ -1,0 +1,186 @@
+#include "internal.h"
+
+nux_u32_t
+nux_new_scope (nux_env_t *env, nux_u32_t capa)
+{
+    nux_u32_t    id;
+    nux_scope_t *scope = nux_add_object(env, NUX_OBJECT_SCOPE, &id);
+    NUX_CHECK(scope, "Out of objects", return NUX_NULL);
+
+    scope->base = nux_malloc(env, capa);
+    NUX_CHECK(scope->base, "Could not allocate scope memory", goto cleanup0);
+
+    scope->capa        = capa;
+    scope->size        = 0;
+    scope->last_object = NUX_NULL;
+
+    return id;
+
+cleanup0:
+    nux_remove_object(env, id);
+    return NUX_NULL;
+}
+static void
+rewind_scope (nux_env_t *env, nux_scope_t *scope, nux_u32_t object)
+{
+    // Cleanup all objects
+    nux_u32_t next = scope->last_object;
+    while (next != object)
+    {
+        nux_u32_t     cleanup = next;
+        nux_object_t *obj     = &env->inst->objects.data[cleanup];
+        switch (obj->type)
+        {
+            case NUX_OBJECT_NULL:
+                break;
+            case NUX_OBJECT_SCOPE:
+                break;
+            case NUX_OBJECT_MEMORY:
+                scope->size -= obj->data.memory.size;
+                break;
+            case NUX_OBJECT_LUA:
+                break;
+            case NUX_OBJECT_TEXTURE: {
+                nux_texture_t *tex = &obj->data.texture;
+                if (tex->slot)
+                {
+                    *nux_u32_vec_push(&env->inst->free_texture_slots)
+                        = tex->slot;
+                }
+            }
+            break;
+            case NUX_OBJECT_RENDER_TARGET: {
+                nux_render_target_t *rt = &obj->data.render_target;
+                if (rt->slot)
+                {
+                    *nux_u32_vec_push(&env->inst->free_framebuffer_slots)
+                        = rt->slot;
+                }
+                if (rt->texture)
+                {
+                    *nux_u32_vec_push(&env->inst->free_framebuffer_slots)
+                        = rt->slot;
+                }
+            }
+            break;
+            case NUX_OBJECT_MESH:
+                break;
+        }
+        next = obj->prev;
+        nux_object_pool_remove(&env->inst->objects, cleanup);
+    }
+
+    // Reset memory
+    scope->last_object = object;
+}
+void
+nux_rewind_scope (nux_env_t *env, nux_u32_t id)
+{
+    nux_scope_t *scope = nux_check_object(env, NUX_OBJECT_SCOPE, id);
+    NUX_CHECK(scope, "Invalid scope id", return);
+    rewind_scope(env, scope, NUX_NULL); // rewind all objects of scope
+}
+nux_u32_t
+nux_frame_begin (nux_env_t *env)
+{
+    nux_scope_t *scope = nux_check_object(env, NUX_OBJECT_SCOPE, env->scope);
+    return scope->last_object;
+}
+void
+nux_frame_rewind (nux_env_t *env, nux_u32_t id)
+{
+    nux_scope_t *scope = nux_check_object(env, NUX_OBJECT_SCOPE, env->scope);
+    rewind_scope(env, scope, id);
+}
+
+void *
+nux_malloc (nux_env_t *env, nux_u32_t size)
+{
+    nux_scope_t *scope = nux_check_object(env, NUX_OBJECT_SCOPE, env->scope);
+    NUX_CHECK(scope->size + size <= NUX_MEMORY_SIZE,
+              "Out of memory",
+              return NUX_NULL);
+    nux_memory_t *memory = nux_add_object(env, NUX_OBJECT_MEMORY, NUX_NULL);
+    NUX_CHECK(memory, "Failed to create memory object", return NUX_NULL);
+    memory->size = size;
+    memory->data = (nux_u8_t *)scope->base + scope->size;
+    scope->size += size;
+    return memory->data;
+}
+void *
+nux_add_object (nux_env_t *env, nux_object_type_t type, nux_u32_t *id)
+{
+    nux_u32_t     object_id;
+    nux_object_t *obj = nux_object_pool_add(&env->inst->objects, &object_id);
+    NUX_CHECK(obj, "Failed to allocate object", return NUX_NULL);
+    obj->type          = type;
+    obj->scope         = env->scope;
+    nux_scope_t *scope = nux_check_object(env, NUX_OBJECT_SCOPE, env->scope);
+    obj->prev          = scope->last_object;
+    scope->last_object = object_id;
+    if (id)
+    {
+        *id = object_id;
+    }
+    nux_memset(&obj->data, 0, sizeof(obj->data));
+    return &obj->data;
+}
+nux_status_t
+nux_remove_object (nux_env_t *env, nux_u32_t id)
+{
+    if (!id || id <= env->inst->objects.size
+        || env->inst->objects.data[id].type == NUX_OBJECT_NULL)
+    {
+        return NUX_FAILURE;
+    }
+    env->inst->objects.data[id].type = NUX_OBJECT_NULL;
+    nux_object_pool_remove(&env->inst->objects, id);
+    return NUX_SUCCESS;
+}
+void *
+nux_check_object (nux_env_t *env, nux_object_type_t type, nux_u32_t id)
+{
+    if (!id || id <= env->inst->objects.size
+        || env->inst->objects.data[id].type != type)
+    {
+        return NUX_NULL;
+    }
+    return &env->inst->objects.data[id].data;
+}
+
+void
+nux_dump_scope (nux_env_t *env)
+{
+    nux_scope_t *scope = nux_check_object(env, NUX_OBJECT_SCOPE, env->scope);
+    nux_u32_t    next  = scope->last_object;
+    nux_u32_t    i     = 0;
+    while (next)
+    {
+        nux_object_t *obj = &env->inst->objects.data[next];
+        switch (obj->type)
+        {
+            case NUX_OBJECT_NULL:
+                printf("[%d] NULL", i);
+                break;
+            case NUX_OBJECT_SCOPE:
+                printf("[%d] SCOPE", i);
+                break;
+            case NUX_OBJECT_MEMORY:
+                printf("[%d] MEMORY", i);
+                break;
+            case NUX_OBJECT_LUA:
+                printf("[%d] LUA", i);
+                break;
+            case NUX_OBJECT_TEXTURE:
+                printf("[%d] TEXTURE", i);
+                break;
+            case NUX_OBJECT_RENDER_TARGET:
+                printf("[%d] RENDER TARGET", i);
+                break;
+            case NUX_OBJECT_MESH:
+                printf("[%d] MESH", i);
+                break;
+        }
+        next = obj->prev;
+    }
+}

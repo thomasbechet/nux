@@ -37,10 +37,7 @@ typedef enum
 
 typedef enum
 {
-    NUX_MEMORY_USAGE_CORE,
     NUX_MEMORY_USAGE_STATE,
-    NUX_MEMORY_USAGE_GPU_BUFFER,
-    NUX_MEMORY_USAGE_GPU_COMMAND,
 } nux_memory_usage_t;
 
 typedef struct

@@ -1,11 +1,11 @@
 local inspect = require("inspect")
-local module = {}
 
-function module.hello()
-    print("Hello")
-    print(nux.frame())
-end
+local gfx = nux.graphics
 
-module.hello()
--- print(inspect(nux))
-return module
+local a = nux.newArena()
+local gui = gfx.newRenderTarget(a, 360, 200)
+
+gfx.setRenderTarget(gui)
+
+gfx.setRenderTarget(0) -- default render target
+gfx.blit(gui:texture())

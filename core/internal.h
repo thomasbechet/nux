@@ -32,18 +32,23 @@
 #define NUX_UNUSED4(a, b, c, d)    (void)(a), NUX_UNUSED3(b, c, d)
 #define NUX_UNUSED5(a, b, c, d, e) (void)(a), NUX_UNUSED4(b, c, d, e)
 
+#define NUX_CHECK(check, action) \
+    if (!(check))                \
+    {                            \
+        action;                  \
+    }
 #ifdef NUX_DEBUG
-#define NUX_CHECK(check, message, action) \
-    NUX_ASSERT((check));                  \
-    if (!(check))                         \
-    {                                     \
-        action;                           \
+#define NUX_CHECKM(check, message, action) \
+    NUX_ASSERT((check));                   \
+    if (!(check))                          \
+    {                                      \
+        action;                            \
     }
 #else
-#define NUX_CHECK(check, message, action) \
-    if (!(check))                         \
-    {                                     \
-        action;                           \
+#define NUX_CHECKM(check, message, action) \
+    if (!(check))                          \
+    {                                      \
+        action;                            \
     }
 #endif
 
@@ -165,47 +170,90 @@
     } nux_##name##_t;             \
     nux_##name##_t nux_##name(type min, type max);
 
-#define NUX_VEC(type)   \
-    struct              \
-    {                   \
-        type     *data; \
-        nux_u32_t capa; \
-        nux_u32_t size; \
+#define NUX_VEC_DEFINE(name, T)                                             \
+    typedef struct                                                          \
+    {                                                                       \
+        nux_u32_t size;                                                     \
+        nux_u32_t capa;                                                     \
+        T        *data;                                                     \
+    } name##_t;                                                             \
+    nux_status_t name##_alloc(nux_env_t *env, nux_u32_t capa, name##_t *v); \
+    T           *name##_push(name##_t *v);                                  \
+    nux_b32_t    name##_pushv(name##_t *v, T val);                          \
+    T           *name##_pop(name##_t *v);                                   \
+    void         name##_clear(name##_t *v);                                 \
+    T           *name##_get(name##_t *v, nux_u32_t i);                      \
+    void         name##_fill_reverse_indices(name##_t *v);
+#define NUX_VEC_IMPL(name, T)                                              \
+    nux_status_t name##_alloc(nux_env_t *env, nux_u32_t capa, name##_t *v) \
+    {                                                                      \
+        void *p = nux_alloc(env, sizeof(*(v)->data) * capa);               \
+        NUX_ASSERT(capa);                                                  \
+        NUX_CHECK(p, return NUX_FAILURE);                                  \
+        (v)->capa = capa;                                                  \
+        (v)->size = 0;                                                     \
+        (v)->data = p;                                                     \
+        return NUX_SUCCESS;                                                \
+    }                                                                      \
+    T *name##_push(name##_t *v)                                            \
+    {                                                                      \
+        if ((v)->size >= (v)->capa)                                        \
+        {                                                                  \
+            return NUX_NULL;                                               \
+        }                                                                  \
+        T *ret = (v)->data + (v)->size;                                    \
+        ++(v)->size;                                                       \
+        return ret;                                                        \
+    }                                                                      \
+    nux_b32_t name##_pushv(name##_t *v, T val)                             \
+    {                                                                      \
+        T *a = name##_push(v);                                             \
+        if (a)                                                             \
+        {                                                                  \
+            *a = val;                                                      \
+            return NUX_TRUE;                                               \
+        }                                                                  \
+        return NUX_FALSE;                                                  \
+    }                                                                      \
+    T *name##_pop(name##_t *v)                                             \
+    {                                                                      \
+        return ((v)->size) ? (v)->data + (v)->size++ : NUX_NULL;           \
+    }                                                                      \
+    void name##_clear(name##_t *v)                                         \
+    {                                                                      \
+        (v)->size = 0;                                                     \
+    }                                                                      \
+    T *name##_get(name##_t *v, nux_u32_t i)                                \
+    {                                                                      \
+        return i < (v)->size ? (v)->data + i : NUX_NULL;                   \
     }
-#define NUX_VEC_INIT(v, ptr, cap) \
-    {                             \
-        (v)->data = (ptr);        \
-        (v)->capa = (cap);        \
-        (v)->size = 0;            \
-    }
-#define NUX_VEC_PUSH(v) \
-    ((v)->size >= (v)->capa ? NUX_NULL : &(v)->data[(v)->size++])
-#define NUX_VEC_PUSHN(v, n) \
-    ((v)->size + n >= (v)->capa ? NUX_NULL : &(v)->data[(v)->size += n])
-#define NUX_VEC_CLEAR(v) (v)->size = 0
-#define NUX_VEC_POP(v)   (v)->size ? &(v)->data[(v)->size--] : NUX_NULL
-#define NUX_VEC_GET(v, index) \
-    ((index) >= (v)->size ? NUX_NULL : &(v)->data[index])
 
-// Vector data structure should be enought to cover all engine cases.
-// Try not to create too much abstraction (i.e. pools)
+#define NUX_NEW_STRUCT(env, type, struct, id) \
+    (struct *)nux_add_object_struct((env), type, sizeof(struct), (id))
 
 ////////////////////////////
 ///        TYPES         ///
 ////////////////////////////
 
-NUX_V2_DEFINE(v2i, nux_i32_t);
-NUX_V2_DEFINE(v2u, nux_u32_t);
-NUX_V2_DEFINE(v2, nux_f32_t);
-NUX_V3_DEFINE(v3i, nux_i32_t);
-NUX_V3_DEFINE(v3u, nux_u32_t);
-NUX_V3_DEFINE(v3, nux_f32_t);
-NUX_V4_DEFINE(v4i, nux_i32_t);
-NUX_V4_DEFINE(v4u, nux_u32_t);
-NUX_V4_DEFINE(v4, nux_f32_t);
+NUX_V2_DEFINE(v2i, nux_i32_t)
+NUX_V2_DEFINE(v2u, nux_u32_t)
+NUX_V2_DEFINE(v2, nux_f32_t)
+NUX_V3_DEFINE(v3i, nux_i32_t)
+NUX_V3_DEFINE(v3u, nux_u32_t)
+NUX_V3_DEFINE(v3, nux_f32_t)
+NUX_V4_DEFINE(v4i, nux_i32_t)
+NUX_V4_DEFINE(v4u, nux_u32_t)
+NUX_V4_DEFINE(v4, nux_f32_t)
 
-NUX_B3_DEFINE(b3, nux_v3_t);
-NUX_B3_DEFINE(b3i, nux_v3i_t);
+NUX_B3_DEFINE(b3, nux_v3_t)
+NUX_B3_DEFINE(b3i, nux_v3i_t)
+
+typedef struct
+{
+    nux_u32_t arena;
+    nux_u32_t size;
+    nux_u32_t object;
+} nux_frame_t;
 
 typedef struct
 {
@@ -274,16 +322,9 @@ struct nux_env
     nux_error_t error;
     nux_c8_t    error_message[256];
 
-    // Stats
-    nux_u32_t tricount;
+    // Arena
+    nux_u32_t arena;
 };
-
-typedef struct
-{
-    void     *data;
-    nux_u32_t size;
-    nux_u32_t first_object;
-} nux_section_t;
 
 typedef struct
 {
@@ -296,9 +337,9 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t slot;
-    nux_u32_t texture;
-} nux_rendertarget_t;
+    nux_u32_t texture; // owned object
+    nux_u32_t slot;    // framebuffer slot
+} nux_render_target_t;
 
 typedef struct
 {
@@ -307,28 +348,34 @@ typedef struct
     nux_u32_t  count;
 } nux_mesh_t;
 
+typedef struct
+{
+    void     *data;
+    nux_u32_t capa;
+    nux_u32_t size;
+    nux_u32_t last_object;
+} nux_arena_t;
+
 typedef enum
 {
     NUX_OBJECT_NULL = 0,
+    NUX_OBJECT_ARENA,
     NUX_OBJECT_LUA,
-    NUX_OBJECT_SECTION,
     NUX_OBJECT_TEXTURE,
-    NUX_OBJECT_RENDERTARGET,
+    NUX_OBJECT_RENDER_TARGET,
     NUX_OBJECT_MESH,
 } nux_object_type_t;
 
 typedef struct
 {
-    nux_u32_t         next;
     nux_u32_t         prev;
+    nux_u32_t         arena;
     nux_object_type_t type;
-    union
-    {
-        nux_section_t section;
-        nux_texture_t texture;
-        nux_mesh_t    mesh;
-    } data;
+    void             *data;
 } nux_object_t;
+
+NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
+NUX_VEC_DEFINE(nux_object_vec, nux_object_t)
 
 typedef struct
 {
@@ -345,6 +392,22 @@ typedef struct
 {
     nux_u32_t texture_type;
 } nux_gpu_draw_constants_t;
+
+typedef struct
+{
+    nux_gpu_pass_type_t type;
+    nux_u32_t           render_target;
+    nux_u32_t           command_first;
+    nux_u32_t           commant_count;
+} nux_render_pass_t;
+
+typedef struct
+{
+
+} nux_render_command_t;
+
+NUX_VEC_DEFINE(nux_render_pass_vec, nux_render_pass_t)
+NUX_VEC_DEFINE(nux_render_command_vec, nux_render_command_t)
 
 struct nux_instance
 {
@@ -373,9 +436,12 @@ struct nux_instance
 
     nux_u32_t test_cube;
 
-    NUX_VEC(nux_u8_t) memory;
-    NUX_VEC(nux_object_t) objects;
-    NUX_VEC(nux_u32_t) free_objects;
+    nux_arena_t      arena;
+    nux_object_vec_t objects;
+    nux_u32_vec_t    objects_freelist;
+
+    nux_u32_vec_t free_texture_slots;
+    nux_u32_vec_t free_framebuffer_slots;
 
     lua_State *L;
 
@@ -387,6 +453,10 @@ struct nux_instance
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
+
+// ds.c
+
+void nux_u32_vec_fill_reverse_indices(nux_u32_vec_t *v);
 
 // math.c
 
@@ -424,6 +494,23 @@ void     *nux_memset(void *dst, nux_u32_t c, nux_u32_t n);
 void      nux_memcpy(void *dst, const void *src, nux_u32_t n);
 void      nux_memswp(void *a, void *b, nux_u32_t n);
 void     *nux_memalign(void *ptr, nux_u32_t align);
+
+// arena.c
+
+nux_frame_t nux_begin_frame(nux_env_t *env);
+void        nux_reset_frame(nux_env_t *env, nux_frame_t frame);
+
+nux_u32_t    nux_add_object(nux_env_t *env, nux_object_type_t type, void *data);
+void        *nux_add_object_struct(nux_env_t        *env,
+                                   nux_object_type_t type,
+                                   nux_u32_t         ssize,
+                                   nux_u32_t        *id);
+nux_status_t nux_delete_object(nux_env_t *env, nux_u32_t id);
+void *nux_get_object(nux_env_t *env, nux_object_type_t type, nux_u32_t id);
+void  nux_arena_cleanup(nux_env_t *env, void *data);
+
+void *nux_alloc(nux_env_t *env, nux_u32_t size);
+void *nux_realloc(nux_env_t *env, void *p, nux_u32_t osize, nux_u32_t nsize);
 
 // vector.c
 
@@ -494,19 +581,8 @@ nux_u32_t nux_generate_cube(nux_env_t *env,
 
 // instance.c
 
-/**
- * Allocate memory in the current section
- * @param size requested memory size
- * @return pointer to memory
- */
-void *nux_malloc(nux_env_t *env, nux_u32_t size);
-void  nux_set_error(nux_env_t *env, nux_error_t error);
+void nux_set_error(nux_env_t *env, nux_error_t error);
 
-void *nux_add_object(nux_env_t *env, nux_object_type_t type, nux_u32_t *id);
-nux_status_t nux_remove_object(nux_env_t *env, nux_u32_t id);
-void *nux_check_object(nux_env_t *env, nux_u32_t id, nux_object_type_t type);
-
-nux_status_t    nux_register_lua(nux_instance_t *inst);
-const nux_c8_t *nux_error_message(nux_error_t error);
+nux_status_t nux_register_lua(nux_instance_t *inst);
 
 #endif

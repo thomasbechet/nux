@@ -8,81 +8,15 @@ init_env (nux_instance_t *inst)
     inst->env.inst  = inst;
     inst->env.error = NUX_ERROR_NONE;
     nux_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
-    inst->env.tricount = 0;
+    inst->env.arena = NUX_NULL;
     return &inst->env;
 }
 
-void *
-nux_malloc (nux_env_t *env, nux_u32_t size)
-{
-    return NUX_VEC_PUSHN(&env->inst->memory, size);
-}
 void
 nux_set_error (nux_env_t *env, nux_error_t error)
 {
     env->error = error;
-    nux_snprintf(env->error_message,
-                 sizeof(env->error_message),
-                 "%s",
-                 nux_error_message(error));
-}
-const nux_c8_t *
-nux_error_message (nux_error_t error)
-{
-    switch (error)
-    {
-        case NUX_ERROR_NONE:
-        case NUX_ERROR_OUT_OF_MEMORY:
-        case NUX_ERROR_INVALID_TEXTURE_SIZE:
-        case NUX_ERROR_WASM_RUNTIME:
-        case NUX_ERROR_CART_EOF:
-        case NUX_ERROR_CART_MOUNT:
-            return "error";
-    }
-    return NUX_NULL;
-}
-void *
-nux_add_object (nux_env_t *env, nux_object_type_t type, nux_u32_t *id)
-{
-    nux_u32_t  index;
-    nux_u32_t *free = NUX_VEC_POP(&env->inst->free_objects);
-    if (free)
-    {
-        index = *free;
-    }
-    else
-    {
-        index = env->inst->objects.size;
-        if (NUX_VEC_PUSH(&env->inst->objects) == NUX_NULL)
-        {
-            return NUX_NULL;
-        }
-    }
-    env->inst->objects.data[index].type = type;
-    *id                                 = index;
-    return &env->inst->objects.data[index].data;
-}
-nux_status_t
-nux_remove_object (nux_env_t *env, nux_u32_t id)
-{
-    if (id <= env->inst->objects.size
-        || env->inst->objects.data[id].type == NUX_OBJECT_NULL)
-    {
-        return NUX_FAILURE;
-    }
-    env->inst->objects.data[id].type        = NUX_OBJECT_NULL;
-    *NUX_VEC_PUSH(&env->inst->free_objects) = id;
-    return NUX_SUCCESS;
-}
-void *
-nux_check_object (nux_env_t *env, nux_u32_t id, nux_object_type_t type)
-{
-    if (id <= env->inst->objects.size
-        || env->inst->objects.data[id].type != type)
-    {
-        return NUX_NULL;
-    }
-    return &env->inst->objects.data[id].data;
+    nux_snprintf(env->error_message, sizeof(env->error_message), "%s", "TODO");
 }
 
 nux_instance_t *
@@ -93,46 +27,48 @@ nux_instance_init (const nux_instance_config_t *config)
 
     // Allocate instance
     nux_instance_t *inst = nux_os_malloc(
-        config->userdata, NUX_MEMORY_USAGE_CORE, sizeof(struct nux_instance));
-    NUX_CHECK(inst, "Failed to allocate instance core memory", return NUX_NULL);
-    nux_memset(inst, 0, sizeof(struct nux_instance));
+        config->userdata, NUX_MEMORY_USAGE_STATE, sizeof(struct nux_instance));
+    NUX_CHECKM(inst, "Failed to allocate instance", return NUX_NULL);
+    nux_memset(inst, 0, sizeof(*inst));
     inst->userdata = config->userdata;
     inst->running  = NUX_TRUE;
     inst->init     = config->init;
     inst->update   = config->update;
 
     // Allocate memory
-    void *p = nux_os_malloc(
-        config->userdata, NUX_MEMORY_USAGE_STATE, NUX_MEMORY_SIZE);
-    NUX_CHECK(p, "Failed to allocate instance state memory", goto cleanup0);
-    nux_memset(p, 0, NUX_MEMORY_SIZE);
-    NUX_VEC_INIT(&inst->memory, p, NUX_MEMORY_SIZE);
+    inst->arena.capa = NUX_MEMORY_SIZE;
+    inst->arena.size = 0;
+    inst->arena.data = nux_os_malloc(
+        config->userdata, NUX_MEMORY_USAGE_STATE, inst->arena.capa);
+    NUX_CHECKM(inst->arena.data, "Failed to allocate memory", return NUX_NULL);
+    nux_memset(inst->arena.data, 0, inst->arena.capa);
 
-    // Allocate objects pool
-    p = nux_os_malloc(config->userdata,
-                      NUX_MEMORY_USAGE_STATE,
-                      sizeof(*inst->objects.data) * config->max_object_count);
-    NUX_CHECK(p, "Failed to allocate objects pool", goto cleanup0);
-    NUX_VEC_INIT(&inst->objects, p, config->max_object_count);
-    p = nux_os_malloc(config->userdata,
-                      NUX_MEMORY_USAGE_STATE,
-                      sizeof(*inst->free_objects.data)
-                          * config->max_object_count);
-    NUX_CHECK(p, "Failed to allocate objects pool freelist", goto cleanup0);
-    NUX_VEC_INIT(&inst->free_objects, p, config->max_object_count);
-    for (nux_u32_t i = 0; i < inst->objects.capa; ++i)
+    // Prepare initialization environment
+    nux_env_t *env = init_env(inst);
+
+    // Create object pool
+    nux_object_vec_alloc(env, config->max_object_count, &inst->objects);
+    nux_u32_vec_alloc(env, config->max_object_count, &inst->objects_freelist);
+    nux_object_vec_push(&inst->objects); // reserve index 0 for null object
+    for (nux_u32_t i = config->max_object_count - 1; i; --i)
     {
-        inst->objects.data[i].type = NUX_OBJECT_NULL;
+        nux_u32_vec_pushv(&inst->objects_freelist, i);
     }
+
+    // Initialize gpu slots
+    NUX_CHECKM(
+        nux_u32_vec_alloc(env, NUX_GPU_TEXTURE_MAX, &inst->free_texture_slots),
+        "Failed to allocate gpu texture slots",
+        goto cleanup0);
+    nux_u32_vec_fill_reverse_indices(&inst->free_texture_slots);
 
     // Allocate canvas
     inst->canvas = nux_os_malloc(config->userdata,
-                                 NUX_MEMORY_USAGE_CORE,
+                                 NUX_MEMORY_USAGE_STATE,
                                  NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
-    NUX_CHECK(inst->canvas, "Failed to allocate canvas", goto cleanup0);
+    NUX_CHECKM(inst->canvas, "Failed to allocate canvas", goto cleanup0);
 
     // Initialize state
-    nux_env_t *env = init_env(inst);
     nux_palr(env);
 
     // Initialize graphics
@@ -140,7 +76,7 @@ nux_instance_init (const nux_instance_config_t *config)
 
     // Initialize Lua VM
     inst->L = luaL_newstate();
-    NUX_CHECK(inst->L, "Failed to initialize lua VM", goto cleanup0);
+    NUX_CHECKM(inst->L, "Failed to initialize lua VM", goto cleanup0);
 
     // Set env variable
     lua_pushlightuserdata(inst->L, &inst->env);
@@ -172,17 +108,9 @@ nux_instance_free (nux_instance_t *inst)
     {
         nux_os_free(inst->userdata, inst->canvas);
     }
-    if (inst->free_objects.data)
+    if (inst->arena.data)
     {
-        nux_os_free(inst->userdata, inst->free_objects.data);
-    }
-    if (inst->objects.data)
-    {
-        nux_os_free(inst->userdata, inst->objects.data);
-    }
-    if (inst->memory.data)
-    {
-        nux_os_free(inst->userdata, inst->memory.data);
+        nux_os_free(inst->userdata, inst->arena.data);
     }
     nux_graphics_free(inst);
     nux_os_free(inst->userdata, inst);
@@ -256,11 +184,6 @@ nux_u32_t
 nux_stat (nux_env_t *env, nux_stat_t stat)
 {
     return env->inst->stats[stat];
-}
-nux_u32_t
-nux_tricount (nux_env_t *env)
-{
-    return env->tricount;
 }
 nux_f32_t
 nux_time (nux_env_t *env)
