@@ -18,20 +18,37 @@
 } %}
 
 {% for function in functions %}
+{% if not function.hasptr %}
 static int l_{{ function.name }}(lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
-    lua_pushnumber(L, nux_frame(env));
     {%- for arg in function.args -%}
+        {{ arg.typename }} {{ arg.name }} = {{ checkmap.get(arg.typename, "luaL_checkinteger") }}(L, {{ loop.index }});
     {%- endfor -%}
-    return {{ "0" if function.returntype == "void" else "1" }};
+    {% if function.returntype != "void" %}
+        {{ function.returntype }} ret =
+    {% endif %}
+    nux_{{ function.name }}(env
+    {%- for arg in function.args -%}
+        , {{ arg.name }}
+    {%- endfor -%}
+    );
+    {% if function.returntype != "void" %}
+        lua_pushinteger(L, ret);
+        return 1;
+    {% else %}
+        return 0;
+    {% endif %}
 }
+{% endif %}
 {%- endfor %}
 
 static const struct luaL_Reg nuxlib[] = {
 {% for function in functions %}
+{% if not function.hasptr %}
     { "{{ function.name }}", l_{{ function.name }} },
+{% endif %}
 {%- endfor %}
     { NUX_NULL, NUX_NULL }
 };

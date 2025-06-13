@@ -35,11 +35,6 @@ typedef enum
     NUX_DEBUG_F32,
 } nux_debug_type_t;
 
-typedef enum
-{
-    NUX_MEMORY_USAGE_STATE,
-} nux_memory_usage_t;
-
 typedef struct
 {
     nux_u32_t version;
@@ -113,9 +108,7 @@ typedef union
 //////                       Platform Callbacks                     //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API void        *nux_os_malloc(void              *userdata,
-                                   nux_memory_usage_t usage,
-                                   nux_u32_t          n);
+NUX_API void        *nux_os_malloc(void *userdata, nux_u32_t n);
 NUX_API void         nux_os_free(void *userdata, void *p);
 NUX_API void        *nux_os_realloc(void *userdata, void *p, nux_u32_t n);
 NUX_API void         nux_os_debug(void            *userdata,

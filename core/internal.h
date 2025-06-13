@@ -42,6 +42,7 @@
     NUX_ASSERT((check));                   \
     if (!(check))                          \
     {                                      \
+        fprintf(stderr, "%s", (message));  \
         action;                            \
     }
 #else
@@ -178,6 +179,7 @@
         T        *data;                                                     \
     } name##_t;                                                             \
     nux_status_t name##_alloc(nux_env_t *env, nux_u32_t capa, name##_t *v); \
+    void         name##_init(void *p, nux_u32_t capa, name##_t *v);         \
     T           *name##_push(name##_t *v);                                  \
     nux_b32_t    name##_pushv(name##_t *v, T val);                          \
     T           *name##_pop(name##_t *v);                                   \
@@ -188,12 +190,16 @@
     nux_status_t name##_alloc(nux_env_t *env, nux_u32_t capa, name##_t *v) \
     {                                                                      \
         void *p = nux_alloc(env, sizeof(*(v)->data) * capa);               \
-        NUX_ASSERT(capa);                                                  \
         NUX_CHECK(p, return NUX_FAILURE);                                  \
+        name##_init(p, capa, v);                                           \
+        return NUX_SUCCESS;                                                \
+    }                                                                      \
+    void name##_init(void *p, nux_u32_t capa, name##_t *v)                 \
+    {                                                                      \
+        NUX_ASSERT(capa);                                                  \
         (v)->capa = capa;                                                  \
         (v)->size = 0;                                                     \
         (v)->data = p;                                                     \
-        return NUX_SUCCESS;                                                \
     }                                                                      \
     T *name##_push(name##_t *v)                                            \
     {                                                                      \
@@ -436,7 +442,8 @@ struct nux_instance
 
     nux_u32_t test_cube;
 
-    nux_arena_t      arena;
+    nux_arena_t      core_arena;
+    nux_u32_t        core_arena_id;
     nux_object_vec_t objects;
     nux_u32_vec_t    objects_freelist;
 
@@ -509,6 +516,7 @@ nux_status_t nux_delete_object(nux_env_t *env, nux_u32_t id);
 void *nux_get_object(nux_env_t *env, nux_object_type_t type, nux_u32_t id);
 void  nux_arena_cleanup(nux_env_t *env, void *data);
 
+void *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
 void *nux_alloc(nux_env_t *env, nux_u32_t size);
 void *nux_realloc(nux_env_t *env, void *p, nux_u32_t osize, nux_u32_t nsize);
 
@@ -565,11 +573,11 @@ nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 
 // graphics.c
 
-nux_status_t nux_graphics_init(nux_instance_t *inst);
-nux_status_t nux_graphics_free(nux_instance_t *inst);
-nux_status_t nux_graphics_render(nux_instance_t *inst);
+nux_status_t nux_graphics_init(nux_env_t *env);
+nux_status_t nux_graphics_free(nux_env_t *env);
+nux_status_t nux_graphics_render(nux_env_t *env);
 
-nux_status_t nux_graphics_push_vertices(nux_instance_t  *inst,
+nux_status_t nux_graphics_push_vertices(nux_env_t       *env,
                                         nux_u32_t        vcount,
                                         const nux_f32_t *data,
                                         nux_u32_t       *first);

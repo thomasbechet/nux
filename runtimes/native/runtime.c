@@ -265,7 +265,7 @@ native_realloc (void *p, nu_size_t n)
 }
 
 void *
-nux_os_malloc (void *userdata, nux_memory_usage_t usage, nux_u32_t n)
+nux_os_malloc (void *userdata, nux_u32_t n)
 {
     return native_malloc(n);
 }

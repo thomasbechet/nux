@@ -57,5 +57,5 @@ VOut vertexMain(
 float4 fragmentMain(VOut input) : SV_Target
 {
     float d = dot(input.normal, normalize(float3(cos(constants.time), 1, sin(constants.time))));
-    return max(d, 0) * float4(1, 0, 0, 1);
+    return max(d, 0.5) * float4(1, 0, 0, 1);
 }

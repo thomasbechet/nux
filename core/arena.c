@@ -11,48 +11,6 @@ arena_push (nux_arena_t *arena, nux_u32_t size)
     arena->size += size;
     return p;
 }
-static nux_arena_t *
-get_arena (nux_env_t *env)
-{
-    if (env->arena)
-    {
-        return nux_get_object(env, NUX_OBJECT_ARENA, env->arena);
-    }
-    else
-    {
-        return &env->inst->arena;
-    }
-}
-static void *
-arena_alloc (nux_env_t *env, void *optr, nux_u32_t osize, nux_u32_t nsize)
-{
-    nux_arena_t *arena = get_arena(env);
-    if (optr) // realloc
-    {
-        NUX_ASSERT(nsize);
-        NUX_ASSERT(osize);
-        if (nsize <= osize) // shrink
-        {
-            return optr; // nothing to do
-        }
-        else // grow
-        {
-            void *p = arena_push(arena, nsize);
-            NUX_CHECKM(p, "Out of memory", return NUX_NULL);
-            nux_memcpy(p, optr, osize);
-            return p;
-        }
-    }
-    else // malloc
-    {
-        NUX_ASSERT(nsize);
-        NUX_ASSERT(!osize);
-        void *p = arena_push(arena, nsize);
-        NUX_CHECKM(p, "Out of memory", return NUX_NULL);
-        nux_memset(p, 0, nsize);
-        return p;
-    }
-}
 static void
 delete_objects (nux_env_t *env, nux_arena_t *arena, nux_u32_t object)
 {
@@ -101,31 +59,78 @@ delete_objects (nux_env_t *env, nux_arena_t *arena, nux_u32_t object)
         *nux_u32_vec_push(&env->inst->objects_freelist) = cleanup;
     }
 }
+static void *
+arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
+{
+    if (optr) // realloc
+    {
+        NUX_ASSERT(nsize);
+        NUX_ASSERT(osize);
+        if (nsize <= osize) // shrink
+        {
+            return optr; // nothing to do
+        }
+        else // grow
+        {
+            void *p = arena_push(arena, nsize);
+            NUX_CHECKM(p, "Out of memory", return NUX_NULL);
+            nux_memcpy(p, optr, osize);
+            return p;
+        }
+    }
+    else // malloc
+    {
+        NUX_ASSERT(nsize);
+        NUX_ASSERT(!osize);
+        void *p = arena_push(arena, nsize);
+        NUX_CHECKM(p, "Out of memory", return NUX_NULL);
+        nux_memset(p, 0, nsize);
+        return p;
+    }
+}
 
+void *
+nux_arena_alloc (nux_arena_t *arena, nux_u32_t size)
+{
+    return arena_alloc(arena, NUX_NULL, 0, size);
+}
 void *
 nux_alloc (nux_env_t *env, nux_u32_t size)
 {
-    return arena_alloc(env, NUX_NULL, 0, size);
+    nux_arena_t *arena = nux_get_object(env, NUX_OBJECT_ARENA, env->arena);
+    return arena_alloc(arena, NUX_NULL, 0, size);
 }
 void *
 nux_realloc (nux_env_t *env, void *p, nux_u32_t osize, nux_u32_t nsize)
 {
-    return arena_alloc(env, p, osize, nsize);
+    nux_arena_t *arena = nux_get_object(env, NUX_OBJECT_ARENA, env->arena);
+    return arena_alloc(arena, p, osize, nsize);
 }
 
 nux_u32_t
 nux_add_object (nux_env_t *env, nux_object_type_t type, void *data)
 {
-    nux_u32_t *free_id = nux_u32_vec_pop(&env->inst->objects_freelist);
-    NUX_CHECK(free_id, return NUX_NULL);
-    nux_object_t *obj  = &env->inst->objects.data[*free_id];
+    nux_object_t *obj;
+    nux_u32_t    *free_id = nux_u32_vec_pop(&env->inst->objects_freelist);
+    nux_u32_t     id;
+    if (free_id)
+    {
+        id  = *free_id;
+        obj = &env->inst->objects.data[*free_id];
+    }
+    else
+    {
+        id  = env->inst->objects.size;
+        obj = nux_object_vec_push(&env->inst->objects);
+    }
+    NUX_CHECKM(obj, "Out of objects", return NUX_NULL);
     obj->type          = type;
     obj->arena         = env->arena;
     obj->data          = data;
     nux_arena_t *arena = nux_get_object(env, NUX_OBJECT_ARENA, env->arena);
     obj->prev          = arena->last_object;
-    arena->last_object = *free_id;
-    return *free_id;
+    arena->last_object = id;
+    return id;
 }
 void *
 nux_add_object_struct (nux_env_t        *env,
@@ -142,7 +147,8 @@ nux_add_object_struct (nux_env_t        *env,
 nux_status_t
 nux_delete_object (nux_env_t *env, nux_u32_t id)
 {
-    if (!id || id <= env->inst->objects.size)
+    // Ensure the object is not the core arena or null object
+    if (id < 2 || id <= env->inst->objects.size)
     {
         return NUX_FAILURE;
     }
@@ -170,7 +176,7 @@ nux_delete_object (nux_env_t *env, nux_u32_t id)
 void *
 nux_get_object (nux_env_t *env, nux_object_type_t type, nux_u32_t id)
 {
-    if (!id || id <= env->inst->objects.size
+    if (!id || id >= env->inst->objects.size
         || env->inst->objects.data[id].type != type)
     {
         return NUX_NULL;
@@ -205,15 +211,22 @@ cleanup:
     return NUX_NULL;
 }
 void
-nux_reset_arena (nux_env_t *env, nux_u32_t a)
+nux_reset_arena (nux_env_t *env)
 {
-    nux_arena_t *arena = nux_get_object(env, NUX_OBJECT_ARENA, a);
+    nux_arena_t *arena = nux_get_object(env, NUX_OBJECT_ARENA, env->arena);
     NUX_CHECKM(arena, "Invalid arena id", return);
     // Delete all objects
     delete_objects(env, arena, NUX_NULL);
     // Reset memory
     arena->last_object = NUX_NULL;
     arena->size        = 0;
+}
+void
+nux_set_arena (nux_env_t *env, nux_u32_t id)
+{
+    NUX_CHECKM(
+        nux_get_object(env, NUX_OBJECT_ARENA, id), "Invalid arena id", return);
+    env->arena = id;
 }
 
 nux_frame_t

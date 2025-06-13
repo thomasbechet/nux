@@ -239,5 +239,6 @@ void nux_blit(nux_env_t *env, nux_u32_t id);
 
 nux_u32_t nux_new_arena(nux_env_t *env, nux_u32_t capa);
 void      nux_reset_arena(nux_env_t *env);
+void      nux_set_arena(nux_env_t *env, nux_u32_t id);
 
 #endif

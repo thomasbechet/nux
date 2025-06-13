@@ -21,6 +21,6 @@ layout(location = 0) out vec4 entryPointParam_fragmentMain;
 
 void main()
 {
-    entryPointParam_fragmentMain = vec4(1.0, 0.0, 0.0, 1.0) * max(dot(input_normal, normalize(vec3(cos(constants.time), 1.0, sin(constants.time)))), 0.0);
+    entryPointParam_fragmentMain = vec4(1.0, 0.0, 0.0, 1.0) * max(dot(input_normal, normalize(vec3(cos(constants.time), 1.0, sin(constants.time)))), 0.5);
 }
 

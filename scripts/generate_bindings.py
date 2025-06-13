@@ -16,6 +16,7 @@ def parse_function(node):
     # print(node.type)
     func["name"] = node.type.declname.replace('nux_', '')
     func["returntype"] = node.type.type.names[0]
+    func["hasptr"] = False
     func["args"] = []
     for param in node.args.params[1:]:
         if (isinstance(param, c_ast.EllipsisParam)):
@@ -25,11 +26,13 @@ def parse_function(node):
         arg["name"] = param.name
         if type(param.type) is c_ast.PtrDecl:
             arg["isptr"] = True
+            func["hasptr"] = True
             if param.quals:
                 arg["isconst"] = True
             arg["typename"] = param.type.type.type.names[0]
         else:
             arg["typename"] = param.type.type.names[0]
+            arg["isptr"] = False
         func["args"].append(arg)
     functions.append(func)
 
