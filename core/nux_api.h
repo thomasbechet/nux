@@ -227,18 +227,18 @@ void nux_tracefmt(nux_env_t *env, const nux_c8_t *fmt, ...);
 nux_u32_t nux_button(nux_env_t *env, nux_u32_t player);
 nux_f32_t nux_axis(nux_env_t *env, nux_u32_t player, nux_axis_t axis);
 
-nux_u32_t nux_new_texture(nux_env_t           *env,
+nux_u32_t nux_texture_new(nux_env_t           *env,
                           nux_texture_format_t format,
                           nux_u32_t            w,
                           nux_u32_t            h);
-nux_u32_t nux_new_render_target(nux_env_t *env, nux_u32_t w, nux_u32_t h);
+nux_u32_t nux_render_target_new(nux_env_t *env, nux_u32_t w, nux_u32_t h);
 
 void nux_set_render_target(nux_env_t *env, nux_u32_t id);
 void nux_blit(nux_env_t *env, nux_u32_t id);
 // void nux_draw_cube(nux_env_t *env);
 
-nux_u32_t nux_new_arena(nux_env_t *env, nux_u32_t capa);
-void      nux_reset_arena(nux_env_t *env);
+nux_u32_t nux_arena_new(nux_env_t *env, nux_u32_t capa);
+void      nux_arena_reset(nux_env_t *env);
 void      nux_set_arena(nux_env_t *env, nux_u32_t id);
 
 #endif

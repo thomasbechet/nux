@@ -26,7 +26,7 @@ typedef enum
     NUX_GPU_PIPELINE_MAX    = 128,
     NUX_GPU_FRAMEBUFFER_MAX = 32,
     NUX_GPU_TEXTURE_MAX     = 128,
-    NUX_GPU_BUFFER_MAX      = 8,
+    NUX_GPU_BUFFER_MAX      = 32,
 } nux_gpu_constants_t;
 
 typedef enum

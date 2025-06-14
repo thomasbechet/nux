@@ -2,22 +2,16 @@
 
 #include "fonts_data.c.inc"
 
-enum
-{
-    PIPELINE_CANVAS    = 0,
-    PIPELINE_MAIN      = 1,
-    TEXTURE_COLORMAP   = 0,
-    TEXTURE_CANVAS     = 1,
-    BUFFER_CONSTANTS   = 0,
-    BUFFER_VERTICES    = 1,
-    FRAMEBUFFER_CANVAS = 0,
-};
+#define PIPELINE_CANVAS_SLOT    0
+#define PIPELINE_MAIN_SLOT      1
+#define TEXTURE_COLORMAP_SLOT   0
+#define TEXTURE_CANVAS_SLOT     1
+#define BUFFER_CONSTANTS_SLOT   0
+#define BUFFER_VERTICES_SLOT    1
+#define FRAMEBUFFER_CANVAS_SLOT 0
 
-enum
-{
-    VERTEX_SIZE           = 5,
-    VERTICES_DEFAULT_SIZE = 1024,
-};
+#define VERTEX_SIZE           5
+#define VERTICES_DEFAULT_SIZE 1024
 
 nux_status_t
 nux_graphics_init (nux_env_t *env)
@@ -29,11 +23,22 @@ nux_graphics_init (nux_env_t *env)
                    env, NUX_GPU_TEXTURE_MAX, &env->inst->free_texture_slots),
                "Failed to allocate gpu texture slots",
                goto error);
-    nux_u32_vec_fill_reverse_indices(&env->inst->free_texture_slots);
+    NUX_CHECKM(nux_u32_vec_alloc(env,
+                                 NUX_GPU_FRAMEBUFFER_MAX,
+                                 &env->inst->free_framebuffer_slots),
+               "Failed to allocate gpu framebuffer slots",
+               goto error);
+    NUX_CHECKM(nux_u32_vec_alloc(
+                   env, NUX_GPU_BUFFER_MAX, &env->inst->free_buffer_slots),
+               "Failed to allocate gpu buffer slots",
+               goto error);
+
+    nux_u32_vec_fill_reversed(&env->inst->free_texture_slots);
+    nux_u32_vec_fill_reversed(&env->inst->free_framebuffer_slots);
+    nux_u32_vec_fill_reversed(&env->inst->free_buffer_slots);
 
     // Allocate canvas
-    env->inst->canvas = nux_arena_alloc(&env->inst->core_arena,
-                                        NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
+    env->inst->canvas = nux_alloc(env, NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
     NUX_CHECKM(env->inst->canvas, "Failed to allocate canvas", goto error);
 
     // Initialize state
@@ -41,11 +46,12 @@ nux_graphics_init (nux_env_t *env)
 
     // Create pipelines
     NUX_CHECKM(nux_os_create_pipeline(
-                   env->inst->userdata, PIPELINE_MAIN, NUX_GPU_PASS_MAIN),
+                   env->inst->userdata, PIPELINE_MAIN_SLOT, NUX_GPU_PASS_MAIN),
                "Failed to create main pipeline",
                goto error);
-    NUX_CHECKM(nux_os_create_pipeline(
-                   env->inst->userdata, PIPELINE_CANVAS, NUX_GPU_PASS_CANVAS),
+    NUX_CHECKM(nux_os_create_pipeline(env->inst->userdata,
+                                      PIPELINE_CANVAS_SLOT,
+                                      NUX_GPU_PASS_CANVAS),
                "Failed to create canvas pipeline",
                return NUX_FAILURE);
 
@@ -56,7 +62,7 @@ nux_graphics_init (nux_env_t *env)
                                      .width  = NUX_COLORMAP_SIZE,
                                      .height = 1 };
     NUX_CHECKM(nux_os_create_texture(env->inst->userdata,
-                                     TEXTURE_COLORMAP,
+                                     TEXTURE_COLORMAP_SLOT,
                                      &env->inst->colormap_info),
                "Failed to create colormap texture",
                goto error);
@@ -67,21 +73,21 @@ nux_graphics_init (nux_env_t *env)
                                      .width  = NUX_CANVAS_WIDTH,
                                      .height = NUX_CANVAS_HEIGHT };
     NUX_CHECKM(nux_os_create_texture(env->inst->userdata,
-                                     TEXTURE_CANVAS,
+                                     TEXTURE_CANVAS_SLOT,
                                      &env->inst->canvas_info),
                "Failed to create canvas texture",
                goto error);
 
     // Create buffers
     NUX_CHECKM(nux_os_create_buffer(env->inst->userdata,
-                                    BUFFER_CONSTANTS,
+                                    BUFFER_CONSTANTS_SLOT,
                                     NUX_GPU_BUFFER_UNIFORM,
                                     sizeof(nux_gpu_constants_buffer_t)),
                "Failed to create uniform buffer",
                goto error);
 
     NUX_CHECKM(nux_os_create_buffer(env->inst->userdata,
-                                    BUFFER_VERTICES,
+                                    BUFFER_VERTICES_SLOT,
                                     NUX_GPU_BUFFER_STORAGE,
                                     VERTEX_SIZE * VERTICES_DEFAULT_SIZE),
                "Failed to create vertex buffer",
@@ -89,8 +95,9 @@ nux_graphics_init (nux_env_t *env)
     env->inst->vertex_storage_head = 0;
 
     // Create canvas framebuffer
-    NUX_CHECKM(nux_os_create_framebuffer(
-                   env->inst->userdata, FRAMEBUFFER_CANVAS, TEXTURE_CANVAS),
+    NUX_CHECKM(nux_os_create_framebuffer(env->inst->userdata,
+                                         FRAMEBUFFER_CANVAS_SLOT,
+                                         TEXTURE_CANVAS_SLOT),
                "Failed to create canvas framebuffer",
                goto error);
 
@@ -113,7 +120,7 @@ nux_graphics_render (nux_env_t *env)
 {
     // Update colormap
     NUX_CHECKM(nux_os_update_texture(env->inst->userdata,
-                                     TEXTURE_COLORMAP,
+                                     TEXTURE_COLORMAP_SLOT,
                                      0,
                                      0,
                                      env->inst->colormap_info.width,
@@ -124,7 +131,7 @@ nux_graphics_render (nux_env_t *env)
 
     // Update canvas
     NUX_CHECKM(nux_os_update_texture(env->inst->userdata,
-                                     TEXTURE_CANVAS,
+                                     TEXTURE_CANVAS_SLOT,
                                      0,
                                      0,
                                      env->inst->canvas_info.width,
@@ -148,7 +155,7 @@ nux_graphics_render (nux_env_t *env)
     uniform_buffer.canvas_size = nux_v2u(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     uniform_buffer.time        = env->inst->time;
     nux_os_update_buffer(env->inst->userdata,
-                         BUFFER_CONSTANTS,
+                         BUFFER_CONSTANTS_SLOT,
                          0,
                          sizeof(uniform_buffer),
                          &uniform_buffer);
@@ -156,14 +163,14 @@ nux_graphics_render (nux_env_t *env)
     // Blit canvas
     {
         nux_gpu_command_t cmds[] = { {
-            .canvas.texture      = TEXTURE_CANVAS,
-            .canvas.colormap     = TEXTURE_COLORMAP,
+            .canvas.texture      = TEXTURE_CANVAS_SLOT,
+            .canvas.colormap     = TEXTURE_COLORMAP_SLOT,
             .canvas.vertex_count = 3,
         } };
         nux_gpu_pass_t    pass   = {
                  .type                  = NUX_GPU_PASS_CANVAS,
-                 .pipeline              = PIPELINE_CANVAS,
-                 .canvas.uniform_buffer = BUFFER_CONSTANTS,
+                 .pipeline              = PIPELINE_CANVAS_SLOT,
+                 .canvas.uniform_buffer = BUFFER_CONSTANTS_SLOT,
                  .count                 = NUX_ARRAY_SIZE(cmds),
         };
         nux_os_gpu_submit_pass(env->inst->userdata, &pass, cmds);
@@ -171,15 +178,15 @@ nux_graphics_render (nux_env_t *env)
 
     // Render cube
     {
-        nux_gpu_command_t cmds[] = { { .main.texture      = 0,
-                                       .main.colormap     = 0,
-                                       .main.storage      = BUFFER_VERTICES,
-                                       .main.vertex_base  = 0,
+        nux_gpu_command_t cmds[] = { { .main.texture     = 0,
+                                       .main.colormap    = 0,
+                                       .main.storage     = BUFFER_VERTICES_SLOT,
+                                       .main.vertex_base = 0,
                                        .main.vertex_count = 36 } };
         nux_gpu_pass_t    pass   = {
                  .type                = NUX_GPU_PASS_MAIN,
-                 .pipeline            = PIPELINE_MAIN,
-                 .main.uniform_buffer = BUFFER_CONSTANTS,
+                 .pipeline            = PIPELINE_MAIN_SLOT,
+                 .main.uniform_buffer = BUFFER_CONSTANTS_SLOT,
                  .count               = NUX_ARRAY_SIZE(cmds),
         };
         nux_os_gpu_submit_pass(env->inst->userdata, &pass, cmds);
@@ -198,7 +205,7 @@ nux_graphics_push_vertices (nux_env_t       *env,
                "Out of vertices",
                return NUX_FAILURE);
     NUX_CHECKM(nux_os_update_buffer(env->inst->userdata,
-                                    BUFFER_VERTICES,
+                                    BUFFER_VERTICES_SLOT,
                                     env->inst->vertex_storage_head * VERTEX_SIZE
                                         * sizeof(nux_f32_t),
                                     vcount * VERTEX_SIZE * sizeof(nux_f32_t),
@@ -407,154 +414,6 @@ nux_write_texture (nux_env_t      *env,
     //     const nux_u8_t *src = data + (i * w);
     //     nux_memcpy(dst, src, w);
     // }
-}
-
-nux_u32_t
-nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
-{
-    nux_frame_t frame = nux_begin_frame(env);
-
-    const nux_b3_t box = nux_b3(nux_v3s(0), nux_v3(sx / 2, sy / 2, sz / 2));
-
-    const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
-    const nux_v3_t v1 = nux_v3(box.max.x, box.min.y, box.min.z);
-    const nux_v3_t v2 = nux_v3(box.max.x, box.min.y, box.max.z);
-    const nux_v3_t v3 = nux_v3(box.min.x, box.min.y, box.max.z);
-
-    const nux_v3_t v4 = nux_v3(box.min.x, box.max.y, box.min.z);
-    const nux_v3_t v5 = nux_v3(box.max.x, box.max.y, box.min.z);
-    const nux_v3_t v6 = nux_v3(box.max.x, box.max.y, box.max.z);
-    const nux_v3_t v7 = nux_v3(box.min.x, box.max.y, box.max.z);
-
-    const nux_v3_t positions[]
-        = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
-            v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
-            v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
-
-    const nux_v2_t uvs[] = {
-        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
-        { { 0, 0 } }, { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } }, { { 1, 1 } },
-        { { 0, 0 } }, { { 0, 1 } }, { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } },
-        { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } }, { { 1, 0 } },
-        { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } }, { { 0, 0 } }, { { 0, 0 } },
-        { { 0, 1 } }, { { 1, 1 } }, { { 1, 1 } }, { { 1, 0 } }, { { 0, 0 } },
-        { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
-        { { 0, 0 } },
-    };
-
-    nux_u32_t   id;
-    nux_mesh_t *mesh = NUX_NEW_STRUCT(env, NUX_OBJECT_MESH, nux_mesh_t, &id);
-    NUX_CHECKM(mesh, "Failed to create cube mesh object", goto cleanup);
-    mesh->count = NUX_ARRAY_SIZE(positions);
-    mesh->data  = nux_alloc(env, sizeof(nux_f32_t) * 5 * mesh->count);
-    NUX_CHECKM(mesh->data, "Failed to allocate cube mesh data", goto cleanup);
-
-    for (nux_u32_t i = 0; i < mesh->count; ++i)
-    {
-        mesh->data[i * 5 + 0] = positions[i].x;
-        mesh->data[i * 5 + 1] = positions[i].y;
-        mesh->data[i * 5 + 2] = positions[i].z;
-        mesh->data[i * 5 + 3] = uvs[i].x;
-        mesh->data[i * 5 + 4] = uvs[i].y;
-    }
-
-    NUX_CHECKM(
-        nux_graphics_push_vertices(env, mesh->count, mesh->data, &mesh->first),
-        "Failed to push cube vertices",
-        goto cleanup);
-
-    return NUX_SUCCESS;
-
-cleanup:
-    nux_reset_frame(env, frame);
-    return NUX_FAILURE;
-}
-
-nux_u32_t
-nux_new_texture (nux_env_t           *env,
-                 nux_texture_format_t format,
-                 nux_u32_t            w,
-                 nux_u32_t            h)
-{
-    nux_frame_t frame = nux_begin_frame(env);
-
-    // Create object
-    nux_u32_t      id;
-    nux_texture_t *tex
-        = NUX_NEW_STRUCT(env, NUX_OBJECT_TEXTURE, nux_texture_t, &id);
-    NUX_CHECKM(tex, "Failed to create texture object", return NUX_NULL);
-    tex->format = format;
-    tex->width  = w;
-    tex->height = h;
-
-    // Create gpu texture
-    nux_gpu_texture_info_t info = {
-        .format = format,
-        .filter = NUX_GPU_TEXTURE_FILTER_NEAREST,
-        .width  = w,
-        .height = h,
-    };
-    nux_u32_t *slot = nux_u32_vec_pop(&env->inst->free_texture_slots);
-    NUX_CHECKM(slot, "Out of gpu textures", goto cleanup);
-    tex->slot = *slot;
-    NUX_CHECKM(nux_os_create_texture(env->inst->userdata, tex->slot, &info),
-               "Failed to create texture",
-               goto cleanup);
-
-    // Allocate memory
-    nux_u32_t sample_size = 0;
-    switch (format)
-    {
-        case NUX_TEXTURE_FORMAT_RGBA:
-            sample_size = sizeof(nux_u32_t);
-            break;
-        case NUX_TEXTURE_FORMAT_INDEX:
-            sample_size = sizeof(nux_u8_t);
-            break;
-    }
-    NUX_CHECKM(sample_size, "Invalid texture format", goto cleanup);
-    tex->data = nux_alloc(env, sample_size * w * h);
-    NUX_CHECKM(tex->data, "Failed to allocate texture data", goto cleanup);
-    nux_memset(tex->data, 0, sample_size * w * h);
-
-    return id;
-
-cleanup:
-    nux_reset_frame(env, frame);
-    return NUX_NULL;
-}
-nux_u32_t
-nux_new_render_target (nux_env_t *env, nux_u32_t w, nux_u32_t h)
-{
-    nux_frame_t frame = nux_begin_frame(env);
-
-    // Create object
-    nux_u32_t            id;
-    nux_render_target_t *rt = NUX_NEW_STRUCT(
-        env, NUX_OBJECT_RENDER_TARGET, nux_render_target_t, &id);
-    NUX_CHECKM(rt, "Failed to create render target", return NUX_NULL);
-
-    // Create texture
-    rt->texture = nux_new_texture(env, NUX_TEXTURE_FORMAT_RGBA, w, h);
-    NUX_CHECKM(
-        rt->texture, "Failed to create texture render target", goto cleanup);
-
-    // Create framebuffer
-    nux_u32_t *slot = nux_u32_vec_pop(&env->inst->free_framebuffer_slots);
-    NUX_CHECKM(slot, "Out of gpu framebuffer slots", goto cleanup);
-    rt->slot = *slot;
-
-    nux_texture_t *tex = nux_get_object(env, rt->texture, NUX_OBJECT_TEXTURE);
-    NUX_CHECKM(
-        nux_os_create_framebuffer(env->inst->userdata, rt->slot, tex->slot),
-        "Failed to create framebuffer",
-        goto cleanup);
-
-    return id;
-
-cleanup:
-    nux_reset_frame(env, frame);
-    return NUX_NULL;
 }
 
 void

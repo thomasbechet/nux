@@ -234,8 +234,8 @@
         return i < (v)->size ? (v)->data + i : NUX_NULL;                   \
     }
 
-#define NUX_NEW_STRUCT(env, type, struct, id) \
-    (struct *)nux_add_object_struct((env), type, sizeof(struct), (id))
+#define NUX_NEW(env, type, struct, id) \
+    (struct *)nux_new((env), type, sizeof(struct), (id))
 
 ////////////////////////////
 ///        TYPES         ///
@@ -448,6 +448,7 @@ struct nux_instance
     nux_u32_vec_t    objects_freelist;
 
     nux_u32_vec_t free_texture_slots;
+    nux_u32_vec_t free_buffer_slots;
     nux_u32_vec_t free_framebuffer_slots;
 
     lua_State *L;
@@ -463,7 +464,7 @@ struct nux_instance
 
 // ds.c
 
-void nux_u32_vec_fill_reverse_indices(nux_u32_vec_t *v);
+void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
 
 // math.c
 
@@ -504,21 +505,34 @@ void     *nux_memalign(void *ptr, nux_u32_t align);
 
 // arena.c
 
-nux_frame_t nux_begin_frame(nux_env_t *env);
-void        nux_reset_frame(nux_env_t *env, nux_frame_t frame);
+void *nux_new(nux_env_t        *env,
+              nux_object_type_t type,
+              nux_u32_t         ssize,
+              nux_u32_t        *id);
+void *nux_get(nux_env_t *env, nux_object_type_t type, nux_u32_t id);
 
-nux_u32_t    nux_add_object(nux_env_t *env, nux_object_type_t type, void *data);
-void        *nux_add_object_struct(nux_env_t        *env,
-                                   nux_object_type_t type,
-                                   nux_u32_t         ssize,
-                                   nux_u32_t        *id);
-nux_status_t nux_delete_object(nux_env_t *env, nux_u32_t id);
-void *nux_get_object(nux_env_t *env, nux_object_type_t type, nux_u32_t id);
 void  nux_arena_cleanup(nux_env_t *env, void *data);
-
 void *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
 void *nux_alloc(nux_env_t *env, nux_u32_t size);
 void *nux_realloc(nux_env_t *env, void *p, nux_u32_t osize, nux_u32_t nsize);
+
+nux_frame_t nux_begin_frame(nux_env_t *env);
+void        nux_reset_frame(nux_env_t *env, nux_frame_t frame);
+
+// texture.c
+
+void nux_texture_cleanup(nux_env_t *env, void *data);
+void nux_texture_write(nux_env_t      *env,
+                       nux_u32_t       id,
+                       nux_u32_t       x,
+                       nux_u32_t       y,
+                       nux_u32_t       w,
+                       nux_u32_t       h,
+                       const nux_u8_t *data);
+
+// render_target.c
+
+void nux_render_target_cleanup(nux_env_t *env, void *data);
 
 // vector.c
 

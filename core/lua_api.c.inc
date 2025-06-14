@@ -303,7 +303,7 @@ l_new_texture (lua_State *L)
     nux_u32_t            h      = luaL_checkinteger(L, 3);
     nux_u32_t            ret =
 
-        nux_new_texture(env, format, w, h);
+        nux_texture_new(env, format, w, h);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -318,7 +318,7 @@ l_new_render_target (lua_State *L)
     nux_u32_t  h   = luaL_checkinteger(L, 2);
     nux_u32_t  ret =
 
-        nux_new_render_target(env, w, h);
+        nux_render_target_new(env, w, h);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -354,7 +354,7 @@ l_new_arena (lua_State *L)
     nux_u32_t  capa = luaL_checkinteger(L, 1);
     nux_u32_t  ret =
 
-        nux_new_arena(env, capa);
+        nux_arena_new(env, capa);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -365,7 +365,7 @@ l_reset_arena (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
-    nux_reset_arena(env);
+    nux_arena_reset(env);
 
     return 0;
 }
