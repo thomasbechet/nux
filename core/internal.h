@@ -390,24 +390,33 @@ typedef struct
 
 typedef enum
 {
-    NUX_OBJECT_NULL = 0,
-    NUX_OBJECT_ARENA,
-    NUX_OBJECT_LUA,
-    NUX_OBJECT_TEXTURE,
-    NUX_OBJECT_MESH,
-    NUX_OBJECT_WORLD,
-    NUX_OBJECT_ENTITY,
-    NUX_OBJECT_TRANSFORM,
-    NUX_OBJECT_CAMERA,
+    NUX_OBJECT_NULL      = 0,
+    NUX_OBJECT_ARENA     = 1,
+    NUX_OBJECT_LUA       = 2,
+    NUX_OBJECT_TEXTURE   = 3,
+    NUX_OBJECT_MESH      = 4,
+    NUX_OBJECT_WORLD     = 5,
+    NUX_OBJECT_ENTITY    = 6,
+    NUX_OBJECT_TRANSFORM = 7,
+    NUX_OBJECT_CAMERA    = 8,
+    NUX_OBJECT_TYPE_MAX  = 9,
+} nux_object_base_type_t;
+
+typedef void (*nux_object_cleanup_t)(nux_env_t *env, void *data);
+
+typedef struct
+{
+    nux_c8_t             name[64];
+    nux_object_cleanup_t cleanup;
 } nux_object_type_t;
 
 typedef struct
 {
-    nux_u32_t         prev;
-    nux_u32_t         arena;
-    nux_u8_t          version;
-    nux_object_type_t type;
-    void             *data;
+    nux_u32_t prev;
+    nux_u32_t arena;
+    nux_u8_t  version;
+    nux_u32_t type;
+    void     *data;
 } nux_object_t;
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
@@ -467,10 +476,12 @@ struct nux_instance
 
     nux_u32_t test_cube;
 
-    nux_arena_t      core_arena;
-    nux_u32_t        core_arena_id;
-    nux_object_vec_t objects;
-    nux_u32_vec_t    objects_freelist;
+    nux_arena_t       core_arena;
+    nux_u32_t         core_arena_id;
+    nux_object_vec_t  objects;
+    nux_u32_vec_t     objects_freelist;
+    nux_object_type_t object_types[NUX_OBJECT_TYPE_MAX];
+    nux_u32_t         object_types_count;
 
     nux_u32_vec_t free_texture_slots;
     nux_u32_vec_t free_buffer_slots;
@@ -530,12 +541,18 @@ void     *nux_memalign(void *ptr, nux_u32_t align);
 
 // object.c
 
-nux_u32_t nux_object_add(nux_env_t *env, nux_object_type_t type, void *data);
-void     *nux_object_add_struct(nux_env_t        *env,
-                                nux_object_type_t type,
-                                nux_u32_t         ssize,
-                                nux_u32_t        *id);
-void     *nux_object_get(nux_env_t *env, nux_object_type_t type, nux_u32_t id);
+void nux_object_register(nux_instance_t      *inst,
+                         const nux_c8_t      *name,
+                         nux_object_cleanup_t cleanup);
+
+nux_u32_t nux_object_add(nux_env_t             *env,
+                         nux_object_base_type_t type,
+                         void                  *data);
+void     *nux_object_add_struct(nux_env_t             *env,
+                                nux_object_base_type_t type,
+                                nux_u32_t              ssize,
+                                nux_u32_t             *id);
+void *nux_object_get(nux_env_t *env, nux_object_base_type_t type, nux_u32_t id);
 
 void  nux_arena_cleanup(nux_env_t *env, void *data);
 void *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
@@ -630,6 +647,12 @@ nux_u32_t nux_generate_cube(nux_env_t *env,
                             nux_f32_t  sx,
                             nux_f32_t  sy,
                             nux_f32_t  sz);
+
+// lua.c
+
+nux_status_t nux_lua_init(nux_env_t *env);
+void         nux_lua_free(nux_env_t *env);
+void         nux_lua_tick(nux_env_t *env);
 
 // instance.c
 

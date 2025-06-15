@@ -18,37 +18,19 @@ arena_push (nux_arena_t *arena, nux_u32_t size)
 static void
 delete_objects (nux_env_t *env, nux_arena_t *arena, nux_u32_t object)
 {
-    // Cleanup all objects
     nux_u32_t next = arena->last_object;
     while (next != object)
     {
-        nux_u32_t     cleanup = next;
-        nux_object_t *obj     = &env->inst->objects.data[ID_INDEX(cleanup)];
-        switch (obj->type)
+        printf("%d\n", ID_INDEX(next));
+        nux_object_t      *obj  = &env->inst->objects.data[ID_INDEX(next)];
+        nux_object_type_t *type = env->inst->object_types + obj->type;
+        if (type->cleanup)
         {
-            case NUX_OBJECT_NULL:
-                break;
-            case NUX_OBJECT_ARENA:
-                nux_arena_cleanup(env, obj->data);
-                break;
-            case NUX_OBJECT_LUA:
-                break;
-            case NUX_OBJECT_TEXTURE:
-                nux_texture_cleanup(env, obj->data);
-                break;
-            case NUX_OBJECT_MESH:
-                break;
-            case NUX_OBJECT_ENTITY:
-                break;
-            case NUX_OBJECT_TRANSFORM:
-                break;
-            case NUX_OBJECT_CAMERA:
-                break;
-            case NUX_OBJECT_WORLD:
-                break;
+            printf("cleanup %s\n", type->name);
+            type->cleanup(env, obj->data);
         }
+        nux_u32_vec_pushv(&env->inst->objects_freelist, ID_INDEX(next));
         next = obj->prev;
-        nux_u32_vec_pushv(&env->inst->objects_freelist, ID_INDEX(cleanup));
     }
 }
 static void *
@@ -81,8 +63,19 @@ arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
     }
 }
 
+void
+nux_object_register (nux_instance_t      *inst,
+                     const nux_c8_t      *name,
+                     nux_object_cleanup_t cleanup)
+{
+    nux_object_type_t *type = inst->object_types + inst->object_types_count;
+    nux_strncpy(type->name, name, NUX_ARRAY_SIZE(type->name));
+    type->cleanup = cleanup;
+    ++inst->object_types_count;
+}
+
 nux_u32_t
-nux_object_add (nux_env_t *env, nux_object_type_t type, void *data)
+nux_object_add (nux_env_t *env, nux_object_base_type_t type, void *data)
 {
     nux_object_t *obj;
     nux_u32_t    *free_index = nux_u32_vec_pop(&env->inst->objects_freelist);
@@ -109,10 +102,10 @@ nux_object_add (nux_env_t *env, nux_object_type_t type, void *data)
     return id;
 }
 void *
-nux_object_add_struct (nux_env_t        *env,
-                       nux_object_type_t type,
-                       nux_u32_t         ssize,
-                       nux_u32_t        *id)
+nux_object_add_struct (nux_env_t             *env,
+                       nux_object_base_type_t type,
+                       nux_u32_t              ssize,
+                       nux_u32_t             *id)
 {
     void *data = nux_alloc(env, ssize);
     NUX_CHECK(data, return NUX_NULL);
@@ -121,7 +114,7 @@ nux_object_add_struct (nux_env_t        *env,
     return data;
 }
 void *
-nux_object_get (nux_env_t *env, nux_object_type_t type, nux_u32_t id)
+nux_object_get (nux_env_t *env, nux_object_base_type_t type, nux_u32_t id)
 {
     nux_u32_t index   = ID_INDEX(id);
     nux_u8_t  version = ID_VERSION(id);

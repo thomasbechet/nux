@@ -53,13 +53,13 @@ nux_graphics_init (nux_env_t *env)
                return NUX_FAILURE);
 
     // Create textures
-    env->inst->colormap_texture = nux_new_texture(
+    env->inst->colormap_texture = nux_texture_new(
         env, NUX_TEXTURE_IMAGE_RGBA, NUX_COLORMAP_SIZE, NUX_COLORMAP_SIZE);
     NUX_CHECKM(env->inst->colormap_texture,
                "Failed to create colormap texture",
                goto error);
 
-    env->inst->canvas_render_target = nux_new_texture(
+    env->inst->canvas_render_target = nux_texture_new(
         env, NUX_TEXTURE_RENDER_TARGET, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     NUX_CHECKM(env->inst->canvas_render_target,
                "Failed to create canvas render target",
@@ -215,7 +215,7 @@ nux_cls (nux_env_t *env, nux_u32_t color)
     nux_rectfill(env, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1, color);
 }
 void
-nux_text (
+nux_graphics_text (
     nux_env_t *env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c)
 {
     const nux_u32_t pixel_per_glyph
@@ -259,12 +259,12 @@ nux_text (
     }
 }
 void
-nux_print (nux_env_t *env, const nux_c8_t *text, nux_u8_t c)
+nux_graphics_print (nux_env_t *env, const nux_c8_t *text, nux_u8_t c)
 {
-    nux_i32_t x = nux_cursorx(env);
-    nux_i32_t y = nux_cursory(env);
-    nux_text(env, x, y, text, c);
-    nux_cursor(env, x, y + DEFAULT_FONT_DATA_HEIGHT);
+    nux_i32_t x = nux_graphics_cursor_x(env);
+    nux_i32_t y = nux_graphics_cursor_y(env);
+    nux_graphics_text(env, x, y, text, c);
+    nux_graphics_cursor(env, x, y + DEFAULT_FONT_DATA_HEIGHT);
 }
 #ifdef NUX_BUILD_VARARGS
 void
@@ -280,7 +280,7 @@ nux_textfmt (nux_env_t      *env,
     va_start(args, fmt);
     nux_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
-    nux_text(env, x, y, buf, c);
+    nux_graphics_text(env, x, y, buf, c);
 }
 void
 nux_printfmt (nux_env_t *env, nux_u8_t c, const nux_c8_t *fmt, ...)
@@ -290,7 +290,7 @@ nux_printfmt (nux_env_t *env, nux_u8_t c, const nux_c8_t *fmt, ...)
     va_start(args, fmt);
     nux_vsnprintf(buf, sizeof(buf), fmt, args);
     va_end(args);
-    nux_print(env, buf, c);
+    nux_graphics_print(env, buf, c);
 }
 void
 nux_tracefmt (nux_env_t *env, const nux_c8_t *fmt, ...)
@@ -305,17 +305,17 @@ nux_tracefmt (nux_env_t *env, const nux_c8_t *fmt, ...)
 #endif
 
 nux_i32_t
-nux_cursorx (nux_env_t *env)
+nux_graphics_cursor_x (nux_env_t *env)
 {
     return env->inst->cursor.x;
 }
 nux_i32_t
-nux_cursory (nux_env_t *env)
+nux_graphics_cursor_y (nux_env_t *env)
 {
     return env->inst->cursor.y;
 }
 void
-nux_cursor (nux_env_t *env, nux_i32_t x, nux_i32_t y)
+nux_graphics_cursor (nux_env_t *env, nux_i32_t x, nux_i32_t y)
 {
     env->inst->cursor = nux_v2i(x, y);
 }
@@ -360,7 +360,7 @@ nux_write_texture (nux_env_t      *env,
 }
 
 void
-nux_set_render_target (nux_env_t *env, nux_u32_t id)
+nux_graphics_set_render_target (nux_env_t *env, nux_u32_t id)
 {
     nux_texture_t *tex = nux_object_get(env, NUX_OBJECT_TEXTURE, id);
     NUX_CHECKM(tex->type == NUX_TEXTURE_RENDER_TARGET,
@@ -368,6 +368,6 @@ nux_set_render_target (nux_env_t *env, nux_u32_t id)
                return);
 }
 void
-nux_blit (nux_env_t *env, nux_u32_t id)
+nux_graphics_blit (nux_env_t *env, nux_u32_t id)
 {
 }

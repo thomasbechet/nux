@@ -1,7 +1,5 @@
 #include "internal.h"
 
-#include "lua_api.c.inc"
-
 static nux_env_t *
 init_env (nux_instance_t *inst)
 {
@@ -27,9 +25,10 @@ core_init (const nux_instance_config_t *config)
 
     // Allocate core memory
     nux_arena_t arena;
-    arena.capa = NUX_MEMORY_SIZE;
-    arena.size = 0;
-    arena.data = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
+    arena.capa        = NUX_MEMORY_SIZE;
+    arena.size        = 0;
+    arena.data        = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
+    arena.last_object = NUX_NULL;
     NUX_CHECKM(arena.data, "Failed to allocate core memory", return NUX_NULL);
     nux_memset(arena.data, 0, NUX_MEMORY_SIZE);
 
@@ -41,6 +40,18 @@ core_init (const nux_instance_config_t *config)
     inst->init       = config->init;
     inst->update     = config->update;
     inst->core_arena = arena; // copy by value
+
+    // Register base objects
+    inst->object_types_count = 0;
+    nux_object_register(inst, "null", NUX_NULL);
+    nux_object_register(inst, "arena", nux_arena_cleanup);
+    nux_object_register(inst, "lua", NUX_NULL);
+    nux_object_register(inst, "texture", nux_texture_cleanup);
+    nux_object_register(inst, "mesh", NUX_NULL);
+    nux_object_register(inst, "world", nux_world_cleanup);
+    nux_object_register(inst, "entity", nux_entity_cleanup);
+    nux_object_register(inst, "transform", NUX_NULL);
+    nux_object_register(inst, "camera", NUX_NULL);
 
     // Create object pool
     nux_object_t *objects = nux_arena_alloc(
@@ -81,29 +92,13 @@ nux_instance_init (const nux_instance_config_t *config)
     // Prepare initialization environment
     nux_env_t *env = init_env(inst);
 
-    // Initialize graphics
-    nux_graphics_init(env);
-
-    // Initialize Lua VM
-    inst->L = luaL_newstate();
-    NUX_CHECKM(inst->L, "Failed to initialize lua VM", goto cleanup0);
-
-    // Set env variable
-    lua_pushlightuserdata(inst->L, &inst->env);
-    lua_rawseti(inst->L, LUA_REGISTRYINDEX, 1);
-
-    // Load api
-    luaL_openlibs(inst->L);
-    nux_register_lua(inst);
-
-    if (luaL_dofile(inst->L, "main.lua") != LUA_OK)
-    {
-        fprintf(stderr, "%s\n", lua_tostring(inst->L, -1));
-        fprintf(stderr, "\n");
-    }
+    // Initialize modules
+    NUX_CHECK(nux_graphics_init(env), goto cleanup);
+    NUX_CHECK(nux_lua_init(env), goto cleanup);
 
     return inst;
-cleanup0:
+
+cleanup:
     nux_instance_free(inst);
     return NUX_NULL;
 }
@@ -111,11 +106,14 @@ void
 nux_instance_free (nux_instance_t *inst)
 {
     nux_env_t *env = init_env(inst);
-    if (inst->L)
-    {
-        lua_close(inst->L);
-    }
+    nux_arena_set_active(env, inst->core_arena_id);
+    nux_arena_reset(env);
+
+    // Free modules
+    nux_lua_free(env);
     nux_graphics_free(env);
+
+    // Free core memory
     if (inst->core_arena.data)
     {
         nux_os_free(inst->userdata, inst->core_arena.data);
@@ -127,7 +125,7 @@ nux_instance_tick (nux_instance_t *inst)
     nux_env_t *env = init_env(inst);
 
     // Init draw state
-    nux_cursor(env, 0, 0);
+    nux_graphics_cursor(env, 0, 0);
 
     // Init
     if (env->inst->frame == 0 && inst->init)
@@ -147,6 +145,9 @@ nux_instance_tick (nux_instance_t *inst)
     {
         inst->update(env);
     }
+
+    // Update lua
+    nux_lua_tick(env);
 
     // Render
     nux_graphics_render(env);

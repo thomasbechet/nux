@@ -180,26 +180,26 @@ void nux_trifill(nux_env_t *env,
                  nux_i32_t  x2,
                  nux_i32_t  y2,
                  nux_u8_t   c);
-void nux_text(
+void nux_graphics_text(
     nux_env_t *env, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
-void      nux_print(nux_env_t *env, const nux_c8_t *text, nux_u8_t c);
-nux_i32_t nux_cursorx(nux_env_t *env);
-nux_i32_t nux_cursory(nux_env_t *env);
-void      nux_cursor(nux_env_t *env, nux_i32_t x, nux_i32_t y);
-void      nux_line(nux_env_t *env,
-                   nux_i32_t  x0,
-                   nux_i32_t  y0,
-                   nux_i32_t  x1,
-                   nux_i32_t  y1,
-                   nux_u8_t   color);
-void      nux_circ(
+void      nux_graphics_print(nux_env_t *env, const nux_c8_t *text, nux_u8_t c);
+nux_i32_t nux_graphics_cursor_x(nux_env_t *env);
+nux_i32_t nux_graphics_cursor_y(nux_env_t *env);
+void      nux_graphics_cursor(nux_env_t *env, nux_i32_t x, nux_i32_t y);
+void      nux_graphics_line(nux_env_t *env,
+                            nux_i32_t  x0,
+                            nux_i32_t  y0,
+                            nux_i32_t  x1,
+                            nux_i32_t  y1,
+                            nux_u8_t   color);
+void      nux_graphics_circle(
          nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c);
-void nux_rect(nux_env_t *env,
-              nux_i32_t  x0,
-              nux_i32_t  y0,
-              nux_i32_t  x1,
-              nux_i32_t  y1,
-              nux_u8_t   c);
+void nux_graphics_rectangle(nux_env_t *env,
+                            nux_i32_t  x0,
+                            nux_i32_t  y0,
+                            nux_i32_t  x1,
+                            nux_i32_t  y1,
+                            nux_u8_t   c);
 
 // Draw State API
 
@@ -225,16 +225,16 @@ void nux_tracefmt(nux_env_t *env, const nux_c8_t *fmt, ...);
 
 // Input
 
-nux_u32_t nux_button(nux_env_t *env, nux_u32_t player);
-nux_f32_t nux_axis(nux_env_t *env, nux_u32_t player, nux_axis_t axis);
+nux_u32_t nux_input_button(nux_env_t *env, nux_u32_t player);
+nux_f32_t nux_input_axis(nux_env_t *env, nux_u32_t player, nux_axis_t axis);
 
-nux_u32_t nux_new_texture(nux_env_t         *env,
+nux_u32_t nux_texture_new(nux_env_t         *env,
                           nux_texture_type_t format,
                           nux_u32_t          w,
                           nux_u32_t          h);
 
-void nux_set_render_target(nux_env_t *env, nux_u32_t id);
-void nux_blit(nux_env_t *env, nux_u32_t id);
+void nux_graphics_set_render_target(nux_env_t *env, nux_u32_t id);
+void nux_graphics_blit(nux_env_t *env, nux_u32_t id);
 // void nux_draw_cube(nux_env_t *env);
 
 nux_u32_t    nux_arena_new(nux_env_t *env, nux_u32_t capa);

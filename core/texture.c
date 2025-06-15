@@ -1,7 +1,7 @@
 #include "internal.h"
 
 nux_u32_t
-nux_new_texture (nux_env_t         *env,
+nux_texture_new (nux_env_t         *env,
                  nux_texture_type_t type,
                  nux_u32_t          w,
                  nux_u32_t          h)

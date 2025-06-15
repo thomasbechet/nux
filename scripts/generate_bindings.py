@@ -8,13 +8,20 @@ import os
 import json
 from template import apply_template
 
-functions = []
-enums = []
+constants = []
+modules = {}
 
 def parse_function(node):
+    parts = node.type.declname.split("_", 2)
+    if len(parts) < 3: # In base module
+        module = "base"
+    else:
+        module = parts[1]
+    if module not in modules.keys():
+        modules[module] = []
     func = {}
     # print(node.type)
-    func["name"] = node.type.declname.replace('nux_', '')
+    func["name"] = parts[-1]
     func["returntype"] = node.type.type.names[0]
     func["hasptr"] = False
     func["args"] = []
@@ -34,18 +41,18 @@ def parse_function(node):
             arg["typename"] = param.type.type.names[0]
             arg["isptr"] = False
         func["args"].append(arg)
-    functions.append(func)
+    modules[module].append(func)
 
 def parse_enum(node):
-    enum = {}
-    enum["name"] = node.name.replace("nux_", "")
-    enum["values"] = []
+    constant = {}
+    constant["name"] = node.name.replace("nux_", "")
+    constant["values"] = []
     for e in node.type.type.values.enumerators:
         val = {}
         val["name"] = e.name.replace("NUX_", "")
         val["value"] = c_generator.CGenerator().visit(e.value)
-        enum["values"].append(val)
-    enums.append(enum)
+        constant["values"].append(val)
+    constants.append(constant)
 
 class FuncDefVisitor(c_ast.NodeVisitor):
     def visit_FuncDecl(self, node):
@@ -77,13 +84,13 @@ def parse_header(args):
     v.visit(ast)
 
 def dump():
-    print(json.dumps(functions, indent=4))
-    print(json.dumps(enums, indent=4))
+    print(json.dumps(constants, indent=4))
+    print(json.dumps(modules, indent=4))
 
 def generate_files(args):
 
     # lua_api.c.inc
-    apply_template(args.rootdir, "lua_api.c.inc.jinja", "core/lua_api.c.inc", functions=functions, enums=enums)
+    apply_template(args.rootdir, "lua_api.c.inc.jinja", "core/lua_api.c.inc", modules=modules, constants=constants)
 
     # # nux.h
     # template = env.get_template("nux.h.jinja")

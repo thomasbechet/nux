@@ -39,14 +39,14 @@ debug_camera (nux_env_t *env, nu_f32_t dt)
     // nux_f32_t bob = nu_sin(nux_time(env) * 0.1 * vel * (2 * NU_PI));
     nux_f32_t bob = 0;
 
-    nu_v3_t look = nu_v3(nux_axis(env, freecam.player, NUX_AXIS_RIGHTX) * 100,
-                         nux_axis(env, freecam.player, NUX_AXIS_RIGHTY) * 100,
+    nu_v3_t look = nu_v3(nux_input_axis(env, freecam.player, NUX_AXIS_RIGHTX) * 100,
+                         nux_input_axis(env, freecam.player, NUX_AXIS_RIGHTY) * 100,
                          0);
-    nu_v3_t move = nu_v3(nux_axis(env, freecam.player, NUX_AXIS_LEFTX),
+    nu_v3_t move = nu_v3(nux_input_axis(env, freecam.player, NUX_AXIS_LEFTX),
                          0,
-                         nux_axis(env, freecam.player, NUX_AXIS_LEFTY));
-    move.y += nux_button(env, freecam.player) & NUX_BUTTON_Y ? 1 : 0;
-    move.y -= nux_button(env, freecam.player) & NUX_BUTTON_B ? 1 : 0;
+                         nux_input_axis(env, freecam.player, NUX_AXIS_LEFTY));
+    move.y += nux_input_button(env, freecam.player) & NUX_BUTTON_Y ? 1 : 0;
+    move.y -= nux_input_button(env, freecam.player) & NUX_BUTTON_B ? 1 : 0;
     move = nu_v3_normalize(move);
 
     // Translation
@@ -187,12 +187,12 @@ loop_update (nux_env_t *env)
         sum_fps = 0;
     }
 
-    nux_cursor(env, 0, 0);
+    nux_graphics_cursor(env, 0, 0);
     nux_printfmt(env, 7, "FPS:%d", avg_fps);
     nux_printfmt(env, 7, "FRA:%d", nux_frame(env));
     nux_printfmt(env, 7, "RES:%dx%d", NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
 
-    nux_circ(env, 50, 50, 10, 7);
+    nux_graphics_circle(env, 50, 50, 10, 7);
 
     // nux_line(env,
     //          NUX_CANVAS_WIDTH / 2,

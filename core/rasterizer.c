@@ -32,7 +32,7 @@ nux_pset (nux_env_t *env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
     canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(env, color);
 }
 void
-nux_line (nux_env_t *env,
+nux_graphics_line (nux_env_t *env,
           nux_i32_t  x0,
           nux_i32_t  y0,
           nux_i32_t  x1,
@@ -82,7 +82,7 @@ nux_trifill (nux_env_t *env,
     nux_v2i_t v2 = nux_v2i(x2, y2);
     if (y0 == y1 && y0 == y2)
     {
-        nux_line(env,
+        nux_graphics_line(env,
                  NUX_MIN(x0, NUX_MIN(x1, x2)),
                  y0,
                  NUX_MAX(x0, NUX_MAX(x1, x2)),
@@ -183,7 +183,7 @@ processline:
     goto bresenham0;
 }
 void
-nux_circ (nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
+nux_graphics_circle (nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
 {
     int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
     do
@@ -204,7 +204,7 @@ nux_circ (nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
     } while (x < 0);
 }
 void
-nux_rect (nux_env_t *env,
+nux_graphics_rectangle (nux_env_t *env,
           nux_i32_t  x0,
           nux_i32_t  y0,
           nux_i32_t  x1,
