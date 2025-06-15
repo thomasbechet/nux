@@ -1,24 +1,25 @@
 #include "internal.h"
 
 nux_u32_t
-nux_texture_new (nux_env_t           *env,
-                 nux_texture_format_t format,
-                 nux_u32_t            w,
-                 nux_u32_t            h)
+nux_new_texture (nux_env_t         *env,
+                 nux_texture_type_t type,
+                 nux_u32_t          w,
+                 nux_u32_t          h)
 {
-    nux_frame_t frame = nux_begin_frame(env);
+    nux_frame_t frame = nux_frame_begin(env);
 
     // Create object
     nux_u32_t      id;
-    nux_texture_t *tex = NUX_NEW(env, NUX_OBJECT_TEXTURE, nux_texture_t, &id);
+    nux_texture_t *tex = nux_object_add_struct(
+        env, NUX_OBJECT_TEXTURE, sizeof(nux_texture_t), &id);
     NUX_CHECKM(tex, "Failed to create texture object", return NUX_NULL);
-    tex->format = format;
+    tex->type   = type;
     tex->width  = w;
     tex->height = h;
 
     // Create gpu texture
     nux_gpu_texture_info_t info = {
-        .format = format,
+        .type   = type,
         .filter = NUX_GPU_TEXTURE_FILTER_NEAREST,
         .width  = w,
         .height = h,
@@ -31,25 +32,42 @@ nux_texture_new (nux_env_t           *env,
                goto cleanup);
 
     // Allocate memory
-    nux_u32_t sample_size = 0;
-    switch (format)
+    nux_u32_t pixel_size;
+    switch (type)
     {
-        case NUX_TEXTURE_FORMAT_RGBA:
-            sample_size = sizeof(nux_u32_t);
+        case NUX_TEXTURE_IMAGE_RGBA:
+            pixel_size = sizeof(nux_u32_t);
             break;
-        case NUX_TEXTURE_FORMAT_INDEX:
-            sample_size = sizeof(nux_u8_t);
+        case NUX_TEXTURE_IMAGE_INDEX:
+            pixel_size = sizeof(nux_u8_t);
+            break;
+        case NUX_TEXTURE_RENDER_TARGET:
+            pixel_size = 0;
             break;
     }
-    NUX_CHECKM(sample_size, "Invalid texture format", goto cleanup);
-    tex->data = nux_alloc(env, sample_size * w * h);
-    NUX_CHECKM(tex->data, "Failed to allocate texture data", goto cleanup);
-    nux_memset(tex->data, 0, sample_size * w * h);
+    if (pixel_size)
+    {
+        tex->data = nux_alloc(env, pixel_size * w * h);
+        NUX_CHECKM(tex->data, "Failed to allocate texture data", goto cleanup);
+        nux_memset(tex->data, 0, pixel_size * w * h);
+    }
+
+    if (type == NUX_TEXTURE_RENDER_TARGET)
+    {
+        // Create framebuffer
+        slot = nux_u32_vec_pop(&env->inst->free_framebuffer_slots);
+        NUX_CHECKM(slot, "Out of gpu framebuffer slots", goto cleanup);
+        tex->framebuffer_slot = *slot;
+        NUX_CHECKM(nux_os_create_framebuffer(
+                       env->inst->userdata, tex->framebuffer_slot, tex->slot),
+                   "Failed to create framebuffer",
+                   goto cleanup);
+    }
 
     return id;
 
 cleanup:
-    nux_reset_frame(env, frame);
+    nux_frame_reset(env, frame);
     return NUX_NULL;
 }
 void
@@ -58,16 +76,30 @@ nux_texture_cleanup (nux_env_t *env, void *data)
     nux_texture_t *tex = data;
     if (tex->slot)
     {
-        *nux_u32_vec_push(&env->inst->free_texture_slots) = tex->slot;
+        nux_u32_vec_pushv(&env->inst->free_texture_slots, tex->slot);
+    }
+    if (tex->framebuffer_slot)
+    {
+        nux_u32_vec_pushv(&env->inst->free_framebuffer_slots,
+                          tex->framebuffer_slot);
     }
 }
 void
-nux_texture_write (nux_env_t      *env,
-                   nux_u32_t       id,
-                   nux_u32_t       x,
-                   nux_u32_t       y,
-                   nux_u32_t       w,
-                   nux_u32_t       h,
-                   const nux_u8_t *data)
+nux_texture_write (nux_env_t  *env,
+                   nux_u32_t   id,
+                   nux_u32_t   x,
+                   nux_u32_t   y,
+                   nux_u32_t   w,
+                   nux_u32_t   h,
+                   const void *data)
 {
+    nux_texture_t *tex = nux_object_get(env, NUX_OBJECT_TEXTURE, id);
+    NUX_CHECKM(tex, "Invalid texture id", return);
+    NUX_CHECKM(tex->type != NUX_TEXTURE_RENDER_TARGET,
+               "Trying to write render target texture",
+               return);
+    NUX_CHECKM(
+        nux_os_update_texture(env->inst->userdata, tex->slot, x, y, w, h, data),
+        "Failed to update colormap texture",
+        return);
 }

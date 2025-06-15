@@ -149,9 +149,10 @@ typedef enum
 
 typedef enum
 {
-    NUX_TEXTURE_FORMAT_RGBA,
-    NUX_TEXTURE_FORMAT_INDEX,
-} nux_texture_format_t;
+    NUX_TEXTURE_IMAGE_RGBA,
+    NUX_TEXTURE_IMAGE_INDEX,
+    NUX_TEXTURE_RENDER_TARGET,
+} nux_texture_type_t;
 
 // Debug API
 void nux_trace(nux_env_t *env, const nux_c8_t *text);
@@ -227,18 +228,20 @@ void nux_tracefmt(nux_env_t *env, const nux_c8_t *fmt, ...);
 nux_u32_t nux_button(nux_env_t *env, nux_u32_t player);
 nux_f32_t nux_axis(nux_env_t *env, nux_u32_t player, nux_axis_t axis);
 
-nux_u32_t nux_texture_new(nux_env_t           *env,
-                          nux_texture_format_t format,
-                          nux_u32_t            w,
-                          nux_u32_t            h);
-nux_u32_t nux_render_target_new(nux_env_t *env, nux_u32_t w, nux_u32_t h);
+nux_u32_t nux_new_texture(nux_env_t         *env,
+                          nux_texture_type_t format,
+                          nux_u32_t          w,
+                          nux_u32_t          h);
 
 void nux_set_render_target(nux_env_t *env, nux_u32_t id);
 void nux_blit(nux_env_t *env, nux_u32_t id);
 // void nux_draw_cube(nux_env_t *env);
 
-nux_u32_t nux_arena_new(nux_env_t *env, nux_u32_t capa);
-void      nux_arena_reset(nux_env_t *env);
-void      nux_set_arena(nux_env_t *env, nux_u32_t id);
+nux_u32_t    nux_arena_new(nux_env_t *env, nux_u32_t capa);
+void         nux_arena_reset(nux_env_t *env);
+nux_status_t nux_arena_set_active(nux_env_t *env, nux_u32_t id);
+
+nux_u32_t nux_world_new(nux_env_t *env);
+nux_u32_t nux_entity_new(nux_env_t *env, nux_u32_t world);
 
 #endif

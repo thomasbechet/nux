@@ -297,28 +297,13 @@ static int
 l_new_texture (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t           *env    = lua_touserdata(L, -1);
-    nux_texture_format_t format = luaL_checkinteger(L, 1);
-    nux_u32_t            w      = luaL_checkinteger(L, 2);
-    nux_u32_t            h      = luaL_checkinteger(L, 3);
-    nux_u32_t            ret =
+    nux_env_t         *env    = lua_touserdata(L, -1);
+    nux_texture_type_t format = luaL_checkinteger(L, 1);
+    nux_u32_t          w      = luaL_checkinteger(L, 2);
+    nux_u32_t          h      = luaL_checkinteger(L, 3);
+    nux_u32_t          ret =
 
-        nux_texture_new(env, format, w, h);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-
-static int
-l_new_render_target (lua_State *L)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env = lua_touserdata(L, -1);
-    nux_u32_t  w   = luaL_checkinteger(L, 1);
-    nux_u32_t  h   = luaL_checkinteger(L, 2);
-    nux_u32_t  ret =
-
-        nux_render_target_new(env, w, h);
+        nux_new_texture(env, format, w, h);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -347,7 +332,7 @@ l_blit (lua_State *L)
 }
 
 static int
-l_new_arena (lua_State *L)
+l_arena_new (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env  = lua_touserdata(L, -1);
@@ -361,7 +346,7 @@ l_new_arena (lua_State *L)
 }
 
 static int
-l_reset_arena (lua_State *L)
+l_arena_reset (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -371,14 +356,44 @@ l_reset_arena (lua_State *L)
 }
 
 static int
-l_set_arena (lua_State *L)
+l_arena_set_active (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t   *env = lua_touserdata(L, -1);
+    nux_u32_t    id  = luaL_checkinteger(L, 1);
+    nux_status_t ret =
+
+        nux_arena_set_active(env, id);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+static int
+l_world_new (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
-    nux_set_arena(env, id);
+    nux_u32_t  ret =
 
-    return 0;
+        nux_world_new(env);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+static int
+l_entity_new (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env   = lua_touserdata(L, -1);
+    nux_u32_t  world = luaL_checkinteger(L, 1);
+    nux_u32_t  ret =
+
+        nux_entity_new(env, world);
+
+    lua_pushinteger(L, ret);
+    return 1;
 }
 
 static const struct luaL_Reg nuxlib[] = {
@@ -429,17 +444,19 @@ static const struct luaL_Reg nuxlib[] = {
 
     { "new_texture", l_new_texture },
 
-    { "new_render_target", l_new_render_target },
-
     { "set_render_target", l_set_render_target },
 
     { "blit", l_blit },
 
-    { "new_arena", l_new_arena },
+    { "arena_new", l_arena_new },
 
-    { "reset_arena", l_reset_arena },
+    { "arena_reset", l_arena_reset },
 
-    { "set_arena", l_set_arena },
+    { "arena_set_active", l_arena_set_active },
+
+    { "world_new", l_world_new },
+
+    { "entity_new", l_entity_new },
 
     { NUX_NULL, NUX_NULL }
 };

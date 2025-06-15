@@ -38,12 +38,11 @@
         action;                  \
     }
 #ifdef NUX_DEBUG
-#define NUX_CHECKM(check, message, action) \
-    NUX_ASSERT((check));                   \
-    if (!(check))                          \
-    {                                      \
-        fprintf(stderr, "%s", (message));  \
-        action;                            \
+#define NUX_CHECKM(check, message, action)  \
+    if (!(check))                           \
+    {                                       \
+        fprintf(stderr, "%s\n", (message)); \
+        action;                             \
     }
 #else
 #define NUX_CHECKM(check, message, action) \
@@ -223,7 +222,11 @@
     }                                                                      \
     T *name##_pop(name##_t *v)                                             \
     {                                                                      \
-        return ((v)->size) ? (v)->data + (v)->size++ : NUX_NULL;           \
+        if (!(v)->size)                                                    \
+            return NUX_NULL;                                               \
+        T *ret = &(v)->data[(v)->size - 1];                                \
+        --(v)->size;                                                       \
+        return ret;                                                        \
     }                                                                      \
     void name##_clear(name##_t *v)                                         \
     {                                                                      \
@@ -233,9 +236,6 @@
     {                                                                      \
         return i < (v)->size ? (v)->data + i : NUX_NULL;                   \
     }
-
-#define NUX_NEW(env, type, struct, id) \
-    (struct *)nux_new((env), type, sizeof(struct), (id))
 
 ////////////////////////////
 ///        TYPES         ///
@@ -334,18 +334,13 @@ struct nux_env
 
 typedef struct
 {
-    nux_u32_t            slot;
-    nux_texture_format_t format;
-    nux_u32_t            width;
-    nux_u32_t            height;
-    nux_u8_t            *data;
+    nux_u32_t          slot;
+    nux_u32_t          framebuffer_slot;
+    nux_texture_type_t type;
+    nux_u32_t          width;
+    nux_u32_t          height;
+    nux_u8_t          *data;
 } nux_texture_t;
-
-typedef struct
-{
-    nux_u32_t texture; // owned object
-    nux_u32_t slot;    // framebuffer slot
-} nux_render_target_t;
 
 typedef struct
 {
@@ -353,6 +348,37 @@ typedef struct
     nux_u32_t  first;
     nux_u32_t  count;
 } nux_mesh_t;
+
+typedef struct
+{
+
+} nux_entity_component_t;
+
+typedef struct
+{
+    nux_u32_t world;
+    nux_u32_t transform;
+    nux_u32_t camera;
+    nux_u32_t mesh;
+} nux_entity_t;
+
+typedef struct
+{
+    nux_u32_t arena;
+} nux_world_t;
+
+typedef struct
+{
+    nux_b2i_t viewport;
+    nux_f32_t fov;
+} nux_camera_t;
+
+typedef struct
+{
+    nux_v3_t position;
+    nux_q4_t rotation;
+    nux_v3_t scale;
+} nux_transform_t;
 
 typedef struct
 {
@@ -368,14 +394,18 @@ typedef enum
     NUX_OBJECT_ARENA,
     NUX_OBJECT_LUA,
     NUX_OBJECT_TEXTURE,
-    NUX_OBJECT_RENDER_TARGET,
     NUX_OBJECT_MESH,
+    NUX_OBJECT_WORLD,
+    NUX_OBJECT_ENTITY,
+    NUX_OBJECT_TRANSFORM,
+    NUX_OBJECT_CAMERA,
 } nux_object_type_t;
 
 typedef struct
 {
     nux_u32_t         prev;
     nux_u32_t         arena;
+    nux_u8_t          version;
     nux_object_type_t type;
     void             *data;
 } nux_object_t;
@@ -424,11 +454,6 @@ struct nux_instance
     nux_u8_t  pal[NUX_PALETTE_SIZE];
     nux_u32_t colormap[NUX_COLORMAP_SIZE];
     nux_v2i_t cursor;
-    nux_v3_t  cam_eye;
-    nux_v3_t  cam_center;
-    nux_v3_t  cam_up;
-    nux_b2i_t cam_viewport;
-    nux_f32_t cam_fov;
     nux_u8_t *canvas;
 
     nux_u32_t buttons[NUX_PLAYER_MAX];
@@ -436,9 +461,9 @@ struct nux_instance
 
     nux_u32_t stats[NUX_STAT_MAX];
 
-    nux_gpu_texture_info_t canvas_info;
-    nux_gpu_texture_info_t colormap_info;
-    nux_u32_t              vertex_storage_head;
+    nux_u32_t colormap_texture;
+    nux_u32_t canvas_render_target;
+    nux_u32_t vertex_storage_head;
 
     nux_u32_t test_cube;
 
@@ -503,36 +528,41 @@ void      nux_memcpy(void *dst, const void *src, nux_u32_t n);
 void      nux_memswp(void *a, void *b, nux_u32_t n);
 void     *nux_memalign(void *ptr, nux_u32_t align);
 
-// arena.c
+// object.c
 
-void *nux_new(nux_env_t        *env,
-              nux_object_type_t type,
-              nux_u32_t         ssize,
-              nux_u32_t        *id);
-void *nux_get(nux_env_t *env, nux_object_type_t type, nux_u32_t id);
+nux_u32_t nux_object_add(nux_env_t *env, nux_object_type_t type, void *data);
+void     *nux_object_add_struct(nux_env_t        *env,
+                                nux_object_type_t type,
+                                nux_u32_t         ssize,
+                                nux_u32_t        *id);
+void     *nux_object_get(nux_env_t *env, nux_object_type_t type, nux_u32_t id);
 
 void  nux_arena_cleanup(nux_env_t *env, void *data);
 void *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
 void *nux_alloc(nux_env_t *env, nux_u32_t size);
 void *nux_realloc(nux_env_t *env, void *p, nux_u32_t osize, nux_u32_t nsize);
 
-nux_frame_t nux_begin_frame(nux_env_t *env);
-void        nux_reset_frame(nux_env_t *env, nux_frame_t frame);
+nux_frame_t nux_frame_begin(nux_env_t *env);
+void        nux_frame_reset(nux_env_t *env, nux_frame_t frame);
 
 // texture.c
 
 void nux_texture_cleanup(nux_env_t *env, void *data);
-void nux_texture_write(nux_env_t      *env,
-                       nux_u32_t       id,
-                       nux_u32_t       x,
-                       nux_u32_t       y,
-                       nux_u32_t       w,
-                       nux_u32_t       h,
-                       const nux_u8_t *data);
+void nux_texture_write(nux_env_t  *env,
+                       nux_u32_t   id,
+                       nux_u32_t   x,
+                       nux_u32_t   y,
+                       nux_u32_t   w,
+                       nux_u32_t   h,
+                       const void *data);
 
-// render_target.c
+// world.c
 
-void nux_render_target_cleanup(nux_env_t *env, void *data);
+void nux_world_cleanup(nux_env_t *env, void *data);
+
+// entity.c
+
+void nux_entity_cleanup(nux_env_t *env, void *data);
 
 // vector.c
 
@@ -603,8 +633,9 @@ nux_u32_t nux_generate_cube(nux_env_t *env,
 
 // instance.c
 
-void nux_set_error(nux_env_t *env, nux_error_t error);
+void nux_error(nux_env_t *env, nux_error_t error);
 
 nux_status_t nux_register_lua(nux_instance_t *inst);
+nux_status_t nux_register_lua2(nux_instance_t *inst);
 
 #endif

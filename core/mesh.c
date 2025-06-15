@@ -3,7 +3,7 @@
 nux_u32_t
 nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
-    nux_frame_t frame = nux_begin_frame(env);
+    nux_frame_t frame = nux_frame_begin(env);
 
     const nux_b3_t box = nux_b3(nux_v3s(0), nux_v3(sx / 2, sy / 2, sz / 2));
 
@@ -34,7 +34,8 @@ nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
     };
 
     nux_u32_t   id;
-    nux_mesh_t *mesh = NUX_NEW(env, NUX_OBJECT_MESH, nux_mesh_t, &id);
+    nux_mesh_t *mesh
+        = nux_object_add_struct(env, NUX_OBJECT_MESH, sizeof(nux_mesh_t), &id);
     NUX_CHECKM(mesh, "Failed to create cube mesh object", goto cleanup);
     mesh->count = NUX_ARRAY_SIZE(positions);
     mesh->data  = nux_alloc(env, sizeof(nux_f32_t) * 5 * mesh->count);
@@ -57,6 +58,6 @@ nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
     return NUX_SUCCESS;
 
 cleanup:
-    nux_reset_frame(env, frame);
+    nux_frame_reset(env, frame);
     return NUX_FAILURE;
 }

@@ -13,7 +13,7 @@ init_env (nux_instance_t *inst)
 }
 
 void
-nux_set_error (nux_env_t *env, nux_error_t error)
+nux_error (nux_env_t *env, nux_error_t error)
 {
     env->error = error;
     nux_snprintf(env->error_message, sizeof(env->error_message), "%s", "TODO");
@@ -63,6 +63,7 @@ core_init (const nux_instance_config_t *config)
     obj->data           = &inst->core_arena;
     obj->arena          = NUX_NULL;
     obj->prev           = NUX_NULL;
+    obj->version        = 0;
     inst->core_arena_id = 1;
 
     return inst;

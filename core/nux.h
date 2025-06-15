@@ -49,7 +49,7 @@ typedef enum
 
 typedef struct
 {
-    nux_texture_format_t     format;
+    nux_texture_type_t       type;
     nux_gpu_texture_filter_t filter;
     nux_u32_t                width;
     nux_u32_t                height;

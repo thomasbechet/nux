@@ -168,16 +168,19 @@ nux_os_create_texture (void                         *userdata,
     NU_CHECK(slot < NU_ARRAY_SIZE(inst->textures), return NUX_FAILURE);
     texture_t *tex = inst->textures + slot;
 
-    switch (info->format)
+    switch (info->type)
     {
-        case NUX_TEXTURE_FORMAT_RGBA:
+        case NUX_TEXTURE_IMAGE_RGBA:
             tex->internal_format = GL_RGBA8;
             tex->format          = GL_RGB;
             break;
-        case NUX_TEXTURE_FORMAT_INDEX:
+        case NUX_TEXTURE_IMAGE_INDEX:
             tex->internal_format = GL_R8UI;
             tex->format          = GL_RED_INTEGER;
             break;
+        case NUX_TEXTURE_RENDER_TARGET:
+            tex->internal_format = GL_RGBA8;
+            tex->format          = GL_RGB;
     }
 
     switch (info->filter)

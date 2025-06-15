@@ -104,3 +104,14 @@ nux_lookat (nux_v3_t eye, nux_v3_t center, nux_v3_t up)
     m.data[15] = 1;
     return m;
 }
+
+nux_u32_t
+nux_camera_new (nux_env_t *env, nux_u32_t id)
+{
+    return 0;
+}
+void
+nux_camera_cleanup (nux_env_t *env, void *data)
+{
+    nux_camera_t *cam = data;
+}
