@@ -241,7 +241,7 @@ nux_u32_t    nux_arena_new(nux_env_t *env, nux_u32_t capa);
 void         nux_arena_reset(nux_env_t *env);
 nux_status_t nux_arena_set_active(nux_env_t *env, nux_u32_t id);
 
-nux_u32_t nux_world_new(nux_env_t *env);
+nux_u32_t nux_scene_new(nux_env_t *env);
 nux_u32_t nux_entity_new(nux_env_t *env, nux_u32_t world);
 
 #endif

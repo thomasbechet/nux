@@ -1,7 +1,7 @@
 #include "internal.h"
 
 static int
-l_base_stat (lua_State *L)
+l_core_stat (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env  = lua_touserdata(L, -1);
@@ -15,7 +15,7 @@ l_base_stat (lua_State *L)
 }
 
 static int
-l_base_time (lua_State *L)
+l_core_time (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -23,12 +23,12 @@ l_base_time (lua_State *L)
 
         nux_time(env);
 
-    lua_pushinteger(L, ret);
+    lua_pushnumber(L, ret);
     return 1;
 }
 
 static int
-l_base_dt (lua_State *L)
+l_core_dt (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -36,12 +36,12 @@ l_base_dt (lua_State *L)
 
         nux_dt(env);
 
-    lua_pushinteger(L, ret);
+    lua_pushnumber(L, ret);
     return 1;
 }
 
 static int
-l_base_frame (lua_State *L)
+l_core_frame (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -54,7 +54,7 @@ l_base_frame (lua_State *L)
 }
 
 static int
-l_base_rectfill (lua_State *L)
+l_core_rectfill (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -69,7 +69,7 @@ l_base_rectfill (lua_State *L)
 }
 
 static int
-l_base_trifill (lua_State *L)
+l_core_trifill (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -86,7 +86,7 @@ l_base_trifill (lua_State *L)
 }
 
 static int
-l_base_pal (lua_State *L)
+l_core_pal (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
@@ -98,7 +98,7 @@ l_base_pal (lua_State *L)
 }
 
 static int
-l_base_palt (lua_State *L)
+l_core_palt (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -109,7 +109,7 @@ l_base_palt (lua_State *L)
 }
 
 static int
-l_base_palr (lua_State *L)
+l_core_palr (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -119,7 +119,7 @@ l_base_palr (lua_State *L)
 }
 
 static int
-l_base_palc (lua_State *L)
+l_core_palc (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
@@ -133,7 +133,7 @@ l_base_palc (lua_State *L)
 }
 
 static int
-l_base_cls (lua_State *L)
+l_core_cls (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
@@ -144,7 +144,7 @@ l_base_cls (lua_State *L)
 }
 
 static int
-l_base_pset (lua_State *L)
+l_core_pset (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
@@ -157,7 +157,7 @@ l_base_pset (lua_State *L)
 }
 
 static int
-l_base_cget (lua_State *L)
+l_core_cget (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
@@ -171,7 +171,7 @@ l_base_cget (lua_State *L)
 }
 
 static int
-l_base_cset (lua_State *L)
+l_core_cset (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
@@ -311,7 +311,7 @@ l_input_axis (lua_State *L)
 
         nux_input_axis(env, player, axis);
 
-    lua_pushinteger(L, ret);
+    lua_pushnumber(L, ret);
     return 1;
 }
 
@@ -370,13 +370,13 @@ l_arena_set_active (lua_State *L)
 }
 
 static int
-l_world_new (lua_State *L)
+l_scene_new (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  ret =
 
-        nux_world_new(env);
+        nux_scene_new(env);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -396,109 +396,58 @@ l_entity_new (lua_State *L)
     return 1;
 }
 
-static const struct luaL_Reg lib_base[] = {
+static const struct luaL_Reg lib_core[] = { { "stat", l_core_stat },
+                                            { "time", l_core_time },
+                                            { "dt", l_core_dt },
+                                            { "frame", l_core_frame },
+                                            { "rectfill", l_core_rectfill },
+                                            { "trifill", l_core_trifill },
+                                            { "pal", l_core_pal },
+                                            { "palt", l_core_palt },
+                                            { "palr", l_core_palr },
+                                            { "palc", l_core_palc },
+                                            { "cls", l_core_cls },
+                                            { "pset", l_core_pset },
+                                            { "cget", l_core_cget },
+                                            { "cset", l_core_cset },
+                                            { NUX_NULL, NUX_NULL } };
 
-    { "stat", l_base_stat },
+static const struct luaL_Reg lib_graphics[]
+    = { { "cursor_x", l_graphics_cursor_x },
+        { "cursor_y", l_graphics_cursor_y },
+        { "cursor", l_graphics_cursor },
+        { "line", l_graphics_line },
+        { "circle", l_graphics_circle },
+        { "rectangle", l_graphics_rectangle },
+        { "set_render_target", l_graphics_set_render_target },
+        { "blit", l_graphics_blit },
+        { NUX_NULL, NUX_NULL } };
 
-    { "time", l_base_time },
+static const struct luaL_Reg lib_input[] = { { "button", l_input_button },
+                                             { "axis", l_input_axis },
+                                             { NUX_NULL, NUX_NULL } };
 
-    { "dt", l_base_dt },
+static const struct luaL_Reg lib_texture[]
+    = { { "new", l_texture_new }, { NUX_NULL, NUX_NULL } };
 
-    { "frame", l_base_frame },
+static const struct luaL_Reg lib_arena[]
+    = { { "new", l_arena_new },
+        { "reset", l_arena_reset },
+        { "set_active", l_arena_set_active },
+        { NUX_NULL, NUX_NULL } };
 
-    { "rectfill", l_base_rectfill },
+static const struct luaL_Reg lib_scene[]
+    = { { "new", l_scene_new }, { NUX_NULL, NUX_NULL } };
 
-    { "trifill", l_base_trifill },
-
-    { "pal", l_base_pal },
-
-    { "palt", l_base_palt },
-
-    { "palr", l_base_palr },
-
-    { "palc", l_base_palc },
-
-    { "cls", l_base_cls },
-
-    { "pset", l_base_pset },
-
-    { "cget", l_base_cget },
-
-    { "cset", l_base_cset },
-
-    { NUX_NULL, NUX_NULL }
-};
-
-static const struct luaL_Reg lib_graphics[] = {
-
-    { "cursor_x", l_graphics_cursor_x },
-
-    { "cursor_y", l_graphics_cursor_y },
-
-    { "cursor", l_graphics_cursor },
-
-    { "line", l_graphics_line },
-
-    { "circle", l_graphics_circle },
-
-    { "rectangle", l_graphics_rectangle },
-
-    { "set_render_target", l_graphics_set_render_target },
-
-    { "blit", l_graphics_blit },
-
-    { NUX_NULL, NUX_NULL }
-};
-
-static const struct luaL_Reg lib_input[] = {
-
-    { "button", l_input_button },
-
-    { "axis", l_input_axis },
-
-    { NUX_NULL, NUX_NULL }
-};
-
-static const struct luaL_Reg lib_texture[] = {
-
-    { "new", l_texture_new },
-
-    { NUX_NULL, NUX_NULL }
-};
-
-static const struct luaL_Reg lib_arena[] = {
-
-    { "new", l_arena_new },
-
-    { "reset", l_arena_reset },
-
-    { "set_active", l_arena_set_active },
-
-    { NUX_NULL, NUX_NULL }
-};
-
-static const struct luaL_Reg lib_world[] = {
-
-    { "new", l_world_new },
-
-    { NUX_NULL, NUX_NULL }
-};
-
-static const struct luaL_Reg lib_entity[] = {
-
-    { "new", l_entity_new },
-
-    { NUX_NULL, NUX_NULL }
-};
+static const struct luaL_Reg lib_entity[]
+    = { { "new", l_entity_new }, { NUX_NULL, NUX_NULL } };
 
 nux_status_t
 nux_register_lua (nux_instance_t *inst)
 {
     lua_newtable(inst->L);
 
-    lua_newtable(inst->L);
-    luaL_setfuncs(inst->L, lib_base, 0);
-    lua_setfield(inst->L, -2, "base");
+    luaL_setfuncs(inst->L, lib_core, 0);
 
     lua_newtable(inst->L);
     luaL_setfuncs(inst->L, lib_graphics, 0);
@@ -517,8 +466,8 @@ nux_register_lua (nux_instance_t *inst)
     lua_setfield(inst->L, -2, "arena");
 
     lua_newtable(inst->L);
-    luaL_setfuncs(inst->L, lib_world, 0);
-    lua_setfield(inst->L, -2, "world");
+    luaL_setfuncs(inst->L, lib_scene, 0);
+    lua_setfield(inst->L, -2, "scene");
 
     lua_newtable(inst->L);
     luaL_setfuncs(inst->L, lib_entity, 0);

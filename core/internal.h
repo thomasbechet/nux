@@ -365,7 +365,7 @@ typedef struct
 typedef struct
 {
     nux_u32_t arena;
-} nux_world_t;
+} nux_scene_t;
 
 typedef struct
 {
@@ -395,7 +395,7 @@ typedef enum
     NUX_OBJECT_LUA       = 2,
     NUX_OBJECT_TEXTURE   = 3,
     NUX_OBJECT_MESH      = 4,
-    NUX_OBJECT_WORLD     = 5,
+    NUX_OBJECT_SCENE     = 5,
     NUX_OBJECT_ENTITY    = 6,
     NUX_OBJECT_TRANSFORM = 7,
     NUX_OBJECT_CAMERA    = 8,
@@ -573,9 +573,9 @@ void nux_texture_write(nux_env_t  *env,
                        nux_u32_t   h,
                        const void *data);
 
-// world.c
+// scene.c
 
-void nux_world_cleanup(nux_env_t *env, void *data);
+void nux_scene_cleanup(nux_env_t *env, void *data);
 
 // entity.c
 

@@ -48,7 +48,7 @@ core_init (const nux_instance_config_t *config)
     nux_object_register(inst, "lua", NUX_NULL);
     nux_object_register(inst, "texture", nux_texture_cleanup);
     nux_object_register(inst, "mesh", NUX_NULL);
-    nux_object_register(inst, "world", nux_world_cleanup);
+    nux_object_register(inst, "scene", nux_scene_cleanup);
     nux_object_register(inst, "entity", nux_entity_cleanup);
     nux_object_register(inst, "transform", NUX_NULL);
     nux_object_register(inst, "camera", NUX_NULL);

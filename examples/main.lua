@@ -1,14 +1,12 @@
-local inspect = require("inspect")
+local module = {}
 
-local gfx = nux.graphics
+function module.on_load()
 
-local a = nux.newArena()
-local gui = gfx.newRenderTarget(a, 360, 200)
+end
 
-gfx.setRenderTarget(gui)
+function module.on_tick()
 
-gfx.setRenderTarget(0) -- default render target
-gfx.blit(gui:texture())
+end
 
-local rt = gfx.newRenderTarget(500, 500)
-local tex = gfx.newTexture(500, 500)
+return module
+

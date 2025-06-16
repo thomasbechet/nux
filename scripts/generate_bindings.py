@@ -13,8 +13,8 @@ modules = {}
 
 def parse_function(node):
     parts = node.type.declname.split("_", 2)
-    if len(parts) < 3: # In base module
-        module = "base"
+    if len(parts) < 3: # In core module
+        module = "core"
     else:
         module = parts[1]
     if module not in modules.keys():

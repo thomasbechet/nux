@@ -23,6 +23,11 @@ nux_lua_init (nux_env_t *env)
         fprintf(stderr, "\n");
     }
 
+    lua_getglobal(env->inst->L, "nux");
+    lua_getfield(env->inst->L, -1, "init");
+    lua_pcall(env->inst->L, 0, 0, 0);
+    lua_pop(env->inst->L, 1);
+
     return NUX_SUCCESS;
 }
 void
@@ -36,4 +41,8 @@ nux_lua_free (nux_env_t *env)
 void
 nux_lua_tick (nux_env_t *env)
 {
+    lua_getglobal(env->inst->L, "nux");
+    lua_getfield(env->inst->L, -1, "tick");
+    lua_pcall(env->inst->L, 0, 0, 0);
+    lua_pop(env->inst->L, 1);
 }

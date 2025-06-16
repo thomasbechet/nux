@@ -21,12 +21,10 @@ delete_objects (nux_env_t *env, nux_arena_t *arena, nux_u32_t object)
     nux_u32_t next = arena->last_object;
     while (next != object)
     {
-        printf("%d\n", ID_INDEX(next));
         nux_object_t      *obj  = &env->inst->objects.data[ID_INDEX(next)];
         nux_object_type_t *type = env->inst->object_types + obj->type;
         if (type->cleanup)
         {
-            printf("cleanup %s\n", type->name);
             type->cleanup(env, obj->data);
         }
         nux_u32_vec_pushv(&env->inst->objects_freelist, ID_INDEX(next));
