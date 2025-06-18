@@ -383,6 +383,17 @@ l_arena_active (lua_State *L)
 }
 
 static int
+l_arena_dump (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env = lua_touserdata(L, -1);
+    nux_u32_t  id  = luaL_checkinteger(L, 1);
+    nux_arena_dump(env, id);
+
+    return 0;
+}
+
+static int
 l_scene_new (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
@@ -443,11 +454,10 @@ static const struct luaL_Reg lib_input[] = { { "button", l_input_button },
 static const struct luaL_Reg lib_texture[]
     = { { "new", l_texture_new }, { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
-                                             { "reset", l_arena_reset },
-                                             { "use", l_arena_use },
-                                             { "active", l_arena_active },
-                                             { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_arena[]
+    = { { "new", l_arena_new },   { "reset", l_arena_reset },
+        { "use", l_arena_use },   { "active", l_arena_active },
+        { "dump", l_arena_dump }, { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_scene[]
     = { { "new", l_scene_new }, { NUX_NULL, NUX_NULL } };

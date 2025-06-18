@@ -15,20 +15,21 @@ nux_strncpy (nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n)
     while (i++ != n && (*dst++ = *src++))
         ;
 }
-void
+nux_u32_t
 nux_snprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...)
 {
 #ifdef NUX_STDLIB
     va_list args;
     va_start(args, format);
-    nux_vsnprintf(buf, n, format, args);
+    nux_u32_t cn = nux_vsnprintf(buf, n, format, args);
     va_end(args);
+    return cn;
 #endif
 }
-void
+nux_u32_t
 nux_vsnprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, va_list args)
 {
 #ifdef NUX_STDLIB
-    vsnprintf(buf, n, format, args);
+    return vsnprintf(buf, n, format, args);
 #endif
 }

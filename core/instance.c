@@ -25,10 +25,11 @@ core_init (const nux_instance_config_t *config)
 
     // Allocate core memory
     nux_arena_t core_arena;
-    core_arena.capa        = NUX_MEMORY_SIZE;
-    core_arena.size        = 0;
-    core_arena.data        = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
-    core_arena.last_object = NUX_NULL;
+    core_arena.capa         = NUX_MEMORY_SIZE;
+    core_arena.size         = 0;
+    core_arena.data         = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
+    core_arena.first_object = NUX_NULL;
+    core_arena.last_object  = NUX_NULL;
     NUX_CHECKM(
         core_arena.data, "Failed to allocate core memory", return NUX_NULL);
     nux_memset(core_arena.data, 0, NUX_MEMORY_SIZE);
@@ -165,7 +166,7 @@ nux_instance_load (nux_instance_t *inst, const nux_c8_t *cart, nux_u32_t n)
 void
 nux_trace (nux_env_t *env, const nux_c8_t *text)
 {
-    nux_os_log(env->inst->userdata, text, nux_strnlen(text, 1024));
+    nux_log(env, NUX_LOG_INFO, text, nux_strnlen(text, 1024));
 }
 
 void

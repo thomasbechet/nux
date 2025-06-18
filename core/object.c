@@ -88,8 +88,18 @@ nux_object_create (nux_env_t   *env,
     obj->type_index = type_index;
     obj->data       = data;
     obj->version += 1;
-    nux_u32_t id       = BUILD_ID(index, obj->version);
-    obj->prev          = arena->last_object;
+    nux_u32_t id = BUILD_ID(index, obj->version);
+    obj->prev    = arena->last_object;
+    if (arena->last_object)
+    {
+        nux_object_t *prev_obj = &env->inst->objects.data[ID_INDEX(obj->prev)];
+        prev_obj->next         = id;
+    }
+    obj->next = NUX_NULL;
+    if (arena->first_object == NUX_NULL)
+    {
+        arena->first_object = id;
+    }
     arena->last_object = id;
     return id;
 }
@@ -101,6 +111,16 @@ nux_object_delete (nux_env_t *env, nux_u32_t id)
     if (type->cleanup)
     {
         type->cleanup(env, obj->data);
+    }
+    if (obj->prev)
+    {
+        nux_object_t *prev_obj = &env->inst->objects.data[ID_INDEX(obj->prev)];
+        prev_obj->next         = obj->next;
+    }
+    if (obj->next)
+    {
+        nux_object_t *next_obj = &env->inst->objects.data[ID_INDEX(obj->next)];
+        next_obj->prev         = obj->prev;
     }
     nux_u32_vec_pushv(&env->inst->objects_freelist, ID_INDEX(id));
 }
@@ -146,6 +166,7 @@ nux_arena_new (nux_env_t *env)
     const nux_u32_t default_capa = 1 << 20;
     arena->capa                  = default_capa;
     arena->size                  = 0;
+    arena->first_object          = NUX_NULL;
     arena->last_object           = NUX_NULL;
     arena->data = nux_arena_alloc(env->active_arena, arena->capa);
     NUX_CHECK(arena->data, goto cleanup1);
@@ -180,4 +201,19 @@ nux_u32_t
 nux_arena_active (nux_env_t *env)
 {
     return env->active_arena->id;
+}
+void
+nux_arena_dump (nux_env_t *env, nux_u32_t id)
+{
+    nux_arena_t *arena = nux_object_get(env, NUX_OBJECT_ARENA, id);
+    NUX_CHECK(arena, return);
+    NUX_INFO("ARENA : %d", id);
+    nux_u32_t next = arena->first_object;
+    while (next)
+    {
+        nux_object_t      *obj  = &env->inst->objects.data[ID_INDEX(next)];
+        nux_object_type_t *type = &env->inst->object_types[obj->type_index];
+        NUX_INFO("- %s : %d", type->name, next);
+        next = obj->next;
+    }
 }

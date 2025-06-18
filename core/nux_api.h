@@ -154,6 +154,14 @@ typedef enum
     NUX_TEXTURE_RENDER_TARGET,
 } nux_texture_type_t;
 
+typedef enum
+{
+    NUX_LOG_DEBUG   = 5,
+    NUX_LOG_INFO    = 4,
+    NUX_LOG_WARNING = 3,
+    NUX_LOG_ERROR   = 2,
+} nux_log_level_t;
+
 // Debug API
 void nux_trace(nux_env_t *env, const nux_c8_t *text);
 void nux_dbgi32(nux_env_t *env, const nux_c8_t *name, nux_i32_t *p);
@@ -241,6 +249,7 @@ nux_u32_t    nux_arena_new(nux_env_t *env);
 void         nux_arena_reset(nux_env_t *env, nux_u32_t id);
 nux_status_t nux_arena_use(nux_env_t *env, nux_u32_t id);
 nux_u32_t    nux_arena_active(nux_env_t *env);
+void         nux_arena_dump(nux_env_t *env, nux_u32_t id);
 
 nux_u32_t nux_scene_new(nux_env_t *env);
 nux_u32_t nux_entity_new(nux_env_t *env, nux_u32_t world);

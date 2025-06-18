@@ -52,7 +52,7 @@ instance_init (runtime_instance_t *instance, nu_sv_t path)
                             nu_strnlen(instance->path, NU_PATH_MAX));
     if (!status)
     {
-        logger_log(NU_LOG_ERROR, "Failed to load cartridge.");
+        logger_log(NUX_LOG_ERROR, "Failed to load cartridge.");
         goto cleanup0;
     }
 
@@ -280,9 +280,12 @@ nux_os_realloc (void *userdata, void *p, nux_u32_t n)
     return native_realloc(p, n);
 }
 void
-nux_os_log (void *userdata, const nux_c8_t *log, nux_u32_t n)
+nux_os_console (void           *userdata,
+                nux_log_level_t level,
+                const nux_c8_t *log,
+                nux_u32_t       n)
 {
-    logger_log(NU_LOG_INFO, "%.*s", n, log);
+    logger_log(level, "%.*s", n, log);
 }
 void
 nux_os_debug (void            *userdata,
@@ -312,7 +315,7 @@ nux_os_debug (void            *userdata,
         if (instance->debug_value_count
             >= NU_ARRAY_SIZE(instance->debug_values))
         {
-            logger_log(NU_LOG_ERROR, "Max inspect value count reach");
+            logger_log(NUX_LOG_ERROR, "Max inspect value count reach");
             return;
         }
         value       = &instance->debug_values[instance->debug_value_count++];

@@ -121,7 +121,10 @@ NUX_API nux_status_t nux_os_mount(void           *userdata,
                                   nux_u32_t       n);
 NUX_API nux_status_t nux_os_seek(void *userdata, nux_u32_t n);
 NUX_API nux_u32_t    nux_os_read(void *userdata, void *p, nux_u32_t n);
-NUX_API void nux_os_log(void *userdata, const nux_c8_t *log, nux_u32_t n);
+NUX_API void         nux_os_console(void           *userdata,
+                                    nux_log_level_t level,
+                                    const nux_c8_t *log,
+                                    nux_u32_t       n);
 NUX_API nux_status_t nux_os_create_pipeline(void               *userdata,
                                             nux_u32_t           slot,
                                             nux_gpu_pass_type_t type);

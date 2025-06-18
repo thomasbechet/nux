@@ -52,6 +52,12 @@
     }
 #endif
 
+#define NUX_INFO(format, ...) nux_log(env, NUX_LOG_INFO, format, ##__VA_ARGS__)
+#define NUX_WARNING(format, ...) \
+    nux_log(env, NUX_LOG_WARNING, format, ##__VA_ARGS__)
+#define NUX_ERROR(format, ...) \
+    nux_log(env, NUX_LOG_ERROR, format, ##__VA_ARGS__)
+
 #define NUX_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define NUX_ARRAY_FILL(arr, size, value) \
     for (nu_size_t i = 0; i < size; ++i) \
@@ -374,6 +380,7 @@ typedef struct
     void     *data;
     nux_u32_t capa;
     nux_u32_t size;
+    nux_u32_t first_object;
     nux_u32_t last_object;
 } nux_arena_t;
 
@@ -468,6 +475,7 @@ typedef struct
 typedef struct
 {
     nux_u32_t prev;
+    nux_u32_t next;
     nux_u8_t  version;
     nux_u32_t type_index;
     void     *data;
@@ -590,8 +598,8 @@ nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 
 nux_u32_t nux_strnlen(const nux_c8_t *s, nux_u32_t n);
 void      nux_strncpy(nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n);
-void      nux_snprintf(nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...);
-void      nux_vsnprintf(nux_c8_t       *buf,
+nux_u32_t nux_snprintf(nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...);
+nux_u32_t nux_vsnprintf(nux_c8_t       *buf,
                         nux_u32_t       n,
                         const nux_c8_t *format,
                         va_list         args);
@@ -718,5 +726,13 @@ void nux_error(nux_env_t *env, nux_error_t error);
 
 nux_status_t nux_register_lua(nux_instance_t *inst);
 nux_status_t nux_register_lua2(nux_instance_t *inst);
+
+// logger.c
+
+void nux_vlog(nux_env_t      *env,
+              nux_log_level_t level,
+              const nux_c8_t *fmt,
+              va_list         args);
+void nux_log(nux_env_t *env, nux_log_level_t level, const nux_c8_t *fmt, ...);
 
 #endif

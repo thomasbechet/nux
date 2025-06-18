@@ -96,8 +96,8 @@ void *native_malloc(nu_size_t n);
 void  native_free(void *p);
 void *native_realloc(void *p, nu_size_t n);
 
-void logger_log(nu_log_level_t level, const nu_char_t *fmt, ...);
-void logger_vlog(nu_log_level_t level, const nu_char_t *fmt, va_list args);
+void logger_log(nux_log_level_t level, const nu_char_t *fmt, ...);
+void logger_vlog(nux_log_level_t level, const nu_char_t *fmt, va_list args);
 
 nu_status_t         runtime_run(const runtime_config_t *config);
 nu_status_t         runtime_open(nu_u32_t index, nu_sv_t path);
