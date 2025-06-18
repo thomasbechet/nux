@@ -1,6 +1,6 @@
 # Console Specifications
 
-NUX console supports multiple specs based on the cartridge options.
+TODO
 
 # ? Load / Save state
 # ? Determinism
@@ -23,3 +23,13 @@ NUX console supports multiple specs based on the cartridge options.
 
 - use lua as config files
 
+## Objects
+
+- An object belongs to an arena which correspond to a lifetime
+- Each objects are referenced with and id (using index + version) in a global table
+- The object's state must be contained only in a single arena
+- Objects pool is possible
+
+## Program
+
+- The runtime execute a single program

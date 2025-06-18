@@ -237,9 +237,10 @@ void nux_graphics_set_render_target(nux_env_t *env, nux_u32_t id);
 void nux_graphics_blit(nux_env_t *env, nux_u32_t id);
 // void nux_draw_cube(nux_env_t *env);
 
-nux_u32_t    nux_arena_new(nux_env_t *env, nux_u32_t capa);
-void         nux_arena_reset(nux_env_t *env);
-nux_status_t nux_arena_set_active(nux_env_t *env, nux_u32_t id);
+nux_u32_t    nux_arena_new(nux_env_t *env);
+void         nux_arena_reset(nux_env_t *env, nux_u32_t id);
+nux_status_t nux_arena_use(nux_env_t *env, nux_u32_t id);
+nux_u32_t    nux_arena_active(nux_env_t *env);
 
 nux_u32_t nux_scene_new(nux_env_t *env);
 nux_u32_t nux_entity_new(nux_env_t *env, nux_u32_t world);

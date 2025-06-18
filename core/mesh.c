@@ -3,8 +3,6 @@
 nux_u32_t
 nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
-    nux_frame_t frame = nux_frame_begin(env);
-
     const nux_b3_t box = nux_b3(nux_v3s(0), nux_v3(sx / 2, sy / 2, sz / 2));
 
     const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
@@ -33,13 +31,15 @@ nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
         { { 0, 0 } },
     };
 
-    nux_u32_t   id;
-    nux_mesh_t *mesh
-        = nux_object_add_struct(env, NUX_OBJECT_MESH, sizeof(nux_mesh_t), &id);
-    NUX_CHECKM(mesh, "Failed to create cube mesh object", goto cleanup);
+    nux_mesh_t *mesh = nux_arena_alloc(env->active_arena, sizeof(*mesh));
+    NUX_CHECK(mesh, return NUX_NULL);
+    nux_u32_t id
+        = nux_object_create(env, env->active_arena, NUX_OBJECT_MESH, mesh);
+    NUX_CHECK(id, return NUX_NULL);
     mesh->count = NUX_ARRAY_SIZE(positions);
-    mesh->data  = nux_alloc(env, sizeof(nux_f32_t) * 5 * mesh->count);
-    NUX_CHECKM(mesh->data, "Failed to allocate cube mesh data", goto cleanup);
+    mesh->data  = nux_arena_alloc(env->active_arena,
+                                 sizeof(nux_f32_t) * 5 * mesh->count);
+    NUX_CHECK(mesh->data, return NUX_NULL);
 
     for (nux_u32_t i = 0; i < mesh->count; ++i)
     {
@@ -50,14 +50,9 @@ nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
         mesh->data[i * 5 + 4] = uvs[i].y;
     }
 
-    NUX_CHECKM(
+    NUX_CHECK(
         nux_graphics_push_vertices(env, mesh->count, mesh->data, &mesh->first),
-        "Failed to push cube vertices",
-        goto cleanup);
+        return NUX_NULL);
 
-    return NUX_SUCCESS;
-
-cleanup:
-    nux_frame_reset(env, frame);
-    return NUX_FAILURE;
+    return id;
 }

@@ -6,13 +6,12 @@ nux_texture_new (nux_env_t         *env,
                  nux_u32_t          w,
                  nux_u32_t          h)
 {
-    nux_frame_t frame = nux_frame_begin(env);
-
     // Create object
-    nux_u32_t      id;
-    nux_texture_t *tex = nux_object_add_struct(
-        env, NUX_OBJECT_TEXTURE, sizeof(nux_texture_t), &id);
-    NUX_CHECKM(tex, "Failed to create texture object", return NUX_NULL);
+    nux_texture_t *tex = nux_arena_alloc(env->active_arena, sizeof(*tex));
+    NUX_CHECK(tex, return NUX_NULL);
+    nux_u32_t id
+        = nux_object_create(env, env->active_arena, NUX_OBJECT_TEXTURE, tex);
+    NUX_CHECK(id, return NUX_NULL);
     tex->type   = type;
     tex->width  = w;
     tex->height = h;
@@ -25,11 +24,11 @@ nux_texture_new (nux_env_t         *env,
         .height = h,
     };
     nux_u32_t *slot = nux_u32_vec_pop(&env->inst->free_texture_slots);
-    NUX_CHECKM(slot, "Out of gpu textures", goto cleanup);
+    NUX_CHECKM(slot, "Out of gpu textures", return NUX_NULL);
     tex->slot = *slot;
     NUX_CHECKM(nux_os_create_texture(env->inst->userdata, tex->slot, &info),
                "Failed to create texture",
-               goto cleanup);
+               return NUX_NULL);
 
     // Allocate memory
     nux_u32_t pixel_size;
@@ -47,8 +46,9 @@ nux_texture_new (nux_env_t         *env,
     }
     if (pixel_size)
     {
-        tex->data = nux_alloc(env, pixel_size * w * h);
-        NUX_CHECKM(tex->data, "Failed to allocate texture data", goto cleanup);
+        tex->data = nux_arena_alloc(env->active_arena, pixel_size * w * h);
+        NUX_CHECKM(
+            tex->data, "Failed to allocate texture data", return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
@@ -56,19 +56,15 @@ nux_texture_new (nux_env_t         *env,
     {
         // Create framebuffer
         slot = nux_u32_vec_pop(&env->inst->free_framebuffer_slots);
-        NUX_CHECKM(slot, "Out of gpu framebuffer slots", goto cleanup);
+        NUX_CHECKM(slot, "Out of gpu framebuffer slots", return NUX_NULL);
         tex->framebuffer_slot = *slot;
         NUX_CHECKM(nux_os_create_framebuffer(
                        env->inst->userdata, tex->framebuffer_slot, tex->slot),
                    "Failed to create framebuffer",
-                   goto cleanup);
+                   return NUX_NULL);
     }
 
     return id;
-
-cleanup:
-    nux_frame_reset(env, frame);
-    return NUX_NULL;
 }
 void
 nux_texture_cleanup (nux_env_t *env, void *data)

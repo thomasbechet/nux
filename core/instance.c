@@ -6,7 +6,7 @@ init_env (nux_instance_t *inst)
     inst->env.inst  = inst;
     inst->env.error = NUX_ERROR_NONE;
     nux_strncpy(inst->env.error_message, "", sizeof(inst->env.error_message));
-    inst->env.arena = inst->core_arena_id;
+    inst->env.active_arena = inst->core_arena;
     return &inst->env;
 }
 
@@ -24,27 +24,27 @@ core_init (const nux_instance_config_t *config)
     NUX_ASSERT(config->memory_size);
 
     // Allocate core memory
-    nux_arena_t arena;
-    arena.capa        = NUX_MEMORY_SIZE;
-    arena.size        = 0;
-    arena.data        = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
-    arena.last_object = NUX_NULL;
-    NUX_CHECKM(arena.data, "Failed to allocate core memory", return NUX_NULL);
-    nux_memset(arena.data, 0, NUX_MEMORY_SIZE);
+    nux_arena_t core_arena;
+    core_arena.capa        = NUX_MEMORY_SIZE;
+    core_arena.size        = 0;
+    core_arena.data        = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
+    core_arena.last_object = NUX_NULL;
+    NUX_CHECKM(
+        core_arena.data, "Failed to allocate core memory", return NUX_NULL);
+    nux_memset(core_arena.data, 0, NUX_MEMORY_SIZE);
 
     // Allocate instance
-    nux_instance_t *inst = nux_arena_alloc(&arena, sizeof(*inst));
+    nux_instance_t *inst = nux_arena_alloc(&core_arena, sizeof(*inst));
     NUX_ASSERT(inst);
-    inst->userdata   = config->userdata;
-    inst->running    = NUX_TRUE;
-    inst->init       = config->init;
-    inst->update     = config->update;
-    inst->core_arena = arena; // copy by value
+    inst->userdata = config->userdata;
+    inst->running  = NUX_TRUE;
+    inst->init     = config->init;
+    inst->update   = config->update;
 
     // Register base objects
     inst->object_types_count = 0;
     nux_object_register(inst, "null", NUX_NULL);
-    nux_object_register(inst, "arena", nux_arena_cleanup);
+    nux_object_register(inst, "arena", NUX_NULL);
     nux_object_register(inst, "lua", NUX_NULL);
     nux_object_register(inst, "texture", nux_texture_cleanup);
     nux_object_register(inst, "mesh", NUX_NULL);
@@ -54,32 +54,29 @@ core_init (const nux_instance_config_t *config)
     nux_object_register(inst, "camera", NUX_NULL);
 
     // Create object pool
-    nux_object_t *objects = nux_arena_alloc(
-        &inst->core_arena, sizeof(*objects) * config->max_object_count);
-    NUX_CHECKM(objects, "Failed to allocate objects pool", goto cleanup);
-    nux_object_vec_init(objects, config->max_object_count, &inst->objects);
-    nux_u32_t *objects_freelist
-        = nux_arena_alloc(&inst->core_arena,
-                          sizeof(*objects_freelist) * config->max_object_count);
-    NUX_CHECKM(objects, "Failed to allocate objects freelist", goto cleanup);
-    nux_u32_vec_init(
-        objects_freelist, config->max_object_count, &inst->objects_freelist);
+    NUX_CHECKM(nux_object_vec_alloc(
+                   &core_arena, config->max_object_count, &inst->objects),
+               "Failed to allocate objects pool",
+               goto cleanup);
+    NUX_CHECKM(nux_u32_vec_alloc(&core_arena,
+                                 config->max_object_count,
+                                 &inst->objects_freelist),
+               "Failed to allocate objects freelist",
+               goto cleanup);
 
     // Reserve index 0 for null object
     nux_object_vec_push(&inst->objects);
 
-    // Reserve index 1 for core arena
-    nux_object_t *obj   = nux_object_vec_push(&inst->objects);
-    obj->type           = NUX_OBJECT_ARENA;
-    obj->data           = &inst->core_arena;
-    obj->arena          = NUX_NULL;
-    obj->prev           = NUX_NULL;
-    obj->version        = 0;
-    inst->core_arena_id = 1;
+    // Register core arena
+    NUX_CHECKM(nux_arena_pool_alloc(&core_arena, 32, &inst->arenas),
+               "Failed to allocate arenas",
+               goto cleanup);
+    inst->core_arena  = nux_arena_pool_add(&inst->arenas);
+    *inst->core_arena = core_arena; // copy by value
 
     return inst;
 cleanup:
-    nux_os_free(config->userdata, inst->core_arena.data);
+    nux_os_free(config->userdata, inst->core_arena->data);
     return NUX_NULL;
 }
 
@@ -91,6 +88,10 @@ nux_instance_init (const nux_instance_config_t *config)
 
     // Prepare initialization environment
     nux_env_t *env = init_env(inst);
+
+    // Register core arena object
+    inst->core_arena->id = nux_object_create(
+        env, env->active_arena, NUX_OBJECT_ARENA, inst->core_arena);
 
     // Initialize modules
     NUX_CHECK(nux_graphics_init(env), goto cleanup);
@@ -106,17 +107,16 @@ void
 nux_instance_free (nux_instance_t *inst)
 {
     nux_env_t *env = init_env(inst);
-    nux_arena_set_active(env, inst->core_arena_id);
-    nux_arena_reset(env);
+    nux_arena_reset_to(env, inst->core_arena, NUX_NULL);
 
     // Free modules
     nux_lua_free(env);
     nux_graphics_free(env);
 
     // Free core memory
-    if (inst->core_arena.data)
+    if (inst->core_arena->data)
     {
-        nux_os_free(inst->userdata, inst->core_arena.data);
+        nux_os_free(inst->userdata, inst->core_arena->data);
     }
 }
 void

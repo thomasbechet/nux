@@ -13,20 +13,20 @@
 nux_status_t
 nux_graphics_init (nux_env_t *env)
 {
-    nux_frame_t frame = nux_frame_begin(env);
-
     // Initialize gpu slots
-    NUX_CHECKM(nux_u32_vec_alloc(
-                   env, NUX_GPU_TEXTURE_MAX, &env->inst->free_texture_slots),
+    NUX_CHECKM(nux_u32_vec_alloc(env->inst->core_arena,
+                                 NUX_GPU_TEXTURE_MAX,
+                                 &env->inst->free_texture_slots),
                "Failed to allocate gpu texture slots",
                goto error);
-    NUX_CHECKM(nux_u32_vec_alloc(env,
+    NUX_CHECKM(nux_u32_vec_alloc(env->inst->core_arena,
                                  NUX_GPU_FRAMEBUFFER_MAX,
                                  &env->inst->free_framebuffer_slots),
                "Failed to allocate gpu framebuffer slots",
                goto error);
-    NUX_CHECKM(nux_u32_vec_alloc(
-                   env, NUX_GPU_BUFFER_MAX, &env->inst->free_buffer_slots),
+    NUX_CHECKM(nux_u32_vec_alloc(env->inst->core_arena,
+                                 NUX_GPU_BUFFER_MAX,
+                                 &env->inst->free_buffer_slots),
                "Failed to allocate gpu buffer slots",
                goto error);
 
@@ -35,7 +35,8 @@ nux_graphics_init (nux_env_t *env)
     nux_u32_vec_fill_reversed(&env->inst->free_buffer_slots);
 
     // Allocate canvas
-    env->inst->canvas = nux_alloc(env, NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
+    env->inst->canvas = nux_arena_alloc(env->inst->core_arena,
+                                        NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
     NUX_CHECKM(env->inst->canvas, "Failed to allocate canvas", goto error);
 
     // Initialize state
@@ -87,7 +88,6 @@ nux_graphics_init (nux_env_t *env)
     return NUX_SUCCESS;
 
 error:
-    nux_frame_reset(env, frame);
     return NUX_FAILURE;
 }
 nux_status_t

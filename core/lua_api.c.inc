@@ -335,11 +335,10 @@ static int
 l_arena_new (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env  = lua_touserdata(L, -1);
-    nux_u32_t  capa = luaL_checkinteger(L, 1);
+    nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  ret =
 
-        nux_arena_new(env, capa);
+        nux_arena_new(env);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -350,20 +349,34 @@ l_arena_reset (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
-    nux_arena_reset(env);
+    nux_u32_t  id  = luaL_checkinteger(L, 1);
+    nux_arena_reset(env, id);
 
     return 0;
 }
 
 static int
-l_arena_set_active (lua_State *L)
+l_arena_use (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t   *env = lua_touserdata(L, -1);
     nux_u32_t    id  = luaL_checkinteger(L, 1);
     nux_status_t ret =
 
-        nux_arena_set_active(env, id);
+        nux_arena_use(env, id);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+static int
+l_arena_active (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env = lua_touserdata(L, -1);
+    nux_u32_t  ret =
+
+        nux_arena_active(env);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -430,11 +443,11 @@ static const struct luaL_Reg lib_input[] = { { "button", l_input_button },
 static const struct luaL_Reg lib_texture[]
     = { { "new", l_texture_new }, { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_arena[]
-    = { { "new", l_arena_new },
-        { "reset", l_arena_reset },
-        { "set_active", l_arena_set_active },
-        { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
+                                             { "reset", l_arena_reset },
+                                             { "use", l_arena_use },
+                                             { "active", l_arena_active },
+                                             { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_scene[]
     = { { "new", l_scene_new }, { NUX_NULL, NUX_NULL } };
