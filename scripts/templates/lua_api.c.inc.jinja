@@ -11,6 +11,7 @@
 {% set retmap = {
     "nux_i8_t": "lua_pushinteger",
     "nux_u8_t": "lua_pushinteger",
+    "nux_b32_t": "lua_pushboolean",
     "nux_i32_t": "lua_pushinteger",
     "nux_u32_t": "lua_pushinteger",
     "nux_f32_t": "lua_pushnumber",
@@ -68,6 +69,12 @@ nux_status_t nux_register_lua(nux_instance_t *inst)
     luaL_setfuncs(inst->L, lib_{{ module }}, 0);
     lua_setfield(inst->L, -2, "{{ module }}");
 {% endif %}
+{% endfor %}
+{% for constant in constants %}
+{% for value in constant["values"] %}
+    lua_pushinteger(inst->L, {{ value.value }});
+    lua_setfield(inst->L, -2, "{{ value.name }}");
+{% endfor %}
 {% endfor %}
     lua_setglobal(inst->L, "nux");
     return NUX_SUCCESS;

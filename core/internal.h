@@ -538,7 +538,9 @@ struct nux_instance
     nux_u8_t *canvas;
 
     nux_u32_t buttons[NUX_PLAYER_MAX];
+    nux_u32_t buttons_prev[NUX_PLAYER_MAX];
     nux_f32_t axis[NUX_PLAYER_MAX * NUX_AXIS_MAX];
+    nux_f32_t axis_prev[NUX_PLAYER_MAX * NUX_AXIS_MAX];
 
     nux_u32_t stats[NUX_STAT_MAX];
 
@@ -734,5 +736,9 @@ void nux_vlog(nux_env_t      *env,
               const nux_c8_t *fmt,
               va_list         args);
 void nux_log(nux_env_t *env, nux_log_level_t level, const nux_c8_t *fmt, ...);
+
+// input.c
+
+void nux_input_pre_update(nux_env_t *env);
 
 #endif

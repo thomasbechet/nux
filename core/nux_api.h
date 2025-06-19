@@ -128,30 +128,30 @@ typedef enum
 
 typedef enum
 {
-    NUX_STAT_FPS,
-    NUX_STAT_SCREEN_WIDTH,
-    NUX_STAT_SCREEN_HEIGHT,
-    NUX_STAT_MAX
+    NUX_STAT_FPS           = 0,
+    NUX_STAT_SCREEN_WIDTH  = 1,
+    NUX_STAT_SCREEN_HEIGHT = 2,
+    NUX_STAT_MAX           = 3
 } nux_stat_t;
 
 typedef enum
 {
-    NUX_V3F,
-    NUX_V3F_T2F,
-    NUX_V3F_T2F_N3F,
+    NUX_V3F         = 0,
+    NUX_V3F_T2F     = 1,
+    NUX_V3F_T2F_N3F = 2,
 } nux_vertex_format_t;
 
 typedef enum
 {
-    NUX_TRIANGLES,
-    NUX_LINES,
+    NUX_TRIANGLES = 0,
+    NUX_LINES     = 1,
 } nux_vertex_primitive_t;
 
 typedef enum
 {
-    NUX_TEXTURE_IMAGE_RGBA,
-    NUX_TEXTURE_IMAGE_INDEX,
-    NUX_TEXTURE_RENDER_TARGET,
+    NUX_TEXTURE_IMAGE_RGBA    = 0,
+    NUX_TEXTURE_IMAGE_INDEX   = 1,
+    NUX_TEXTURE_RENDER_TARGET = 2,
 } nux_texture_type_t;
 
 typedef enum
@@ -235,6 +235,18 @@ void nux_tracefmt(nux_env_t *env, const nux_c8_t *fmt, ...);
 
 nux_u32_t nux_input_button(nux_env_t *env, nux_u32_t player);
 nux_f32_t nux_input_axis(nux_env_t *env, nux_u32_t player, nux_axis_t axis);
+nux_b32_t nux_button_pressed(nux_env_t   *env,
+                             nux_u32_t    player,
+                             nux_button_t button);
+nux_b32_t nux_button_released(nux_env_t   *env,
+                              nux_u32_t    player,
+                              nux_button_t button);
+nux_b32_t nux_button_just_pressed(nux_env_t   *env,
+                                  nux_u32_t    player,
+                                  nux_button_t button);
+nux_b32_t nux_button_just_released(nux_env_t   *env,
+                                   nux_u32_t    player,
+                                   nux_button_t button);
 
 nux_u32_t nux_texture_new(nux_env_t         *env,
                           nux_texture_type_t format,

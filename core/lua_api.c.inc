@@ -316,6 +316,66 @@ l_input_axis (lua_State *L)
 }
 
 static int
+l_button_pressed (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t   *env    = lua_touserdata(L, -1);
+    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_button_t button = luaL_checkinteger(L, 2);
+    nux_b32_t    ret =
+
+        nux_button_pressed(env, player, button);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+static int
+l_button_released (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t   *env    = lua_touserdata(L, -1);
+    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_button_t button = luaL_checkinteger(L, 2);
+    nux_b32_t    ret =
+
+        nux_button_released(env, player, button);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+static int
+l_button_just_pressed (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t   *env    = lua_touserdata(L, -1);
+    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_button_t button = luaL_checkinteger(L, 2);
+    nux_b32_t    ret =
+
+        nux_button_just_pressed(env, player, button);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+static int
+l_button_just_released (lua_State *L)
+{
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t   *env    = lua_touserdata(L, -1);
+    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_button_t button = luaL_checkinteger(L, 2);
+    nux_b32_t    ret =
+
+        nux_button_just_released(env, player, button);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
+static int
 l_texture_new (lua_State *L)
 {
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
@@ -451,6 +511,13 @@ static const struct luaL_Reg lib_input[] = { { "button", l_input_button },
                                              { "axis", l_input_axis },
                                              { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_button[]
+    = { { "pressed", l_button_pressed },
+        { "released", l_button_released },
+        { "just_pressed", l_button_just_pressed },
+        { "just_released", l_button_just_released },
+        { NUX_NULL, NUX_NULL } };
+
 static const struct luaL_Reg lib_texture[]
     = { { "new", l_texture_new }, { NUX_NULL, NUX_NULL } };
 
@@ -481,6 +548,10 @@ nux_register_lua (nux_instance_t *inst)
     lua_setfield(inst->L, -2, "input");
 
     lua_newtable(inst->L);
+    luaL_setfuncs(inst->L, lib_button, 0);
+    lua_setfield(inst->L, -2, "button");
+
+    lua_newtable(inst->L);
     luaL_setfuncs(inst->L, lib_texture, 0);
     lua_setfield(inst->L, -2, "texture");
 
@@ -495,6 +566,180 @@ nux_register_lua (nux_instance_t *inst)
     lua_newtable(inst->L);
     luaL_setfuncs(inst->L, lib_entity, 0);
     lua_setfield(inst->L, -2, "entity");
+
+    lua_pushinteger(inst->L, 512);
+    lua_setfield(inst->L, -2, "CANVAS_WIDTH");
+
+    lua_pushinteger(inst->L, 320);
+    lua_setfield(inst->L, -2, "CANVAS_HEIGHT");
+
+    lua_pushinteger(inst->L, 4096);
+    lua_setfield(inst->L, -2, "TEXTURE_WIDTH");
+
+    lua_pushinteger(inst->L, 4096);
+    lua_setfield(inst->L, -2, "TEXTURE_HEIGHT");
+
+    lua_pushinteger(inst->L, 4);
+    lua_setfield(inst->L, -2, "PLAYER_MAX");
+
+    lua_pushinteger(inst->L, 10);
+    lua_setfield(inst->L, -2, "BUTTON_MAX");
+
+    lua_pushinteger(inst->L, 6);
+    lua_setfield(inst->L, -2, "AXIS_MAX");
+
+    lua_pushinteger(inst->L, 64);
+    lua_setfield(inst->L, -2, "NAME_MAX");
+
+    lua_pushinteger(inst->L, 256);
+    lua_setfield(inst->L, -2, "PALETTE_SIZE");
+
+    lua_pushinteger(inst->L, 256);
+    lua_setfield(inst->L, -2, "COLORMAP_SIZE");
+
+    lua_pushinteger(inst->L, 1024);
+    lua_setfield(inst->L, -2, "GPU_COMMAND_SIZE");
+
+    lua_pushinteger(inst->L, 0);
+    lua_setfield(inst->L, -2, "ERROR_NONE");
+
+    lua_pushinteger(inst->L, 1);
+    lua_setfield(inst->L, -2, "ERROR_OUT_OF_MEMORY");
+
+    lua_pushinteger(inst->L, 4);
+    lua_setfield(inst->L, -2, "ERROR_INVALID_TEXTURE_SIZE");
+
+    lua_pushinteger(inst->L, 8);
+    lua_setfield(inst->L, -2, "ERROR_WASM_RUNTIME");
+
+    lua_pushinteger(inst->L, 10);
+    lua_setfield(inst->L, -2, "ERROR_CART_EOF");
+
+    lua_pushinteger(inst->L, 11);
+    lua_setfield(inst->L, -2, "ERROR_CART_MOUNT");
+
+    lua_pushinteger(inst->L, 1);
+    lua_setfield(inst->L, -2, "SUCCESS");
+
+    lua_pushinteger(inst->L, 0);
+    lua_setfield(inst->L, -2, "FAILURE");
+
+    lua_pushinteger(inst->L, 6);
+    lua_setfield(inst->L, -2, "VERTEX_TRIANGLES");
+
+    lua_pushinteger(inst->L, 6);
+    lua_setfield(inst->L, -2, "VERTEX_LINES");
+
+    lua_pushinteger(inst->L, 6);
+    lua_setfield(inst->L, -2, "VERTEX_POINTS");
+
+    lua_pushinteger(inst->L, 1 << 0);
+    lua_setfield(inst->L, -2, "VERTEX_POSITION");
+
+    lua_pushinteger(inst->L, 1 << 1);
+    lua_setfield(inst->L, -2, "VERTEX_UV");
+
+    lua_pushinteger(inst->L, 1 << 2);
+    lua_setfield(inst->L, -2, "VERTEX_COLOR");
+
+    lua_pushinteger(inst->L, 1 << 3);
+    lua_setfield(inst->L, -2, "VERTEX_INDICES");
+
+    lua_pushinteger(inst->L, 1 << 0);
+    lua_setfield(inst->L, -2, "BUTTON_A");
+
+    lua_pushinteger(inst->L, 1 << 1);
+    lua_setfield(inst->L, -2, "BUTTON_X");
+
+    lua_pushinteger(inst->L, 1 << 2);
+    lua_setfield(inst->L, -2, "BUTTON_Y");
+
+    lua_pushinteger(inst->L, 1 << 3);
+    lua_setfield(inst->L, -2, "BUTTON_B");
+
+    lua_pushinteger(inst->L, 1 << 4);
+    lua_setfield(inst->L, -2, "BUTTON_UP");
+
+    lua_pushinteger(inst->L, 1 << 5);
+    lua_setfield(inst->L, -2, "BUTTON_DOWN");
+
+    lua_pushinteger(inst->L, 1 << 6);
+    lua_setfield(inst->L, -2, "BUTTON_LEFT");
+
+    lua_pushinteger(inst->L, 1 << 7);
+    lua_setfield(inst->L, -2, "BUTTON_RIGHT");
+
+    lua_pushinteger(inst->L, 1 << 8);
+    lua_setfield(inst->L, -2, "BUTTON_LB");
+
+    lua_pushinteger(inst->L, 1 << 9);
+    lua_setfield(inst->L, -2, "BUTTON_RB");
+
+    lua_pushinteger(inst->L, 0);
+    lua_setfield(inst->L, -2, "AXIS_LEFTX");
+
+    lua_pushinteger(inst->L, 1);
+    lua_setfield(inst->L, -2, "AXIS_LEFTY");
+
+    lua_pushinteger(inst->L, 2);
+    lua_setfield(inst->L, -2, "AXIS_RIGHTX");
+
+    lua_pushinteger(inst->L, 3);
+    lua_setfield(inst->L, -2, "AXIS_RIGHTY");
+
+    lua_pushinteger(inst->L, 4);
+    lua_setfield(inst->L, -2, "AXIS_RT");
+
+    lua_pushinteger(inst->L, 5);
+    lua_setfield(inst->L, -2, "AXIS_LT");
+
+    lua_pushinteger(inst->L, 0);
+    lua_setfield(inst->L, -2, "STAT_FPS");
+
+    lua_pushinteger(inst->L, 1);
+    lua_setfield(inst->L, -2, "STAT_SCREEN_WIDTH");
+
+    lua_pushinteger(inst->L, 2);
+    lua_setfield(inst->L, -2, "STAT_SCREEN_HEIGHT");
+
+    lua_pushinteger(inst->L, 3);
+    lua_setfield(inst->L, -2, "STAT_MAX");
+
+    lua_pushinteger(inst->L, 0);
+    lua_setfield(inst->L, -2, "V3F");
+
+    lua_pushinteger(inst->L, 1);
+    lua_setfield(inst->L, -2, "V3F_T2F");
+
+    lua_pushinteger(inst->L, 2);
+    lua_setfield(inst->L, -2, "V3F_T2F_N3F");
+
+    lua_pushinteger(inst->L, 0);
+    lua_setfield(inst->L, -2, "TRIANGLES");
+
+    lua_pushinteger(inst->L, 1);
+    lua_setfield(inst->L, -2, "LINES");
+
+    lua_pushinteger(inst->L, 0);
+    lua_setfield(inst->L, -2, "TEXTURE_IMAGE_RGBA");
+
+    lua_pushinteger(inst->L, 1);
+    lua_setfield(inst->L, -2, "TEXTURE_IMAGE_INDEX");
+
+    lua_pushinteger(inst->L, 2);
+    lua_setfield(inst->L, -2, "TEXTURE_RENDER_TARGET");
+
+    lua_pushinteger(inst->L, 5);
+    lua_setfield(inst->L, -2, "LOG_DEBUG");
+
+    lua_pushinteger(inst->L, 4);
+    lua_setfield(inst->L, -2, "LOG_INFO");
+
+    lua_pushinteger(inst->L, 3);
+    lua_setfield(inst->L, -2, "LOG_WARNING");
+
+    lua_pushinteger(inst->L, 2);
+    lua_setfield(inst->L, -2, "LOG_ERROR");
 
     lua_setglobal(inst->L, "nux");
     return NUX_SUCCESS;

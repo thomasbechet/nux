@@ -137,6 +137,9 @@ nux_instance_tick (nux_instance_t *inst)
     // Update stats
     nux_os_update_stats(env->inst->userdata, env->inst->stats);
 
+    // Keep previous input state
+    nux_input_pre_update(env);
+
     // Update inputs
     nux_os_update_inputs(
         env->inst->userdata, env->inst->buttons, env->inst->axis);
