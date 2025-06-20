@@ -30,8 +30,7 @@ core_init (const nux_instance_config_t *config)
     core_arena.data         = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
     core_arena.first_object = NUX_NULL;
     core_arena.last_object  = NUX_NULL;
-    NUX_CHECKM(
-        core_arena.data, "Failed to allocate core memory", return NUX_NULL);
+    NUX_CHECK(core_arena.data, return NUX_NULL);
     nux_memset(core_arena.data, 0, NUX_MEMORY_SIZE);
 
     // Allocate instance
@@ -50,28 +49,25 @@ core_init (const nux_instance_config_t *config)
     nux_object_register(inst, "texture", nux_texture_cleanup);
     nux_object_register(inst, "mesh", NUX_NULL);
     nux_object_register(inst, "scene", nux_scene_cleanup);
-    nux_object_register(inst, "entity", nux_entity_cleanup);
+    nux_object_register(inst, "entity", NUX_NULL);
     nux_object_register(inst, "transform", NUX_NULL);
     nux_object_register(inst, "camera", NUX_NULL);
 
     // Create object pool
-    NUX_CHECKM(nux_object_vec_alloc(
-                   &core_arena, config->max_object_count, &inst->objects),
-               "Failed to allocate objects pool",
-               goto cleanup);
-    NUX_CHECKM(nux_u32_vec_alloc(&core_arena,
-                                 config->max_object_count,
-                                 &inst->objects_freelist),
-               "Failed to allocate objects freelist",
-               goto cleanup);
+    NUX_CHECK(nux_object_vec_alloc(
+                  &core_arena, config->max_object_count, &inst->objects),
+              goto cleanup);
+    NUX_CHECK(nux_u32_vec_alloc(&core_arena,
+                                config->max_object_count,
+                                &inst->objects_freelist),
+              goto cleanup);
 
     // Reserve index 0 for null object
     nux_object_vec_push(&inst->objects);
 
     // Register core arena
-    NUX_CHECKM(nux_arena_pool_alloc(&core_arena, 32, &inst->arenas),
-               "Failed to allocate arenas",
-               goto cleanup);
+    NUX_CHECK(nux_arena_pool_alloc(&core_arena, 32, &inst->arenas),
+              goto cleanup);
     inst->core_arena  = nux_arena_pool_add(&inst->arenas);
     *inst->core_arena = core_arena; // copy by value
 

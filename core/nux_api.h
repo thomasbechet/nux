@@ -21,6 +21,17 @@ typedef long long int nux_intptr_t;
 
 typedef struct nux_env nux_env_t;
 
+typedef union
+{
+    struct
+    {
+        nux_f32_t x;
+        nux_f32_t y;
+        nux_f32_t z;
+    };
+    nux_f32_t data[3];
+} nux_v3_t;
+
 typedef enum
 {
     // 16:9
@@ -265,5 +276,13 @@ void         nux_arena_dump(nux_env_t *env, nux_u32_t id);
 
 nux_u32_t nux_scene_new(nux_env_t *env);
 nux_u32_t nux_entity_new(nux_env_t *env, nux_u32_t world);
+
+void     nux_transform_add(nux_env_t *env, nux_u32_t entity);
+void     nux_transform_remove(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_get_position(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_get_scale(nux_env_t *env, nux_u32_t entity);
+void     nux_transform_set_position(nux_env_t *env,
+                                    nux_u32_t  entity,
+                                    nux_v3_t   position);
 
 #endif

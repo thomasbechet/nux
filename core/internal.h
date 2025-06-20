@@ -38,11 +38,11 @@
         action;                  \
     }
 #ifdef NUX_DEBUG
-#define NUX_CHECKM(check, message, action)  \
-    if (!(check))                           \
-    {                                       \
-        fprintf(stderr, "%s\n", (message)); \
-        action;                             \
+#define NUX_CHECKM(check, message, action) \
+    if (!(check))                          \
+    {                                      \
+        NUX_ERROR("%s", (message));        \
+        action;                            \
     }
 #else
 #define NUX_CHECKM(check, message, action) \
@@ -100,15 +100,6 @@
 #define NUX_M4_SIZE 16
 
 #define NUX_V2_DEFINE(name, type)                                        \
-    typedef union                                                        \
-    {                                                                    \
-        struct                                                           \
-        {                                                                \
-            type x;                                                      \
-            type y;                                                      \
-        };                                                               \
-        type data[NUX_V2_SIZE];                                          \
-    } nux_##name##_t;                                                    \
     nux_##name##_t nux_##name(type x, type y);                           \
     nux_##name##_t nux_##name##s(type x);                                \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b); \
@@ -121,16 +112,6 @@
     nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);
 
 #define NUX_V3_DEFINE(name, type)                                          \
-    typedef union                                                          \
-    {                                                                      \
-        struct                                                             \
-        {                                                                  \
-            type x;                                                        \
-            type y;                                                        \
-            type z;                                                        \
-        };                                                                 \
-        type data[NUX_V3_SIZE];                                            \
-    } nux_##name##_t;                                                      \
     nux_##name##_t nux_##name(type x, type y, type z);                     \
     nux_##name##_t nux_##name##s(type x);                                  \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);   \
@@ -145,17 +126,6 @@
     type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
 
 #define NUX_V4_DEFINE(name, type)                                        \
-    typedef union                                                        \
-    {                                                                    \
-        struct                                                           \
-        {                                                                \
-            type x;                                                      \
-            type y;                                                      \
-            type z;                                                      \
-            type w;                                                      \
-        };                                                               \
-        type data[NUX_V4_SIZE];                                          \
-    } nux_##name##_t;                                                    \
     nux_##name##_t nux_##name(type x, type y, type z, type w);           \
     nux_##name##_t nux_##name##s(type x);                                \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b); \
@@ -168,13 +138,7 @@
     nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);          \
     type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
 
-#define NUX_B3_DEFINE(name, type) \
-    typedef struct                \
-    {                             \
-        type min;                 \
-        type max;                 \
-    } nux_##name##_t;             \
-    nux_##name##_t nux_##name(type min, type max);
+#define NUX_B3_DEFINE(name, type) nux_##name##_t nux_##name(type min, type max);
 
 #define NUX_VEC_DEFINE(name, T)                           \
     typedef struct                                        \
@@ -302,18 +266,93 @@
 ///        TYPES         ///
 ////////////////////////////
 
-NUX_V2_DEFINE(v2i, nux_i32_t)
-NUX_V2_DEFINE(v2u, nux_u32_t)
-NUX_V2_DEFINE(v2, nux_f32_t)
-NUX_V3_DEFINE(v3i, nux_i32_t)
-NUX_V3_DEFINE(v3u, nux_u32_t)
-NUX_V3_DEFINE(v3, nux_f32_t)
-NUX_V4_DEFINE(v4i, nux_i32_t)
-NUX_V4_DEFINE(v4u, nux_u32_t)
-NUX_V4_DEFINE(v4, nux_f32_t)
+typedef union
+{
+    struct
+    {
+        nux_i32_t x;
+        nux_i32_t y;
+    };
+    nux_i32_t data[2];
+} nux_v2i_t;
 
-NUX_B3_DEFINE(b3, nux_v3_t)
-NUX_B3_DEFINE(b3i, nux_v3i_t)
+typedef union
+{
+    struct
+    {
+        nux_u32_t x;
+        nux_u32_t y;
+    };
+    nux_u32_t data[2];
+} nux_v2u_t;
+
+typedef union
+{
+    struct
+    {
+        nux_f32_t x;
+        nux_f32_t y;
+    };
+    nux_f32_t data[2];
+} nux_v2_t;
+
+typedef union
+{
+    struct
+    {
+        nux_i32_t x;
+        nux_i32_t y;
+        nux_i32_t z;
+    };
+    nux_i32_t data[3];
+} nux_v3i_t;
+
+typedef union
+{
+    struct
+    {
+        nux_u32_t x;
+        nux_u32_t y;
+        nux_u32_t z;
+    };
+    nux_u32_t data[3];
+} nux_v3u_t;
+
+typedef union
+{
+    struct
+    {
+        nux_f32_t x;
+        nux_f32_t y;
+        nux_f32_t z;
+        nux_f32_t w;
+    };
+    nux_f32_t data[4];
+} nux_v4_t;
+
+typedef union
+{
+    struct
+    {
+        nux_i32_t x;
+        nux_i32_t y;
+        nux_i32_t z;
+        nux_i32_t w;
+    };
+    nux_i32_t data[4];
+} nux_v4i_t;
+
+typedef union
+{
+    struct
+    {
+        nux_u32_t x;
+        nux_u32_t y;
+        nux_u32_t z;
+        nux_u32_t w;
+    };
+    nux_u32_t data[4];
+} nux_v4u_t;
 
 typedef struct
 {
@@ -376,6 +415,18 @@ typedef union
 
 typedef struct
 {
+    nux_v3_t min;
+    nux_v3_t max;
+} nux_b3_t;
+
+typedef struct
+{
+    nux_v3i_t min;
+    nux_v3i_t max;
+} nux_b3i_t;
+
+typedef struct
+{
     nux_u32_t id;
     void     *data;
     nux_u32_t capa;
@@ -415,24 +466,6 @@ typedef struct
 
 typedef struct
 {
-
-} nux_entity_component_t;
-
-typedef struct
-{
-    nux_u32_t world;
-    nux_u32_t transform;
-    nux_u32_t camera;
-    nux_u32_t mesh;
-} nux_entity_t;
-
-typedef struct
-{
-    nux_arena_t *arena;
-} nux_scene_t;
-
-typedef struct
-{
     nux_b2i_t viewport;
     nux_f32_t fov;
 } nux_camera_t;
@@ -444,19 +477,52 @@ typedef struct
     nux_v3_t scale;
 } nux_transform_t;
 
+typedef struct
+{
+    nux_u32_t mesh;
+} nux_static_mesh_t;
+
+typedef struct
+{
+    nux_u32_t scene;
+    nux_u32_t transform_index;
+    nux_u32_t camera_index;
+    nux_u32_t static_mesh_index;
+} nux_entity_t;
+
+typedef union
+{
+    nux_entity_t      entity;
+    nux_transform_t   transform;
+    nux_camera_t      camera;
+    nux_static_mesh_t static_mesh;
+} nux_scene_item_t;
+
+NUX_POOL_DEFINE(nux_scene_item_pool, nux_scene_item_t);
+
+typedef struct
+{
+    nux_arena_t          *arena;
+    nux_scene_item_pool_t items;
+} nux_scene_t;
+
 typedef enum
 {
-    NUX_OBJECT_NULL      = 0,
-    NUX_OBJECT_ARENA     = 1,
-    NUX_OBJECT_LUA       = 2,
-    NUX_OBJECT_TEXTURE   = 3,
-    NUX_OBJECT_MESH      = 4,
-    NUX_OBJECT_SCENE     = 5,
-    NUX_OBJECT_ENTITY    = 6,
-    NUX_OBJECT_TRANSFORM = 7,
-    NUX_OBJECT_CAMERA    = 8,
-    NUX_OBJECT_TYPE_MAX  = 9,
+    NUX_OBJECT_NULL     = 0,
+    NUX_OBJECT_ARENA    = 1,
+    NUX_OBJECT_LUA      = 2,
+    NUX_OBJECT_TEXTURE  = 3,
+    NUX_OBJECT_MESH     = 4,
+    NUX_OBJECT_SCENE    = 5,
+    NUX_OBJECT_ENTITY   = 6,
+    NUX_OBJECT_TYPE_MAX = 9,
 } nux_object_base_type_t;
+
+typedef enum
+{
+    NUX_COMPONENT_TRANSFORM,
+    NUX_COMPONENT_CAMERA,
+} nux_component_type_t;
 
 typedef void (*nux_object_cleanup_t)(nux_env_t *env, void *data);
 typedef void (*nux_object_serialize_t)(nux_env_t  *env,
@@ -510,7 +576,6 @@ typedef struct
 
 typedef struct
 {
-
 } nux_render_command_t;
 
 NUX_VEC_DEFINE(nux_render_pass_vec, nux_render_pass_t)
@@ -572,6 +637,19 @@ struct nux_instance
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
+
+NUX_V2_DEFINE(v2i, nux_i32_t)
+NUX_V2_DEFINE(v2u, nux_u32_t)
+NUX_V2_DEFINE(v2, nux_f32_t)
+NUX_V3_DEFINE(v3i, nux_i32_t)
+NUX_V3_DEFINE(v3u, nux_u32_t)
+NUX_V3_DEFINE(v3, nux_f32_t)
+NUX_V4_DEFINE(v4i, nux_i32_t)
+NUX_V4_DEFINE(v4u, nux_u32_t)
+NUX_V4_DEFINE(v4, nux_f32_t)
+
+NUX_B3_DEFINE(b3, nux_v3_t)
+NUX_B3_DEFINE(b3i, nux_v3i_t)
 
 // ds.c
 
@@ -643,11 +721,16 @@ void nux_texture_write(nux_env_t  *env,
 
 // scene.c
 
-void nux_scene_cleanup(nux_env_t *env, void *data);
-
-// entity.c
-
-void nux_entity_cleanup(nux_env_t *env, void *data);
+void  nux_scene_cleanup(nux_env_t *env, void *data);
+void *nux_scene_add_component(nux_env_t           *env,
+                              nux_u32_t            entity,
+                              nux_component_type_t type);
+void  nux_scene_remove_component(nux_env_t           *env,
+                                 nux_u32_t            entity,
+                                 nux_component_type_t type);
+void *nux_scene_get_component(nux_env_t           *env,
+                              nux_u32_t            entity,
+                              nux_component_type_t type);
 
 // vector.c
 

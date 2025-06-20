@@ -39,7 +39,7 @@ arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
         else // grow
         {
             void *p = arena_push(arena, nsize);
-            NUX_CHECKM(p, "Out of memory", return NUX_NULL);
+            NUX_CHECK(p, return NUX_NULL);
             nux_memcpy(p, optr, osize);
             return p;
         }
@@ -49,7 +49,7 @@ arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
         NUX_ASSERT(nsize);
         NUX_ASSERT(!osize);
         void *p = arena_push(arena, nsize);
-        NUX_CHECKM(p, "Out of memory", return NUX_NULL);
+        NUX_CHECK(p, return NUX_NULL);
         nux_memset(p, 0, nsize);
         return p;
     }
@@ -101,6 +101,8 @@ nux_object_create (nux_env_t   *env,
         arena->first_object = id;
     }
     arena->last_object = id;
+    NUX_ASSERT(obj->next != id);
+    NUX_ASSERT(obj->prev != id);
     return id;
 }
 void
@@ -139,6 +141,13 @@ nux_object_get (nux_env_t *env, nux_u32_t type_index, nux_u32_t id)
         || env->inst->objects.data[index].type_index != type_index
         || env->inst->objects.data[index].version != version)
     {
+        nux_object_type_t *got
+            = &env->inst
+                   ->object_types[env->inst->objects.data[index].type_index];
+        nux_object_type_t *expect = &env->inst->object_types[type_index];
+        NUX_ERROR("Invalid object type (expect \"%s\", got \"%s\")",
+                  expect->name,
+                  got->name);
         return NUX_NULL;
     }
     return env->inst->objects.data[index].data;

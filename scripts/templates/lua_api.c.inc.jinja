@@ -23,10 +23,20 @@
 {% if not function.hasptr %}
 static int l_{{ module }}_{{ function.name }}(lua_State *L)
 {
+    {% set ns = namespace(stack = 1) %}
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     {%- for arg in function.args -%}
-        {{ arg.typename }} {{ arg.name }} = {{ checkmap.get(arg.typename, "luaL_checkinteger") }}(L, {{ loop.index }});
+        {% if arg.typename == "nux_v3_t" %}
+            nux_v3_t {{ arg.name }};
+            {{ arg.name }}.x = luaL_checknumber(L, {{ ns.stack + 0 }});
+            {{ arg.name }}.y = luaL_checknumber(L, {{ ns.stack + 1 }});
+            {{ arg.name }}.z = luaL_checknumber(L, {{ ns.stack + 2 }});
+            {% set ns.stack = ns.stack + 3 %}
+        {% else %}
+            {{ arg.typename }} {{ arg.name }} = {{ checkmap.get(arg.typename, "luaL_checkinteger") }}(L, {{ ns.stack }});
+            {% set ns.stack = ns.stack + 1 %}
+        {% endif %}
     {%- endfor -%}
     {% if function.returntype != "void" %}
         {{ function.returntype }} ret =
@@ -36,7 +46,12 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
         , {{ arg.name }}
     {%- endfor -%}
     );
-    {% if function.returntype != "void" %}
+    {% if function.returntype == "nux_v3_t" %}
+        lua_pushnumber(L, ret.x);
+        lua_pushnumber(L, ret.y);
+        lua_pushnumber(L, ret.z);
+        return 3;
+    {% elif function.returntype != "void" %}
         {{ retmap.get(function.returntype, "lua_pushinteger") }}(L, ret);
         return 1;
     {% else %}

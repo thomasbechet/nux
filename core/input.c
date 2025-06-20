@@ -55,7 +55,7 @@ nux_button_just_pressed (nux_env_t *env, nux_u32_t player, nux_button_t button)
     NUX_CHECK(player < NUX_ARRAY_SIZE(env->inst->buttons_prev), return 0);
     nux_u32_t stat = env->inst->buttons[player];
     nux_u32_t prev = env->inst->buttons_prev[player];
-    return stat ^ prev && nux_button_pressed(env, player, button);
+    return (stat ^ prev) & button && nux_button_pressed(env, player, button);
 }
 nux_b32_t
 nux_button_just_released (nux_env_t *env, nux_u32_t player, nux_button_t button)
@@ -63,5 +63,5 @@ nux_button_just_released (nux_env_t *env, nux_u32_t player, nux_button_t button)
     NUX_CHECK(player < NUX_ARRAY_SIZE(env->inst->buttons_prev), return 0);
     nux_u32_t stat = env->inst->buttons[player];
     nux_u32_t prev = env->inst->buttons_prev[player];
-    return stat ^ prev && nux_button_released(env, player, button);
+    return (stat ^ prev) & button && nux_button_released(env, player, button);
 }

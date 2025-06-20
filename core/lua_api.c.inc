@@ -3,10 +3,12 @@
 static int
 l_core_stat (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env  = lua_touserdata(L, -1);
     nux_stat_t info = luaL_checkinteger(L, 1);
-    nux_u32_t  ret =
+
+    nux_u32_t ret =
 
         nux_stat(env, info);
 
@@ -17,6 +19,7 @@ l_core_stat (lua_State *L)
 static int
 l_core_time (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_f32_t  ret =
@@ -30,6 +33,7 @@ l_core_time (lua_State *L)
 static int
 l_core_dt (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_f32_t  ret =
@@ -43,6 +47,7 @@ l_core_dt (lua_State *L)
 static int
 l_core_frame (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  ret =
@@ -56,13 +61,19 @@ l_core_frame (lua_State *L)
 static int
 l_core_rectfill (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  x0  = luaL_checkinteger(L, 1);
-    nux_i32_t  y0  = luaL_checkinteger(L, 2);
-    nux_i32_t  x1  = luaL_checkinteger(L, 3);
-    nux_i32_t  y1  = luaL_checkinteger(L, 4);
-    nux_u8_t   c   = luaL_checkinteger(L, 5);
+
+    nux_i32_t y0 = luaL_checkinteger(L, 2);
+
+    nux_i32_t x1 = luaL_checkinteger(L, 3);
+
+    nux_i32_t y1 = luaL_checkinteger(L, 4);
+
+    nux_u8_t c = luaL_checkinteger(L, 5);
+
     nux_rectfill(env, x0, y0, x1, y1, c);
 
     return 0;
@@ -71,15 +82,23 @@ l_core_rectfill (lua_State *L)
 static int
 l_core_trifill (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  x0  = luaL_checkinteger(L, 1);
-    nux_i32_t  y0  = luaL_checkinteger(L, 2);
-    nux_i32_t  x1  = luaL_checkinteger(L, 3);
-    nux_i32_t  y1  = luaL_checkinteger(L, 4);
-    nux_i32_t  x2  = luaL_checkinteger(L, 5);
-    nux_i32_t  y2  = luaL_checkinteger(L, 6);
-    nux_u8_t   c   = luaL_checkinteger(L, 7);
+
+    nux_i32_t y0 = luaL_checkinteger(L, 2);
+
+    nux_i32_t x1 = luaL_checkinteger(L, 3);
+
+    nux_i32_t y1 = luaL_checkinteger(L, 4);
+
+    nux_i32_t x2 = luaL_checkinteger(L, 5);
+
+    nux_i32_t y2 = luaL_checkinteger(L, 6);
+
+    nux_u8_t c = luaL_checkinteger(L, 7);
+
     nux_trifill(env, x0, y0, x1, y1, x2, y2, c);
 
     return 0;
@@ -88,10 +107,13 @@ l_core_trifill (lua_State *L)
 static int
 l_core_pal (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
     nux_u8_t   index = luaL_checkinteger(L, 1);
-    nux_u8_t   color = luaL_checkinteger(L, 2);
+
+    nux_u8_t color = luaL_checkinteger(L, 2);
+
     nux_pal(env, index, color);
 
     return 0;
@@ -100,9 +122,11 @@ l_core_pal (lua_State *L)
 static int
 l_core_palt (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u8_t   c   = luaL_checkinteger(L, 1);
+
     nux_palt(env, c);
 
     return 0;
@@ -111,6 +135,7 @@ l_core_palt (lua_State *L)
 static int
 l_core_palr (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_palr(env);
@@ -121,10 +146,12 @@ l_core_palr (lua_State *L)
 static int
 l_core_palc (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
     nux_u8_t   index = luaL_checkinteger(L, 1);
-    nux_u8_t   ret =
+
+    nux_u8_t ret =
 
         nux_palc(env, index);
 
@@ -135,9 +162,11 @@ l_core_palc (lua_State *L)
 static int
 l_core_cls (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
     nux_u32_t  color = luaL_checkinteger(L, 1);
+
     nux_cls(env, color);
 
     return 0;
@@ -146,11 +175,15 @@ l_core_cls (lua_State *L)
 static int
 l_core_pset (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  x   = luaL_checkinteger(L, 1);
-    nux_i32_t  y   = luaL_checkinteger(L, 2);
-    nux_u8_t   c   = luaL_checkinteger(L, 3);
+
+    nux_i32_t y = luaL_checkinteger(L, 2);
+
+    nux_u8_t c = luaL_checkinteger(L, 3);
+
     nux_pset(env, x, y, c);
 
     return 0;
@@ -159,10 +192,12 @@ l_core_pset (lua_State *L)
 static int
 l_core_cget (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
     nux_u8_t   index = luaL_checkinteger(L, 1);
-    nux_u32_t  ret =
+
+    nux_u32_t ret =
 
         nux_cget(env, index);
 
@@ -173,10 +208,13 @@ l_core_cget (lua_State *L)
 static int
 l_core_cset (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
     nux_u8_t   index = luaL_checkinteger(L, 1);
-    nux_u16_t  c     = luaL_checkinteger(L, 2);
+
+    nux_u16_t c = luaL_checkinteger(L, 2);
+
     nux_cset(env, index, c);
 
     return 0;
@@ -185,6 +223,7 @@ l_core_cset (lua_State *L)
 static int
 l_graphics_cursor_x (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  ret =
@@ -198,6 +237,7 @@ l_graphics_cursor_x (lua_State *L)
 static int
 l_graphics_cursor_y (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  ret =
@@ -211,10 +251,13 @@ l_graphics_cursor_y (lua_State *L)
 static int
 l_graphics_cursor (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  x   = luaL_checkinteger(L, 1);
-    nux_i32_t  y   = luaL_checkinteger(L, 2);
+
+    nux_i32_t y = luaL_checkinteger(L, 2);
+
     nux_graphics_cursor(env, x, y);
 
     return 0;
@@ -223,13 +266,19 @@ l_graphics_cursor (lua_State *L)
 static int
 l_graphics_line (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env   = lua_touserdata(L, -1);
-    nux_i32_t  x0    = luaL_checkinteger(L, 1);
-    nux_i32_t  y0    = luaL_checkinteger(L, 2);
-    nux_i32_t  x1    = luaL_checkinteger(L, 3);
-    nux_i32_t  y1    = luaL_checkinteger(L, 4);
-    nux_u8_t   color = luaL_checkinteger(L, 5);
+    nux_env_t *env = lua_touserdata(L, -1);
+    nux_i32_t  x0  = luaL_checkinteger(L, 1);
+
+    nux_i32_t y0 = luaL_checkinteger(L, 2);
+
+    nux_i32_t x1 = luaL_checkinteger(L, 3);
+
+    nux_i32_t y1 = luaL_checkinteger(L, 4);
+
+    nux_u8_t color = luaL_checkinteger(L, 5);
+
     nux_graphics_line(env, x0, y0, x1, y1, color);
 
     return 0;
@@ -238,12 +287,17 @@ l_graphics_line (lua_State *L)
 static int
 l_graphics_circle (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  xm  = luaL_checkinteger(L, 1);
-    nux_i32_t  ym  = luaL_checkinteger(L, 2);
-    nux_i32_t  r   = luaL_checkinteger(L, 3);
-    nux_u8_t   c   = luaL_checkinteger(L, 4);
+
+    nux_i32_t ym = luaL_checkinteger(L, 2);
+
+    nux_i32_t r = luaL_checkinteger(L, 3);
+
+    nux_u8_t c = luaL_checkinteger(L, 4);
+
     nux_graphics_circle(env, xm, ym, r, c);
 
     return 0;
@@ -252,13 +306,19 @@ l_graphics_circle (lua_State *L)
 static int
 l_graphics_rectangle (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_i32_t  x0  = luaL_checkinteger(L, 1);
-    nux_i32_t  y0  = luaL_checkinteger(L, 2);
-    nux_i32_t  x1  = luaL_checkinteger(L, 3);
-    nux_i32_t  y1  = luaL_checkinteger(L, 4);
-    nux_u8_t   c   = luaL_checkinteger(L, 5);
+
+    nux_i32_t y0 = luaL_checkinteger(L, 2);
+
+    nux_i32_t x1 = luaL_checkinteger(L, 3);
+
+    nux_i32_t y1 = luaL_checkinteger(L, 4);
+
+    nux_u8_t c = luaL_checkinteger(L, 5);
+
     nux_graphics_rectangle(env, x0, y0, x1, y1, c);
 
     return 0;
@@ -267,9 +327,11 @@ l_graphics_rectangle (lua_State *L)
 static int
 l_graphics_set_render_target (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  id  = luaL_checkinteger(L, 1);
+
     nux_graphics_set_render_target(env, id);
 
     return 0;
@@ -278,9 +340,11 @@ l_graphics_set_render_target (lua_State *L)
 static int
 l_graphics_blit (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  id  = luaL_checkinteger(L, 1);
+
     nux_graphics_blit(env, id);
 
     return 0;
@@ -289,10 +353,12 @@ l_graphics_blit (lua_State *L)
 static int
 l_input_button (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env    = lua_touserdata(L, -1);
     nux_u32_t  player = luaL_checkinteger(L, 1);
-    nux_u32_t  ret =
+
+    nux_u32_t ret =
 
         nux_input_button(env, player);
 
@@ -303,11 +369,14 @@ l_input_button (lua_State *L)
 static int
 l_input_axis (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env    = lua_touserdata(L, -1);
     nux_u32_t  player = luaL_checkinteger(L, 1);
-    nux_axis_t axis   = luaL_checkinteger(L, 2);
-    nux_f32_t  ret =
+
+    nux_axis_t axis = luaL_checkinteger(L, 2);
+
+    nux_f32_t ret =
 
         nux_input_axis(env, player, axis);
 
@@ -318,11 +387,14 @@ l_input_axis (lua_State *L)
 static int
 l_button_pressed (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t   *env    = lua_touserdata(L, -1);
-    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  player = luaL_checkinteger(L, 1);
+
     nux_button_t button = luaL_checkinteger(L, 2);
-    nux_b32_t    ret =
+
+    nux_b32_t ret =
 
         nux_button_pressed(env, player, button);
 
@@ -333,11 +405,14 @@ l_button_pressed (lua_State *L)
 static int
 l_button_released (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t   *env    = lua_touserdata(L, -1);
-    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  player = luaL_checkinteger(L, 1);
+
     nux_button_t button = luaL_checkinteger(L, 2);
-    nux_b32_t    ret =
+
+    nux_b32_t ret =
 
         nux_button_released(env, player, button);
 
@@ -348,11 +423,14 @@ l_button_released (lua_State *L)
 static int
 l_button_just_pressed (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t   *env    = lua_touserdata(L, -1);
-    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  player = luaL_checkinteger(L, 1);
+
     nux_button_t button = luaL_checkinteger(L, 2);
-    nux_b32_t    ret =
+
+    nux_b32_t ret =
 
         nux_button_just_pressed(env, player, button);
 
@@ -363,11 +441,14 @@ l_button_just_pressed (lua_State *L)
 static int
 l_button_just_released (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t   *env    = lua_touserdata(L, -1);
-    nux_u32_t    player = luaL_checkinteger(L, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  player = luaL_checkinteger(L, 1);
+
     nux_button_t button = luaL_checkinteger(L, 2);
-    nux_b32_t    ret =
+
+    nux_b32_t ret =
 
         nux_button_just_released(env, player, button);
 
@@ -378,12 +459,16 @@ l_button_just_released (lua_State *L)
 static int
 l_texture_new (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t         *env    = lua_touserdata(L, -1);
     nux_texture_type_t format = luaL_checkinteger(L, 1);
-    nux_u32_t          w      = luaL_checkinteger(L, 2);
-    nux_u32_t          h      = luaL_checkinteger(L, 3);
-    nux_u32_t          ret =
+
+    nux_u32_t w = luaL_checkinteger(L, 2);
+
+    nux_u32_t h = luaL_checkinteger(L, 3);
+
+    nux_u32_t ret =
 
         nux_texture_new(env, format, w, h);
 
@@ -394,6 +479,7 @@ l_texture_new (lua_State *L)
 static int
 l_arena_new (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  ret =
@@ -407,9 +493,11 @@ l_arena_new (lua_State *L)
 static int
 l_arena_reset (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  id  = luaL_checkinteger(L, 1);
+
     nux_arena_reset(env, id);
 
     return 0;
@@ -418,9 +506,11 @@ l_arena_reset (lua_State *L)
 static int
 l_arena_use (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t   *env = lua_touserdata(L, -1);
-    nux_u32_t    id  = luaL_checkinteger(L, 1);
+    nux_env_t *env = lua_touserdata(L, -1);
+    nux_u32_t  id  = luaL_checkinteger(L, 1);
+
     nux_status_t ret =
 
         nux_arena_use(env, id);
@@ -432,6 +522,7 @@ l_arena_use (lua_State *L)
 static int
 l_arena_active (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  ret =
@@ -445,9 +536,11 @@ l_arena_active (lua_State *L)
 static int
 l_arena_dump (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  id  = luaL_checkinteger(L, 1);
+
     nux_arena_dump(env, id);
 
     return 0;
@@ -456,6 +549,7 @@ l_arena_dump (lua_State *L)
 static int
 l_scene_new (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env = lua_touserdata(L, -1);
     nux_u32_t  ret =
@@ -469,15 +563,97 @@ l_scene_new (lua_State *L)
 static int
 l_entity_new (lua_State *L)
 {
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_env_t *env   = lua_touserdata(L, -1);
     nux_u32_t  world = luaL_checkinteger(L, 1);
-    nux_u32_t  ret =
+
+    nux_u32_t ret =
 
         nux_entity_new(env, world);
 
     lua_pushinteger(L, ret);
     return 1;
+}
+
+static int
+l_transform_add (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_transform_add(env, entity);
+
+    return 0;
+}
+
+static int
+l_transform_remove (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_transform_remove(env, entity);
+
+    return 0;
+}
+
+static int
+l_transform_get_position (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_get_position(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+
+static int
+l_transform_get_scale (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_get_scale(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+
+static int
+l_transform_set_position (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t position;
+    position.x = luaL_checknumber(L, 2);
+    position.y = luaL_checknumber(L, 3);
+    position.z = luaL_checknumber(L, 4);
+
+    nux_transform_set_position(env, entity, position);
+
+    return 0;
 }
 
 static const struct luaL_Reg lib_core[] = { { "stat", l_core_stat },
@@ -532,6 +708,14 @@ static const struct luaL_Reg lib_scene[]
 static const struct luaL_Reg lib_entity[]
     = { { "new", l_entity_new }, { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_transform[]
+    = { { "add", l_transform_add },
+        { "remove", l_transform_remove },
+        { "get_position", l_transform_get_position },
+        { "get_scale", l_transform_get_scale },
+        { "set_position", l_transform_set_position },
+        { NUX_NULL, NUX_NULL } };
+
 nux_status_t
 nux_register_lua (nux_instance_t *inst)
 {
@@ -566,6 +750,10 @@ nux_register_lua (nux_instance_t *inst)
     lua_newtable(inst->L);
     luaL_setfuncs(inst->L, lib_entity, 0);
     lua_setfield(inst->L, -2, "entity");
+
+    lua_newtable(inst->L);
+    luaL_setfuncs(inst->L, lib_transform, 0);
+    lua_setfield(inst->L, -2, "transform");
 
     lua_pushinteger(inst->L, 512);
     lua_setfield(inst->L, -2, "CANVAS_WIDTH");
