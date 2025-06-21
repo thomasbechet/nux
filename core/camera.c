@@ -105,13 +105,25 @@ nux_lookat (nux_v3_t eye, nux_v3_t center, nux_v3_t up)
     return m;
 }
 
-nux_u32_t
-nux_camera_new (nux_env_t *env, nux_u32_t id)
+void
+nux_camera_add (nux_env_t *env, nux_u32_t entity)
 {
-    return 0;
+    nux_camera_t *c
+        = nux_scene_add_component(env, entity, NUX_COMPONENT_CAMERA);
+    NUX_CHECK(c, return);
+    c->fov      = 60;
+    c->viewport = nux_b2i_xywh(0, 0, 100, 100);
 }
 void
-nux_camera_cleanup (nux_env_t *env, void *data)
+nux_camera_remove (nux_env_t *env, nux_u32_t entity)
 {
-    nux_camera_t *cam = data;
+    nux_scene_remove_component(env, entity, NUX_COMPONENT_CAMERA);
+}
+void
+nux_camera_set_fov (nux_env_t *env, nux_u32_t entity, nux_f32_t fov)
+{
+    nux_camera_t *c
+        = nux_scene_get_component(env, entity, NUX_COMPONENT_CAMERA);
+    NUX_CHECK(c, return);
+    c->fov = fov;
 }

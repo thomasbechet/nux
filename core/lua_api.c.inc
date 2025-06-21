@@ -603,7 +603,38 @@ l_transform_remove (lua_State *L)
 }
 
 static int
-l_transform_get_position (lua_State *L)
+l_transform_set_parent (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_u32_t parent = luaL_checkinteger(L, 2);
+
+    nux_transform_set_parent(env, entity, parent);
+
+    return 0;
+}
+
+static int
+l_transform_get_parent (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_u32_t ret =
+
+        nux_transform_get_parent(env, entity);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
+static int
+l_transform_get_translation (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
@@ -612,7 +643,7 @@ l_transform_get_position (lua_State *L)
 
     nux_v3_t ret =
 
-        nux_transform_get_position(env, entity);
+        nux_transform_get_translation(env, entity);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -639,7 +670,43 @@ l_transform_get_scale (lua_State *L)
 }
 
 static int
-l_transform_set_position (lua_State *L)
+l_transform_get_global_translation (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_get_global_translation(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+
+static int
+l_transform_get_global_scale (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_get_global_scale(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+
+static int
+l_transform_set_translation (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
@@ -651,7 +718,125 @@ l_transform_set_position (lua_State *L)
     position.y = luaL_checknumber(L, 3);
     position.z = luaL_checknumber(L, 4);
 
-    nux_transform_set_position(env, entity, position);
+    nux_transform_set_translation(env, entity, position);
+
+    return 0;
+}
+
+static int
+l_transform_set_scale (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t scale;
+    scale.x = luaL_checknumber(L, 2);
+    scale.y = luaL_checknumber(L, 3);
+    scale.z = luaL_checknumber(L, 4);
+
+    nux_transform_set_scale(env, entity, scale);
+
+    return 0;
+}
+
+static int
+l_transform_look_at (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t center;
+    center.x = luaL_checknumber(L, 2);
+    center.y = luaL_checknumber(L, 3);
+    center.z = luaL_checknumber(L, 4);
+
+    nux_transform_look_at(env, entity, center);
+
+    return 0;
+}
+
+static int
+l_camera_add (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_camera_add(env, entity);
+
+    return 0;
+}
+
+static int
+l_camera_remove (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_camera_remove(env, entity);
+
+    return 0;
+}
+
+static int
+l_camera_set_fov (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_f32_t fov = luaL_checknumber(L, 2);
+
+    nux_camera_set_fov(env, entity, fov);
+
+    return 0;
+}
+
+static int
+l_staticmesh_add (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_staticmesh_add(env, entity);
+
+    return 0;
+}
+
+static int
+l_staticmesh_remove (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_staticmesh_remove(env, entity);
+
+    return 0;
+}
+
+static int
+l_staticmesh_set_mesh (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_u32_t mesh = luaL_checkinteger(L, 2);
+
+    nux_staticmesh_set_mesh(env, entity, mesh);
 
     return 0;
 }
@@ -711,9 +896,26 @@ static const struct luaL_Reg lib_entity[]
 static const struct luaL_Reg lib_transform[]
     = { { "add", l_transform_add },
         { "remove", l_transform_remove },
-        { "get_position", l_transform_get_position },
+        { "set_parent", l_transform_set_parent },
+        { "get_parent", l_transform_get_parent },
+        { "get_translation", l_transform_get_translation },
         { "get_scale", l_transform_get_scale },
-        { "set_position", l_transform_set_position },
+        { "get_global_translation", l_transform_get_global_translation },
+        { "get_global_scale", l_transform_get_global_scale },
+        { "set_translation", l_transform_set_translation },
+        { "set_scale", l_transform_set_scale },
+        { "look_at", l_transform_look_at },
+        { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_camera[] = { { "add", l_camera_add },
+                                              { "remove", l_camera_remove },
+                                              { "set_fov", l_camera_set_fov },
+                                              { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_staticmesh[]
+    = { { "add", l_staticmesh_add },
+        { "remove", l_staticmesh_remove },
+        { "set_mesh", l_staticmesh_set_mesh },
         { NUX_NULL, NUX_NULL } };
 
 nux_status_t
@@ -754,6 +956,14 @@ nux_register_lua (nux_instance_t *inst)
     lua_newtable(inst->L);
     luaL_setfuncs(inst->L, lib_transform, 0);
     lua_setfield(inst->L, -2, "transform");
+
+    lua_newtable(inst->L);
+    luaL_setfuncs(inst->L, lib_camera, 0);
+    lua_setfield(inst->L, -2, "camera");
+
+    lua_newtable(inst->L);
+    luaL_setfuncs(inst->L, lib_staticmesh, 0);
+    lua_setfield(inst->L, -2, "staticmesh");
 
     lua_pushinteger(inst->L, 512);
     lua_setfield(inst->L, -2, "CANVAS_WIDTH");

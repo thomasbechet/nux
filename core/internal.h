@@ -86,11 +86,12 @@
         y      = SWAP;    \
     } while (0)
 
-#define NUX_PI      3.14159265359
-#define NUX_FLT_MAX 3.402823E+38
-#define NUX_FLT_MIN 1.175494e-38
-#define NUX_I32_MAX 2147483647
-#define NUX_I32_MIN -2147483648
+#define NUX_PI          3.14159265359
+#define NUX_FLT_MAX     3.402823E+38
+#define NUX_FLT_MIN     1.175494e-38
+#define NUX_I32_MAX     2147483647
+#define NUX_I32_MIN     -2147483648
+#define NUX_F32_EPSILON 0.00001
 
 #define NUX_V2_SIZE 2
 #define NUX_V3_SIZE 3
@@ -98,6 +99,10 @@
 #define NUX_Q4_SIZE 4
 #define NUX_M3_SIZE 9
 #define NUX_M4_SIZE 16
+
+#define NUX_V3_UP     nux_v3(0, 1, 0)
+#define NUX_V3_ONES   nux_v3s(1)
+#define NUX_V3_ZEROES nux_v3s(0)
 
 #define NUX_V2_DEFINE(name, type)                                        \
     nux_##name##_t nux_##name(type x, type y);                           \
@@ -472,22 +477,27 @@ typedef struct
 
 typedef struct
 {
-    nux_v3_t position;
-    nux_q4_t rotation;
-    nux_v3_t scale;
+    nux_v3_t  local_translation;
+    nux_q4_t  local_rotation;
+    nux_v3_t  local_scale;
+    nux_m4_t  global_matrix;
+    nux_b32_t dirty;
+    nux_u32_t parent;
 } nux_transform_t;
 
 typedef struct
 {
     nux_u32_t mesh;
-} nux_static_mesh_t;
+} nux_staticmesh_t;
 
 typedef struct
 {
     nux_u32_t scene;
+
+    // can support up to (128 - 4) / 4 = 31 components
     nux_u32_t transform_index;
     nux_u32_t camera_index;
-    nux_u32_t static_mesh_index;
+    nux_u32_t staticmesh_index;
 } nux_entity_t;
 
 typedef union
@@ -495,7 +505,7 @@ typedef union
     nux_entity_t      entity;
     nux_transform_t   transform;
     nux_camera_t      camera;
-    nux_static_mesh_t static_mesh;
+    nux_staticmesh_t static_mesh;
 } nux_scene_item_t;
 
 NUX_POOL_DEFINE(nux_scene_item_pool, nux_scene_item_t);
@@ -522,6 +532,7 @@ typedef enum
 {
     NUX_COMPONENT_TRANSFORM,
     NUX_COMPONENT_CAMERA,
+    NUX_COMPONENT_STATICMESH,
 } nux_component_type_t;
 
 typedef void (*nux_object_cleanup_t)(nux_env_t *env, void *data);
@@ -734,6 +745,7 @@ void *nux_scene_get_component(nux_env_t           *env,
 
 // vector.c
 
+nux_f32_t nux_v3_norm(nux_v3_t a);
 nux_v3_t  nux_v3_normalize(nux_v3_t a);
 nux_f32_t nux_v4_norm(nux_v4_t a);
 
@@ -755,6 +767,7 @@ nux_m4_t nux_m4_mul(nux_m4_t a, nux_m4_t b);
 nux_v4_t nux_m4_mulv(nux_m4_t a, nux_v4_t v);
 nux_v3_t nux_m4_mulv3(nux_m4_t a, nux_v3_t v);
 nux_m4_t nux_m4_trs(nux_v3_t t, nux_q4_t r, nux_v3_t s);
+void nux_m4_trs_decompose(nux_m4_t m, nux_v3_t *t, nux_q4_t *r, nux_v3_t *s);
 
 // quaternion.c
 

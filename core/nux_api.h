@@ -277,12 +277,28 @@ void         nux_arena_dump(nux_env_t *env, nux_u32_t id);
 nux_u32_t nux_scene_new(nux_env_t *env);
 nux_u32_t nux_entity_new(nux_env_t *env, nux_u32_t world);
 
-void     nux_transform_add(nux_env_t *env, nux_u32_t entity);
-void     nux_transform_remove(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_get_position(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_get_scale(nux_env_t *env, nux_u32_t entity);
-void     nux_transform_set_position(nux_env_t *env,
-                                    nux_u32_t  entity,
-                                    nux_v3_t   position);
+void      nux_transform_add(nux_env_t *env, nux_u32_t entity);
+void      nux_transform_remove(nux_env_t *env, nux_u32_t entity);
+void      nux_transform_set_parent(nux_env_t *env,
+                                   nux_u32_t  entity,
+                                   nux_u32_t  parent);
+nux_u32_t nux_transform_get_parent(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_get_translation(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_get_scale(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_get_global_translation(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_get_global_scale(nux_env_t *env, nux_u32_t entity);
+void     nux_transform_set_translation(nux_env_t *env,
+                                       nux_u32_t  entity,
+                                       nux_v3_t   position);
+void nux_transform_set_scale(nux_env_t *env, nux_u32_t entity, nux_v3_t scale);
+void nux_transform_look_at(nux_env_t *env, nux_u32_t entity, nux_v3_t center);
+
+void nux_camera_add(nux_env_t *env, nux_u32_t entity);
+void nux_camera_remove(nux_env_t *env, nux_u32_t entity);
+void nux_camera_set_fov(nux_env_t *env, nux_u32_t entity, nux_f32_t fov);
+
+void nux_staticmesh_add(nux_env_t *env, nux_u32_t entity);
+void nux_staticmesh_remove(nux_env_t *env, nux_u32_t entity);
+void nux_staticmesh_set_mesh(nux_env_t *env, nux_u32_t entity, nux_u32_t mesh);
 
 #endif

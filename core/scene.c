@@ -9,6 +9,8 @@ entity_component_index (nux_entity_t *e, nux_component_type_t type)
             return &e->transform_index;
         case NUX_COMPONENT_CAMERA:
             return &e->camera_index;
+        case NUX_COMPONENT_STATICMESH:
+            return &e->staticmesh_index;
         default:
             break;
     }
@@ -18,15 +20,18 @@ entity_component_index (nux_entity_t *e, nux_component_type_t type)
 nux_u32_t
 nux_scene_new (nux_env_t *env)
 {
-    nux_scene_t *scene = nux_arena_alloc(env->active_arena, sizeof(*scene));
-    NUX_CHECK(scene, return NUX_NULL);
+    nux_scene_t *s = nux_arena_alloc(env->active_arena, sizeof(*s));
+    NUX_CHECK(s, return NUX_NULL);
     nux_u32_t id
-        = nux_object_create(env, env->active_arena, NUX_OBJECT_SCENE, scene);
+        = nux_object_create(env, env->active_arena, NUX_OBJECT_SCENE, s);
     NUX_CHECK(id, return NUX_NULL);
 
-    scene->arena = env->active_arena;
-    NUX_CHECK(nux_scene_item_pool_alloc(env->active_arena, 1024, &scene->items),
+    s->arena = env->active_arena;
+    NUX_CHECK(nux_scene_item_pool_alloc(env->active_arena, 1024, &s->items),
               return NUX_NULL);
+
+    // Reserve index 0 to null
+    nux_scene_item_pool_add(&s->items);
 
     return id;
 }

@@ -145,3 +145,24 @@ nux_m4_trs (nux_v3_t t, nux_q4_t r, nux_v3_t s)
 {
     return nux_m4_mul(nux_m4_translate(t), nux_q4_mulm4(r, nux_m4_scale(s)));
 }
+void
+nux_m4_trs_decompose (nux_m4_t m, nux_v3_t *t, nux_q4_t *r, nux_v3_t *s)
+{
+    // Expect transform without shearing
+    nux_v3_t  translation = nux_v3(m.w1, m.w2, m.w3);
+    nux_f32_t sx          = nux_v3_norm(nux_v3(m.x1, m.x2, m.x3));
+    nux_f32_t sy          = nux_v3_norm(nux_v3(m.y1, m.y2, m.y3));
+    nux_f32_t sz          = nux_v3_norm(nux_v3(m.z1, m.z2, m.z3));
+    nux_v3_t  scale       = nux_v3(sx, sy, sz);
+    if (t)
+    {
+        *t = translation;
+    }
+    if (r)
+    {
+    }
+    if (s)
+    {
+        *s = scale;
+    }
+}

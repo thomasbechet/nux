@@ -3,7 +3,7 @@
 nux_u32_t
 nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
-    const nux_b3_t box = nux_b3(nux_v3s(0), nux_v3(sx / 2, sy / 2, sz / 2));
+    const nux_b3_t box = nux_b3(NUX_V3_ZEROES, nux_v3(sx / 2, sy / 2, sz / 2));
 
     const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
     const nux_v3_t v1 = nux_v3(box.max.x, box.min.y, box.min.z);
