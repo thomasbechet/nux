@@ -71,25 +71,14 @@ nux_object_create (nux_env_t   *env,
                    nux_u32_t    type_index,
                    void        *data)
 {
-    nux_object_t *obj;
-    nux_u32_t    *free_index = nux_u32_vec_pop(&env->inst->objects_freelist);
-    nux_u32_t     index;
-    if (free_index)
-    {
-        index = *free_index;
-        obj   = &env->inst->objects.data[*free_index];
-    }
-    else
-    {
-        index = env->inst->objects.size;
-        obj   = nux_object_vec_push(&env->inst->objects);
-    }
+    nux_object_t *obj = nux_object_pool_add(&env->inst->objects);
     NUX_CHECKM(obj, "Out of objects", return NUX_NULL);
     obj->type_index = type_index;
     obj->data       = data;
     obj->version += 1;
-    nux_u32_t id = BUILD_ID(index, obj->version);
-    obj->prev    = arena->last_object;
+    nux_u32_t index = obj - env->inst->objects.data;
+    nux_u32_t id    = BUILD_ID(index, obj->version);
+    obj->prev       = arena->last_object;
     if (arena->last_object)
     {
         nux_object_t *prev_obj = &env->inst->objects.data[ID_INDEX(obj->prev)];
@@ -124,7 +113,7 @@ nux_object_delete (nux_env_t *env, nux_u32_t id)
         nux_object_t *next_obj = &env->inst->objects.data[ID_INDEX(obj->next)];
         next_obj->prev         = obj->prev;
     }
-    nux_u32_vec_pushv(&env->inst->objects_freelist, ID_INDEX(id));
+    nux_object_pool_remove(&env->inst->objects, obj);
 }
 void
 nux_object_update (nux_env_t *env, nux_u32_t id, void *data)

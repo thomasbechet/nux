@@ -551,8 +551,7 @@ typedef struct
     void     *data;
 } nux_object_t;
 
-NUX_VEC_DEFINE(nux_object_vec, nux_object_t)
-// NUX_POOL_DEFINE(nux_object_pool, nux_object_t);
+NUX_POOL_DEFINE(nux_object_pool, nux_object_t);
 
 typedef struct
 {
@@ -584,16 +583,8 @@ typedef struct
 
 NUX_VEC_DEFINE(nux_render_pass_vec, nux_render_pass_t)
 NUX_VEC_DEFINE(nux_render_command_vec, nux_render_command_t)
+NUX_VEC_DEFINE(nux_gpu_command_vec, nux_gpu_command_t);
 NUX_POOL_DEFINE(nux_arena_pool, nux_arena_t);
-
-typedef struct
-{
-    nux_u32_t osize;
-    nux_u32_t count;
-    nux_u32_t size;
-    nux_u32_t capa;
-    void     *data;
-} nux_object_pool_t;
 
 struct nux_instance
 {
@@ -613,15 +604,15 @@ struct nux_instance
 
     nux_u32_t stats[NUX_STAT_MAX];
 
-    nux_u32_t colormap_texture;
-    nux_u32_t canvas_render_target;
-    nux_u32_t vertex_storage_head;
+    nux_u32_t             colormap_texture;
+    nux_u32_t             canvas_render_target;
+    nux_u32_t             vertex_storage_head;
+    nux_gpu_command_vec_t gpu_commands;
 
     nux_arena_pool_t arenas;
     nux_arena_t     *core_arena;
 
-    nux_object_vec_t  objects;
-    nux_u32_vec_t     objects_freelist;
+    nux_object_pool_t objects;
     nux_object_type_t object_types[NUX_OBJECT_TYPE_MAX];
     nux_u32_t         object_types_count;
 

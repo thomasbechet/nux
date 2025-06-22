@@ -54,16 +54,12 @@ core_init (const nux_instance_config_t *config)
     nux_object_register(inst, "camera", NUX_NULL);
 
     // Create object pool
-    NUX_CHECK(nux_object_vec_alloc(
+    NUX_CHECK(nux_object_pool_alloc(
                   &core_arena, config->max_object_count, &inst->objects),
-              goto cleanup);
-    NUX_CHECK(nux_u32_vec_alloc(&core_arena,
-                                config->max_object_count,
-                                &inst->objects_freelist),
               goto cleanup);
 
     // Reserve index 0 for null object
-    nux_object_vec_push(&inst->objects);
+    nux_object_pool_add(&inst->objects);
 
     // Register core arena
     NUX_CHECK(nux_arena_pool_alloc(&core_arena, 32, &inst->arenas),

@@ -185,6 +185,8 @@ nux_graphics_push_vertices (nux_env_t       *env,
 void
 nux_graphics_draw (nux_env_t *env, nux_u32_t first, nux_u32_t count)
 {
+    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(&env->inst->gpu_commands);
+    NUX_ASSERT(cmd);
 }
 
 void
