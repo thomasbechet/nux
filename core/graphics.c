@@ -82,9 +82,6 @@ nux_graphics_init (nux_env_t *env)
                goto error);
     env->inst->vertex_storage_head = 0;
 
-    env->inst->test_cube = nux_generate_cube(&env->inst->env, 1, 1, 1);
-    NUX_ASSERT(env->inst->test_cube);
-
     return NUX_SUCCESS;
 
 error:
@@ -184,6 +181,10 @@ nux_graphics_push_vertices (nux_env_t       *env,
     *first = env->inst->vertex_storage_head;
     env->inst->vertex_storage_head += vcount;
     return NUX_SUCCESS;
+}
+void
+nux_graphics_draw (nux_env_t *env, nux_u32_t first, nux_u32_t count)
+{
 }
 
 void

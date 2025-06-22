@@ -7,7 +7,7 @@ static struct
     GLuint empty_vao;
 } renderer;
 
-static nu_status_t
+static nux_status_t
 compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
 {
     GLint success;
@@ -26,17 +26,17 @@ compile_shader (nu_sv_t source, GLuint shader_type, GLuint *shader)
         fprintf(stderr, "Failed to compile shader: %s", log);
         free(log);
         glDeleteShader(*shader);
-        return NU_FAILURE;
+        return NUX_FAILURE;
     }
-    return NU_SUCCESS;
+    return NUX_SUCCESS;
 }
-static nu_status_t
+static nux_status_t
 compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
 {
     GLuint vertex_shader, fragment_shader;
     GLint  success;
 
-    nu_status_t status = NU_SUCCESS;
+    nux_status_t status = NUX_SUCCESS;
 
     status = compile_shader(vert, GL_VERTEX_SHADER, &vertex_shader);
     NU_CHECK(status, goto cleanup0);
@@ -63,7 +63,7 @@ compile_program (nu_sv_t vert, nu_sv_t frag, GLuint *program)
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
 
-        return NU_FAILURE;
+        return NUX_FAILURE;
     }
 
     glDeleteShader(fragment_shader);
@@ -82,7 +82,7 @@ nux_os_create_pipeline (void               *userdata,
     NU_CHECK(slot < NU_ARRAY_SIZE(inst->pipelines), return NUX_FAILURE);
     pipeline_t *pipeline = inst->pipelines + slot;
 
-    nu_status_t status;
+    nux_status_t status = NUX_SUCCESS;
     switch (type)
     {
         case NUX_GPU_PASS_MAIN: {

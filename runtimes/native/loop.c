@@ -155,7 +155,7 @@ loop_update (nux_env_t *env)
     // draw_krabe(env, model.data, 1);
     // draw_lavalamp(env, model.data, 1);
     nux_f32_t y = 0.6;
-    nux_dbgf32(env, "y", &y);
+    // nux_dbgf32(env, "y", &y);
 
 #ifdef NUX_BENCHMARK
     static double sum   = 0;

@@ -175,8 +175,6 @@ typedef enum
 
 // Debug API
 void nux_trace(nux_env_t *env, const nux_c8_t *text);
-void nux_dbgi32(nux_env_t *env, const nux_c8_t *name, nux_i32_t *p);
-void nux_dbgf32(nux_env_t *env, const nux_c8_t *name, nux_f32_t *p);
 
 // System API
 nux_u32_t nux_stat(nux_env_t *env, nux_stat_t info);
@@ -266,7 +264,6 @@ nux_u32_t nux_texture_new(nux_env_t         *env,
 
 void nux_graphics_set_render_target(nux_env_t *env, nux_u32_t id);
 void nux_graphics_blit(nux_env_t *env, nux_u32_t id);
-// void nux_draw_cube(nux_env_t *env);
 
 nux_u32_t    nux_arena_new(nux_env_t *env);
 void         nux_arena_reset(nux_env_t *env, nux_u32_t id);
@@ -275,6 +272,7 @@ nux_u32_t    nux_arena_active(nux_env_t *env);
 void         nux_arena_dump(nux_env_t *env, nux_u32_t id);
 
 nux_u32_t nux_scene_new(nux_env_t *env);
+void      nux_scene_draw(nux_env_t *env, nux_u32_t scene);
 nux_u32_t nux_entity_new(nux_env_t *env, nux_u32_t world);
 
 void      nux_transform_add(nux_env_t *env, nux_u32_t entity);
@@ -300,5 +298,12 @@ void nux_camera_set_fov(nux_env_t *env, nux_u32_t entity, nux_f32_t fov);
 void nux_staticmesh_add(nux_env_t *env, nux_u32_t entity);
 void nux_staticmesh_remove(nux_env_t *env, nux_u32_t entity);
 void nux_staticmesh_set_mesh(nux_env_t *env, nux_u32_t entity, nux_u32_t mesh);
+
+nux_u32_t nux_mesh_new(nux_env_t *env, nux_u32_t capa);
+nux_u32_t nux_mesh_gen_cube(nux_env_t *env,
+                            nux_f32_t  sx,
+                            nux_f32_t  sy,
+                            nux_f32_t  sz);
+nux_u32_t nux_mesh_load(nux_env_t *env, const nux_c8_t *path);
 
 #endif

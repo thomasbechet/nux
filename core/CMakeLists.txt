@@ -3,7 +3,8 @@ project(core LANGUAGES C)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include_directories(${CMAKE_SOURCE_DIR}/externals/lua)
-include_directories(${CMAKE_SOURCE_DIR}/runtimes/native)
+include_directories(${CMAKE_SOURCE_DIR}/externals/cgltf)
+include_directories(${CMAKE_SOURCE_DIR}/externals/stb)
 
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)

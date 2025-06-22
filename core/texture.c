@@ -40,7 +40,7 @@ nux_texture_new (nux_env_t         *env,
         case NUX_TEXTURE_IMAGE_INDEX:
             pixel_size = sizeof(nux_u8_t);
             break;
-        case NUX_TEXTURE_RENDER_TARGET:
+        default:
             pixel_size = 0;
             break;
     }

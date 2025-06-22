@@ -1,7 +1,17 @@
 #include "internal.h"
 
 nux_u32_t
-nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
+nux_mesh_new (nux_env_t *env, nux_u32_t capa)
+{
+    // nux_mesh_t *mesh = nux_arena_alloc(env->active_arena, sizeof(*tex));
+    // NUX_CHECK(tex, return NUX_NULL);
+    // nux_u32_t id
+    //     = nux_object_create(env, env->active_arena, NUX_OBJECT_MESH, tex);
+    // NUX_CHECK(id, return NUX_NULL);
+    return NUX_NULL;
+}
+nux_u32_t
+nux_mesh_gen_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
     const nux_b3_t box = nux_b3(NUX_V3_ZEROES, nux_v3(sx / 2, sy / 2, sz / 2));
 
@@ -55,4 +65,10 @@ nux_generate_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
         return NUX_NULL);
 
     return id;
+}
+nux_u32_t
+nux_mesh_load (nux_env_t *env, const nux_c8_t *path)
+{
+    NUX_INFO(path);
+    return NUX_NULL;
 }

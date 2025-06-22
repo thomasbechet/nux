@@ -167,7 +167,6 @@ nux_trace (nux_env_t *env, const nux_c8_t *text)
 {
     nux_log(env, NUX_LOG_INFO, text, nux_strnlen(text, 1024));
 }
-
 void
 nux_dbgi32 (nux_env_t *env, const nux_c8_t *name, nux_i32_t *p)
 {

@@ -1,12 +1,13 @@
 #include "internal.h"
 
-static nux_b32_t
-update_global_matrix (nux_env_t *env, nux_u32_t entity)
+nux_b32_t
+nux_transform_update_matrix (nux_env_t *env, nux_u32_t entity)
 {
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_ASSERT(t);
-    if (t->parent && update_global_matrix(env, t->parent))
+
+    if (t->parent && nux_transform_update_matrix(env, t->parent))
     {
         t->dirty = NUX_TRUE;
     }
@@ -86,7 +87,7 @@ nux_transform_get_global_translation (nux_env_t *env, nux_u32_t entity)
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ZEROES);
-    update_global_matrix(env, entity);
+    nux_transform_update_matrix(env, entity);
     nux_v3_t translation;
     nux_m4_trs_decompose(t->global_matrix, &translation, NUX_NULL, NUX_NULL);
     return translation;
@@ -97,7 +98,7 @@ nux_transform_get_global_scale (nux_env_t *env, nux_u32_t entity)
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ZEROES);
-    update_global_matrix(env, entity);
+    nux_transform_update_matrix(env, entity);
     return t->local_scale;
 }
 void

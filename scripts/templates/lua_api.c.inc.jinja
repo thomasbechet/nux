@@ -20,7 +20,6 @@
 
 {% for module, functions in modules.items() %}
 {% for function in functions %}
-{% if not function.hasptr %}
 static int l_{{ module }}_{{ function.name }}(lua_State *L)
 {
     {% set ns = namespace(stack = 1) %}
@@ -33,6 +32,8 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
             {{ arg.name }}.y = luaL_checknumber(L, {{ ns.stack + 1 }});
             {{ arg.name }}.z = luaL_checknumber(L, {{ ns.stack + 2 }});
             {% set ns.stack = ns.stack + 3 %}
+        {% elif arg.typename == "nux_c8_t" and arg.isptr %}
+            const nux_c8_t *{{ arg.name }} = luaL_checkstring(L, {{ ns.stack }});
         {% else %}
             {{ arg.typename }} {{ arg.name }} = {{ checkmap.get(arg.typename, "luaL_checkinteger") }}(L, {{ ns.stack }});
             {% set ns.stack = ns.stack + 1 %}
@@ -58,7 +59,6 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
         return 0;
     {% endif %}
 }
-{% endif %}
 {%- endfor %}
 {% endfor %}
 
