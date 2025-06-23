@@ -48,7 +48,7 @@ nux_mesh_gen_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
     NUX_CHECK(id, return NUX_NULL);
     mesh->count = NUX_ARRAY_SIZE(positions);
     mesh->data  = nux_arena_alloc(env->active_arena,
-                                 sizeof(nux_f32_t) * 5 * mesh->count);
+                                 sizeof(nux_f32_t) * 6 * mesh->count);
     NUX_CHECK(mesh->data, return NUX_NULL);
 
     for (nux_u32_t i = 0; i < mesh->count; ++i)

@@ -24,8 +24,9 @@ nux_scene_new (nux_env_t *env)
 void
 nux_scene_draw (nux_env_t *env, nux_u32_t scene)
 {
-    nux_scene_t *s = nux_arena_alloc(env->active_arena, sizeof(*s));
+    nux_scene_t *s = nux_object_get(env, NUX_OBJECT_SCENE, scene);
     NUX_CHECK(s, return);
+
     for (nux_u32_t ei = 0; ei < s->entities.size; ++ei)
     {
         nux_entity_t *e = s->entities.data + ei;
@@ -39,6 +40,10 @@ nux_scene_draw (nux_env_t *env, nux_u32_t scene)
             nux_staticmesh_t *sm
                 = &s->components.data[e->components[NUX_COMPONENT_STATICMESH]]
                        .staticmesh;
+            if (!sm->mesh)
+            {
+                continue;
+            }
             nux_transform_t *t
                 = &s->components.data[e->components[NUX_COMPONENT_TRANSFORM]]
                        .transform;
@@ -46,8 +51,35 @@ nux_scene_draw (nux_env_t *env, nux_u32_t scene)
             {
                 nux_transform_update_matrix(env, e->id);
             }
+            nux_mesh_t *m = nux_object_get(env, NUX_OBJECT_MESH, sm->mesh);
+            NUX_ASSERT(m);
+
+            // Push transform
+            nux_u32_t transform_idx;
+            NUX_ASSERT(nux_graphics_push_transforms(
+                env, 1, &t->global_matrix, &transform_idx));
+
+            nux_gpu_command_t *cmd
+                = nux_gpu_command_vec_push(&env->inst->gpu_commands);
+            NUX_ASSERT(cmd);
+            cmd->main.colormap        = NUX_NULL;
+            cmd->main.texture         = NUX_NULL;
+            cmd->main.vertices        = env->inst->vertices_buffer_slot;
+            cmd->main.transforms      = env->inst->transforms_buffer_slot;
+            cmd->main.vertex_first    = m->first;
+            cmd->main.vertex_count    = m->count;
+            cmd->main.transform_index = transform_idx;
         }
     }
+
+    nux_gpu_pass_t pass = {
+        .type                  = NUX_GPU_PASS_MAIN,
+        .pipeline              = env->inst->main_pipeline_slot,
+        .main.constants_buffer = env->inst->constants_buffer_slot,
+        .count                 = env->inst->gpu_commands.size,
+    };
+    nux_os_gpu_submit_pass(
+        env->inst->userdata, &pass, env->inst->gpu_commands.data);
 }
 nux_u32_t
 nux_entity_new (nux_env_t *env, nux_u32_t scene)

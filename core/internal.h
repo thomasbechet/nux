@@ -557,11 +557,10 @@ typedef struct
 {
     nux_m4_t  view;
     nux_m4_t  proj;
-    nux_m4_t  model;
     nux_v2u_t canvas_size;
     nux_v2u_t screen_size;
     nux_f32_t time;
-    nux_u32_t _pad[3];
+    nux_f32_t _pad[3];
 } nux_gpu_constants_buffer_t;
 
 typedef struct
@@ -604,9 +603,15 @@ struct nux_instance
 
     nux_u32_t stats[NUX_STAT_MAX];
 
-    nux_u32_t             colormap_texture;
+    nux_u32_t             colormap_texture_slot;
     nux_u32_t             canvas_render_target;
-    nux_u32_t             vertex_storage_head;
+    nux_u32_t             vertices_buffer_head;
+    nux_u32_t             vertices_buffer_slot;
+    nux_u32_t             constants_buffer_slot;
+    nux_u32_t             transforms_buffer_head;
+    nux_u32_t             transforms_buffer_slot;
+    nux_u32_t             main_pipeline_slot;
+    nux_u32_t             canvas_pipeline_slot;
     nux_gpu_command_vec_t gpu_commands;
 
     nux_arena_pool_t arenas;
@@ -788,7 +793,10 @@ nux_status_t nux_graphics_push_vertices(nux_env_t       *env,
                                         nux_u32_t        vcount,
                                         const nux_f32_t *data,
                                         nux_u32_t       *first);
-void nux_graphics_draw(nux_env_t *env, nux_u32_t first, nux_u32_t count);
+nux_status_t nux_graphics_push_transforms(nux_env_t      *env,
+                                          nux_u32_t       mcount,
+                                          const nux_m4_t *data,
+                                          nux_u32_t      *index);
 
 // lua.c
 

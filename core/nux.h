@@ -77,11 +77,11 @@ typedef struct
     {
         struct
         {
-            nux_u32_t uniform_buffer;
+            nux_u32_t constants_buffer;
         } main;
         struct
         {
-            nux_u32_t uniform_buffer;
+            nux_u32_t constants_buffer;
         } canvas;
     };
 } nux_gpu_pass_t;
@@ -92,9 +92,11 @@ typedef union
     {
         nux_u32_t texture;
         nux_u32_t colormap;
-        nux_u32_t storage;
-        nux_u32_t vertex_base;
+        nux_u32_t vertices;
+        nux_u32_t transforms;
+        nux_u32_t vertex_first;
         nux_u32_t vertex_count;
+        nux_u32_t transform_index;
     } main;
     struct
     {

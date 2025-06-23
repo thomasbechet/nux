@@ -96,6 +96,9 @@ nux_os_create_pipeline (void               *userdata,
             index = glGetProgramResourceIndex(
                 pipeline->handle, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
             glShaderStorageBlockBinding(pipeline->handle, index, 2);
+            index = glGetProgramResourceIndex(
+                pipeline->handle, GL_SHADER_STORAGE_BLOCK, "transforms");
+            glShaderStorageBlockBinding(pipeline->handle, index, 3);
         }
         break;
         case NUX_GPU_PASS_CANVAS: {
@@ -306,9 +309,10 @@ nux_os_gpu_submit_pass (void                    *userdata,
     switch (pass->type)
     {
         case NUX_GPU_PASS_MAIN: {
-            glUseProgram(inst->pipelines[pass->pipeline].handle);
+            GLuint program = inst->pipelines[pass->pipeline].handle;
+            glUseProgram(program);
 
-            buffer_t *buffer = inst->buffers + pass->main.uniform_buffer;
+            buffer_t *buffer = inst->buffers + pass->main.constants_buffer;
             assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
             glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
 
@@ -319,9 +323,20 @@ nux_os_gpu_submit_pass (void                    *userdata,
             {
                 const nux_gpu_command_t *cmd = cmds + i;
 
-                buffer = inst->buffers + cmd->main.storage;
+                buffer = inst->buffers + cmd->main.vertices;
                 assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
                 glBindBufferBase(buffer->buffer_type, 2, buffer->handle);
+
+                buffer = inst->buffers + cmd->main.transforms;
+                assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
+                glBindBufferBase(buffer->buffer_type, 3, buffer->handle);
+
+                GLuint location = glGetUniformLocation(
+                    program, "entryPointParams.vertexFirst");
+                glUniform1ui(location, cmd->main.vertex_first);
+                location = glGetUniformLocation(
+                    program, "entryPointParams.transformIndex");
+                glUniform1ui(location, cmd->main.transform_index);
 
                 glBindVertexArray(renderer.empty_vao);
                 glDrawArrays(GL_TRIANGLES, 0, cmd->main.vertex_count);
@@ -336,7 +351,7 @@ nux_os_gpu_submit_pass (void                    *userdata,
             GLuint program = inst->pipelines[pass->pipeline].handle;
             glUseProgram(program);
 
-            buffer_t *buffer = inst->buffers + pass->main.uniform_buffer;
+            buffer_t *buffer = inst->buffers + pass->main.constants_buffer;
             assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
             glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
 

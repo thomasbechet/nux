@@ -13,37 +13,39 @@ struct Vertex
     float2 texcoord;
 }
 
-uniform uint drawID;
-
-StructuredBuffer<float>   storage;
 ConstantBuffer<Constants> constants;
+StructuredBuffer<float> vertices;
+StructuredBuffer<float4x4> transforms;
 
 Vertex pullVertex(uint idx)
 {
-    Vertex vertex = {}; 
+    Vertex vertex = {};
     vertex.position = float3(
-        storage[idx * 5 + 0],
-        storage[idx * 5 + 1],
-        storage[idx * 5 + 2]
+        vertices[idx * 5 + 0],
+        vertices[idx * 5 + 1],
+        vertices[idx * 5 + 2],
     );
     vertex.texcoord = float2(
-        storage[idx * 5 + 3],
-        storage[idx * 5 + 4]
+        vertices[idx * 5 + 3],
+        vertices[idx * 5 + 4],
     );
     return vertex;
 }
 
 [shader("vertex")]
 VOut vertexMain(
-    uint vertexID : SV_VertexID,
+    uint vertexIndex : SV_VertexID,
+    uniform uint vertexFirst,
+    uniform uint transformIndex,
 )
 {
-    uint base = (vertexID / 3) * 3;
-    Vertex v0 = pullVertex(vertexID);
-    Vertex v1 = pullVertex(base + (vertexID + 1) % 3);
-    Vertex v2 = pullVertex(base + (vertexID + 2) % 3);
+    uint base = vertexFirst + (vertexIndex / 3) * 3;
+    Vertex v0 = pullVertex(vertexIndex);
+    Vertex v1 = pullVertex(base + (vertexIndex + 1) % 3);
+    Vertex v2 = pullVertex(base + (vertexIndex + 2) % 3);
+    float4x4 transform = transforms[transformIndex];
     VOut output = {};
-    float4 worldPos = mul(constants.model, float4(v0.position, 1));
+    float4 worldPos = mul(transform, float4(v0.position, 1));
     float4 viewPos  = mul(constants.view, worldPos);
     output.position = mul(constants.proj, viewPos);
     output.uv       = v0.texcoord;
