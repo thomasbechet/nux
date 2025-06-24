@@ -7,11 +7,14 @@ nux_transform_update_matrix (nux_env_t *env, nux_u32_t entity)
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_ASSERT(t);
 
-    if (t->parent && nux_transform_update_matrix(env, t->parent))
+    // Check parent global matrix update
+    if (t->parent)
     {
+        nux_transform_update_matrix(env, t->parent);
         t->dirty = NUX_TRUE;
     }
 
+    // Update global matrix from parent
     if (t->dirty)
     {
         t->global_matrix = nux_m4_trs(
@@ -27,6 +30,7 @@ nux_transform_update_matrix (nux_env_t *env, nux_u32_t entity)
         t->dirty = NUX_FALSE;
         return NUX_TRUE;
     }
+
     return NUX_FALSE;
 }
 
@@ -110,6 +114,7 @@ nux_transform_set_translation (nux_env_t *env,
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
     t->local_translation = position;
+    t->dirty             = NUX_TRUE;
 }
 void
 nux_transform_set_scale (nux_env_t *env, nux_u32_t entity, nux_v3_t scale)
@@ -118,6 +123,17 @@ nux_transform_set_scale (nux_env_t *env, nux_u32_t entity, nux_v3_t scale)
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
     t->local_scale = scale;
+    t->dirty       = NUX_TRUE;
+}
+void
+nux_transform_rotate_y (nux_env_t *env, nux_u32_t entity, nux_f32_t angle)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(t, return);
+    t->local_rotation
+        = nux_q4_mul_axis(t->local_rotation, NUX_V3_UP, nux_radian(angle));
+    t->dirty = NUX_TRUE;
 }
 void
 nux_transform_look_at (nux_env_t *env, nux_u32_t entity, nux_v3_t center)
@@ -125,6 +141,24 @@ nux_transform_look_at (nux_env_t *env, nux_u32_t entity, nux_v3_t center)
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
-    nux_v3_t eye     = nux_transform_get_global_translation(env, entity);
-    t->global_matrix = nux_lookat(eye, center, NUX_V3_UP);
+    nux_transform_update_matrix(env, entity);
+    nux_v3_t eye = nux_transform_get_global_translation(env, entity);
+
+    nux_v3_t zaxis = nux_v3_normalize(nux_v3_sub(center, eye));
+    nux_v3_t xaxis = nux_v3_normalize(nux_v3_cross(NUX_V3_UP, zaxis));
+    nux_v3_t yaxis = nux_v3_cross(xaxis, zaxis);
+
+    t->global_matrix.x1 = xaxis.x;
+    t->global_matrix.x2 = xaxis.y;
+    t->global_matrix.x3 = xaxis.z;
+
+    t->global_matrix.y1 = yaxis.x;
+    t->global_matrix.y2 = yaxis.y;
+    t->global_matrix.y3 = yaxis.z;
+
+    t->global_matrix.z1 = -zaxis.x;
+    t->global_matrix.z2 = -zaxis.y;
+    t->global_matrix.z3 = -zaxis.z;
+
+    t->dirty = NUX_FALSE;
 }

@@ -583,7 +583,9 @@ l_scene_draw (lua_State *L)
     nux_env_t *env   = lua_touserdata(L, -1);
     nux_u32_t  scene = luaL_checkinteger(L, 1);
 
-    nux_scene_draw(env, scene);
+    nux_u32_t camera = luaL_checkinteger(L, 2);
+
+    nux_scene_draw(env, scene, camera);
 
     return 0;
 }
@@ -756,6 +758,20 @@ l_transform_set_scale (lua_State *L)
     scale.z = luaL_checknumber(L, 4);
 
     nux_transform_set_scale(env, entity, scale);
+
+    return 0;
+}
+static int
+l_transform_rotate_y (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_f32_t angle = luaL_checknumber(L, 2);
+
+    nux_transform_rotate_y(env, entity, angle);
 
     return 0;
 }
@@ -965,6 +981,7 @@ static const struct luaL_Reg lib_transform[]
         { "get_global_scale", l_transform_get_global_scale },
         { "set_translation", l_transform_set_translation },
         { "set_scale", l_transform_set_scale },
+        { "rotate_y", l_transform_rotate_y },
         { "look_at", l_transform_look_at },
         { NUX_NULL, NUX_NULL } };
 

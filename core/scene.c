@@ -22,11 +22,29 @@ nux_scene_new (nux_env_t *env)
     return id;
 }
 void
-nux_scene_draw (nux_env_t *env, nux_u32_t scene)
+nux_scene_draw (nux_env_t *env, nux_u32_t scene, nux_u32_t camera)
 {
     nux_scene_t *s = nux_object_get(env, NUX_OBJECT_SCENE, scene);
     NUX_CHECK(s, return);
 
+    // Propagate transforms
+    for (nux_u32_t ei = 0; ei < s->entities.size; ++ei)
+    {
+        nux_entity_t *e = s->entities.data + ei;
+        if (!e->id)
+        {
+            continue;
+        }
+        if (e->components[NUX_COMPONENT_TRANSFORM])
+        {
+            nux_transform_t *t
+                = &s->components.data[e->components[NUX_COMPONENT_TRANSFORM]]
+                       .transform;
+            nux_transform_update_matrix(env, e->id);
+        }
+    }
+
+    // Draw entities
     for (nux_u32_t ei = 0; ei < s->entities.size; ++ei)
     {
         nux_entity_t *e = s->entities.data + ei;
@@ -47,10 +65,6 @@ nux_scene_draw (nux_env_t *env, nux_u32_t scene)
             nux_transform_t *t
                 = &s->components.data[e->components[NUX_COMPONENT_TRANSFORM]]
                        .transform;
-            if (t->dirty)
-            {
-                nux_transform_update_matrix(env, e->id);
-            }
             nux_mesh_t *m = nux_object_get(env, NUX_OBJECT_MESH, sm->mesh);
             NUX_ASSERT(m);
 
@@ -72,6 +86,38 @@ nux_scene_draw (nux_env_t *env, nux_u32_t scene)
         }
     }
 
+    // Push constants
+    nux_entity_t *ce = nux_object_get(env, NUX_OBJECT_ENTITY, camera);
+    NUX_CHECK(ce, return);
+    nux_transform_t *ct
+        = nux_scene_get_component(env, camera, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(ct, return);
+    nux_camera_t *cc
+        = nux_scene_get_component(env, camera, NUX_COMPONENT_CAMERA);
+    NUX_CHECK(cc, return);
+
+    nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, nux_v3s(0));
+    nux_v3_t center = nux_m4_mulv3(ct->global_matrix, nux_v3(0, 0, -1));
+    nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP);
+
+    nux_gpu_constants_buffer_t constants;
+    constants.view = nux_lookat(eye, center, NUX_V3_UP);
+    constants.proj
+        = nux_perspective(nux_radian(cc->fov),
+                          (nux_f32_t)NUX_CANVAS_WIDTH / NUX_CANVAS_HEIGHT,
+                          0.1,
+                          100);
+    constants.screen_size = nux_v2u(env->inst->stats[NUX_STAT_SCREEN_WIDTH],
+                                    env->inst->stats[NUX_STAT_SCREEN_HEIGHT]);
+    constants.canvas_size = nux_v2u(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
+    constants.time        = env->inst->time;
+    nux_os_update_buffer(env->inst->userdata,
+                         env->inst->constants_buffer_slot,
+                         0,
+                         sizeof(constants),
+                         &constants);
+
+    // Submit pass
     nux_gpu_pass_t pass = {
         .type                  = NUX_GPU_PASS_MAIN,
         .pipeline              = env->inst->main_pipeline_slot,

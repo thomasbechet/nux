@@ -31,6 +31,7 @@ if __name__ == "__main__":
             subprocess.call([
                 "slangc", file, 
                 "-target", "spirv",
+                "-matrix-layout-column-major",
                 "-entry", entry,
                 "-o", spirv_output 
                 ])
