@@ -100,9 +100,14 @@
 #define NUX_M3_SIZE 9
 #define NUX_M4_SIZE 16
 
-#define NUX_V3_UP     nux_v3(0, 1, 0)
-#define NUX_V3_ONES   nux_v3s(1)
-#define NUX_V3_ZEROES nux_v3s(0)
+#define NUX_V3_ONES     nux_v3s(1)
+#define NUX_V3_ZEROES   nux_v3s(0)
+#define NUX_V3_UP       nux_v3(0, 1, 0)
+#define NUX_V3_DOWN     nux_v3(0, -1, 0)
+#define NUX_V3_FORWARD  nux_v3(0, 0, -1)
+#define NUX_V3_BACKWARD nux_v3(0, 0, 1)
+#define NUX_V3_LEFT     nux_v3(-1, 0, 0)
+#define NUX_V3_RIGHT    nux_v3(1, 0, 0)
 
 #define NUX_V2_DEFINE(name, type)                                        \
     nux_##name##_t nux_##name(type x, type y);                           \
@@ -752,7 +757,7 @@ nux_m4_t nux_m4_scale(nux_v3_t v);
 nux_m4_t nux_m4_rotate_y(nux_f32_t angle);
 nux_m4_t nux_m4_mul(nux_m4_t a, nux_m4_t b);
 nux_v4_t nux_m4_mulv(nux_m4_t a, nux_v4_t v);
-nux_v3_t nux_m4_mulv3(nux_m4_t a, nux_v3_t v);
+nux_v3_t nux_m4_mulv3(nux_m4_t a, nux_v3_t v, nux_f32_t w);
 nux_m4_t nux_m4_trs(nux_v3_t t, nux_q4_t r, nux_v3_t s);
 void nux_m4_trs_decompose(nux_m4_t m, nux_v3_t *t, nux_q4_t *r, nux_v3_t *s);
 

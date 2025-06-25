@@ -728,6 +728,108 @@ l_transform_get_global_scale (lua_State *L)
     return 3;
 }
 static int
+l_transform_forward (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_forward(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
+l_transform_backward (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_backward(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
+l_transform_left (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_left(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
+l_transform_right (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_right(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
+l_transform_up (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_up(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
+l_transform_down (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_down(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
 l_transform_set_translation (lua_State *L)
 {
 
@@ -979,6 +1081,12 @@ static const struct luaL_Reg lib_transform[]
         { "get_scale", l_transform_get_scale },
         { "get_global_translation", l_transform_get_global_translation },
         { "get_global_scale", l_transform_get_global_scale },
+        { "forward", l_transform_forward },
+        { "backward", l_transform_backward },
+        { "left", l_transform_left },
+        { "right", l_transform_right },
+        { "up", l_transform_up },
+        { "down", l_transform_down },
         { "set_translation", l_transform_set_translation },
         { "set_scale", l_transform_set_scale },
         { "rotate_y", l_transform_rotate_y },

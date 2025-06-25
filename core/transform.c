@@ -105,6 +105,45 @@ nux_transform_get_global_scale (nux_env_t *env, nux_u32_t entity)
     nux_transform_update_matrix(env, entity);
     return t->local_scale;
 }
+static nux_v3_t
+rotate_v3 (nux_env_t *env, nux_u32_t entity, nux_v3_t v)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(t, return NUX_V3_ZEROES);
+    nux_transform_update_matrix(env, entity);
+    return nux_m4_mulv3(t->global_matrix, v, 0);
+}
+nux_v3_t
+nux_transform_forward (nux_env_t *env, nux_u32_t entity)
+{
+    return rotate_v3(env, entity, NUX_V3_FORWARD);
+}
+nux_v3_t
+nux_transform_backward (nux_env_t *env, nux_u32_t entity)
+{
+    return rotate_v3(env, entity, NUX_V3_BACKWARD);
+}
+nux_v3_t
+nux_transform_left (nux_env_t *env, nux_u32_t entity)
+{
+    return rotate_v3(env, entity, NUX_V3_LEFT);
+}
+nux_v3_t
+nux_transform_right (nux_env_t *env, nux_u32_t entity)
+{
+    return rotate_v3(env, entity, NUX_V3_RIGHT);
+}
+nux_v3_t
+nux_transform_up (nux_env_t *env, nux_u32_t entity)
+{
+    return rotate_v3(env, entity, NUX_V3_UP);
+}
+nux_v3_t
+nux_transform_down (nux_env_t *env, nux_u32_t entity)
+{
+    return rotate_v3(env, entity, NUX_V3_DOWN);
+}
 void
 nux_transform_set_translation (nux_env_t *env,
                                nux_u32_t  entity,

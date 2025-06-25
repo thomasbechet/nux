@@ -134,9 +134,9 @@ nux_m4_mulv (nux_m4_t m, nux_v4_t v)
     return ret;
 }
 nux_v3_t
-nux_m4_mulv3 (nux_m4_t a, nux_v3_t v)
+nux_m4_mulv3 (nux_m4_t a, nux_v3_t v, nux_f32_t w)
 {
-    nux_v4_t v4 = nux_v4(v.x, v.y, v.z, 1);
+    nux_v4_t v4 = nux_v4(v.x, v.y, v.z, w);
     v4          = nux_m4_mulv(a, v4);
     return nux_v3(v4.x, v4.y, v4.z);
 }

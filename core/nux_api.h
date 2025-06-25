@@ -285,6 +285,12 @@ nux_v3_t  nux_transform_get_translation(nux_env_t *env, nux_u32_t entity);
 nux_v3_t  nux_transform_get_scale(nux_env_t *env, nux_u32_t entity);
 nux_v3_t nux_transform_get_global_translation(nux_env_t *env, nux_u32_t entity);
 nux_v3_t nux_transform_get_global_scale(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_forward(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_backward(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_left(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_right(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_up(nux_env_t *env, nux_u32_t entity);
+nux_v3_t nux_transform_down(nux_env_t *env, nux_u32_t entity);
 void     nux_transform_set_translation(nux_env_t *env,
                                        nux_u32_t  entity,
                                        nux_v3_t   position);

@@ -96,9 +96,9 @@ nux_scene_draw (nux_env_t *env, nux_u32_t scene, nux_u32_t camera)
         = nux_scene_get_component(env, camera, NUX_COMPONENT_CAMERA);
     NUX_CHECK(cc, return);
 
-    nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, nux_v3s(0));
-    nux_v3_t center = nux_m4_mulv3(ct->global_matrix, nux_v3(0, 0, -1));
-    nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP);
+    nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROES, 1);
+    nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
+    nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 1);
 
     nux_gpu_constants_buffer_t constants;
     constants.view = nux_lookat(eye, center, NUX_V3_UP);
