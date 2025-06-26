@@ -16,6 +16,10 @@ typedef struct
     nux_u32_t max_object_count;
     nux_u32_t memory_size;
 
+    nux_u32_t width;
+    nux_u32_t height;
+    nux_u32_t tick_frequency;
+
     void          *userdata;
     nux_callback_t init;
     nux_callback_t update;

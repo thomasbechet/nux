@@ -22,7 +22,7 @@
 #define NUX_API extern
 
 #define NUX_BUILD_VARARGS
-#define NUX_BUILD_CGLTF
+#define NUX_BUILD_IMPORTER
 
 #define NUX_DEBUG
 #define NUX_STDLIB

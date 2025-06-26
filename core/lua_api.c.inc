@@ -660,6 +660,40 @@ l_transform_get_parent (lua_State *L)
     return 1;
 }
 static int
+l_transform_get_local_translation (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_get_local_translation(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
+l_transform_get_local_scale (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_env_t *env    = lua_touserdata(L, -1);
+    nux_u32_t  entity = luaL_checkinteger(L, 1);
+
+    nux_v3_t ret =
+
+        nux_transform_get_local_scale(env, entity);
+
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
 l_transform_get_translation (lua_State *L)
 {
 
@@ -687,40 +721,6 @@ l_transform_get_scale (lua_State *L)
     nux_v3_t ret =
 
         nux_transform_get_scale(env, entity);
-
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
-}
-static int
-l_transform_get_global_translation (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
-
-    nux_v3_t ret =
-
-        nux_transform_get_global_translation(env, entity);
-
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
-}
-static int
-l_transform_get_global_scale (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
-
-    nux_v3_t ret =
-
-        nux_transform_get_global_scale(env, entity);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -1077,10 +1077,10 @@ static const struct luaL_Reg lib_transform[]
         { "remove", l_transform_remove },
         { "set_parent", l_transform_set_parent },
         { "get_parent", l_transform_get_parent },
+        { "get_local_translation", l_transform_get_local_translation },
+        { "get_local_scale", l_transform_get_local_scale },
         { "get_translation", l_transform_get_translation },
         { "get_scale", l_transform_get_scale },
-        { "get_global_translation", l_transform_get_global_translation },
-        { "get_global_scale", l_transform_get_global_scale },
         { "forward", l_transform_forward },
         { "backward", l_transform_backward },
         { "left", l_transform_left },

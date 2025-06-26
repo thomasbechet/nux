@@ -25,13 +25,13 @@ core_init (const nux_instance_config_t *config)
 
     // Allocate core memory
     nux_arena_t core_arena;
-    core_arena.capa         = NUX_MEMORY_SIZE;
-    core_arena.size         = 0;
-    core_arena.data         = nux_os_malloc(config->userdata, NUX_MEMORY_SIZE);
+    core_arena.capa = NUX_CORE_MEMORY_SIZE;
+    core_arena.size = 0;
+    core_arena.data = nux_os_malloc(config->userdata, NUX_CORE_MEMORY_SIZE);
     core_arena.first_object = NUX_NULL;
     core_arena.last_object  = NUX_NULL;
     NUX_CHECK(core_arena.data, return NUX_NULL);
-    nux_memset(core_arena.data, 0, NUX_MEMORY_SIZE);
+    nux_memset(core_arena.data, 0, NUX_CORE_MEMORY_SIZE);
 
     // Allocate instance
     nux_instance_t *inst = nux_arena_alloc(&core_arena, sizeof(*inst));
@@ -85,6 +85,9 @@ nux_instance_init (const nux_instance_config_t *config)
     // Register core arena object
     inst->core_arena->id = nux_object_create(
         env, env->active_arena, NUX_OBJECT_ARENA, inst->core_arena);
+
+    // Load configuration
+    NUX_CHECK(nux_lua_load_conf(env), goto cleanup);
 
     // Initialize modules
     NUX_CHECK(nux_graphics_init(env), goto cleanup);

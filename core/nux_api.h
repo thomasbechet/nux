@@ -80,7 +80,7 @@ typedef enum
     NUX_NAME_MAX         = 64,
     NUX_PALETTE_SIZE     = 256,
     NUX_COLORMAP_SIZE    = 256,
-    NUX_MEMORY_SIZE      = (1 << 27), // 128M
+    NUX_CORE_MEMORY_SIZE = (1 << 27), // 128M
     NUX_GPU_BUFFER_SIZE  = (1 << 24), // 16M
     NUX_GPU_COMMAND_SIZE = 1024,
 } nux_constants_t;
@@ -281,19 +281,19 @@ void      nux_transform_set_parent(nux_env_t *env,
                                    nux_u32_t  entity,
                                    nux_u32_t  parent);
 nux_u32_t nux_transform_get_parent(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_get_local_translation(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_get_local_scale(nux_env_t *env, nux_u32_t entity);
 nux_v3_t  nux_transform_get_translation(nux_env_t *env, nux_u32_t entity);
 nux_v3_t  nux_transform_get_scale(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_get_global_translation(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_get_global_scale(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_forward(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_backward(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_left(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_right(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_up(nux_env_t *env, nux_u32_t entity);
-nux_v3_t nux_transform_down(nux_env_t *env, nux_u32_t entity);
-void     nux_transform_set_translation(nux_env_t *env,
-                                       nux_u32_t  entity,
-                                       nux_v3_t   position);
+nux_v3_t  nux_transform_forward(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_backward(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_left(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_right(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_up(nux_env_t *env, nux_u32_t entity);
+nux_v3_t  nux_transform_down(nux_env_t *env, nux_u32_t entity);
+void      nux_transform_set_translation(nux_env_t *env,
+                                        nux_u32_t  entity,
+                                        nux_v3_t   position);
 void nux_transform_set_scale(nux_env_t *env, nux_u32_t entity, nux_v3_t scale);
 void nux_transform_rotate_y(nux_env_t *env, nux_u32_t entity, nux_f32_t angle);
 void nux_transform_look_at(nux_env_t *env, nux_u32_t entity, nux_v3_t center);

@@ -70,7 +70,7 @@ nux_transform_get_parent (nux_env_t *env, nux_u32_t entity)
     return t->parent;
 }
 nux_v3_t
-nux_transform_get_translation (nux_env_t *env, nux_u32_t entity)
+nux_transform_get_local_translation (nux_env_t *env, nux_u32_t entity)
 {
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
@@ -78,7 +78,7 @@ nux_transform_get_translation (nux_env_t *env, nux_u32_t entity)
     return t->local_translation;
 }
 nux_v3_t
-nux_transform_get_scale (nux_env_t *env, nux_u32_t entity)
+nux_transform_get_local_scale (nux_env_t *env, nux_u32_t entity)
 {
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
@@ -86,7 +86,7 @@ nux_transform_get_scale (nux_env_t *env, nux_u32_t entity)
     return t->local_scale;
 }
 nux_v3_t
-nux_transform_get_global_translation (nux_env_t *env, nux_u32_t entity)
+nux_transform_get_translation (nux_env_t *env, nux_u32_t entity)
 {
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
@@ -97,7 +97,7 @@ nux_transform_get_global_translation (nux_env_t *env, nux_u32_t entity)
     return translation;
 }
 nux_v3_t
-nux_transform_get_global_scale (nux_env_t *env, nux_u32_t entity)
+nux_transform_get_scale (nux_env_t *env, nux_u32_t entity)
 {
     nux_transform_t *t
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
@@ -181,7 +181,7 @@ nux_transform_look_at (nux_env_t *env, nux_u32_t entity, nux_v3_t center)
         = nux_scene_get_component(env, entity, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
     nux_transform_update_matrix(env, entity);
-    nux_v3_t eye = nux_transform_get_global_translation(env, entity);
+    nux_v3_t eye = nux_transform_get_translation(env, entity);
 
     nux_v3_t zaxis = nux_v3_normalize(nux_v3_sub(center, eye));
     nux_v3_t xaxis = nux_v3_normalize(nux_v3_cross(NUX_V3_UP, zaxis));

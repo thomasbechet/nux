@@ -805,6 +805,7 @@ nux_status_t nux_graphics_push_transforms(nux_env_t      *env,
 
 // lua.c
 
+nux_status_t nux_lua_load_conf(nux_env_t *env);
 nux_status_t nux_lua_init(nux_env_t *env);
 void         nux_lua_free(nux_env_t *env);
 void         nux_lua_tick(nux_env_t *env);
