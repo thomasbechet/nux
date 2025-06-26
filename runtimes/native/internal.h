@@ -1,6 +1,14 @@
 #ifndef NUX_INTERNAL_H
 #define NUX_INTERNAL_H
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <math.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <nux.h>
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -10,9 +18,16 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #include <nuklear/nuklear.h>
-#define NU_STDLIB
-#include <nulib/nulib.h>
 #include <glad/gl.h>
+
+#define MAX_COMMAND   64
+#define PATH_MAX_LEN  256
+#define ARRAY_LEN(ar) (sizeof(ar) / sizeof(ar[0]))
+#define CHECK(cond, action) \
+    if (!(cond))            \
+    {                       \
+        action;             \
+    }
 
 typedef enum
 {
@@ -25,23 +40,23 @@ typedef enum
 
 typedef enum
 {
-    COMMAND_EXIT,
-    COMMAND_SAVE_STATE,
-    COMMAND_LOAD_STATE,
-} runtime_command_t;
+    VIEW_GAME     = 0,
+    VIEW_OPEN     = 1,
+    VIEW_CONTROLS = 2,
+    VIEW_SETTINGS = 3,
+} view_t;
 
 typedef struct
 {
-    nu_char_t        name[32];
-    nux_u32_t        addr;
-    nux_debug_type_t type;
-    nu_bool_t        override;
-    union
+    enum
     {
-        nu_f32_t f32;
-        nu_i32_t i32;
-    } value;
-} debug_value_t;
+        COMMAND_EXIT,
+        COMMAND_SAVE_STATE,
+        COMMAND_LOAD_STATE,
+        COMMAND_CHANGE_VIEW,
+    } type;
+    view_t view;
+} command_t;
 
 typedef struct
 {
@@ -70,62 +85,63 @@ typedef struct
 
 typedef struct
 {
-    nu_char_t             path[NU_PATH_MAX];
-    nu_bool_t             active;
+    char                  path[PATH_MAX_LEN];
+    bool                  active;
     nux_instance_config_t config;
     nux_instance_t       *instance;
-    nu_bool_t             pause;
+    bool                  pause;
     struct nk_rect        viewport_ui;
     viewport_mode_t       viewport_mode;
-    nu_b2i_t              viewport;
-    debug_value_t         debug_values[256];
-    nu_size_t             debug_value_count;
+    struct nk_rect        viewport;
     pipeline_t            pipelines[NUX_GPU_PIPELINE_MAX];
     framebuffer_t         framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
     texture_t             textures[NUX_GPU_TEXTURE_MAX];
     buffer_t              buffers[NUX_GPU_BUFFER_MAX];
-} runtime_instance_t;
+} instance_t;
 
 typedef struct
 {
-    nu_bool_t debug;
-    nu_sv_t   path;
-} runtime_config_t;
+    bool        debug;
+    const char *path;
+} config_t;
 
-void *native_malloc(nu_size_t n);
+void *native_malloc(size_t n);
 void  native_free(void *p);
-void *native_realloc(void *p, nu_size_t n);
+void *native_realloc(void *p, size_t n);
 
-void logger_log(nux_log_level_t level, const nu_char_t *fmt, ...);
-void logger_vlog(nux_log_level_t level, const nu_char_t *fmt, va_list args);
+void logger_log(nux_log_level_t level, const char *fmt, ...);
+void logger_vlog(nux_log_level_t level, const char *fmt, va_list args);
 
-nu_status_t         runtime_run(const runtime_config_t *config);
-nu_status_t         runtime_open(nu_u32_t index, nu_sv_t path);
-void                runtime_close(nu_u32_t index);
-void                runtime_reset(nu_u32_t index);
-runtime_instance_t *runtime_instance(void);
-void                runtime_quit(void);
+nux_status_t runtime_run(const config_t *config);
+nux_status_t runtime_open(int index, const char *path);
+void         runtime_close(int index);
+void         runtime_reset(int index);
+instance_t  *runtime_instance(void);
+void         runtime_quit(void);
 
-nu_status_t renderer_init(void);
-void        renderer_free(void);
-void        renderer_clear(nu_b2i_t viewport, nu_v2u_t window_size);
-void renderer_render_begin(runtime_instance_t *inst, nu_v2u_t window_size);
+nux_status_t renderer_init(void);
+void         renderer_free(void);
+void renderer_clear(struct nk_rect viewport, struct nk_vec2i window_size);
+void renderer_render_begin(instance_t *inst, struct nk_vec2i window_size);
 
-nu_status_t        window_init(void);
+nux_status_t       window_init(void);
 void               window_free(void);
 void               window_begin_frame(void);
-nu_u32_t           window_end_frame(void);
-nu_v2u_t           window_get_size(void);
+int                window_end_frame(void);
+struct nk_vec2i    window_get_size(void);
 struct nk_context *window_nk_context(void);
-nu_bool_t          window_is_double_click(void);
-nu_bool_t          window_poll_command(runtime_command_t *cmd);
+bool               window_is_double_click(void);
 
-void view_home(struct nk_context *ctx, struct nk_rect bounds);
+void command_push(command_t cmd);
+bool command_poll(command_t *cmd);
+
+void view_game(struct nk_context *ctx, struct nk_rect bounds);
 void view_controls(struct nk_context *ctx, struct nk_rect bounds);
 void view_settings(struct nk_context *ctx, struct nk_rect bounds);
-void view_debug(struct nk_context *ctx, struct nk_rect bounds);
+void view_open(struct nk_context *ctx, struct nk_rect bounds);
 
 void gui_update(void);
+void gui_set_view(view_t view);
 
 void loop_init(nux_env_t *env);
 void loop_update(nux_env_t *env);

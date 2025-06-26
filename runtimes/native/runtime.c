@@ -1,15 +1,14 @@
 #include "internal.h"
-#include "nux.h"
 
 static struct
 {
-    runtime_instance_t instances[4];
-    nu_bool_t          running;
-    nu_u32_t           fps;
+    instance_t instances[4];
+    bool       running;
+    int        fps;
 } runtime;
 
 static void
-instance_free (runtime_instance_t *instance)
+instance_free (instance_t *instance)
 {
     if (!instance->active)
     {
@@ -19,79 +18,80 @@ instance_free (runtime_instance_t *instance)
     {
         nux_instance_free(instance->instance);
     }
-    instance->active = NU_FALSE;
+    instance->active = false;
 }
-static nu_status_t
-instance_init (runtime_instance_t *instance, nu_sv_t path)
+static nux_status_t
+instance_init (instance_t *instance, const char *path)
 {
     instance_free(instance);
 
     nux_instance_config_t config = {
         .userdata         = instance,
-        .init             = loop_init,
-        .update           = loop_update,
-        .memory_size      = NU_MEM_16M,
+        .init             = NULL,
+        .update           = NULL,
+        .memory_size      = (1 << 24), // 16Mb
         .max_object_count = 1024,
     };
 
-    nu_sv_to_cstr(path, instance->path, NU_PATH_MAX);
-    instance->active            = NU_TRUE;
-    instance->config            = config;
-    instance->instance          = NU_NULL;
-    instance->pause             = NU_FALSE;
-    instance->viewport_ui       = nk_rect(0, 0, 10, 10);
-    instance->viewport_mode     = VIEWPORT_STRETCH_KEEP_ASPECT;
-    instance->debug_value_count = 0;
+    strncpy(instance->path, path, PATH_MAX_LEN);
+    instance->active        = true;
+    instance->config        = config;
+    instance->instance      = NULL;
+    instance->pause         = false;
+    instance->viewport_ui   = nk_rect(0, 0, 10, 10);
+    instance->viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
 
     instance->instance = nux_instance_init(&config);
-    NU_CHECK(instance->instance, goto cleanup0);
+    if (!instance->instance)
+    {
+        logger_log(NUX_LOG_ERROR, "Failed to init instance.");
+        goto cleanup0;
+    }
 
     nux_status_t status
         = nux_instance_load(instance->instance,
                             instance->path,
-                            nu_strnlen(instance->path, NU_PATH_MAX));
+                            strnlen(instance->path, PATH_MAX_LEN));
     if (!status)
     {
         logger_log(NUX_LOG_ERROR, "Failed to load cartridge.");
         goto cleanup0;
     }
 
-    return NU_SUCCESS;
+    return NUX_SUCCESS;
 cleanup0:
     instance_free(instance);
-    return NU_FAILURE;
+    return NUX_FAILURE;
 }
 static void
-apply_viewport_mode (runtime_instance_t *instance, nu_v2u_t window_size)
+apply_viewport_mode (instance_t *instance, struct nk_vec2i window_size)
 {
-    nu_b2i_t viewport = nu_b2i_xywh(instance->viewport_ui.x,
-                                    instance->viewport_ui.y,
-                                    instance->viewport_ui.w,
-                                    instance->viewport_ui.h);
+    struct nk_rect viewport = instance->viewport_ui;
 
-    nu_v2_t global_pos  = nu_v2(viewport.min.x, viewport.min.y);
-    nu_v2_t global_size = nu_v2_v2u(nu_b2i_size(viewport));
+    struct nk_vec2 global_pos  = { viewport.x, viewport.y };
+    struct nk_vec2 global_size = { viewport.w, viewport.h };
 
-    nu_v2_t  screen       = nu_v2(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
-    nu_f32_t aspect_ratio = screen.x / screen.y;
+    struct nk_vec2i screen       = { NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT };
+    float           aspect_ratio = (float)screen.x / screen.y;
 
-    nu_v2_t vsize = NU_V2_ZEROS;
+    struct nk_vec2 vsize = { 0, 0 };
     switch (instance->viewport_mode)
     {
         case VIEWPORT_FIXED: {
-            vsize = nu_v2(screen.x, screen.y);
+            vsize.x = screen.x;
+            vsize.y = screen.y;
         };
         break;
         case VIEWPORT_FIXED_BEST_FIT: {
-            nu_f32_t w_factor = global_size.x / screen.x;
-            nu_f32_t h_factor = global_size.y / screen.y;
-            nu_f32_t min      = NU_MIN(w_factor, h_factor);
+            float w_factor = global_size.x / screen.x;
+            float h_factor = global_size.y / screen.y;
+            float min      = w_factor < h_factor ? w_factor : h_factor;
             if (min < 1)
             {
                 // 0.623 => 0.5
                 // 0,432 => 0.25
                 // 0.115 => 0,125
-                nu_f32_t n = 2;
+                float n = 2;
                 while (min < (1 / n))
                 {
                     n *= 2;
@@ -100,7 +100,7 @@ apply_viewport_mode (runtime_instance_t *instance, nu_v2u_t window_size)
             }
             else
             {
-                min = nu_floor(min);
+                min = floorf(min);
             }
             vsize.x = screen.x * min;
             vsize.y = screen.y * min;
@@ -109,13 +109,13 @@ apply_viewport_mode (runtime_instance_t *instance, nu_v2u_t window_size)
         case VIEWPORT_STRETCH_KEEP_ASPECT: {
             if (global_size.x / global_size.y >= aspect_ratio)
             {
-                vsize.x = nu_floor(global_size.y * aspect_ratio);
-                vsize.y = nu_floor(global_size.y);
+                vsize.x = floorf(global_size.y * aspect_ratio);
+                vsize.y = floorf(global_size.y);
             }
             else
             {
-                vsize.x = nu_floor(global_size.x);
-                vsize.y = nu_floor(global_size.x / aspect_ratio);
+                vsize.x = floorf(global_size.x);
+                vsize.y = floorf(global_size.x / aspect_ratio);
             }
         }
         break;
@@ -126,30 +126,39 @@ apply_viewport_mode (runtime_instance_t *instance, nu_v2u_t window_size)
             break;
     }
 
-    nu_v2_t vpos = nu_v2_sub(global_size, vsize);
-    vpos         = nu_v2_divs(vpos, 2);
-    vpos         = nu_v2_add(vpos, global_pos);
+    struct nk_vec2 vpos;
+    vpos.x = global_pos.x + (global_size.x - vsize.x) * 0.5;
+    vpos.y = global_pos.y + (global_size.y - vsize.y) * 0.5;
 
     // Patch pos (bottom left in opengl)
     vpos.y = window_size.y - (vpos.y + vsize.y);
 
-    instance->viewport = nu_b2i_xywh(vpos.x, vpos.y, vsize.x, vsize.y);
+    instance->viewport.x = vpos.x;
+    instance->viewport.y = vpos.y;
+    instance->viewport.w = vsize.x;
+    instance->viewport.h = vsize.y;
 }
 
-nu_status_t
-runtime_run (const runtime_config_t *config)
+nux_status_t
+runtime_run (const config_t *config)
 {
     // Initialize runtime
-    nu_status_t status;
+    nux_status_t status;
     status = window_init();
-    NU_CHECK(status, goto cleanup0);
+    if (!status)
+    {
+        goto cleanup0;
+    }
     status = renderer_init();
-    NU_CHECK(status, goto cleanup1);
+    if (!status)
+    {
+        goto cleanup1;
+    }
 
-    runtime.running = NU_TRUE;
+    runtime.running = true;
 
     // Initialize base
-    if (config->path.len)
+    if (config->path)
     {
         runtime_open(0, config->path);
     }
@@ -161,14 +170,14 @@ runtime_run (const runtime_config_t *config)
         window_begin_frame();
 
         // Clear window
-        nu_v2u_t window_size = window_get_size();
-        renderer_clear(nu_b2i_xywh(0, 0, window_size.x, window_size.y),
+        struct nk_vec2i window_size = window_get_size();
+        renderer_clear(nk_rect(0, 0, window_size.x, window_size.y),
                        window_size);
 
         // Update active instances
-        for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
+        for (int i = 0; i < (int)ARRAY_LEN(runtime.instances); ++i)
         {
-            runtime_instance_t *instance = runtime.instances + i;
+            instance_t *instance = runtime.instances + i;
             if (instance->active && !instance->pause)
             {
                 // Compute viewport
@@ -186,24 +195,27 @@ runtime_run (const runtime_config_t *config)
         runtime.fps = window_end_frame();
 
         // Process runtime events
-        runtime_command_t cmd;
-        while (window_poll_command(&cmd))
+        command_t cmd;
+        while (command_poll(&cmd))
         {
-            switch (cmd)
+            switch (cmd.type)
             {
                 case COMMAND_EXIT:
-                    runtime.running = NU_FALSE;
+                    runtime.running = false;
                     break;
                 case COMMAND_SAVE_STATE:
                     break;
                 case COMMAND_LOAD_STATE:
+                    break;
+                case COMMAND_CHANGE_VIEW:
+                    gui_set_view(cmd.view);
                     break;
             }
         }
     }
 
     // Free instances
-    for (nu_size_t i = 0; i < NU_ARRAY_SIZE(runtime.instances); ++i)
+    for (int i = 0; i < (int)ARRAY_LEN(runtime.instances); ++i)
     {
         instance_free(runtime.instances + i);
     }
@@ -214,30 +226,29 @@ cleanup1:
 cleanup0:
     return status;
 }
-nu_status_t
-runtime_open (nu_u32_t index, nu_sv_t path)
+nux_status_t
+runtime_open (int index, const char *path)
 {
-    NU_ASSERT(index < NU_ARRAY_SIZE(runtime.instances));
+    assert(index < (int)ARRAY_LEN(runtime.instances));
     return instance_init(&runtime.instances[index], path);
 }
 void
-runtime_close (nu_u32_t index)
+runtime_close (int index)
 {
     instance_free(runtime.instances + index);
 }
 void
-runtime_reset (nu_u32_t index)
+runtime_reset (int index)
 {
-    runtime_instance_t *instance = runtime_instance();
+    instance_t *instance = runtime_instance();
     if (instance->active)
     {
-        nu_char_t path[NU_PATH_MAX];
-        nu_strncpy(path, instance->path, NU_PATH_MAX);
+        const char *path = instance->path;
         runtime_close(0);
-        runtime_open(0, nu_sv(path, NU_PATH_MAX));
+        runtime_open(0, path);
     }
 }
-runtime_instance_t *
+instance_t *
 runtime_instance (void)
 {
     return &runtime.instances[0];
@@ -245,11 +256,11 @@ runtime_instance (void)
 void
 runtime_quit (void)
 {
-    runtime.running = NU_FALSE;
+    runtime.running = false;
 }
 
 void *
-native_malloc (nu_size_t n)
+native_malloc (size_t n)
 {
     return malloc(n);
 }
@@ -259,7 +270,7 @@ native_free (void *p)
     free(p);
 }
 void *
-native_realloc (void *p, nu_size_t n)
+native_realloc (void *p, size_t n)
 {
     return realloc(p, n);
 }
@@ -288,75 +299,10 @@ nux_os_console (void           *userdata,
     logger_log(level, "%.*s", n, log);
 }
 void
-nux_os_debug (void            *userdata,
-              const nux_c8_t  *name,
-              nux_u32_t        n,
-              nux_debug_type_t type,
-              void            *p)
-{
-    // Find existing value at address
-    intptr_t            addr     = (intptr_t)p;
-    runtime_instance_t *instance = userdata;
-    debug_value_t      *value    = NU_NULL;
-    for (nu_size_t i = 0; i < instance->debug_value_count; ++i)
-    {
-        // if (instance->debug_values[i].addr == addr)
-        // {
-        //     value = instance->debug_values + i;
-        // }
-        if (nu_strneq(instance->debug_values[i].name, name, NUX_NAME_MAX))
-        {
-            value = instance->debug_values + i;
-        }
-    }
-    // Register new value
-    if (!value)
-    {
-        if (instance->debug_value_count
-            >= NU_ARRAY_SIZE(instance->debug_values))
-        {
-            logger_log(NUX_LOG_ERROR, "Max inspect value count reach");
-            return;
-        }
-        value       = &instance->debug_values[instance->debug_value_count++];
-        value->type = type;
-        value->addr = addr;
-        value->override = NU_FALSE;
-        nu_strncpy(value->name, name, sizeof(value->name));
-    }
-    // Read / Write value
-    if (value->override)
-    {
-        switch (type)
-        {
-            case NUX_DEBUG_I32:
-                *((nu_i32_t *)p) = value->value.i32;
-                break;
-            case NUX_DEBUG_F32:
-                *((nu_f32_t *)p) = value->value.f32;
-                break;
-        }
-        value->override = NU_FALSE;
-    }
-    else
-    {
-        switch (type)
-        {
-            case NUX_DEBUG_I32:
-                value->value.i32 = *(const nu_i32_t *)p;
-                break;
-            case NUX_DEBUG_F32:
-                value->value.f32 = *(const nu_f32_t *)p;
-                break;
-        }
-    }
-}
-void
 nux_os_update_stats (void *userdata, nux_u32_t *stats)
 {
-    runtime_instance_t *inst      = userdata;
+    instance_t *inst              = userdata;
     stats[NUX_STAT_FPS]           = runtime.fps;
-    nu_v2u_t screen_size          = nu_b2i_size(inst->viewport);
-    stats[NUX_STAT_SCREEN_WIDTH]  = screen_size.x;
-    stats[NUX_STAT_SCREEN_HEIGHT] = screen_size.y;
+    stats[NUX_STAT_SCREEN_WIDTH]  = inst->viewport.w;
+    stats[NUX_STAT_SCREEN_HEIGHT] = inst->viewport.h;
 }

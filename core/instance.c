@@ -166,24 +166,6 @@ nux_trace (nux_env_t *env, const nux_c8_t *text)
 {
     nux_log(env, NUX_LOG_INFO, text, nux_strnlen(text, 1024));
 }
-void
-nux_dbgi32 (nux_env_t *env, const nux_c8_t *name, nux_i32_t *p)
-{
-    nux_os_debug(env->inst->userdata,
-                 name,
-                 nux_strnlen(name, NUX_NAME_MAX),
-                 NUX_DEBUG_I32,
-                 p);
-}
-void
-nux_dbgf32 (nux_env_t *env, const nux_c8_t *name, nux_f32_t *p)
-{
-    nux_os_debug(env->inst->userdata,
-                 name,
-                 nux_strnlen(name, NUX_NAME_MAX),
-                 NUX_DEBUG_F32,
-                 p);
-}
 
 nux_u32_t
 nux_stat (nux_env_t *env, nux_stat_t stat)

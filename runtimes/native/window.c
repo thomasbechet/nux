@@ -5,22 +5,19 @@
 #include <nuklear/nuklear.h>
 #include <nuklear/nuklear_glfw_gl3.h>
 
-#define MAX_COMMAND        64
 #define MAX_VERTEX_BUFFER  512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
 static struct
 {
-    nu_bool_t         fullscreen;
-    nu_bool_t         switch_fullscreen;
-    GLFWwindow       *win;
-    nu_u32_t          buttons[NUX_PLAYER_MAX];
-    nu_f32_t          axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
-    runtime_command_t cmds[MAX_COMMAND];
-    nu_size_t         cmds_count;
-    nu_v2u_t          size;
-    nu_f64_t          prev_time;
-    struct nk_glfw    nk_glfw;
+    bool            fullscreen;
+    bool            switch_fullscreen;
+    GLFWwindow     *win;
+    int             buttons[NUX_PLAYER_MAX];
+    float           axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
+    struct nk_vec2i size;
+    double          prev_time;
+    struct nk_glfw  nk_glfw;
 } window;
 
 static const GLchar *
@@ -90,7 +87,7 @@ gl_message_callback (GLenum        source,
 }
 
 static nux_button_t
-key_to_button (nu_u32_t code)
+key_to_button (int code)
 {
     switch (code)
     {
@@ -123,7 +120,7 @@ key_to_button (nu_u32_t code)
     return -1;
 }
 static nux_axis_t
-key_to_axis (nu_u32_t code, nu_f32_t *value)
+key_to_axis (int code, float *value)
 {
     switch (code)
     {
@@ -168,7 +165,7 @@ key_to_axis (nu_u32_t code, nu_f32_t *value)
     return -1;
 }
 static nux_button_t
-gamepad_button_to_button (nu_u32_t button)
+gamepad_button_to_button (int button)
 {
     switch (button)
     {
@@ -198,7 +195,8 @@ gamepad_button_to_button (nu_u32_t button)
 static void
 resize_callback (GLFWwindow *win, int w, int h)
 {
-    window.size = nu_v2u(w, h);
+    window.size.x = w;
+    window.size.y = h;
 }
 static void
 key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
@@ -206,7 +204,7 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
     if (action == GLFW_PRESS)
     {
         nux_button_t button = key_to_button(key);
-        nu_f32_t     axvalue;
+        float        axvalue;
         nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
@@ -221,22 +219,22 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE)
         {
-            window.cmds[window.cmds_count++] = COMMAND_EXIT;
+            command_push((command_t) { .type = COMMAND_EXIT });
         }
         if (key == GLFW_KEY_P)
         {
-            window.switch_fullscreen = NU_TRUE;
+            window.switch_fullscreen = true;
         }
         if (key == GLFW_KEY_T)
         {
-            window.cmds[window.cmds_count++] = COMMAND_SAVE_STATE;
+            command_push((command_t) { .type = COMMAND_SAVE_STATE });
         }
         if (key == GLFW_KEY_Y)
         {
-            window.cmds[window.cmds_count++] = COMMAND_LOAD_STATE;
+            command_push((command_t) { .type = COMMAND_LOAD_STATE });
         }
         nux_button_t button = key_to_button(key);
-        nu_f32_t     axvalue;
+        float        axvalue;
         nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
@@ -251,17 +249,16 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
     nk_glfw3_key_callback(win, key, scancode, action, mods);
 }
 
-nu_status_t
+nux_status_t
 window_init (void)
 {
     // Initialize surface (and inputs)
-    const nu_int_t width  = 1200;
-    const nu_int_t height = 700;
+    const int width  = 1200;
+    const int height = 700;
 
     // Initialize values
-    window.fullscreen        = NU_FALSE;
-    window.switch_fullscreen = NU_FALSE;
-    window.cmds_count        = 0;
+    window.fullscreen        = false;
+    window.switch_fullscreen = false;
 
     // Initialized GLFW
 #ifdef NUX_PLATFORM_UNIX
@@ -271,7 +268,7 @@ window_init (void)
     if (!glfwInit())
     {
         fprintf(stderr, "Failed to init GLFW");
-        return NU_FAILURE;
+        return NUX_FAILURE;
     }
 
     // Create window
@@ -279,11 +276,11 @@ window_init (void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
-    window.win = glfwCreateWindow(width, height, "nux", NU_NULL, NU_NULL);
+    window.win = glfwCreateWindow(width, height, "nux", NULL, NULL);
     if (!window.win)
     {
         fprintf(stderr, "Failed to create GLFW window");
-        return NU_FAILURE;
+        return NUX_FAILURE;
     }
     window.prev_time = glfwGetTime();
 
@@ -299,18 +296,19 @@ window_init (void)
     if (!gladLoadGL(glfwGetProcAddress))
     {
         fprintf(stderr, "Failed to load GL functions");
-        return NU_FAILURE;
+        return NUX_FAILURE;
     }
 
     // Setup debug callbacks
     // During init, enable debug output
     glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(gl_message_callback, NU_NULL);
+    glDebugMessageCallback(gl_message_callback, NULL);
 
     // Initialize viewport
     int w, h;
     glfwGetFramebufferSize(window.win, &w, &h);
-    window.size = nu_v2u(w, h);
+    window.size.x = w;
+    window.size.y = h;
 
     // Initialize nuklear context
     glfwSetScrollCallback(window.win, nk_gflw3_scroll_callback);
@@ -322,7 +320,7 @@ window_init (void)
     nk_glfw3_font_stash_begin(&window.nk_glfw, &atlas);
     nk_glfw3_font_stash_end(&window.nk_glfw);
 
-    return NU_SUCCESS;
+    return NUX_SUCCESS;
 }
 void
 window_free (void)
@@ -341,7 +339,7 @@ window_begin_frame (void)
         // Check close requested
         if (glfwWindowShouldClose(window.win))
         {
-            window.cmds[window.cmds_count++] = COMMAND_EXIT;
+            command_push((command_t) { .type = COMMAND_EXIT });
         }
 
         // Process events
@@ -369,7 +367,7 @@ window_begin_frame (void)
         {
             if (window.fullscreen)
             {
-                glfwSetWindowMonitor(window.win, NU_NULL, 50, 50, 1200, 800, 0);
+                glfwSetWindowMonitor(window.win, NULL, 50, 50, 1200, 800, 0);
             }
             else
             {
@@ -384,14 +382,14 @@ window_begin_frame (void)
                                      mode->height,
                                      mode->refreshRate);
             }
-            window.switch_fullscreen = NU_FALSE;
+            window.switch_fullscreen = false;
             window.fullscreen        = !window.fullscreen;
         }
 
         // Update gamepad related axis
         {
-            // const nu_u32_t controller = 0;
-            // const nu_u32_t player     = 1;
+            // const int controller = 0;
+            // const int player     = 1;
             // nu_v2_t        ax         = nu_v2(
             //     RGFW_getGamepadAxis(window.win, controller, 0).x / 100.0,
             //     RGFW_getGamepadAxis(window.win, controller, 0).y / 100.0);
@@ -417,7 +415,7 @@ window_begin_frame (void)
     // Begin nuklear context
     nk_glfw3_new_frame(&window.nk_glfw);
 }
-nu_u32_t
+int
 window_end_frame (void)
 {
     // Render GUI
@@ -428,13 +426,13 @@ window_end_frame (void)
 
     // Swap buffers
     glfwSwapBuffers(window.win);
-    nu_f64_t time    = glfwGetTime();
-    nu_f64_t delta   = time - window.prev_time;
-    nu_u32_t fps     = (nu_u32_t)(1. / ((nu_f32_t)delta));
+    double time      = glfwGetTime();
+    double delta     = time - window.prev_time;
+    int    fps       = (int)(1. / ((float)delta));
     window.prev_time = time;
     return fps;
 }
-nu_v2u_t
+struct nk_vec2i
 window_get_size (void)
 {
     return window.size;
@@ -444,27 +442,17 @@ window_nk_context (void)
 {
     return &window.nk_glfw.ctx;
 }
-nu_bool_t
+bool
 window_is_double_click (void)
 {
     return window.nk_glfw.is_double_click_down;
 }
-nu_bool_t
-window_poll_command (runtime_command_t *cmd)
-{
-    if (!window.cmds_count)
-    {
-        return NU_FALSE;
-    }
-    *cmd = window.cmds[--window.cmds_count];
-    return NU_TRUE;
-}
 void
 nux_os_update_inputs (void *userdata, nux_u32_t *buttons, nux_f32_t *axis)
 {
-    runtime_instance_t *inst = userdata;
-    buttons[0]               = window.buttons[0];
-    for (nu_size_t a = 0; a < NUX_AXIS_MAX; ++a)
+    instance_t *inst = userdata;
+    buttons[0]       = window.buttons[0];
+    for (int a = 0; a < NUX_AXIS_MAX; ++a)
     {
         axis[a] = window.axis[0][a];
     }

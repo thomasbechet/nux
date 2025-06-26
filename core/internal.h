@@ -815,10 +815,6 @@ void         nux_lua_tick(nux_env_t *env);
 void nux_error(nux_env_t *env, nux_error_t error);
 
 nux_status_t nux_register_lua(nux_instance_t *inst);
-nux_status_t nux_register_lua2(nux_instance_t *inst);
-
-void nux_dbgi32(nux_env_t *env, const nux_c8_t *name, nux_i32_t *p);
-void nux_dbgf32(nux_env_t *env, const nux_c8_t *name, nux_f32_t *p);
 
 // logger.c
 
