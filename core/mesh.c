@@ -1,17 +1,17 @@
 #include "internal.h"
 
 nux_u32_t
-nux_mesh_new (nux_env_t *env, nux_u32_t capa)
+nux_mesh_new (nux_ctx_t *ctx, nux_u32_t capa)
 {
-    // nux_mesh_t *mesh = nux_arena_alloc(env->active_arena, sizeof(*tex));
+    // nux_mesh_t *mesh = nux_arena_alloc(ctx->active_arena, sizeof(*tex));
     // NUX_CHECK(tex, return NUX_NULL);
     // nux_u32_t id
-    //     = nux_object_create(env, env->active_arena, NUX_OBJECT_MESH, tex);
+    //     = nux_object_create(ctx, ctx->active_arena, NUX_OBJECT_MESH, tex);
     // NUX_CHECK(id, return NUX_NULL);
     return NUX_NULL;
 }
 nux_u32_t
-nux_mesh_gen_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
+nux_mesh_gen_cube (nux_ctx_t *ctx, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
     const nux_b3_t box = nux_b3(NUX_V3_ZEROES, nux_v3(sx, sy, sz));
 
@@ -41,13 +41,13 @@ nux_mesh_gen_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
         { { 0, 0 } },
     };
 
-    nux_mesh_t *mesh = nux_arena_alloc(env->active_arena, sizeof(*mesh));
+    nux_mesh_t *mesh = nux_arena_alloc(ctx->active_arena, sizeof(*mesh));
     NUX_CHECK(mesh, return NUX_NULL);
     nux_u32_t id
-        = nux_object_create(env, env->active_arena, NUX_OBJECT_MESH, mesh);
+        = nux_object_create(ctx, ctx->active_arena, NUX_OBJECT_MESH, mesh);
     NUX_CHECK(id, return NUX_NULL);
     mesh->count = NUX_ARRAY_SIZE(positions);
-    mesh->data  = nux_arena_alloc(env->active_arena,
+    mesh->data  = nux_arena_alloc(ctx->active_arena,
                                  sizeof(nux_f32_t) * 6 * mesh->count);
     NUX_CHECK(mesh->data, return NUX_NULL);
 
@@ -61,13 +61,13 @@ nux_mesh_gen_cube (nux_env_t *env, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
     }
 
     NUX_CHECK(
-        nux_graphics_push_vertices(env, mesh->count, mesh->data, &mesh->first),
+        nux_graphics_push_vertices(ctx, mesh->count, mesh->data, &mesh->first),
         return NUX_NULL);
 
     return id;
 }
 nux_u32_t
-nux_mesh_load (nux_env_t *env, const nux_c8_t *path)
+nux_mesh_load (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     NUX_INFO(path);
     return NUX_NULL;

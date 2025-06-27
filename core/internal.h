@@ -52,11 +52,11 @@
     }
 #endif
 
-#define NUX_INFO(format, ...) nux_log(env, NUX_LOG_INFO, format, ##__VA_ARGS__)
+#define NUX_INFO(format, ...) nux_log(ctx, NUX_LOG_INFO, format, ##__VA_ARGS__)
 #define NUX_WARNING(format, ...) \
-    nux_log(env, NUX_LOG_WARNING, format, ##__VA_ARGS__)
+    nux_log(ctx, NUX_LOG_WARNING, format, ##__VA_ARGS__)
 #define NUX_ERROR(format, ...) \
-    nux_log(env, NUX_LOG_ERROR, format, ##__VA_ARGS__)
+    nux_log(ctx, NUX_LOG_ERROR, format, ##__VA_ARGS__)
 
 #define NUX_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define NUX_ARRAY_FILL(arr, size, value) \
@@ -439,18 +439,6 @@ typedef struct
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 
-struct nux_env
-{
-    nux_instance_t *inst;
-
-    // Error handling
-    nux_error_t error;
-    nux_c8_t    error_message[256];
-
-    // Arena info
-    nux_arena_t *active_arena;
-};
-
 typedef struct
 {
     nux_u32_t          slot;
@@ -533,11 +521,11 @@ typedef struct
     nux_component_pool_t components;
 } nux_scene_t;
 
-typedef void (*nux_object_cleanup_t)(nux_env_t *env, void *data);
-typedef void (*nux_object_serialize_t)(nux_env_t  *env,
+typedef void (*nux_object_cleanup_t)(nux_ctx_t *ctx, void *data);
+typedef void (*nux_object_serialize_t)(nux_ctx_t  *ctx,
                                        const void *data,
                                        void       *out);
-typedef void (*nux_object_deserialize_t)(nux_env_t  *env,
+typedef void (*nux_object_deserialize_t)(nux_ctx_t  *ctx,
                                          void       *data,
                                          const void *in);
 
@@ -590,8 +578,15 @@ NUX_VEC_DEFINE(nux_render_command_vec, nux_render_command_t)
 NUX_VEC_DEFINE(nux_gpu_command_vec, nux_gpu_command_t);
 NUX_POOL_DEFINE(nux_arena_pool, nux_arena_t);
 
-struct nux_instance
+struct nux_context
 {
+    // Error handling
+    nux_error_t error;
+    nux_c8_t    error_message[256];
+
+    // Arena info
+    nux_arena_t *active_arena;
+
     void     *userdata;
     nux_b32_t running;
     nux_u64_t frame;
@@ -633,7 +628,6 @@ struct nux_instance
 
     lua_State *L;
 
-    struct nux_env env;
     nux_callback_t init;
     nux_callback_t update;
 };
@@ -698,24 +692,24 @@ void     *nux_memalign(void *ptr, nux_u32_t align);
 
 // object.c
 
-void      nux_object_register(nux_instance_t      *inst,
+void      nux_object_register(nux_ctx_t           *ctx,
                               const nux_c8_t      *name,
                               nux_object_cleanup_t cleanup);
-nux_u32_t nux_object_create(nux_env_t   *env,
+nux_u32_t nux_object_create(nux_ctx_t   *ctx,
                             nux_arena_t *arena,
                             nux_u32_t    type_index,
                             void        *data);
-void      nux_object_delete(nux_env_t *env, nux_u32_t id);
-void      nux_object_update(nux_env_t *env, nux_u32_t id, void *data);
-void     *nux_object_get(nux_env_t *env, nux_u32_t type_index, nux_u32_t id);
+void      nux_object_delete(nux_ctx_t *ctx, nux_u32_t id);
+void      nux_object_update(nux_ctx_t *ctx, nux_u32_t id, void *data);
+void     *nux_object_get(nux_ctx_t *ctx, nux_u32_t type_index, nux_u32_t id);
 
 void *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
-void  nux_arena_reset_to(nux_env_t *env, nux_arena_t *arena, nux_u32_t object);
+void  nux_arena_reset_to(nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t object);
 
 // texture.c
 
-void nux_texture_cleanup(nux_env_t *env, void *data);
-void nux_texture_write(nux_env_t  *env,
+void nux_texture_cleanup(nux_ctx_t *ctx, void *data);
+void nux_texture_write(nux_ctx_t  *ctx,
                        nux_u32_t   id,
                        nux_u32_t   x,
                        nux_u32_t   y,
@@ -725,14 +719,14 @@ void nux_texture_write(nux_env_t  *env,
 
 // scene.c
 
-void  nux_scene_cleanup(nux_env_t *env, void *data);
-void *nux_scene_add_component(nux_env_t           *env,
+void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
+void *nux_scene_add_component(nux_ctx_t           *ctx,
                               nux_u32_t            entity,
                               nux_component_type_t type);
-void  nux_scene_remove_component(nux_env_t           *env,
+void  nux_scene_remove_component(nux_ctx_t           *ctx,
                                  nux_u32_t            entity,
                                  nux_component_type_t type);
-void *nux_scene_get_component(nux_env_t           *env,
+void *nux_scene_get_component(nux_ctx_t           *ctx,
                               nux_u32_t            entity,
                               nux_component_type_t type);
 
@@ -791,51 +785,51 @@ nux_m4_t nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 
 // graphics.c
 
-nux_status_t nux_graphics_init(nux_env_t *env);
-nux_status_t nux_graphics_free(nux_env_t *env);
-nux_status_t nux_graphics_render(nux_env_t *env);
+nux_status_t nux_graphics_init(nux_ctx_t *ctx);
+nux_status_t nux_graphics_free(nux_ctx_t *ctx);
+nux_status_t nux_graphics_render(nux_ctx_t *ctx);
 
-nux_status_t nux_graphics_push_vertices(nux_env_t       *env,
+nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
                                         nux_u32_t        vcount,
                                         const nux_f32_t *data,
                                         nux_u32_t       *first);
-nux_status_t nux_graphics_push_transforms(nux_env_t      *env,
+nux_status_t nux_graphics_push_transforms(nux_ctx_t      *ctx,
                                           nux_u32_t       mcount,
                                           const nux_m4_t *data,
                                           nux_u32_t      *index);
 
 // io.c
 
-nux_status_t nux_io_init(nux_env_t *env);
-nux_status_t nux_io_free(nux_env_t *env);
+nux_status_t nux_io_init(nux_ctx_t *ctx);
+nux_status_t nux_io_free(nux_ctx_t *ctx);
 
 // lua.c
 
-nux_status_t nux_lua_load_conf(nux_env_t *env);
-nux_status_t nux_lua_init(nux_env_t *env);
-void         nux_lua_free(nux_env_t *env);
-void         nux_lua_tick(nux_env_t *env);
+nux_status_t nux_lua_load_conf(nux_ctx_t *ctx);
+nux_status_t nux_lua_init(nux_ctx_t *ctx);
+void         nux_lua_free(nux_ctx_t *ctx);
+void         nux_lua_tick(nux_ctx_t *ctx);
 
-// instance.c
+// context.c
 
-void nux_error(nux_env_t *env, nux_error_t error);
+void nux_error(nux_ctx_t *ctx, nux_error_t error);
 
-nux_status_t nux_register_lua(nux_instance_t *inst);
+nux_status_t nux_register_lua(nux_ctx_t *ctx);
 
 // logger.c
 
-void nux_vlog(nux_env_t      *env,
+void nux_vlog(nux_ctx_t      *ctx,
               nux_log_level_t level,
               const nux_c8_t *fmt,
               va_list         args);
-void nux_log(nux_env_t *env, nux_log_level_t level, const nux_c8_t *fmt, ...);
+void nux_log(nux_ctx_t *ctx, nux_log_level_t level, const nux_c8_t *fmt, ...);
 
 // input.c
 
-void nux_input_pre_update(nux_env_t *env);
+void nux_input_pre_update(nux_ctx_t *ctx);
 
 // transform.c
 
-nux_b32_t nux_transform_update_matrix(nux_env_t *env, nux_u32_t entity);
+nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_u32_t entity);
 
 #endif

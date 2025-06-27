@@ -3,7 +3,7 @@
 #include "lua_api.c.inc"
 
 nux_status_t
-nux_lua_load_conf (nux_env_t *env)
+nux_lua_load_conf (nux_ctx_t *ctx)
 {
     lua_State *L = luaL_newstate();
     NUX_CHECKM(L, "Failed to initialize lua VM", return NUX_FAILURE);
@@ -35,51 +35,51 @@ error:
     return NUX_FAILURE;
 }
 nux_status_t
-nux_lua_init (nux_env_t *env)
+nux_lua_init (nux_ctx_t *ctx)
 {
     // Initialize Lua VM
-    env->inst->L = luaL_newstate();
-    NUX_CHECKM(env->inst->L, "Failed to initialize lua VM", return NUX_FAILURE);
+    ctx->L = luaL_newstate();
+    NUX_CHECKM(ctx->L, "Failed to initialize lua VM", return NUX_FAILURE);
 
-    // Set env variable
-    lua_pushlightuserdata(env->inst->L, env); // TODO: per thread env
-    lua_rawseti(env->inst->L, LUA_REGISTRYINDEX, 1);
+    // Set ctx variable
+    lua_pushlightuserdata(ctx->L, ctx); // TODO: per thread ctx
+    lua_rawseti(ctx->L, LUA_REGISTRYINDEX, 1);
 
     // Load api
-    luaL_openlibs(env->inst->L);
-    nux_register_lua(env->inst);
+    luaL_openlibs(ctx->L);
+    nux_register_lua(ctx);
 
-    if (luaL_dofile(env->inst->L, "main.lua") != LUA_OK)
+    if (luaL_dofile(ctx->L, "main.lua") != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(env->inst->L, -1));
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
     }
 
-    lua_getglobal(env->inst->L, "nux");
-    lua_getfield(env->inst->L, -1, "init");
-    if (lua_pcall(env->inst->L, 0, 0, 0))
+    lua_getglobal(ctx->L, "nux");
+    lua_getfield(ctx->L, -1, "init");
+    if (lua_pcall(ctx->L, 0, 0, 0))
     {
-        NUX_ERROR("%s", lua_tostring(env->inst->L, -1));
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
     }
-    lua_pop(env->inst->L, 1);
+    lua_pop(ctx->L, 1);
 
     return NUX_SUCCESS;
 }
 void
-nux_lua_free (nux_env_t *env)
+nux_lua_free (nux_ctx_t *ctx)
 {
-    if (env->inst->L)
+    if (ctx->L)
     {
-        lua_close(env->inst->L);
+        lua_close(ctx->L);
     }
 }
 void
-nux_lua_tick (nux_env_t *env)
+nux_lua_tick (nux_ctx_t *ctx)
 {
-    lua_getglobal(env->inst->L, "nux");
-    lua_getfield(env->inst->L, -1, "tick");
-    if (lua_pcall(env->inst->L, 0, 0, 0))
+    lua_getglobal(ctx->L, "nux");
+    lua_getfield(ctx->L, -1, "tick");
+    if (lua_pcall(ctx->L, 0, 0, 0))
     {
-        NUX_ERROR("%s", lua_tostring(env->inst->L, -1));
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
     }
-    lua_pop(env->inst->L, 1);
+    lua_pop(ctx->L, 1);
 }

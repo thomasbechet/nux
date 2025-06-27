@@ -14,9 +14,9 @@ instance_free (instance_t *instance)
     {
         return;
     }
-    if (instance->instance)
+    if (instance->ctx)
     {
-        nux_instance_free(instance->instance);
+        nux_instance_free(instance->ctx);
     }
     instance->active = false;
 }
@@ -25,7 +25,7 @@ instance_init (instance_t *instance, const char *path)
 {
     instance_free(instance);
 
-    nux_instance_config_t config = {
+    nux_config_t config = {
         .userdata         = instance,
         .init             = NULL,
         .update           = NULL,
@@ -36,22 +36,20 @@ instance_init (instance_t *instance, const char *path)
     strncpy(instance->path, path, PATH_MAX_LEN);
     instance->active        = true;
     instance->config        = config;
-    instance->instance      = NULL;
+    instance->ctx           = NULL;
     instance->pause         = false;
     instance->viewport_ui   = nk_rect(0, 0, 10, 10);
     instance->viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
 
-    instance->instance = nux_instance_init(&config);
-    if (!instance->instance)
+    instance->ctx = nux_instance_init(&config);
+    if (!instance->ctx)
     {
         logger_log(NUX_LOG_ERROR, "Failed to init instance.");
         goto cleanup0;
     }
 
-    nux_status_t status
-        = nux_instance_load(instance->instance,
-                            instance->path,
-                            strnlen(instance->path, PATH_MAX_LEN));
+    nux_status_t status = nux_instance_load(
+        instance->ctx, instance->path, strnlen(instance->path, PATH_MAX_LEN));
     if (!status)
     {
         logger_log(NUX_LOG_ERROR, "Failed to load cartridge.");
@@ -184,7 +182,7 @@ runtime_run (const config_t *config)
                 apply_viewport_mode(instance, window_size);
 
                 // Tick
-                nux_instance_tick(instance->instance);
+                nux_instance_tick(instance->ctx);
             }
         }
 

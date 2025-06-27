@@ -87,8 +87,8 @@ typedef struct
 {
     char                  path[PATH_MAX_LEN];
     bool                  active;
-    nux_instance_config_t config;
-    nux_instance_t       *instance;
+    nux_config_t config;
+    nux_ctx_t            *ctx;
     bool                  pause;
     struct nk_rect        viewport_ui;
     viewport_mode_t       viewport_mode;
@@ -143,10 +143,5 @@ void view_open(struct nk_context *ctx, struct nk_rect bounds);
 
 void gui_update(void);
 void gui_set_view(view_t view);
-
-void loop_init(nux_env_t *env);
-void loop_update(nux_env_t *env);
-
-void load_blk_colormap(nux_env_t *env);
 
 #endif

@@ -1,7 +1,7 @@
 #include "internal.h"
 
 void
-nux_rectfill (nux_env_t *env,
+nux_rectfill (nux_ctx_t *ctx,
               nux_i32_t  x0,
               nux_i32_t  y0,
               nux_i32_t  x1,
@@ -16,28 +16,28 @@ nux_rectfill (nux_env_t *env,
     {
         for (nux_i32_t x = minx; x <= maxx; ++x)
         {
-            nux_pset(env, x, y, color);
+            nux_pset(ctx, x, y, color);
         }
     }
 }
 void
-nux_pset (nux_env_t *env, nux_i32_t x, nux_i32_t y, nux_u8_t color)
+nux_pset (nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y, nux_u8_t color)
 {
     if (x < 0 || x >= NUX_CANVAS_WIDTH || y < 0 || y >= NUX_CANVAS_HEIGHT)
     {
         return;
     }
 
-    nux_u8_t *canvas                 = env->inst->canvas;
-    canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(env, color);
+    nux_u8_t *canvas                 = ctx->canvas;
+    canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(ctx, color);
 }
 void
-nux_graphics_line (nux_env_t *env,
-          nux_i32_t  x0,
-          nux_i32_t  y0,
-          nux_i32_t  x1,
-          nux_i32_t  y1,
-          nux_u8_t   c)
+nux_graphics_line (nux_ctx_t *ctx,
+                   nux_i32_t  x0,
+                   nux_i32_t  y0,
+                   nux_i32_t  x1,
+                   nux_i32_t  y1,
+                   nux_u8_t   c)
 {
     nux_i32_t dx  = NUX_ABS(x1 - x0);
     nux_i32_t sx  = x0 < x1 ? 1 : -1;
@@ -47,7 +47,7 @@ nux_graphics_line (nux_env_t *env,
     nux_i32_t e2;
     for (;;)
     {
-        nux_pset(env, x0, y0, c);
+        nux_pset(ctx, x0, y0, c);
         if (x0 == x1 && y0 == y1)
         {
             break;
@@ -67,7 +67,7 @@ nux_graphics_line (nux_env_t *env,
 }
 
 void
-nux_trifill (nux_env_t *env,
+nux_trifill (nux_ctx_t *ctx,
              nux_i32_t  x0,
              nux_i32_t  y0,
              nux_i32_t  x1,
@@ -82,12 +82,12 @@ nux_trifill (nux_env_t *env,
     nux_v2i_t v2 = nux_v2i(x2, y2);
     if (y0 == y1 && y0 == y2)
     {
-        nux_graphics_line(env,
-                 NUX_MIN(x0, NUX_MIN(x1, x2)),
-                 y0,
-                 NUX_MAX(x0, NUX_MAX(x1, x2)),
-                 y0,
-                 c);
+        nux_graphics_line(ctx,
+                          NUX_MIN(x0, NUX_MIN(x1, x2)),
+                          y0,
+                          NUX_MAX(x0, NUX_MAX(x1, x2)),
+                          y0,
+                          c);
         return;
     }
     if (v0.y > v1.y)
@@ -174,7 +174,7 @@ bresenham1:
 processline:
     for (nux_i32_t x = NUX_MIN(curx0, curx1); x < NUX_MAX(curx0, curx1); ++x)
     {
-        nux_pset(env, x, cury1, c);
+        nux_pset(ctx, x, cury1, c);
     }
     if (cury1 == v2.y)
     {
@@ -183,15 +183,16 @@ processline:
     goto bresenham0;
 }
 void
-nux_graphics_circle (nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
+nux_graphics_circle (
+    nux_ctx_t *ctx, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c)
 {
     int x = -r, y = 0, err = 2 - 2 * r; /* II. Quadrant */
     do
     {
-        nux_pset(env, xm - x, ym + y, c); /*   I. Quadrant */
-        nux_pset(env, xm - y, ym - x, c); /*  II. Quadrant */
-        nux_pset(env, xm + x, ym - y, c); /* III. Quadrant */
-        nux_pset(env, xm + y, ym + x, c); /*  IV. Quadrant */
+        nux_pset(ctx, xm - x, ym + y, c); /*   I. Quadrant */
+        nux_pset(ctx, xm - y, ym - x, c); /*  II. Quadrant */
+        nux_pset(ctx, xm + x, ym - y, c); /* III. Quadrant */
+        nux_pset(ctx, xm + y, ym + x, c); /*  IV. Quadrant */
         r = err;
         if (r > x)
         {
@@ -204,12 +205,12 @@ nux_graphics_circle (nux_env_t *env, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nu
     } while (x < 0);
 }
 void
-nux_graphics_rectangle (nux_env_t *env,
-          nux_i32_t  x0,
-          nux_i32_t  y0,
-          nux_i32_t  x1,
-          nux_i32_t  y1,
-          nux_u8_t   c)
+nux_graphics_rectangle (nux_ctx_t *ctx,
+                        nux_i32_t  x0,
+                        nux_i32_t  y0,
+                        nux_i32_t  x1,
+                        nux_i32_t  y1,
+                        nux_u8_t   c)
 {
     nux_i32_t xmin = NUX_MIN(x0, x1);
     nux_i32_t xmax = NUX_MAX(x0, x1);
@@ -217,13 +218,13 @@ nux_graphics_rectangle (nux_env_t *env,
     nux_i32_t ymax = NUX_MAX(y0, y1);
     for (nux_i32_t x = xmin; x <= xmax; ++x)
     {
-        nux_pset(env, x, y0, c);
-        nux_pset(env, x, y1, c);
+        nux_pset(ctx, x, y0, c);
+        nux_pset(ctx, x, y1, c);
     }
     for (nux_i32_t y = ymin; y <= ymax; ++y)
     {
-        nux_pset(env, x0, y, c);
-        nux_pset(env, x1, y, c);
+        nux_pset(ctx, x0, y, c);
+        nux_pset(ctx, x1, y, c);
     }
 }
 
@@ -354,12 +355,12 @@ nux_graphics_rectangle (nux_env_t *env,
 // }
 //
 // static inline nux_u16_t
-// sample_texture (nux_env_t *env, nux_f32_t u, nux_f32_t v)
+// sample_texture (nux_ctx_t *ctx, nux_f32_t u, nux_f32_t v)
 // {
-//     nux_u32_t tx = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[0];
-//     nux_u32_t ty = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[1];
-//     nux_u32_t tw = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[2];
-//     nux_u32_t th = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[3];
+//     nux_u32_t tx = NUX_MEMPTR(ctx->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[0];
+//     nux_u32_t ty = NUX_MEMPTR(ctx->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[1];
+//     nux_u32_t tw = NUX_MEMPTR(ctx->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[2];
+//     nux_u32_t th = NUX_MEMPTR(ctx->inst, NUX_RAM_TEXTURE_VIEW, nux_u32_t)[3];
 //
 //     // Point based filtering
 //     nux_i32_t x = (nux_i32_t)(u * (nux_f32_t)tw);
@@ -372,27 +373,27 @@ nux_graphics_rectangle (nux_env_t *env,
 //     // Inverse y coordinate
 //     y = th - y - 1;
 //
-//     nux_u8_t *base = NUX_MEMPTR(env->inst, NUX_RAM_TEXTURE, nux_u8_t)
+//     nux_u8_t *base = NUX_MEMPTR(ctx->inst, NUX_RAM_TEXTURE, nux_u8_t)
 //                      + (ty * NUX_TEXTURE_WIDTH + tx);
 //     return base[y * NUX_TEXTURE_WIDTH + x];
 // }
 
 // static void
-// raster_fill_triangles (nux_env_t        env,
+// raster_fill_triangles (nux_ctx_t        ctx,
 //                        const nux_f32_t *positions,
 //                        const nux_f32_t *uvs,
 //                        nux_u32_t        count,
 //                        const nux_f32_t *m)
 // {
 //     const nux_f32_t *cameye
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nux_f32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_EYE, const nux_f32_t);
 //     const nux_f32_t *camcenter
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nux_f32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_CENTER, const nux_f32_t);
 //     const nux_f32_t *camup
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nux_f32_t);
-//     nux_f32_t        fov = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_UP, const nux_f32_t);
+//     nux_f32_t        fov = NUX_MEMGET(ctx->inst, NUX_RAM_CAM_FOV, nux_f32_t);
 //     const nux_u32_t *viewport
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, const nux_u32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_VIEWPORT, const nux_u32_t);
 //
 //     nux_m4_t view = nu_lookat(nux_v3(cameye[0], cameye[1], cameye[2]),
 //                              nux_v3(camcenter[0], camcenter[1],
@@ -487,7 +488,7 @@ nux_graphics_rectangle (nux_env_t *env,
 //                 continue;
 //             }
 //
-//             env->tricount += 1;
+//             ctx->tricount += 1;
 //
 //             // Keep inv weights for perspective correction
 //             nux_f32_t inv_vw0 = 1. / v0.w;
@@ -510,11 +511,11 @@ nux_graphics_rectangle (nux_env_t *env,
 //             for (nux_i32_t y = ymin; y < ymax; ++y)
 //             {
 //                 nux_f32_t *row_depth
-//                     = &((nux_f32_t *)(env->inst->state
+//                     = &((nux_f32_t *)(ctx->inst->state
 //                                      + NUX_RAM_ZBUFFER))[y *
 //                                      NUX_CANVAS_WIDTH];
 //                 nu_u8_t *row_pixel
-//                     = env->inst->state + NUX_RAM_CANVAS + y *
+//                     = ctx->inst->state + NUX_RAM_CANVAS + y *
 //                     NUX_CANVAS_WIDTH;
 //                 for (nux_i32_t x = xmin; x <= xmax; ++x)
 //                 {
@@ -546,7 +547,7 @@ nux_graphics_rectangle (nux_env_t *env,
 //
 //                     // Depth test
 //                     nux_f32_t *pdepth = &(
-//                         (nux_f32_t *)(env->inst->state
+//                         (nux_f32_t *)(ctx->inst->state
 //                                      + NUX_RAM_ZBUFFER))[y * NUX_CANVAS_WIDTH
 //                                                          + x];
 //                     if (depth < *pdepth)
@@ -556,9 +557,9 @@ nux_graphics_rectangle (nux_env_t *env,
 //
 //                         nux_f32_t u = a * uv0.x + b * uv1.x + c * uv2.x;
 //                         nux_f32_t v = a * uv0.y + b * uv1.y + c * uv2.y;
-//                         nux_u16_t c = sample_texture(env, u, v);
+//                         nux_u16_t c = sample_texture(ctx, u, v);
 //
-//                         // nux_f32_t t = nux_time(env);
+//                         // nux_f32_t t = nux_time(ctx);
 //                         // nux_v3_t  sun
 //                         //     = nux_v3_normalize(nux_v3(nu_sin(t), 1,
 //                         //     nu_cos(t)));
@@ -566,7 +567,7 @@ nux_graphics_rectangle (nux_env_t *env,
 //                         sun));
 //                         // c            = blend_color(c, 0, dot);
 //
-//                         NUX_ENCODE_COLOR(env->inst->state + NUX_RAM_CANVAS,
+//                         NUX_ENCODE_COLOR(ctx->inst->state + NUX_RAM_CANVAS,
 //                                          y * NUX_CANVAS_WIDTH + x,
 //                                          c);
 //                     }
@@ -580,29 +581,29 @@ nux_graphics_rectangle (nux_env_t *env,
 //             //     nux_u32_t y0 = NUX_CLAMP(v0vp.y, 0, NUX_SCREEN_HEIGHT);
 //             //     nux_u32_t y1 = NUX_CLAMP(v1vp.y, 0, NUX_SCREEN_HEIGHT);
 //             //     nux_u32_t y2 = NUX_CLAMP(v2vp.y, 0, NUX_SCREEN_HEIGHT);
-//             //     nux_line(env, x0, y0, x1, y1, 0);
-//             //     nux_line(env, x0, y0, x2, y2, 0);
-//             //     nux_line(env, x1, y1, x2, y2, 0);
+//             //     nux_line(ctx, x0, y0, x1, y1, 0);
+//             //     nux_line(ctx, x0, y0, x2, y2, 0);
+//             //     nux_line(ctx, x1, y1, x2, y2, 0);
 //             // }
 //         }
 //     }
 // }
 // static void
-// raster_wire_triangles (nux_env_t        env,
+// raster_wire_triangles (nux_ctx_t        ctx,
 //                        const nux_f32_t *positions,
 //                        const nux_f32_t *uvs,
 //                        nux_u32_t        count,
 //                        const nux_f32_t *m)
 // {
 //     const nux_f32_t *cameye
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_EYE, const nux_f32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_EYE, const nux_f32_t);
 //     const nux_f32_t *camcenter
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_CENTER, const nux_f32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_CENTER, const nux_f32_t);
 //     const nux_f32_t *camup
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_UP, const nux_f32_t);
-//     nux_f32_t        fov = NUX_MEMGET(env->inst, NUX_RAM_CAM_FOV, nux_f32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_UP, const nux_f32_t);
+//     nux_f32_t        fov = NUX_MEMGET(ctx->inst, NUX_RAM_CAM_FOV, nux_f32_t);
 //     const nux_u32_t *viewport
-//         = NUX_MEMPTR(env->inst, NUX_RAM_CAM_VIEWPORT, const nux_u32_t);
+//         = NUX_MEMPTR(ctx->inst, NUX_RAM_CAM_VIEWPORT, const nux_u32_t);
 //
 //     nux_m4_t view = nux_lookat(nux_v3(cameye[0], cameye[1], cameye[2]),
 //                                nux_v3(camcenter[0], camcenter[1],
@@ -681,15 +682,15 @@ nux_graphics_rectangle (nux_env_t *env,
 //             nux_u32_t y0 = NUX_CLAMP(v0vp.y, 0, NUX_CANVAS_HEIGHT);
 //             nux_u32_t y1 = NUX_CLAMP(v1vp.y, 0, NUX_CANVAS_HEIGHT);
 //             nux_u32_t y2 = NUX_CLAMP(v2vp.y, 0, NUX_CANVAS_HEIGHT);
-//             nux_line(env, x0, y0, x1, y1, 7);
-//             nux_line(env, x0, y0, x2, y2, 7);
-//             nux_line(env, x1, y1, x2, y2, 7);
+//             nux_line(ctx, x0, y0, x1, y1, 7);
+//             nux_line(ctx, x0, y0, x2, y2, 7);
+//             nux_line(ctx, x1, y1, x2, y2, 7);
 //         }
 //     }
 // }
 
 void
-nux_mesh (nux_env_t       *env,
+nux_mesh (nux_ctx_t       *ctx,
           const nux_f32_t *positions,
           const nux_f32_t *uvs,
           nux_u32_t        count,
@@ -697,7 +698,7 @@ nux_mesh (nux_env_t       *env,
 {
 }
 void
-nux_mesh_wire (nux_env_t       *env,
+nux_mesh_wire (nux_ctx_t       *ctx,
                const nux_f32_t *positions,
                const nux_f32_t *uvs,
                nux_u32_t        count,
@@ -705,7 +706,7 @@ nux_mesh_wire (nux_env_t       *env,
 {
 }
 void
-nux_draw_cube (nux_env_t       *env,
+nux_draw_cube (nux_ctx_t       *ctx,
                nux_f32_t        sx,
                nux_f32_t        sy,
                nux_f32_t        sz,
@@ -739,14 +740,14 @@ nux_draw_cube (nux_env_t       *env,
     //     { { 0, 0 } },
     // };
     //
-    // nux_mesh(env,
+    // nux_mesh(ctx,
     //          (const nux_f32_t *)positions,
     //          (const nux_f32_t *)uvs,
     //          NUX_ARRAY_SIZE(positions),
     //          m);
 }
 void
-nux_draw_plane (nux_env_t *env, nux_f32_t w, nux_f32_t h, const nux_f32_t *m)
+nux_draw_plane (nux_ctx_t *ctx, nux_f32_t w, nux_f32_t h, const nux_f32_t *m)
 {
     const nux_v3_t v0 = nux_v3(0, 0, 0);
     const nux_v3_t v1 = nux_v3(w, 0, 0);
@@ -761,7 +762,7 @@ nux_draw_plane (nux_env_t *env, nux_f32_t w, nux_f32_t h, const nux_f32_t *m)
     const nux_v2_t uvs[] = { { { 0, 0 } }, { { 1, 1 } }, { { 1, 0 } },
                              { { 0, 1 } }, { { 1, 1 } }, { { 0, 0 } } };
 
-    nux_mesh(env,
+    nux_mesh(ctx,
              (const nux_f32_t *)positions,
              (const nux_f32_t *)uvs,
              NUX_ARRAY_SIZE(positions),

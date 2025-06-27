@@ -24,7 +24,7 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
 {
     {% set ns = namespace(stack = 1) %}
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_env_t *env = lua_touserdata(L, -1);
+    nux_ctx_t *ctx = lua_touserdata(L, -1);
     {%- for arg in function.args -%}
         {% if arg.typename == "nux_v3_t" %}
             nux_v3_t {{ arg.name }};
@@ -42,7 +42,7 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
     {% if function.returntype != "void" %}
         {{ function.returntype }} ret =
     {% endif %}
-    {{ "nux_" + module if module != "core" else "nux" }}_{{ function.name }}(env
+    {{ "nux_" + module if module != "core" else "nux" }}_{{ function.name }}(ctx
     {%- for arg in function.args -%}
         , {{ arg.name }}
     {%- endfor -%}
@@ -73,24 +73,24 @@ static const struct luaL_Reg lib_{{ module }}[] = {
 };
 {% endfor %}
 
-nux_status_t nux_register_lua(nux_instance_t *inst)
+nux_status_t nux_register_lua(nux_ctx_t *ctx)
 {
-    lua_newtable(inst->L);
+    lua_newtable(ctx->L);
 {% for module in modules.keys() %}
 {% if module == "core" %}
-    luaL_setfuncs(inst->L, lib_{{ module }}, 0);
+    luaL_setfuncs(ctx->L, lib_{{ module }}, 0);
 {% else %}
-    lua_newtable(inst->L);
-    luaL_setfuncs(inst->L, lib_{{ module }}, 0);
-    lua_setfield(inst->L, -2, "{{ module }}");
+    lua_newtable(ctx->L);
+    luaL_setfuncs(ctx->L, lib_{{ module }}, 0);
+    lua_setfield(ctx->L, -2, "{{ module }}");
 {% endif %}
 {% endfor %}
 {% for constant in constants %}
 {% for value in constant["values"] %}
-    lua_pushinteger(inst->L, {{ value.value }});
-    lua_setfield(inst->L, -2, "{{ value.name }}");
+    lua_pushinteger(ctx->L, {{ value.value }});
+    lua_setfield(ctx->L, -2, "{{ value.name }}");
 {% endfor %}
 {% endfor %}
-    lua_setglobal(inst->L, "nux");
+    lua_setglobal(ctx->L, "nux");
     return NUX_SUCCESS;
 }

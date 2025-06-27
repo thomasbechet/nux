@@ -8,8 +8,7 @@
 //////                               Types                          //////
 //////////////////////////////////////////////////////////////////////////
 
-typedef struct nux_instance nux_instance_t;
-typedef void (*nux_callback_t)(nux_env_t *);
+typedef void (*nux_callback_t)(nux_ctx_t *);
 
 typedef struct
 {
@@ -23,7 +22,7 @@ typedef struct
     void          *userdata;
     nux_callback_t init;
     nux_callback_t update;
-} nux_instance_config_t;
+} nux_config_t;
 
 typedef enum
 {
@@ -163,10 +162,10 @@ NUX_API void         nux_os_update_stats(void *userdata, nux_u32_t *stats);
 //////////////////////////////////////////////////////////////////////////
 
 NUX_API
-nux_instance_t      *nux_instance_init(const nux_instance_config_t *config);
-NUX_API void         nux_instance_free(nux_instance_t *inst);
-NUX_API void         nux_instance_tick(nux_instance_t *inst);
-NUX_API nux_status_t nux_instance_load(nux_instance_t *inst,
+nux_ctx_t           *nux_instance_init(const nux_config_t *config);
+NUX_API void         nux_instance_free(nux_ctx_t *ctx);
+NUX_API void         nux_instance_tick(nux_ctx_t *ctx);
+NUX_API nux_status_t nux_instance_load(nux_ctx_t      *ctx,
                                        const nux_c8_t *cart,
                                        nux_u32_t       n);
 
