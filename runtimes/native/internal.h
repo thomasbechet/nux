@@ -131,6 +131,7 @@ int                window_end_frame(void);
 struct nk_vec2i    window_get_size(void);
 struct nk_context *window_nk_context(void);
 bool               window_is_double_click(void);
+bool               window_is_fullscreen(void);
 
 void command_push(command_t cmd);
 bool command_poll(command_t *cmd);
@@ -147,8 +148,5 @@ void loop_init(nux_env_t *env);
 void loop_update(nux_env_t *env);
 
 void load_blk_colormap(nux_env_t *env);
-void draw_red(nux_env_t *env, const nux_f32_t *m, nux_u32_t wireframe);
-void draw_krabe(nux_env_t *env, const nux_f32_t *m, nux_u32_t wireframe);
-void draw_lavalamp(nux_env_t *env, const nux_f32_t *m, nux_u32_t wireframe);
 
 #endif

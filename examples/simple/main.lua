@@ -7,6 +7,7 @@ function controller(e)
     local x, y, z = nux.transform.get_translation(e)
     x = x + nux.input.axis(0, nux.AXIS_LEFTX) * nux.dt() * 5
     z = z - nux.input.axis(0, nux.AXIS_LEFTY) * nux.dt() * 5
+    y = y - nux.input.axis(0, nux.AXIS_LEFTY) * nux.dt() * 5
     nux.transform.set_translation(e, x, 3, z)
     local fx, fy, fz = nux.transform.forward(e)
     nux.transform.look_at(c, x + fx, y - 0.5, z + fz)

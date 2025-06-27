@@ -447,6 +447,12 @@ window_is_double_click (void)
 {
     return window.nk_glfw.is_double_click_down;
 }
+bool
+window_is_fullscreen (void)
+{
+    return window.fullscreen;
+}
+
 void
 nux_os_update_inputs (void *userdata, nux_u32_t *buttons, nux_f32_t *axis)
 {
