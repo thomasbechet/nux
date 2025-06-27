@@ -91,6 +91,7 @@ nux_instance_init (const nux_instance_config_t *config)
 
     // Initialize modules
     NUX_CHECK(nux_graphics_init(env), goto cleanup);
+    NUX_CHECK(nux_io_init(env), goto cleanup);
     NUX_CHECK(nux_lua_init(env), goto cleanup);
 
     return inst;
@@ -107,6 +108,7 @@ nux_instance_free (nux_instance_t *inst)
 
     // Free modules
     nux_lua_free(env);
+    nux_io_free(env);
     nux_graphics_free(env);
 
     // Free core memory

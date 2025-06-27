@@ -629,6 +629,7 @@ struct nux_instance
     nux_u32_vec_t free_texture_slots;
     nux_u32_vec_t free_buffer_slots;
     nux_u32_vec_t free_framebuffer_slots;
+    nux_u32_vec_t free_file_slots;
 
     lua_State *L;
 
@@ -802,6 +803,11 @@ nux_status_t nux_graphics_push_transforms(nux_env_t      *env,
                                           nux_u32_t       mcount,
                                           const nux_m4_t *data,
                                           nux_u32_t      *index);
+
+// io.c
+
+nux_status_t nux_io_init(nux_env_t *env);
+nux_status_t nux_io_free(nux_env_t *env);
 
 // lua.c
 

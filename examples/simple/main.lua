@@ -25,6 +25,8 @@ end
 function nux.init()
     s = nux.scene.new()
 
+    -- image = nux.texture.load("assets/")
+
     local mesh = nux.mesh.gen_cube(1, 1, 1)
     for i = 0, 50 do
         create_cube(s, mesh, (i / 10) * 1.2, 0, (i % 10) * 1.2)
