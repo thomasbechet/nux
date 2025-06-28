@@ -5,18 +5,18 @@
 
 #ifdef NUX_INCLUDE_FIXED_TYPES
 #else
-typedef int           nux_b32_t;
-typedef unsigned char nux_u8_t;
-typedef char          nux_c8_t;
-typedef int           nux_i16_t;
-typedef unsigned int  nux_u16_t;
-typedef int           nux_i32_t;
-typedef unsigned int  nux_u32_t;
-typedef long          nux_i64_t;
-typedef unsigned long nux_u64_t;
-typedef float         nux_f32_t;
-typedef double        nux_f64_t;
-typedef long long int nux_intptr_t;
+typedef int            nux_b32_t;
+typedef unsigned char  nux_u8_t;
+typedef char           nux_c8_t;
+typedef short          nux_i16_t;
+typedef unsigned short nux_u16_t;
+typedef int            nux_i32_t;
+typedef unsigned int   nux_u32_t;
+typedef long           nux_i64_t;
+typedef unsigned long  nux_u64_t;
+typedef float          nux_f32_t;
+typedef double         nux_f64_t;
+typedef long long int  nux_intptr_t;
 #endif
 
 typedef struct nux_context nux_ctx_t;
@@ -227,7 +227,7 @@ nux_u8_t  nux_palc(nux_ctx_t *ctx, nux_u8_t index);
 void      nux_cls(nux_ctx_t *ctx, nux_u32_t color);
 void      nux_pset(nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y, nux_u8_t c);
 nux_u32_t nux_cget(nux_ctx_t *ctx, nux_u8_t index);
-void      nux_cset(nux_ctx_t *ctx, nux_u8_t index, nux_u16_t c);
+void      nux_cset(nux_ctx_t *ctx, nux_u8_t index, nux_u32_t c);
 
 #ifdef NUX_BUILD_VARARGS
 void nux_textfmt(nux_ctx_t      *ctx,
@@ -311,6 +311,6 @@ nux_u32_t nux_mesh_gen_cube(nux_ctx_t *ctx,
                             nux_f32_t  sx,
                             nux_f32_t  sy,
                             nux_f32_t  sz);
-nux_u32_t nux_mesh_load(nux_ctx_t *ctx, const nux_c8_t *path);
+nux_u32_t nux_mesh_load(nux_ctx_t *ctx, const nux_c8_t *url);
 
 #endif

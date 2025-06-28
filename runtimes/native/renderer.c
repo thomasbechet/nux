@@ -414,12 +414,28 @@ renderer_free (void)
         glDeleteVertexArrays(1, &renderer.empty_vao);
     }
 }
+static float
+color_to_linear (float x)
+{
+    if (x > 0.04045)
+    {
+        return powf((x + 0.055) / 1.055, 2.4);
+    }
+    else
+    {
+        return x / 12.92;
+    }
+}
 void
 renderer_clear (struct nk_rect viewport, struct nk_vec2i window_size)
 {
-    const float     clear[] = { 25. / 255, 27. / 255, 43. / 255, 1 };
-    struct nk_vec2i pos     = { viewport.x, viewport.y };
-    struct nk_vec2i size    = { viewport.w, viewport.h };
+    float clear[] = { 25. / 255, 27. / 255, 43. / 255, 1 };
+    for (int i = 0; i < (int)ARRAY_LEN(clear); ++i)
+    {
+        clear[i] = color_to_linear(clear[i]);
+    }
+    struct nk_vec2i pos  = { viewport.x, viewport.y };
+    struct nk_vec2i size = { viewport.w, viewport.h };
     // Patch pos (bottom left in opengl)
     pos.y = window_size.y - (pos.y + size.y);
     glViewport(0, 0, window_size.x, window_size.y);

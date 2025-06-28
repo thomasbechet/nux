@@ -40,7 +40,7 @@ VOut vertexMain(
 )
 {
     uint base = vertexFirst + (vertexIndex / 3) * 3;
-    Vertex v0 = pullVertex(vertexIndex);
+    Vertex v0 = pullVertex(base + (vertexIndex + 0) % 3);
     Vertex v1 = pullVertex(base + (vertexIndex + 1) % 3);
     Vertex v2 = pullVertex(base + (vertexIndex + 2) % 3);
     float4x4 transform = transforms[transformIndex];
