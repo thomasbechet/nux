@@ -15,6 +15,24 @@ nux_strncpy (nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n)
     while (i++ != n && (*dst++ = *src++))
         ;
 }
+nux_i32_t
+nux_strncmp (const nux_c8_t *a, const nux_c8_t *b, nux_u32_t n)
+{
+    while (n && *a && (*a == *b))
+    {
+        ++a;
+        ++b;
+        --n;
+    }
+    if (n == 0)
+    {
+        return 0;
+    }
+    else
+    {
+        return (*(unsigned char *)a - *(unsigned char *)b);
+    }
+}
 nux_u32_t
 nux_snprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...)
 {

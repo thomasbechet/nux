@@ -199,3 +199,187 @@ nux_scene_get_component (nux_ctx_t           *ctx,
     }
     return NUX_NULL;
 }
+nux_u32_t
+nux_scene_load (nux_ctx_t *ctx, const nux_c8_t *url)
+{
+    return NUX_NULL;
+}
+static nux_status_t
+parse_component (nux_ctx_t *ctx, nux_u32_t e)
+{
+    const nux_u32_t c_index = -2;
+    return NUX_SUCCESS;
+}
+static nux_v3_t
+parse_v3 (lua_State *L)
+{
+    lua_geti(L, -1, 1);
+    float x = luaL_checknumber(L, -1);
+    lua_geti(L, -2, 2);
+    float y = luaL_checknumber(L, -1);
+    lua_geti(L, -3, 3);
+    float    z = luaL_checknumber(L, -1);
+    nux_v3_t v = nux_v3(x, y, z);
+    lua_pop(L, 3);
+    return v;
+}
+static nux_u32_t
+try_parse_u32 (lua_State      *L,
+               nux_i32_t       idx,
+               const nux_c8_t *k,
+               nux_u32_t       default_value)
+{
+    nux_u32_t ret = default_value;
+    lua_getfield(L, idx, k);
+    if (!lua_isnil(L, -1))
+    {
+        ret = luaL_checkinteger(L, -1);
+    }
+    lua_pop(L, 1);
+    return ret;
+}
+static nux_f32_t
+try_parse_f32 (lua_State      *L,
+               nux_i32_t       idx,
+               const nux_c8_t *k,
+               nux_f32_t       default_value)
+{
+    nux_f32_t ret = default_value;
+    lua_getfield(L, idx, k);
+    if (!lua_isnil(L, -1))
+    {
+        ret = luaL_checknumber(L, -1);
+    }
+    lua_pop(L, 1);
+    return ret;
+}
+static nux_v3_t
+try_parse_v3 (lua_State      *L,
+              nux_i32_t       idx,
+              const nux_c8_t *k,
+              nux_v3_t        default_value)
+{
+    nux_v3_t ret = default_value;
+    lua_getfield(L, idx, k);
+    if (!lua_isnil(L, -1))
+    {
+        ret = parse_v3(L);
+    }
+    lua_pop(L, 1);
+    return ret;
+}
+static nux_status_t
+nux_transform_parse (nux_ctx_t *ctx,
+                     nux_u32_t  e,
+                     lua_State *L,
+                     nux_u32_t  t_index)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, e, NUX_COMPONENT_TRANSFORM);
+    NUX_ASSERT(t);
+    nux_v3_t translation
+        = try_parse_v3(L, t_index, "translation", NUX_V3_ZEROES);
+    nux_v3_t scale       = try_parse_v3(L, t_index, "scale", NUX_V3_ONES);
+    t->local_translation = translation;
+    t->local_scale       = scale;
+    t->dirty             = NUX_TRUE;
+    return NUX_SUCCESS;
+}
+static nux_status_t
+nux_camera_parse (nux_ctx_t *ctx, nux_u32_t e, lua_State *L, nux_u32_t t_index)
+{
+    nux_camera_t *c = nux_scene_get_component(ctx, e, NUX_COMPONENT_CAMERA);
+    NUX_ASSERT(c);
+    c->fov = try_parse_f32(L, t_index, "fov", 60);
+    return NUX_SUCCESS;
+}
+static nux_status_t
+nux_staticmesh_parse (nux_ctx_t *ctx,
+                      nux_u32_t  e,
+                      lua_State *L,
+                      nux_u32_t  t_index)
+{
+    nux_staticmesh_t *sm
+        = nux_scene_get_component(ctx, e, NUX_COMPONENT_STATICMESH);
+    NUX_ASSERT(sm);
+    sm->mesh = try_parse_u32(L, t_index, "mesh", NUX_NULL);
+    return NUX_SUCCESS;
+}
+nux_u32_t
+nux_scene_parse (nux_ctx_t *ctx, lua_State *L)
+{
+    // TODO: handle failure case, deallocate resources
+
+    nux_u32_t s = nux_scene_new(ctx);
+    NUX_CHECK(s, return NUX_NULL);
+
+    const nux_u32_t t_index = 1;
+    NUX_CHECK(lua_istable(L, t_index), lua_error(L));
+
+    lua_pushnil(L); // key iter
+    while (lua_next(L, t_index) != 0)
+    {
+        lua_pushvalue(L, -2);
+        // -1 => key (string or number or ...)
+        // -2 => value
+
+        if (lua_isnumber(L, -1)) // Non tagged entity
+        {
+            nux_i32_t i = (nux_i32_t)lua_tonumber(L, -1);
+        }
+        else if (lua_isstring(L, -1)) // tagged entity
+        {
+            const nux_c8_t *tag
+                = lua_tostring(L, -1); // No side effect as key is a string
+        }
+
+        // Check is table
+        NUX_CHECKM(
+            lua_istable(L, -2), "Entity value is not a table", return NUX_NULL);
+
+        // Create entity
+        nux_u32_t e = nux_entity_new(ctx, s);
+        NUX_CHECK(e, return NUX_NULL);
+
+        // Iterate components
+        lua_pushnil(L);
+        while (lua_next(L, -3))
+        {
+            lua_pushvalue(L, -2);
+            // -1 => key (string or number or ...)
+            // -2 => value
+
+            if (lua_isstring(L, -1))
+            {
+                const nux_c8_t *key
+                    = lua_tostring(L, -1); // No side effect as key is a string
+
+                // Check is table
+                NUX_CHECKM(lua_istable(L, -2),
+                           "Component value is not a table",
+                           return NUX_NULL);
+
+                if (NUX_MATCH(key, "transform"))
+                {
+                    nux_transform_add(ctx, e);
+                    nux_transform_parse(ctx, e, L, -2);
+                }
+                else if (NUX_MATCH(key, "staticmesh"))
+                {
+                    nux_staticmesh_add(ctx, e);
+                    nux_staticmesh_parse(ctx, e, L, -2);
+                }
+                else if (NUX_MATCH(key, "camera"))
+                {
+                    nux_camera_add(ctx, e);
+                    nux_camera_parse(ctx, e, L, -2);
+                }
+            }
+            lua_pop(L, 2);
+        }
+        lua_pop(L, 2); // key / value
+    }
+    lua_pop(L, 1); // key iter
+
+    return s;
+}

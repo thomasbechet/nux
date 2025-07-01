@@ -3,6 +3,24 @@ local s
 local c
 
 print(inspect(nux))
+local SCENE = require("scene")
+
+function load_scene(scene)
+    local s = nux.scene.new()
+    for ek, ev in pairs(scene) do
+        print(ek)
+        local e = nux.entity.new(s)
+        for ck, cv in pairs(ev) do
+            if ck == 'transform' then
+                nux.transform.add(e)
+                if cv.translation then
+                    nux.transform.set_translation(e, table.unpack(cv.translation))
+                end
+            end
+        end
+    end
+    return s
+end
 
 function controller(e)
     local x, y, z = nux.transform.get_translation(e)
@@ -31,6 +49,8 @@ end
 function nux.init()
     s = nux.scene.new()
 
+    nux.scene.parse(SCENE)
+
     local mesh_ariane = nux.mesh.load("../basic/assets/ariane6.glb")
     local mesh_cube = nux.mesh.gen_cube(1, 1, 1)
 
@@ -41,6 +61,8 @@ function nux.init()
     nux.transform.set_translation(c, 0, 1, 3)
     nux.camera.add(c)
     nux.camera.set_fov(c, 60)
+
+    -- load_scene(SCENE)
 end
 
 function nux.tick()

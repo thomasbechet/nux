@@ -65,13 +65,13 @@
         (arr)[i] = (value);              \
     }
 
+#define NUX_MATCH(v, k) (nux_strncmp((v), k, NUX_ARRAY_SIZE(k)) == 0)
+
 #if defined(NUX_DEBUG) && defined(NUX_STDLIB)
 #define NUX_ASSERT(x) assert((x))
 #else
 #define NUX_ASSERT(x) (void)((x))
 #endif
-
-// math.c
 
 #define NUX_MIN(a, b)          (((a) < (b)) ? (a) : (b))
 #define NUX_MAX(a, b)          (((a) > (b)) ? (a) : (b))
@@ -626,7 +626,7 @@ struct nux_context
     nux_u32_vec_t free_framebuffer_slots;
     nux_u32_vec_t free_file_slots;
 
-    lua_State *L;
+    lua_State *lua_state;
 
     nux_callback_t init;
     nux_callback_t update;
@@ -676,6 +676,7 @@ nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 
 nux_u32_t nux_strnlen(const nux_c8_t *s, nux_u32_t n);
 void      nux_strncpy(nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n);
+nux_i32_t nux_strncmp(const nux_c8_t *a, const nux_c8_t *b, nux_u32_t n);
 nux_u32_t nux_snprintf(nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...);
 nux_u32_t nux_vsnprintf(nux_c8_t       *buf,
                         nux_u32_t       n,
@@ -719,16 +720,18 @@ void nux_texture_write(nux_ctx_t  *ctx,
 
 // scene.c
 
-void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
-void *nux_scene_add_component(nux_ctx_t           *ctx,
-                              nux_u32_t            entity,
-                              nux_component_type_t type);
-void  nux_scene_remove_component(nux_ctx_t           *ctx,
-                                 nux_u32_t            entity,
-                                 nux_component_type_t type);
-void *nux_scene_get_component(nux_ctx_t           *ctx,
-                              nux_u32_t            entity,
-                              nux_component_type_t type);
+void      nux_scene_cleanup(nux_ctx_t *ctx, void *data);
+void     *nux_scene_add_component(nux_ctx_t           *ctx,
+                                  nux_u32_t            entity,
+                                  nux_component_type_t type);
+void      nux_scene_remove_component(nux_ctx_t           *ctx,
+                                     nux_u32_t            entity,
+                                     nux_component_type_t type);
+void     *nux_scene_get_component(nux_ctx_t           *ctx,
+                                  nux_u32_t            entity,
+                                  nux_component_type_t type);
+nux_u32_t nux_scene_load(nux_ctx_t *ctx, const nux_c8_t *url);
+nux_u32_t nux_scene_parse(nux_ctx_t *ctx, lua_State *L);
 
 // vector.c
 
@@ -809,12 +812,15 @@ nux_status_t nux_lua_load_conf(nux_ctx_t *ctx);
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
 void         nux_lua_free(nux_ctx_t *ctx);
 void         nux_lua_tick(nux_ctx_t *ctx);
+nux_status_t nux_lua_register_ext(nux_ctx_t *ctx);
+
+// lua_api.c.inc
+
+nux_status_t nux_lua_register_base(nux_ctx_t *ctx);
 
 // context.c
 
 void nux_error(nux_ctx_t *ctx, nux_error_t error);
-
-nux_status_t nux_register_lua(nux_ctx_t *ctx);
 
 // logger.c
 

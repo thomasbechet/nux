@@ -73,24 +73,25 @@ static const struct luaL_Reg lib_{{ module }}[] = {
 };
 {% endfor %}
 
-nux_status_t nux_register_lua(nux_ctx_t *ctx)
+nux_status_t nux_lua_register_base(nux_ctx_t *ctx)
 {
-    lua_newtable(ctx->L);
+    lua_State *L = ctx->lua_state;
+    lua_newtable(L);
 {% for module in modules.keys() %}
 {% if module == "core" %}
-    luaL_setfuncs(ctx->L, lib_{{ module }}, 0);
+    luaL_setfuncs(L, lib_{{ module }}, 0);
 {% else %}
-    lua_newtable(ctx->L);
-    luaL_setfuncs(ctx->L, lib_{{ module }}, 0);
-    lua_setfield(ctx->L, -2, "{{ module }}");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_{{ module }}, 0);
+    lua_setfield(L, -2, "{{ module }}");
 {% endif %}
 {% endfor %}
 {% for constant in constants %}
 {% for value in constant["values"] %}
-    lua_pushinteger(ctx->L, {{ value.value }});
-    lua_setfield(ctx->L, -2, "{{ value.name }}");
+    lua_pushinteger(L, {{ value.value }});
+    lua_setfield(L, -2, "{{ value.name }}");
 {% endfor %}
 {% endfor %}
-    lua_setglobal(ctx->L, "nux");
+    lua_setglobal(L, "nux");
     return NUX_SUCCESS;
 }
