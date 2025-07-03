@@ -10,12 +10,12 @@ if __name__ == "__main__":
 
     code = []
     for file in glob.glob(os.path.join(args.rootdir, "core/lua/*")):
-        string = open(file, 'r').read()
+        string = open(file, "r").read()
         def tohex(code):
             l = ["0x{:02x}".format(x) for x in code.encode()]
-            l.append("0x00") # null terminated
             return l
+        print(string)
         code += tohex(string)
-
+    code.append("0x00") # null terminated
     apply_template(args.rootdir, "lua_ext.c.inc.jinja", "core/lua_ext.c.inc", code=code)
 
