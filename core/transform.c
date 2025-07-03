@@ -8,9 +8,10 @@ nux_transform_update_matrix (nux_ctx_t *ctx, nux_u32_t node)
     NUX_ASSERT(t);
 
     // Check parent global matrix update
-    if (t->parent)
+    nux_u32_t parent = nux_node_get_parent(ctx, node);
+    if (parent)
     {
-        nux_transform_update_matrix(ctx, t->parent);
+        nux_transform_update_matrix(ctx, parent);
         t->dirty = NUX_TRUE;
     }
 
@@ -19,10 +20,10 @@ nux_transform_update_matrix (nux_ctx_t *ctx, nux_u32_t node)
     {
         t->global_matrix = nux_m4_trs(
             t->local_translation, t->local_rotation, t->local_scale);
-        if (t->parent)
+        if (parent)
         {
-            nux_transform_t *parent_t = nux_scene_get_component(
-                ctx, t->parent, NUX_COMPONENT_TRANSFORM);
+            nux_transform_t *parent_t
+                = nux_scene_get_component(ctx, parent, NUX_COMPONENT_TRANSFORM);
             NUX_ASSERT(parent_t);
             t->global_matrix
                 = nux_m4_mul(parent_t->global_matrix, t->global_matrix);
@@ -44,30 +45,11 @@ nux_transform_add (nux_ctx_t *ctx, nux_u32_t node)
     t->local_rotation    = nux_q4_identity();
     t->local_scale       = NUX_V3_ONES;
     t->dirty             = NUX_TRUE;
-    t->parent            = NUX_NULL;
 }
 void
 nux_transform_remove (nux_ctx_t *ctx, nux_u32_t node)
 {
     nux_scene_remove_component(ctx, node, NUX_COMPONENT_TRANSFORM);
-}
-void
-nux_transform_set_parent (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t parent)
-{
-    NUX_CHECKM(node != parent, "Setting transform parent to itself", return);
-    nux_transform_t *t
-        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
-    t->parent = parent;
-    t->dirty  = NUX_TRUE;
-}
-nux_u32_t
-nux_transform_get_parent (nux_ctx_t *ctx, nux_u32_t node)
-{
-    nux_transform_t *t
-        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_NULL);
-    return t->parent;
 }
 nux_v3_t
 nux_transform_get_local_translation (nux_ctx_t *ctx, nux_u32_t node)

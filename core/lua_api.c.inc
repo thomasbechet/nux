@@ -605,6 +605,35 @@ l_node_new (lua_State *L)
     lua_pushinteger(L, ret);
     return 1;
 }
+static int
+l_node_set_parent (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
+
+    nux_u32_t parent = luaL_checkinteger(L, 2);
+
+    nux_node_set_parent(ctx, node, parent);
+
+    return 0;
+}
+static int
+l_node_get_parent (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
+
+    nux_u32_t ret =
+
+        nux_node_get_parent(ctx, node);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
 
 static int
 l_transform_add (lua_State *L)
@@ -629,35 +658,6 @@ l_transform_remove (lua_State *L)
     nux_transform_remove(ctx, node);
 
     return 0;
-}
-static int
-l_transform_set_parent (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx  = lua_touserdata(L, -1);
-    nux_u32_t  node = luaL_checkinteger(L, 1);
-
-    nux_u32_t parent = luaL_checkinteger(L, 2);
-
-    nux_transform_set_parent(ctx, node, parent);
-
-    return 0;
-}
-static int
-l_transform_get_parent (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx  = lua_touserdata(L, -1);
-    nux_u32_t  node = luaL_checkinteger(L, 1);
-
-    nux_u32_t ret =
-
-        nux_transform_get_parent(ctx, node);
-
-    lua_pushinteger(L, ret);
-    return 1;
 }
 static int
 l_transform_get_local_translation (lua_State *L)
@@ -1069,14 +1069,14 @@ static const struct luaL_Reg lib_scene[] = { { "new", l_scene_new },
                                              { "draw", l_scene_draw },
                                              { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_node[]
-    = { { "new", l_node_new }, { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_node[] = { { "new", l_node_new },
+                                            { "set_parent", l_node_set_parent },
+                                            { "get_parent", l_node_get_parent },
+                                            { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_transform[]
     = { { "add", l_transform_add },
         { "remove", l_transform_remove },
-        { "set_parent", l_transform_set_parent },
-        { "get_parent", l_transform_get_parent },
         { "get_local_translation", l_transform_get_local_translation },
         { "get_local_scale", l_transform_get_local_scale },
         { "get_translation", l_transform_get_translation },

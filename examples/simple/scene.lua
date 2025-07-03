@@ -1,23 +1,16 @@
-return {
-    {
-        transform = {
-            translation = { 2, 3, 4 },
+return function(cube)
+    return {
+        {
+            transform = {},
+            staticmesh = {
+                mesh = cube
+            }
         },
-        staticmesh = {
-            mesh = 0
-        }
-    },
-    e1 = {
-        transform = {
-            translation = { 1, 1, 1 }
+        {
+            transform = { translation = { 2, 0, 0 } },
+            staticmesh = {
+                mesh = cube
+            }
         },
-        camera = {
-            fov = 60
-        }
-    },
-    {
-        transform = {
-            parent = "e1"
-        }
     }
-}
+end

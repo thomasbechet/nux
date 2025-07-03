@@ -469,7 +469,6 @@ typedef struct
     nux_v3_t  local_scale;
     nux_m4_t  global_matrix;
     nux_b32_t dirty;
-    nux_u32_t parent;
 } nux_transform_t;
 
 typedef struct
@@ -510,6 +509,7 @@ typedef struct
 typedef struct
 {
     nux_u32_t scene;
+    nux_u32_t parent;
     nux_u32_t id;
     nux_u32_t components[NUX_COMPONENT_MAX];
 } nux_node_t;

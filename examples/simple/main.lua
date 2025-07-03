@@ -1,8 +1,7 @@
-local inspect = require("inspect")
+-- local inspect = require("inspect")
 local s
 local c
 
-print(inspect(nux))
 local SCENE = require("scene")
 
 function controller(e)
@@ -19,33 +18,16 @@ function controller(e)
     nux.transform.look_at(c, x + fx, y - 0.5, z + fz)
 end
 
-function create_cube(scene, mesh, x, y, z)
-    local n = nux.node.new(scene)
-    print(mesh)
-    nux.staticmesh.add(n)
-    nux.staticmesh.set_mesh(n, mesh)
-    nux.transform.add(n)
-    nux.transform.set_translation(n, x, y, z)
-    return n
-end
-
 function nux.init()
-    s = nux.scene.new()
-
-    nux.scene.parse(SCENE)
-
-    local mesh_ariane = nux.mesh.load("../basic/assets/ariane6.glb")
+    -- local mesh_ariane = nux.mesh.load("../basic/assets/ariane6.glb")
     local mesh_cube = nux.mesh.gen_cube(1, 1, 1)
-
-    create_cube(s, mesh_ariane, 0, 0, 0)
+    s = nux.scene.parse(SCENE(mesh_cube))
 
     c = nux.node.new(s)
     nux.transform.add(c)
     nux.transform.set_translation(c, 0, 1, 3)
     nux.camera.add(c)
-    nux.camera.set_fov(c, 60)
-
-    -- load_scene(SCENE)
+    nux.camera.set_fov(c, 100)
 end
 
 function nux.tick()

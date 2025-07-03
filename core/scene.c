@@ -135,9 +135,33 @@ nux_node_new (nux_ctx_t *ctx, nux_u32_t scene)
     nux_u32_t id = nux_object_create(ctx, s->arena, NUX_TYPE_NODE, n);
     NUX_CHECK(id, return NUX_NULL);
     nux_memset(n, 0, sizeof(*n));
-    n->scene = scene;
-    n->id    = id;
+    n->scene  = scene;
+    n->parent = NUX_NULL;
+    n->id     = id;
     return id;
+}
+void
+nux_node_set_parent (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t parent)
+{
+    NUX_CHECKM(node != parent, "Setting node parent to itself", return);
+    nux_node_t *n = nux_object_get(ctx, NUX_TYPE_NODE, node);
+    NUX_CHECK(n, return);
+    n->parent = parent;
+
+    // Update child components
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
+    if (t)
+    {
+        t->dirty = NUX_TRUE;
+    }
+}
+nux_u32_t
+nux_node_get_parent (nux_ctx_t *ctx, nux_u32_t node)
+{
+    nux_node_t *n = nux_object_get(ctx, NUX_TYPE_NODE, node);
+    NUX_CHECK(n, return NUX_NULL);
+    return n->parent;
 }
 
 void
