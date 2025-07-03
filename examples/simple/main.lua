@@ -20,13 +20,13 @@ function controller(e)
 end
 
 function create_cube(scene, mesh, x, y, z)
-    local e = nux.entity.new(scene)
+    local n = nux.node.new(scene)
     print(mesh)
-    nux.staticmesh.add(e)
-    nux.staticmesh.set_mesh(e, mesh)
-    nux.transform.add(e)
-    nux.transform.set_translation(e, x, y, z)
-    return e
+    nux.staticmesh.add(n)
+    nux.staticmesh.set_mesh(n, mesh)
+    nux.transform.add(n)
+    nux.transform.set_translation(n, x, y, z)
+    return n
 end
 
 function nux.init()
@@ -39,7 +39,7 @@ function nux.init()
 
     create_cube(s, mesh_ariane, 0, 0, 0)
 
-    c = nux.entity.new(s)
+    c = nux.node.new(s)
     nux.transform.add(c)
     nux.transform.set_translation(c, 0, 1, 3)
     nux.camera.add(c)

@@ -591,7 +591,7 @@ l_scene_draw (lua_State *L)
 }
 
 static int
-l_entity_new (lua_State *L)
+l_node_new (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
@@ -600,7 +600,7 @@ l_entity_new (lua_State *L)
 
     nux_u32_t ret =
 
-        nux_entity_new(ctx, world);
+        nux_node_new(ctx, world);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -611,10 +611,10 @@ l_transform_add (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
-    nux_transform_add(ctx, entity);
+    nux_transform_add(ctx, node);
 
     return 0;
 }
@@ -623,10 +623,10 @@ l_transform_remove (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
-    nux_transform_remove(ctx, entity);
+    nux_transform_remove(ctx, node);
 
     return 0;
 }
@@ -635,12 +635,12 @@ l_transform_set_parent (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_u32_t parent = luaL_checkinteger(L, 2);
 
-    nux_transform_set_parent(ctx, entity, parent);
+    nux_transform_set_parent(ctx, node, parent);
 
     return 0;
 }
@@ -649,12 +649,12 @@ l_transform_get_parent (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_u32_t ret =
 
-        nux_transform_get_parent(ctx, entity);
+        nux_transform_get_parent(ctx, node);
 
     lua_pushinteger(L, ret);
     return 1;
@@ -664,12 +664,12 @@ l_transform_get_local_translation (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_get_local_translation(ctx, entity);
+        nux_transform_get_local_translation(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -681,12 +681,12 @@ l_transform_get_local_scale (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_get_local_scale(ctx, entity);
+        nux_transform_get_local_scale(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -698,12 +698,12 @@ l_transform_get_translation (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_get_translation(ctx, entity);
+        nux_transform_get_translation(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -715,12 +715,12 @@ l_transform_get_scale (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_get_scale(ctx, entity);
+        nux_transform_get_scale(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -732,12 +732,12 @@ l_transform_forward (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_forward(ctx, entity);
+        nux_transform_forward(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -749,12 +749,12 @@ l_transform_backward (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_backward(ctx, entity);
+        nux_transform_backward(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -766,12 +766,12 @@ l_transform_left (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_left(ctx, entity);
+        nux_transform_left(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -783,12 +783,12 @@ l_transform_right (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_right(ctx, entity);
+        nux_transform_right(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -800,12 +800,12 @@ l_transform_up (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_up(ctx, entity);
+        nux_transform_up(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -817,12 +817,12 @@ l_transform_down (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t ret =
 
-        nux_transform_down(ctx, entity);
+        nux_transform_down(ctx, node);
 
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -834,15 +834,15 @@ l_transform_set_translation (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t position;
     position.x = luaL_checknumber(L, 2);
     position.y = luaL_checknumber(L, 3);
     position.z = luaL_checknumber(L, 4);
 
-    nux_transform_set_translation(ctx, entity, position);
+    nux_transform_set_translation(ctx, node, position);
 
     return 0;
 }
@@ -851,15 +851,15 @@ l_transform_set_scale (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t scale;
     scale.x = luaL_checknumber(L, 2);
     scale.y = luaL_checknumber(L, 3);
     scale.z = luaL_checknumber(L, 4);
 
-    nux_transform_set_scale(ctx, entity, scale);
+    nux_transform_set_scale(ctx, node, scale);
 
     return 0;
 }
@@ -868,12 +868,12 @@ l_transform_rotate_y (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_f32_t angle = luaL_checknumber(L, 2);
 
-    nux_transform_rotate_y(ctx, entity, angle);
+    nux_transform_rotate_y(ctx, node, angle);
 
     return 0;
 }
@@ -882,15 +882,15 @@ l_transform_look_at (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_v3_t center;
     center.x = luaL_checknumber(L, 2);
     center.y = luaL_checknumber(L, 3);
     center.z = luaL_checknumber(L, 4);
 
-    nux_transform_look_at(ctx, entity, center);
+    nux_transform_look_at(ctx, node, center);
 
     return 0;
 }
@@ -900,10 +900,10 @@ l_camera_add (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
-    nux_camera_add(ctx, entity);
+    nux_camera_add(ctx, node);
 
     return 0;
 }
@@ -912,10 +912,10 @@ l_camera_remove (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
-    nux_camera_remove(ctx, entity);
+    nux_camera_remove(ctx, node);
 
     return 0;
 }
@@ -924,12 +924,12 @@ l_camera_set_fov (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_f32_t fov = luaL_checknumber(L, 2);
 
-    nux_camera_set_fov(ctx, entity, fov);
+    nux_camera_set_fov(ctx, node, fov);
 
     return 0;
 }
@@ -939,10 +939,10 @@ l_staticmesh_add (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
-    nux_staticmesh_add(ctx, entity);
+    nux_staticmesh_add(ctx, node);
 
     return 0;
 }
@@ -951,10 +951,10 @@ l_staticmesh_remove (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
-    nux_staticmesh_remove(ctx, entity);
+    nux_staticmesh_remove(ctx, node);
 
     return 0;
 }
@@ -963,12 +963,12 @@ l_staticmesh_set_mesh (lua_State *L)
 {
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx    = lua_touserdata(L, -1);
-    nux_u32_t  entity = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx  = lua_touserdata(L, -1);
+    nux_u32_t  node = luaL_checkinteger(L, 1);
 
     nux_u32_t mesh = luaL_checkinteger(L, 2);
 
-    nux_staticmesh_set_mesh(ctx, entity, mesh);
+    nux_staticmesh_set_mesh(ctx, node, mesh);
 
     return 0;
 }
@@ -1069,8 +1069,8 @@ static const struct luaL_Reg lib_scene[] = { { "new", l_scene_new },
                                              { "draw", l_scene_draw },
                                              { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_entity[]
-    = { { "new", l_entity_new }, { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_node[]
+    = { { "new", l_node_new }, { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_transform[]
     = { { "add", l_transform_add },
@@ -1142,8 +1142,8 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_setfield(L, -2, "scene");
 
     lua_newtable(L);
-    luaL_setfuncs(L, lib_entity, 0);
-    lua_setfield(L, -2, "entity");
+    luaL_setfuncs(L, lib_node, 0);
+    lua_setfield(L, -2, "node");
 
     lua_newtable(L);
     luaL_setfuncs(L, lib_transform, 0);

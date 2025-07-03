@@ -49,7 +49,7 @@ nux_instance_init (const nux_config_t *config)
     type          = nux_type_register(ctx, "scene");
     type->cleanup = nux_scene_cleanup;
 
-    type = nux_type_register(ctx, "entity");
+    type = nux_type_register(ctx, "node");
 
     type                 = nux_type_register(ctx, "transform");
     type->component_type = NUX_COMPONENT_TRANSFORM;

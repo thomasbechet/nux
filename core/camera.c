@@ -106,24 +106,22 @@ nux_lookat (nux_v3_t eye, nux_v3_t center, nux_v3_t up)
 }
 
 void
-nux_camera_add (nux_ctx_t *ctx, nux_u32_t entity)
+nux_camera_add (nux_ctx_t *ctx, nux_u32_t node)
 {
-    nux_camera_t *c
-        = nux_scene_add_component(ctx, entity, NUX_COMPONENT_CAMERA);
+    nux_camera_t *c = nux_scene_add_component(ctx, node, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
     c->fov      = 60;
     c->viewport = nux_b2i_xywh(0, 0, 100, 100);
 }
 void
-nux_camera_remove (nux_ctx_t *ctx, nux_u32_t entity)
+nux_camera_remove (nux_ctx_t *ctx, nux_u32_t node)
 {
-    nux_scene_remove_component(ctx, entity, NUX_COMPONENT_CAMERA);
+    nux_scene_remove_component(ctx, node, NUX_COMPONENT_CAMERA);
 }
 void
-nux_camera_set_fov (nux_ctx_t *ctx, nux_u32_t entity, nux_f32_t fov)
+nux_camera_set_fov (nux_ctx_t *ctx, nux_u32_t node, nux_f32_t fov)
 {
-    nux_camera_t *c
-        = nux_scene_get_component(ctx, entity, NUX_COMPONENT_CAMERA);
+    nux_camera_t *c = nux_scene_get_component(ctx, node, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
     c->fov = fov;
 }

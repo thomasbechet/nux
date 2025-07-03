@@ -485,7 +485,7 @@ typedef enum
     NUX_TYPE_TEXTURE    = 3,
     NUX_TYPE_MESH       = 4,
     NUX_TYPE_SCENE      = 5,
-    NUX_TYPE_ENTITY     = 6,
+    NUX_TYPE_NODE       = 6,
     NUX_TYPE_TRANSFORM  = 7,
     NUX_TYPE_CAMERA     = 8,
     NUX_TYPE_STATICMESH = 9,
@@ -512,7 +512,7 @@ typedef struct
     nux_u32_t scene;
     nux_u32_t id;
     nux_u32_t components[NUX_COMPONENT_MAX];
-} nux_entity_t;
+} nux_node_t;
 
 typedef union
 {
@@ -521,13 +521,13 @@ typedef union
     nux_staticmesh_t staticmesh;
 } nux_component_t;
 
-NUX_POOL_DEFINE(nux_entity_pool, nux_entity_t);
+NUX_POOL_DEFINE(nux_node_pool, nux_node_t);
 NUX_POOL_DEFINE(nux_component_pool, nux_component_t);
 
 typedef struct
 {
     nux_arena_t         *arena;
-    nux_entity_pool_t    entities;
+    nux_node_pool_t      nodes;
     nux_component_pool_t components;
 } nux_scene_t;
 
@@ -740,11 +740,9 @@ void nux_texture_write(nux_ctx_t  *ctx,
 void nux_component_register(nux_ctx_t *ctx, nux_u32_t type);
 
 void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
-void *nux_scene_add_component(nux_ctx_t *ctx, nux_u32_t entity, nux_u32_t type);
-void  nux_scene_remove_component(nux_ctx_t *ctx,
-                                 nux_u32_t  entity,
-                                 nux_u32_t  type);
-void *nux_scene_get_component(nux_ctx_t *ctx, nux_u32_t entity, nux_u32_t type);
+void *nux_scene_add_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
+void nux_scene_remove_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
+void *nux_scene_get_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
 nux_u32_t nux_scene_load(nux_ctx_t *ctx, const nux_c8_t *url);
 nux_u32_t nux_scene_parse(nux_ctx_t *ctx, lua_State *L);
 
@@ -851,6 +849,6 @@ void nux_input_pre_update(nux_ctx_t *ctx);
 
 // transform.c
 
-nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_u32_t entity);
+nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_u32_t node);
 
 #endif

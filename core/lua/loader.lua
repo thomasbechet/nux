@@ -1,5 +1,5 @@
 function nux.scene.parse(tab)
-    local entities = {}
+    local nodes = {}
 
     -- Component loaders
     local loaders = {
@@ -14,7 +14,7 @@ function nux.scene.parse(tab)
             if type(v.parent) == "number" then
                 nux.transform.set_parent(e, v.parent)
             elseif type(v.parent) == "string" then
-                nux.transform.set_parent(e, entities[v.parent])
+                nux.transform.set_parent(e, nodes[v.parent])
             end
         end,
         camera = function(e, v)
@@ -34,19 +34,19 @@ function nux.scene.parse(tab)
     -- Create scene
     local s = nux.scene.new()
 
-    -- Create entities
+    -- Create nodes
     for k in pairs(tab) do
-        local e = nux.entity.new(s)
-        entities[k] = e
+        local n = nux.node.new(s)
+        nodes[k] = n
     end
 
     -- Add components
     for k, v in pairs(tab) do
-        local e = entities[k]
+        local n = nodes[k]
         for kc, vc in pairs(v) do
             local load = loaders[kc]
             if load then
-                load(e, vc)
+                load(n, vc)
             end
         end
     end
