@@ -1,16 +1,23 @@
 return {
     {
         transform = {
-            -- translation = { 2, 3, 4 }
+            translation = { 2, 3, 4 },
         },
         staticmesh = {
             mesh = 0
         }
     },
-    {
+    e1 = {
         transform = {
             translation = { 1, 1, 1 }
         },
-        camera = {}
+        camera = {
+            fov = 60
+        }
     },
+    {
+        transform = {
+            parent = "e1"
+        }
+    }
 }

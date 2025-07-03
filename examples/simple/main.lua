@@ -5,23 +5,6 @@ local c
 print(inspect(nux))
 local SCENE = require("scene")
 
-function load_scene(scene)
-    local s = nux.scene.new()
-    for ek, ev in pairs(scene) do
-        print(ek)
-        local e = nux.entity.new(s)
-        for ck, cv in pairs(ev) do
-            if ck == 'transform' then
-                nux.transform.add(e)
-                if cv.translation then
-                    nux.transform.set_translation(e, table.unpack(cv.translation))
-                end
-            end
-        end
-    end
-    return s
-end
-
 function controller(e)
     local x, y, z = nux.transform.get_translation(e)
     x = x + nux.input.axis(0, nux.AXIS_LEFTX) * nux.dt() * 5

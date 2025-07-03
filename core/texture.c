@@ -10,7 +10,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     nux_texture_t *tex = nux_arena_alloc(ctx->active_arena, sizeof(*tex));
     NUX_CHECK(tex, return NUX_NULL);
     nux_u32_t id
-        = nux_object_create(ctx, ctx->active_arena, NUX_OBJECT_TEXTURE, tex);
+        = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_TEXTURE, tex);
     NUX_CHECK(id, return NUX_NULL);
     tex->type   = type;
     tex->width  = w;
@@ -88,7 +88,7 @@ nux_texture_write (nux_ctx_t  *ctx,
                    nux_u32_t   h,
                    const void *data)
 {
-    nux_texture_t *tex = nux_object_get(ctx, NUX_OBJECT_TEXTURE, id);
+    nux_texture_t *tex = nux_object_get(ctx, NUX_TYPE_TEXTURE, id);
     NUX_CHECKM(tex, "Invalid texture id", return);
     NUX_CHECKM(tex->type != NUX_TEXTURE_RENDER_TARGET,
                "Trying to write render target texture",

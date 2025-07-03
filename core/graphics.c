@@ -381,7 +381,7 @@ nux_write_texture (nux_ctx_t      *ctx,
 void
 nux_graphics_set_render_target (nux_ctx_t *ctx, nux_u32_t id)
 {
-    nux_texture_t *tex = nux_object_get(ctx, NUX_OBJECT_TEXTURE, id);
+    nux_texture_t *tex = nux_object_get(ctx, NUX_TYPE_TEXTURE, id);
     NUX_CHECKM(tex->type == NUX_TEXTURE_RENDER_TARGET,
                "Texture is not a render target",
                return);

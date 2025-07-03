@@ -11,7 +11,7 @@ nux_mesh_new (nux_ctx_t *ctx, nux_u32_t capa)
     nux_mesh_t *mesh = nux_arena_alloc(ctx->active_arena, sizeof(*mesh));
     NUX_CHECK(mesh, return NUX_NULL);
     nux_u32_t id
-        = nux_object_create(ctx, ctx->active_arena, NUX_OBJECT_MESH, mesh);
+        = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_MESH, mesh);
     NUX_CHECK(id, return NUX_NULL);
     mesh->count = capa;
     mesh->data  = nux_arena_alloc(ctx->active_arena,
@@ -52,7 +52,7 @@ nux_mesh_gen_cube (nux_ctx_t *ctx, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 
     nux_u32_t id = nux_mesh_new(ctx, NUX_ARRAY_SIZE(positions));
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_object_get(ctx, NUX_OBJECT_MESH, id);
+    nux_mesh_t *mesh = nux_object_get(ctx, NUX_TYPE_MESH, id);
 
     for (nux_u32_t i = 0; i < mesh->count; ++i)
     {
@@ -154,7 +154,7 @@ compile_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
     // Create mesh object
     nux_u32_t id = nux_mesh_new(ctx, indice_count);
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_object_get(ctx, NUX_OBJECT_MESH, id);
+    nux_mesh_t *mesh = nux_object_get(ctx, NUX_TYPE_MESH, id);
 
     // Write vertices
     if (attributes & NUX_VERTEX_POSITION)

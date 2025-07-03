@@ -479,22 +479,32 @@ typedef struct
 
 typedef enum
 {
-    NUX_OBJECT_NULL     = 0,
-    NUX_OBJECT_ARENA    = 1,
-    NUX_OBJECT_LUA      = 2,
-    NUX_OBJECT_TEXTURE  = 3,
-    NUX_OBJECT_MESH     = 4,
-    NUX_OBJECT_SCENE    = 5,
-    NUX_OBJECT_ENTITY   = 6,
-    NUX_OBJECT_TYPE_MAX = 9,
-} nux_object_base_type_t;
+    NUX_TYPE_NULL       = 0,
+    NUX_TYPE_ARENA      = 1,
+    NUX_TYPE_LUA        = 2,
+    NUX_TYPE_TEXTURE    = 3,
+    NUX_TYPE_MESH       = 4,
+    NUX_TYPE_SCENE      = 5,
+    NUX_TYPE_ENTITY     = 6,
+    NUX_TYPE_TRANSFORM  = 7,
+    NUX_TYPE_CAMERA     = 8,
+    NUX_TYPE_STATICMESH = 9,
+
+    NUX_TYPE_MAX = 256,
+} nux_type_base_t;
 
 typedef enum
 {
     NUX_COMPONENT_TRANSFORM  = 0,
     NUX_COMPONENT_CAMERA     = 1,
     NUX_COMPONENT_STATICMESH = 2,
-    NUX_COMPONENT_MAX        = 3,
+
+    NUX_COMPONENT_MAX = 32,
+} nux_component_type_base_t;
+
+typedef struct
+{
+    nux_u32_t type;
 } nux_component_type_t;
 
 typedef struct
@@ -521,26 +531,29 @@ typedef struct
     nux_component_pool_t components;
 } nux_scene_t;
 
-typedef void (*nux_object_cleanup_t)(nux_ctx_t *ctx, void *data);
-typedef void (*nux_object_serialize_t)(nux_ctx_t  *ctx,
-                                       const void *data,
-                                       void       *out);
-typedef void (*nux_object_deserialize_t)(nux_ctx_t  *ctx,
-                                         void       *data,
-                                         const void *in);
+typedef void (*nux_type_cleanup_t)(nux_ctx_t *ctx, void *data);
+typedef nux_status_t (*nux_type_save_lua_t)(nux_ctx_t  *ctx,
+                                            const void *data,
+                                            lua_State  *L);
+typedef nux_status_t (*nux_type_load_lua_t)(nux_ctx_t *ctx,
+                                            void      *data,
+                                            lua_State *L);
 
 typedef struct
 {
-    nux_c8_t             name[64];
-    nux_object_cleanup_t cleanup;
-} nux_object_type_t;
+    const nux_c8_t     *name;
+    nux_type_cleanup_t  cleanup;
+    nux_type_save_lua_t save_lua;
+    nux_type_load_lua_t load_lua;
+    nux_u32_t           component_type;
+} nux_type_t;
 
 typedef struct
 {
     nux_u32_t prev;
     nux_u32_t next;
     nux_u8_t  version;
-    nux_u32_t type_index;
+    nux_u32_t type;
     void     *data;
 } nux_object_t;
 
@@ -614,12 +627,15 @@ struct nux_context
     nux_u32_t             canvas_pipeline_slot;
     nux_gpu_command_vec_t gpu_commands;
 
-    nux_arena_pool_t arenas;
-    nux_arena_t     *core_arena;
-
+    nux_arena_pool_t  arenas;
     nux_object_pool_t objects;
-    nux_object_type_t object_types[NUX_OBJECT_TYPE_MAX];
-    nux_u32_t         object_types_count;
+    nux_arena_t      *core_arena;
+
+    nux_type_t types[NUX_TYPE_MAX];
+    nux_u32_t  types_count;
+
+    nux_component_type_t component_types[NUX_COMPONENT_MAX];
+    nux_u32_t            component_types_count;
 
     nux_u32_vec_t free_texture_slots;
     nux_u32_vec_t free_buffer_slots;
@@ -691,11 +707,12 @@ void      nux_memcpy(void *dst, const void *src, nux_u32_t n);
 void      nux_memswp(void *a, void *b, nux_u32_t n);
 void     *nux_memalign(void *ptr, nux_u32_t align);
 
+// type.c
+
+nux_type_t *nux_type_register(nux_ctx_t *ctx, const nux_c8_t *name);
+
 // object.c
 
-void      nux_object_register(nux_ctx_t           *ctx,
-                              const nux_c8_t      *name,
-                              nux_object_cleanup_t cleanup);
 nux_u32_t nux_object_create(nux_ctx_t   *ctx,
                             nux_arena_t *arena,
                             nux_u32_t    type_index,
@@ -720,16 +737,14 @@ void nux_texture_write(nux_ctx_t  *ctx,
 
 // scene.c
 
-void      nux_scene_cleanup(nux_ctx_t *ctx, void *data);
-void     *nux_scene_add_component(nux_ctx_t           *ctx,
-                                  nux_u32_t            entity,
-                                  nux_component_type_t type);
-void      nux_scene_remove_component(nux_ctx_t           *ctx,
-                                     nux_u32_t            entity,
-                                     nux_component_type_t type);
-void     *nux_scene_get_component(nux_ctx_t           *ctx,
-                                  nux_u32_t            entity,
-                                  nux_component_type_t type);
+void nux_component_register(nux_ctx_t *ctx, nux_u32_t type);
+
+void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
+void *nux_scene_add_component(nux_ctx_t *ctx, nux_u32_t entity, nux_u32_t type);
+void  nux_scene_remove_component(nux_ctx_t *ctx,
+                                 nux_u32_t  entity,
+                                 nux_u32_t  type);
+void *nux_scene_get_component(nux_ctx_t *ctx, nux_u32_t entity, nux_u32_t type);
 nux_u32_t nux_scene_load(nux_ctx_t *ctx, const nux_c8_t *url);
 nux_u32_t nux_scene_parse(nux_ctx_t *ctx, lua_State *L);
 

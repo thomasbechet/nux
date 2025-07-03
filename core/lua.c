@@ -1,6 +1,7 @@
 #include "internal.h"
 
 #include "lua_api.c.inc"
+#include "lua_ext.c.inc"
 
 nux_status_t
 nux_lua_load_conf (nux_ctx_t *ctx)
@@ -86,29 +87,74 @@ nux_lua_tick (nux_ctx_t *ctx)
     lua_pop(ctx->lua_state, 1);
 }
 
-static int
-l_scene_parse (lua_State *L)
-{
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  ret = nux_scene_parse(ctx, L);
-    lua_pushinteger(L, ret);
-    return 1;
-}
 nux_status_t
 nux_lua_register_ext (nux_ctx_t *ctx)
 {
     lua_State *L = ctx->lua_state;
 
-    lua_getglobal(L, "nux");
-    NUX_ASSERT(lua_istable(L, -1));
-
-    lua_getfield(L, -1, "scene");
-    NUX_ASSERT(lua_istable(L, -1));
-    static const struct luaL_Reg lib_scene[]
-        = { { "parse", l_scene_parse }, { NUX_NULL, NUX_NULL } };
-    luaL_setfuncs(L, lib_scene, 0);
-    lua_pop(L, 2);
+    if (luaL_dostring(L, lua_ext_code) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(ctx->lua_state, -1));
+    }
 
     return NUX_SUCCESS;
 }
+
+// static nux_v3_t
+// parse_v3 (lua_State *L)
+// {
+//     lua_geti(L, -1, 1);
+//     float x = luaL_checknumber(L, -1);
+//     lua_geti(L, -2, 2);
+//     float y = luaL_checknumber(L, -1);
+//     lua_geti(L, -3, 3);
+//     float    z = luaL_checknumber(L, -1);
+//     nux_v3_t v = nux_v3(x, y, z);
+//     lua_pop(L, 3);
+//     return v;
+// }
+// nux_u32_t
+// try_parse_u32 (lua_State      *L,
+//                nux_i32_t       idx,
+//                const nux_c8_t *k,
+//                nux_u32_t       default_value)
+// {
+//     nux_u32_t ret = default_value;
+//     lua_getfield(L, idx, k);
+//     if (!lua_isnil(L, -1))
+//     {
+//         ret = luaL_checkinteger(L, -1);
+//     }
+//     lua_pop(L, 1);
+//     return ret;
+// }
+// nux_f32_t
+// nux_lua_try_parse_f32 (lua_State      *L,
+//                        nux_i32_t       idx,
+//                        const nux_c8_t *k,
+//                        nux_f32_t       default_value)
+// {
+//     nux_f32_t ret = default_value;
+//     lua_getfield(L, idx, k);
+//     if (!lua_isnil(L, -1))
+//     {
+//         ret = luaL_checknumber(L, -1);
+//     }
+//     lua_pop(L, 1);
+//     return ret;
+// }
+// nux_v3_t
+// nux_lua_try_parse_v3 (lua_State      *L,
+//                       nux_i32_t       idx,
+//                       const nux_c8_t *k,
+//                       nux_v3_t        default_value)
+// {
+//     nux_v3_t ret = default_value;
+//     lua_getfield(L, idx, k);
+//     if (!lua_isnil(L, -1))
+//     {
+//         ret = parse_v3(L);
+//     }
+//     lua_pop(L, 1);
+//     return ret;
+// }

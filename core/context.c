@@ -31,17 +31,41 @@ nux_instance_init (const nux_config_t *config)
     ctx->init     = config->init;
     ctx->update   = config->update;
 
-    // Register base objects
-    ctx->object_types_count = 0;
-    nux_object_register(ctx, "null", NUX_NULL);
-    nux_object_register(ctx, "arena", NUX_NULL);
-    nux_object_register(ctx, "lua", NUX_NULL);
-    nux_object_register(ctx, "texture", nux_texture_cleanup);
-    nux_object_register(ctx, "mesh", NUX_NULL);
-    nux_object_register(ctx, "scene", nux_scene_cleanup);
-    nux_object_register(ctx, "entity", NUX_NULL);
-    nux_object_register(ctx, "transform", NUX_NULL);
-    nux_object_register(ctx, "camera", NUX_NULL);
+    // Register base types
+    // Must be coherent with nux_type_base_t
+    ctx->types_count = 0;
+    nux_type_t *type;
+    type = nux_type_register(ctx, "null");
+
+    type = nux_type_register(ctx, "arena");
+
+    type = nux_type_register(ctx, "lua");
+
+    type          = nux_type_register(ctx, "texture");
+    type->cleanup = nux_texture_cleanup;
+
+    type = nux_type_register(ctx, "mesh");
+
+    type          = nux_type_register(ctx, "scene");
+    type->cleanup = nux_scene_cleanup;
+
+    type = nux_type_register(ctx, "entity");
+
+    type                 = nux_type_register(ctx, "transform");
+    type->component_type = NUX_COMPONENT_TRANSFORM;
+
+    type                 = nux_type_register(ctx, "camera");
+    type->component_type = NUX_COMPONENT_CAMERA;
+
+    type                 = nux_type_register(ctx, "staticmesh");
+    type->component_type = NUX_COMPONENT_STATICMESH;
+
+    // Register base component types
+    // Must be coherent with nux_component_type_base_t
+    ctx->types_count = 0;
+    nux_component_register(ctx, NUX_TYPE_TRANSFORM);
+    nux_component_register(ctx, NUX_TYPE_CAMERA);
+    nux_component_register(ctx, NUX_TYPE_STATICMESH);
 
     // Create object pool
     NUX_CHECK(nux_object_pool_alloc(
@@ -60,7 +84,7 @@ nux_instance_init (const nux_config_t *config)
 
     // Register core arena object
     ctx->core_arena->id = nux_object_create(
-        ctx, ctx->active_arena, NUX_OBJECT_ARENA, ctx->core_arena);
+        ctx, ctx->active_arena, NUX_TYPE_ARENA, ctx->core_arena);
 
     // Initialize error state
     ctx->error            = NUX_ERROR_NONE;
