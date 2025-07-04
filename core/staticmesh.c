@@ -25,3 +25,19 @@ nux_staticmesh_set_mesh (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t mesh)
     NUX_CHECK(sm, return);
     sm->mesh = mesh;
 }
+void
+nux_staticmesh_set_texture (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t texture)
+{
+    if (texture)
+    {
+        NUX_CHECK(nux_object_get(ctx, NUX_TYPE_TEXTURE, texture), return);
+    }
+    nux_staticmesh_t *sm
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_STATICMESH);
+    NUX_CHECK(sm, return);
+    sm->texture = texture;
+}
+void
+nux_staticmesh_set_colormap (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t colormap)
+{
+}

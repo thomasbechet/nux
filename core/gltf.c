@@ -3,6 +3,14 @@
 #ifdef NUX_BUILD_IMPORTER
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
+#define STBIR_DEBUG
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include <stb_image_resize.h>
+// #include <stb_image_resize2.h>
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
 #endif
 
 static nux_u32_t
@@ -128,7 +136,31 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
 static nux_u32_t
 load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
 {
-    return NUX_NULL;
+    nux_status_t status = NUX_FAILURE;
+
+    // Load image buffer
+    cgltf_buffer_view *view = texture->image->buffer_view;
+    nux_i32_t          w, h, n;
+    nux_u8_t *img = stbi_load_from_memory(view->buffer->data + view->offset,
+                                          view->size,
+                                          &w,
+                                          &h,
+                                          &n,
+                                          STBI_rgb_alpha);
+    if (!img)
+    {
+        NUX_ERROR("Failed to load image '%s'", texture->name);
+        return NUX_NULL;
+    }
+
+    NUX_INFO("Loading texture '%s' w %d h %d", texture->name, w, h);
+
+    nux_u32_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
+    NUX_CHECK(id, return NUX_NULL);
+    nux_texture_write(ctx, id, 0, 0, w, h, img);
+
+    stbi_image_free(img);
+    return id;
 }
 nux_u32_t
 nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
@@ -213,7 +245,6 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
     // Load scenes and nodes
     for (nux_u32_t s = 0; s < data->scenes_count; ++s)
     {
-
         cgltf_scene *scene = data->scenes + s;
 
         // Compute required node
@@ -321,7 +352,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                     // Write staticmesh
                     nux_staticmesh_add(ctx, node_id);
                     nux_staticmesh_set_mesh(ctx, node_id, mesh);
-                    // nux_staticmesh_set_texture(ctx, id, texture);
+                    nux_staticmesh_set_texture(ctx, node_id, texture);
                 }
             }
         }

@@ -5,6 +5,7 @@ struct VOut
     float4 position : SV_Position;
     float3 normal;
     float2 uv;
+    uint hasTexture;
 }
 
 struct Vertex
@@ -13,6 +14,8 @@ struct Vertex
     float2 texcoord;
 }
 
+Texture2D texture0;
+SamplerState sampler0;
 ConstantBuffer<Constants> constants;
 StructuredBuffer<float> vertices;
 StructuredBuffer<float4x4> transforms;
@@ -37,6 +40,7 @@ VOut vertexMain(
     uint vertexIndex : SV_VertexID,
     uniform uint vertexFirst,
     uniform uint transformIndex,
+    uniform uint hasTexture,
 )
 {
     uint base = vertexFirst + (vertexIndex / 3) * 3;
@@ -52,6 +56,7 @@ VOut vertexMain(
     output.normal   = normalize(cross(
         v2.position - v1.position, 
         v0.position - v1.position));
+    output.hasTexture = hasTexture;
     return output;
 }
 
@@ -59,5 +64,13 @@ VOut vertexMain(
 float4 fragmentMain(VOut input) : SV_Target
 {
     float d = dot(input.normal, normalize(float3(cos(constants.time), 1, sin(constants.time))));
-    return max(d, 0.5) * float4(input.uv, 0, 1);
+    if (input.hasTexture != 0)
+    {
+        float4 color = texture0.Sample(sampler0, input.uv);
+        return max(d, 0.5) * color;
+    }
+    else
+    {
+        return max(d, 0.5) * float4(input.uv, 0, 1);
+    }
 }

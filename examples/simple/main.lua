@@ -6,7 +6,7 @@ local nux = nux
 
 local function controller(e)
     local x, y, z = nux.transform.get_translation(e)
-    local speed = 10
+    local speed = 20
     x = x + nux.input.axis(0, nux.AXIS_LEFTX) * nux.dt() * speed
     z = z - nux.input.axis(0, nux.AXIS_LEFTY) * nux.dt() * speed
     if nux.button.pressed(0, nux.BUTTON_Y) then
@@ -21,7 +21,6 @@ local function controller(e)
 end
 
 function nux.init()
-    -- s = nux.scene.load_gltf("../basic/assets/ariane6.glb")
     local mesh_cube = nux.mesh.gen_cube(1, 1, 1)
     s = nux.scene.new()
 
@@ -52,13 +51,20 @@ function nux.init()
             template = template2,
         }
     }
-    for i = 0, 5 do
-        nux.node.instantiate(s, {
+    for i = 0, 100 do
+        local x = i // 10
+        local y = i % 10
+        local n = nux.node.instantiate(s, {
             template = template3,
-            transform = { translation = { i * 10, 0, 0 } }
+            transform = { translation = { x * 5, 0, y * 5 } }
         }
         , nil)
+        if i == 55 then
+            r = n
+        end
     end
+
+    s = nux.scene.load_gltf("../basic/assets/industrial.glb")
 
     c = nux.node.new(s)
     nux.transform.add(c)
@@ -70,5 +76,5 @@ end
 function nux.tick()
     controller(c)
     nux.scene.draw(s, c)
-    -- nux.transform.rotate_y(r, nux.dt() * 10)
+    nux.transform.rotate_y(r, nux.dt() * 10)
 end

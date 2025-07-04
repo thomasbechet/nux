@@ -307,6 +307,12 @@ void nux_camera_set_fov(nux_ctx_t *ctx, nux_u32_t node, nux_f32_t fov);
 void nux_staticmesh_add(nux_ctx_t *ctx, nux_u32_t node);
 void nux_staticmesh_remove(nux_ctx_t *ctx, nux_u32_t node);
 void nux_staticmesh_set_mesh(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t mesh);
+void nux_staticmesh_set_texture(nux_ctx_t *ctx,
+                                nux_u32_t  node,
+                                nux_u32_t  texture);
+void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
+                                 nux_u32_t  node,
+                                 nux_u32_t  colormap);
 
 nux_u32_t nux_mesh_new(nux_ctx_t *ctx, nux_u32_t capa);
 nux_u32_t nux_mesh_gen_cube(nux_ctx_t *ctx,

@@ -3,8 +3,8 @@
 #include "fonts_data.c.inc"
 
 #define VERTEX_SIZE             5
-#define VERTICES_DEFAULT_SIZE   (1 << 15) // 32k
-#define TRANSFORMS_DEFAULT_SIZE 256
+#define VERTICES_DEFAULT_SIZE   (1 << 18) // 32k
+#define TRANSFORMS_DEFAULT_SIZE 4096
 
 nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)

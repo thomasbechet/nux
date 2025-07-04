@@ -185,7 +185,7 @@ nux_os_create_texture (void                         *userdata,
     {
         case NUX_TEXTURE_IMAGE_RGBA:
             tex->internal_format = GL_RGBA8;
-            tex->format          = GL_RGB;
+            tex->format          = GL_RGBA;
             break;
         case NUX_TEXTURE_IMAGE_INDEX:
             tex->internal_format = GL_R8UI;
@@ -348,6 +348,26 @@ nux_os_gpu_submit_pass (void                    *userdata,
                 location = glGetUniformLocation(
                     program, "entryPointParams.transformIndex");
                 glUniform1ui(location, cmd->main.transform_index);
+
+                if (cmd->main.texture)
+                {
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D,
+                                  inst->textures[cmd->main.texture].handle);
+                    location = glGetUniformLocation(
+                        program, "SPIRV_Cross_Combinedcanvassampler0");
+                    glUniform1i(location, 0);
+
+                    location = glGetUniformLocation(
+                        program, "entryPointParams.hasTexture");
+                    glUniform1ui(location, 1);
+                }
+                else
+                {
+                    location = glGetUniformLocation(
+                        program, "entryPointParams.hasTexture");
+                    glUniform1ui(location, 0);
+                }
 
                 glBindVertexArray(renderer.empty_vao);
                 glDrawArrays(GL_TRIANGLES, 0, cmd->main.vertex_count);

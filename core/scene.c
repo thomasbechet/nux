@@ -1,5 +1,7 @@
 #include "internal.h"
 
+#define DEFAULT_NODE_COUNT 4096
+
 nux_u32_t
 nux_scene_new (nux_ctx_t *ctx)
 {
@@ -9,9 +11,11 @@ nux_scene_new (nux_ctx_t *ctx)
     NUX_CHECK(id, return NUX_NULL);
 
     s->arena = ctx->active_arena;
-    NUX_CHECK(nux_node_pool_alloc(ctx->active_arena, 1024, &s->nodes),
-              return NUX_NULL);
-    NUX_CHECK(nux_component_pool_alloc(ctx->active_arena, 1024, &s->components),
+    NUX_CHECK(
+        nux_node_pool_alloc(ctx->active_arena, DEFAULT_NODE_COUNT, &s->nodes),
+        return NUX_NULL);
+    NUX_CHECK(nux_component_pool_alloc(
+                  ctx->active_arena, DEFAULT_NODE_COUNT, &s->components),
               return NUX_NULL);
 
     // Reserve index 0 to null
@@ -66,6 +70,11 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
                        .transform;
             nux_mesh_t *m = nux_object_get(ctx, NUX_TYPE_MESH, sm->mesh);
             NUX_ASSERT(m);
+            nux_texture_t *tex = NUX_NULL;
+            if (sm->texture)
+            {
+                tex = nux_object_get(ctx, NUX_TYPE_TEXTURE, sm->texture);
+            }
 
             // Push transform
             nux_u32_t transform_idx;
@@ -76,8 +85,16 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             nux_gpu_command_t *cmd
                 = nux_gpu_command_vec_push(&ctx->gpu_commands);
             NUX_ASSERT(cmd);
-            cmd->main.colormap        = NUX_NULL;
-            cmd->main.texture         = NUX_NULL;
+            if (tex)
+            {
+                cmd->main.colormap = NUX_NULL;
+                cmd->main.texture  = tex->slot;
+            }
+            else
+            {
+                cmd->main.colormap = NUX_NULL;
+                cmd->main.texture  = NUX_NULL;
+            }
             cmd->main.vertices        = ctx->vertices_buffer_slot;
             cmd->main.transforms      = ctx->transforms_buffer_slot;
             cmd->main.vertex_first    = m->first;

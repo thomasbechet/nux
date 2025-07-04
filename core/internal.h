@@ -474,6 +474,7 @@ typedef struct
 typedef struct
 {
     nux_u32_t mesh;
+    nux_u32_t texture;
 } nux_staticmesh_t;
 
 typedef enum
