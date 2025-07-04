@@ -14,7 +14,6 @@ if __name__ == "__main__":
         def tohex(code):
             l = ["0x{:02x}".format(x) for x in code.encode()]
             return l
-        print(string)
         code += tohex(string)
     code.append("0x00") # null terminated
     apply_template(args.rootdir, "lua_ext.c.inc.jinja", "core/lua_ext.c.inc", code=code)

@@ -589,6 +589,38 @@ l_scene_draw (lua_State *L)
 
     return 0;
 }
+static int
+l_scene_get_node (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_ctx_t *ctx   = lua_touserdata(L, -1);
+    nux_u32_t  scene = luaL_checkinteger(L, 1);
+
+    nux_u32_t index = luaL_checkinteger(L, 2);
+
+    nux_u32_t ret =
+
+        nux_scene_get_node(ctx, scene, index);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_scene_load_gltf (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_ctx_t      *ctx = lua_touserdata(L, -1);
+    const nux_c8_t *url = luaL_checkstring(L, 1);
+
+    nux_u32_t ret =
+
+        nux_scene_load_gltf(ctx, url);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
 
 static int
 l_node_new (lua_State *L)
@@ -1007,21 +1039,6 @@ l_mesh_gen_cube (lua_State *L)
     lua_pushinteger(L, ret);
     return 1;
 }
-static int
-l_mesh_load (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t      *ctx = lua_touserdata(L, -1);
-    const nux_c8_t *url = luaL_checkstring(L, 1);
-
-    nux_u32_t ret =
-
-        nux_mesh_load(ctx, url);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
 
 static const struct luaL_Reg lib_core[]
     = { { "trace", l_core_trace },     { "stat", l_core_stat },
@@ -1067,6 +1084,8 @@ static const struct luaL_Reg lib_arena[]
 
 static const struct luaL_Reg lib_scene[] = { { "new", l_scene_new },
                                              { "draw", l_scene_draw },
+                                             { "get_node", l_scene_get_node },
+                                             { "load_gltf", l_scene_load_gltf },
                                              { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_node[] = { { "new", l_node_new },
@@ -1106,7 +1125,6 @@ static const struct luaL_Reg lib_staticmesh[]
 
 static const struct luaL_Reg lib_mesh[] = { { "new", l_mesh_new },
                                             { "gen_cube", l_mesh_gen_cube },
-                                            { "load", l_mesh_load },
                                             { NUX_NULL, NUX_NULL } };
 
 nux_status_t

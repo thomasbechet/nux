@@ -498,7 +498,7 @@ typedef enum
     NUX_COMPONENT_CAMERA     = 1,
     NUX_COMPONENT_STATICMESH = 2,
 
-    NUX_COMPONENT_MAX = 32,
+    NUX_COMPONENT_MAX = 16,
 } nux_component_type_base_t;
 
 typedef struct
@@ -743,8 +743,10 @@ void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
 void *nux_scene_add_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
 void nux_scene_remove_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
 void *nux_scene_get_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
-nux_u32_t nux_scene_load(nux_ctx_t *ctx, const nux_c8_t *url);
-nux_u32_t nux_scene_parse(nux_ctx_t *ctx, lua_State *L);
+
+// gltf.c
+
+nux_u32_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *url);
 
 // vector.c
 

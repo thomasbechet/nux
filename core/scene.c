@@ -69,8 +69,9 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
 
             // Push transform
             nux_u32_t transform_idx;
-            NUX_ASSERT(nux_graphics_push_transforms(
-                ctx, 1, &t->global_matrix, &transform_idx));
+            NUX_CHECK(nux_graphics_push_transforms(
+                          ctx, 1, &t->global_matrix, &transform_idx),
+                      continue);
 
             nux_gpu_command_t *cmd
                 = nux_gpu_command_vec_push(&ctx->gpu_commands);
@@ -126,6 +127,14 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     nux_os_gpu_submit_pass(ctx->userdata, &pass, ctx->gpu_commands.data);
 }
 nux_u32_t
+nux_scene_get_node (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t index)
+{
+    nux_scene_t *s = nux_object_get(ctx, NUX_TYPE_SCENE, scene);
+    NUX_CHECK(s, return NUX_NULL);
+    NUX_CHECK(index < s->nodes.size, return NUX_NULL);
+    return s->nodes.data[index].id;
+}
+nux_u32_t
 nux_node_new (nux_ctx_t *ctx, nux_u32_t scene)
 {
     nux_scene_t *s = nux_object_get(ctx, NUX_TYPE_SCENE, scene);
@@ -162,6 +171,13 @@ nux_node_get_parent (nux_ctx_t *ctx, nux_u32_t node)
     nux_node_t *n = nux_object_get(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return NUX_NULL);
     return n->parent;
+}
+nux_u32_t
+nux_node_get_scene (nux_ctx_t *ctx, nux_u32_t node)
+{
+    nux_node_t *n = nux_object_get(ctx, NUX_TYPE_NODE, node);
+    NUX_CHECK(n, return NUX_NULL);
+    return n->scene;
 }
 
 void

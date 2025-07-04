@@ -55,7 +55,7 @@ path_list_files (const char *path,
     assert(path);
     *count = 0;
     char s[PATH_MAX_LEN];
-    strncpy(s, path, PATH_MAX_LEN);
+    memcpy(s, path, PATH_MAX_LEN);
     DIR *d;
     d = opendir(s);
     if (!d)
@@ -124,7 +124,7 @@ path_basename (char *buf, const char *path)
             return;
         }
     }
-    strncpy(buf, path, PATH_MAX_LEN);
+    memcpy(buf, path, PATH_MAX_LEN);
 }
 static bool
 path_isdir (const char *path)
@@ -140,8 +140,8 @@ path_isdir (const char *path)
 static void
 file_dialog_change_dir (file_dialog_t *fd, const char *dir)
 {
-    strncpy(fd->dir, dir, PATH_MAX_LEN);
-    strncpy(fd->edit_dir, dir, PATH_MAX_LEN);
+    memcpy(fd->dir, dir, PATH_MAX_LEN);
+    memcpy(fd->edit_dir, dir, PATH_MAX_LEN);
     fd->edit_dir_len      = strnlen(dir, PATH_MAX_LEN);
     fd->edit_filename_len = 0;
     fd->file_selected     = -1;
@@ -153,7 +153,7 @@ file_dialog_open (file_dialog_t *fd)
     char        cwd_buf[PATH_MAX_LEN];
     const char *cwd = getcwd(cwd_buf, PATH_MAX_LEN);
     char        dir[PATH_MAX_LEN];
-    strncpy(dir, cwd, PATH_MAX_LEN);
+    memcpy(dir, cwd, PATH_MAX_LEN - 1);
     file_dialog_change_dir(fd, dir);
     fd->open = true;
 }
@@ -179,7 +179,9 @@ file_dialog (file_dialog_t     *fd,
         char      files[64][PATH_MAX_LEN];
         int       count;
 
-        assert(path_list_files(fd->dir, files, ARRAY_LEN(files), &count));
+        nux_status_t status
+            = path_list_files(fd->dir, files, ARRAY_LEN(files), &count);
+        assert(status);
         if (count > (int)ARRAY_LEN(files))
         {
             count = ARRAY_LEN(files);
@@ -229,7 +231,7 @@ file_dialog (file_dialog_t     *fd,
                     }
                     else
                     {
-                        strncpy(output, files[i], PATH_MAX_LEN);
+                        memcpy(output, files[i], PATH_MAX_LEN);
                         fd->open = false;
                         exit     = true;
                     }

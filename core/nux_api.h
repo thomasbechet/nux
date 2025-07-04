@@ -273,9 +273,13 @@ void         nux_arena_dump(nux_ctx_t *ctx, nux_u32_t id);
 
 nux_u32_t nux_scene_new(nux_ctx_t *ctx);
 void      nux_scene_draw(nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera);
-nux_u32_t nux_node_new(nux_ctx_t *ctx, nux_u32_t world);
+nux_u32_t nux_scene_get_node(nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t index);
+nux_u32_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *url);
+
+nux_u32_t nux_node_new(nux_ctx_t *ctx, nux_u32_t scene);
 void      nux_node_set_parent(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t parent);
 nux_u32_t nux_node_get_parent(nux_ctx_t *ctx, nux_u32_t node);
+nux_u32_t nux_node_get_scene(nux_ctx_t *ctx, nux_u32_t node);
 
 void     nux_transform_add(nux_ctx_t *ctx, nux_u32_t node);
 void     nux_transform_remove(nux_ctx_t *ctx, nux_u32_t node);
@@ -309,6 +313,5 @@ nux_u32_t nux_mesh_gen_cube(nux_ctx_t *ctx,
                             nux_f32_t  sx,
                             nux_f32_t  sy,
                             nux_f32_t  sz);
-nux_u32_t nux_mesh_load(nux_ctx_t *ctx, const nux_c8_t *url);
 
 #endif

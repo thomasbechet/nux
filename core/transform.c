@@ -1,32 +1,50 @@
 #include "internal.h"
 
+static nux_m4_t
+find_parent_transform (nux_ctx_t *ctx, nux_u32_t node)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
+    if (t)
+    {
+        return t->global_matrix;
+    }
+
+    nux_u32_t parent = nux_node_get_parent(ctx, node);
+    if (parent)
+    {
+        return find_parent_transform(ctx, parent);
+    }
+
+    return nux_m4_identity();
+}
+
 nux_b32_t
 nux_transform_update_matrix (nux_ctx_t *ctx, nux_u32_t node)
 {
     nux_transform_t *t
         = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
-    NUX_ASSERT(t);
 
     // Check parent global matrix update
     nux_u32_t parent = nux_node_get_parent(ctx, node);
     if (parent)
     {
         nux_transform_update_matrix(ctx, parent);
-        t->dirty = NUX_TRUE;
+        if (t)
+        {
+            t->dirty = NUX_TRUE;
+        }
     }
 
     // Update global matrix from parent
-    if (t->dirty)
+    if (t && t->dirty)
     {
         t->global_matrix = nux_m4_trs(
             t->local_translation, t->local_rotation, t->local_scale);
         if (parent)
         {
-            nux_transform_t *parent_t
-                = nux_scene_get_component(ctx, parent, NUX_COMPONENT_TRANSFORM);
-            NUX_ASSERT(parent_t);
-            t->global_matrix
-                = nux_m4_mul(parent_t->global_matrix, t->global_matrix);
+            nux_m4_t parent_matrix = find_parent_transform(ctx, parent);
+            t->global_matrix = nux_m4_mul(parent_matrix, t->global_matrix);
         }
         t->dirty = NUX_FALSE;
         return NUX_TRUE;

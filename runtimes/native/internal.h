@@ -85,18 +85,18 @@ typedef struct
 
 typedef struct
 {
-    char                  path[PATH_MAX_LEN];
-    bool                  active;
-    nux_config_t config;
-    nux_ctx_t            *ctx;
-    bool                  pause;
-    struct nk_rect        viewport_ui;
-    viewport_mode_t       viewport_mode;
-    struct nk_rect        viewport;
-    pipeline_t            pipelines[NUX_GPU_PIPELINE_MAX];
-    framebuffer_t         framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
-    texture_t             textures[NUX_GPU_TEXTURE_MAX];
-    buffer_t              buffers[NUX_GPU_BUFFER_MAX];
+    char            path[PATH_MAX_LEN];
+    bool            active;
+    nux_config_t    config;
+    nux_ctx_t      *ctx;
+    bool            pause;
+    struct nk_rect  viewport_ui;
+    viewport_mode_t viewport_mode;
+    struct nk_rect  viewport;
+    pipeline_t      pipelines[NUX_GPU_PIPELINE_MAX];
+    framebuffer_t   framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
+    texture_t       textures[NUX_GPU_TEXTURE_MAX];
+    buffer_t        buffers[NUX_GPU_BUFFER_MAX];
 } instance_t;
 
 typedef struct

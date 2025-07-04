@@ -33,7 +33,7 @@ instance_init (instance_t *instance, const char *path)
         .max_object_count = 1024,
     };
 
-    strncpy(instance->path, path, PATH_MAX_LEN);
+    strncpy(instance->path, path, PATH_MAX_LEN - 1);
     instance->active        = true;
     instance->config        = config;
     instance->ctx           = NULL;
@@ -241,7 +241,8 @@ runtime_reset (int index)
     instance_t *instance = runtime_instance();
     if (instance->active)
     {
-        const char *path = instance->path;
+        char path[PATH_MAX_LEN];
+        memcpy(path, instance->path, PATH_MAX_LEN);
         runtime_close(0);
         runtime_open(0, path);
     }
