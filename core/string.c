@@ -36,7 +36,7 @@ nux_strncmp (const nux_c8_t *a, const nux_c8_t *b, nux_u32_t n)
 nux_u32_t
 nux_snprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     va_list args;
     va_start(args, format);
     nux_u32_t cn = nux_vsnprintf(buf, n, format, args);
@@ -47,7 +47,7 @@ nux_snprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...)
 nux_u32_t
 nux_vsnprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, va_list args)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return vsnprintf(buf, n, format, args);
 #endif
 }

@@ -3,7 +3,7 @@
 
 #include "nux.h"
 
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
 #include <assert.h>
 #include <math.h>
 #include <stdarg.h>
@@ -52,6 +52,8 @@
     }
 #endif
 
+#define NUX_DEBUG(format, ...) \
+    nux_log(ctx, NUX_LOG_DEBUG, format, ##__VA_ARGS__)
 #define NUX_INFO(format, ...) nux_log(ctx, NUX_LOG_INFO, format, ##__VA_ARGS__)
 #define NUX_WARNING(format, ...) \
     nux_log(ctx, NUX_LOG_WARNING, format, ##__VA_ARGS__)
@@ -67,7 +69,7 @@
 
 #define NUX_MATCH(v, k) (nux_strncmp((v), k, NUX_ARRAY_SIZE(k)) == 0)
 
-#if defined(NUX_DEBUG) && defined(NUX_STDLIB)
+#if defined(NUX_BUILD_DEBUG) && defined(NUX_BUILD_STDLIB)
 #define NUX_ASSERT(x) assert((x))
 #else
 #define NUX_ASSERT(x) (void)((x))

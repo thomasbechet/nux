@@ -55,6 +55,7 @@ nux_lua_init (nux_ctx_t *ctx)
     if (luaL_dofile(ctx->lua_state, "main.lua") != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(ctx->lua_state, -1));
+        return NUX_FAILURE;
     }
 
     lua_getglobal(ctx->lua_state, "nux");
@@ -62,6 +63,7 @@ nux_lua_init (nux_ctx_t *ctx)
     if (lua_pcall(ctx->lua_state, 0, 0, 0))
     {
         NUX_ERROR("%s", lua_tostring(ctx->lua_state, -1));
+        return NUX_FAILURE;
     }
     lua_pop(ctx->lua_state, 1);
 

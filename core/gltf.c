@@ -153,7 +153,7 @@ load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
         return NUX_NULL;
     }
 
-    NUX_INFO("Loading texture '%s' w %d h %d", texture->name, w, h);
+    NUX_DEBUG("Loading texture '%s' w %d h %d", texture->name, w, h);
 
     nux_u32_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
     NUX_CHECK(id, return NUX_NULL);
@@ -204,7 +204,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
             nux_u32_t id = load_primitive_mesh(ctx, mesh->primitives + p);
-            NUX_INFO("Loading mesh %u '%s' primitive %d", id, mesh->name, p);
+            NUX_DEBUG("Loading mesh %u '%s' primitive %d", id, mesh->name, p);
             NUX_CHECK(id, goto cleanup0);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             resources[resources_count].id        = id;
@@ -234,7 +234,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         if (texture)
         {
             nux_u32_t id = load_texture(ctx, texture);
-            NUX_INFO("Loading texture %u '%s'", id, texture->name);
+            NUX_DEBUG("Loading texture %u '%s'", id, texture->name);
             NUX_CHECK(id, goto cleanup0);
             resources[resources_count].cgltf_ptr = texture;
             resources[resources_count].id        = id;
@@ -344,10 +344,10 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                             node->name);
                     }
 
-                    NUX_INFO("Loading node %s mesh %d texture %d",
-                             node->name,
-                             mesh,
-                             texture);
+                    NUX_DEBUG("Loading node %s mesh %d texture %d",
+                              node->name,
+                              mesh,
+                              texture);
 
                     // Write staticmesh
                     nux_staticmesh_add(ctx, node_id);

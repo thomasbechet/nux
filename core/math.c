@@ -1,5 +1,15 @@
 #include "internal.h"
 
+#define NUX_B3_IMPL(name, type)                                         \
+    nux_##name##_t nux_##name(type min, type max)                       \
+    {                                                                   \
+        NUX_ASSERT(max.x >= min.x && max.y >= min.y && max.z >= min.z); \
+        nux_##name##_t b;                                               \
+        b.min = min;                                                    \
+        b.max = max;                                                    \
+        return b;                                                       \
+    }
+
 nux_u32_t
 nux_log2 (nux_u32_t n)
 {
@@ -15,21 +25,21 @@ nux_log2 (nux_u32_t n)
 nux_f32_t
 nux_log10 (nux_f32_t x)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return log10f(x);
 #endif
 }
 nux_f32_t
 nux_fabs (nux_f32_t f)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return fabsf(f);
 #endif
 }
 nux_f32_t
 nux_floor (nux_f32_t f)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return floorf(f);
 #endif
 }
@@ -41,42 +51,42 @@ nux_radian (nux_f32_t d)
 nux_f32_t
 nux_sqrt (nux_f32_t x)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return sqrtf(x);
 #endif
 }
 nux_f32_t
 nux_pow (nux_f32_t b, nux_f32_t e)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return powf(b, e);
 #endif
 }
 nux_f32_t
 nux_cos (nux_f32_t x)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return cosf(x);
 #endif
 }
 nux_f32_t
 nux_sin (nux_f32_t x)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return sinf(x);
 #endif
 }
 nux_f32_t
 nux_tan (nux_f32_t x)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return tanf(x);
 #endif
 }
 nux_f32_t
 nux_exp (nux_f32_t x)
 {
-#ifdef NUX_STDLIB
+#ifdef NUX_BUILD_STDLIB
     return expf(x);
 #endif
 }
@@ -107,16 +117,6 @@ nux_b2i_moveto (nux_b2i_t b, nux_v2i_t p)
 {
     return nux_b2i_translate(b, nux_v2i_sub(p, b.min));
 }
-
-#define NUX_B3_IMPL(name, type)                                         \
-    nux_##name##_t nux_##name(type min, type max)                       \
-    {                                                                   \
-        NUX_ASSERT(max.x >= min.x && max.y >= min.y && max.z >= min.z); \
-        nux_##name##_t b;                                               \
-        b.min = min;                                                    \
-        b.max = max;                                                    \
-        return b;                                                       \
-    }
 
 NUX_B3_IMPL(b3, nux_v3_t);
 NUX_B3_IMPL(b3i, nux_v3i_t);
