@@ -619,6 +619,7 @@ struct nux_context
     nux_u32_t             main_pipeline_slot;
     nux_u32_t             canvas_pipeline_slot;
     nux_gpu_command_vec_t gpu_commands;
+    nux_gpu_command_vec_t gpu_gui_commands;
 
     nux_arena_pool_t  arenas;
     nux_object_pool_t objects;

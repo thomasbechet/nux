@@ -120,24 +120,6 @@ nux_graphics_render (nux_ctx_t *ctx)
                       ctx->colormap);
 
     // Update storage buffer
-    nux_gpu_constants_buffer_t uniform_buffer;
-    uniform_buffer.view = nux_lookat(nux_v3s(1), nux_v3s(0), nux_v3(0, 1, 0));
-    uniform_buffer.proj
-        = nux_perspective(nux_radian(60),
-                          (nux_f32_t)NUX_CANVAS_WIDTH / NUX_CANVAS_HEIGHT,
-                          0.1,
-                          100);
-    // uniform_buffer.model
-    //     = nux_m4_mul(uniform_buffer.model, nux_m4_translate(nux_v3s(-0.5)));
-    uniform_buffer.screen_size = nux_v2u(ctx->stats[NUX_STAT_SCREEN_WIDTH],
-                                         ctx->stats[NUX_STAT_SCREEN_HEIGHT]);
-    uniform_buffer.canvas_size = nux_v2u(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
-    uniform_buffer.time        = ctx->time;
-    nux_os_update_buffer(ctx->userdata,
-                         ctx->constants_buffer_slot,
-                         0,
-                         sizeof(uniform_buffer),
-                         &uniform_buffer);
 
     // Blit canvas
     {

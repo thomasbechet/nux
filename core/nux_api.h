@@ -195,20 +195,20 @@ nux_f32_t nux_dt(nux_ctx_t *ctx);
 nux_u32_t nux_frame(nux_ctx_t *ctx);
 
 // Canvas API
-void nux_rectfill(nux_ctx_t *ctx,
-                  nux_i32_t  x0,
-                  nux_i32_t  y0,
-                  nux_i32_t  x1,
-                  nux_i32_t  y1,
-                  nux_u8_t   c);
-void nux_trifill(nux_ctx_t *ctx,
-                 nux_i32_t  x0,
-                 nux_i32_t  y0,
-                 nux_i32_t  x1,
-                 nux_i32_t  y1,
-                 nux_i32_t  x2,
-                 nux_i32_t  y2,
-                 nux_u8_t   c);
+// void nux_rectfill(nux_ctx_t *ctx,
+//                   nux_i32_t  x0,
+//                   nux_i32_t  y0,
+//                   nux_i32_t  x1,
+//                   nux_i32_t  y1,
+//                   nux_u8_t   c);
+// void nux_trifill(nux_ctx_t *ctx,
+//                  nux_i32_t  x0,
+//                  nux_i32_t  y0,
+//                  nux_i32_t  x1,
+//                  nux_i32_t  y1,
+//                  nux_i32_t  x2,
+//                  nux_i32_t  y2,
+//                  nux_u8_t   c);
 void nux_graphics_text(
     nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
 void      nux_graphics_print(nux_ctx_t *ctx, const nux_c8_t *text, nux_u8_t c);

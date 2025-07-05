@@ -4,13 +4,11 @@ local c
 local r
 local nux = nux
 
-YAW = 0
-PITCH = 0
-
-function math.clamp(n, low, high) return math.min(math.max(n, low), high) end
+local yaw = 0
+local pitch = 0
 
 local function controller(e)
-    local speed = 25
+    local speed = 20
 
     local mx = nux.input.axis(0, nux.AXIS_LEFTX)
     local mz = nux.input.axis(0, nux.AXIS_LEFTY)
@@ -25,7 +23,7 @@ local function controller(e)
 
     -- Translation
     local fx, fy, fz = nux.transform.forward(e)
-    local lx, ly, lz = nux.transform.right(e)
+    local lx, ly, lz = nux.transform.left(e)
     local dx = 0
     local dy = 0
     local dz = 0
@@ -35,9 +33,9 @@ local function controller(e)
     dy = dy + fy * mz * dt * speed
     dz = dz + fz * mz * dt * speed
     -- Left
-    dx = dx + lx * mx * dt * speed
-    dy = dy + ly * mx * dt * speed
-    dz = dz + lz * mx * dt * speed
+    dx = dx - lx * mx * dt * speed
+    dy = dy - ly * mx * dt * speed
+    dz = dz - lz * mx * dt * speed
     -- Up
     dy = dy + my * dt * speed
     local x, y, z = nux.transform.get_translation(e)
@@ -45,13 +43,13 @@ local function controller(e)
 
     -- Rotation
     if rx ~= 0 then
-        YAW = YAW + rx * nux.dt() * 100
+        yaw = yaw + rx * nux.dt() * 100
     end
     if ry ~= 0 then
-        PITCH = PITCH - ry * nux.dt() * 100
+        pitch = pitch - ry * nux.dt() * 100
     end
-    PITCH = math.clamp(PITCH, -90, 90)
-    nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
+    pitch = math.clamp(pitch, -90, 90)
+    nux.transform.set_rotation_euler(e, -math.rad(pitch), -math.rad(yaw), 0)
 end
 
 function nux.init()
