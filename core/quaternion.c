@@ -11,6 +11,45 @@ nux_q4 (nux_f32_t x, nux_f32_t y, nux_f32_t z, nux_f32_t w)
     return q;
 }
 nux_q4_t
+nux_q4_euler (nux_v3_t euler)
+{
+    nux_f32_t c_pitch = nux_cos(euler.x * 0.5);
+    nux_f32_t s_pitch = nux_sin(euler.x * 0.5);
+    nux_f32_t c_yaw   = nux_cos(euler.y * 0.5);
+    nux_f32_t s_yaw   = nux_sin(euler.y * 0.5);
+    nux_f32_t c_roll  = nux_cos(euler.z * 0.5);
+    nux_f32_t s_roll  = nux_sin(euler.z * 0.5);
+
+    nux_q4_t q;
+    q.w = c_pitch * c_yaw * c_roll + s_pitch * s_yaw * s_roll;
+    q.x = s_pitch * c_yaw * c_roll - c_pitch * s_yaw * s_roll;
+    q.y = c_pitch * s_yaw * c_roll + s_pitch * c_yaw * s_roll;
+    q.z = c_pitch * c_yaw * s_roll - s_pitch * s_yaw * c_roll;
+    return q;
+}
+nux_v3_t
+nux_q4_to_euler (nux_q4_t q)
+{
+    nux_v3_t angles;
+
+    // roll (x-axis rotation)
+    nux_f32_t sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+    nux_f32_t cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+    angles.x            = nux_atan2(sinr_cosp, cosr_cosp);
+
+    // pitch (y-axis rotation)
+    nux_f32_t sinp = nux_sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+    nux_f32_t cosp = nux_sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+    angles.y       = 2 * nux_atan2(sinp, cosp) - M_PI / 2;
+
+    // yaw (z-axis rotation)
+    nux_f32_t siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+    nux_f32_t cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+    angles.z            = nux_atan2(siny_cosp, cosy_cosp);
+
+    return angles;
+}
+nux_q4_t
 nux_q4_identity (void)
 {
     return nux_q4(0, 0, 0, 1);

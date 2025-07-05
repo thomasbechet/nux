@@ -301,7 +301,7 @@ nux_os_gpu_submit_pass (void                    *userdata,
 {
     instance_t *inst = userdata;
 
-    glEnable(GL_FRAMEBUFFER_SRGB);
+    // glEnable(GL_FRAMEBUFFER_SRGB);
 
     if (pass->framebuffer)
     {
@@ -413,7 +413,7 @@ nux_os_gpu_submit_pass (void                    *userdata,
         break;
     }
 
-    glDisable(GL_FRAMEBUFFER_SRGB);
+    // glDisable(GL_FRAMEBUFFER_SRGB);
 }
 
 nux_status_t

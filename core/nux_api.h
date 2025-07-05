@@ -32,6 +32,18 @@ typedef union
     nux_f32_t data[3];
 } nux_v3_t;
 
+typedef union
+{
+    struct
+    {
+        nux_f32_t x;
+        nux_f32_t y;
+        nux_f32_t z;
+        nux_f32_t w;
+    };
+    nux_f32_t data[4];
+} nux_q4_t;
+
 typedef enum
 {
     // 16:9
@@ -284,25 +296,41 @@ nux_u32_t nux_node_get_scene(nux_ctx_t *ctx, nux_u32_t node);
 void     nux_transform_add(nux_ctx_t *ctx, nux_u32_t node);
 void     nux_transform_remove(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_get_local_translation(nux_ctx_t *ctx, nux_u32_t node);
+nux_q4_t nux_transform_get_local_rotation(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_get_local_scale(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_get_translation(nux_ctx_t *ctx, nux_u32_t node);
+nux_q4_t nux_transform_get_rotation(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_get_scale(nux_ctx_t *ctx, nux_u32_t node);
+void     nux_transform_set_translation(nux_ctx_t *ctx,
+                                       nux_u32_t  node,
+                                       nux_v3_t   position);
+void     nux_transform_set_rotation(nux_ctx_t *ctx,
+                                    nux_u32_t  node,
+                                    nux_q4_t   rotation);
+void     nux_transform_set_rotation_euler(nux_ctx_t *ctx,
+                                          nux_u32_t  node,
+                                          nux_v3_t   euler);
+void nux_transform_set_scale(nux_ctx_t *ctx, nux_u32_t node, nux_v3_t scale);
 nux_v3_t nux_transform_forward(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_backward(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_left(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_right(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_up(nux_ctx_t *ctx, nux_u32_t node);
 nux_v3_t nux_transform_down(nux_ctx_t *ctx, nux_u32_t node);
-void     nux_transform_set_translation(nux_ctx_t *ctx,
-                                       nux_u32_t  node,
-                                       nux_v3_t   position);
-void nux_transform_set_scale(nux_ctx_t *ctx, nux_u32_t node, nux_v3_t scale);
+void     nux_transform_rotate(nux_ctx_t *ctx,
+                              nux_u32_t  node,
+                              nux_v3_t   axis,
+                              nux_f32_t  angle);
+void nux_transform_rotate_x(nux_ctx_t *ctx, nux_u32_t node, nux_f32_t angle);
 void nux_transform_rotate_y(nux_ctx_t *ctx, nux_u32_t node, nux_f32_t angle);
+void nux_transform_rotate_z(nux_ctx_t *ctx, nux_u32_t node, nux_f32_t angle);
 void nux_transform_look_at(nux_ctx_t *ctx, nux_u32_t node, nux_v3_t center);
 
 void nux_camera_add(nux_ctx_t *ctx, nux_u32_t node);
 void nux_camera_remove(nux_ctx_t *ctx, nux_u32_t node);
 void nux_camera_set_fov(nux_ctx_t *ctx, nux_u32_t node, nux_f32_t fov);
+void nux_camera_set_near(nux_ctx_t *ctx, nux_u32_t node, nux_f32_t near);
+void nux_camera_set_far(nux_ctx_t *ctx, nux_u32_t node, nux_f32_t far);
 
 void nux_staticmesh_add(nux_ctx_t *ctx, nux_u32_t node);
 void nux_staticmesh_remove(nux_ctx_t *ctx, nux_u32_t node);

@@ -64,6 +64,7 @@ VOut vertexMain(
 float4 fragmentMain(VOut input) : SV_Target
 {
     float d = dot(input.normal, normalize(float3(cos(constants.time), 1, sin(constants.time))));
+    d = 1;
     if (input.hasTexture != 0)
     {
         float4 color = texture0.Sample(sampler0, input.uv);

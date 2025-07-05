@@ -77,6 +77,14 @@ nux_transform_get_local_translation (nux_ctx_t *ctx, nux_u32_t node)
     NUX_CHECK(t, return NUX_V3_ZEROES);
     return t->local_translation;
 }
+nux_q4_t
+nux_transform_get_local_rotation (nux_ctx_t *ctx, nux_u32_t node)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(t, return nux_q4_identity());
+    return t->local_rotation;
+}
 nux_v3_t
 nux_transform_get_local_scale (nux_ctx_t *ctx, nux_u32_t node)
 {
@@ -96,14 +104,63 @@ nux_transform_get_translation (nux_ctx_t *ctx, nux_u32_t node)
     nux_m4_trs_decompose(t->global_matrix, &translation, NUX_NULL, NUX_NULL);
     return translation;
 }
+nux_q4_t
+nux_transform_get_rotation (nux_ctx_t *ctx, nux_u32_t node)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(t, return nux_q4_identity());
+    nux_transform_update_matrix(ctx, node);
+    nux_q4_t rotation;
+    nux_m4_trs_decompose(t->global_matrix, NUX_NULL, &rotation, NUX_NULL);
+    return rotation;
+}
 nux_v3_t
 nux_transform_get_scale (nux_ctx_t *ctx, nux_u32_t node)
 {
     nux_transform_t *t
         = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROES);
+    NUX_CHECK(t, return NUX_V3_ONES);
     nux_transform_update_matrix(ctx, node);
-    return t->local_scale;
+    nux_v3_t scale;
+    nux_m4_trs_decompose(t->global_matrix, &scale, NUX_NULL, NUX_NULL);
+    return scale;
+}
+void
+nux_transform_set_translation (nux_ctx_t *ctx,
+                               nux_u32_t  node,
+                               nux_v3_t   position)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(t, return);
+    t->local_translation = position;
+    t->dirty             = NUX_TRUE;
+}
+void
+nux_transform_set_rotation (nux_ctx_t *ctx, nux_u32_t node, nux_q4_t rotation)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(t, return);
+    t->local_rotation = rotation;
+    t->dirty          = NUX_TRUE;
+}
+void
+nux_transform_set_rotation_euler (nux_ctx_t *ctx,
+                                  nux_u32_t  node,
+                                  nux_v3_t   euler)
+{
+    nux_transform_set_rotation(ctx, node, nux_q4_euler(euler));
+}
+void
+nux_transform_set_scale (nux_ctx_t *ctx, nux_u32_t node, nux_v3_t scale)
+{
+    nux_transform_t *t
+        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
+    NUX_CHECK(t, return);
+    t->local_scale = scale;
+    t->dirty       = NUX_TRUE;
 }
 static nux_v3_t
 rotate_v3 (nux_ctx_t *ctx, nux_u32_t node, nux_v3_t v)
@@ -145,34 +202,31 @@ nux_transform_down (nux_ctx_t *ctx, nux_u32_t node)
     return rotate_v3(ctx, node, NUX_V3_DOWN);
 }
 void
-nux_transform_set_translation (nux_ctx_t *ctx,
-                               nux_u32_t  node,
-                               nux_v3_t   position)
+nux_transform_rotate (nux_ctx_t *ctx,
+                      nux_u32_t  node,
+                      nux_v3_t   axis,
+                      nux_f32_t  angle)
 {
     nux_transform_t *t
         = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
-    t->local_translation = position;
-    t->dirty             = NUX_TRUE;
+    t->local_rotation = nux_q4_mul_axis(t->local_rotation, axis, angle);
+    t->dirty          = NUX_TRUE;
 }
 void
-nux_transform_set_scale (nux_ctx_t *ctx, nux_u32_t node, nux_v3_t scale)
+nux_transform_rotate_x (nux_ctx_t *ctx, nux_u32_t node, nux_f32_t angle)
 {
-    nux_transform_t *t
-        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
-    t->local_scale = scale;
-    t->dirty       = NUX_TRUE;
+    nux_transform_rotate(ctx, node, NUX_V3_RIGHT, angle);
 }
 void
 nux_transform_rotate_y (nux_ctx_t *ctx, nux_u32_t node, nux_f32_t angle)
 {
-    nux_transform_t *t
-        = nux_scene_get_component(ctx, node, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
-    t->local_rotation
-        = nux_q4_mul_axis(t->local_rotation, NUX_V3_UP, nux_radian(angle));
-    t->dirty = NUX_TRUE;
+    nux_transform_rotate(ctx, node, NUX_V3_UP, angle);
+}
+void
+nux_transform_rotate_z (nux_ctx_t *ctx, nux_u32_t node, nux_f32_t angle)
+{
+    nux_transform_rotate(ctx, node, NUX_V3_BACKWARD, angle);
 }
 void
 nux_transform_look_at (nux_ctx_t *ctx, nux_u32_t node, nux_v3_t center)

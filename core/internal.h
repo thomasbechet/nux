@@ -368,18 +368,6 @@ typedef union
 {
     struct
     {
-        nux_f32_t x;
-        nux_f32_t y;
-        nux_f32_t z;
-        nux_f32_t w;
-    };
-    nux_f32_t data[NUX_Q4_SIZE];
-} nux_q4_t;
-
-typedef union
-{
-    struct
-    {
         nux_f32_t x1;
         nux_f32_t x2;
         nux_f32_t x3;
@@ -462,6 +450,8 @@ typedef struct
 {
     nux_b2i_t viewport;
     nux_f32_t fov;
+    nux_f32_t near;
+    nux_f32_t far;
 } nux_camera_t;
 
 typedef struct
@@ -685,6 +675,7 @@ nux_f32_t nux_cos(nux_f32_t x);
 nux_f32_t nux_sin(nux_f32_t x);
 nux_f32_t nux_tan(nux_f32_t x);
 nux_f32_t nux_exp(nux_f32_t x);
+nux_f32_t nux_atan2(nux_f32_t x, nux_f32_t y);
 
 nux_b2i_t nux_b2i(nux_v2i_t min, nux_v2i_t max);
 nux_b2i_t nux_b2i_xywh(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
@@ -780,6 +771,8 @@ void nux_m4_trs_decompose(nux_m4_t m, nux_v3_t *t, nux_q4_t *r, nux_v3_t *s);
 // quaternion.c
 
 nux_q4_t  nux_q4(nux_f32_t x, nux_f32_t y, nux_f32_t z, nux_f32_t w);
+nux_q4_t  nux_q4_euler(nux_v3_t euler);
+nux_v3_t  nux_q4_to_euler(nux_q4_t q);
 nux_q4_t  nux_q4_identity(void);
 nux_v4_t  nux_q4_vec4(nux_q4_t a);
 nux_f32_t nux_q4_norm(nux_q4_t a);

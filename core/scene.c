@@ -115,15 +115,15 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
 
     nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROES, 1);
     nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
-    nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 1);
+    nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 0);
 
     nux_gpu_constants_buffer_t constants;
-    constants.view = nux_lookat(eye, center, NUX_V3_UP);
+    constants.view = nux_lookat(eye, center, up);
     constants.proj
         = nux_perspective(nux_radian(cc->fov),
                           (nux_f32_t)NUX_CANVAS_WIDTH / NUX_CANVAS_HEIGHT,
-                          0.1,
-                          100);
+                          cc->near,
+                          cc->far);
     constants.screen_size = nux_v2u(ctx->stats[NUX_STAT_SCREEN_WIDTH],
                                     ctx->stats[NUX_STAT_SCREEN_HEIGHT]);
     constants.canvas_size = nux_v2u(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);

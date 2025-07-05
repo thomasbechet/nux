@@ -4,20 +4,54 @@ local c
 local r
 local nux = nux
 
+YAW = 0
+PITCH = 0
+
+function math.clamp(n, low, high) return math.min(math.max(n, low), high) end
+
 local function controller(e)
-    local x, y, z = nux.transform.get_translation(e)
-    local speed = 20
-    x = x + nux.input.axis(0, nux.AXIS_LEFTX) * nux.dt() * speed
-    z = z - nux.input.axis(0, nux.AXIS_LEFTY) * nux.dt() * speed
+    local speed = 25
+
+    local mx = nux.input.axis(0, nux.AXIS_LEFTX)
+    local mz = nux.input.axis(0, nux.AXIS_LEFTY)
+    local my = 0
     if nux.button.pressed(0, nux.BUTTON_Y) then
-        y = y + nux.dt() * speed
+        my = 1
     elseif nux.button.pressed(0, nux.BUTTON_X) then
-        y = y - nux.dt() * speed
+        my = -1
     end
-    nux.transform.set_translation(e, x, y, z)
-    local fx, _, fz = nux.transform.forward(e)
-    nux.transform.look_at(c, x + fx, y - 0.5, z + fz)
-    nux.transform.look_at(c, x + fx, y, z + fz)
+    local rx = nux.input.axis(0, nux.AXIS_RIGHTX)
+    local ry = nux.input.axis(0, nux.AXIS_RIGHTY)
+
+    -- Translation
+    local fx, fy, fz = nux.transform.forward(e)
+    local lx, ly, lz = nux.transform.right(e)
+    local dx = 0
+    local dy = 0
+    local dz = 0
+    local dt = nux.dt()
+    -- Forward
+    dx = dx + fx * mz * dt * speed
+    dy = dy + fy * mz * dt * speed
+    dz = dz + fz * mz * dt * speed
+    -- Left
+    dx = dx + lx * mx * dt * speed
+    dy = dy + ly * mx * dt * speed
+    dz = dz + lz * mx * dt * speed
+    -- Up
+    dy = dy + my * dt * speed
+    local x, y, z = nux.transform.get_translation(e)
+    nux.transform.set_translation(e, x + dx, y + dy, z + dz)
+
+    -- Rotation
+    if rx ~= 0 then
+        YAW = YAW + rx * nux.dt() * 100
+    end
+    if ry ~= 0 then
+        PITCH = PITCH - ry * nux.dt() * 100
+    end
+    PITCH = math.clamp(PITCH, -90, 90)
+    nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
 end
 
 function nux.init()

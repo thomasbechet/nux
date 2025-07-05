@@ -90,6 +90,13 @@ nux_exp (nux_f32_t x)
     return expf(x);
 #endif
 }
+nux_f32_t
+nux_atan2 (nux_f32_t x, nux_f32_t y)
+{
+#ifdef NUX_BUILD_STDLIB
+    return atan2f(x, y);
+#endif
+}
 
 nux_b2i_t
 nux_b2i (nux_v2i_t min, nux_v2i_t max)
