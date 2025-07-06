@@ -87,19 +87,19 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             NUX_ASSERT(cmd);
             if (tex)
             {
-                cmd->main.colormap = NUX_NULL;
-                cmd->main.texture  = tex->slot;
+                cmd->colormap = NUX_NULL;
+                cmd->texture  = tex->slot;
             }
             else
             {
-                cmd->main.colormap = NUX_NULL;
-                cmd->main.texture  = NUX_NULL;
+                cmd->colormap = NUX_NULL;
+                cmd->texture  = NUX_NULL;
             }
-            cmd->main.vertices        = ctx->vertices_buffer_slot;
-            cmd->main.transforms      = ctx->transforms_buffer_slot;
-            cmd->main.vertex_first    = m->first;
-            cmd->main.vertex_count    = m->count;
-            cmd->main.transform_index = transform_idx;
+            cmd->vertices        = ctx->vertices_buffer_slot;
+            cmd->transforms      = ctx->transforms_buffer_slot;
+            cmd->vertex_first    = m->first;
+            cmd->vertex_count    = m->count;
+            cmd->transform_index = transform_idx;
         }
     }
 

@@ -62,7 +62,7 @@ typedef enum
 typedef enum
 {
     NUX_GPU_PASS_MAIN,
-    NUX_GPU_PASS_CANVAS,
+    NUX_GPU_PASS_BLIT,
 } nux_gpu_pass_type_t;
 
 typedef struct
@@ -84,25 +84,43 @@ typedef struct
     };
 } nux_gpu_pass_t;
 
+typedef struct
+{
+    nux_u32_t texture;
+    nux_u32_t colormap;
+    nux_u32_t vertices;
+    nux_u32_t transforms;
+    nux_u32_t vertex_first;
+    nux_u32_t vertex_count;
+    nux_u32_t transform_index;
+} nux_gpu_command_t;
+
+typedef enum
+{
+    NUX_GPU_COMMAND_DRAW         = 0,
+    NUX_GPU_COMMAND_BIND_BUFFER  = 1,
+    NUX_GPU_COMMAND_BIND_TEXTURE = 2,
+} nux_gpu_command_type_t;
+
 typedef union
 {
+    nux_u32_t type;
     struct
     {
-        nux_u32_t texture;
-        nux_u32_t colormap;
-        nux_u32_t vertices;
-        nux_u32_t transforms;
-        nux_u32_t vertex_first;
-        nux_u32_t vertex_count;
-        nux_u32_t transform_index;
-    } main;
+        nux_u32_t first;
+        nux_u32_t count;
+    } draw;
     struct
     {
-        nux_u32_t texture;
-        nux_u32_t colormap;
-        nux_u32_t vertex_count;
-    } canvas;
-} nux_gpu_command_t;
+        nux_u32_t slot;
+        nux_u32_t index;
+    } bind_buffer;
+    struct
+    {
+        nux_u32_t slot;
+        nux_u32_t index;
+    } bind_texture;
+} nux_gpu_command2_t;
 
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Callbacks                     //////

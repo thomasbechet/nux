@@ -67,50 +67,6 @@ l_core_frame (lua_State *L)
     return 1;
 }
 static int
-l_core_rectfill (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  x0  = luaL_checkinteger(L, 1);
-
-    nux_i32_t y0 = luaL_checkinteger(L, 2);
-
-    nux_i32_t x1 = luaL_checkinteger(L, 3);
-
-    nux_i32_t y1 = luaL_checkinteger(L, 4);
-
-    nux_u8_t c = luaL_checkinteger(L, 5);
-
-    nux_rectfill(ctx, x0, y0, x1, y1, c);
-
-    return 0;
-}
-static int
-l_core_trifill (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  x0  = luaL_checkinteger(L, 1);
-
-    nux_i32_t y0 = luaL_checkinteger(L, 2);
-
-    nux_i32_t x1 = luaL_checkinteger(L, 3);
-
-    nux_i32_t y1 = luaL_checkinteger(L, 4);
-
-    nux_i32_t x2 = luaL_checkinteger(L, 5);
-
-    nux_i32_t y2 = luaL_checkinteger(L, 6);
-
-    nux_u8_t c = luaL_checkinteger(L, 7);
-
-    nux_trifill(ctx, x0, y0, x1, y1, x2, y2, c);
-
-    return 0;
-}
-static int
 l_core_pal (lua_State *L)
 {
 
@@ -1230,14 +1186,13 @@ l_mesh_gen_cube (lua_State *L)
 }
 
 static const struct luaL_Reg lib_core[]
-    = { { "trace", l_core_trace },     { "stat", l_core_stat },
-        { "time", l_core_time },       { "dt", l_core_dt },
-        { "frame", l_core_frame },     { "rectfill", l_core_rectfill },
-        { "trifill", l_core_trifill }, { "pal", l_core_pal },
-        { "palt", l_core_palt },       { "palr", l_core_palr },
-        { "palc", l_core_palc },       { "cls", l_core_cls },
-        { "pset", l_core_pset },       { "cget", l_core_cget },
-        { "cset", l_core_cset },       { NUX_NULL, NUX_NULL } };
+    = { { "trace", l_core_trace }, { "stat", l_core_stat },
+        { "time", l_core_time },   { "dt", l_core_dt },
+        { "frame", l_core_frame }, { "pal", l_core_pal },
+        { "palt", l_core_palt },   { "palr", l_core_palr },
+        { "palc", l_core_palc },   { "cls", l_core_cls },
+        { "pset", l_core_pset },   { "cget", l_core_cget },
+        { "cset", l_core_cset },   { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_graphics[]
     = { { "text", l_graphics_text },

@@ -110,11 +110,11 @@ nux_os_create_pipeline (void               *userdata,
             glShaderStorageBlockBinding(pipeline->handle, index, 3);
         }
         break;
-        case NUX_GPU_PASS_CANVAS: {
-            status       = compile_program(shader_canvas_vert,
-                                     ARRAY_LEN(shader_canvas_vert),
-                                     shader_canvas_frag,
-                                     ARRAY_LEN(shader_canvas_frag),
+        case NUX_GPU_PASS_BLIT: {
+            status       = compile_program(shader_blit_vert,
+                                     ARRAY_LEN(shader_blit_vert),
+                                     shader_blit_frag,
+                                     ARRAY_LEN(shader_blit_frag),
                                      &pipeline->handle);
             GLuint index = glGetProgramResourceIndex(
                 pipeline->handle, GL_UNIFORM_BLOCK, "Constants_std140");
@@ -323,6 +323,7 @@ nux_os_gpu_submit_pass (void                    *userdata,
             GLuint program = inst->pipelines[pass->pipeline].handle;
             glUseProgram(program);
 
+            // buffer index 1
             buffer_t *buffer = inst->buffers + pass->main.constants_buffer;
             assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
             glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
@@ -334,26 +335,29 @@ nux_os_gpu_submit_pass (void                    *userdata,
             {
                 const nux_gpu_command_t *cmd = cmds + i;
 
-                buffer = inst->buffers + cmd->main.vertices;
+                // buffer index 2
+                buffer = inst->buffers + cmd->vertices;
                 assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
                 glBindBufferBase(buffer->buffer_type, 2, buffer->handle);
 
-                buffer = inst->buffers + cmd->main.transforms;
+                // buffer index 3
+                buffer = inst->buffers + cmd->transforms;
                 assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
                 glBindBufferBase(buffer->buffer_type, 3, buffer->handle);
 
                 GLuint location = glGetUniformLocation(
                     program, "entryPointParams.vertexFirst");
-                glUniform1ui(location, cmd->main.vertex_first);
+                glUniform1ui(location, cmd->vertex_first);
                 location = glGetUniformLocation(
                     program, "entryPointParams.transformIndex");
-                glUniform1ui(location, cmd->main.transform_index);
+                glUniform1ui(location, cmd->transform_index);
 
-                if (cmd->main.texture)
+                if (cmd->texture)
                 {
+                    // texture 0
                     glActiveTexture(GL_TEXTURE0);
                     glBindTexture(GL_TEXTURE_2D,
-                                  inst->textures[cmd->main.texture].handle);
+                                  inst->textures[cmd->texture].handle);
                     location = glGetUniformLocation(
                         program, "SPIRV_Cross_Combinedcanvassampler0");
                     glUniform1i(location, 0);
@@ -370,7 +374,7 @@ nux_os_gpu_submit_pass (void                    *userdata,
                 }
 
                 glBindVertexArray(renderer.empty_vao);
-                glDrawArrays(GL_TRIANGLES, 0, cmd->main.vertex_count);
+                glDrawArrays(GL_TRIANGLES, 0, cmd->vertex_count);
                 glBindVertexArray(0);
             }
 
@@ -378,7 +382,7 @@ nux_os_gpu_submit_pass (void                    *userdata,
             glDisable(GL_MULTISAMPLE);
         }
         break;
-        case NUX_GPU_PASS_CANVAS: {
+        case NUX_GPU_PASS_BLIT: {
             GLuint program = inst->pipelines[pass->pipeline].handle;
             glUseProgram(program);
 
@@ -392,7 +396,7 @@ nux_os_gpu_submit_pass (void                    *userdata,
 
                 glActiveTexture(GL_TEXTURE0);
                 glBindTexture(GL_TEXTURE_2D,
-                              inst->textures[cmd->canvas.texture].handle);
+                              inst->textures[cmd->texture].handle);
 
                 GLuint location = glGetUniformLocation(
                     program, "SPIRV_Cross_Combinedcanvassampler0");
@@ -400,13 +404,13 @@ nux_os_gpu_submit_pass (void                    *userdata,
 
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D,
-                              inst->textures[cmd->canvas.colormap].handle);
+                              inst->textures[cmd->colormap].handle);
                 location = glGetUniformLocation(
                     program, "SPIRV_Cross_Combinedcolormapsampler1"),
                 glUniform1i(location, 1);
 
                 glBindVertexArray(renderer.empty_vao);
-                glDrawArrays(GL_TRIANGLES, 0, cmd->canvas.vertex_count);
+                glDrawArrays(GL_TRIANGLES, 0, cmd->vertex_count);
                 glBindVertexArray(0);
             }
         }

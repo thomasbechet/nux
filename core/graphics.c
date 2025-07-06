@@ -53,7 +53,7 @@ nux_graphics_init (nux_ctx_t *ctx)
     ctx->canvas_pipeline_slot = 0;
     NUX_CHECKM(nux_os_create_pipeline(ctx->userdata,
                                       ctx->canvas_pipeline_slot,
-                                      NUX_GPU_PASS_CANVAS),
+                                      NUX_GPU_PASS_BLIT),
                "Failed to create canvas pipeline",
                return NUX_FAILURE);
 
@@ -213,7 +213,7 @@ nux_palc (nux_ctx_t *ctx, nux_u8_t index)
 void
 nux_cls (nux_ctx_t *ctx, nux_u32_t color)
 {
-    nux_rectfill(ctx, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1, color);
+    // nux_rectfill(ctx, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1, color);
 }
 void
 nux_graphics_text (

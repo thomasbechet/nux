@@ -26,10 +26,10 @@ float4 bilinearFiltering(float2 uv, float2 res)
     float2 iuv = floor(st);
     float2 fuv = fract(st);
 
-    float4 a = sampleColor((iuv+float2(0.5,0.5)) / res);
-    float4 b = sampleColor((iuv+float2(1.5,0.5)) / res);
-    float4 c = sampleColor((iuv+float2(0.5,1.5)) / res);
-    float4 d = sampleColor((iuv+float2(1.5,1.5)) / res);
+    float4 a = sampleColor((iuv + float2(0.5,0.5)) / res);
+    float4 b = sampleColor((iuv + float2(1.5,0.5)) / res);
+    float4 c = sampleColor((iuv + float2(0.5,1.5)) / res);
+    float4 d = sampleColor((iuv + float2(1.5,1.5)) / res);
     
     return mix(mix(a, b, fuv.x), mix(c, d, fuv.x), fuv.y);
 }
