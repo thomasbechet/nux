@@ -564,23 +564,17 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t texture_type;
-} nux_gpu_draw_constants_t;
+    nux_u32_t             slot;
+    nux_gpu_buffer_type_t type;
+    nux_u32_t             size;
+} nux_gpu_buffer_t;
 
 typedef struct
 {
-    nux_gpu_pass_type_t type;
-    nux_u32_t           render_target;
-    nux_u32_t           command_first;
-    nux_u32_t           commant_count;
-} nux_render_pass_t;
+    nux_gpu_pipeline_type_t type;
+    nux_u32_t               slot;
+} nux_gpu_pipeline_t;
 
-typedef struct
-{
-} nux_render_command_t;
-
-NUX_VEC_DEFINE(nux_render_pass_vec, nux_render_pass_t)
-NUX_VEC_DEFINE(nux_render_command_vec, nux_render_command_t)
 NUX_VEC_DEFINE(nux_gpu_command_vec, nux_gpu_command_t);
 NUX_POOL_DEFINE(nux_arena_pool, nux_arena_t);
 
@@ -609,17 +603,14 @@ struct nux_context
 
     nux_u32_t stats[NUX_STAT_MAX];
 
-    nux_u32_t             colormap_texture_slot;
-    nux_u32_t             canvas_render_target;
-    nux_u32_t             vertices_buffer_head;
-    nux_u32_t             vertices_buffer_slot;
-    nux_u32_t             constants_buffer_slot;
-    nux_u32_t             transforms_buffer_head;
-    nux_u32_t             transforms_buffer_slot;
-    nux_u32_t             main_pipeline_slot;
-    nux_u32_t             canvas_pipeline_slot;
+    nux_gpu_pipeline_t    main_pipeline;
+    nux_gpu_pipeline_t    blit_pipeline;
     nux_gpu_command_vec_t gpu_commands;
-    nux_gpu_command_vec_t gpu_gui_commands;
+    nux_gpu_buffer_t      vertices_buffer;
+    nux_u32_t             vertices_buffer_head;
+    nux_gpu_buffer_t      constants_buffer;
+    nux_gpu_buffer_t      transforms_buffer;
+    nux_u32_t             transforms_buffer_head;
 
     nux_arena_pool_t  arenas;
     nux_object_pool_t objects;
@@ -633,6 +624,7 @@ struct nux_context
 
     nux_u32_vec_t free_texture_slots;
     nux_u32_vec_t free_buffer_slots;
+    nux_u32_vec_t free_pipeline_slots;
     nux_u32_vec_t free_framebuffer_slots;
     nux_u32_vec_t free_file_slots;
 
@@ -812,6 +804,20 @@ nux_status_t nux_graphics_push_transforms(nux_ctx_t      *ctx,
                                           nux_u32_t       mcount,
                                           const nux_m4_t *data,
                                           nux_u32_t      *index);
+
+// gpu.c
+
+nux_status_t nux_gpu_buffer_init(nux_ctx_t *ctx, nux_gpu_buffer_t *buffer);
+nux_status_t nux_gpu_texture_init(nux_ctx_t *ctx, nux_texture_t *texture);
+nux_status_t nux_gpu_pipeline_init(nux_ctx_t          *ctx,
+                                   nux_gpu_pipeline_t *pipeline);
+
+void nux_gpu_draw(nux_ctx_t *ctx, nux_u32_t count);
+void nux_gpu_push_u32(nux_ctx_t *ctx, nux_u32_t index, nux_u32_t value);
+void nux_gpu_push_f32(nux_ctx_t *ctx, nux_u32_t index, nux_f32_t value);
+void nux_gpu_bind_pipeline(nux_ctx_t *ctx, nux_u32_t slot);
+void nux_gpu_bind_texture(nux_ctx_t *ctx, nux_u32_t index, nux_u32_t slot);
+void nux_gpu_bind_buffer(nux_ctx_t *ctx, nux_u32_t index, nux_u32_t slot);
 
 // io.c
 

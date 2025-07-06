@@ -47,6 +47,11 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
         }
     }
 
+    // Bind pipeline and constants
+    nux_gpu_bind_pipeline(ctx, ctx->main_pipeline.slot);
+    nux_gpu_bind_buffer(
+        ctx, NUX_GPU_INDEX_MAIN_CONSTANTS, ctx->constants_buffer.slot);
+
     // Draw nodes
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
     {
@@ -82,28 +87,26 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
                           ctx, 1, &t->global_matrix, &transform_idx),
                       continue);
 
-            nux_gpu_command_t *cmd
-                = nux_gpu_command_vec_push(&ctx->gpu_commands);
-            NUX_ASSERT(cmd);
+            // Prepare commands
             if (tex)
             {
-                cmd->colormap = NUX_NULL;
-                cmd->texture  = tex->slot;
+                nux_gpu_bind_texture(
+                    ctx, NUX_GPU_INDEX_MAIN_TEXTURE0, tex->slot);
             }
-            else
-            {
-                cmd->colormap = NUX_NULL;
-                cmd->texture  = NUX_NULL;
-            }
-            cmd->vertices        = ctx->vertices_buffer_slot;
-            cmd->transforms      = ctx->transforms_buffer_slot;
-            cmd->vertex_first    = m->first;
-            cmd->vertex_count    = m->count;
-            cmd->transform_index = transform_idx;
+            nux_gpu_push_u32(ctx, NUX_GPU_INDEX_MAIN_HAS_TEXTURE, tex ? 1 : 0);
+            nux_gpu_bind_buffer(
+                ctx, NUX_GPU_INDEX_MAIN_VERTICES, ctx->vertices_buffer.slot);
+            nux_gpu_bind_buffer(ctx,
+                                NUX_GPU_INDEX_MAIN_TRANSFORMS,
+                                ctx->transforms_buffer.slot);
+            nux_gpu_push_u32(ctx, NUX_GPU_INDEX_MAIN_FIRST_VERTEX, m->first);
+            nux_gpu_push_u32(
+                ctx, NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX, transform_idx);
+            nux_gpu_draw(ctx, m->count);
         }
     }
 
-    // Push constants
+    // Update constants
     nux_node_t *ce = nux_object_get(ctx, NUX_TYPE_NODE, camera);
     NUX_CHECK(ce, return);
     nux_transform_t *ct
@@ -129,19 +132,14 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     constants.canvas_size = nux_v2u(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     constants.time        = ctx->time;
     nux_os_update_buffer(ctx->userdata,
-                         ctx->constants_buffer_slot,
+                         ctx->constants_buffer.slot,
                          0,
                          sizeof(constants),
                          &constants);
 
-    // Submit pass
-    nux_gpu_pass_t pass = {
-        .type                  = NUX_GPU_PASS_MAIN,
-        .pipeline              = ctx->main_pipeline_slot,
-        .main.constants_buffer = ctx->constants_buffer_slot,
-        .count                 = ctx->gpu_commands.size,
-    };
-    nux_os_gpu_submit_pass(ctx->userdata, &pass, ctx->gpu_commands.data);
+    // Submit commands
+    nux_os_gpu_submit(
+        ctx->userdata, ctx->gpu_commands.data, ctx->gpu_commands.size);
 }
 nux_u32_t
 nux_scene_get_node (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t index)

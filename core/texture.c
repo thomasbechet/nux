@@ -17,18 +17,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     tex->height = h;
 
     // Create gpu texture
-    nux_gpu_texture_info_t info = {
-        .type   = type,
-        .filter = NUX_GPU_TEXTURE_FILTER_NEAREST,
-        .width  = w,
-        .height = h,
-    };
-    nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_texture_slots);
-    NUX_CHECKM(slot, "Out of gpu textures", return NUX_NULL);
-    tex->slot = *slot;
-    NUX_CHECKM(nux_os_create_texture(ctx->userdata, tex->slot, &info),
-               "Failed to create texture",
-               return NUX_NULL);
+    NUX_CHECK(nux_gpu_texture_init(ctx, tex), return NUX_NULL);
 
     // Allocate memory
     nux_u32_t pixel_size;
@@ -50,18 +39,6 @@ nux_texture_new (nux_ctx_t         *ctx,
         NUX_CHECKM(
             tex->data, "Failed to allocate texture data", return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
-    }
-
-    if (type == NUX_TEXTURE_RENDER_TARGET)
-    {
-        // Create framebuffer
-        slot = nux_u32_vec_pop(&ctx->free_framebuffer_slots);
-        NUX_CHECKM(slot, "Out of gpu framebuffer slots", return NUX_NULL);
-        tex->framebuffer_slot = *slot;
-        NUX_CHECKM(nux_os_create_framebuffer(
-                       ctx->userdata, tex->framebuffer_slot, tex->slot),
-                   "Failed to create framebuffer",
-                   return NUX_NULL);
     }
 
     return id;

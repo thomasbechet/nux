@@ -11,6 +11,11 @@ nux_graphics_init (nux_ctx_t *ctx)
 {
     // Initialize gpu slots
     NUX_CHECKM(nux_u32_vec_alloc(ctx->core_arena,
+                                 NUX_GPU_PIPELINE_MAX,
+                                 &ctx->free_pipeline_slots),
+               "Failed to allocate gpu pipeline slots",
+               goto error);
+    NUX_CHECKM(nux_u32_vec_alloc(ctx->core_arena,
                                  NUX_GPU_TEXTURE_MAX,
                                  &ctx->free_texture_slots),
                "Failed to allocate gpu texture slots",
@@ -26,13 +31,14 @@ nux_graphics_init (nux_ctx_t *ctx)
                "Failed to allocate gpu buffer slots",
                goto error);
 
+    nux_u32_vec_fill_reversed(&ctx->free_pipeline_slots);
     nux_u32_vec_fill_reversed(&ctx->free_texture_slots);
     nux_u32_vec_fill_reversed(&ctx->free_framebuffer_slots);
     nux_u32_vec_fill_reversed(&ctx->free_buffer_slots);
 
     // Allocate gpu commands buffer
     NUX_CHECKM(
-        nux_gpu_command_vec_alloc(ctx->core_arena, 1024, &ctx->gpu_commands),
+        nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &ctx->gpu_commands),
         "Failed to allocate gpu commands buffer",
         goto error);
 
@@ -45,55 +51,33 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_palr(ctx);
 
     // Create pipelines
-    ctx->main_pipeline_slot = 1;
-    NUX_CHECKM(nux_os_create_pipeline(
-                   ctx->userdata, ctx->main_pipeline_slot, NUX_GPU_PASS_MAIN),
+    ctx->main_pipeline.type = NUX_GPU_PIPELINE_MAIN;
+    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->main_pipeline),
                "Failed to create main pipeline",
                goto error);
-    ctx->canvas_pipeline_slot = 0;
-    NUX_CHECKM(nux_os_create_pipeline(ctx->userdata,
-                                      ctx->canvas_pipeline_slot,
-                                      NUX_GPU_PASS_BLIT),
-               "Failed to create canvas pipeline",
-               return NUX_FAILURE);
-
-    // Create textures
-    ctx->colormap_texture_slot = nux_texture_new(
-        ctx, NUX_TEXTURE_IMAGE_RGBA, NUX_COLORMAP_SIZE, NUX_COLORMAP_SIZE);
-    NUX_CHECKM(ctx->colormap_texture_slot,
-               "Failed to create colormap texture",
-               goto error);
-
-    ctx->canvas_render_target = nux_texture_new(
-        ctx, NUX_TEXTURE_RENDER_TARGET, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
-    NUX_CHECKM(ctx->canvas_render_target,
-               "Failed to create canvas render target",
+    ctx->blit_pipeline.type = NUX_GPU_PIPELINE_BLIT;
+    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->blit_pipeline),
+               "Failed to create blit pipeline",
                goto error);
 
     // Create buffers
-    ctx->constants_buffer_slot = 0;
-    NUX_CHECKM(nux_os_create_buffer(ctx->userdata,
-                                    ctx->constants_buffer_slot,
-                                    NUX_GPU_BUFFER_UNIFORM,
-                                    sizeof(nux_gpu_constants_buffer_t)),
-               "Failed to create uniform buffer",
+    ctx->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
+    ctx->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
+    NUX_CHECKM(nux_gpu_buffer_init(ctx, &ctx->constants_buffer),
+               "Failed to create constants buffer",
                goto error);
 
-    ctx->vertices_buffer_slot = 1;
+    ctx->vertices_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    ctx->vertices_buffer.size = VERTEX_SIZE * VERTICES_DEFAULT_SIZE;
     ctx->vertices_buffer_head = 0;
-    NUX_CHECKM(nux_os_create_buffer(ctx->userdata,
-                                    ctx->vertices_buffer_slot,
-                                    NUX_GPU_BUFFER_STORAGE,
-                                    VERTEX_SIZE * VERTICES_DEFAULT_SIZE),
-               "Failed to create vertex buffer",
+    NUX_CHECKM(nux_gpu_buffer_init(ctx, &ctx->vertices_buffer),
+               "Failed to create vertices buffer",
                goto error);
 
-    ctx->transforms_buffer_slot = 2;
     ctx->transforms_buffer_head = 0;
-    NUX_CHECKM(nux_os_create_buffer(ctx->userdata,
-                                    ctx->transforms_buffer_slot,
-                                    NUX_GPU_BUFFER_STORAGE,
-                                    NUX_M4_SIZE * TRANSFORMS_DEFAULT_SIZE),
+    ctx->transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    ctx->transforms_buffer.size = NUX_M4_SIZE * TRANSFORMS_DEFAULT_SIZE;
+    NUX_CHECKM(nux_gpu_buffer_init(ctx, &ctx->transforms_buffer),
                "Failed to create transforms buffer",
                goto error);
 
@@ -111,13 +95,13 @@ nux_status_t
 nux_graphics_render (nux_ctx_t *ctx)
 {
     // Update colormap
-    nux_texture_write(ctx,
-                      ctx->colormap_texture_slot,
-                      0,
-                      0,
-                      NUX_COLORMAP_SIZE,
-                      1,
-                      ctx->colormap);
+    // nux_texture_write(ctx,
+    //                   ctx->colormap_texture_slot,
+    //                   0,
+    //                   0,
+    //                   NUX_COLORMAP_SIZE,
+    //                   1,
+    //                   ctx->colormap);
 
     // Update storage buffer
 
@@ -154,7 +138,7 @@ nux_graphics_push_vertices (nux_ctx_t       *ctx,
                "Out of vertices",
                return NUX_FAILURE);
     NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
-                                    ctx->vertices_buffer_slot,
+                                    ctx->vertices_buffer.slot,
                                     ctx->vertices_buffer_head * VERTEX_SIZE
                                         * sizeof(nux_f32_t),
                                     vcount * VERTEX_SIZE * sizeof(nux_f32_t),
@@ -175,7 +159,7 @@ nux_graphics_push_transforms (nux_ctx_t      *ctx,
                "Out of transforms",
                return NUX_FAILURE);
     NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
-                                    ctx->transforms_buffer_slot,
+                                    ctx->transforms_buffer.slot,
                                     ctx->transforms_buffer_head * NUX_M4_SIZE
                                         * sizeof(nux_f32_t),
                                     mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
@@ -213,7 +197,8 @@ nux_palc (nux_ctx_t *ctx, nux_u8_t index)
 void
 nux_cls (nux_ctx_t *ctx, nux_u32_t color)
 {
-    // nux_rectfill(ctx, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1, color);
+    // nux_rectfill(ctx, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1,
+    // color);
 }
 void
 nux_graphics_text (

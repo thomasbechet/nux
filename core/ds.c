@@ -1,8 +1,6 @@
 #include "internal.h"
 
 NUX_VEC_IMPL(nux_u32_vec, nux_u32_t);
-NUX_VEC_IMPL(nux_render_pass_vec, nux_render_pass_t)
-NUX_VEC_IMPL(nux_render_command_vec, nux_render_command_t)
 NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
 NUX_POOL_IMPL(nux_object_pool, nux_object_t)
 NUX_POOL_IMPL(nux_arena_pool, nux_arena_t)

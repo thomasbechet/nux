@@ -82,43 +82,67 @@ cleanup0:
 }
 
 nux_status_t
-nux_os_create_pipeline (void               *userdata,
-                        nux_u32_t           slot,
-                        nux_gpu_pass_type_t type)
+nux_os_create_pipeline (void                          *userdata,
+                        nux_u32_t                      slot,
+                        const nux_gpu_pipeline_info_t *info)
 {
     instance_t *inst = userdata;
     CHECK(slot < ARRAY_LEN(inst->pipelines), return NUX_FAILURE);
     pipeline_t *pipeline = inst->pipelines + slot;
+    pipeline->type       = info->type;
 
     nux_status_t status = NUX_SUCCESS;
-    switch (type)
+    switch (info->type)
     {
-        case NUX_GPU_PASS_MAIN: {
-            status       = compile_program(shader_main_vert,
+        case NUX_GPU_PIPELINE_MAIN: {
+            status = compile_program(shader_main_vert,
                                      ARRAY_LEN(shader_main_vert),
                                      shader_main_frag,
                                      ARRAY_LEN(shader_main_frag),
-                                     &pipeline->handle);
+                                     &pipeline->program);
+
             GLuint index = glGetProgramResourceIndex(
-                pipeline->handle, GL_UNIFORM_BLOCK, "Constants_std140");
-            glUniformBlockBinding(pipeline->handle, index, 1);
+                pipeline->program, GL_UNIFORM_BLOCK, "Constants_std140");
+            glUniformBlockBinding(pipeline->program, index, 1);
             index = glGetProgramResourceIndex(
-                pipeline->handle, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
-            glShaderStorageBlockBinding(pipeline->handle, index, 2);
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
+            glShaderStorageBlockBinding(pipeline->program, index, 2);
             index = glGetProgramResourceIndex(
-                pipeline->handle, GL_SHADER_STORAGE_BLOCK, "transforms");
-            glShaderStorageBlockBinding(pipeline->handle, index, 3);
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "transforms");
+            glShaderStorageBlockBinding(pipeline->program, index, 3);
+
+            pipeline->indices[NUX_GPU_INDEX_MAIN_CONSTANTS]  = 1;
+            pipeline->indices[NUX_GPU_INDEX_MAIN_VERTICES]   = 2;
+            pipeline->indices[NUX_GPU_INDEX_MAIN_TRANSFORMS] = 3;
+
+            pipeline->locations[NUX_GPU_INDEX_MAIN_FIRST_VERTEX]
+                = glGetUniformLocation(pipeline->program,
+                                       "entryPointParams.vertexFirst");
+            pipeline->locations[NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX]
+                = glGetUniformLocation(pipeline->program,
+                                       "entryPointParams.transformIndex");
+            pipeline->locations[NUX_GPU_INDEX_MAIN_TEXTURE0]
+                = glGetUniformLocation(pipeline->program,
+                                       "SPIRV_Cross_Combinedcanvassampler0");
+            pipeline->locations[NUX_GPU_INDEX_MAIN_HAS_TEXTURE]
+                = glGetUniformLocation(pipeline->program,
+                                       "entryPointParams.hasTexture");
+
+            pipeline->units[NUX_GPU_INDEX_MAIN_TEXTURE0] = 0;
         }
         break;
-        case NUX_GPU_PASS_BLIT: {
+        case NUX_GPU_PIPELINE_BLIT: {
             status       = compile_program(shader_blit_vert,
                                      ARRAY_LEN(shader_blit_vert),
                                      shader_blit_frag,
                                      ARRAY_LEN(shader_blit_frag),
-                                     &pipeline->handle);
+                                     &pipeline->program);
             GLuint index = glGetProgramResourceIndex(
-                pipeline->handle, GL_UNIFORM_BLOCK, "Constants_std140");
-            glUniformBlockBinding(pipeline->handle, index, 1);
+                pipeline->program, GL_UNIFORM_BLOCK, "Constants_std140");
+            glUniformBlockBinding(pipeline->program, index, 1);
+        }
+        break;
+        case NUX_GPU_PIPELINE_CANVAS: {
         }
         break;
     }
@@ -295,127 +319,206 @@ nux_os_update_buffer (void       *userdata,
     return NUX_SUCCESS;
 }
 void
-nux_os_gpu_submit_pass (void                    *userdata,
-                        const nux_gpu_pass_t    *pass,
-                        const nux_gpu_command_t *cmds)
+nux_os_gpu_submit (void                    *userdata,
+                   const nux_gpu_command_t *cmds,
+                   nux_u32_t                count)
 {
     instance_t *inst = userdata;
 
     // glEnable(GL_FRAMEBUFFER_SRGB);
 
-    if (pass->framebuffer)
+    // Initialize state
+    pipeline_t *active_pipeline = NULL;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glViewport(
+        inst->viewport.x, inst->viewport.y, inst->viewport.w, inst->viewport.h);
+
+    // Execute commands
+    for (nux_u32_t i = 0; i < count; ++i)
     {
-        framebuffer_t *fb = inst->framebuffers + pass->framebuffer;
-        glBindFramebuffer(GL_FRAMEBUFFER, fb->handle);
-    }
-    else
-    {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(inst->viewport.x,
-                   inst->viewport.y,
-                   inst->viewport.w,
-                   inst->viewport.h);
-    }
-
-    switch (pass->type)
-    {
-        case NUX_GPU_PASS_MAIN: {
-            GLuint program = inst->pipelines[pass->pipeline].handle;
-            glUseProgram(program);
-
-            // buffer index 1
-            buffer_t *buffer = inst->buffers + pass->main.constants_buffer;
-            assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
-            glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
-
-            glEnable(GL_DEPTH_TEST);
-            glEnable(GL_MULTISAMPLE);
-
-            for (nux_u32_t i = 0; i < pass->count; ++i)
-            {
-                const nux_gpu_command_t *cmd = cmds + i;
-
-                // buffer index 2
-                buffer = inst->buffers + cmd->vertices;
-                assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
-                glBindBufferBase(buffer->buffer_type, 2, buffer->handle);
-
-                // buffer index 3
-                buffer = inst->buffers + cmd->transforms;
-                assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
-                glBindBufferBase(buffer->buffer_type, 3, buffer->handle);
-
-                GLuint location = glGetUniformLocation(
-                    program, "entryPointParams.vertexFirst");
-                glUniform1ui(location, cmd->vertex_first);
-                location = glGetUniformLocation(
-                    program, "entryPointParams.transformIndex");
-                glUniform1ui(location, cmd->transform_index);
-
-                if (cmd->texture)
-                {
-                    // texture 0
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D,
-                                  inst->textures[cmd->texture].handle);
-                    location = glGetUniformLocation(
-                        program, "SPIRV_Cross_Combinedcanvassampler0");
-                    glUniform1i(location, 0);
-
-                    location = glGetUniformLocation(
-                        program, "entryPointParams.hasTexture");
-                    glUniform1ui(location, 1);
-                }
-                else
-                {
-                    location = glGetUniformLocation(
-                        program, "entryPointParams.hasTexture");
-                    glUniform1ui(location, 0);
-                }
-
+        const nux_gpu_command_t *cmd = cmds + i;
+        switch ((nux_gpu_command_type_t)cmd->type)
+        {
+            case NUX_GPU_COMMAND_DRAW: {
                 glBindVertexArray(renderer.empty_vao);
-                glDrawArrays(GL_TRIANGLES, 0, cmd->vertex_count);
+                glDrawArrays(GL_TRIANGLES, 0, cmd->draw.count);
                 glBindVertexArray(0);
             }
-
-            glDisable(GL_DEPTH_TEST);
-            glDisable(GL_MULTISAMPLE);
-        }
-        break;
-        case NUX_GPU_PASS_BLIT: {
-            GLuint program = inst->pipelines[pass->pipeline].handle;
-            glUseProgram(program);
-
-            buffer_t *buffer = inst->buffers + pass->main.constants_buffer;
-            assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
-            glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
-
-            for (nux_u32_t i = 0; i < pass->count; ++i)
-            {
-                const nux_gpu_command_t *cmd = cmds + i;
-
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D,
-                              inst->textures[cmd->texture].handle);
-
-                GLuint location = glGetUniformLocation(
-                    program, "SPIRV_Cross_Combinedcanvassampler0");
-                glUniform1i(location, 0);
-
-                glActiveTexture(GL_TEXTURE1);
-                glBindTexture(GL_TEXTURE_2D,
-                              inst->textures[cmd->colormap].handle);
-                location = glGetUniformLocation(
-                    program, "SPIRV_Cross_Combinedcolormapsampler1"),
-                glUniform1i(location, 1);
-
-                glBindVertexArray(renderer.empty_vao);
-                glDrawArrays(GL_TRIANGLES, 0, cmd->vertex_count);
-                glBindVertexArray(0);
+            break;
+            case NUX_GPU_COMMAND_BIND_PIPELINE: {
+                active_pipeline = inst->pipelines + cmd->bind_pipeline.slot;
+                glUseProgram(active_pipeline->program);
+                switch ((nux_gpu_pipeline_type_t)active_pipeline->type)
+                {
+                    case NUX_GPU_PIPELINE_MAIN: {
+                        glEnable(GL_DEPTH_TEST);
+                        glEnable(GL_MULTISAMPLE);
+                    }
+                    break;
+                    case NUX_GPU_PIPELINE_BLIT: {
+                    }
+                    break;
+                    case NUX_GPU_PIPELINE_CANVAS: {
+                    }
+                    break;
+                }
             }
+            break;
+            case NUX_GPU_COMMAND_BIND_BUFFER: {
+                buffer_t *buffer = inst->buffers + cmd->bind_buffer.slot;
+                GLuint index = active_pipeline->indices[cmd->bind_buffer.index];
+                glBindBufferBase(buffer->buffer_type, index, buffer->handle);
+            }
+            break;
+            case NUX_GPU_COMMAND_BIND_TEXTURE: {
+                GLuint unit = active_pipeline->units[cmd->bind_texture.index];
+                glActiveTexture(GL_TEXTURE0 + unit);
+                glBindTexture(GL_TEXTURE_2D,
+                              inst->textures[cmd->bind_texture.slot].handle);
+                GLuint location
+                    = active_pipeline->locations[cmd->bind_texture.index];
+                glUniform1i(location, unit);
+            }
+            break;
+            case NUX_GPU_COMMAND_PUSH_CONSTANT: {
+                GLuint location
+                    = active_pipeline->locations[cmd->push_constant.index];
+                switch ((nux_gpu_index_t)cmd->push_constant.index)
+                {
+                    case NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX:
+                        glUniform1ui(location, cmd->push_constant.u32);
+                        break;
+                    case NUX_GPU_INDEX_MAIN_FIRST_VERTEX:
+                        glUniform1ui(location, cmd->push_constant.u32);
+                        break;
+                    case NUX_GPU_INDEX_MAIN_HAS_TEXTURE:
+                        glUniform1ui(location, cmd->push_constant.u32);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            break;
         }
-        break;
     }
+
+    // Restore state
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_MULTISAMPLE);
+
+    // if (pass->framebuffer)
+    // {
+    //     framebuffer_t *fb = inst->framebuffers + pass->framebuffer;
+    //     glBindFramebuffer(GL_FRAMEBUFFER, fb->handle);
+    // }
+    // else
+    // {
+    //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //     glViewport(inst->viewport.x,
+    //                inst->viewport.y,
+    //                inst->viewport.w,
+    //                inst->viewport.h);
+    // }
+    //
+    // switch (pass->type)
+    // {
+    //     case NUX_GPU_PASS_MAIN: {
+    //         GLuint program = inst->pipelines[pass->pipeline].handle;
+    //         glUseProgram(program);
+    //
+    //         // buffer index 1
+    //         buffer_t *buffer = inst->buffers + pass->main.constants_buffer;
+    //         assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
+    //         glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+    //
+    //         glEnable(GL_DEPTH_TEST);
+    //         glEnable(GL_MULTISAMPLE);
+    //
+    //         for (nux_u32_t i = 0; i < pass->count; ++i)
+    //         {
+    //             const nux_gpu_command_t *cmd = cmds + i;
+    //
+    //             // buffer index 2
+    //             buffer = inst->buffers + cmd->vertices;
+    //             assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
+    //             glBindBufferBase(buffer->buffer_type, 2, buffer->handle);
+    //
+    //             // buffer index 3
+    //             buffer = inst->buffers + cmd->transforms;
+    //             assert(buffer->buffer_type == GL_SHADER_STORAGE_BUFFER);
+    //             glBindBufferBase(buffer->buffer_type, 3, buffer->handle);
+    //
+    //             GLuint location = glGetUniformLocation(
+    //                 program, "entryPointParams.vertexFirst");
+    //             glUniform1ui(location, cmd->vertex_first);
+    //             location = glGetUniformLocation(
+    //                 program, "entryPointParams.transformIndex");
+    //             glUniform1ui(location, cmd->transform_index);
+    //
+    //             if (cmd->texture)
+    //             {
+    //                 // texture 0
+    //                 glActiveTexture(GL_TEXTURE0);
+    //                 glBindTexture(GL_TEXTURE_2D,
+    //                               inst->textures[cmd->texture].handle);
+    //                 location = glGetUniformLocation(
+    //                     program, "SPIRV_Cross_Combinedcanvassampler0");
+    //                 glUniform1i(location, 0);
+    //
+    //                 location = glGetUniformLocation(
+    //                     program, "entryPointParams.hasTexture");
+    //                 glUniform1ui(location, 1);
+    //             }
+    //             else
+    //             {
+    //                 location = glGetUniformLocation(
+    //                     program, "entryPointParams.hasTexture");
+    //                 glUniform1ui(location, 0);
+    //             }
+    //
+    //             glBindVertexArray(renderer.empty_vao);
+    //             glDrawArrays(GL_TRIANGLES, 0, cmd->vertex_count);
+    //             glBindVertexArray(0);
+    //         }
+    //
+    //         glDisable(GL_DEPTH_TEST);
+    //         glDisable(GL_MULTISAMPLE);
+    //     }
+    //     break;
+    //     case NUX_GPU_PASS_BLIT: {
+    //         GLuint program = inst->pipelines[pass->pipeline].handle;
+    //         glUseProgram(program);
+    //
+    //         buffer_t *buffer = inst->buffers + pass->main.constants_buffer;
+    //         assert(buffer->buffer_type == GL_UNIFORM_BUFFER);
+    //         glBindBufferBase(buffer->buffer_type, 1, buffer->handle);
+    //
+    //         for (nux_u32_t i = 0; i < pass->count; ++i)
+    //         {
+    //             const nux_gpu_command_t *cmd = cmds + i;
+    //
+    //             glActiveTexture(GL_TEXTURE0);
+    //             glBindTexture(GL_TEXTURE_2D,
+    //                           inst->textures[cmd->texture].handle);
+    //
+    //             GLuint location = glGetUniformLocation(
+    //                 program, "SPIRV_Cross_Combinedcanvassampler0");
+    //             glUniform1i(location, 0);
+    //
+    //             glActiveTexture(GL_TEXTURE1);
+    //             glBindTexture(GL_TEXTURE_2D,
+    //                           inst->textures[cmd->colormap].handle);
+    //             location = glGetUniformLocation(
+    //                 program, "SPIRV_Cross_Combinedcolormapsampler1"),
+    //             glUniform1i(location, 1);
+    //
+    //             glBindVertexArray(renderer.empty_vao);
+    //             glDrawArrays(GL_TRIANGLES, 0, cmd->vertex_count);
+    //             glBindVertexArray(0);
+    //         }
+    //     }
+    //     break;
+    // }
 
     // glDisable(GL_FRAMEBUFFER_SRGB);
 }
