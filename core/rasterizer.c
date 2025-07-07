@@ -28,8 +28,8 @@ nux_pset (nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y, nux_u8_t color)
         return;
     }
 
-    nux_u8_t *canvas                 = ctx->canvas;
-    canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(ctx, color);
+    // nux_u8_t *canvas                 = ctx->canvas;
+    // canvas[y * NUX_CANVAS_WIDTH + x] = nux_palc(ctx, color);
 }
 void
 nux_graphics_line (nux_ctx_t *ctx,

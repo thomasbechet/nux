@@ -42,11 +42,6 @@ nux_graphics_init (nux_ctx_t *ctx)
         "Failed to allocate gpu commands buffer",
         goto error);
 
-    // Allocate canvas
-    ctx->canvas = nux_arena_alloc(ctx->core_arena,
-                                  NUX_CANVAS_WIDTH * NUX_CANVAS_HEIGHT);
-    NUX_CHECKM(ctx->canvas, "Failed to allocate canvas", goto error);
-
     // Initialize state
     nux_palr(ctx);
 
@@ -81,6 +76,11 @@ nux_graphics_init (nux_ctx_t *ctx)
                "Failed to create transforms buffer",
                goto error);
 
+    // Create canvas
+    NUX_CHECKM(nux_canvas_init(ctx, &ctx->canvas),
+               "Failed to initialize canvas",
+               goto error);
+
     return NUX_SUCCESS;
 
 error:
@@ -94,34 +94,11 @@ nux_graphics_free (nux_ctx_t *ctx)
 nux_status_t
 nux_graphics_render (nux_ctx_t *ctx)
 {
-    // Update colormap
-    // nux_texture_write(ctx,
-    //                   ctx->colormap_texture_slot,
-    //                   0,
-    //                   0,
-    //                   NUX_COLORMAP_SIZE,
-    //                   1,
-    //                   ctx->colormap);
+    // Submit canvas commands
+    nux_canvas_end(ctx, &ctx->canvas);
+    nux_canvas_begin(ctx, &ctx->canvas);
 
-    // Update storage buffer
-
-    // Blit canvas
-    {
-        // nux_gpu_command_t cmds[] = { {
-        //     .canvas.texture      = TEXTURE_CANVAS_SLOT,
-        //     .canvas.colormap     = TEXTURE_COLORMAP_SLOT,
-        //     .canvas.vertex_count = 3,
-        // } };
-        // nux_gpu_pass_t    pass   = {
-        //          .type                  = NUX_GPU_PASS_CANVAS,
-        //          .pipeline              = PIPELINE_CANVAS_SLOT,
-        //          .canvas.uniform_buffer = BUFFER_CONSTANTS_SLOT,
-        //          .count                 = NUX_ARRAY_SIZE(cmds),
-        // };
-        // nux_os_gpu_submit_pass(ctx->userdata, &pass, cmds);
-    }
-
-    // Reset frame data
+    // Reset frame data (TODO: mode to scene)
     ctx->transforms_buffer_head = 0;
     nux_gpu_command_vec_clear(&ctx->gpu_commands);
 

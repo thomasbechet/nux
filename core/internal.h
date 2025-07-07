@@ -578,6 +578,13 @@ typedef struct
 NUX_VEC_DEFINE(nux_gpu_command_vec, nux_gpu_command_t);
 NUX_POOL_DEFINE(nux_arena_pool, nux_arena_t);
 
+typedef struct
+{
+    nux_gpu_command_vec_t commands;
+    nux_gpu_buffer_t      quads_buffer;
+    nux_u32_t             quads_buffer_head;
+} nux_canvas_t;
+
 struct nux_context
 {
     // Error handling
@@ -594,7 +601,6 @@ struct nux_context
     nux_u8_t  pal[NUX_PALETTE_SIZE];
     nux_u32_t colormap[NUX_COLORMAP_SIZE];
     nux_v2i_t cursor;
-    nux_u8_t *canvas;
 
     nux_u32_t buttons[NUX_PLAYER_MAX];
     nux_u32_t buttons_prev[NUX_PLAYER_MAX];
@@ -611,6 +617,7 @@ struct nux_context
     nux_gpu_buffer_t      constants_buffer;
     nux_gpu_buffer_t      transforms_buffer;
     nux_u32_t             transforms_buffer_head;
+    nux_canvas_t          canvas;
 
     nux_arena_pool_t  arenas;
     nux_object_pool_t objects;
@@ -804,6 +811,11 @@ nux_status_t nux_graphics_push_transforms(nux_ctx_t      *ctx,
                                           nux_u32_t       mcount,
                                           const nux_m4_t *data,
                                           nux_u32_t      *index);
+// canvas.c
+
+nux_status_t nux_canvas_init(nux_ctx_t *ctx, nux_canvas_t *canvas);
+void         nux_canvas_begin(nux_ctx_t *ctx, nux_canvas_t *canvas);
+void         nux_canvas_end(nux_ctx_t *ctx, nux_canvas_t *canvas);
 
 // gpu.c
 
