@@ -585,6 +585,7 @@ NUX_POOL_DEFINE(nux_object_pool, nux_object_t);
 typedef struct
 {
     nux_gpu_command_vec_t commands;
+    nux_gpu_buffer_t      constants_buffer;
     nux_gpu_buffer_t      quads_buffer;
     nux_u32_t             quads_buffer_head;
 } nux_canvas_t;

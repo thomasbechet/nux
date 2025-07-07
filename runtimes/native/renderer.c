@@ -401,23 +401,16 @@ nux_os_gpu_submit (void                    *userdata,
                 glUniform1i(location, unit);
             }
             break;
-            case NUX_GPU_COMMAND_PUSH_CONSTANT: {
+            case NUX_GPU_COMMAND_PUSH_U32: {
                 GLuint location
-                    = active_pipeline->locations[cmd->push_constant.index];
-                switch ((nux_gpu_index_t)cmd->push_constant.index)
-                {
-                    case NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX:
-                        glUniform1ui(location, cmd->push_constant.u32);
-                        break;
-                    case NUX_GPU_INDEX_MAIN_FIRST_VERTEX:
-                        glUniform1ui(location, cmd->push_constant.u32);
-                        break;
-                    case NUX_GPU_INDEX_MAIN_HAS_TEXTURE:
-                        glUniform1ui(location, cmd->push_constant.u32);
-                        break;
-                    default:
-                        break;
-                }
+                    = active_pipeline->locations[cmd->push_u32.index];
+                glUniform1ui(location, cmd->push_u32.value);
+            }
+            break;
+            case NUX_GPU_COMMAND_PUSH_F32: {
+                GLuint location
+                    = active_pipeline->locations[cmd->push_f32.index];
+                glUniform1f(location, cmd->push_f32.value);
             }
             break;
         }

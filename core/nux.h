@@ -94,7 +94,8 @@ typedef enum
     NUX_GPU_COMMAND_BIND_PIPELINE = 1,
     NUX_GPU_COMMAND_BIND_BUFFER   = 2,
     NUX_GPU_COMMAND_BIND_TEXTURE  = 3,
-    NUX_GPU_COMMAND_PUSH_CONSTANT = 4,
+    NUX_GPU_COMMAND_PUSH_U32      = 4,
+    NUX_GPU_COMMAND_PUSH_F32      = 5,
 } nux_gpu_command_type_t;
 
 typedef struct
@@ -121,12 +122,13 @@ typedef struct
     struct
     {
         nux_u32_t index;
-        union
-        {
-            nux_u32_t u32;
-            nux_f32_t f32;
-        };
-    } push_constant;
+        nux_u32_t value;
+    } push_u32;
+    struct
+    {
+        nux_u32_t index;
+        nux_f32_t value;
+    } push_f32;
 } nux_gpu_command_t;
 
 //////////////////////////////////////////////////////////////////////////
