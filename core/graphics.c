@@ -2,9 +2,8 @@
 
 #include "fonts_data.c.inc"
 
-#define VERTEX_SIZE             5
-#define VERTICES_DEFAULT_SIZE   (1 << 18) // 32k
-#define TRANSFORMS_DEFAULT_SIZE 4096
+#define VERTEX_SIZE           5
+#define VERTICES_DEFAULT_SIZE (1 << 18) // 32k
 
 nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
@@ -36,12 +35,6 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_u32_vec_fill_reversed(&ctx->free_framebuffer_slots);
     nux_u32_vec_fill_reversed(&ctx->free_buffer_slots);
 
-    // Allocate gpu commands buffer
-    NUX_CHECKM(
-        nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &ctx->gpu_commands),
-        "Failed to allocate gpu commands buffer",
-        goto error);
-
     // Initialize state
     nux_palr(ctx);
 
@@ -50,30 +43,21 @@ nux_graphics_init (nux_ctx_t *ctx)
     NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->main_pipeline),
                "Failed to create main pipeline",
                goto error);
+    ctx->canvas_pipeline.type = NUX_GPU_PIPELINE_CANVAS;
+    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->canvas_pipeline),
+               "Failed to create canvas pipeline",
+               goto error);
     ctx->blit_pipeline.type = NUX_GPU_PIPELINE_BLIT;
     NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->blit_pipeline),
                "Failed to create blit pipeline",
                goto error);
 
-    // Create buffers
-    ctx->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
-    ctx->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &ctx->constants_buffer),
-               "Failed to create constants buffer",
-               goto error);
-
+    // Create vertices buffers
     ctx->vertices_buffer.type = NUX_GPU_BUFFER_STORAGE;
     ctx->vertices_buffer.size = VERTEX_SIZE * VERTICES_DEFAULT_SIZE;
     ctx->vertices_buffer_head = 0;
     NUX_CHECKM(nux_gpu_buffer_init(ctx, &ctx->vertices_buffer),
                "Failed to create vertices buffer",
-               goto error);
-
-    ctx->transforms_buffer_head = 0;
-    ctx->transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    ctx->transforms_buffer.size = NUX_M4_SIZE * TRANSFORMS_DEFAULT_SIZE;
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &ctx->transforms_buffer),
-               "Failed to create transforms buffer",
                goto error);
 
     // Create canvas
@@ -98,10 +82,6 @@ nux_graphics_render (nux_ctx_t *ctx)
     nux_canvas_end(ctx, &ctx->canvas);
     nux_canvas_begin(ctx, &ctx->canvas);
 
-    // Reset frame data (TODO: mode to scene)
-    ctx->transforms_buffer_head = 0;
-    nux_gpu_command_vec_clear(&ctx->gpu_commands);
-
     return NUX_SUCCESS;
 }
 
@@ -124,27 +104,6 @@ nux_graphics_push_vertices (nux_ctx_t       *ctx,
                return NUX_FAILURE);
     *first = ctx->vertices_buffer_head;
     ctx->vertices_buffer_head += vcount;
-    return NUX_SUCCESS;
-}
-nux_status_t
-nux_graphics_push_transforms (nux_ctx_t      *ctx,
-                              nux_u32_t       mcount,
-                              const nux_m4_t *data,
-                              nux_u32_t      *index)
-{
-    NUX_CHECKM(ctx->transforms_buffer_head + mcount < TRANSFORMS_DEFAULT_SIZE,
-               "Out of transforms",
-               return NUX_FAILURE);
-    NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
-                                    ctx->transforms_buffer.slot,
-                                    ctx->transforms_buffer_head * NUX_M4_SIZE
-                                        * sizeof(nux_f32_t),
-                                    mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    data),
-               "Failed to update transform buffer",
-               return NUX_FAILURE);
-    *index = ctx->transforms_buffer_head;
-    ctx->transforms_buffer_head += mcount;
     return NUX_SUCCESS;
 }
 

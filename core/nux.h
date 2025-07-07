@@ -69,7 +69,12 @@ typedef enum
     NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX = 4,
     NUX_GPU_INDEX_MAIN_FIRST_VERTEX    = 5,
     NUX_GPU_INDEX_MAIN_HAS_TEXTURE     = 6,
-    NUX_GPU_INDEX_MAIN_MAX             = 7,
+
+    NUX_GPU_INDEX_CANVAS_CONSTANTS  = 0,
+    NUX_GPU_INDEX_CANVAS_QUADS      = 1,
+    NUX_GPU_INDEX_CANVAS_FIRST_QUAD = 2,
+
+    NUX_GPU_INDEX_MAX = 7,
 } nux_gpu_index_t;
 
 typedef struct

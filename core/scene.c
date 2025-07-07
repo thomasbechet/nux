@@ -1,6 +1,30 @@
 #include "internal.h"
 
-#define DEFAULT_NODE_COUNT 4096
+#define DEFAULT_NODE_COUNT      4096
+#define TRANSFORMS_DEFAULT_SIZE 4096
+
+static nux_status_t
+push_transforms (nux_ctx_t      *ctx,
+                 nux_scene_t    *scene,
+                 nux_u32_t       mcount,
+                 const nux_m4_t *data,
+                 nux_u32_t      *index)
+{
+    NUX_CHECKM(scene->transforms_buffer_head + mcount < TRANSFORMS_DEFAULT_SIZE,
+               "Out of transforms",
+               return NUX_FAILURE);
+    NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
+                                    scene->transforms_buffer.slot,
+                                    scene->transforms_buffer_head * NUX_M4_SIZE
+                                        * sizeof(nux_f32_t),
+                                    mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    data),
+               "Failed to update transform buffer",
+               return NUX_FAILURE);
+    *index = scene->transforms_buffer_head;
+    scene->transforms_buffer_head += mcount;
+    return NUX_SUCCESS;
+}
 
 nux_u32_t
 nux_scene_new (nux_ctx_t *ctx)
@@ -21,6 +45,26 @@ nux_scene_new (nux_ctx_t *ctx)
     // Reserve index 0 to null
     nux_node_pool_add(&s->nodes);
     nux_component_pool_add(&s->components);
+
+    // Allocate gpu commands buffer
+    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &s->commands),
+               "Failed to allocate commands buffer",
+               return NUX_NULL);
+
+    // Allocate constants buffer
+    s->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
+    s->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
+    NUX_CHECKM(nux_gpu_buffer_init(ctx, &s->constants_buffer),
+               "Failed to create constants buffer",
+               return NUX_NULL);
+
+    // Allocate transforms buffer
+    s->transforms_buffer_head = 0;
+    s->transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    s->transforms_buffer.size = NUX_M4_SIZE * TRANSFORMS_DEFAULT_SIZE;
+    NUX_CHECKM(nux_gpu_buffer_init(ctx, &s->transforms_buffer),
+               "Failed to create transforms buffer",
+               return NUX_NULL);
 
     return id;
 }
@@ -48,9 +92,9 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     }
 
     // Bind pipeline and constants
-    nux_gpu_bind_pipeline(ctx, ctx->main_pipeline.slot);
+    nux_gpu_bind_pipeline(&s->commands, ctx->main_pipeline.slot);
     nux_gpu_bind_buffer(
-        ctx, NUX_GPU_INDEX_MAIN_CONSTANTS, ctx->constants_buffer.slot);
+        &s->commands, NUX_GPU_INDEX_MAIN_CONSTANTS, s->constants_buffer.slot);
 
     // Draw nodes
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
@@ -83,26 +127,30 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
 
             // Push transform
             nux_u32_t transform_idx;
-            NUX_CHECK(nux_graphics_push_transforms(
-                          ctx, 1, &t->global_matrix, &transform_idx),
-                      continue);
+            NUX_CHECK(
+                push_transforms(ctx, s, 1, &t->global_matrix, &transform_idx),
+                continue);
 
             // Prepare commands
             if (tex)
             {
                 nux_gpu_bind_texture(
-                    ctx, NUX_GPU_INDEX_MAIN_TEXTURE0, tex->slot);
+                    &s->commands, NUX_GPU_INDEX_MAIN_TEXTURE0, tex->slot);
             }
-            nux_gpu_push_u32(ctx, NUX_GPU_INDEX_MAIN_HAS_TEXTURE, tex ? 1 : 0);
-            nux_gpu_bind_buffer(
-                ctx, NUX_GPU_INDEX_MAIN_VERTICES, ctx->vertices_buffer.slot);
-            nux_gpu_bind_buffer(ctx,
-                                NUX_GPU_INDEX_MAIN_TRANSFORMS,
-                                ctx->transforms_buffer.slot);
-            nux_gpu_push_u32(ctx, NUX_GPU_INDEX_MAIN_FIRST_VERTEX, m->first);
             nux_gpu_push_u32(
-                ctx, NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX, transform_idx);
-            nux_gpu_draw(ctx, m->count);
+                &s->commands, NUX_GPU_INDEX_MAIN_HAS_TEXTURE, tex ? 1 : 0);
+            nux_gpu_bind_buffer(&s->commands,
+                                NUX_GPU_INDEX_MAIN_VERTICES,
+                                ctx->vertices_buffer.slot);
+            nux_gpu_bind_buffer(&s->commands,
+                                NUX_GPU_INDEX_MAIN_TRANSFORMS,
+                                s->transforms_buffer.slot);
+            nux_gpu_push_u32(
+                &s->commands, NUX_GPU_INDEX_MAIN_FIRST_VERTEX, m->first);
+            nux_gpu_push_u32(&s->commands,
+                             NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX,
+                             transform_idx);
+            nux_gpu_draw(&s->commands, m->count);
         }
     }
 
@@ -132,14 +180,17 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     constants.canvas_size = nux_v2u(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     constants.time        = ctx->time;
     nux_os_update_buffer(ctx->userdata,
-                         ctx->constants_buffer.slot,
+                         s->constants_buffer.slot,
                          0,
                          sizeof(constants),
                          &constants);
 
     // Submit commands
-    nux_os_gpu_submit(
-        ctx->userdata, ctx->gpu_commands.data, ctx->gpu_commands.size);
+    nux_os_gpu_submit(ctx->userdata, s->commands.data, s->commands.size);
+
+    // Reset frame data
+    s->transforms_buffer_head = 0;
+    nux_gpu_command_vec_clear(&s->commands);
 }
 nux_u32_t
 nux_scene_get_node (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t index)

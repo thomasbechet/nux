@@ -16,6 +16,7 @@ if __name__ == "__main__":
     shaders = []
     slang_files = [
         "core/shaders/main.slang",
+        "core/shaders/canvas.slang",
         "core/shaders/blit.slang",
     ]
     for slang_file in slang_files:

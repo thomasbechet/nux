@@ -131,18 +131,39 @@ nux_os_create_pipeline (void                          *userdata,
             pipeline->units[NUX_GPU_INDEX_MAIN_TEXTURE0] = 0;
         }
         break;
-        case NUX_GPU_PIPELINE_BLIT: {
-            status       = compile_program(shader_blit_vert,
-                                     ARRAY_LEN(shader_blit_vert),
-                                     shader_blit_frag,
-                                     ARRAY_LEN(shader_blit_frag),
+        case NUX_GPU_PIPELINE_CANVAS: {
+            status = compile_program(shader_canvas_vert,
+                                     ARRAY_LEN(shader_canvas_vert),
+                                     shader_canvas_frag,
+                                     ARRAY_LEN(shader_canvas_frag),
                                      &pipeline->program);
+
             GLuint index = glGetProgramResourceIndex(
                 pipeline->program, GL_UNIFORM_BLOCK, "Constants_std140");
             glUniformBlockBinding(pipeline->program, index, 1);
+            index = glGetProgramResourceIndex(
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
+            glShaderStorageBlockBinding(pipeline->program, index, 2);
+
+            pipeline->indices[NUX_GPU_INDEX_CANVAS_CONSTANTS] = 1;
+            pipeline->indices[NUX_GPU_INDEX_CANVAS_QUADS]     = 2;
+
+            pipeline->locations[NUX_GPU_INDEX_CANVAS_FIRST_QUAD]
+                = glGetUniformLocation(pipeline->program,
+                                       "entryPointParams.firstQuad");
         }
         break;
-        case NUX_GPU_PIPELINE_CANVAS: {
+        case NUX_GPU_PIPELINE_BLIT: {
+            // status       = compile_program(shader_blit_vert,
+            //                          ARRAY_LEN(shader_blit_vert),
+            //                          shader_blit_frag,
+            //                          ARRAY_LEN(shader_blit_frag),
+            //                          &pipeline->program);
+            // GLuint index = glGetProgramResourceIndex(
+            //     pipeline->program, GL_UNIFORM_BLOCK, "Constants_std140");
+            // glUniformBlockBinding(pipeline->program, index, 1);
+            //
+            // pipeline->indices[NUX_GPU_INDEX_MAIN_CONSTANTS] = 1;
         }
         break;
     }
