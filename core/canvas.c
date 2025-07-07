@@ -10,17 +10,17 @@ typedef struct
 } gpu_quad_t;
 
 static gpu_quad_t
-make_quad (nux_u32_t x,
-           nux_u32_t y,
-           nux_u32_t tx,
-           nux_u32_t ty,
-           nux_u32_t sx,
-           nux_u32_t sy)
+make_quad (nux_u16_t x,
+           nux_u16_t y,
+           nux_u16_t tx,
+           nux_u16_t ty,
+           nux_u16_t sx,
+           nux_u16_t sy)
 {
     gpu_quad_t q;
-    q.pos  = (y << 16) | x;
-    q.tex  = (ty << 16) | tx;
-    q.size = (sy << 16) | sx;
+    q.pos  = ((nux_u32_t)y << 16) | x;
+    q.tex  = ((nux_u32_t)ty << 16) | tx;
+    q.size = ((nux_u32_t)sy << 16) | sx;
     // blit->depth
     //     = (pass->depth - NUGL__MIN_DEPTH) / (NUGL__MAX_DEPTH -
     //     NUGL__MIN_DEPTH);
@@ -46,6 +46,15 @@ push_quads (nux_ctx_t    *ctx,
     *index = canvas->quads_buffer_head;
     canvas->quads_buffer_head += count;
     return NUX_SUCCESS;
+}
+static void
+render_quads (nux_ctx_t             *ctx,
+              nux_gpu_command_vec_t *cmds,
+              nux_u32_t              first,
+              nux_u32_t              count)
+{
+    nux_gpu_push_u32(cmds, NUX_GPU_INDEX_CANVAS_FIRST_QUAD, first);
+    nux_gpu_draw(cmds, 6 * count);
 }
 
 nux_status_t
@@ -90,12 +99,15 @@ nux_canvas_begin (nux_ctx_t *ctx, nux_canvas_t *canvas)
                         NUX_GPU_INDEX_CANVAS_QUADS,
                         canvas->quads_buffer.slot);
 
-    // TEST
-    gpu_quad_t q = make_quad(50, 50, 0, 0, 100, 100);
-    nux_u32_t  index;
-    NUX_ASSERT(push_quads(ctx, canvas, &q, 1, &index));
-    nux_gpu_push_u32(&canvas->commands, NUX_GPU_INDEX_CANVAS_FIRST_QUAD, index);
-    nux_gpu_draw(&canvas->commands, 6);
+    // // TEST
+    // gpu_quad_t q = make_quad(50, 50, 0, 0, 100, 100);
+    // nux_u32_t  index;
+    // NUX_ASSERT(push_quads(ctx, canvas, &q, 1, &index));
+    // nux_gpu_push_u32(&canvas->commands, NUX_GPU_INDEX_CANVAS_FIRST_QUAD,
+    // index); nux_gpu_draw(&canvas->commands, 6);
+
+    nux_canvas_draw_text(
+        ctx, canvas, &ctx->default_font, 50, 50, "Hello World !");
 }
 void
 nux_canvas_end (nux_ctx_t *ctx, nux_canvas_t *canvas)
@@ -116,54 +128,62 @@ nux_canvas_end (nux_ctx_t *ctx, nux_canvas_t *canvas)
     nux_os_gpu_submit(
         ctx->userdata, canvas->commands.data, canvas->commands.size);
 }
-static void
+void
 nux_canvas_draw_text (nux_ctx_t      *ctx,
+                      nux_canvas_t   *canvas,
                       nux_font_t     *font,
                       nux_u32_t       x,
                       nux_u32_t       y,
                       const nux_c8_t *text)
 {
-    // const nux_u32_t pixel_per_glyph
-    //     = DEFAULT_FONT_DATA_WIDTH * DEFAULT_FONT_DATA_HEIGHT;
-    //
-    // nux_u32_t len = nux_strnlen(text, 1024);
-    // nux_b2i_t extent
-    //     = nux_b2i_xywh(x, y, DEFAULT_FONT_DATA_WIDTH,
-    //     DEFAULT_FONT_DATA_HEIGHT);
-    // nux_c8_t        c;
-    // const nux_c8_t *it = text;
-    // while (*it != '\0')
-    // {
-    //     if (*it == '\n')
-    //     {
-    //         extent = nux_b2i_moveto(
-    //             extent, nux_v2i(x, extent.min.y + DEFAULT_FONT_DATA_HEIGHT));
-    //         continue;
-    //     }
-    //     nux_u32_t index = default_font_data_chars[(nux_u8_t)*it];
-    //
-    //     for (nux_u32_t p = 0; p < pixel_per_glyph; ++p)
-    //     {
-    //         nux_u32_t bit_offset = index * pixel_per_glyph + p;
-    //         NUX_ASSERT((bit_offset / 8) < sizeof(default_font_data));
-    //         nux_u8_t  byte    = default_font_data[bit_offset / 8];
-    //         nux_b32_t bit_set = (byte & (1 << (7 - (p % 8)))) != 0;
-    //
-    //         nux_i32_t px = extent.min.x + p % DEFAULT_FONT_DATA_WIDTH;
-    //         nux_i32_t py = extent.min.y + p / DEFAULT_FONT_DATA_WIDTH;
-    //
-    //         if (bit_set)
-    //         {
-    //             nux_pset(env, px, py, c);
-    //
-    //             // Apply shadow
-    //             nux_pset(env, px + 1, py + 1, 0);
-    //         }
-    //     }
-    //
-    //     extent = nux_b2i_translate(extent, nux_v2i(DEFAULT_FONT_DATA_WIDTH,
-    //     0));
-    //
-    //     ++it;
-    // }
+    nux_gpu_bind_texture(
+        &canvas->commands, NUX_GPU_INDEX_CANVAS_TEXTURE, font->texture.slot);
+    nux_gpu_push_u32(&canvas->commands,
+                     NUX_GPU_INDEX_CANVAS_ATLAS_WIDTH,
+                     font->texture.width);
+    nux_gpu_push_u32(&canvas->commands,
+                     NUX_GPU_INDEX_CANVAS_ATLAS_HEIGHT,
+                     font->texture.height);
+
+    nux_u32_t len = nux_strnlen(text, 1024);
+    nux_b2i_t extent
+        = nux_b2i_xywh(x, y, font->glyph_width, font->glyph_height);
+    nux_u32_t       quad_count = 0;
+    nux_u32_t       first_quad = 0;
+    const nux_c8_t *it         = text;
+    while (*it != '\0')
+    {
+        // Check next line
+        if (*it == '\n')
+        {
+            extent = nux_b2i_moveto(
+                extent, nux_v2i(x, extent.min.y + font->glyph_height));
+            continue;
+        }
+
+        // Generate quad
+        nux_u32_t  index      = font->char_to_glyph_index[(nux_u8_t)*it];
+        gpu_quad_t quad       = make_quad(extent.min.x,
+                                    extent.min.y,
+                                    index * font->glyph_width,
+                                    0,
+                                    font->glyph_width,
+                                    font->glyph_height);
+        nux_u32_t  quad_index = 0;
+        NUX_CHECK(push_quads(ctx, canvas, &quad, 1, &index), return);
+        if (!first_quad) // Keep track of first quad index
+        {
+            first_quad = quad_index;
+        }
+
+        // Add quad to buffer
+        ++quad_count;
+
+        // Move to next character
+        extent = nux_b2i_translate(extent, nux_v2i(font->glyph_width, 0));
+        ++it;
+    }
+
+    // Render quads
+    render_quads(ctx, &canvas->commands, first_quad, quad_count);
 }

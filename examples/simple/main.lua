@@ -8,7 +8,7 @@ local yaw = 0
 local pitch = 0
 
 local function controller(e)
-    local speed = 20
+    local speed = 10 
 
     local mx = nux.input.axis(0, nux.AXIS_LEFTX)
     local mz = nux.input.axis(0, nux.AXIS_LEFTY)

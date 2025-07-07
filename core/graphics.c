@@ -60,6 +60,11 @@ nux_graphics_init (nux_ctx_t *ctx)
                "Failed to create vertices buffer",
                goto error);
 
+    // Create default font
+    NUX_CHECKM(nux_font_init_default(ctx, &ctx->default_font),
+               "Failed to create default font",
+               goto error);
+
     // Create canvas
     NUX_CHECKM(nux_canvas_init(ctx, &ctx->canvas),
                "Failed to initialize canvas",
@@ -285,7 +290,7 @@ void
 nux_graphics_set_render_target (nux_ctx_t *ctx, nux_u32_t id)
 {
     nux_texture_t *tex = nux_object_get(ctx, NUX_TYPE_TEXTURE, id);
-    NUX_CHECKM(tex->type == NUX_TEXTURE_RENDER_TARGET,
+    NUX_CHECKM(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET,
                "Texture is not a render target",
                return);
 }

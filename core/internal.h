@@ -462,7 +462,12 @@ typedef struct
     nux_texture_type_t type;
     nux_u32_t          width;
     nux_u32_t          height;
-    nux_u8_t          *data;
+} nux_gpu_texture_t;
+
+typedef struct
+{
+    nux_gpu_texture_t gpu;
+    nux_u8_t         *data;
 } nux_texture_t;
 
 typedef struct
@@ -592,7 +597,10 @@ typedef struct
 
 typedef struct
 {
-    nux_texture_t texture;
+    nux_gpu_texture_t texture;
+    nux_u32_t         glyph_width;
+    nux_u32_t         glyph_height;
+    const nux_u8_t   *char_to_glyph_index;
 } nux_font_t;
 
 struct nux_context
@@ -624,6 +632,7 @@ struct nux_context
     nux_gpu_pipeline_t canvas_pipeline;
     nux_gpu_buffer_t   vertices_buffer;
     nux_u32_t          vertices_buffer_head;
+    nux_font_t         default_font;
     nux_canvas_t       canvas;
 
     nux_arena_pool_t  arenas;
@@ -814,16 +823,27 @@ nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
                                         nux_u32_t        vcount,
                                         const nux_f32_t *data,
                                         nux_u32_t       *first);
+
+// font.c
+
+nux_status_t nux_font_init_default(nux_ctx_t *ctx, nux_font_t *font);
+
 // canvas.c
 
 nux_status_t nux_canvas_init(nux_ctx_t *ctx, nux_canvas_t *canvas);
 void         nux_canvas_begin(nux_ctx_t *ctx, nux_canvas_t *canvas);
 void         nux_canvas_end(nux_ctx_t *ctx, nux_canvas_t *canvas);
+void         nux_canvas_draw_text(nux_ctx_t      *ctx,
+                                  nux_canvas_t   *canvas,
+                                  nux_font_t     *font,
+                                  nux_u32_t       x,
+                                  nux_u32_t       y,
+                                  const nux_c8_t *text);
 
 // gpu.c
 
 nux_status_t nux_gpu_buffer_init(nux_ctx_t *ctx, nux_gpu_buffer_t *buffer);
-nux_status_t nux_gpu_texture_init(nux_ctx_t *ctx, nux_texture_t *texture);
+nux_status_t nux_gpu_texture_init(nux_ctx_t *ctx, nux_gpu_texture_t *texture);
 nux_status_t nux_gpu_pipeline_init(nux_ctx_t          *ctx,
                                    nux_gpu_pipeline_t *pipeline);
 

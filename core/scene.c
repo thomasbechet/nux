@@ -135,7 +135,7 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             if (tex)
             {
                 nux_gpu_bind_texture(
-                    &s->commands, NUX_GPU_INDEX_MAIN_TEXTURE0, tex->slot);
+                    &s->commands, NUX_GPU_INDEX_MAIN_TEXTURE0, tex->gpu.slot);
             }
             nux_gpu_push_u32(
                 &s->commands, NUX_GPU_INDEX_MAIN_HAS_TEXTURE, tex ? 1 : 0);

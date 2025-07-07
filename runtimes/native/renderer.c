@@ -151,6 +151,17 @@ nux_os_create_pipeline (void                          *userdata,
             pipeline->locations[NUX_GPU_INDEX_CANVAS_FIRST_QUAD]
                 = glGetUniformLocation(pipeline->program,
                                        "entryPointParams.firstQuad");
+            pipeline->locations[NUX_GPU_INDEX_CANVAS_TEXTURE]
+                = glGetUniformLocation(pipeline->program,
+                                       "SPIRV_Cross_Combinedtexture0sampler0");
+            pipeline->locations[NUX_GPU_INDEX_CANVAS_ATLAS_WIDTH]
+                = glGetUniformLocation(pipeline->program,
+                                       "entryPointParams.atlasWidth");
+            pipeline->locations[NUX_GPU_INDEX_CANVAS_ATLAS_HEIGHT]
+                = glGetUniformLocation(pipeline->program,
+                                       "entryPointParams.atlasHeight");
+
+            pipeline->units[NUX_GPU_INDEX_CANVAS_TEXTURE] = 0;
         }
         break;
         case NUX_GPU_PIPELINE_BLIT: {

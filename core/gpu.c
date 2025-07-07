@@ -12,7 +12,7 @@ nux_gpu_buffer_init (nux_ctx_t *ctx, nux_gpu_buffer_t *buffer)
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_gpu_texture_init (nux_ctx_t *ctx, nux_texture_t *texture)
+nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
 {
     nux_gpu_texture_info_t info = {
         .type   = texture->type,
