@@ -77,6 +77,9 @@ typedef enum
     NUX_GPU_INDEX_CANVAS_ATLAS_WIDTH  = 4,
     NUX_GPU_INDEX_CANVAS_ATLAS_HEIGHT = 5,
 
+    NUX_GPU_INDEX_BLIT_CONSTANTS = 0,
+    NUX_GPU_INDEX_BLIT_TEXTURE   = 1,
+
     NUX_GPU_INDEX_MAX = 7,
 } nux_gpu_index_t;
 
@@ -93,12 +96,14 @@ typedef enum
 
 typedef enum
 {
-    NUX_GPU_COMMAND_DRAW          = 0,
-    NUX_GPU_COMMAND_BIND_PIPELINE = 1,
-    NUX_GPU_COMMAND_BIND_BUFFER   = 2,
-    NUX_GPU_COMMAND_BIND_TEXTURE  = 3,
-    NUX_GPU_COMMAND_PUSH_U32      = 4,
-    NUX_GPU_COMMAND_PUSH_F32      = 5,
+    NUX_GPU_COMMAND_BIND_FRAMEBUFFER = 0,
+    NUX_GPU_COMMAND_BIND_PIPELINE    = 1,
+    NUX_GPU_COMMAND_BIND_BUFFER      = 2,
+    NUX_GPU_COMMAND_BIND_TEXTURE     = 3,
+    NUX_GPU_COMMAND_PUSH_U32         = 4,
+    NUX_GPU_COMMAND_PUSH_F32         = 5,
+    NUX_GPU_COMMAND_DRAW             = 6,
+    NUX_GPU_COMMAND_CLEAR            = 7,
 } nux_gpu_command_type_t;
 
 typedef struct
@@ -106,8 +111,12 @@ typedef struct
     nux_u32_t type;
     struct
     {
-        nux_u32_t count;
-    } draw;
+        nux_u32_t slot;
+    } bind_framebuffer;
+    struct
+    {
+        nux_u32_t slot;
+    } bind_pipeline;
     struct
     {
         nux_u32_t index;
@@ -120,10 +129,6 @@ typedef struct
     } bind_texture;
     struct
     {
-        nux_u32_t slot;
-    } bind_pipeline;
-    struct
-    {
         nux_u32_t index;
         nux_u32_t value;
     } push_u32;
@@ -132,6 +137,14 @@ typedef struct
         nux_u32_t index;
         nux_f32_t value;
     } push_f32;
+    struct
+    {
+        nux_u32_t count;
+    } draw;
+    struct
+    {
+        nux_u32_t color;
+    } clear;
 } nux_gpu_command_t;
 
 //////////////////////////////////////////////////////////////////////////

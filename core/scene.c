@@ -91,7 +91,9 @@ nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
         }
     }
 
-    // Bind pipeline and constants
+    // Bind framebuffer, pipeline and constants
+    nux_gpu_bind_framebuffer(&s->commands, 0);
+    nux_gpu_clear(&s->commands, 0x00);
     nux_gpu_bind_pipeline(&s->commands, ctx->main_pipeline.slot);
     nux_gpu_bind_buffer(
         &s->commands, NUX_GPU_INDEX_MAIN_CONSTANTS, s->constants_buffer.slot);

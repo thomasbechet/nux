@@ -6,16 +6,17 @@ struct VOut
     float2 uv;
 }
 
-Texture2D<uint> canvas;
-Texture2D colormap;
+// Texture2D<uint> canvas;
+Texture2D texture0;
 SamplerState sampler0;
-SamplerState sampler1;
+// SamplerState sampler1;
 ConstantBuffer<Constants> constants;
 
 float4 sampleColor(float2 uv)
 {
-    uint idx = canvas.Sample(sampler0, uv).r;
-    return colormap.Sample(sampler1, float2(float(idx) / 255.0, 0));
+    // uint idx = canvas.Sample(sampler0, uv).r;
+    // return colormap.Sample(sampler1, float2(float(idx) / 255.0, 0));
+    return texture0.Sample(sampler0, uv);
 }
 
 // https://www.shadertoy.com/view/4s3fDB
@@ -60,7 +61,7 @@ VOut vertexMain(
 float4 fragmentMain(VOut input) : SV_Target
 {
     const float2 textureSize = constants.canvas_size;
-    float2 uv = float2(input.uv.x, 1 - input.uv.y);
+    float2 uv = float2(input.uv.x, input.uv.y);
     uv = uvFiltering(uv, textureSize);
     return bilinearFiltering(uv, textureSize);
 }

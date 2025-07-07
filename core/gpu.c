@@ -54,30 +54,12 @@ nux_gpu_pipeline_init (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
 }
 
 void
-nux_gpu_draw (nux_gpu_command_vec_t *cmds, nux_u32_t count)
+nux_gpu_bind_framebuffer (nux_gpu_command_vec_t *cmds, nux_u32_t slot)
 {
     nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
     NUX_ASSERT(cmd);
-    cmd->type       = NUX_GPU_COMMAND_DRAW;
-    cmd->draw.count = count;
-}
-void
-nux_gpu_push_u32 (nux_gpu_command_vec_t *cmds, nux_u32_t index, nux_u32_t value)
-{
-    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
-    NUX_ASSERT(cmd);
-    cmd->type           = NUX_GPU_COMMAND_PUSH_U32;
-    cmd->push_u32.index = index;
-    cmd->push_u32.value = value;
-}
-void
-nux_gpu_push_f32 (nux_gpu_command_vec_t *cmds, nux_u32_t index, nux_f32_t value)
-{
-    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
-    NUX_ASSERT(cmd);
-    cmd->type           = NUX_GPU_COMMAND_PUSH_F32;
-    cmd->push_f32.index = index;
-    cmd->push_f32.value = value;
+    cmd->type                  = NUX_GPU_COMMAND_BIND_FRAMEBUFFER;
+    cmd->bind_framebuffer.slot = slot;
 }
 void
 nux_gpu_bind_pipeline (nux_gpu_command_vec_t *cmds, nux_u32_t slot)
@@ -108,4 +90,38 @@ nux_gpu_bind_buffer (nux_gpu_command_vec_t *cmds,
     cmd->type              = NUX_GPU_COMMAND_BIND_BUFFER;
     cmd->bind_buffer.slot  = slot;
     cmd->bind_buffer.index = index;
+}
+void
+nux_gpu_push_u32 (nux_gpu_command_vec_t *cmds, nux_u32_t index, nux_u32_t value)
+{
+    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
+    NUX_ASSERT(cmd);
+    cmd->type           = NUX_GPU_COMMAND_PUSH_U32;
+    cmd->push_u32.index = index;
+    cmd->push_u32.value = value;
+}
+void
+nux_gpu_push_f32 (nux_gpu_command_vec_t *cmds, nux_u32_t index, nux_f32_t value)
+{
+    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
+    NUX_ASSERT(cmd);
+    cmd->type           = NUX_GPU_COMMAND_PUSH_F32;
+    cmd->push_f32.index = index;
+    cmd->push_f32.value = value;
+}
+void
+nux_gpu_draw (nux_gpu_command_vec_t *cmds, nux_u32_t count)
+{
+    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
+    NUX_ASSERT(cmd);
+    cmd->type       = NUX_GPU_COMMAND_DRAW;
+    cmd->draw.count = count;
+}
+void
+nux_gpu_clear (nux_gpu_command_vec_t *cmds, nux_u32_t color)
+{
+    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
+    NUX_ASSERT(cmd);
+    cmd->type        = NUX_GPU_COMMAND_CLEAR;
+    cmd->clear.color = color;
 }

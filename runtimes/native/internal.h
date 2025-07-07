@@ -70,6 +70,8 @@ typedef struct
 typedef struct
 {
     GLuint handle;
+    GLuint width;
+    GLuint height;
 } framebuffer_t;
 
 typedef struct
