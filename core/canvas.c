@@ -65,11 +65,13 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
     NUX_CHECKM(nux_gpu_buffer_init(ctx, &canvas->quads_buffer),
                "Failed to create quads buffer",
                return NUX_FAILURE);
+
     // Allocate commands
     NUX_CHECKM(
         nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &canvas->commands),
         "Failed to allocate canvas commands buffer",
         return NUX_FAILURE);
+
     return NUX_SUCCESS;
 }
 void
@@ -113,4 +115,55 @@ nux_canvas_end (nux_ctx_t *ctx, nux_canvas_t *canvas)
     // Submit commands
     nux_os_gpu_submit(
         ctx->userdata, canvas->commands.data, canvas->commands.size);
+}
+static void
+nux_canvas_draw_text (nux_ctx_t      *ctx,
+                      nux_font_t     *font,
+                      nux_u32_t       x,
+                      nux_u32_t       y,
+                      const nux_c8_t *text)
+{
+    // const nux_u32_t pixel_per_glyph
+    //     = DEFAULT_FONT_DATA_WIDTH * DEFAULT_FONT_DATA_HEIGHT;
+    //
+    // nux_u32_t len = nux_strnlen(text, 1024);
+    // nux_b2i_t extent
+    //     = nux_b2i_xywh(x, y, DEFAULT_FONT_DATA_WIDTH,
+    //     DEFAULT_FONT_DATA_HEIGHT);
+    // nux_c8_t        c;
+    // const nux_c8_t *it = text;
+    // while (*it != '\0')
+    // {
+    //     if (*it == '\n')
+    //     {
+    //         extent = nux_b2i_moveto(
+    //             extent, nux_v2i(x, extent.min.y + DEFAULT_FONT_DATA_HEIGHT));
+    //         continue;
+    //     }
+    //     nux_u32_t index = default_font_data_chars[(nux_u8_t)*it];
+    //
+    //     for (nux_u32_t p = 0; p < pixel_per_glyph; ++p)
+    //     {
+    //         nux_u32_t bit_offset = index * pixel_per_glyph + p;
+    //         NUX_ASSERT((bit_offset / 8) < sizeof(default_font_data));
+    //         nux_u8_t  byte    = default_font_data[bit_offset / 8];
+    //         nux_b32_t bit_set = (byte & (1 << (7 - (p % 8)))) != 0;
+    //
+    //         nux_i32_t px = extent.min.x + p % DEFAULT_FONT_DATA_WIDTH;
+    //         nux_i32_t py = extent.min.y + p / DEFAULT_FONT_DATA_WIDTH;
+    //
+    //         if (bit_set)
+    //         {
+    //             nux_pset(env, px, py, c);
+    //
+    //             // Apply shadow
+    //             nux_pset(env, px + 1, py + 1, 0);
+    //         }
+    //     }
+    //
+    //     extent = nux_b2i_translate(extent, nux_v2i(DEFAULT_FONT_DATA_WIDTH,
+    //     0));
+    //
+    //     ++it;
+    // }
 }

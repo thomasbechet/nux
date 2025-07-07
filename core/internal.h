@@ -590,6 +590,11 @@ typedef struct
     nux_u32_t             quads_buffer_head;
 } nux_canvas_t;
 
+typedef struct
+{
+    nux_texture_t texture;
+} nux_font_t;
+
 struct nux_context
 {
     // Error handling
