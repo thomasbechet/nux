@@ -69,7 +69,7 @@ nux_scene_new (nux_ctx_t *ctx)
     return id;
 }
 void
-nux_scene_draw (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
+nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
 {
     nux_scene_t *s = nux_object_get(ctx, NUX_TYPE_SCENE, scene);
     NUX_CHECK(s, return);

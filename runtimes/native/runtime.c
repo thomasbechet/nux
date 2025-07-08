@@ -166,11 +166,10 @@ runtime_run (const config_t *config)
     {
         // Retrieve window events
         window_begin_frame();
-
-        // Clear window
         struct nk_vec2i window_size = window_get_size();
-        renderer_clear(nk_rect(0, 0, window_size.x, window_size.y),
-                       window_size);
+
+        // Clear background
+        renderer_clear();
 
         // Update active instances
         for (int i = 0; i < (int)ARRAY_LEN(runtime.instances); ++i)
@@ -181,8 +180,15 @@ runtime_run (const config_t *config)
                 // Compute viewport
                 apply_viewport_mode(instance, window_size);
 
+                // Begin renderer
+                renderer_begin(nk_rect(0, 0, window_size.x, window_size.y),
+                               window_size);
+
                 // Tick
                 nux_instance_tick(instance->ctx);
+
+                // End renderer
+                renderer_end();
             }
         }
 

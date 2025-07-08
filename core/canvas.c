@@ -58,10 +58,7 @@ render_quads (nux_ctx_t             *ctx,
 }
 
 nux_status_t
-nux_canvas_init (nux_ctx_t    *ctx,
-                 nux_canvas_t *canvas,
-                 nux_u32_t     width,
-                 nux_u32_t     height)
+nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
 {
     // Allocate constants buffer
     canvas->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
@@ -84,81 +81,9 @@ nux_canvas_init (nux_ctx_t    *ctx,
         "Failed to allocate canvas commands buffer",
         return NUX_FAILURE);
 
-    // Allocate texture
-    canvas->texture.type   = NUX_TEXTURE_RENDER_TARGET;
-    canvas->texture.width  = width;
-    canvas->texture.height = height;
-    NUX_CHECKM(nux_gpu_texture_init(ctx, &canvas->texture),
-               "Failed to create canvas render target",
-               return NUX_FAILURE);
-
     return NUX_SUCCESS;
 }
-void
-nux_canvas_begin (nux_ctx_t *ctx, nux_canvas_t *canvas)
-{
-    // Clear buffers
-    canvas->quads_buffer_head = 0;
-    nux_gpu_command_vec_clear(&canvas->commands);
-
-    // Begin render
-    nux_gpu_bind_framebuffer(&canvas->commands,
-                             canvas->texture.framebuffer_slot);
-    nux_gpu_bind_pipeline(&canvas->commands, ctx->canvas_pipeline.slot);
-    nux_gpu_bind_buffer(&canvas->commands,
-                        NUX_GPU_INDEX_CANVAS_CONSTANTS,
-                        canvas->constants_buffer.slot);
-    nux_gpu_bind_buffer(&canvas->commands,
-                        NUX_GPU_INDEX_CANVAS_QUADS,
-                        canvas->quads_buffer.slot);
-
-    // // TEST
-    // gpu_quad_t q = make_quad(50, 50, 0, 0, 100, 100);
-    // nux_u32_t  index;
-    // NUX_ASSERT(push_quads(ctx, canvas, &q, 1, &index));
-    // nux_gpu_push_u32(&canvas->commands, NUX_GPU_INDEX_CANVAS_FIRST_QUAD,
-    // index); nux_gpu_draw(&canvas->commands, 6);
-
-    nux_c8_t buf[32];
-    nux_snprintf(buf, sizeof(buf), "time:%.2lf", nux_time(ctx));
-    nux_canvas_draw_text(ctx, canvas, &ctx->default_font, 10, 10, buf);
-}
-void
-nux_canvas_end (nux_ctx_t *ctx, nux_canvas_t *canvas)
-{
-    // Update constants
-    nux_gpu_constants_buffer_t constants;
-    // constants.screen_size = nux_v2u(ctx->stats[NUX_STAT_SCREEN_WIDTH],
-    //                                 ctx->stats[NUX_STAT_SCREEN_HEIGHT]);
-    constants.screen_size
-        = nux_v2u(canvas->texture.width, canvas->texture.height);
-    constants.canvas_size
-        = nux_v2u(canvas->texture.width, canvas->texture.height);
-    constants.time = ctx->time;
-    nux_os_update_buffer(ctx->userdata,
-                         canvas->constants_buffer.slot,
-                         0,
-                         sizeof(constants),
-                         &constants);
-
-    // Submit commands
-    nux_os_gpu_submit(
-        ctx->userdata, canvas->commands.data, canvas->commands.size);
-
-    // Blit to fullscreen
-    nux_gpu_command_vec_clear(&canvas->commands);
-    nux_gpu_bind_framebuffer(&canvas->commands, 0);
-    nux_gpu_bind_pipeline(&canvas->commands, ctx->blit_pipeline.slot);
-    nux_gpu_bind_buffer(&canvas->commands,
-                        NUX_GPU_INDEX_BLIT_CONSTANTS,
-                        canvas->constants_buffer.slot);
-    nux_gpu_bind_texture(
-        &canvas->commands, NUX_GPU_INDEX_BLIT_TEXTURE, canvas->texture.slot);
-    nux_gpu_draw(&canvas->commands, 3);
-    nux_os_gpu_submit(
-        ctx->userdata, canvas->commands.data, canvas->commands.size);
-}
-void
+static void
 nux_canvas_draw_text (nux_ctx_t      *ctx,
                       nux_canvas_t   *canvas,
                       nux_font_t     *font,
@@ -188,6 +113,7 @@ nux_canvas_draw_text (nux_ctx_t      *ctx,
         {
             extent = nux_b2i_moveto(
                 extent, nux_v2i(x, extent.min.y + font->glyph_height));
+            ++it;
             continue;
         }
 
@@ -210,10 +136,91 @@ nux_canvas_draw_text (nux_ctx_t      *ctx,
         ++quad_count;
 
         // Move to next character
-        extent = nux_b2i_translate(extent, nux_v2i(font->glyph_width, 0));
+        extent = nux_b2i_translate(extent, nux_v2i(font->glyph_width - 1, 0));
         ++it;
     }
 
     // Render quads
     render_quads(ctx, &canvas->commands, first_quad, quad_count);
+}
+
+nux_u32_t
+nux_canvas_new (nux_ctx_t *ctx)
+{
+    nux_canvas_t *c = nux_arena_alloc(ctx->active_arena, sizeof(*c));
+    NUX_CHECK(c, return NUX_NULL);
+    nux_u32_t id
+        = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_CANVAS, c);
+    NUX_CHECK(id, return NUX_NULL);
+    NUX_CHECK(nux_canvas_init(ctx, c), return NUX_NULL);
+    return id;
+}
+void
+nux_canvas_clear (nux_ctx_t *ctx, nux_u32_t id)
+{
+    nux_canvas_t *c = nux_object_get(ctx, NUX_TYPE_CANVAS, id);
+    NUX_CHECK(c, return);
+    c->quads_buffer_head = 0;
+    nux_gpu_command_vec_clear(&c->commands);
+}
+void
+nux_canvas_render (nux_ctx_t *ctx, nux_u32_t id, nux_u32_t target)
+{
+    nux_canvas_t *c = nux_object_get(ctx, NUX_TYPE_CANVAS, id);
+    NUX_CHECK(c, return);
+
+    nux_gpu_command_t     cmds_data[16];
+    nux_gpu_command_vec_t cmds;
+    nux_gpu_command_vec_init(cmds_data, NUX_ARRAY_SIZE(cmds_data), &cmds);
+
+    nux_u32_t framebuffer = NUX_NULL;
+    nux_u32_t width       = 1000;
+    nux_u32_t height      = 800;
+    if (target)
+    {
+        nux_texture_t *rt = nux_object_get(ctx, NUX_TYPE_TEXTURE, target);
+        if (rt->gpu.type != NUX_TEXTURE_RENDER_TARGET)
+        {
+            NUX_ERROR("Canvas target is a render target");
+            return;
+        }
+        framebuffer = rt->gpu.framebuffer_slot;
+        width       = rt->gpu.width;
+        height      = rt->gpu.height;
+    }
+
+    // Update constants
+    nux_gpu_constants_buffer_t constants;
+    constants.screen_size = nux_v2u(width, height);
+    constants.canvas_size = nux_v2u(width, height);
+    constants.time        = ctx->time;
+    nux_os_update_buffer(ctx->userdata,
+                         c->constants_buffer.slot,
+                         0,
+                         sizeof(constants),
+                         &constants);
+
+    // Begin canvas render
+    nux_gpu_bind_framebuffer(&cmds, framebuffer);
+    // nux_gpu_clear(&cmds, 0x770000);
+    nux_gpu_bind_pipeline(&cmds, ctx->canvas_pipeline.slot);
+    nux_gpu_bind_buffer(
+        &cmds, NUX_GPU_INDEX_CANVAS_CONSTANTS, c->constants_buffer.slot);
+    nux_gpu_bind_buffer(
+        &cmds, NUX_GPU_INDEX_CANVAS_QUADS, c->quads_buffer.slot);
+
+    // Submit commands
+    nux_os_gpu_submit(ctx->userdata, cmds.data, cmds.size);
+    nux_os_gpu_submit(ctx->userdata, c->commands.data, c->commands.size);
+}
+void
+nux_canvas_text (nux_ctx_t      *ctx,
+                 nux_u32_t       id,
+                 nux_u32_t       x,
+                 nux_u32_t       y,
+                 const nux_c8_t *text)
+{
+    nux_canvas_t *c = nux_object_get(ctx, NUX_TYPE_CANVAS, id);
+    NUX_CHECK(c, return);
+    nux_canvas_draw_text(ctx, c, &ctx->default_font, x, y, text);
 }

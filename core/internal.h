@@ -152,21 +152,22 @@
 
 #define NUX_B3_DEFINE(name, type) nux_##name##_t nux_##name(type min, type max);
 
-#define NUX_VEC_DEFINE(name, T)                           \
-    typedef struct                                        \
-    {                                                     \
-        nux_arena_t *arena;                               \
-        nux_u32_t    size;                                \
-        nux_u32_t    capa;                                \
-        T           *data;                                \
-    } name##_t;                                           \
-    nux_status_t name##_alloc(                            \
-        nux_arena_t *arena, nux_u32_t capa, name##_t *v); \
-    T        *name##_push(name##_t *v);                   \
-    nux_b32_t name##_pushv(name##_t *v, T val);           \
-    T        *name##_pop(name##_t *v);                    \
-    void      name##_clear(name##_t *v);                  \
-    T        *name##_get(name##_t *v, nux_u32_t i);       \
+#define NUX_VEC_DEFINE(name, T)                                  \
+    typedef struct                                               \
+    {                                                            \
+        nux_arena_t *arena;                                      \
+        nux_u32_t    size;                                       \
+        nux_u32_t    capa;                                       \
+        T           *data;                                       \
+    } name##_t;                                                  \
+    nux_status_t name##_alloc(                                   \
+        nux_arena_t *arena, nux_u32_t capa, name##_t *v);        \
+    void      name##_init(T *data, nux_u32_t capa, name##_t *v); \
+    T        *name##_push(name##_t *v);                          \
+    nux_b32_t name##_pushv(name##_t *v, T val);                  \
+    T        *name##_pop(name##_t *v);                           \
+    void      name##_clear(name##_t *v);                         \
+    T        *name##_get(name##_t *v, nux_u32_t i);              \
     void      name##_fill_reverse_indices(name##_t *v);
 #define NUX_VEC_IMPL(name, T)                                                  \
     nux_status_t name##_alloc(nux_arena_t *arena, nux_u32_t capa, name##_t *v) \
@@ -178,6 +179,14 @@
         (v)->capa  = capa;                                                     \
         (v)->size  = 0;                                                        \
         return NUX_SUCCESS;                                                    \
+    }                                                                          \
+    void name##_init(T *data, nux_u32_t capa, name##_t *v)                     \
+    {                                                                          \
+        NUX_ASSERT(capa);                                                      \
+        (v)->data  = data;                                                     \
+        (v)->arena = NUX_NULL;                                                 \
+        (v)->capa  = capa;                                                     \
+        (v)->size  = 0;                                                        \
     }                                                                          \
     T *name##_push(name##_t *v)                                                \
     {                                                                          \
@@ -507,11 +516,12 @@ typedef enum
     NUX_TYPE_LUA        = 2,
     NUX_TYPE_TEXTURE    = 3,
     NUX_TYPE_MESH       = 4,
-    NUX_TYPE_SCENE      = 5,
-    NUX_TYPE_NODE       = 6,
-    NUX_TYPE_TRANSFORM  = 7,
-    NUX_TYPE_CAMERA     = 8,
-    NUX_TYPE_STATICMESH = 9,
+    NUX_TYPE_CANVAS     = 5,
+    NUX_TYPE_SCENE      = 6,
+    NUX_TYPE_NODE       = 7,
+    NUX_TYPE_TRANSFORM  = 8,
+    NUX_TYPE_CAMERA     = 9,
+    NUX_TYPE_STATICMESH = 10,
 
     NUX_TYPE_MAX = 256,
 } nux_type_base_t;
@@ -593,7 +603,6 @@ typedef struct
     nux_gpu_buffer_t      constants_buffer;
     nux_gpu_buffer_t      quads_buffer;
     nux_u32_t             quads_buffer_head;
-    nux_gpu_texture_t     texture;
 } nux_canvas_t;
 
 typedef struct
@@ -634,7 +643,6 @@ struct nux_context
     nux_gpu_buffer_t   vertices_buffer;
     nux_u32_t          vertices_buffer_head;
     nux_font_t         default_font;
-    nux_canvas_t       canvas;
 
     nux_arena_pool_t  arenas;
     nux_object_pool_t objects;
@@ -831,18 +839,7 @@ nux_status_t nux_font_init_default(nux_ctx_t *ctx, nux_font_t *font);
 
 // canvas.c
 
-nux_status_t nux_canvas_init(nux_ctx_t    *ctx,
-                             nux_canvas_t *canvas,
-                             nux_u32_t     width,
-                             nux_u32_t     height);
-void         nux_canvas_begin(nux_ctx_t *ctx, nux_canvas_t *canvas);
-void         nux_canvas_end(nux_ctx_t *ctx, nux_canvas_t *canvas);
-void         nux_canvas_draw_text(nux_ctx_t      *ctx,
-                                  nux_canvas_t   *canvas,
-                                  nux_font_t     *font,
-                                  nux_u32_t       x,
-                                  nux_u32_t       y,
-                                  const nux_c8_t *text);
+nux_status_t nux_canvas_init(nux_ctx_t *ctx, nux_canvas_t *canvas);
 
 // gpu.c
 

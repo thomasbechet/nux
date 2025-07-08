@@ -127,8 +127,9 @@ void         runtime_quit(void);
 
 nux_status_t renderer_init(void);
 void         renderer_free(void);
-void renderer_clear(struct nk_rect viewport, struct nk_vec2i window_size);
-void renderer_render_begin(instance_t *inst, struct nk_vec2i window_size);
+void         renderer_clear(void);
+void renderer_begin(struct nk_rect viewport, struct nk_vec2i window_size);
+void renderer_end(void);
 
 nux_status_t       window_init(void);
 void               window_free(void);

@@ -1,4 +1,4 @@
--- local inspect = require("inspect")
+local inspect = require("inspect")
 local s
 local c
 local r
@@ -6,9 +6,11 @@ local nux = nux
 
 local yaw = 0
 local pitch = 0
+local canvas
+local surface
 
 local function controller(e)
-    local speed = 10 
+    local speed = 10
 
     local mx = nux.input.axis(0, nux.AXIS_LEFTX)
     local mz = nux.input.axis(0, nux.AXIS_LEFTY)
@@ -103,10 +105,18 @@ function nux.init()
     nux.transform.set_translation(c, 0, 1, 3)
     nux.camera.add(c)
     nux.camera.set_fov(c, 80)
+
+    canvas = nux.canvas.new()
+    surface = nux.texture.new(nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH * 2, nux.CANVAS_HEIGHT * 2)
 end
 
 function nux.tick()
     controller(c)
-    nux.scene.draw(s, c)
     nux.transform.rotate_y(r, nux.dt() * 10)
+    nux.scene.render(s, c)
+    nux.canvas.clear(canvas)
+    nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time()))
+    nux.canvas.text(canvas, 10, 20, inspect(nux))
+    nux.canvas.render(canvas, surface)
+    nux.texture.blit(surface)
 end

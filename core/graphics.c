@@ -68,12 +68,6 @@ nux_graphics_init (nux_ctx_t *ctx)
                "Failed to create default font",
                goto error);
 
-    // Create canvas
-    NUX_CHECKM(
-        nux_canvas_init(ctx, &ctx->canvas, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT),
-        "Failed to initialize canvas",
-        goto error);
-
     return NUX_SUCCESS;
 
 error:
@@ -87,10 +81,6 @@ nux_graphics_free (nux_ctx_t *ctx)
 nux_status_t
 nux_graphics_render (nux_ctx_t *ctx)
 {
-    // Submit canvas commands
-    nux_canvas_end(ctx, &ctx->canvas);
-    nux_canvas_begin(ctx, &ctx->canvas);
-
     return NUX_SUCCESS;
 }
 
@@ -290,14 +280,6 @@ nux_write_texture (nux_ctx_t      *ctx,
     // }
 }
 
-void
-nux_graphics_set_render_target (nux_ctx_t *ctx, nux_u32_t id)
-{
-    nux_texture_t *tex = nux_object_get(ctx, NUX_TYPE_TEXTURE, id);
-    NUX_CHECKM(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET,
-               "Texture is not a render target",
-               return);
-}
 void
 nux_graphics_blit (nux_ctx_t *ctx, nux_u32_t id)
 {

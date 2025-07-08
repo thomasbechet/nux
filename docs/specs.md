@@ -20,9 +20,6 @@ TODO
 # Fantasy console
 - integrated IDE
 
-
-- use lua as config files
-
 ## Objects
 
 - An object belongs to an arena which correspond to a lifetime
@@ -33,3 +30,22 @@ TODO
 ## Program
 
 - The runtime execute a single program
+
+## Gui rendering
+
+2D api -> canvas -> render to texture
+3D api -> scene  -> render to texture
+
+nux.graphics.set_canvas(c)
+nux.graphics.line(0, 0, 50, 50)
+
+local rt = nux.texture.new(...)
+local s  = nux.scene.new(...)
+local c  = nux.canvas.new(...)
+
+nux.scene.render(s, rt)
+nux.canvas.render(c, rt)
+
+- render targets => texture or screen
+- canvas => texture
+- scene => render target

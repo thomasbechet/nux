@@ -6,11 +6,8 @@ struct VOut
     float2 uv;
 }
 
-// Texture2D<uint> canvas;
 Texture2D texture0;
 SamplerState sampler0;
-// SamplerState sampler1;
-ConstantBuffer<Constants> constants;
 
 float4 sampleColor(float2 uv)
 {
@@ -58,9 +55,13 @@ VOut vertexMain(
 }
 
 [shader("fragment")]
-float4 fragmentMain(VOut input) : SV_Target
+float4 fragmentMain(
+    VOut input,
+    uniform uint textureWidth,
+    uniform uint textureHeight
+) : SV_Target
 {
-    const float2 textureSize = constants.canvas_size;
+    const float2 textureSize = float2(textureWidth, textureHeight);
     float2 uv = float2(input.uv.x, input.uv.y);
     uv = uvFiltering(uv, textureSize);
     return bilinearFiltering(uv, textureSize);
