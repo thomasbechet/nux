@@ -72,10 +72,11 @@ typedef enum
 
     NUX_GPU_INDEX_CANVAS_CONSTANTS    = 0,
     NUX_GPU_INDEX_CANVAS_QUADS        = 1,
-    NUX_GPU_INDEX_CANVAS_FIRST_QUAD   = 2,
-    NUX_GPU_INDEX_CANVAS_TEXTURE      = 3,
-    NUX_GPU_INDEX_CANVAS_ATLAS_WIDTH  = 4,
-    NUX_GPU_INDEX_CANVAS_ATLAS_HEIGHT = 5,
+    NUX_GPU_INDEX_CANVAS_MODE         = 2,
+    NUX_GPU_INDEX_CANVAS_FIRST_QUAD   = 3,
+    NUX_GPU_INDEX_CANVAS_TEXTURE      = 4,
+    NUX_GPU_INDEX_CANVAS_ATLAS_WIDTH  = 5,
+    NUX_GPU_INDEX_CANVAS_ATLAS_HEIGHT = 6,
 
     NUX_GPU_INDEX_BLIT_TEXTURE        = 0,
     NUX_GPU_INDEX_BLIT_TEXTURE_WIDTH  = 1,
@@ -138,6 +139,10 @@ typedef struct
         nux_u32_t index;
         nux_f32_t value;
     } push_f32;
+    struct
+    {
+        nux_u32_t index;
+    } push_v2;
     struct
     {
         nux_u32_t count;

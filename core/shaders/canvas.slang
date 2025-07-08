@@ -11,12 +11,18 @@ StructuredBuffer<uint32_t> quads;
 Texture2D texture0;
 SamplerState sampler0;
 
+struct UniformData
+{
+    uint mode;
+    uint firstQuad;
+    uint atlasWidth;
+    uint atlasHeight;
+}
+
 [shader("vertex")]
 VOut vertexMain(
     uint vertexIndex : SV_VertexID,
-    uniform uint firstQuad,
-    uniform uint atlasWidth,
-    uniform uint atlasHeight,
+    uniform UniformData data,
 )
 {
     const float2 offsets[6] = {
@@ -29,7 +35,7 @@ VOut vertexMain(
     };
 
     // Extract quad data
-    uint index = firstQuad + vertexIndex / 6;
+    uint index = data.firstQuad + vertexIndex / 6;
     uint32_t pos  = quads[index * 3 + 0];
     uint32_t tex  = quads[index * 3 + 1];
     uint32_t size = quads[index * 3 + 2];
@@ -45,7 +51,7 @@ VOut vertexMain(
     // Apply offset and normalize
     float2 position = (vertex_pos + vertex_size * vertex_offset) / constants.screen_size; 
     position.y = 1 - position.y;
-    float2 uv = floor(vertex_tex + vertex_size * vertex_offset) / float2(atlasWidth, atlasHeight);
+    float2 uv = floor(vertex_tex + vertex_size * vertex_offset) / float2(data.atlasWidth, data.atlasHeight);
 
     // Store output 
     VOut output = {};
@@ -56,8 +62,14 @@ VOut vertexMain(
 }
 
 [shader("fragment")]
-float4 fragmentMain(VOut input) : SV_Target
+float4 fragmentMain(
+    VOut input, 
+    uniform UniformData data,
+) : SV_Target
 {
-    float4 color = texture0.Sample(sampler0, input.uv);
-    return color;
+    if (data.mode == 1)
+    {
+        return texture0.Sample(sampler0, input.uv);
+    }
+    return float4(1, 1, 1, 1);
 }

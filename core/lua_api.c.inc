@@ -1242,6 +1242,26 @@ l_canvas_text (lua_State *L)
 
     return 0;
 }
+static int
+l_canvas_rectangle (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_ctx_t *ctx = lua_touserdata(L, -1);
+    nux_u32_t  id  = luaL_checkinteger(L, 1);
+
+    nux_u32_t x = luaL_checkinteger(L, 2);
+
+    nux_u32_t y = luaL_checkinteger(L, 3);
+
+    nux_u32_t w = luaL_checkinteger(L, 4);
+
+    nux_u32_t h = luaL_checkinteger(L, 5);
+
+    nux_canvas_rectangle(ctx, id, x, y, w, h);
+
+    return 0;
+}
 
 static const struct luaL_Reg lib_core[]
     = { { "trace", l_core_trace }, { "stat", l_core_stat },
@@ -1335,11 +1355,13 @@ static const struct luaL_Reg lib_mesh[] = { { "new", l_mesh_new },
                                             { "gen_cube", l_mesh_gen_cube },
                                             { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_canvas[] = { { "new", l_canvas_new },
-                                              { "clear", l_canvas_clear },
-                                              { "render", l_canvas_render },
-                                              { "text", l_canvas_text },
-                                              { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_canvas[]
+    = { { "new", l_canvas_new },
+        { "clear", l_canvas_clear },
+        { "render", l_canvas_render },
+        { "text", l_canvas_text },
+        { "rectangle", l_canvas_rectangle },
+        { NUX_NULL, NUX_NULL } };
 
 nux_status_t
 nux_lua_register_base (nux_ctx_t *ctx)

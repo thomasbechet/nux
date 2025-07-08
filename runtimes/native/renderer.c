@@ -149,18 +149,21 @@ nux_os_create_pipeline (void                          *userdata,
             pipeline->indices[NUX_GPU_INDEX_CANVAS_CONSTANTS] = 1;
             pipeline->indices[NUX_GPU_INDEX_CANVAS_QUADS]     = 2;
 
+            pipeline->locations[NUX_GPU_INDEX_CANVAS_MODE]
+                = glGetUniformLocation(pipeline->program,
+                                       "entryPointParams.data.mode");
             pipeline->locations[NUX_GPU_INDEX_CANVAS_FIRST_QUAD]
                 = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.firstQuad");
+                                       "entryPointParams.data.firstQuad");
             pipeline->locations[NUX_GPU_INDEX_CANVAS_TEXTURE]
                 = glGetUniformLocation(pipeline->program,
                                        "SPIRV_Cross_Combinedtexture0sampler0");
             pipeline->locations[NUX_GPU_INDEX_CANVAS_ATLAS_WIDTH]
                 = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.atlasWidth");
+                                       "entryPointParams.data.atlasWidth");
             pipeline->locations[NUX_GPU_INDEX_CANVAS_ATLAS_HEIGHT]
                 = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.atlasHeight");
+                                       "entryPointParams.data.atlasHeight");
 
             pipeline->units[NUX_GPU_INDEX_CANVAS_TEXTURE] = 0;
         }
@@ -368,6 +371,12 @@ nux_os_gpu_submit (void                    *userdata,
 {
     instance_t *inst = userdata;
 
+    // const nux_u8_t *it = cmds;
+    // while (nux_gpu_command_decode(&it, &cmd))
+    // {
+    //     
+    // }
+
     // Execute commands
     for (nux_u32_t i = 0; i < count; ++i)
     {
@@ -514,6 +523,7 @@ renderer_clear (void)
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClearColor(clear[0], clear[1], clear[2], clear[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_FRAMEBUFFER_SRGB);
 }
 void
 renderer_begin (struct nk_rect viewport, struct nk_vec2i window_size)
@@ -541,4 +551,5 @@ renderer_end (void)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(
         inst->viewport.x, inst->viewport.y, inst->viewport.w, inst->viewport.h);
+    glDisable(GL_FRAMEBUFFER_SRGB);
 }

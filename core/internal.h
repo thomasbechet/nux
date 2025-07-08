@@ -862,6 +862,9 @@ void nux_gpu_push_u32(nux_gpu_command_vec_t *cmds,
 void nux_gpu_push_f32(nux_gpu_command_vec_t *cmds,
                       nux_u32_t              index,
                       nux_f32_t              value);
+void nux_gpu_push_v2(nux_gpu_command_vec_t *cmds,
+                     nux_u32_t              index,
+                     nux_v2_t               value);
 void nux_gpu_draw(nux_gpu_command_vec_t *cmds, nux_u32_t count);
 void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 

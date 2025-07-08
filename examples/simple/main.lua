@@ -117,6 +117,7 @@ function nux.tick()
     nux.canvas.clear(canvas)
     nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time()))
     nux.canvas.text(canvas, 10, 20, inspect(nux))
+    nux.canvas.rectangle(canvas, 50, 50, 200, 200)
     nux.canvas.render(canvas, surface)
     nux.texture.blit(surface)
 end

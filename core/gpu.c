@@ -110,6 +110,14 @@ nux_gpu_push_f32 (nux_gpu_command_vec_t *cmds, nux_u32_t index, nux_f32_t value)
     cmd->push_f32.value = value;
 }
 void
+nux_gpu_push_v2 (nux_gpu_command_vec_t *cmds, nux_u32_t index, nux_v2_t value)
+{
+    nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);
+    NUX_ASSERT(cmd);
+    cmd->type           = NUX_GPU_COMMAND_PUSH_F32;
+    cmd->push_f32.index = index;
+}
+void
 nux_gpu_draw (nux_gpu_command_vec_t *cmds, nux_u32_t count)
 {
     nux_gpu_command_t *cmd = nux_gpu_command_vec_push(cmds);

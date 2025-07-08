@@ -356,5 +356,11 @@ void      nux_canvas_text(nux_ctx_t      *ctx,
                           nux_u32_t       x,
                           nux_u32_t       y,
                           const nux_c8_t *text);
+void      nux_canvas_rectangle(nux_ctx_t *ctx,
+                               nux_u32_t  id,
+                               nux_u32_t  x,
+                               nux_u32_t  y,
+                               nux_u32_t  w,
+                               nux_u32_t  h);
 
 #endif
