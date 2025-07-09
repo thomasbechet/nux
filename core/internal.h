@@ -599,10 +599,32 @@ NUX_POOL_DEFINE(nux_object_pool, nux_object_t);
 
 typedef struct
 {
-    nux_gpu_command_vec_t commands;
-    nux_gpu_buffer_t      constants_buffer;
-    nux_gpu_buffer_t      quads_buffer;
-    nux_u32_t             quads_buffer_head;
+    nux_u32_t pos;
+    nux_u32_t tex;
+    nux_u32_t size;
+} nux_gpu_canvas_quad_t;
+
+typedef struct
+{
+    nux_u32_t mode;
+    nux_u32_t first;
+    nux_u32_t count;
+    nux_u32_t texture_width;
+    nux_u32_t texture_height;
+    nux_u32_t _pad0[3];
+    nux_v4_t  color;
+} nux_gpu_canvas_batch_t;
+
+typedef struct
+{
+    nux_gpu_command_vec_t  commands;
+    nux_gpu_buffer_t       constants_buffer;
+    nux_gpu_buffer_t       quads_buffer;
+    nux_u32_t              quads_buffer_head;
+    nux_gpu_buffer_t       batches_buffer;
+    nux_u32_t              batches_buffer_head;
+    nux_gpu_canvas_batch_t active_batch;
+    nux_u32_t              active_texture;
 } nux_canvas_t;
 
 typedef struct

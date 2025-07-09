@@ -135,95 +135,43 @@ nux_cls (nux_ctx_t *ctx, nux_u32_t color)
     // nux_rectfill(ctx, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1,
     // color);
 }
-void
-nux_graphics_text (
-    nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c)
-{
-    const nux_u32_t pixel_per_glyph
-        = DEFAULT_FONT_DATA_WIDTH * DEFAULT_FONT_DATA_HEIGHT;
-
-    nux_u32_t len = nux_strnlen(text, 1024);
-    nux_b2i_t extent
-        = nux_b2i_xywh(x, y, DEFAULT_FONT_DATA_WIDTH, DEFAULT_FONT_DATA_HEIGHT);
-    const nux_c8_t *end = text + len;
-    const nux_c8_t *it  = text;
-    for (; it < end; ++it)
-    {
-        if (*it == '\n')
-        {
-            extent = nux_b2i_moveto(
-                extent, nux_v2i(x, extent.min.y + DEFAULT_FONT_DATA_HEIGHT));
-            continue;
-        }
-        nux_u32_t index = default_font_data_chars[(nux_u8_t)(*it)];
-
-        for (nux_u32_t p = 0; p < pixel_per_glyph; ++p)
-        {
-            nux_u32_t bit_offset = index * pixel_per_glyph + p;
-            NUX_ASSERT((bit_offset / 8) < sizeof(default_font_data));
-            nux_u8_t  byte    = default_font_data[bit_offset / 8];
-            nux_b32_t bit_set = (byte & (1 << (7 - (p % 8)))) != 0;
-
-            nux_i32_t px = extent.min.x + p % DEFAULT_FONT_DATA_WIDTH;
-            nux_i32_t py = extent.min.y + p / DEFAULT_FONT_DATA_WIDTH;
-
-            if (bit_set)
-            {
-                nux_pset(ctx, px, py, c);
-
-                // Apply shadow
-                nux_pset(ctx, px + 1, py + 1, 0);
-            }
-        }
-
-        extent = nux_b2i_translate(extent, nux_v2i(DEFAULT_FONT_DATA_WIDTH, 0));
-    }
-}
-void
-nux_graphics_print (nux_ctx_t *ctx, const nux_c8_t *text, nux_u8_t c)
-{
-    nux_i32_t x = nux_graphics_cursor_x(ctx);
-    nux_i32_t y = nux_graphics_cursor_y(ctx);
-    nux_graphics_text(ctx, x, y, text, c);
-    nux_graphics_cursor(ctx, x, y + DEFAULT_FONT_DATA_HEIGHT);
-}
-#ifdef NUX_BUILD_VARARGS
-void
-nux_textfmt (nux_ctx_t      *ctx,
-             nux_i32_t       x,
-             nux_i32_t       y,
-             nux_u8_t        c,
-             const nux_c8_t *fmt,
-             ...)
-{
-    nux_c8_t buf[128];
-    va_list  args;
-    va_start(args, fmt);
-    nux_vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-    nux_graphics_text(ctx, x, y, buf, c);
-}
-void
-nux_printfmt (nux_ctx_t *ctx, nux_u8_t c, const nux_c8_t *fmt, ...)
-{
-    nux_c8_t buf[128];
-    va_list  args;
-    va_start(args, fmt);
-    nux_vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-    nux_graphics_print(ctx, buf, c);
-}
-void
-nux_tracefmt (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
-{
-    nux_c8_t buf[128];
-    va_list  args;
-    va_start(args, fmt);
-    nux_vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-    nux_trace(ctx, buf);
-}
-#endif
+// #ifdef NUX_BUILD_VARARGS
+// void
+// nux_textfmt (nux_ctx_t      *ctx,
+//              nux_i32_t       x,
+//              nux_i32_t       y,
+//              nux_u8_t        c,
+//              const nux_c8_t *fmt,
+//              ...)
+// {
+//     nux_c8_t buf[128];
+//     va_list  args;
+//     va_start(args, fmt);
+//     nux_vsnprintf(buf, sizeof(buf), fmt, args);
+//     va_end(args);
+//     nux_graphics_text(ctx, x, y, buf, c);
+// }
+// void
+// nux_printfmt (nux_ctx_t *ctx, nux_u8_t c, const nux_c8_t *fmt, ...)
+// {
+//     nux_c8_t buf[128];
+//     va_list  args;
+//     va_start(args, fmt);
+//     nux_vsnprintf(buf, sizeof(buf), fmt, args);
+//     va_end(args);
+//     nux_graphics_print(ctx, buf, c);
+// }
+// void
+// nux_tracefmt (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
+// {
+//     nux_c8_t buf[128];
+//     va_list  args;
+//     va_start(args, fmt);
+//     nux_vsnprintf(buf, sizeof(buf), fmt, args);
+//     va_end(args);
+//     nux_trace(ctx, buf);
+// }
+// #endif
 
 nux_i32_t
 nux_graphics_cursor_x (nux_ctx_t *ctx)

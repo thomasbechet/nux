@@ -145,25 +145,20 @@ nux_os_create_pipeline (void                          *userdata,
             index = glGetProgramResourceIndex(
                 pipeline->program, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
             glShaderStorageBlockBinding(pipeline->program, index, 2);
+            index = glGetProgramResourceIndex(
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "quads");
+            glShaderStorageBlockBinding(pipeline->program, index, 3);
 
             pipeline->indices[NUX_GPU_INDEX_CANVAS_CONSTANTS] = 1;
-            pipeline->indices[NUX_GPU_INDEX_CANVAS_QUADS]     = 2;
+            pipeline->indices[NUX_GPU_INDEX_CANVAS_BATCHES]   = 2;
+            pipeline->indices[NUX_GPU_INDEX_CANVAS_QUADS]     = 3;
 
-            pipeline->locations[NUX_GPU_INDEX_CANVAS_MODE]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.data.mode");
-            pipeline->locations[NUX_GPU_INDEX_CANVAS_FIRST_QUAD]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.data.firstQuad");
             pipeline->locations[NUX_GPU_INDEX_CANVAS_TEXTURE]
                 = glGetUniformLocation(pipeline->program,
                                        "SPIRV_Cross_Combinedtexture0sampler0");
-            pipeline->locations[NUX_GPU_INDEX_CANVAS_ATLAS_WIDTH]
+            pipeline->locations[NUX_GPU_INDEX_CANVAS_BATCH_INDEX]
                 = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.data.atlasWidth");
-            pipeline->locations[NUX_GPU_INDEX_CANVAS_ATLAS_HEIGHT]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.data.atlasHeight");
+                                       "entryPointParams.batchIndex");
 
             pipeline->units[NUX_GPU_INDEX_CANVAS_TEXTURE] = 0;
         }
@@ -374,7 +369,7 @@ nux_os_gpu_submit (void                    *userdata,
     // const nux_u8_t *it = cmds;
     // while (nux_gpu_command_decode(&it, &cmd))
     // {
-    //     
+    //
     // }
 
     // Execute commands

@@ -195,40 +195,6 @@ nux_f32_t nux_dt(nux_ctx_t *ctx);
 nux_u32_t nux_frame(nux_ctx_t *ctx);
 
 // Canvas API
-// void nux_rectfill(nux_ctx_t *ctx,
-//                   nux_i32_t  x0,
-//                   nux_i32_t  y0,
-//                   nux_i32_t  x1,
-//                   nux_i32_t  y1,
-//                   nux_u8_t   c);
-// void nux_trifill(nux_ctx_t *ctx,
-//                  nux_i32_t  x0,
-//                  nux_i32_t  y0,
-//                  nux_i32_t  x1,
-//                  nux_i32_t  y1,
-//                  nux_i32_t  x2,
-//                  nux_i32_t  y2,
-//                  nux_u8_t   c);
-void nux_graphics_text(
-    nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y, const nux_c8_t *text, nux_u8_t c);
-void      nux_graphics_print(nux_ctx_t *ctx, const nux_c8_t *text, nux_u8_t c);
-nux_i32_t nux_graphics_cursor_x(nux_ctx_t *ctx);
-nux_i32_t nux_graphics_cursor_y(nux_ctx_t *ctx);
-void      nux_graphics_cursor(nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y);
-void      nux_graphics_line(nux_ctx_t *ctx,
-                            nux_i32_t  x0,
-                            nux_i32_t  y0,
-                            nux_i32_t  x1,
-                            nux_i32_t  y1,
-                            nux_u8_t   color);
-void      nux_graphics_circle(
-         nux_ctx_t *ctx, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t c);
-void nux_graphics_rectangle(nux_ctx_t *ctx,
-                            nux_i32_t  x0,
-                            nux_i32_t  y0,
-                            nux_i32_t  x1,
-                            nux_i32_t  y1,
-                            nux_u8_t   c);
 
 // Draw State API
 
@@ -362,5 +328,20 @@ void      nux_canvas_rectangle(nux_ctx_t *ctx,
                                nux_u32_t  y,
                                nux_u32_t  w,
                                nux_u32_t  h);
+// void      nux_graphics_line(nux_ctx_t *ctx,
+//                             nux_i32_t  x0,
+//                             nux_i32_t  y0,
+//                             nux_i32_t  x1,
+//                             nux_i32_t  y1,
+//                             nux_u8_t   color);
+// void      nux_graphics_circle(
+//          nux_ctx_t *ctx, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t
+//          c);
+// void nux_graphics_rectangle(nux_ctx_t *ctx,
+//                             nux_i32_t  x0,
+//                             nux_i32_t  y0,
+//                             nux_i32_t  x1,
+//                             nux_i32_t  y1,
+//                             nux_u8_t   c);
 
 #endif

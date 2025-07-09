@@ -176,149 +176,6 @@ l_core_cset (lua_State *L)
 }
 
 static int
-l_graphics_text (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  x   = luaL_checkinteger(L, 1);
-
-    nux_i32_t y = luaL_checkinteger(L, 2);
-
-    const nux_c8_t *text = luaL_checkstring(L, 3);
-
-    nux_u8_t c = luaL_checkinteger(L, 3);
-
-    nux_graphics_text(ctx, x, y, text, c);
-
-    return 0;
-}
-static int
-l_graphics_print (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t      *ctx  = lua_touserdata(L, -1);
-    const nux_c8_t *text = luaL_checkstring(L, 1);
-
-    nux_u8_t c = luaL_checkinteger(L, 1);
-
-    nux_graphics_print(ctx, text, c);
-
-    return 0;
-}
-static int
-l_graphics_cursor_x (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  ret =
-
-        nux_graphics_cursor_x(ctx);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_graphics_cursor_y (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  ret =
-
-        nux_graphics_cursor_y(ctx);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_graphics_cursor (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  x   = luaL_checkinteger(L, 1);
-
-    nux_i32_t y = luaL_checkinteger(L, 2);
-
-    nux_graphics_cursor(ctx, x, y);
-
-    return 0;
-}
-static int
-l_graphics_line (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  x0  = luaL_checkinteger(L, 1);
-
-    nux_i32_t y0 = luaL_checkinteger(L, 2);
-
-    nux_i32_t x1 = luaL_checkinteger(L, 3);
-
-    nux_i32_t y1 = luaL_checkinteger(L, 4);
-
-    nux_u8_t color = luaL_checkinteger(L, 5);
-
-    nux_graphics_line(ctx, x0, y0, x1, y1, color);
-
-    return 0;
-}
-static int
-l_graphics_circle (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  xm  = luaL_checkinteger(L, 1);
-
-    nux_i32_t ym = luaL_checkinteger(L, 2);
-
-    nux_i32_t r = luaL_checkinteger(L, 3);
-
-    nux_u8_t c = luaL_checkinteger(L, 4);
-
-    nux_graphics_circle(ctx, xm, ym, r, c);
-
-    return 0;
-}
-static int
-l_graphics_rectangle (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_i32_t  x0  = luaL_checkinteger(L, 1);
-
-    nux_i32_t y0 = luaL_checkinteger(L, 2);
-
-    nux_i32_t x1 = luaL_checkinteger(L, 3);
-
-    nux_i32_t y1 = luaL_checkinteger(L, 4);
-
-    nux_u8_t c = luaL_checkinteger(L, 5);
-
-    nux_graphics_rectangle(ctx, x0, y0, x1, y1, c);
-
-    return 0;
-}
-static int
-l_graphics_blit (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
-
-    nux_graphics_blit(ctx, id);
-
-    return 0;
-}
-
-static int
 l_input_button (lua_State *L)
 {
 
@@ -448,6 +305,19 @@ l_texture_blit (lua_State *L)
     nux_u32_t  id  = luaL_checkinteger(L, 1);
 
     nux_texture_blit(ctx, id);
+
+    return 0;
+}
+
+static int
+l_graphics_blit (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_ctx_t *ctx = lua_touserdata(L, -1);
+    nux_u32_t  id  = luaL_checkinteger(L, 1);
+
+    nux_graphics_blit(ctx, id);
 
     return 0;
 }
@@ -1272,14 +1142,6 @@ static const struct luaL_Reg lib_core[]
         { "pset", l_core_pset },   { "cget", l_core_cget },
         { "cset", l_core_cset },   { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_graphics[] = {
-    { "text", l_graphics_text },         { "print", l_graphics_print },
-    { "cursor_x", l_graphics_cursor_x }, { "cursor_y", l_graphics_cursor_y },
-    { "cursor", l_graphics_cursor },     { "line", l_graphics_line },
-    { "circle", l_graphics_circle },     { "rectangle", l_graphics_rectangle },
-    { "blit", l_graphics_blit },         { NUX_NULL, NUX_NULL }
-};
-
 static const struct luaL_Reg lib_input[] = { { "button", l_input_button },
                                              { "axis", l_input_axis },
                                              { NUX_NULL, NUX_NULL } };
@@ -1294,6 +1156,9 @@ static const struct luaL_Reg lib_button[]
 static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
                                                { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_graphics[]
+    = { { "blit", l_graphics_blit }, { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_arena[]
     = { { "new", l_arena_new },   { "reset", l_arena_reset },
@@ -1372,10 +1237,6 @@ nux_lua_register_base (nux_ctx_t *ctx)
     luaL_setfuncs(L, lib_core, 0);
 
     lua_newtable(L);
-    luaL_setfuncs(L, lib_graphics, 0);
-    lua_setfield(L, -2, "graphics");
-
-    lua_newtable(L);
     luaL_setfuncs(L, lib_input, 0);
     lua_setfield(L, -2, "input");
 
@@ -1386,6 +1247,10 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_newtable(L);
     luaL_setfuncs(L, lib_texture, 0);
     lua_setfield(L, -2, "texture");
+
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_graphics, 0);
+    lua_setfield(L, -2, "graphics");
 
     lua_newtable(L);
     luaL_setfuncs(L, lib_arena, 0);

@@ -8,6 +8,7 @@ local yaw = 0
 local pitch = 0
 local canvas
 local surface
+local cube
 
 local function controller(e)
     local speed = 10
@@ -107,17 +108,29 @@ function nux.init()
     nux.camera.set_fov(c, 80)
 
     canvas = nux.canvas.new()
-    surface = nux.texture.new(nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH * 2, nux.CANVAS_HEIGHT * 2)
+    local x, y = 350, 1500
+    surface = nux.texture.new(nux.TEXTURE_RENDER_TARGET, x, y)
+
+    cube = nux.node.new(s)
+    nux.transform.add(cube)
+    nux.transform.set_translation(cube, 0, 5, 0)
+    nux.transform.set_scale(cube, x / 100, y / 100, 1)
+    nux.staticmesh.add(cube)
+    nux.staticmesh.set_mesh(cube, mesh_cube)
+    nux.staticmesh.set_texture(cube, surface)
 end
 
 function nux.tick()
     controller(c)
     nux.transform.rotate_y(r, nux.dt() * 10)
+    nux.transform.rotate_y(cube, nux.dt() / 10)
     nux.scene.render(s, c)
     nux.canvas.clear(canvas)
-    nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time()))
-    nux.canvas.text(canvas, 10, 20, inspect(nux))
-    nux.canvas.rectangle(canvas, 50, 50, 200, 200)
+    for i = 0, 100 do
+        nux.canvas.text(canvas, 10, 10 * i, string.format("%f", math.random()))
+    end
+    -- nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time()))
+    -- nux.canvas.text(canvas, 10, 20, inspect(nux))
     nux.canvas.render(canvas, surface)
-    nux.texture.blit(surface)
+    -- nux.texture.blit(surface)
 end

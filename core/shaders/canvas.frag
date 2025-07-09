@@ -1,16 +1,23 @@
 #version 450
 
-struct UniformData_std430
+struct Batch_std430
 {
     uint mode;
-    uint firstQuad;
-    uint atlasWidth;
-    uint atlasHeight;
+    uint first;
+    uint count;
+    uint textureWidth;
+    uint textureHeight;
+    vec4 color;
 };
+
+layout(binding = 2, std430) readonly buffer StructuredBuffer
+{
+    Batch_std430 _m0[];
+} batches;
 
 struct EntryPointParams_std430
 {
-    UniformData_std430 data;
+    uint batchIndex;
 };
 
 uniform EntryPointParams_std430 entryPointParams;
@@ -24,12 +31,12 @@ void main()
 {
     do
     {
-        if (entryPointParams.data.mode == 1u)
+        if (batches._m0[entryPointParams.batchIndex].mode == 1u)
         {
             entryPointParam_fragmentMain = texture(SPIRV_Cross_Combinedtexture0sampler0, input_uv);
             break;
         }
-        entryPointParam_fragmentMain = vec4(1.0);
+        entryPointParam_fragmentMain = batches._m0[entryPointParams.batchIndex].color;
         break;
     } while(false);
 }

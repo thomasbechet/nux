@@ -123,9 +123,6 @@ nux_instance_free (nux_ctx_t *ctx)
 void
 nux_instance_tick (nux_ctx_t *ctx)
 {
-    // Init draw state
-    nux_graphics_cursor(ctx, 0, 0);
-
     // Init
     if (ctx->frame == 0 && ctx->init)
     {

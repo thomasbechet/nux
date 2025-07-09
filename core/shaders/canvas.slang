@@ -6,23 +6,26 @@ struct VOut
     float2 uv;
 }
 
-ConstantBuffer<Constants> constants;
-StructuredBuffer<uint32_t> quads;
-Texture2D texture0;
-SamplerState sampler0;
-
-struct UniformData
+struct Batch
 {
     uint mode;
-    uint firstQuad;
-    uint atlasWidth;
-    uint atlasHeight;
+    uint first; 
+    uint count;
+    uint textureWidth;
+    uint textureHeight;
+    float4 color;
 }
+
+ConstantBuffer<Constants> constants;
+StructuredBuffer<uint32_t> quads;
+StructuredBuffer<Batch> batches;
+Texture2D texture0;
+SamplerState sampler0;
 
 [shader("vertex")]
 VOut vertexMain(
     uint vertexIndex : SV_VertexID,
-    uniform UniformData data,
+    uniform uint batchIndex,
 )
 {
     const float2 offsets[6] = {
@@ -35,7 +38,8 @@ VOut vertexMain(
     };
 
     // Extract quad data
-    uint index = data.firstQuad + vertexIndex / 6;
+    Batch batch = batches[batchIndex];
+    uint index = batch.first + vertexIndex / 6;
     uint32_t pos  = quads[index * 3 + 0];
     uint32_t tex  = quads[index * 3 + 1];
     uint32_t size = quads[index * 3 + 2];
@@ -51,7 +55,7 @@ VOut vertexMain(
     // Apply offset and normalize
     float2 position = (vertex_pos + vertex_size * vertex_offset) / constants.screen_size; 
     position.y = 1 - position.y;
-    float2 uv = floor(vertex_tex + vertex_size * vertex_offset) / float2(data.atlasWidth, data.atlasHeight);
+    float2 uv = floor(vertex_tex + vertex_size * vertex_offset) / float2(batch.textureWidth, batch.textureHeight);
 
     // Store output 
     VOut output = {};
@@ -64,12 +68,13 @@ VOut vertexMain(
 [shader("fragment")]
 float4 fragmentMain(
     VOut input, 
-    uniform UniformData data,
+    uniform uint batchIndex,
 ) : SV_Target
 {
-    if (data.mode == 1)
+    Batch batch = batches[batchIndex];
+    if (batch.mode == 1)
     {
         return texture0.Sample(sampler0, input.uv);
     }
-    return float4(1, 1, 1, 1);
+    return batch.color;
 }
