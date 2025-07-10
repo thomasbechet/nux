@@ -96,7 +96,7 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     nux_gpu_clear(&s->commands, 0x4f9bd9);
     nux_gpu_bind_pipeline(&s->commands, ctx->main_pipeline.slot);
     nux_gpu_bind_buffer(
-        &s->commands, NUX_GPU_INDEX_MAIN_CONSTANTS, s->constants_buffer.slot);
+        &s->commands, NUX_GPU_DESC_UBER_CONSTANTS, s->constants_buffer.slot);
 
     // Draw nodes
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
@@ -137,20 +137,20 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             if (tex)
             {
                 nux_gpu_bind_texture(
-                    &s->commands, NUX_GPU_INDEX_MAIN_TEXTURE0, tex->gpu.slot);
+                    &s->commands, NUX_GPU_DESC_UBER_TEXTURE0, tex->gpu.slot);
             }
             nux_gpu_push_u32(
-                &s->commands, NUX_GPU_INDEX_MAIN_HAS_TEXTURE, tex ? 1 : 0);
+                &s->commands, NUX_GPU_DESC_UBER_HAS_TEXTURE, tex ? 1 : 0);
             nux_gpu_bind_buffer(&s->commands,
-                                NUX_GPU_INDEX_MAIN_VERTICES,
+                                NUX_GPU_DESC_UBER_VERTICES,
                                 ctx->vertices_buffer.slot);
             nux_gpu_bind_buffer(&s->commands,
-                                NUX_GPU_INDEX_MAIN_TRANSFORMS,
+                                NUX_GPU_DESC_UBER_TRANSFORMS,
                                 s->transforms_buffer.slot);
             nux_gpu_push_u32(
-                &s->commands, NUX_GPU_INDEX_MAIN_FIRST_VERTEX, m->first);
+                &s->commands, NUX_GPU_DESC_UBER_FIRST_VERTEX, m->first);
             nux_gpu_push_u32(&s->commands,
-                             NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX,
+                             NUX_GPU_DESC_UBER_TRANSFORM_INDEX,
                              transform_idx);
             nux_gpu_draw(&s->commands, m->count);
         }

@@ -62,9 +62,9 @@ typedef struct
 {
     nux_gpu_pipeline_type_t type;
     GLuint                  program;
-    GLuint                  indices[NUX_GPU_INDEX_MAX];
-    GLuint                  locations[NUX_GPU_INDEX_MAX];
-    GLuint                  units[NUX_GPU_INDEX_MAX];
+    GLuint                  indices[NUX_GPU_DESC_MAX];
+    GLuint                  locations[NUX_GPU_DESC_MAX];
+    GLuint                  units[NUX_GPU_DESC_MAX];
 } pipeline_t;
 
 typedef struct

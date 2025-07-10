@@ -1,7 +1,6 @@
 local inspect = require("inspect")
 local s
 local c
-local r
 local nux = nux
 
 local yaw = 0
@@ -94,9 +93,6 @@ function nux.init()
             transform = { translation = { x * 5, 0, y * 5 } }
         }
         , nil)
-        if i == 55 then
-            r = n
-        end
     end
 
     s = nux.scene.load_gltf("../basic/assets/industrial.glb")
@@ -122,15 +118,11 @@ end
 
 function nux.tick()
     controller(c)
-    nux.transform.rotate_y(r, nux.dt() * 10)
-    nux.transform.rotate_y(cube, nux.dt() / 10)
+    nux.transform.rotate_y(cube, nux.dt() / 50)
     nux.scene.render(s, c)
     nux.canvas.clear(canvas)
-    for i = 0, 100 do
-        nux.canvas.text(canvas, 10, 10 * i, string.format("%f", math.random()))
-    end
-    -- nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time()))
-    -- nux.canvas.text(canvas, 10, 20, inspect(nux))
+    nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time()))
+    nux.canvas.text(canvas, 10, 20, inspect(nux))
     nux.canvas.render(canvas, surface)
     -- nux.texture.blit(surface)
 end

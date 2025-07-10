@@ -12,12 +12,12 @@ void main()
     {
         if (input_hasTexture != 0u)
         {
-            entryPointParam_fragmentMain = texture(SPIRV_Cross_Combinedtexture0sampler0, input_uv) * 1.0;
+            entryPointParam_fragmentMain = texture(SPIRV_Cross_Combinedtexture0sampler0, input_uv);
             break;
         }
         else
         {
-            entryPointParam_fragmentMain = vec4(input_uv, 0.0, 1.0) * 1.0;
+            entryPointParam_fragmentMain = vec4(input_uv, 0.0, 1.0);
             break;
         }
         break;

@@ -42,7 +42,7 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_palr(ctx);
 
     // Create pipelines
-    ctx->main_pipeline.type = NUX_GPU_PIPELINE_MAIN;
+    ctx->main_pipeline.type = NUX_GPU_PIPELINE_UBER;
     NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->main_pipeline),
                "Failed to create main pipeline",
                goto error);

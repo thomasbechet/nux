@@ -63,15 +63,12 @@ VOut vertexMain(
 [shader("fragment")]
 float4 fragmentMain(VOut input) : SV_Target
 {
-    float d = dot(input.normal, normalize(float3(cos(constants.time), 1, sin(constants.time))));
-    d = 1;
     if (input.hasTexture != 0)
     {
-        float4 color = texture0.Sample(sampler0, input.uv);
-        return max(d, 0.5) * color;
+        return texture0.Sample(sampler0, input.uv);
     }
     else
     {
-        return max(d, 0.5) * float4(input.uv, 0, 1);
+        return float4(input.uv, 0, 1);
     }
 }

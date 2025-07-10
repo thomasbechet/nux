@@ -87,9 +87,9 @@ nux_texture_blit (nux_ctx_t *ctx, nux_u32_t id)
     nux_gpu_command_vec_init(cmds_data, NUX_ARRAY_SIZE(cmds_data), &cmds);
     nux_gpu_bind_framebuffer(&cmds, 0);
     nux_gpu_bind_pipeline(&cmds, ctx->blit_pipeline.slot);
-    nux_gpu_bind_texture(&cmds, NUX_GPU_INDEX_BLIT_TEXTURE, tex->gpu.slot);
-    nux_gpu_push_u32(&cmds, NUX_GPU_INDEX_BLIT_TEXTURE_WIDTH, tex->gpu.width);
-    nux_gpu_push_u32(&cmds, NUX_GPU_INDEX_BLIT_TEXTURE_HEIGHT, tex->gpu.height);
+    nux_gpu_bind_texture(&cmds, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
+    nux_gpu_push_u32(&cmds, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
+    nux_gpu_push_u32(&cmds, NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT, tex->gpu.height);
     nux_gpu_draw(&cmds, 3);
     nux_os_gpu_submit(ctx->userdata, cmds.data, cmds.size);
 }

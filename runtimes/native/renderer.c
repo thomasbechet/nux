@@ -95,11 +95,11 @@ nux_os_create_pipeline (void                          *userdata,
     nux_status_t status = NUX_SUCCESS;
     switch (info->type)
     {
-        case NUX_GPU_PIPELINE_MAIN: {
-            status = compile_program(shader_main_vert,
-                                     ARRAY_LEN(shader_main_vert),
-                                     shader_main_frag,
-                                     ARRAY_LEN(shader_main_frag),
+        case NUX_GPU_PIPELINE_UBER: {
+            status = compile_program(shader_uber_vert,
+                                     ARRAY_LEN(shader_uber_vert),
+                                     shader_uber_frag,
+                                     ARRAY_LEN(shader_uber_frag),
                                      &pipeline->program);
 
             GLuint index = glGetProgramResourceIndex(
@@ -112,24 +112,24 @@ nux_os_create_pipeline (void                          *userdata,
                 pipeline->program, GL_SHADER_STORAGE_BLOCK, "transforms");
             glShaderStorageBlockBinding(pipeline->program, index, 3);
 
-            pipeline->indices[NUX_GPU_INDEX_MAIN_CONSTANTS]  = 1;
-            pipeline->indices[NUX_GPU_INDEX_MAIN_VERTICES]   = 2;
-            pipeline->indices[NUX_GPU_INDEX_MAIN_TRANSFORMS] = 3;
+            pipeline->indices[NUX_GPU_DESC_UBER_CONSTANTS]  = 1;
+            pipeline->indices[NUX_GPU_DESC_UBER_VERTICES]   = 2;
+            pipeline->indices[NUX_GPU_DESC_UBER_TRANSFORMS] = 3;
 
-            pipeline->locations[NUX_GPU_INDEX_MAIN_FIRST_VERTEX]
+            pipeline->locations[NUX_GPU_DESC_UBER_FIRST_VERTEX]
                 = glGetUniformLocation(pipeline->program,
                                        "entryPointParams.vertexFirst");
-            pipeline->locations[NUX_GPU_INDEX_MAIN_TRANSFORM_INDEX]
+            pipeline->locations[NUX_GPU_DESC_UBER_TRANSFORM_INDEX]
                 = glGetUniformLocation(pipeline->program,
                                        "entryPointParams.transformIndex");
-            pipeline->locations[NUX_GPU_INDEX_MAIN_TEXTURE0]
+            pipeline->locations[NUX_GPU_DESC_UBER_TEXTURE0]
                 = glGetUniformLocation(pipeline->program,
                                        "SPIRV_Cross_Combinedcanvassampler0");
-            pipeline->locations[NUX_GPU_INDEX_MAIN_HAS_TEXTURE]
+            pipeline->locations[NUX_GPU_DESC_UBER_HAS_TEXTURE]
                 = glGetUniformLocation(pipeline->program,
                                        "entryPointParams.hasTexture");
 
-            pipeline->units[NUX_GPU_INDEX_MAIN_TEXTURE0] = 0;
+            pipeline->units[NUX_GPU_DESC_UBER_TEXTURE0] = 0;
         }
         break;
         case NUX_GPU_PIPELINE_CANVAS: {
@@ -149,18 +149,18 @@ nux_os_create_pipeline (void                          *userdata,
                 pipeline->program, GL_SHADER_STORAGE_BLOCK, "quads");
             glShaderStorageBlockBinding(pipeline->program, index, 3);
 
-            pipeline->indices[NUX_GPU_INDEX_CANVAS_CONSTANTS] = 1;
-            pipeline->indices[NUX_GPU_INDEX_CANVAS_BATCHES]   = 2;
-            pipeline->indices[NUX_GPU_INDEX_CANVAS_QUADS]     = 3;
+            pipeline->indices[NUX_GPU_DESC_CANVAS_CONSTANTS] = 1;
+            pipeline->indices[NUX_GPU_DESC_CANVAS_BATCHES]   = 2;
+            pipeline->indices[NUX_GPU_DESC_CANVAS_QUADS]     = 3;
 
-            pipeline->locations[NUX_GPU_INDEX_CANVAS_TEXTURE]
+            pipeline->locations[NUX_GPU_DESC_CANVAS_TEXTURE]
                 = glGetUniformLocation(pipeline->program,
                                        "SPIRV_Cross_Combinedtexture0sampler0");
-            pipeline->locations[NUX_GPU_INDEX_CANVAS_BATCH_INDEX]
+            pipeline->locations[NUX_GPU_DESC_CANVAS_BATCH_INDEX]
                 = glGetUniformLocation(pipeline->program,
                                        "entryPointParams.batchIndex");
 
-            pipeline->units[NUX_GPU_INDEX_CANVAS_TEXTURE] = 0;
+            pipeline->units[NUX_GPU_DESC_CANVAS_TEXTURE] = 0;
         }
         break;
         case NUX_GPU_PIPELINE_BLIT: {
@@ -170,17 +170,17 @@ nux_os_create_pipeline (void                          *userdata,
                                      ARRAY_LEN(shader_blit_frag),
                                      &pipeline->program);
 
-            pipeline->locations[NUX_GPU_INDEX_BLIT_TEXTURE]
+            pipeline->locations[NUX_GPU_DESC_BLIT_TEXTURE]
                 = glGetUniformLocation(pipeline->program,
                                        "SPIRV_Cross_Combinedtexture0sampler0");
-            pipeline->locations[NUX_GPU_INDEX_BLIT_TEXTURE_WIDTH]
+            pipeline->locations[NUX_GPU_DESC_BLIT_TEXTURE_WIDTH]
                 = glGetUniformLocation(pipeline->program,
                                        "entryPointParams.textureWidth");
-            pipeline->locations[NUX_GPU_INDEX_BLIT_TEXTURE_HEIGHT]
+            pipeline->locations[NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT]
                 = glGetUniformLocation(pipeline->program,
                                        "entryPointParams.textureHeight");
 
-            pipeline->units[NUX_GPU_INDEX_BLIT_TEXTURE] = 0;
+            pipeline->units[NUX_GPU_DESC_BLIT_TEXTURE] = 0;
         }
         break;
     }
@@ -409,7 +409,7 @@ nux_os_gpu_submit (void                    *userdata,
                 glUseProgram(renderer.active_pipeline->program);
                 switch ((nux_gpu_pipeline_type_t)renderer.active_pipeline->type)
                 {
-                    case NUX_GPU_PIPELINE_MAIN: {
+                    case NUX_GPU_PIPELINE_UBER: {
                         glEnable(GL_DEPTH_TEST);
                         glEnable(GL_MULTISAMPLE);
                     }

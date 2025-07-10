@@ -62,11 +62,9 @@ end_batch (nux_ctx_t *ctx, nux_canvas_t *canvas)
     ++canvas->batches_buffer_head;
 
     // Build commands
-    nux_gpu_bind_texture(&canvas->commands,
-                         NUX_GPU_INDEX_CANVAS_TEXTURE,
-                         canvas->active_texture);
-    nux_gpu_push_u32(
-        &canvas->commands, NUX_GPU_INDEX_CANVAS_BATCH_INDEX, index);
+    nux_gpu_bind_texture(
+        &canvas->commands, NUX_GPU_DESC_CANVAS_TEXTURE, canvas->active_texture);
+    nux_gpu_push_u32(&canvas->commands, NUX_GPU_DESC_CANVAS_BATCH_INDEX, index);
     nux_gpu_draw(&canvas->commands, canvas->active_batch.count * 6);
 
     return NUX_SUCCESS;
@@ -196,11 +194,10 @@ nux_canvas_render (nux_ctx_t *ctx, nux_u32_t id, nux_u32_t target)
     nux_gpu_bind_framebuffer(&cmds, framebuffer);
     nux_gpu_bind_pipeline(&cmds, ctx->canvas_pipeline.slot);
     nux_gpu_bind_buffer(
-        &cmds, NUX_GPU_INDEX_CANVAS_CONSTANTS, c->constants_buffer.slot);
+        &cmds, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
     nux_gpu_bind_buffer(
-        &cmds, NUX_GPU_INDEX_CANVAS_BATCHES, c->batches_buffer.slot);
-    nux_gpu_bind_buffer(
-        &cmds, NUX_GPU_INDEX_CANVAS_QUADS, c->quads_buffer.slot);
+        &cmds, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
+    nux_gpu_bind_buffer(&cmds, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
 
     // Submit commands
     nux_os_gpu_submit(ctx->userdata, cmds.data, cmds.size);
