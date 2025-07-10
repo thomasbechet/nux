@@ -560,10 +560,19 @@ NUX_POOL_DEFINE(nux_component_pool, nux_component_t);
 
 typedef struct
 {
+    nux_u32_t first_vertex;
+    nux_u32_t first_transform;
+    nux_u32_t has_texture;
+} nux_gpu_scene_batch_t;
+
+typedef struct
+{
     nux_arena_t          *arena;
     nux_node_pool_t       nodes;
     nux_component_pool_t  components;
     nux_gpu_buffer_t      constants_buffer;
+    nux_gpu_buffer_t      batches_buffer;
+    nux_u32_t             batches_buffer_head;
     nux_gpu_buffer_t      transforms_buffer;
     nux_u32_t             transforms_buffer_head;
     nux_gpu_command_vec_t commands;

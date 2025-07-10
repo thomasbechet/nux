@@ -109,25 +109,23 @@ nux_os_create_pipeline (void                          *userdata,
                 pipeline->program, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
             glShaderStorageBlockBinding(pipeline->program, index, 2);
             index = glGetProgramResourceIndex(
-                pipeline->program, GL_SHADER_STORAGE_BLOCK, "transforms");
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "vertices");
             glShaderStorageBlockBinding(pipeline->program, index, 3);
+            index = glGetProgramResourceIndex(
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "transforms");
+            glShaderStorageBlockBinding(pipeline->program, index, 4);
 
             pipeline->indices[NUX_GPU_DESC_UBER_CONSTANTS]  = 1;
-            pipeline->indices[NUX_GPU_DESC_UBER_VERTICES]   = 2;
-            pipeline->indices[NUX_GPU_DESC_UBER_TRANSFORMS] = 3;
+            pipeline->indices[NUX_GPU_DESC_UBER_BATCHES]    = 2;
+            pipeline->indices[NUX_GPU_DESC_UBER_VERTICES]   = 3;
+            pipeline->indices[NUX_GPU_DESC_UBER_TRANSFORMS] = 4;
 
-            pipeline->locations[NUX_GPU_DESC_UBER_FIRST_VERTEX]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.vertexFirst");
-            pipeline->locations[NUX_GPU_DESC_UBER_TRANSFORM_INDEX]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.transformIndex");
             pipeline->locations[NUX_GPU_DESC_UBER_TEXTURE0]
                 = glGetUniformLocation(pipeline->program,
                                        "SPIRV_Cross_Combinedcanvassampler0");
-            pipeline->locations[NUX_GPU_DESC_UBER_HAS_TEXTURE]
+            pipeline->locations[NUX_GPU_DESC_UBER_BATCH_INDEX]
                 = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.hasTexture");
+                                       "entryPointParams.batchIndex");
 
             pipeline->units[NUX_GPU_DESC_UBER_TEXTURE0] = 0;
         }

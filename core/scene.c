@@ -2,6 +2,7 @@
 
 #define DEFAULT_NODE_COUNT      4096
 #define TRANSFORMS_DEFAULT_SIZE 4096
+#define BATCH_DEFAULT_SIZE      512
 
 static nux_status_t
 push_transforms (nux_ctx_t      *ctx,
@@ -58,6 +59,14 @@ nux_scene_new (nux_ctx_t *ctx)
                "Failed to create constants buffer",
                return NUX_NULL);
 
+    // Allocate batches buffer
+    s->batches_buffer_head = 0;
+    s->batches_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    s->batches_buffer.size = sizeof(nux_gpu_scene_batch_t) * BATCH_DEFAULT_SIZE;
+    NUX_CHECKM(nux_gpu_buffer_init(ctx, &s->batches_buffer),
+               "Failed to create batches buffer",
+               return NUX_NULL);
+
     // Allocate transforms buffer
     s->transforms_buffer_head = 0;
     s->transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
@@ -73,6 +82,9 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
 {
     nux_scene_t *s = nux_object_get(ctx, NUX_TYPE_SCENE, scene);
     NUX_CHECK(s, return);
+
+    // Reset batches
+    s->batches_buffer_head = 0;
 
     // Propagate transforms
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
@@ -97,6 +109,12 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     nux_gpu_bind_pipeline(&s->commands, ctx->main_pipeline.slot);
     nux_gpu_bind_buffer(
         &s->commands, NUX_GPU_DESC_UBER_CONSTANTS, s->constants_buffer.slot);
+    nux_gpu_bind_buffer(
+        &s->commands, NUX_GPU_DESC_UBER_BATCHES, s->batches_buffer.slot);
+    nux_gpu_bind_buffer(
+        &s->commands, NUX_GPU_DESC_UBER_TRANSFORMS, s->transforms_buffer.slot);
+    nux_gpu_bind_buffer(
+        &s->commands, NUX_GPU_DESC_UBER_VERTICES, ctx->vertices_buffer.slot);
 
     // Draw nodes
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
@@ -128,30 +146,34 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             }
 
             // Push transform
-            nux_u32_t transform_idx;
+            nux_u32_t transform_index;
             NUX_CHECK(
-                push_transforms(ctx, s, 1, &t->global_matrix, &transform_idx),
+                push_transforms(ctx, s, 1, &t->global_matrix, &transform_index),
                 continue);
 
-            // Prepare commands
+            // Update batch
+            nux_u32_t batch_index = s->batches_buffer_head;
+            ++s->batches_buffer_head;
+            nux_gpu_scene_batch_t batch;
+            batch.first_transform = transform_index;
+            batch.first_vertex    = m->first;
+            batch.has_texture     = tex ? 1 : 0;
+            NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
+                                            s->batches_buffer.slot,
+                                            batch_index * sizeof(batch),
+                                            sizeof(batch),
+                                            &batch),
+                       "Failed to update batches buffer",
+                       continue);
+
+            // Create commands
             if (tex)
             {
                 nux_gpu_bind_texture(
                     &s->commands, NUX_GPU_DESC_UBER_TEXTURE0, tex->gpu.slot);
             }
             nux_gpu_push_u32(
-                &s->commands, NUX_GPU_DESC_UBER_HAS_TEXTURE, tex ? 1 : 0);
-            nux_gpu_bind_buffer(&s->commands,
-                                NUX_GPU_DESC_UBER_VERTICES,
-                                ctx->vertices_buffer.slot);
-            nux_gpu_bind_buffer(&s->commands,
-                                NUX_GPU_DESC_UBER_TRANSFORMS,
-                                s->transforms_buffer.slot);
-            nux_gpu_push_u32(
-                &s->commands, NUX_GPU_DESC_UBER_FIRST_VERTEX, m->first);
-            nux_gpu_push_u32(&s->commands,
-                             NUX_GPU_DESC_UBER_TRANSFORM_INDEX,
-                             transform_idx);
+                &s->commands, NUX_GPU_DESC_UBER_BATCH_INDEX, batch_index);
             nux_gpu_draw(&s->commands, m->count);
         }
     }
