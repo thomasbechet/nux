@@ -1,6 +1,14 @@
 #version 450
 
-struct Batch_std430
+struct Constants
+{
+    mat4 view;
+    mat4 proj;
+    uvec2 screenSize;
+    float time;
+};
+
+struct Batch
 {
     uint mode;
     uint first;
@@ -10,50 +18,57 @@ struct Batch_std430
     vec4 color;
 };
 
-const vec2 _78[6] = vec2[](vec2(0.0), vec2(0.0, 1.0), vec2(1.0), vec2(1.0), vec2(1.0, 0.0), vec2(0.0));
-
-struct _MatrixStorage_float4x4_ColMajorstd140
+layout(binding = 2, std430) readonly buffer BatchBlock
 {
-    vec4 data[4];
+    Batch batches[];
 };
 
-layout(binding = 2, std430) readonly buffer StructuredBuffer
+layout(binding = 0, std140) uniform ConstantBlock
 {
-    Batch_std430 _m0[];
-} batches;
-
-layout(binding = 1, std430) readonly buffer quads
+    Constants constants;
+};
+layout(binding = 1, std430) readonly buffer QuadBlock
 {
-    uint _m0[];
-} quads_1;
-
-layout(binding = 0, std140) uniform Constants_std140
-{
-    _MatrixStorage_float4x4_ColMajorstd140 view;
-    _MatrixStorage_float4x4_ColMajorstd140 proj;
-    uvec2 screen_size;
-    float time;
-} constants;
-
-struct EntryPointParams_std430
-{
-    uint batchIndex;
+    uint quads[];
 };
 
-uniform EntryPointParams_std430 entryPointParams;
+layout(location = 0) out vec2 outUV;
 
-layout(location = 0) out vec2 entryPointParam_vertexMain_uv;
+uniform uint batchIndex;
 
 void main()
 {
-    uint _22 = uint(gl_VertexID);
-    uint _44 = (batches._m0[entryPointParams.batchIndex].first + (_22 / 6u)) * 3u;
-    uint _52 = _44 + 1u;
-    uint _56 = _44 + 2u;
-    vec2 _88 = vec2(float(quads_1._m0[_56] & 65535u), float(quads_1._m0[_56] >> 16u)) * _78[_22 % 6u];
-    vec2 _102 = (vec2(float(quads_1._m0[_44] & 65535u), float(quads_1._m0[_44] >> 16u)) + _88) / vec2(constants.screen_size);
-    _102.y = 1.0 - _102.y;
-    gl_Position = vec4((_102 * 2.0) - vec2(1.0), 0.0, 1.0);
-    entryPointParam_vertexMain_uv = floor(vec2(float(quads_1._m0[_52] & 65535u), float(quads_1._m0[_52] >> 16u)) + _88) / vec2(float(batches._m0[entryPointParams.batchIndex].textureWidth), float(batches._m0[entryPointParams.batchIndex].textureHeight));
-}
+    const vec2 offsets[6] = vec2[](
+            vec2(0, 0),
+            vec2(0, 1),
+            vec2(1, 1),
+            vec2(1, 1),
+            vec2(1, 0),
+            vec2(0, 0)
+        );
 
+    // Extract quad data
+    Batch batch = batches[batchIndex];
+    uint index = batch.first + gl_VertexID / 6;
+    uint pos = quads[index * 3 + 0];
+    uint tex = quads[index * 3 + 1];
+    uint size = quads[index * 3 + 2];
+
+    // Decode quad data
+    vec2 vertex_pos = vec2(float(pos & 0xffffu), float(pos >> 16u));
+    vec2 vertex_tex = vec2(float(tex & 0xffffu), float(tex >> 16u));
+    vec2 vertex_size = vec2(float(size & 0xffffu), float(size >> 16u));
+
+    // Compute vertex offset based on the vertex index
+    vec2 vertex_offset = offsets[gl_VertexID % 6];
+
+    // Apply offset and normalize
+    vec2 position = (vertex_pos + vertex_size * vertex_offset) / constants.screenSize;
+    position.y = 1 - position.y;
+    vec2 uv = floor(vertex_tex + vertex_size * vertex_offset) / vec2(batch.textureWidth, batch.textureHeight);
+
+    // Store output
+    // output.position = float4(position * 2 - 1, depth, 1);
+    gl_Position = vec4(position * 2 - 1, 0, 1);
+    outUV = uv;
+}

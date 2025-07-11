@@ -1,6 +1,6 @@
 #version 450
 
-struct Batch_std430
+struct Batch
 {
     uint mode;
     uint first;
@@ -10,34 +10,25 @@ struct Batch_std430
     vec4 color;
 };
 
-layout(binding = 2, std430) readonly buffer StructuredBuffer
+layout(binding = 2, std430) readonly buffer BatchBlock
 {
-    Batch_std430 _m0[];
-} batches;
-
-struct EntryPointParams_std430
-{
-    uint batchIndex;
+    Batch batches[];
 };
 
-uniform EntryPointParams_std430 entryPointParams;
+layout(location = 0) in vec2 inUV;
+layout(location = 0) out vec4 outColor;
 
-uniform sampler2D SPIRV_Cross_Combinedtexture0sampler0;
-
-layout(location = 0) in vec2 input_uv;
-layout(location = 0) out vec4 entryPointParam_fragmentMain;
+uniform sampler2D texture0;
+uniform uint batchIndex;
 
 void main()
 {
-    do
+    if (batches[batchIndex].mode == 1)
     {
-        if (batches._m0[entryPointParams.batchIndex].mode == 1u)
-        {
-            entryPointParam_fragmentMain = texture(SPIRV_Cross_Combinedtexture0sampler0, input_uv);
-            break;
-        }
-        entryPointParam_fragmentMain = batches._m0[entryPointParams.batchIndex].color;
-        break;
-    } while(false);
+        outColor = texture(texture0, inUV);
+    }
+    else
+    {
+        outColor = batches[batchIndex].color;
+    }
 }
-

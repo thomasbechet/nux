@@ -103,16 +103,16 @@ nux_os_create_pipeline (void                          *userdata,
                                      &pipeline->program);
 
             GLuint index = glGetProgramResourceIndex(
-                pipeline->program, GL_UNIFORM_BLOCK, "Constants_std140");
+                pipeline->program, GL_UNIFORM_BLOCK, "ConstantBlock");
             glUniformBlockBinding(pipeline->program, index, 1);
             index = glGetProgramResourceIndex(
-                pipeline->program, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "BatchBlock");
             glShaderStorageBlockBinding(pipeline->program, index, 2);
             index = glGetProgramResourceIndex(
-                pipeline->program, GL_SHADER_STORAGE_BLOCK, "vertices");
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "VertexBlock");
             glShaderStorageBlockBinding(pipeline->program, index, 3);
             index = glGetProgramResourceIndex(
-                pipeline->program, GL_SHADER_STORAGE_BLOCK, "transforms");
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "TransformBlock");
             glShaderStorageBlockBinding(pipeline->program, index, 4);
 
             pipeline->indices[NUX_GPU_DESC_UBER_CONSTANTS]  = 1;
@@ -121,11 +121,9 @@ nux_os_create_pipeline (void                          *userdata,
             pipeline->indices[NUX_GPU_DESC_UBER_TRANSFORMS] = 4;
 
             pipeline->locations[NUX_GPU_DESC_UBER_TEXTURE0]
-                = glGetUniformLocation(pipeline->program,
-                                       "SPIRV_Cross_Combinedcanvassampler0");
+                = glGetUniformLocation(pipeline->program, "texture0");
             pipeline->locations[NUX_GPU_DESC_UBER_BATCH_INDEX]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.batchIndex");
+                = glGetUniformLocation(pipeline->program, "batchIndex");
 
             pipeline->units[NUX_GPU_DESC_UBER_TEXTURE0] = 0;
         }
@@ -138,13 +136,13 @@ nux_os_create_pipeline (void                          *userdata,
                                      &pipeline->program);
 
             GLuint index = glGetProgramResourceIndex(
-                pipeline->program, GL_UNIFORM_BLOCK, "Constants_std140");
+                pipeline->program, GL_UNIFORM_BLOCK, "ConstantBlock");
             glUniformBlockBinding(pipeline->program, index, 1);
             index = glGetProgramResourceIndex(
-                pipeline->program, GL_SHADER_STORAGE_BLOCK, "StructuredBuffer");
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "BatchBlock");
             glShaderStorageBlockBinding(pipeline->program, index, 2);
             index = glGetProgramResourceIndex(
-                pipeline->program, GL_SHADER_STORAGE_BLOCK, "quads");
+                pipeline->program, GL_SHADER_STORAGE_BLOCK, "QuadBlock");
             glShaderStorageBlockBinding(pipeline->program, index, 3);
 
             pipeline->indices[NUX_GPU_DESC_CANVAS_CONSTANTS] = 1;
@@ -152,11 +150,9 @@ nux_os_create_pipeline (void                          *userdata,
             pipeline->indices[NUX_GPU_DESC_CANVAS_QUADS]     = 3;
 
             pipeline->locations[NUX_GPU_DESC_CANVAS_TEXTURE]
-                = glGetUniformLocation(pipeline->program,
-                                       "SPIRV_Cross_Combinedtexture0sampler0");
+                = glGetUniformLocation(pipeline->program, "texture0");
             pipeline->locations[NUX_GPU_DESC_CANVAS_BATCH_INDEX]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.batchIndex");
+                = glGetUniformLocation(pipeline->program, "batchIndex");
 
             pipeline->units[NUX_GPU_DESC_CANVAS_TEXTURE] = 0;
         }
@@ -169,14 +165,11 @@ nux_os_create_pipeline (void                          *userdata,
                                      &pipeline->program);
 
             pipeline->locations[NUX_GPU_DESC_BLIT_TEXTURE]
-                = glGetUniformLocation(pipeline->program,
-                                       "SPIRV_Cross_Combinedtexture0sampler0");
+                = glGetUniformLocation(pipeline->program, "texture0");
             pipeline->locations[NUX_GPU_DESC_BLIT_TEXTURE_WIDTH]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.textureWidth");
+                = glGetUniformLocation(pipeline->program, "textureWidth");
             pipeline->locations[NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT]
-                = glGetUniformLocation(pipeline->program,
-                                       "entryPointParams.textureHeight");
+                = glGetUniformLocation(pipeline->program, "textureHeight");
 
             pipeline->units[NUX_GPU_DESC_BLIT_TEXTURE] = 0;
         }

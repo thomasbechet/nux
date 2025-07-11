@@ -1,28 +1,48 @@
 #version 450
 
-struct EntryPointParams_std430
+layout(location = 0) in vec2 inUV;
+layout(location = 0) out vec4 outColor;
+
+uniform sampler2D texture0;
+uniform uint textureWidth;
+uniform uint textureHeight;
+
+vec4 sampleColor(vec2 uv)
 {
-    uint textureWidth;
-    uint textureHeight;
-};
+    // uint idx = canvas.Sample(sampler0, uv).r;
+    // return colormap.Sample(sampler1, vec2(float(idx) / 255.0, 0));
+    return texture(texture0, uv);
+}
 
-uniform EntryPointParams_std430 entryPointParams;
+// https://www.shadertoy.com/view/4s3fDB
+vec4 bilinearFiltering(vec2 uv, vec2 res)
+{
+    vec2 st = uv * res - 0.5;
 
-uniform sampler2D SPIRV_Cross_Combinedtexture0sampler0;
+    vec2 iuv = floor(st);
+    vec2 fuv = fract(st);
 
-layout(location = 0) in vec2 input_uv;
-layout(location = 0) out vec4 entryPointParam_fragmentMain;
+    vec4 a = sampleColor((iuv + vec2(0.5, 0.5)) / res);
+    vec4 b = sampleColor((iuv + vec2(1.5, 0.5)) / res);
+    vec4 c = sampleColor((iuv + vec2(0.5, 1.5)) / res);
+    vec4 d = sampleColor((iuv + vec2(1.5, 1.5)) / res);
+
+    return mix(mix(a, b, fuv.x), mix(c, d, fuv.x), fuv.y);
+}
+
+vec2 uvFiltering(vec2 uv, vec2 textureSize)
+{
+    vec2 pixel = uv * textureSize;
+    vec2 seam = floor(pixel + 0.5);
+    vec2 dudv = fwidth(pixel);
+    pixel = seam + clamp((pixel - seam) / dudv, -0.5, 0.5);
+    return pixel / textureSize;
+}
 
 void main()
 {
-    vec2 textureSize = vec2(float(entryPointParams.textureWidth), float(entryPointParams.textureHeight));
-    vec2 _127 = input_uv * textureSize;
-    vec2 _130 = floor(_127 + vec2(0.5));
-    vec2 _145 = (((_130 + clamp((_127 - _130) / fwidth(_127), vec2(-0.5), vec2(0.5))) / textureSize) * textureSize) - vec2(0.5);
-    vec2 _146 = floor(_145);
-    vec2 _147 = fract(_145);
-    float _160 = _147.x;
-    float _163 = _147.y;
-    entryPointParam_fragmentMain = (((texture(SPIRV_Cross_Combinedtexture0sampler0, (_146 + vec2(1.5)) / textureSize) * _160) + (texture(SPIRV_Cross_Combinedtexture0sampler0, (_146 + vec2(0.5, 1.5)) / textureSize) * (1.0 - _160))) * _163) + (((texture(SPIRV_Cross_Combinedtexture0sampler0, (_146 + vec2(1.5, 0.5)) / textureSize) * _160) + (texture(SPIRV_Cross_Combinedtexture0sampler0, (_146 + vec2(0.5)) / textureSize) * (1.0 - _160))) * (1.0 - _163));
+    const vec2 textureSize = vec2(textureWidth, textureHeight);
+    vec2 uv = inUV;
+    uv = uvFiltering(uv, textureSize);
+    outColor = bilinearFiltering(uv, textureSize);
 }
-
