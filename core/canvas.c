@@ -182,7 +182,6 @@ nux_canvas_render (nux_ctx_t *ctx, nux_u32_t id, nux_u32_t target)
     // Update constants
     nux_gpu_constants_buffer_t constants;
     constants.screen_size = nux_v2u(width, height);
-    constants.canvas_size = nux_v2u(width, height);
     constants.time        = ctx->time;
     nux_os_update_buffer(ctx->userdata,
                          c->constants_buffer.slot,

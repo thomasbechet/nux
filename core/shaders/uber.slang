@@ -59,9 +59,9 @@ VOut vertexMain(
     float4 viewPos  = mul(constants.view, worldPos);
     output.position = mul(constants.proj, viewPos);
     output.uv       = v0.texcoord;
-    output.normal   = normalize(cross(
-        v2.position - v1.position, 
-        v0.position - v1.position));
+    // output.normal   = normalize(cross(
+    //     v2.position - v1.position, 
+    //     v0.position - v1.position));
     return output;
 }
 

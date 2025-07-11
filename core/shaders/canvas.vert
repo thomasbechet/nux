@@ -31,7 +31,6 @@ layout(binding = 0, std140) uniform Constants_std140
 {
     _MatrixStorage_float4x4_ColMajorstd140 view;
     _MatrixStorage_float4x4_ColMajorstd140 proj;
-    uvec2 canvas_size;
     uvec2 screen_size;
     float time;
 } constants;

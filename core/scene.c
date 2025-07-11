@@ -201,7 +201,6 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
                           cc->far);
     constants.screen_size = nux_v2u(ctx->stats[NUX_STAT_SCREEN_WIDTH],
                                     ctx->stats[NUX_STAT_SCREEN_HEIGHT]);
-    constants.canvas_size = nux_v2u(NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
     constants.time        = ctx->time;
     nux_os_update_buffer(ctx->userdata,
                          s->constants_buffer.slot,

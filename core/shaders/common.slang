@@ -2,7 +2,6 @@ struct Constants
 {
     float4x4 view;
     float4x4 proj;
-    uint2    canvas_size;
     uint2    screen_size;
     float    time;
 }

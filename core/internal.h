@@ -442,7 +442,6 @@ typedef struct
 {
     nux_m4_t  view;
     nux_m4_t  proj;
-    nux_v2u_t canvas_size;
     nux_v2u_t screen_size;
     nux_f32_t time;
     nux_f32_t _pad[3];
