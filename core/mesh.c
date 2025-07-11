@@ -14,6 +14,56 @@ nux_mesh_new (nux_ctx_t *ctx, nux_u32_t capa)
     NUX_CHECK(mesh->data, return NUX_NULL);
     return id;
 }
+void
+nux_mesh_gen_bounds (nux_ctx_t *ctx, nux_u32_t id)
+{
+    nux_mesh_t *mesh = nux_object_get(ctx, NUX_TYPE_MESH, id);
+    NUX_CHECK(mesh, return);
+    if (mesh->bounds_first || mesh->count == 0)
+    {
+        return;
+    }
+
+    nux_v3_t min = nux_v3s(NUX_FLT_MAX);
+    nux_v3_t max = nux_v3s(NUX_FLT_MIN);
+    for (nux_u32_t i = 0; i < mesh->count; ++i)
+    {
+        nux_v3_t v = nux_v3(mesh->data[i * 5 + 0],
+                            mesh->data[i * 5 + 1],
+                            mesh->data[i * 5 + 2]);
+        min        = nux_v3_min(min, v);
+        max        = nux_v3_max(max, v);
+    }
+
+    const nux_b3_t box = nux_b3(min, max);
+
+    const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
+    const nux_v3_t v1 = nux_v3(box.max.x, box.min.y, box.min.z);
+    const nux_v3_t v2 = nux_v3(box.max.x, box.min.y, box.max.z);
+    const nux_v3_t v3 = nux_v3(box.min.x, box.min.y, box.max.z);
+
+    const nux_v3_t v4 = nux_v3(box.min.x, box.max.y, box.min.z);
+    const nux_v3_t v5 = nux_v3(box.max.x, box.max.y, box.min.z);
+    const nux_v3_t v6 = nux_v3(box.max.x, box.max.y, box.max.z);
+    const nux_v3_t v7 = nux_v3(box.min.x, box.max.y, box.max.z);
+
+    const nux_v3_t positions[]
+        = { v0, v1, v1, v2, v2, v3, v3, v0, v4, v5, v5, v6,
+            v6, v7, v7, v4, v0, v4, v1, v5, v2, v6, v3, v7 };
+
+    nux_f32_t data[12 * 2 * 5];
+    for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(positions); ++i)
+    {
+        data[i * 5 + 0] = positions[i].x;
+        data[i * 5 + 1] = positions[i].y;
+        data[i * 5 + 2] = positions[i].z;
+        data[i * 5 + 3] = 0;
+        data[i * 5 + 4] = 0;
+    }
+
+    nux_graphics_push_vertices(
+        ctx, NUX_ARRAY_SIZE(positions), data, &mesh->bounds_first);
+}
 nux_u32_t
 nux_mesh_gen_cube (nux_ctx_t *ctx, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {

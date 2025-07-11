@@ -61,6 +61,9 @@ typedef struct
 typedef struct
 {
     nux_gpu_pipeline_type_t type;
+    GLboolean               enable_blend;
+    GLboolean               enable_depth_test;
+    GLuint                  primitive;
     GLuint                  program;
     GLuint                  indices[NUX_GPU_DESC_MAX];
     GLuint                  locations[NUX_GPU_DESC_MAX];

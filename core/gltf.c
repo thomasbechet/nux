@@ -131,6 +131,9 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
         nux_graphics_push_vertices(ctx, mesh->count, mesh->data, &mesh->first),
         return NUX_NULL);
 
+    // Optional : Generate bounds
+    nux_mesh_gen_bounds(ctx, id);
+
     return id;
 }
 static nux_u32_t
@@ -292,7 +295,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
             // Set transform
             nux_transform_add(ctx, node_id);
             nux_transform_set_translation(ctx, node_id, translation);
-            // nux_transform_set_rotation(ctx, node_id, rotation);
+            nux_transform_set_rotation(ctx, node_id, rotation);
             nux_transform_set_scale(ctx, node_id, scale);
 
             if (node->mesh)

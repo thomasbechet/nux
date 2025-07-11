@@ -42,15 +42,31 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_palr(ctx);
 
     // Create pipelines
-    ctx->main_pipeline.type = NUX_GPU_PIPELINE_UBER;
-    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->main_pipeline),
-               "Failed to create main pipeline",
+    ctx->uber_pipeline_opaque.info.type              = NUX_GPU_PIPELINE_UBER;
+    ctx->uber_pipeline_opaque.info.primitive         = NUX_PRIMITIVE_TRIANGLES;
+    ctx->uber_pipeline_opaque.info.enable_blend      = NUX_FALSE;
+    ctx->uber_pipeline_opaque.info.enable_depth_test = NUX_TRUE;
+    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->uber_pipeline_opaque),
+               "Failed to create uber pipeline opaque",
                goto error);
-    ctx->canvas_pipeline.type = NUX_GPU_PIPELINE_CANVAS;
+    ctx->uber_pipeline_line.info.type              = NUX_GPU_PIPELINE_UBER;
+    ctx->uber_pipeline_line.info.primitive         = NUX_PRIMITIVE_LINES;
+    ctx->uber_pipeline_line.info.enable_blend      = NUX_FALSE;
+    ctx->uber_pipeline_line.info.enable_depth_test = NUX_TRUE;
+    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->uber_pipeline_line),
+               "Failed to create uber pipeline line",
+               goto error);
+    ctx->canvas_pipeline.info.type              = NUX_GPU_PIPELINE_CANVAS;
+    ctx->uber_pipeline_opaque.info.primitive    = NUX_PRIMITIVE_TRIANGLES;
+    ctx->canvas_pipeline.info.enable_blend      = NUX_TRUE;
+    ctx->canvas_pipeline.info.enable_depth_test = NUX_FALSE;
     NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->canvas_pipeline),
                "Failed to create canvas pipeline",
                goto error);
-    ctx->blit_pipeline.type = NUX_GPU_PIPELINE_BLIT;
+    ctx->blit_pipeline.info.type              = NUX_GPU_PIPELINE_BLIT;
+    ctx->uber_pipeline_opaque.info.primitive  = NUX_PRIMITIVE_TRIANGLES;
+    ctx->blit_pipeline.info.enable_blend      = NUX_TRUE;
+    ctx->blit_pipeline.info.enable_depth_test = NUX_FALSE;
     NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->blit_pipeline),
                "Failed to create blit pipeline",
                goto error);

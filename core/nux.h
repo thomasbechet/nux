@@ -85,6 +85,9 @@ typedef enum
 typedef struct
 {
     nux_gpu_pipeline_type_t type;
+    nux_primitive_t         primitive;
+    nux_b32_t               enable_blend;
+    nux_b32_t               enable_depth_test;
 } nux_gpu_pipeline_info_t;
 
 typedef enum

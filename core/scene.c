@@ -51,6 +51,10 @@ nux_scene_new (nux_ctx_t *ctx)
     NUX_CHECKM(nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &s->commands),
                "Failed to allocate commands buffer",
                return NUX_NULL);
+    NUX_CHECKM(
+        nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &s->commands_lines),
+        "Failed to allocate lines commands buffer",
+        return NUX_NULL);
 
     // Allocate constants buffer
     s->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
@@ -83,10 +87,8 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     nux_scene_t *s = nux_object_get(ctx, NUX_TYPE_SCENE, scene);
     NUX_CHECK(s, return);
 
-    // Reset batches
-    s->batches_buffer_head = 0;
-
     // Propagate transforms
+    nux_u32_t batch_count = 0;
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
     {
         nux_node_t *n = s->nodes.data + ni;
@@ -100,13 +102,19 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
                 = &s->components.data[n->components[NUX_COMPONENT_TRANSFORM]]
                        .transform;
             nux_transform_update_matrix(ctx, n->id);
+            if (n->components[NUX_COMPONENT_STATICMESH])
+            {
+                ++batch_count;
+            }
         }
     }
 
     // Bind framebuffer, pipeline and constants
     nux_gpu_bind_framebuffer(&s->commands, 0);
     nux_gpu_clear(&s->commands, 0x4f9bd9);
-    nux_gpu_bind_pipeline(&s->commands, ctx->main_pipeline.slot);
+
+    // Begin opaque pass
+    nux_gpu_bind_pipeline(&s->commands, ctx->uber_pipeline_opaque.slot);
     nux_gpu_bind_buffer(
         &s->commands, NUX_GPU_DESC_UBER_CONSTANTS, s->constants_buffer.slot);
     nux_gpu_bind_buffer(
@@ -115,6 +123,9 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
         &s->commands, NUX_GPU_DESC_UBER_TRANSFORMS, s->transforms_buffer.slot);
     nux_gpu_bind_buffer(
         &s->commands, NUX_GPU_DESC_UBER_VERTICES, ctx->vertices_buffer.slot);
+
+    // Begin lines pass
+    nux_gpu_bind_pipeline(&s->commands_lines, ctx->uber_pipeline_line.slot);
 
     // Draw nodes
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
@@ -151,7 +162,7 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
                 push_transforms(ctx, s, 1, &t->global_matrix, &transform_index),
                 continue);
 
-            // Update batch
+            // Create batch
             nux_u32_t batch_index = s->batches_buffer_head;
             ++s->batches_buffer_head;
             nux_gpu_scene_batch_t batch;
@@ -175,6 +186,27 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             nux_gpu_push_u32(
                 &s->commands, NUX_GPU_DESC_UBER_BATCH_INDEX, batch_index);
             nux_gpu_draw(&s->commands, m->count);
+
+            // Create line batch
+            if (m->bounds_first)
+            {
+                batch_index = s->batches_buffer_head;
+                ++s->batches_buffer_head;
+                batch.first_transform = transform_index;
+                batch.first_vertex    = m->bounds_first;
+                batch.has_texture     = 0;
+                NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
+                                                s->batches_buffer.slot,
+                                                batch_index * sizeof(batch),
+                                                sizeof(batch),
+                                                &batch),
+                           "Failed to update batches buffer",
+                           continue);
+                nux_gpu_push_u32(&s->commands_lines,
+                                 NUX_GPU_DESC_UBER_BATCH_INDEX,
+                                 batch_index);
+                nux_gpu_draw(&s->commands_lines, 12 * 2);
+            }
         }
     }
 
@@ -210,10 +242,14 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
 
     // Submit commands
     nux_os_gpu_submit(ctx->userdata, s->commands.data, s->commands.size);
+    nux_os_gpu_submit(
+        ctx->userdata, s->commands_lines.data, s->commands_lines.size);
 
     // Reset frame data
     s->transforms_buffer_head = 0;
+    s->batches_buffer_head    = 0;
     nux_gpu_command_vec_clear(&s->commands);
+    nux_gpu_command_vec_clear(&s->commands_lines);
 }
 nux_u32_t
 nux_scene_get_node (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t index)

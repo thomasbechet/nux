@@ -89,8 +89,22 @@ nux_os_create_pipeline (void                          *userdata,
 {
     instance_t *inst = userdata;
     CHECK(slot < ARRAY_LEN(inst->pipelines), return NUX_FAILURE);
-    pipeline_t *pipeline = inst->pipelines + slot;
-    pipeline->type       = info->type;
+    pipeline_t *pipeline        = inst->pipelines + slot;
+    pipeline->type              = info->type;
+    pipeline->enable_blend      = info->enable_blend ? GL_TRUE : GL_FALSE;
+    pipeline->enable_depth_test = info->enable_depth_test ? GL_TRUE : GL_FALSE;
+    switch (info->primitive)
+    {
+        case NUX_PRIMITIVE_TRIANGLES:
+            pipeline->primitive = GL_TRIANGLES;
+            break;
+        case NUX_PRIMITIVE_LINES:
+            pipeline->primitive = GL_LINES;
+            break;
+        case NUX_PRIMITIVE_POINTS:
+            pipeline->primitive = GL_POINTS;
+            break;
+    }
 
     nux_status_t status = NUX_SUCCESS;
     switch (info->type)
@@ -357,12 +371,6 @@ nux_os_gpu_submit (void                    *userdata,
 {
     instance_t *inst = userdata;
 
-    // const nux_u8_t *it = cmds;
-    // while (nux_gpu_command_decode(&it, &cmd))
-    // {
-    //
-    // }
-
     // Execute commands
     for (nux_u32_t i = 0; i < count; ++i)
     {
@@ -398,22 +406,34 @@ nux_os_gpu_submit (void                    *userdata,
                 renderer.active_pipeline
                     = inst->pipelines + cmd->bind_pipeline.slot;
                 glUseProgram(renderer.active_pipeline->program);
+                if (renderer.active_pipeline->enable_depth_test)
+                {
+                    glEnable(GL_DEPTH_TEST);
+                }
+                else
+                {
+                    glDisable(GL_DEPTH_TEST);
+                }
+                if (renderer.active_pipeline->enable_blend)
+                {
+                    glEnable(GL_BLEND);
+                }
+                else
+                {
+                    glDisable(GL_BLEND);
+                }
                 switch ((nux_gpu_pipeline_type_t)renderer.active_pipeline->type)
                 {
                     case NUX_GPU_PIPELINE_UBER: {
-                        glEnable(GL_DEPTH_TEST);
-                        glEnable(GL_MULTISAMPLE);
+                        // glEnable(GL_MULTISAMPLE);
                     }
                     break;
                     case NUX_GPU_PIPELINE_BLIT: {
-                        glDisable(GL_DEPTH_TEST);
-                        glDisable(GL_MULTISAMPLE);
-                        glEnable(GL_BLEND);
+                        // glDisable(GL_MULTISAMPLE);
                     }
                     break;
                     case NUX_GPU_PIPELINE_CANVAS: {
-                        glDisable(GL_DEPTH_TEST);
-                        glDisable(GL_MULTISAMPLE);
+                        // glDisable(GL_MULTISAMPLE);
                     }
                     break;
                 }
@@ -451,7 +471,8 @@ nux_os_gpu_submit (void                    *userdata,
             break;
             case NUX_GPU_COMMAND_DRAW: {
                 glBindVertexArray(renderer.empty_vao);
-                glDrawArrays(GL_TRIANGLES, 0, cmd->draw.count);
+                glDrawArrays(
+                    renderer.active_pipeline->primitive, 0, cmd->draw.count);
                 glBindVertexArray(0);
             }
             break;
@@ -459,7 +480,7 @@ nux_os_gpu_submit (void                    *userdata,
                 float r = ((cmd->clear.color & 0xFF0000) >> 16) / 255.;
                 float g = ((cmd->clear.color & 0xFF00) >> 8) / 255.;
                 float b = ((cmd->clear.color & 0xFF)) / 255.;
-                glClearColor(r, g, b, 1);
+                glClearColor(r, g, b, 0);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
             break;

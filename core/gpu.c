@@ -45,11 +45,11 @@ nux_gpu_pipeline_init (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
 {
     nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_pipeline_slots);
     NUX_CHECKM(slot, "Out of gpu pipelines", return NUX_FAILURE);
-    pipeline->slot               = *slot;
-    nux_gpu_pipeline_info_t info = { .type = pipeline->type };
-    NUX_CHECKM(nux_os_create_pipeline(ctx->userdata, pipeline->slot, &info),
-               "Failed to create pipeline",
-               return NUX_FAILURE);
+    pipeline->slot = *slot;
+    NUX_CHECKM(
+        nux_os_create_pipeline(ctx->userdata, pipeline->slot, &pipeline->info),
+        "Failed to create pipeline",
+        return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 

@@ -115,9 +115,16 @@ typedef enum
 
 typedef enum
 {
-    NUX_VERTEX_TRIANGLES = 6,
-    NUX_VERTEX_LINES     = 6,
-    NUX_VERTEX_POINTS    = 6,
+    NUX_PRIMITIVE_TRIANGLES = 0,
+    NUX_PRIMITIVE_LINES     = 1,
+    NUX_PRIMITIVE_POINTS    = 2,
+} nux_primitive_t;
+
+typedef enum
+{
+    NUX_VERTEX_TRIANGLES = 0,
+    NUX_VERTEX_LINES     = 1,
+    NUX_VERTEX_POINTS    = 2,
 
     NUX_VERTEX_POSITION = 1 << 0,
     NUX_VERTEX_UV       = 1 << 1,
@@ -309,6 +316,7 @@ void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
                                  nux_u32_t  colormap);
 
 nux_u32_t nux_mesh_new(nux_ctx_t *ctx, nux_u32_t capa);
+void      nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_u32_t id);
 nux_u32_t nux_mesh_gen_cube(nux_ctx_t *ctx,
                             nux_f32_t  sx,
                             nux_f32_t  sy,

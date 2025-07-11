@@ -121,7 +121,9 @@
     nux_##name##_t nux_##name##_adds(nux_##name##_t a, type b);          \
     nux_##name##_t nux_##name##_subs(nux_##name##_t a, type b);          \
     nux_##name##_t nux_##name##_muls(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);
+    nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);          \
+    nux_##name##_t nux_##name##_min(nux_##name##_t a, nux_##name##_t b); \
+    nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b);
 
 #define NUX_V3_DEFINE(name, type)                                          \
     nux_##name##_t nux_##name(type x, type y, type z);                     \
@@ -135,7 +137,9 @@
     nux_##name##_t nux_##name##_muls(nux_##name##_t a, type b);            \
     nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);            \
     nux_##name##_t nux_##name##_cross(nux_##name##_t a, nux_##name##_t b); \
-    type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
+    type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);   \
+    nux_##name##_t nux_##name##_min(nux_##name##_t a, nux_##name##_t b);   \
+    nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b);
 
 #define NUX_V4_DEFINE(name, type)                                        \
     nux_##name##_t nux_##name(type x, type y, type z, type w);           \
@@ -456,7 +460,7 @@ typedef struct
 
 typedef struct
 {
-    nux_gpu_pipeline_type_t type;
+    nux_gpu_pipeline_info_t info;
     nux_u32_t               slot;
 } nux_gpu_pipeline_t;
 
@@ -482,7 +486,8 @@ typedef struct
 {
     nux_f32_t *data;
     nux_u32_t  first;
-    nux_u32_t  count;
+    nux_u32_t  count; // vertex count
+    nux_u32_t  bounds_first;
 } nux_mesh_t;
 
 typedef struct
@@ -575,6 +580,7 @@ typedef struct
     nux_gpu_buffer_t      transforms_buffer;
     nux_u32_t             transforms_buffer_head;
     nux_gpu_command_vec_t commands;
+    nux_gpu_command_vec_t commands_lines;
 } nux_scene_t;
 
 typedef void (*nux_type_cleanup_t)(nux_ctx_t *ctx, void *data);
@@ -667,7 +673,8 @@ struct nux_context
 
     nux_u32_t stats[NUX_STAT_MAX];
 
-    nux_gpu_pipeline_t main_pipeline;
+    nux_gpu_pipeline_t uber_pipeline_opaque;
+    nux_gpu_pipeline_t uber_pipeline_line;
     nux_gpu_pipeline_t blit_pipeline;
     nux_gpu_pipeline_t canvas_pipeline;
     nux_gpu_buffer_t   vertices_buffer;

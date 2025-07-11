@@ -152,6 +152,7 @@ nux_canvas_clear (nux_ctx_t *ctx, nux_u32_t id)
     c->batches_buffer_head = 0;
     c->quads_buffer_head   = 0;
     nux_gpu_command_vec_clear(&c->commands);
+    nux_gpu_clear(&c->commands, 0x00);
 }
 void
 nux_canvas_render (nux_ctx_t *ctx, nux_u32_t id, nux_u32_t target)
