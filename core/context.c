@@ -15,16 +15,16 @@ nux_instance_init (const nux_config_t *config)
 
     // Allocate core memory
     nux_arena_t core_arena;
-    core_arena.capa = NUX_CORE_MEMORY_SIZE;
+    core_arena.capa = config->memory_size;
     core_arena.size = 0;
-    core_arena.data = nux_os_malloc(config->userdata, NUX_CORE_MEMORY_SIZE);
+    core_arena.data = nux_os_malloc(config->userdata, config->memory_size);
     core_arena.first_object = NUX_NULL;
     core_arena.last_object  = NUX_NULL;
     NUX_CHECK(core_arena.data, return NUX_NULL);
-    nux_memset(core_arena.data, 0, NUX_CORE_MEMORY_SIZE);
+    nux_memset(core_arena.data, 0, config->memory_size);
 
     // Allocate instance
-    nux_ctx_t *ctx = nux_arena_alloc(&core_arena, sizeof(*ctx));
+    nux_ctx_t *ctx = nux_arena_alloc(NUX_NULL, &core_arena, sizeof(*ctx));
     NUX_ASSERT(ctx);
     ctx->userdata = config->userdata;
     ctx->running  = NUX_TRUE;
@@ -69,14 +69,14 @@ nux_instance_init (const nux_config_t *config)
 
     // Create object pool
     NUX_CHECK(nux_object_pool_alloc(
-                  &core_arena, config->max_object_count, &ctx->objects),
+                  ctx, &core_arena, config->max_object_count, &ctx->objects),
               goto cleanup);
 
     // Reserve index 0 for null object
     nux_object_pool_add(&ctx->objects);
 
     // Register core arena
-    NUX_CHECK(nux_arena_pool_alloc(&core_arena, 32, &ctx->arenas),
+    NUX_CHECK(nux_arena_pool_alloc(ctx, &core_arena, 32, &ctx->arenas),
               goto cleanup);
     ctx->core_arena   = nux_arena_pool_add(&ctx->arenas);
     *ctx->core_arena  = core_arena; // copy by value

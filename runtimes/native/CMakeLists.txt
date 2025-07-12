@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.0)
 project(nux VERSION 0.0.1)
 
 # set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# set(CMAKE_EXECUTABLE_SUFFIX ".wasm") TODO: support wasm build
+# set(CMAKE_EXECUTABLE_SUFFIX ".wasm") # TODO: support wasm build
 
 include(CheckCCompilerFlag)
 function(enable_c_compiler_flag_if_supported flag)
@@ -27,6 +27,8 @@ enable_c_compiler_flag_if_supported("-fsanitize=address")
 
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)
+# add_compile_options(-pg)
+# add_link_options(-pg)
 
 include_directories(${CMAKE_SOURCE_DIR}/core)
 include_directories(${CMAKE_SOURCE_DIR}/externals)

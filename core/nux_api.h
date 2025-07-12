@@ -92,7 +92,6 @@ typedef enum
     NUX_NAME_MAX         = 64,
     NUX_PALETTE_SIZE     = 256,
     NUX_COLORMAP_SIZE    = 256,
-    NUX_CORE_MEMORY_SIZE = (1 << 27), // 128M
     NUX_GPU_BUFFER_SIZE  = (1 << 24), // 16M
     NUX_GPU_COMMAND_SIZE = 1024,
 } nux_constants_t;

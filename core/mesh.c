@@ -3,14 +3,14 @@
 nux_u32_t
 nux_mesh_new (nux_ctx_t *ctx, nux_u32_t capa)
 {
-    nux_mesh_t *mesh = nux_arena_alloc(ctx->active_arena, sizeof(*mesh));
+    nux_mesh_t *mesh = nux_arena_alloc(ctx, ctx->active_arena, sizeof(*mesh));
     NUX_CHECK(mesh, return NUX_NULL);
     nux_u32_t id
         = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_MESH, mesh);
     NUX_CHECK(id, return NUX_NULL);
     mesh->count = capa;
-    mesh->data  = nux_arena_alloc(ctx->active_arena,
-                                 sizeof(nux_f32_t) * 5 * mesh->count);
+    mesh->data  = nux_arena_alloc(
+        ctx, ctx->active_arena, sizeof(nux_f32_t) * 5 * mesh->count);
     NUX_CHECK(mesh->data, return NUX_NULL);
     return id;
 }

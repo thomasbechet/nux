@@ -30,17 +30,17 @@ push_transforms (nux_ctx_t      *ctx,
 nux_u32_t
 nux_scene_new (nux_ctx_t *ctx)
 {
-    nux_scene_t *s = nux_arena_alloc(ctx->active_arena, sizeof(*s));
+    nux_scene_t *s = nux_arena_alloc(ctx, ctx->active_arena, sizeof(*s));
     NUX_CHECK(s, return NUX_NULL);
     nux_u32_t id = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_SCENE, s);
     NUX_CHECK(id, return NUX_NULL);
 
     s->arena = ctx->active_arena;
-    NUX_CHECK(
-        nux_node_pool_alloc(ctx->active_arena, DEFAULT_NODE_COUNT, &s->nodes),
-        return NUX_NULL);
+    NUX_CHECK(nux_node_pool_alloc(
+                  ctx, ctx->active_arena, DEFAULT_NODE_COUNT, &s->nodes),
+              return NUX_NULL);
     NUX_CHECK(nux_component_pool_alloc(
-                  ctx->active_arena, DEFAULT_NODE_COUNT, &s->components),
+                  ctx, ctx->active_arena, DEFAULT_NODE_COUNT, &s->components),
               return NUX_NULL);
 
     // Reserve index 0 to null
@@ -48,13 +48,14 @@ nux_scene_new (nux_ctx_t *ctx)
     nux_component_pool_add(&s->components);
 
     // Allocate gpu commands buffer
-    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &s->commands),
-               "Failed to allocate commands buffer",
-               return NUX_NULL);
     NUX_CHECKM(
-        nux_gpu_command_vec_alloc(ctx->core_arena, 4096, &s->commands_lines),
-        "Failed to allocate lines commands buffer",
+        nux_gpu_command_vec_alloc(ctx, ctx->core_arena, 4096, &s->commands),
+        "Failed to allocate commands buffer",
         return NUX_NULL);
+    NUX_CHECKM(nux_gpu_command_vec_alloc(
+                   ctx, ctx->core_arena, 4096, &s->commands_lines),
+               "Failed to allocate lines commands buffer",
+               return NUX_NULL);
 
     // Allocate constants buffer
     s->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
@@ -88,7 +89,7 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     NUX_CHECK(s, return);
 
     // Propagate transforms
-    nux_u32_t batch_count = 0;
+    // nux_u32_t batch_count = 0;
     for (nux_u32_t ni = 0; ni < s->nodes.size; ++ni)
     {
         nux_node_t *n = s->nodes.data + ni;
@@ -104,7 +105,7 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             nux_transform_update_matrix(ctx, n->id);
             if (n->components[NUX_COMPONENT_STATICMESH])
             {
-                ++batch_count;
+                // ++batch_count;
             }
         }
     }

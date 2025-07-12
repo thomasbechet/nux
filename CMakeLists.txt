@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(nux VERSION 0.0.1)
+project(nux LANGUAGES C VERSION 0.0.1)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -62,6 +62,7 @@ endif ()
 
 # Add subdirectories
 add_subdirectory(core)
-# add_subdirectory(sdk)
-add_subdirectory(runtimes/native)
-# add_subdirectory(cli)
+# add_subdirectory(runtimes/native)
+add_subdirectory(runtimes/minimal)
+
+# cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=~/.local
