@@ -62,7 +62,7 @@ endif ()
 
 # Add subdirectories
 add_subdirectory(core)
-# add_subdirectory(runtimes/native)
-add_subdirectory(runtimes/minimal)
+add_subdirectory(runtimes/native)
+# add_subdirectory(runtimes/minimal)
 
 # cmake .. -DCMAKE_TOOLCHAIN_FILE=/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_INSTALL_PREFIX=~/.local

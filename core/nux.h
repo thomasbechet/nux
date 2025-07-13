@@ -157,9 +157,10 @@ typedef struct
 //////                       Platform Callbacks                     //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API void        *nux_os_malloc(void *userdata, nux_u32_t n);
-NUX_API void         nux_os_free(void *userdata, void *p);
-NUX_API void        *nux_os_realloc(void *userdata, void *p, nux_u32_t n);
+NUX_API void        *nux_os_alloc(void     *userdata,
+                                  void     *p,
+                                  nux_u32_t osize,
+                                  nux_u32_t nsize);
 NUX_API nux_status_t nux_os_open(void           *userdata,
                                  nux_u32_t       slot,
                                  const nux_c8_t *url,
@@ -169,10 +170,10 @@ NUX_API nux_u32_t    nux_os_read(void     *userdata,
                                  nux_u32_t slot,
                                  void     *p,
                                  nux_u32_t n);
-NUX_API void         nux_os_console(void           *userdata,
-                                    nux_log_level_t level,
-                                    const nux_c8_t *log,
-                                    nux_u32_t       n);
+NUX_API void         nux_os_log(void           *userdata,
+                                nux_log_level_t level,
+                                const nux_c8_t *log,
+                                nux_u32_t       n);
 NUX_API nux_status_t nux_os_create_pipeline(
     void *userdata, nux_u32_t slot, const nux_gpu_pipeline_info_t *info);
 NUX_API nux_status_t nux_os_create_framebuffer(void     *userdata,

@@ -4,19 +4,21 @@
 #include <nux.h>
 
 void *
-nux_os_malloc (void *userdata, nux_u32_t n)
+nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
 {
-    return malloc(n);
-}
-void
-nux_os_free (void *userdata, void *p)
-{
-    free(p);
-}
-void *
-nux_os_realloc (void *userdata, void *p, nux_u32_t n)
-{
-    return realloc(p, n);
+    if (!p)
+    {
+        return malloc(nsize);
+    }
+    else if (!nsize)
+    {
+        free(p);
+        return NULL;
+    }
+    else
+    {
+        return realloc(p, nsize);
+    }
 }
 nux_status_t
 nux_os_open (void *userdata, nux_u32_t slot, const nux_c8_t *url, nux_u32_t n)
@@ -34,10 +36,10 @@ nux_os_read (void *userdata, nux_u32_t slot, void *p, nux_u32_t n)
     return 0;
 }
 void
-nux_os_console (void           *userdata,
-                nux_log_level_t level,
-                const nux_c8_t *log,
-                nux_u32_t       n)
+nux_os_log (void           *userdata,
+            nux_log_level_t level,
+            const nux_c8_t *log,
+            nux_u32_t       n)
 {
     printf("%.*s\n", n, log);
 }
@@ -108,15 +110,15 @@ main (int argc, char *arv[])
 {
     nux_config_t config;
     memset(&config, 0, sizeof(config));
-    config.max_ref_count = 4096;
-    config.memory_size      = (1 << 24);
-    config.width            = 800;
-    config.height           = 400;
-    config.tick_frequency   = 60;
-    config.userdata         = NULL;
+    config.max_ref_count  = 4096;
+    config.memory_size    = (1 << 24);
+    config.width          = 800;
+    config.height         = 400;
+    config.tick_frequency = 60;
+    config.userdata       = NULL;
 
     nux_ctx_t *ctx = nux_instance_init(&config);
-    // nux_instance_tick(ctx);
+    nux_instance_tick(ctx);
     nux_instance_free(ctx);
 
     return 0;

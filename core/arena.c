@@ -1,55 +1,5 @@
 #include "internal.h"
 
-// nux_u32_t
-// nux_object_create (nux_ctx_t *ctx, nux_u32_t type_index, void *data)
-// {
-// }
-// void
-// nux_object_delete (nux_ctx_t *ctx, nux_u32_t id)
-// {
-//     nux_object_t *obj  = &ctx->objects.data[ID_INDEX(id)];
-//     nux_type_t   *type = ctx->types + obj->type;
-//     if (type->cleanup)
-//     {
-//         type->cleanup(ctx, obj->data);
-//     }
-//     if (obj->prev)
-//     {
-//         nux_object_t *prev_obj = &ctx->objects.data[ID_INDEX(obj->prev)];
-//         prev_obj->next         = obj->next;
-//     }
-//     if (obj->next)
-//     {
-//         nux_object_t *next_obj = &ctx->objects.data[ID_INDEX(obj->next)];
-//         next_obj->prev         = obj->prev;
-//     }
-//     nux_object_pool_remove(&ctx->objects, obj);
-// }
-// void
-// nux_object_update (nux_ctx_t *ctx, nux_u32_t id, void *data)
-// {
-//     nux_object_t *obj = ctx->objects.data + ID_INDEX(id);
-//     obj->data         = data;
-// }
-// void *
-// nux_object_get (nux_ctx_t *ctx, nux_u32_t type_index, nux_u32_t id)
-// {
-//     nux_u32_t index   = ID_INDEX(id);
-//     nux_u8_t  version = ID_VERSION(id);
-//     if (index >= ctx->objects.size
-//         || ctx->objects.data[index].type != type_index
-//         || ctx->objects.data[index].version != version)
-//     {
-//         nux_type_t *got    = &ctx->types[ctx->objects.data[index].type];
-//         nux_type_t *expect = &ctx->types[type_index];
-//         NUX_ERROR("Invalid object type (expect \"%s\", got \"%s\")",
-//                   expect->name,
-//                   got->name);
-//         return NUX_NULL;
-//     }
-//     return ctx->objects.data[index].data;
-// }
-
 static void *
 arena_push (nux_arena_t *arena, nux_u32_t size)
 {

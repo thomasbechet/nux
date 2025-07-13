@@ -281,25 +281,27 @@ native_realloc (void *p, size_t n)
 }
 
 void *
-nux_os_malloc (void *userdata, nux_u32_t n)
+nux_os_alloc (void *userdata, void *p, nux_u32_t o, nux_u32_t n)
 {
-    return native_malloc(n);
+    if (!p)
+    {
+        return native_malloc(n);
+    }
+    else if (!n)
+    {
+        native_free(p);
+        return NULL;
+    }
+    else
+    {
+        return native_realloc(p, n);
+    }
 }
 void
-nux_os_free (void *userdata, void *p)
-{
-    native_free(p);
-}
-void *
-nux_os_realloc (void *userdata, void *p, nux_u32_t n)
-{
-    return native_realloc(p, n);
-}
-void
-nux_os_console (void           *userdata,
-                nux_log_level_t level,
-                const nux_c8_t *log,
-                nux_u32_t       n)
+nux_os_log (void           *userdata,
+            nux_log_level_t level,
+            const nux_c8_t *log,
+            nux_u32_t       n)
 {
     logger_log(level, "%.*s", n, log);
 }

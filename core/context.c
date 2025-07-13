@@ -17,7 +17,8 @@ nux_instance_init (const nux_config_t *config)
     nux_arena_t core_arena;
     core_arena.capa = config->memory_size;
     core_arena.size = 0;
-    core_arena.data = nux_os_malloc(config->userdata, config->memory_size);
+    core_arena.data
+        = nux_os_alloc(config->userdata, NUX_NULL, 0, config->memory_size);
     core_arena.first_type = NUX_NULL;
     core_arena.last_type  = NUX_NULL;
     NUX_CHECK(core_arena.data, return NUX_NULL);
@@ -115,7 +116,7 @@ nux_instance_free (nux_ctx_t *ctx)
     // Free core memory
     if (ctx->core_arena->data)
     {
-        nux_os_free(ctx->userdata, ctx->core_arena->data);
+        nux_os_alloc(ctx->userdata, ctx->core_arena->data, 0, 0);
     }
 }
 void

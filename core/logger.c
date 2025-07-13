@@ -8,7 +8,7 @@ nux_vlog (nux_ctx_t      *ctx,
 {
     nux_c8_t  buf[256];
     nux_u32_t n = nux_vsnprintf(buf, sizeof(buf), fmt, args);
-    nux_os_console(ctx->userdata, level, buf, n);
+    nux_os_log(ctx->userdata, level, buf, n);
 }
 void
 nux_log (nux_ctx_t *ctx, nux_log_level_t level, const nux_c8_t *fmt, ...)
