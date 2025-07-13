@@ -95,10 +95,10 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
     cgltf_accessor *accessor     = primitive->indices;
     nux_u32_t       indice_count = accessor->count;
 
-    // Create mesh object
+    // Create mesh
     nux_u32_t id = nux_mesh_new(ctx, indice_count);
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_object_get(ctx, NUX_TYPE_MESH, id);
+    nux_mesh_t *mesh = nux_ref_get(ctx, NUX_TYPE_MESH, id);
 
     // Write vertices
     if (attributes & NUX_VERTEX_POSITION)

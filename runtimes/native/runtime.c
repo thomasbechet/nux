@@ -26,11 +26,11 @@ instance_init (instance_t *instance, const char *path)
     instance_free(instance);
 
     nux_config_t config = {
-        .userdata         = instance,
-        .init             = NULL,
-        .update           = NULL,
-        .memory_size      = (1 << 24), // 16Mb
-        .max_object_count = 4096,
+        .userdata      = instance,
+        .init          = NULL,
+        .update        = NULL,
+        .memory_size   = (1 << 24), // 16Mb
+        .max_ref_count = 4096,
     };
 
     strncpy(instance->path, path, PATH_MAX_LEN - 1);

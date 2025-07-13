@@ -302,22 +302,9 @@ l_texture_blit (lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
+    nux_u32_t  ref = luaL_checkinteger(L, 1);
 
-    nux_texture_blit(ctx, id);
-
-    return 0;
-}
-
-static int
-l_graphics_blit (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
-
-    nux_graphics_blit(ctx, id);
+    nux_texture_blit(ctx, ref);
 
     return 0;
 }
@@ -334,58 +321,6 @@ l_arena_new (lua_State *L)
 
     lua_pushinteger(L, ret);
     return 1;
-}
-static int
-l_arena_reset (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
-
-    nux_arena_reset(ctx, id);
-
-    return 0;
-}
-static int
-l_arena_use (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
-
-    nux_status_t ret =
-
-        nux_arena_use(ctx, id);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_arena_active (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  ret =
-
-        nux_arena_active(ctx);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_arena_dump (lua_State *L)
-{
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
-
-    nux_arena_dump(ctx, id);
-
-    return 0;
 }
 
 static int
@@ -1036,6 +971,18 @@ l_mesh_new (lua_State *L)
     return 1;
 }
 static int
+l_mesh_gen_bounds (lua_State *L)
+{
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
+    nux_ctx_t *ctx = lua_touserdata(L, -1);
+    nux_u32_t  ref = luaL_checkinteger(L, 1);
+
+    nux_mesh_gen_bounds(ctx, ref);
+
+    return 0;
+}
+static int
 l_mesh_gen_cube (lua_State *L)
 {
 
@@ -1074,9 +1021,9 @@ l_canvas_clear (lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
+    nux_u32_t  ref = luaL_checkinteger(L, 1);
 
-    nux_canvas_clear(ctx, id);
+    nux_canvas_clear(ctx, ref);
 
     return 0;
 }
@@ -1086,11 +1033,11 @@ l_canvas_render (lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
+    nux_u32_t  ref = luaL_checkinteger(L, 1);
 
     nux_u32_t target = luaL_checkinteger(L, 2);
 
-    nux_canvas_render(ctx, id, target);
+    nux_canvas_render(ctx, ref, target);
 
     return 0;
 }
@@ -1100,7 +1047,7 @@ l_canvas_text (lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
+    nux_u32_t  ref = luaL_checkinteger(L, 1);
 
     nux_u32_t x = luaL_checkinteger(L, 2);
 
@@ -1108,7 +1055,7 @@ l_canvas_text (lua_State *L)
 
     const nux_c8_t *text = luaL_checkstring(L, 4);
 
-    nux_canvas_text(ctx, id, x, y, text);
+    nux_canvas_text(ctx, ref, x, y, text);
 
     return 0;
 }
@@ -1118,7 +1065,7 @@ l_canvas_rectangle (lua_State *L)
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
     nux_ctx_t *ctx = lua_touserdata(L, -1);
-    nux_u32_t  id  = luaL_checkinteger(L, 1);
+    nux_u32_t  ref = luaL_checkinteger(L, 1);
 
     nux_u32_t x = luaL_checkinteger(L, 2);
 
@@ -1128,7 +1075,7 @@ l_canvas_rectangle (lua_State *L)
 
     nux_u32_t h = luaL_checkinteger(L, 5);
 
-    nux_canvas_rectangle(ctx, id, x, y, w, h);
+    nux_canvas_rectangle(ctx, ref, x, y, w, h);
 
     return 0;
 }
@@ -1157,13 +1104,8 @@ static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
                                                { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_graphics[]
-    = { { "blit", l_graphics_blit }, { NUX_NULL, NUX_NULL } };
-
 static const struct luaL_Reg lib_arena[]
-    = { { "new", l_arena_new },   { "reset", l_arena_reset },
-        { "use", l_arena_use },   { "active", l_arena_active },
-        { "dump", l_arena_dump }, { NUX_NULL, NUX_NULL } };
+    = { { "new", l_arena_new }, { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_scene[] = { { "new", l_scene_new },
                                              { "render", l_scene_render },
@@ -1217,6 +1159,7 @@ static const struct luaL_Reg lib_staticmesh[]
         { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_mesh[] = { { "new", l_mesh_new },
+                                            { "gen_bounds", l_mesh_gen_bounds },
                                             { "gen_cube", l_mesh_gen_cube },
                                             { NUX_NULL, NUX_NULL } };
 
@@ -1247,10 +1190,6 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_newtable(L);
     luaL_setfuncs(L, lib_texture, 0);
     lua_setfield(L, -2, "texture");
-
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_graphics, 0);
-    lua_setfield(L, -2, "graphics");
 
     lua_newtable(L);
     luaL_setfuncs(L, lib_arena, 0);
@@ -1341,13 +1280,22 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "FAILURE");
 
-    lua_pushinteger(L, 6);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "PRIMITIVE_TRIANGLES");
+
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "PRIMITIVE_LINES");
+
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "PRIMITIVE_POINTS");
+
+    lua_pushinteger(L, 0);
     lua_setfield(L, -2, "VERTEX_TRIANGLES");
 
-    lua_pushinteger(L, 6);
+    lua_pushinteger(L, 1);
     lua_setfield(L, -2, "VERTEX_LINES");
 
-    lua_pushinteger(L, 6);
+    lua_pushinteger(L, 2);
     lua_setfield(L, -2, "VERTEX_POINTS");
 
     lua_pushinteger(L, 1 << 0);

@@ -12,7 +12,7 @@ typedef void (*nux_callback_t)(nux_ctx_t *);
 
 typedef struct
 {
-    nux_u32_t max_object_count;
+    nux_u32_t max_ref_count;
     nux_u32_t memory_size;
 
     nux_u32_t width;

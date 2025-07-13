@@ -245,15 +245,9 @@ nux_u32_t nux_texture_new(nux_ctx_t         *ctx,
                           nux_texture_type_t format,
                           nux_u32_t          w,
                           nux_u32_t          h);
-void      nux_texture_blit(nux_ctx_t *ctx, nux_u32_t id);
+void      nux_texture_blit(nux_ctx_t *ctx, nux_u32_t ref);
 
-void nux_graphics_blit(nux_ctx_t *ctx, nux_u32_t id);
-
-nux_u32_t    nux_arena_new(nux_ctx_t *ctx);
-void         nux_arena_reset(nux_ctx_t *ctx, nux_u32_t id);
-nux_status_t nux_arena_use(nux_ctx_t *ctx, nux_u32_t id);
-nux_u32_t    nux_arena_active(nux_ctx_t *ctx);
-void         nux_arena_dump(nux_ctx_t *ctx, nux_u32_t id);
+nux_u32_t nux_arena_new(nux_ctx_t *ctx);
 
 nux_u32_t nux_scene_new(nux_ctx_t *ctx);
 void      nux_scene_render(nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera);
@@ -315,22 +309,22 @@ void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
                                  nux_u32_t  colormap);
 
 nux_u32_t nux_mesh_new(nux_ctx_t *ctx, nux_u32_t capa);
-void      nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_u32_t id);
+void      nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_u32_t ref);
 nux_u32_t nux_mesh_gen_cube(nux_ctx_t *ctx,
                             nux_f32_t  sx,
                             nux_f32_t  sy,
                             nux_f32_t  sz);
 
 nux_u32_t nux_canvas_new(nux_ctx_t *ctx);
-void      nux_canvas_clear(nux_ctx_t *ctx, nux_u32_t id);
-void      nux_canvas_render(nux_ctx_t *ctx, nux_u32_t id, nux_u32_t target);
+void      nux_canvas_clear(nux_ctx_t *ctx, nux_u32_t ref);
+void      nux_canvas_render(nux_ctx_t *ctx, nux_u32_t ref, nux_u32_t target);
 void      nux_canvas_text(nux_ctx_t      *ctx,
-                          nux_u32_t       id,
+                          nux_u32_t       ref,
                           nux_u32_t       x,
                           nux_u32_t       y,
                           const nux_c8_t *text);
 void      nux_canvas_rectangle(nux_ctx_t *ctx,
-                               nux_u32_t  id,
+                               nux_u32_t  ref,
                                nux_u32_t  x,
                                nux_u32_t  y,
                                nux_u32_t  w,

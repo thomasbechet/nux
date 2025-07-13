@@ -239,8 +239,3 @@ nux_write_texture (nux_ctx_t      *ctx,
     //     nux_memcpy(dst, src, w);
     // }
 }
-
-void
-nux_graphics_blit (nux_ctx_t *ctx, nux_u32_t id)
-{
-}

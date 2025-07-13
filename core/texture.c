@@ -7,10 +7,10 @@ nux_texture_new (nux_ctx_t         *ctx,
                  nux_u32_t          h)
 {
     // Create object
-    nux_texture_t *tex = nux_arena_alloc(ctx, sizeof(*tex));
+    nux_u32_t      ref;
+    nux_texture_t *tex
+        = nux_arena_alloc_type(ctx, NUX_TYPE_TEXTURE, sizeof(*tex), &ref);
     NUX_CHECK(tex, return NUX_NULL);
-    nux_u32_t id = nux_object_create(ctx, NUX_TYPE_TEXTURE, tex);
-    NUX_CHECK(id, return NUX_NULL);
     tex->gpu.type   = type;
     tex->gpu.width  = w;
     tex->gpu.height = h;
@@ -40,7 +40,7 @@ nux_texture_new (nux_ctx_t         *ctx,
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
-    return id;
+    return ref;
 }
 void
 nux_texture_cleanup (nux_ctx_t *ctx, void *data)
@@ -58,14 +58,14 @@ nux_texture_cleanup (nux_ctx_t *ctx, void *data)
 }
 void
 nux_texture_write (nux_ctx_t  *ctx,
-                   nux_u32_t   id,
+                   nux_u32_t   ref,
                    nux_u32_t   x,
                    nux_u32_t   y,
                    nux_u32_t   w,
                    nux_u32_t   h,
                    const void *data)
 {
-    nux_texture_t *tex = nux_object_get(ctx, NUX_TYPE_TEXTURE, id);
+    nux_texture_t *tex = nux_ref_get(ctx, NUX_TYPE_TEXTURE, ref);
     NUX_CHECKM(tex, "Invalid texture id", return);
     NUX_CHECKM(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
                "Trying to write render target texture",
@@ -76,9 +76,9 @@ nux_texture_write (nux_ctx_t  *ctx,
         return);
 }
 void
-nux_texture_blit (nux_ctx_t *ctx, nux_u32_t id)
+nux_texture_blit (nux_ctx_t *ctx, nux_u32_t ref)
 {
-    nux_texture_t *tex = nux_object_get(ctx, NUX_TYPE_TEXTURE, id);
+    nux_texture_t *tex = nux_ref_get(ctx, NUX_TYPE_TEXTURE, ref);
     NUX_CHECK(tex, return);
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_command_t     cmds_data[10];
