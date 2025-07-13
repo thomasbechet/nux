@@ -24,12 +24,13 @@ nux_instance_init (const nux_config_t *config)
     nux_memset(core_arena.data, 0, config->memory_size);
 
     // Allocate instance
-    nux_ctx_t *ctx = nux_arena_alloc(NUX_NULL, &core_arena, sizeof(*ctx));
+    nux_ctx_t *ctx = nux_arena_raw_alloc(&core_arena, sizeof(*ctx));
     NUX_ASSERT(ctx);
-    ctx->userdata = config->userdata;
-    ctx->running  = NUX_TRUE;
-    ctx->init     = config->init;
-    ctx->update   = config->update;
+    ctx->active_arena = &core_arena;
+    ctx->userdata     = config->userdata;
+    ctx->running      = NUX_TRUE;
+    ctx->init         = config->init;
+    ctx->update       = config->update;
 
     // Register base types
     // Must be coherent with nux_type_base_t
@@ -68,23 +69,22 @@ nux_instance_init (const nux_config_t *config)
     nux_component_register(ctx, NUX_TYPE_STATICMESH);
 
     // Create object pool
-    NUX_CHECK(nux_object_pool_alloc(
-                  ctx, &core_arena, config->max_object_count, &ctx->objects),
-              goto cleanup);
+    NUX_CHECK(
+        nux_object_pool_alloc(ctx, config->max_object_count, &ctx->objects),
+        goto cleanup);
 
     // Reserve index 0 for null object
     nux_object_pool_add(&ctx->objects);
 
     // Register core arena
-    NUX_CHECK(nux_arena_pool_alloc(ctx, &core_arena, 32, &ctx->arenas),
-              goto cleanup);
+    NUX_CHECK(nux_arena_pool_alloc(ctx, 32, &ctx->arenas), goto cleanup);
     ctx->core_arena   = nux_arena_pool_add(&ctx->arenas);
     *ctx->core_arena  = core_arena; // copy by value
     ctx->active_arena = ctx->core_arena;
 
     // Register core arena object
-    ctx->core_arena->id = nux_object_create(
-        ctx, ctx->active_arena, NUX_TYPE_ARENA, ctx->core_arena);
+    ctx->core_arena->id
+        = nux_object_create(ctx, NUX_TYPE_ARENA, ctx->core_arena);
 
     // Initialize error state
     ctx->error            = NUX_ERROR_NONE;

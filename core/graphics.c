@@ -9,27 +9,20 @@ nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
 {
     // Initialize gpu slots
-    NUX_CHECKM(nux_u32_vec_alloc(ctx,
-                                 ctx->core_arena,
-                                 NUX_GPU_FRAMEBUFFER_MAX,
-                                 &ctx->free_framebuffer_slots),
+    NUX_CHECKM(nux_u32_vec_alloc(
+                   ctx, NUX_GPU_FRAMEBUFFER_MAX, &ctx->free_framebuffer_slots),
                "Failed to allocate gpu framebuffer slots",
                goto error);
-    NUX_CHECKM(nux_u32_vec_alloc(ctx,
-                                 ctx->core_arena,
-                                 NUX_GPU_PIPELINE_MAX,
-                                 &ctx->free_pipeline_slots),
-               "Failed to allocate gpu pipeline slots",
-               goto error);
-    NUX_CHECKM(nux_u32_vec_alloc(ctx,
-                                 ctx->core_arena,
-                                 NUX_GPU_TEXTURE_MAX,
-                                 &ctx->free_texture_slots),
-               "Failed to allocate gpu texture slots",
-               goto error);
     NUX_CHECKM(
-        nux_u32_vec_alloc(
-            ctx, ctx->core_arena, NUX_GPU_BUFFER_MAX, &ctx->free_buffer_slots),
+        nux_u32_vec_alloc(ctx, NUX_GPU_PIPELINE_MAX, &ctx->free_pipeline_slots),
+        "Failed to allocate gpu pipeline slots",
+        goto error);
+    NUX_CHECKM(
+        nux_u32_vec_alloc(ctx, NUX_GPU_TEXTURE_MAX, &ctx->free_texture_slots),
+        "Failed to allocate gpu texture slots",
+        goto error);
+    NUX_CHECKM(
+        nux_u32_vec_alloc(ctx, NUX_GPU_BUFFER_MAX, &ctx->free_buffer_slots),
         "Failed to allocate gpu buffer slots",
         goto error);
 

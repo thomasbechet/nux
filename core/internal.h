@@ -148,129 +148,125 @@
 
 #define NUX_B3_DEFINE(name, type) nux_##name##_t nux_##name(type min, type max);
 
-#define NUX_VEC_DEFINE(name, T)                                           \
-    typedef struct                                                        \
-    {                                                                     \
-        nux_arena_t *arena;                                               \
-        nux_u32_t    size;                                                \
-        nux_u32_t    capa;                                                \
-        T           *data;                                                \
-    } name##_t;                                                           \
-    nux_status_t name##_alloc(                                            \
-        nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t capa, name##_t *v); \
-    void      name##_init(T *data, nux_u32_t capa, name##_t *v);          \
-    T        *name##_push(name##_t *v);                                   \
-    nux_b32_t name##_pushv(name##_t *v, T val);                           \
-    T        *name##_pop(name##_t *v);                                    \
-    void      name##_clear(name##_t *v);                                  \
-    T        *name##_get(name##_t *v, nux_u32_t i);                       \
-    void      name##_fill_reverse_indices(name##_t *v);
-#define NUX_VEC_IMPL(name, T)                                               \
-    nux_status_t name##_alloc(                                              \
-        nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t capa, name##_t *v)    \
+#define NUX_VEC_DEFINE(name, T)                                             \
+    typedef struct                                                          \
     {                                                                       \
-        NUX_ASSERT(capa);                                                   \
-        (v)->data = nux_arena_alloc(ctx, arena, sizeof(*(v)->data) * capa); \
-        NUX_CHECK((v)->data, return NUX_FAILURE);                           \
-        (v)->arena = arena;                                                 \
-        (v)->capa  = capa;                                                  \
-        (v)->size  = 0;                                                     \
-        return NUX_SUCCESS;                                                 \
-    }                                                                       \
-    void name##_init(T *data, nux_u32_t capa, name##_t *v)                  \
-    {                                                                       \
-        NUX_ASSERT(capa);                                                   \
-        (v)->data  = data;                                                  \
-        (v)->arena = NUX_NULL;                                              \
-        (v)->capa  = capa;                                                  \
-        (v)->size  = 0;                                                     \
-    }                                                                       \
-    T *name##_push(name##_t *v)                                             \
-    {                                                                       \
-        if ((v)->size >= (v)->capa)                                         \
-        {                                                                   \
-            return NUX_NULL;                                                \
-        }                                                                   \
-        T *ret = (v)->data + (v)->size;                                     \
-        ++(v)->size;                                                        \
-        return ret;                                                         \
-    }                                                                       \
-    nux_b32_t name##_pushv(name##_t *v, T val)                              \
-    {                                                                       \
-        T *a = name##_push(v);                                              \
-        if (a)                                                              \
-        {                                                                   \
-            *a = val;                                                       \
-            return NUX_TRUE;                                                \
-        }                                                                   \
-        return NUX_FALSE;                                                   \
-    }                                                                       \
-    T *name##_pop(name##_t *v)                                              \
-    {                                                                       \
-        if (!(v)->size)                                                     \
-            return NUX_NULL;                                                \
-        T *ret = &(v)->data[(v)->size - 1];                                 \
-        --(v)->size;                                                        \
-        return ret;                                                         \
-    }                                                                       \
-    void name##_clear(name##_t *v)                                          \
-    {                                                                       \
-        (v)->size = 0;                                                      \
-    }                                                                       \
-    T *name##_get(name##_t *v, nux_u32_t i)                                 \
-    {                                                                       \
-        return i < (v)->size ? (v)->data + i : NUX_NULL;                    \
+        nux_arena_t *arena;                                                 \
+        nux_u32_t    size;                                                  \
+        nux_u32_t    capa;                                                  \
+        T           *data;                                                  \
+    } name##_t;                                                             \
+    nux_status_t name##_alloc(nux_ctx_t *ctx, nux_u32_t capa, name##_t *v); \
+    void         name##_init(T *data, nux_u32_t capa, name##_t *v);         \
+    T           *name##_push(name##_t *v);                                  \
+    nux_b32_t    name##_pushv(name##_t *v, T val);                          \
+    T           *name##_pop(name##_t *v);                                   \
+    void         name##_clear(name##_t *v);                                 \
+    T           *name##_get(name##_t *v, nux_u32_t i);                      \
+    void         name##_fill_reverse_indices(name##_t *v);
+#define NUX_VEC_IMPL(name, T)                                              \
+    nux_status_t name##_alloc(nux_ctx_t *ctx, nux_u32_t capa, name##_t *v) \
+    {                                                                      \
+        NUX_ASSERT(capa);                                                  \
+        (v)->data = nux_arena_alloc(ctx, sizeof(*(v)->data) * capa);       \
+        NUX_CHECK((v)->data, return NUX_FAILURE);                          \
+        (v)->arena = ctx->active_arena;                                    \
+        (v)->capa  = capa;                                                 \
+        (v)->size  = 0;                                                    \
+        return NUX_SUCCESS;                                                \
+    }                                                                      \
+    void name##_init(T *data, nux_u32_t capa, name##_t *v)                 \
+    {                                                                      \
+        NUX_ASSERT(capa);                                                  \
+        (v)->data  = data;                                                 \
+        (v)->arena = NUX_NULL;                                             \
+        (v)->capa  = capa;                                                 \
+        (v)->size  = 0;                                                    \
+    }                                                                      \
+    T *name##_push(name##_t *v)                                            \
+    {                                                                      \
+        if ((v)->size >= (v)->capa)                                        \
+        {                                                                  \
+            return NUX_NULL;                                               \
+        }                                                                  \
+        T *ret = (v)->data + (v)->size;                                    \
+        ++(v)->size;                                                       \
+        return ret;                                                        \
+    }                                                                      \
+    nux_b32_t name##_pushv(name##_t *v, T val)                             \
+    {                                                                      \
+        T *a = name##_push(v);                                             \
+        if (a)                                                             \
+        {                                                                  \
+            *a = val;                                                      \
+            return NUX_TRUE;                                               \
+        }                                                                  \
+        return NUX_FALSE;                                                  \
+    }                                                                      \
+    T *name##_pop(name##_t *v)                                             \
+    {                                                                      \
+        if (!(v)->size)                                                    \
+            return NUX_NULL;                                               \
+        T *ret = &(v)->data[(v)->size - 1];                                \
+        --(v)->size;                                                       \
+        return ret;                                                        \
+    }                                                                      \
+    void name##_clear(name##_t *v)                                         \
+    {                                                                      \
+        (v)->size = 0;                                                     \
+    }                                                                      \
+    T *name##_get(name##_t *v, nux_u32_t i)                                \
+    {                                                                      \
+        return i < (v)->size ? (v)->data + i : NUX_NULL;                   \
     }
 
-#define NUX_POOL_DEFINE(name, T)                                          \
-    typedef struct                                                        \
-    {                                                                     \
-        nux_arena_t  *arena;                                              \
-        nux_u32_t     capa;                                               \
-        nux_u32_t     size;                                               \
-        nux_u32_vec_t freelist;                                           \
-        T            *data;                                               \
-    } name##_t;                                                           \
-    nux_status_t name##_alloc(                                            \
-        nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t capa, name##_t *p); \
-    T   *name##_add(name##_t *p);                                         \
-    void name##_remove(name##_t *p, T *i);
-#define NUX_POOL_IMPL(name, T)                                           \
-    nux_status_t name##_alloc(                                           \
-        nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t capa, name##_t *p) \
-    {                                                                    \
-        NUX_ASSERT(capa);                                                \
-        p->data = nux_arena_alloc(ctx, arena, sizeof(*p->data) * capa);  \
-        NUX_CHECK(p->data, return NUX_FAILURE);                          \
-        nux_u32_vec_alloc(ctx, arena, capa, &p->freelist);               \
-        p->arena = arena;                                                \
-        p->capa  = capa;                                                 \
-        p->size  = 0;                                                    \
-        return NUX_SUCCESS;                                              \
-    }                                                                    \
-    T *name##_add(name##_t *p)                                           \
-    {                                                                    \
-        if (p->freelist.size)                                            \
-        {                                                                \
-            nux_u32_t free = *nux_u32_vec_pop(&p->freelist);             \
-            return &p->data[free];                                       \
-        }                                                                \
-        else                                                             \
-        {                                                                \
-            if (p->size >= p->capa)                                      \
-            {                                                            \
-                return NUX_NULL;                                         \
-            }                                                            \
-            T *data = p->data + p->size;                                 \
-            ++p->size;                                                   \
-            return data;                                                 \
-        }                                                                \
-    }                                                                    \
-    void name##_remove(name##_t *p, T *i)                                \
-    {                                                                    \
-        nux_u32_t index = i - p->data;                                   \
-        NUX_ASSERT(index < p->size);                                     \
-        nux_u32_vec_pushv(&p->freelist, index);                          \
+#define NUX_POOL_DEFINE(name, T)                                            \
+    typedef struct                                                          \
+    {                                                                       \
+        nux_arena_t  *arena;                                                \
+        nux_u32_t     capa;                                                 \
+        nux_u32_t     size;                                                 \
+        nux_u32_vec_t freelist;                                             \
+        T            *data;                                                 \
+    } name##_t;                                                             \
+    nux_status_t name##_alloc(nux_ctx_t *ctx, nux_u32_t capa, name##_t *p); \
+    T           *name##_add(name##_t *p);                                   \
+    void         name##_remove(name##_t *p, T *i);
+#define NUX_POOL_IMPL(name, T)                                             \
+    nux_status_t name##_alloc(nux_ctx_t *ctx, nux_u32_t capa, name##_t *p) \
+    {                                                                      \
+        NUX_ASSERT(capa);                                                  \
+        p->data = nux_arena_alloc(ctx, sizeof(*p->data) * capa);           \
+        NUX_CHECK(p->data, return NUX_FAILURE);                            \
+        nux_u32_vec_alloc(ctx, capa, &p->freelist);                        \
+        p->arena = ctx->active_arena;                                      \
+        p->capa  = capa;                                                   \
+        p->size  = 0;                                                      \
+        return NUX_SUCCESS;                                                \
+    }                                                                      \
+    T *name##_add(name##_t *p)                                             \
+    {                                                                      \
+        if (p->freelist.size)                                              \
+        {                                                                  \
+            nux_u32_t free = *nux_u32_vec_pop(&p->freelist);               \
+            return &p->data[free];                                         \
+        }                                                                  \
+        else                                                               \
+        {                                                                  \
+            if (p->size >= p->capa)                                        \
+            {                                                              \
+                return NUX_NULL;                                           \
+            }                                                              \
+            T *data = p->data + p->size;                                   \
+            ++p->size;                                                     \
+            return data;                                                   \
+        }                                                                  \
+    }                                                                      \
+    void name##_remove(name##_t *p, T *i)                                  \
+    {                                                                      \
+        nux_u32_t index = i - p->data;                                     \
+        NUX_ASSERT(index < p->size);                                       \
+        nux_u32_vec_pushv(&p->freelist, index);                            \
     }
 
 ////////////////////////////
@@ -651,6 +647,7 @@ struct nux_context
 
     // Arena info
     nux_arena_t *active_arena;
+    nux_u32_t    active_arena_id;
 
     void     *userdata;
     nux_b32_t running;
@@ -763,16 +760,16 @@ nux_type_t *nux_type_register(nux_ctx_t *ctx, const nux_c8_t *name);
 
 // object.c
 
-nux_u32_t nux_object_create(nux_ctx_t   *ctx,
-                            nux_arena_t *arena,
-                            nux_u32_t    type_index,
-                            void        *data);
+nux_u32_t nux_object_create(nux_ctx_t *ctx, nux_u32_t type_index, void *data);
 void      nux_object_delete(nux_ctx_t *ctx, nux_u32_t id);
 void      nux_object_update(nux_ctx_t *ctx, nux_u32_t id, void *data);
 void     *nux_object_get(nux_ctx_t *ctx, nux_u32_t type_index, nux_u32_t id);
 
-void *nux_arena_alloc(nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size);
+void *nux_arena_raw_alloc(nux_arena_t *arena, nux_u32_t size);
+void *nux_arena_alloc(nux_ctx_t *ctx, nux_u32_t size);
 void  nux_arena_reset_to(nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t object);
+nux_u32_t nux_arena_get_active(nux_ctx_t *ctx);
+void      nux_arena_set_active(nux_ctx_t *ctx, nux_u32_t id);
 
 // texture.c
 

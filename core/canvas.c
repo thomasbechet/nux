@@ -119,8 +119,7 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
                return NUX_FAILURE);
 
     // Allocate commands
-    NUX_CHECKM(nux_gpu_command_vec_alloc(
-                   ctx, ctx->core_arena, 4096, &canvas->commands),
+    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx, 4096, &canvas->commands),
                "Failed to allocate canvas commands buffer",
                return NUX_FAILURE);
 
@@ -136,10 +135,9 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
 nux_u32_t
 nux_canvas_new (nux_ctx_t *ctx)
 {
-    nux_canvas_t *c = nux_arena_alloc(ctx, ctx->active_arena, sizeof(*c));
+    nux_canvas_t *c = nux_arena_alloc(ctx, sizeof(*c));
     NUX_CHECK(c, return NUX_NULL);
-    nux_u32_t id
-        = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_CANVAS, c);
+    nux_u32_t id = nux_object_create(ctx, NUX_TYPE_CANVAS, c);
     NUX_CHECK(id, return NUX_NULL);
     NUX_CHECK(nux_canvas_init(ctx, c), return NUX_NULL);
     return id;

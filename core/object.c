@@ -56,15 +56,13 @@ arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
 }
 
 nux_u32_t
-nux_object_create (nux_ctx_t   *ctx,
-                   nux_arena_t *arena,
-                   nux_u32_t    type,
-                   void        *data)
+nux_object_create (nux_ctx_t *ctx, nux_u32_t type_index, void *data)
 {
     nux_object_t *obj = nux_object_pool_add(&ctx->objects);
     NUX_CHECKM(obj, "Out of objects", return NUX_NULL);
-    obj->type = type;
-    obj->data = data;
+    nux_arena_t *arena = ctx->active_arena;
+    obj->type          = type_index;
+    obj->data          = data;
     obj->version += 1;
     nux_u32_t index = obj - ctx->objects.data;
     nux_u32_t id    = BUILD_ID(index, obj->version);
@@ -131,9 +129,14 @@ nux_object_get (nux_ctx_t *ctx, nux_u32_t type_index, nux_u32_t id)
 }
 
 void *
-nux_arena_alloc (nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size)
+nux_arena_raw_alloc (nux_arena_t *arena, nux_u32_t size)
 {
-    void *p = arena_alloc(arena, NUX_NULL, 0, size);
+    return arena_alloc(arena, NUX_NULL, 0, size);
+}
+void *
+nux_arena_alloc (nux_ctx_t *ctx, nux_u32_t size)
+{
+    void *p = nux_arena_raw_alloc(ctx->active_arena, size);
     NUX_CHECKM(p, "Out of memory", return NUX_NULL);
     return p;
 }
@@ -142,21 +145,40 @@ nux_arena_reset_to (nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t object)
 {
     delete_objects(ctx, arena, object);
 }
+nux_u32_t
+nux_arena_get_active (nux_ctx_t *ctx)
+{
+    return ctx->active_arena_id;
+}
+void
+nux_arena_set_active (nux_ctx_t *ctx, nux_u32_t id)
+{
+    if (id)
+    {
+        nux_arena_t *arena = nux_object_get(ctx, NUX_TYPE_ARENA, id);
+        NUX_CHECK(arena, return);
+        ctx->active_arena = arena;
+    }
+    else
+    {
+        ctx->active_arena = ctx->core_arena;
+    }
+    ctx->active_arena_id = id;
+}
 
 nux_u32_t
 nux_arena_new (nux_ctx_t *ctx)
 {
     nux_arena_t *arena = nux_arena_pool_add(&ctx->arenas);
     NUX_CHECKM(arena, "Failed to allocate arena", return NUX_NULL);
-    arena->id
-        = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_ARENA, arena);
+    arena->id = nux_object_create(ctx, NUX_TYPE_ARENA, arena);
     NUX_CHECK(arena->id, goto cleanup0);
     const nux_u32_t default_capa = 1 << 20;
     arena->capa                  = default_capa;
     arena->size                  = 0;
     arena->first_object          = NUX_NULL;
     arena->last_object           = NUX_NULL;
-    arena->data = nux_arena_alloc(ctx, ctx->active_arena, arena->capa);
+    arena->data                  = nux_arena_alloc(ctx, arena->capa);
     NUX_CHECK(arena->data, goto cleanup1);
     return arena->id;
 

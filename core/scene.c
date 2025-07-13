@@ -30,17 +30,15 @@ push_transforms (nux_ctx_t      *ctx,
 nux_u32_t
 nux_scene_new (nux_ctx_t *ctx)
 {
-    nux_scene_t *s = nux_arena_alloc(ctx, ctx->active_arena, sizeof(*s));
+    nux_scene_t *s = nux_arena_alloc(ctx, sizeof(*s));
     NUX_CHECK(s, return NUX_NULL);
-    nux_u32_t id = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_SCENE, s);
+    nux_u32_t id = nux_object_create(ctx, NUX_TYPE_SCENE, s);
     NUX_CHECK(id, return NUX_NULL);
 
     s->arena = ctx->active_arena;
-    NUX_CHECK(nux_node_pool_alloc(
-                  ctx, ctx->active_arena, DEFAULT_NODE_COUNT, &s->nodes),
+    NUX_CHECK(nux_node_pool_alloc(ctx, DEFAULT_NODE_COUNT, &s->nodes),
               return NUX_NULL);
-    NUX_CHECK(nux_component_pool_alloc(
-                  ctx, ctx->active_arena, DEFAULT_NODE_COUNT, &s->components),
+    NUX_CHECK(nux_component_pool_alloc(ctx, DEFAULT_NODE_COUNT, &s->components),
               return NUX_NULL);
 
     // Reserve index 0 to null
@@ -48,12 +46,10 @@ nux_scene_new (nux_ctx_t *ctx)
     nux_component_pool_add(&s->components);
 
     // Allocate gpu commands buffer
-    NUX_CHECKM(
-        nux_gpu_command_vec_alloc(ctx, ctx->core_arena, 4096, &s->commands),
-        "Failed to allocate commands buffer",
-        return NUX_NULL);
-    NUX_CHECKM(nux_gpu_command_vec_alloc(
-                   ctx, ctx->core_arena, 4096, &s->commands_lines),
+    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands),
+               "Failed to allocate commands buffer",
+               return NUX_NULL);
+    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands_lines),
                "Failed to allocate lines commands buffer",
                return NUX_NULL);
 
@@ -267,7 +263,7 @@ nux_node_new (nux_ctx_t *ctx, nux_u32_t scene)
     NUX_CHECK(s, return NUX_NULL);
     nux_node_t *n = nux_node_pool_add(&s->nodes);
     NUX_CHECK(n, return NUX_NULL);
-    nux_u32_t id = nux_object_create(ctx, s->arena, NUX_TYPE_NODE, n);
+    nux_u32_t id = nux_object_create(ctx, NUX_TYPE_NODE, n);
     NUX_CHECK(id, return NUX_NULL);
     nux_memset(n, 0, sizeof(*n));
     n->scene  = scene;

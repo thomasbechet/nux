@@ -7,10 +7,9 @@ nux_texture_new (nux_ctx_t         *ctx,
                  nux_u32_t          h)
 {
     // Create object
-    nux_texture_t *tex = nux_arena_alloc(ctx, ctx->active_arena, sizeof(*tex));
+    nux_texture_t *tex = nux_arena_alloc(ctx, sizeof(*tex));
     NUX_CHECK(tex, return NUX_NULL);
-    nux_u32_t id
-        = nux_object_create(ctx, ctx->active_arena, NUX_TYPE_TEXTURE, tex);
+    nux_u32_t id = nux_object_create(ctx, NUX_TYPE_TEXTURE, tex);
     NUX_CHECK(id, return NUX_NULL);
     tex->gpu.type   = type;
     tex->gpu.width  = w;
@@ -35,7 +34,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     }
     if (pixel_size)
     {
-        tex->data = nux_arena_alloc(ctx, ctx->active_arena, pixel_size * w * h);
+        tex->data = nux_arena_alloc(ctx, pixel_size * w * h);
         NUX_CHECKM(
             tex->data, "Failed to allocate texture data", return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
