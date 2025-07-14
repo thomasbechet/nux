@@ -24,7 +24,7 @@
 #define NUX_BUILD_VARARGS
 #define NUX_BUILD_IMPORTER
 
-#define NUX_BUILD_DEBUG
+// #define NUX_BUILD_DEBUG
 #define NUX_BUILD_STDLIB
 
 #endif

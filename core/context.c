@@ -152,6 +152,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     // Frame integration
     ctx->time += nux_dt(ctx);
     ++ctx->frame;
+    NUX_INFO("FRAME: %d", ctx->frame);
 }
 nux_status_t
 nux_instance_load (nux_ctx_t *ctx, const nux_c8_t *cart, nux_u32_t n)

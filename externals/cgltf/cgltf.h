@@ -907,9 +907,10 @@ cgltf_size cgltf_animation_channel_index(const cgltf_animation* animation, const
 
 #ifdef CGLTF_IMPLEMENTATION
 
-#include <assert.h> /* For assert */
+// #include <assert.h> /* For assert */
+#define assert(x) (void)(x)
 #include <string.h> /* For strncpy */
-#include <stdio.h>  /* For fopen */
+// #include <stdio.h>  /* For fopen */
 #include <limits.h> /* For UINT_MAX etc */
 #include <float.h>  /* For FLT_MAX */
 
@@ -1224,37 +1225,6 @@ cgltf_result cgltf_parse(const cgltf_options* options, const void* data, cgltf_s
 	return cgltf_result_success;
 }
 
-cgltf_result cgltf_parse_file(const cgltf_options* options, const char* path, cgltf_data** out_data)
-{
-	if (options == NULL)
-	{
-		return cgltf_result_invalid_options;
-	}
-
-	cgltf_result (*file_read)(const struct cgltf_memory_options*, const struct cgltf_file_options*, const char*, cgltf_size*, void**) = options->file.read ? options->file.read : &cgltf_default_file_read;
-	void (*file_release)(const struct cgltf_memory_options*, const struct cgltf_file_options*, void* data) = options->file.release ? options->file.release : cgltf_default_file_release;
-
-	void* file_data = NULL;
-	cgltf_size file_size = 0;
-	cgltf_result result = file_read(&options->memory, &options->file, path, &file_size, &file_data);
-	if (result != cgltf_result_success)
-	{
-		return result;
-	}
-
-	result = cgltf_parse(options, file_data, file_size, out_data);
-
-	if (result != cgltf_result_success)
-	{
-		file_release(&options->memory, &options->file, file_data);
-		return result;
-	}
-
-	(*out_data)->file_data = file_data;
-
-	return cgltf_result_success;
-}
-
 static void cgltf_combine_paths(char* path, const char* base, const char* uri)
 {
 	const char* s0 = strrchr(base, '/');
@@ -1272,33 +1242,6 @@ static void cgltf_combine_paths(char* path, const char* base, const char* uri)
 	{
 		strcpy(path, uri);
 	}
-}
-
-static cgltf_result cgltf_load_buffer_file(const cgltf_options* options, cgltf_size size, const char* uri, const char* gltf_path, void** out_data)
-{
-	void* (*memory_alloc)(void*, cgltf_size) = options->memory.alloc_func ? options->memory.alloc_func : &cgltf_default_alloc;
-	void (*memory_free)(void*, void*) = options->memory.free_func ? options->memory.free_func : &cgltf_default_free;
-	cgltf_result (*file_read)(const struct cgltf_memory_options*, const struct cgltf_file_options*, const char*, cgltf_size*, void**) = options->file.read ? options->file.read : &cgltf_default_file_read;
-
-	char* path = (char*)memory_alloc(options->memory.user_data, strlen(uri) + strlen(gltf_path) + 1);
-	if (!path)
-	{
-		return cgltf_result_out_of_memory;
-	}
-
-	cgltf_combine_paths(path, gltf_path, uri);
-
-	// after combining, the tail of the resulting path is a uri; decode_uri converts it into path
-	cgltf_decode_uri(path + strlen(path) - strlen(uri));
-
-	void* file_data = NULL;
-	cgltf_result result = file_read(&options->memory, &options->file, path, &size, &file_data);
-
-	memory_free(options->memory.user_data, path);
-
-	*out_data = (result == cgltf_result_success) ? file_data : NULL;
-
-	return result;
 }
 
 cgltf_result cgltf_load_buffer_base64(const cgltf_options* options, cgltf_size size, const char* base64, void** out_data)
@@ -1508,16 +1451,6 @@ cgltf_result cgltf_load_buffers(const cgltf_options* options, cgltf_data* data, 
 			else
 			{
 				return cgltf_result_unknown_format;
-			}
-		}
-		else if (strstr(uri, "://") == NULL && gltf_path)
-		{
-			cgltf_result res = cgltf_load_buffer_file(options, data->buffers[i].size, uri, gltf_path, &data->buffers[i].data);
-			data->buffers[i].data_free_method = cgltf_data_free_method_file_release;
-
-			if (res != cgltf_result_success)
-			{
-				return res;
 			}
 		}
 		else

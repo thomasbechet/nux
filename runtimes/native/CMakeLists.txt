@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project(nux VERSION 0.0.1)
 
-# set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-# set(CMAKE_EXECUTABLE_SUFFIX ".wasm") # TODO: support wasm build
-
 include(CheckCCompilerFlag)
 function(enable_c_compiler_flag_if_supported flag)
     string(FIND "${CMAKE_C_FLAGS}" "${flag}" flag_already_set)
@@ -30,6 +27,8 @@ enable_c_compiler_flag_if_supported("-fsanitize=address")
 # add_compile_options(-pg)
 # add_link_options(-pg)
 
+# Add externals
+add_subdirectory(externals/glfw-3.4 EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_SOURCE_DIR}/core)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/externals/glfw-3.4/include)

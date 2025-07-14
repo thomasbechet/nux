@@ -4,13 +4,16 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 #define STBIR_DEBUG
+#define STB_IMAGE_STATIC
+#define STBI_NO_STDIO
+#define STBI_ASSERT(x) NUX_ASSERT(x)
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
-#define STB_IMAGE_RESIZE_IMPLEMENTATION
-#include <stb_image_resize.h>
+// #define STB_IMAGE_RESIZE_IMPLEMENTATION
+// #include <stb_image_resize.h>
 // #include <stb_image_resize2.h>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #include <stb_image_write.h>
 #endif
 
 static nux_u32_t
@@ -171,7 +174,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
     typedef struct
     {
         void     *cgltf_ptr;
-        nux_u32_t id;
+        nux_u32_t ref;
     } resource_t;
 
     cgltf_options options;
@@ -183,8 +186,8 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_u32_t scene_id = nux_scene_new(ctx);
-    NUX_CHECK(scene_id, goto cleanup0);
+    nux_u32_t scene_ref = nux_scene_new(ctx);
+    NUX_CHECK(scene_ref, goto cleanup0);
 
     // Parse file and load buffers
     result = cgltf_parse_file(&options, url, &data);
@@ -206,11 +209,11 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         cgltf_mesh *mesh = data->meshes + i;
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nux_u32_t id = load_primitive_mesh(ctx, mesh->primitives + p);
-            NUX_DEBUG("Loading mesh %u '%s' primitive %d", id, mesh->name, p);
-            NUX_CHECK(id, goto cleanup0);
+            nux_u32_t ref = load_primitive_mesh(ctx, mesh->primitives + p);
+            NUX_DEBUG("Loading mesh %u '%s' primitive %d", ref, mesh->name, p);
+            NUX_CHECK(ref, goto cleanup0);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
-            resources[resources_count].id        = id;
+            resources[resources_count].ref       = ref;
             ++resources_count;
         }
     }
@@ -236,11 +239,11 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         }
         if (texture)
         {
-            nux_u32_t id = load_texture(ctx, texture);
-            NUX_DEBUG("Loading texture %u '%s'", id, texture->name);
-            NUX_CHECK(id, goto cleanup0);
+            nux_u32_t ref = load_texture(ctx, texture);
+            NUX_DEBUG("Loading texture %u '%s'", ref, texture->name);
+            NUX_CHECK(ref, goto cleanup0);
             resources[resources_count].cgltf_ptr = texture;
-            resources[resources_count].id        = id;
+            resources[resources_count].ref       = ref;
             ++resources_count;
         }
     }
@@ -267,8 +270,8 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         {
             cgltf_node *node = scene->nodes[n];
 
-            nux_u32_t node_id = nux_node_new(ctx, scene_id);
-            NUX_CHECK(node_id, goto cleanup0);
+            nux_u32_t node_ref = nux_node_new(ctx, scene_ref);
+            NUX_CHECK(node_ref, goto cleanup0);
 
             nux_v3_t translation = NUX_V3_ZEROES;
             nux_q4_t rotation    = nux_q4_identity();
@@ -293,10 +296,10 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
             }
 
             // Set transform
-            nux_transform_add(ctx, node_id);
-            nux_transform_set_translation(ctx, node_id, translation);
-            nux_transform_set_rotation(ctx, node_id, rotation);
-            nux_transform_set_scale(ctx, node_id, scale);
+            nux_transform_add(ctx, node_ref);
+            nux_transform_set_translation(ctx, node_ref, translation);
+            nux_transform_set_rotation(ctx, node_ref, rotation);
+            nux_transform_set_scale(ctx, node_ref, scale);
 
             if (node->mesh)
             {
@@ -310,7 +313,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].id;
+                            mesh = resources[i].ref;
                             break;
                         }
                     }
@@ -335,7 +338,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].id;
+                                texture = resources[i].ref;
                                 break;
                             }
                         }
@@ -353,9 +356,9 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                               texture);
 
                     // Write staticmesh
-                    nux_staticmesh_add(ctx, node_id);
-                    nux_staticmesh_set_mesh(ctx, node_id, mesh);
-                    nux_staticmesh_set_texture(ctx, node_id, texture);
+                    nux_staticmesh_add(ctx, node_ref);
+                    nux_staticmesh_set_mesh(ctx, node_ref, mesh);
+                    nux_staticmesh_set_texture(ctx, node_ref, texture);
                 }
             }
         }
@@ -365,5 +368,5 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
 
 cleanup0:
     cgltf_free(data);
-    return scene_id;
+    return scene_ref;
 }

@@ -4,12 +4,11 @@
 #include "nux.h"
 
 #ifdef NUX_BUILD_STDLIB
-#include <assert.h>
+// #include <assert.h>
 #include <math.h>
 #include <stdarg.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
+// #include <stdlib.h>
 #endif
 
 #include <lauxlib.h>
@@ -582,20 +581,20 @@ typedef struct
 } nux_scene_t;
 
 typedef void (*nux_type_cleanup_t)(nux_ctx_t *ctx, void *data);
-typedef nux_status_t (*nux_type_save_lua_t)(nux_ctx_t  *ctx,
-                                            const void *data,
-                                            lua_State  *L);
-typedef nux_status_t (*nux_type_load_lua_t)(nux_ctx_t *ctx,
-                                            void      *data,
-                                            lua_State *L);
-
+// typedef nux_status_t (*nux_type_save_lua_t)(nux_ctx_t  *ctx,
+//                                             const void *data,
+//                                             lua_State  *L);
+// typedef nux_status_t (*nux_type_load_lua_t)(nux_ctx_t *ctx,
+//                                             void      *data,
+//                                             lua_State *L);
+//
 typedef struct
 {
-    const nux_c8_t     *name;
-    nux_type_cleanup_t  cleanup;
-    nux_type_save_lua_t save_lua;
-    nux_type_load_lua_t load_lua;
-    nux_u32_t           component_type;
+    const nux_c8_t    *name;
+    nux_type_cleanup_t cleanup;
+    // nux_type_save_lua_t save_lua;
+    // nux_type_load_lua_t load_lua;
+    nux_u32_t component_type;
 } nux_type_t;
 
 typedef struct
