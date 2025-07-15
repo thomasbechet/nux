@@ -52,7 +52,7 @@ end_batch (nux_ctx_t *ctx, nux_canvas_t *canvas)
 {
     // Update buffer
     nux_u32_t index = canvas->batches_buffer_head;
-    NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
+    NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
                                     canvas->batches_buffer.slot,
                                     index * sizeof(canvas->active_batch),
                                     sizeof(canvas->active_batch),
@@ -78,7 +78,7 @@ push_quads (nux_ctx_t             *ctx,
     NUX_CHECKM(canvas->quads_buffer_head + count < QUADS_DEFAULT_SIZE,
                "Out of quads",
                return NUX_FAILURE);
-    NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
+    NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
                                     canvas->quads_buffer.slot,
                                     canvas->quads_buffer_head * sizeof(*quads),
                                     count * sizeof(*quads),
@@ -145,7 +145,7 @@ nux_canvas_new (nux_ctx_t *ctx)
 void
 nux_canvas_clear (nux_ctx_t *ctx, nux_u32_t ref)
 {
-    nux_canvas_t *c = nux_ref_get(ctx, NUX_TYPE_CANVAS, ref);
+    nux_canvas_t *c = nux_id_get(ctx, NUX_TYPE_CANVAS, ref);
     NUX_CHECK(c, return);
     c->batches_buffer_head = 0;
     c->quads_buffer_head   = 0;
@@ -155,7 +155,7 @@ nux_canvas_clear (nux_ctx_t *ctx, nux_u32_t ref)
 void
 nux_canvas_render (nux_ctx_t *ctx, nux_u32_t ref, nux_u32_t target)
 {
-    nux_canvas_t *c = nux_ref_get(ctx, NUX_TYPE_CANVAS, ref);
+    nux_canvas_t *c = nux_id_get(ctx, NUX_TYPE_CANVAS, ref);
     NUX_CHECK(c, return);
 
     nux_gpu_command_t     cmds_data[16];
@@ -167,7 +167,7 @@ nux_canvas_render (nux_ctx_t *ctx, nux_u32_t ref, nux_u32_t target)
     nux_u32_t height      = 800;
     if (target)
     {
-        nux_texture_t *rt = nux_ref_get(ctx, NUX_TYPE_TEXTURE, target);
+        nux_texture_t *rt = nux_id_get(ctx, NUX_TYPE_TEXTURE, target);
         if (rt->gpu.type != NUX_TEXTURE_RENDER_TARGET)
         {
             NUX_ERROR("Canvas target is a render target");
@@ -182,7 +182,7 @@ nux_canvas_render (nux_ctx_t *ctx, nux_u32_t ref, nux_u32_t target)
     nux_gpu_constants_buffer_t constants;
     constants.screen_size = nux_v2u(width, height);
     constants.time        = ctx->time;
-    nux_os_update_buffer(ctx->userdata,
+    nux_os_buffer_update(ctx->userdata,
                          c->constants_buffer.slot,
                          0,
                          sizeof(constants),
@@ -208,7 +208,7 @@ nux_canvas_text (nux_ctx_t      *ctx,
                  nux_u32_t       y,
                  const nux_c8_t *text)
 {
-    nux_canvas_t *c = nux_ref_get(ctx, NUX_TYPE_CANVAS, ref);
+    nux_canvas_t *c = nux_id_get(ctx, NUX_TYPE_CANVAS, ref);
     NUX_CHECK(c, return);
 
     nux_font_t *font = &ctx->default_font;
@@ -261,7 +261,7 @@ nux_canvas_rectangle (nux_ctx_t *ctx,
                       nux_u32_t  w,
                       nux_u32_t  h)
 {
-    nux_canvas_t *c = nux_ref_get(ctx, NUX_TYPE_CANVAS, ref);
+    nux_canvas_t *c = nux_id_get(ctx, NUX_TYPE_CANVAS, ref);
     NUX_CHECK(c, return);
     nux_gpu_canvas_quad_t quad = make_quad(x, y, 0, 0, w, h);
 

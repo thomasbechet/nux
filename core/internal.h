@@ -79,12 +79,35 @@
         y      = SWAP;    \
     } while (0)
 
+#define NUX_PATH_MAX 256
+
 #define NUX_PI          3.14159265359
 #define NUX_FLT_MAX     3.402823E+38
 #define NUX_FLT_MIN     1.175494e-38
 #define NUX_I32_MAX     2147483647
 #define NUX_I32_MIN     -2147483648
 #define NUX_F32_EPSILON 0.00001
+
+#define NUX_MEM_1K   (1 << 10)
+#define NUX_MEM_2K   (1 << 11)
+#define NUX_MEM_4K   (1 << 12)
+#define NUX_MEM_8K   (1 << 13)
+#define NUX_MEM_16K  (1 << 14)
+#define NUX_MEM_32K  (1 << 15)
+#define NUX_MEM_64K  (1 << 16)
+#define NUX_MEM_1M   (1 << 20)
+#define NUX_MEM_2M   (1 << 21)
+#define NUX_MEM_4M   (1 << 22)
+#define NUX_MEM_8M   (1 << 23)
+#define NUX_MEM_16M  (1 << 24)
+#define NUX_MEM_32M  (1 << 25)
+#define NUX_MEM_64M  (1 << 26)
+#define NUX_MEM_128M (1 << 27)
+#define NUX_MEM_256M (1 << 28)
+#define NUX_MEM_512M (1 << 29)
+#define NUX_MEM_1G   (1 << 30)
+#define NUX_MEM_2G   (1 << 31)
+#define NUX_MEM_4G   (1 << 32)
 
 #define NUX_V2_SIZE 2
 #define NUX_V3_SIZE 3
@@ -421,7 +444,7 @@ typedef struct
 
 typedef struct nux_type_header
 {
-    nux_u32_t               ref;
+    nux_u32_t               id;
     nux_u32_t               type;
     struct nux_type_header *prev;
     struct nux_type_header *next;
@@ -429,7 +452,7 @@ typedef struct nux_type_header
 
 typedef struct
 {
-    nux_u32_t          ref;
+    nux_u32_t          id;
     void              *data;
     nux_u32_t          capa;
     nux_u32_t          size;
@@ -545,7 +568,7 @@ typedef struct
 {
     nux_u32_t scene;
     nux_u32_t parent;
-    nux_u32_t ref;
+    nux_u32_t id;
     nux_u32_t components[NUX_COMPONENT_MAX];
 } nux_node_t;
 
@@ -602,9 +625,9 @@ typedef struct
     nux_u8_t  version;
     nux_u32_t type;
     void     *data;
-} nux_ref_t;
+} nux_id_entry_t;
 
-NUX_POOL_DEFINE(nux_ref_pool, nux_ref_t);
+NUX_POOL_DEFINE(nux_id_pool, nux_id_entry_t);
 
 typedef struct
 {
@@ -678,8 +701,9 @@ struct nux_context
     nux_font_t         default_font;
 
     nux_arena_pool_t arenas;
-    nux_ref_pool_t   refs;
+    nux_id_pool_t    ids;
     nux_arena_t     *core_arena;
+    nux_u32_t        frame_arena;
 
     nux_type_t types[NUX_TYPE_MAX];
     nux_u32_t  types_count;
@@ -771,16 +795,15 @@ void     *nux_arena_alloc_type(nux_ctx_t *ctx,
                                nux_u32_t  type,
                                nux_u32_t  size,
                                nux_u32_t *id);
-void      nux_arena_rewind(nux_ctx_t *ctx, nux_arena_t *arena);
 nux_u32_t nux_arena_get_active(nux_ctx_t *ctx);
-void      nux_arena_set_active(nux_ctx_t *ctx, nux_u32_t ref);
+void      nux_arena_set_active(nux_ctx_t *ctx, nux_u32_t id);
 
-// ref.c
+// id.c
 
-nux_u32_t nux_ref_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
-void      nux_ref_delete(nux_ctx_t *ctx, nux_u32_t ref);
-void      nux_ref_update(nux_ctx_t *ctx, nux_u32_t ref, void *data);
-void     *nux_ref_get(nux_ctx_t *ctx, nux_u32_t type, nux_u32_t ref);
+nux_u32_t nux_id_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
+void      nux_id_delete(nux_ctx_t *ctx, nux_u32_t id);
+void      nux_id_update(nux_ctx_t *ctx, nux_u32_t id, void *data);
+void     *nux_id_get(nux_ctx_t *ctx, nux_u32_t type, nux_u32_t id);
 
 // texture.c
 
@@ -911,6 +934,7 @@ void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 
 nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
+void *nux_io_load_file(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
 
 // lua.c
 

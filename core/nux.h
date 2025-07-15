@@ -12,7 +12,7 @@ typedef void (*nux_callback_t)(nux_ctx_t *);
 
 typedef struct
 {
-    nux_u32_t max_ref_count;
+    nux_u32_t max_id_count;
     nux_u32_t memory_size;
 
     nux_u32_t width;
@@ -153,6 +153,11 @@ typedef struct
     } clear;
 } nux_gpu_command_t;
 
+typedef struct
+{
+    nux_u32_t size;
+} nux_file_stat_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Callbacks                     //////
 //////////////////////////////////////////////////////////////////////////
@@ -161,39 +166,44 @@ NUX_API void        *nux_os_alloc(void     *userdata,
                                   void     *p,
                                   nux_u32_t osize,
                                   nux_u32_t nsize);
-NUX_API nux_status_t nux_os_open(void           *userdata,
-                                 nux_u32_t       slot,
-                                 const nux_c8_t *url,
-                                 nux_u32_t       n);
-NUX_API nux_status_t nux_os_seek(void *userdata, nux_u32_t slot, nux_u32_t n);
-NUX_API nux_u32_t    nux_os_read(void     *userdata,
-                                 nux_u32_t slot,
-                                 void     *p,
-                                 nux_u32_t n);
+NUX_API nux_status_t nux_os_file_open(void           *userdata,
+                                      nux_u32_t       slot,
+                                      const nux_c8_t *url,
+                                      nux_u32_t       len);
+NUX_API nux_status_t nux_os_file_stat(void            *userdata,
+                                      nux_u32_t        slot,
+                                      nux_file_stat_t *stat);
+NUX_API nux_status_t nux_os_file_seek(void     *userdata,
+                                      nux_u32_t slot,
+                                      nux_u32_t n);
+NUX_API nux_status_t nux_os_file_read(void     *userdata,
+                                      nux_u32_t slot,
+                                      void     *p,
+                                      nux_u32_t n);
 NUX_API void         nux_os_log(void           *userdata,
                                 nux_log_level_t level,
                                 const nux_c8_t *log,
-                                nux_u32_t       n);
-NUX_API nux_status_t nux_os_create_pipeline(
+                                nux_u32_t       len);
+NUX_API nux_status_t nux_os_pipeline_create(
     void *userdata, nux_u32_t slot, const nux_gpu_pipeline_info_t *info);
-NUX_API nux_status_t nux_os_create_framebuffer(void     *userdata,
+NUX_API nux_status_t nux_os_framebuffer_create(void     *userdata,
                                                nux_u32_t slot,
                                                nux_u32_t texture);
-NUX_API nux_status_t nux_os_create_texture(void     *userdata,
+NUX_API nux_status_t nux_os_texture_create(void     *userdata,
                                            nux_u32_t slot,
                                            const nux_gpu_texture_info_t *info);
-NUX_API nux_status_t nux_os_update_texture(void       *userdata,
+NUX_API nux_status_t nux_os_texture_update(void       *userdata,
                                            nux_u32_t   slot,
                                            nux_u32_t   x,
                                            nux_u32_t   y,
                                            nux_u32_t   w,
                                            nux_u32_t   h,
                                            const void *data);
-NUX_API nux_status_t nux_os_create_buffer(void                 *userdata,
+NUX_API nux_status_t nux_os_buffer_create(void                 *userdata,
                                           nux_u32_t             slot,
                                           nux_gpu_buffer_type_t type,
                                           nux_u32_t             size);
-NUX_API nux_status_t nux_os_update_buffer(void       *userdata,
+NUX_API nux_status_t nux_os_buffer_update(void       *userdata,
                                           nux_u32_t   slot,
                                           nux_u32_t   offset,
                                           nux_u32_t   size,
@@ -201,10 +211,10 @@ NUX_API nux_status_t nux_os_update_buffer(void       *userdata,
 NUX_API void         nux_os_gpu_submit(void                    *userdata,
                                        const nux_gpu_command_t *cmds,
                                        nux_u32_t                count);
-NUX_API void         nux_os_update_inputs(void      *user,
-                                          nux_u32_t *buttons,
-                                          nux_f32_t *axis);
-NUX_API void         nux_os_update_stats(void *userdata, nux_u32_t *stats);
+NUX_API void         nux_os_input_update(void      *user,
+                                         nux_u32_t *buttons,
+                                         nux_f32_t *axis);
+NUX_API void         nux_os_stats_update(void *userdata, nux_u32_t *stats);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////

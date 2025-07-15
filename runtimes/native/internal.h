@@ -143,6 +143,9 @@ struct nk_context *window_nk_context(void);
 bool               window_is_double_click(void);
 bool               window_is_fullscreen(void);
 
+void io_init(void);
+void io_free(void);
+
 void command_push(command_t cmd);
 bool command_poll(command_t *cmd);
 

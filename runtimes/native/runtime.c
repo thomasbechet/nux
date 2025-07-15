@@ -26,11 +26,11 @@ instance_init (instance_t *instance, const char *path)
     instance_free(instance);
 
     nux_config_t config = {
-        .userdata      = instance,
-        .init          = NULL,
-        .update        = NULL,
-        .memory_size   = (1 << 24), // 16Mb
-        .max_ref_count = 4096,
+        .userdata     = instance,
+        .init         = NULL,
+        .update       = NULL,
+        .memory_size  = (1 << 26), // 16Mb
+        .max_id_count = 4096,
     };
 
     strncpy(instance->path, path, PATH_MAX_LEN - 1);
@@ -306,7 +306,7 @@ nux_os_log (void           *userdata,
     logger_log(level, "%.*s", n, log);
 }
 void
-nux_os_update_stats (void *userdata, nux_u32_t *stats)
+nux_os_stats_update (void *userdata, nux_u32_t *stats)
 {
     instance_t *inst              = userdata;
     stats[NUX_STAT_FPS]           = runtime.fps;

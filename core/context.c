@@ -10,7 +10,7 @@ nux_error (nux_ctx_t *ctx, nux_error_t error)
 nux_ctx_t *
 nux_instance_init (const nux_config_t *config)
 {
-    NUX_ASSERT(config->max_ref_count);
+    NUX_ASSERT(config->max_id_count);
     NUX_ASSERT(config->memory_size);
 
     // Allocate core memory
@@ -69,21 +69,25 @@ nux_instance_init (const nux_config_t *config)
     nux_component_register(ctx, NUX_TYPE_CAMERA);
     nux_component_register(ctx, NUX_TYPE_STATICMESH);
 
-    // Create references pool
-    NUX_CHECK(nux_ref_pool_alloc(ctx, config->max_ref_count, &ctx->refs),
+    // Create ids pool
+    NUX_CHECK(nux_id_pool_alloc(ctx, config->max_id_count, &ctx->ids),
               goto cleanup);
 
-    // Reserve index 0 for null reference
-    nux_ref_pool_add(&ctx->refs);
+    // Reserve index 0 for null id
+    nux_id_pool_add(&ctx->ids);
 
-    // Register core arena
+    // Allocate arena pool
     NUX_CHECK(nux_arena_pool_alloc(ctx, 32, &ctx->arenas), goto cleanup);
-    ctx->core_arena   = nux_arena_pool_add(&ctx->arenas);
-    *ctx->core_arena  = core_arena; // copy by value
-    ctx->active_arena = ctx->core_arena;
 
     // Register core arena object
-    ctx->core_arena->ref = nux_ref_create(ctx, NUX_TYPE_ARENA, ctx->core_arena);
+    ctx->core_arena     = nux_arena_pool_add(&ctx->arenas);
+    *ctx->core_arena    = core_arena; // copy by value
+    ctx->active_arena   = ctx->core_arena;
+    ctx->core_arena->id = nux_id_create(ctx, NUX_TYPE_ARENA, ctx->core_arena);
+
+    // Register frame arena
+    ctx->frame_arena = nux_arena_new(ctx, NUX_MEM_16M);
+    NUX_CHECK(ctx->frame_arena, goto cleanup);
 
     // Initialize error state
     ctx->error            = NUX_ERROR_NONE;
@@ -106,7 +110,7 @@ cleanup:
 void
 nux_instance_free (nux_ctx_t *ctx)
 {
-    nux_arena_rewind(ctx, ctx->core_arena);
+    nux_arena_rewind(ctx, ctx->core_arena->id);
 
     // Free modules
     nux_lua_free(ctx);
@@ -129,13 +133,13 @@ nux_instance_tick (nux_ctx_t *ctx)
     }
 
     // Update stats
-    nux_os_update_stats(ctx->userdata, ctx->stats);
+    nux_os_stats_update(ctx->userdata, ctx->stats);
 
     // Keep previous input state
     nux_input_pre_update(ctx);
 
     // Update inputs
-    nux_os_update_inputs(ctx->userdata, ctx->buttons, ctx->axis);
+    nux_os_input_update(ctx->userdata, ctx->buttons, ctx->axis);
 
     // Update
     if (ctx->update)

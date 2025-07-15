@@ -454,7 +454,7 @@ window_is_fullscreen (void)
 }
 
 void
-nux_os_update_inputs (void *userdata, nux_u32_t *buttons, nux_f32_t *axis)
+nux_os_input_update (void *userdata, nux_u32_t *buttons, nux_f32_t *axis)
 {
     instance_t *inst = userdata;
     buttons[0]       = window.buttons[0];

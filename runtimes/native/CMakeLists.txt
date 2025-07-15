@@ -28,7 +28,6 @@ enable_c_compiler_flag_if_supported("-fsanitize=address")
 # add_link_options(-pg)
 
 # Add externals
-add_subdirectory(externals/glfw-3.4 EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_SOURCE_DIR}/core)
 include_directories(${CMAKE_SOURCE_DIR}/externals)
 include_directories(${CMAKE_SOURCE_DIR}/externals/glfw-3.4/include)

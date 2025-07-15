@@ -101,7 +101,7 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
     // Create mesh
     nux_u32_t id = nux_mesh_new(ctx, indice_count);
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_ref_get(ctx, NUX_TYPE_MESH, id);
+    nux_mesh_t *mesh = nux_id_get(ctx, NUX_TYPE_MESH, id);
 
     // Write vertices
     if (attributes & NUX_VERTEX_POSITION)
@@ -169,12 +169,12 @@ load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
     return id;
 }
 nux_u32_t
-nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
+nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     typedef struct
     {
         void     *cgltf_ptr;
-        nux_u32_t ref;
+        nux_u32_t id;
     } resource_t;
 
     cgltf_options options;
@@ -186,21 +186,31 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_u32_t scene_ref = nux_scene_new(ctx);
-    NUX_CHECK(scene_ref, goto cleanup0);
+    nux_u32_t scene_id = nux_scene_new(ctx);
+    NUX_CHECK(scene_id, goto cleanup0);
 
-    // Parse file and load buffers
-    result = cgltf_parse_file(&options, url, &data);
+    // Load file
+    nux_u32_t buf_size;
+    nux_u32_t prev_arena = nux_arena_get_active(ctx);
+    nux_arena_set_active(ctx, nux_arena_frame(ctx));
+    void *buf = nux_io_load_file(ctx, path, &buf_size);
+    nux_arena_set_active(ctx, prev_arena);
+    NUX_CHECKM(buf, "Failed to read gltf file", goto cleanup0);
+
+    // Parse file
+    result = cgltf_parse(&options, buf, buf_size, &data);
     if (result != cgltf_result_success)
     {
-        NUX_ERROR("Failed to load gltf file %s (code %d)", url, result);
-        return NUX_NULL;
+        NUX_ERROR("Failed to parse gltf file %s (code %d)", path, result);
+        goto cleanup0;
     }
-    result = cgltf_load_buffers(&options, data, url);
+
+    // Load buffers
+    result = cgltf_load_buffers(&options, data, path);
     if (result != cgltf_result_success)
     {
-        NUX_ERROR("Failed to load gltf buffers %s", url);
-        return NUX_NULL;
+        NUX_ERROR("Failed to load gltf buffers %s", path);
+        goto cleanup0;
     }
 
     // Load mesh primitives
@@ -209,11 +219,11 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         cgltf_mesh *mesh = data->meshes + i;
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nux_u32_t ref = load_primitive_mesh(ctx, mesh->primitives + p);
-            NUX_DEBUG("Loading mesh %u '%s' primitive %d", ref, mesh->name, p);
-            NUX_CHECK(ref, goto cleanup0);
+            nux_u32_t id = load_primitive_mesh(ctx, mesh->primitives + p);
+            NUX_DEBUG("Loading mesh %u '%s' primitive %d", id, mesh->name, p);
+            NUX_CHECK(id, goto cleanup0);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
-            resources[resources_count].ref       = ref;
+            resources[resources_count].id        = id;
             ++resources_count;
         }
     }
@@ -239,11 +249,11 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         }
         if (texture)
         {
-            nux_u32_t ref = load_texture(ctx, texture);
-            NUX_DEBUG("Loading texture %u '%s'", ref, texture->name);
-            NUX_CHECK(ref, goto cleanup0);
+            nux_u32_t id = load_texture(ctx, texture);
+            NUX_DEBUG("Loading texture %u '%s'", id, texture->name);
+            NUX_CHECK(id, goto cleanup0);
             resources[resources_count].cgltf_ptr = texture;
-            resources[resources_count].ref       = ref;
+            resources[resources_count].id        = id;
             ++resources_count;
         }
     }
@@ -270,8 +280,8 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
         {
             cgltf_node *node = scene->nodes[n];
 
-            nux_u32_t node_ref = nux_node_new(ctx, scene_ref);
-            NUX_CHECK(node_ref, goto cleanup0);
+            nux_u32_t node_id = nux_node_new(ctx, scene_id);
+            NUX_CHECK(node_id, goto cleanup0);
 
             nux_v3_t translation = NUX_V3_ZEROES;
             nux_q4_t rotation    = nux_q4_identity();
@@ -296,10 +306,10 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
             }
 
             // Set transform
-            nux_transform_add(ctx, node_ref);
-            nux_transform_set_translation(ctx, node_ref, translation);
-            nux_transform_set_rotation(ctx, node_ref, rotation);
-            nux_transform_set_scale(ctx, node_ref, scale);
+            nux_transform_add(ctx, node_id);
+            nux_transform_set_translation(ctx, node_id, translation);
+            nux_transform_set_rotation(ctx, node_id, rotation);
+            nux_transform_set_scale(ctx, node_id, scale);
 
             if (node->mesh)
             {
@@ -313,7 +323,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].ref;
+                            mesh = resources[i].id;
                             break;
                         }
                     }
@@ -338,7 +348,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].ref;
+                                texture = resources[i].id;
                                 break;
                             }
                         }
@@ -356,9 +366,9 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
                               texture);
 
                     // Write staticmesh
-                    nux_staticmesh_add(ctx, node_ref);
-                    nux_staticmesh_set_mesh(ctx, node_ref, mesh);
-                    nux_staticmesh_set_texture(ctx, node_ref, texture);
+                    nux_staticmesh_add(ctx, node_id);
+                    nux_staticmesh_set_mesh(ctx, node_id, mesh);
+                    nux_staticmesh_set_texture(ctx, node_id, texture);
                 }
             }
         }
@@ -368,5 +378,5 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *url)
 
 cleanup0:
     cgltf_free(data);
-    return scene_ref;
+    return scene_id;
 }

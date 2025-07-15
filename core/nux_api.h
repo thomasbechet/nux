@@ -245,14 +245,16 @@ nux_u32_t nux_texture_new(nux_ctx_t         *ctx,
                           nux_texture_type_t format,
                           nux_u32_t          w,
                           nux_u32_t          h);
-void      nux_texture_blit(nux_ctx_t *ctx, nux_u32_t ref);
+void      nux_texture_blit(nux_ctx_t *ctx, nux_u32_t id);
 
-nux_u32_t nux_arena_new(nux_ctx_t *ctx);
+nux_u32_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
+void      nux_arena_rewind(nux_ctx_t *ctx, nux_u32_t id);
+nux_u32_t nux_arena_frame(nux_ctx_t *ctx);
 
 nux_u32_t nux_scene_new(nux_ctx_t *ctx);
 void      nux_scene_render(nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera);
 nux_u32_t nux_scene_get_node(nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t index);
-nux_u32_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *url);
+nux_u32_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *path);
 
 nux_u32_t nux_node_new(nux_ctx_t *ctx, nux_u32_t scene);
 void      nux_node_set_parent(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t parent);
@@ -309,22 +311,22 @@ void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
                                  nux_u32_t  colormap);
 
 nux_u32_t nux_mesh_new(nux_ctx_t *ctx, nux_u32_t capa);
-void      nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_u32_t ref);
+void      nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_u32_t id);
 nux_u32_t nux_mesh_gen_cube(nux_ctx_t *ctx,
                             nux_f32_t  sx,
                             nux_f32_t  sy,
                             nux_f32_t  sz);
 
 nux_u32_t nux_canvas_new(nux_ctx_t *ctx);
-void      nux_canvas_clear(nux_ctx_t *ctx, nux_u32_t ref);
-void      nux_canvas_render(nux_ctx_t *ctx, nux_u32_t ref, nux_u32_t target);
+void      nux_canvas_clear(nux_ctx_t *ctx, nux_u32_t id);
+void      nux_canvas_render(nux_ctx_t *ctx, nux_u32_t id, nux_u32_t target);
 void      nux_canvas_text(nux_ctx_t      *ctx,
-                          nux_u32_t       ref,
+                          nux_u32_t       id,
                           nux_u32_t       x,
                           nux_u32_t       y,
                           const nux_c8_t *text);
 void      nux_canvas_rectangle(nux_ctx_t *ctx,
-                               nux_u32_t  ref,
+                               nux_u32_t  id,
                                nux_u32_t  x,
                                nux_u32_t  y,
                                nux_u32_t  w,

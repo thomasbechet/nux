@@ -6,7 +6,7 @@ nux_gpu_buffer_init (nux_ctx_t *ctx, nux_gpu_buffer_t *buffer)
     nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_buffer_slots);
     NUX_CHECKM(slot, "Out of gpu buffer", return NUX_FAILURE);
     buffer->slot = *slot;
-    NUX_CHECK(nux_os_create_buffer(
+    NUX_CHECK(nux_os_buffer_create(
                   ctx->userdata, buffer->slot, buffer->type, buffer->size),
               return NUX_FAILURE);
     return NUX_SUCCESS;
@@ -23,7 +23,7 @@ nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
     nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_texture_slots);
     NUX_CHECKM(slot, "Out of gpu textures", return NUX_FAILURE);
     texture->slot = *slot;
-    NUX_CHECKM(nux_os_create_texture(ctx->userdata, texture->slot, &info),
+    NUX_CHECKM(nux_os_texture_create(ctx->userdata, texture->slot, &info),
                "Failed to create texture",
                return NUX_FAILURE);
     // Create framebuffer
@@ -33,7 +33,7 @@ nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
         slot = nux_u32_vec_pop(&ctx->free_framebuffer_slots);
         NUX_CHECKM(slot, "Out of gpu framebuffer slots", return NUX_FAILURE);
         texture->framebuffer_slot = *slot;
-        NUX_CHECKM(nux_os_create_framebuffer(
+        NUX_CHECKM(nux_os_framebuffer_create(
                        ctx->userdata, texture->framebuffer_slot, texture->slot),
                    "Failed to create framebuffer",
                    return NUX_FAILURE);
@@ -47,7 +47,7 @@ nux_gpu_pipeline_init (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
     NUX_CHECKM(slot, "Out of gpu pipelines", return NUX_FAILURE);
     pipeline->slot = *slot;
     NUX_CHECKM(
-        nux_os_create_pipeline(ctx->userdata, pipeline->slot, &pipeline->info),
+        nux_os_pipeline_create(ctx->userdata, pipeline->slot, &pipeline->info),
         "Failed to create pipeline",
         return NUX_FAILURE);
     return NUX_SUCCESS;

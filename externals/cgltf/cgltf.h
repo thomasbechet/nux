@@ -830,11 +830,6 @@ cgltf_result cgltf_parse(
 		cgltf_size size,
 		cgltf_data** out_data);
 
-cgltf_result cgltf_parse_file(
-		const cgltf_options* options,
-		const char* path,
-		cgltf_data** out_data);
-
 cgltf_result cgltf_load_buffers(
 		const cgltf_options* options,
 		cgltf_data* data,

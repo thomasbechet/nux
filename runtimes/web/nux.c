@@ -25,7 +25,7 @@ start (void)
 {
     nux_config_t config;
     memset(&config, 0, sizeof(config));
-    config.max_ref_count  = 4096;
+    config.max_id_count  = 4096;
     config.memory_size    = (1 << 24);
     config.width          = 800;
     config.height         = 400;

@@ -105,7 +105,7 @@ nux_graphics_push_vertices (nux_ctx_t       *ctx,
     NUX_CHECKM(ctx->vertices_buffer_head + vcount < VERTICES_DEFAULT_SIZE,
                "Out of vertices",
                return NUX_FAILURE);
-    NUX_CHECKM(nux_os_update_buffer(ctx->userdata,
+    NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
                                     ctx->vertices_buffer.slot,
                                     ctx->vertices_buffer_head * VERTEX_SIZE
                                         * sizeof(nux_f32_t),

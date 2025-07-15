@@ -83,7 +83,7 @@ cleanup0:
 }
 
 nux_status_t
-nux_os_create_pipeline (void                          *userdata,
+nux_os_pipeline_create (void                          *userdata,
                         nux_u32_t                      slot,
                         const nux_gpu_pipeline_info_t *info)
 {
@@ -194,7 +194,7 @@ nux_os_create_pipeline (void                          *userdata,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_create_framebuffer (void *userdata, nux_u32_t slot, nux_u32_t texture)
+nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
 {
     instance_t *inst = userdata;
     CHECK(slot < ARRAY_LEN(inst->framebuffers), return NUX_FAILURE);
@@ -242,7 +242,7 @@ nux_os_create_framebuffer (void *userdata, nux_u32_t slot, nux_u32_t texture)
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_create_texture (void                         *userdata,
+nux_os_texture_create (void                         *userdata,
                        nux_u32_t                     slot,
                        const nux_gpu_texture_info_t *info)
 {
@@ -298,7 +298,7 @@ nux_os_create_texture (void                         *userdata,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_update_texture (void       *userdata,
+nux_os_texture_update (void       *userdata,
                        nux_u32_t   slot,
                        nux_u32_t   x,
                        nux_u32_t   y,
@@ -318,7 +318,7 @@ nux_os_update_texture (void       *userdata,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_create_buffer (void                 *userdata,
+nux_os_buffer_create (void                 *userdata,
                       nux_u32_t             slot,
                       nux_gpu_buffer_type_t type,
                       nux_u32_t             size)
@@ -348,7 +348,7 @@ nux_os_create_buffer (void                 *userdata,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_update_buffer (void       *userdata,
+nux_os_buffer_update (void       *userdata,
                       nux_u32_t   slot,
                       nux_u32_t   offset,
                       nux_u32_t   size,

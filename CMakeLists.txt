@@ -6,7 +6,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Options
 option(NUX_BUILD_SDK "Build nux with sdk tools" ON)
-option(NUX_BUILD_WASI "Build nux using wasi-sdk toolchain" ON)
+option(NUX_BUILD_WASI "Build nux using wasi-sdk toolchain" OFF)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/externals/glfw-3.4 EXCLUDE_FROM_ALL)
 
 # Show options
 if (NUX_BUILD_SDK)
@@ -22,6 +24,6 @@ endif ()
 
 # Add subdirectories
 add_subdirectory(core)
-# add_subdirectory(runtimes/native)
+add_subdirectory(runtimes/native)
 # add_subdirectory(runtimes/minimal)
-add_subdirectory(runtimes/web)
+# add_subdirectory(runtimes/web)
