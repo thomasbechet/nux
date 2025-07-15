@@ -913,19 +913,19 @@ nux_status_t nux_gpu_pipeline_init(nux_ctx_t          *ctx,
 void nux_gpu_bind_framebuffer(nux_gpu_command_vec_t *cmds, nux_u32_t slot);
 void nux_gpu_bind_pipeline(nux_gpu_command_vec_t *cmds, nux_u32_t slot);
 void nux_gpu_bind_texture(nux_gpu_command_vec_t *cmds,
-                          nux_u32_t              index,
+                          nux_u32_t              desc,
                           nux_u32_t              slot);
 void nux_gpu_bind_buffer(nux_gpu_command_vec_t *cmds,
-                         nux_u32_t              index,
+                         nux_u32_t              desc,
                          nux_u32_t              slot);
 void nux_gpu_push_u32(nux_gpu_command_vec_t *cmds,
-                      nux_u32_t              index,
+                      nux_u32_t              desc,
                       nux_u32_t              value);
 void nux_gpu_push_f32(nux_gpu_command_vec_t *cmds,
-                      nux_u32_t              index,
+                      nux_u32_t              desc,
                       nux_f32_t              value);
 void nux_gpu_push_v2(nux_gpu_command_vec_t *cmds,
-                     nux_u32_t              index,
+                     nux_u32_t              desc,
                      nux_v2_t               value);
 void nux_gpu_draw(nux_gpu_command_vec_t *cmds, nux_u32_t count);
 void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);

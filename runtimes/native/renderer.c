@@ -442,30 +442,30 @@ nux_os_gpu_submit (void                    *userdata,
             case NUX_GPU_COMMAND_BIND_BUFFER: {
                 buffer_t *buffer = inst->buffers + cmd->bind_buffer.slot;
                 GLuint    index
-                    = renderer.active_pipeline->indices[cmd->bind_buffer.index];
+                    = renderer.active_pipeline->indices[cmd->bind_buffer.desc];
                 glBindBufferBase(buffer->buffer_type, index, buffer->handle);
             }
             break;
             case NUX_GPU_COMMAND_BIND_TEXTURE: {
                 GLuint unit
-                    = renderer.active_pipeline->units[cmd->bind_texture.index];
+                    = renderer.active_pipeline->units[cmd->bind_texture.desc];
                 glActiveTexture(GL_TEXTURE0 + unit);
                 glBindTexture(GL_TEXTURE_2D,
                               inst->textures[cmd->bind_texture.slot].handle);
                 GLuint location = renderer.active_pipeline
-                                      ->locations[cmd->bind_texture.index];
+                                      ->locations[cmd->bind_texture.desc];
                 glUniform1i(location, unit);
             }
             break;
             case NUX_GPU_COMMAND_PUSH_U32: {
                 GLuint location
-                    = renderer.active_pipeline->locations[cmd->push_u32.index];
+                    = renderer.active_pipeline->locations[cmd->push_u32.desc];
                 glUniform1ui(location, cmd->push_u32.value);
             }
             break;
             case NUX_GPU_COMMAND_PUSH_F32: {
                 GLuint location
-                    = renderer.active_pipeline->locations[cmd->push_f32.index];
+                    = renderer.active_pipeline->locations[cmd->push_f32.desc];
                 glUniform1f(location, cmd->push_f32.value);
             }
             break;

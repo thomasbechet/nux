@@ -121,28 +121,24 @@ typedef struct
     } bind_pipeline;
     struct
     {
-        nux_u32_t index;
+        nux_u32_t desc;
         nux_u32_t slot;
     } bind_buffer;
     struct
     {
-        nux_u32_t index;
+        nux_u32_t desc;
         nux_u32_t slot;
     } bind_texture;
     struct
     {
-        nux_u32_t index;
+        nux_u32_t desc;
         nux_u32_t value;
     } push_u32;
     struct
     {
-        nux_u32_t index;
+        nux_u32_t desc;
         nux_f32_t value;
     } push_f32;
-    struct
-    {
-        nux_u32_t index;
-    } push_v2;
     struct
     {
         nux_u32_t count;
