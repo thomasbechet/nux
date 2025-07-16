@@ -5,19 +5,25 @@ const importObject = {
     STACK_MAX: 65536,
     abortStackOverflow: function (val) { throw new Error("stackoverfow"); },
     memory: new WebAssembly.Memory({ initial: (1 << 16) }),
-    nux_os_update_stats: ud => { return 1; },
-    nux_os_update_inputs: ud => { return 1; },
-    nux_os_update_texture: ud => { return 1; },
-    nux_os_create_buffer: ud => { return 1; },
-    nux_os_create_texture: ud => { return 1; },
-    nux_os_create_framebuffer: ud => { return 1; },
-    nux_os_create_pipeline: ud => { return 1; },
     nux_os_log: function (userdata, level, data, len) {
       const decoder = new TextDecoder();
       const str = decoder.decode(new Int8Array(instance.exports.memory.buffer, data, len))
       console.log(str);
       return 1;
     },
+    nux_os_stats_update: ud => { return 1; },
+    nux_os_input_update: ud => { return 1; },
+    nux_os_buffer_create: ud => { return 1; },
+    nux_os_buffer_update: ud => { return 1; },
+    nux_os_texture_create: ud => { return 1; },
+    nux_os_texture_update: ud => { return 1; },
+    nux_os_framebuffer_create: ud => { return 1; },
+    nux_os_create_pipeline: ud => { return 1; },
+    nux_os_gpu_submit: ud => { return 1; },
+    nux_os_file_open: ud => { return 1; },
+    nux_os_file_seek: ud => { return 1; },
+    nux_os_file_read: ud => { return 1; },
+    nux_os_file_stat: ud => { return 1; },
   },
   wasi_snapshot_preview1: {
     environ_get: (environ, environBuf) => { return 0; },

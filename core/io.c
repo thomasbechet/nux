@@ -40,7 +40,10 @@ nux_io_load_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size)
                "Failed to seek file",
                goto cleanup);
 
-    *size = stat.size;
+    if (size)
+    {
+        *size = stat.size;
+    }
     if (!stat.size) // empty file
     {
         goto cleanup;

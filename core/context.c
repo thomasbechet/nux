@@ -93,13 +93,16 @@ nux_instance_init (const nux_config_t *config)
     ctx->error            = NUX_ERROR_NONE;
     ctx->error_message[0] = '\0';
 
-    // Load configuration
-    NUX_CHECK(nux_lua_load_conf(ctx), goto cleanup);
-
     // Initialize modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
     NUX_CHECK(nux_io_init(ctx), goto cleanup);
     NUX_CHECK(nux_lua_init(ctx), goto cleanup);
+
+    // Load configuration
+    NUX_CHECK(nux_lua_load_conf(ctx), goto cleanup);
+
+    // Start cartridge
+    NUX_CHECK(nux_lua_start(ctx), goto cleanup);
 
     return ctx;
 
@@ -152,6 +155,9 @@ nux_instance_tick (nux_ctx_t *ctx)
 
     // Render
     nux_graphics_render(ctx);
+
+    // Reset frame arena
+    nux_arena_rewind(ctx, ctx->frame_arena);
 
     // Frame integration
     ctx->time += nux_dt(ctx);

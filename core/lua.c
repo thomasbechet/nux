@@ -1,19 +1,45 @@
 #include "internal.h"
 
+#include "luavm/lualib.h"
+#include "luavm/lauxlib.h"
 #include "lua_api.c.inc"
 #include "lua_ext.c.inc"
+
+static nux_status_t
+dofile (nux_ctx_t *ctx, lua_State *L, const nux_c8_t *path)
+{
+    nux_u32_t arena = nux_arena_get_active(ctx);
+    nux_arena_set_active(ctx, nux_arena_frame(ctx));
+    void *code = nux_io_load_file(ctx, path, NUX_NULL);
+    NUX_CHECK(code, return NUX_FAILURE);
+    nux_arena_set_active(ctx, arena);
+    if (luaL_dostring(L, code) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(L, -1));
+        return NUX_FAILURE;
+    }
+    return NUX_SUCCESS;
+}
+static nux_status_t
+lua_register_ext (nux_ctx_t *ctx)
+{
+    lua_State *L = ctx->lua_state;
+
+    if (luaL_dostring(L, lua_ext_code) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(ctx->lua_state, -1));
+    }
+
+    return NUX_SUCCESS;
+}
 
 nux_status_t
 nux_lua_load_conf (nux_ctx_t *ctx)
 {
     lua_State *L = luaL_newstate();
     NUX_CHECKM(L, "Failed to initialize lua VM", return NUX_FAILURE);
-    if (luaL_dofile(L, "cart.lua") != LUA_OK)
-    {
-        NUX_ERROR("%s", lua_tostring(L, -1));
-        goto error;
-    }
 
+    NUX_CHECK(dofile(ctx, L, "cart.lua"), goto error);
     if (!lua_istable(L, -1))
     {
         NUX_ERROR("Return value from cart.lua is not a table");
@@ -50,13 +76,22 @@ nux_lua_init (nux_ctx_t *ctx)
     // Load api
     luaL_openlibs(ctx->lua_state);
     nux_lua_register_base(ctx);
-    nux_lua_register_ext(ctx);
+    lua_register_ext(ctx);
 
-    if (luaL_dofile(ctx->lua_state, "main.lua") != LUA_OK)
+    return NUX_SUCCESS;
+}
+void
+nux_lua_free (nux_ctx_t *ctx)
+{
+    if (ctx->lua_state)
     {
-        NUX_ERROR("%s", lua_tostring(ctx->lua_state, -1));
-        return NUX_FAILURE;
+        lua_close(ctx->lua_state);
     }
+}
+nux_status_t
+nux_lua_start (nux_ctx_t *ctx)
+{
+    NUX_CHECK(dofile(ctx, ctx->lua_state, "main.lua"), return NUX_FAILURE);
 
     lua_getglobal(ctx->lua_state, "nux");
     lua_getfield(ctx->lua_state, -1, "init");
@@ -70,14 +105,6 @@ nux_lua_init (nux_ctx_t *ctx)
     return NUX_SUCCESS;
 }
 void
-nux_lua_free (nux_ctx_t *ctx)
-{
-    if (ctx->lua_state)
-    {
-        lua_close(ctx->lua_state);
-    }
-}
-void
 nux_lua_tick (nux_ctx_t *ctx)
 {
     lua_getglobal(ctx->lua_state, "nux");
@@ -87,17 +114,4 @@ nux_lua_tick (nux_ctx_t *ctx)
         NUX_ERROR("%s", lua_tostring(ctx->lua_state, -1));
     }
     lua_pop(ctx->lua_state, 1);
-}
-
-nux_status_t
-nux_lua_register_ext (nux_ctx_t *ctx)
-{
-    lua_State *L = ctx->lua_state;
-
-    if (luaL_dostring(L, lua_ext_code) != LUA_OK)
-    {
-        NUX_ERROR("%s", lua_tostring(ctx->lua_state, -1));
-    }
-
-    return NUX_SUCCESS;
 }

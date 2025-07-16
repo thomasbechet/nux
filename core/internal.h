@@ -11,9 +11,7 @@
 // #include <stdlib.h>
 #endif
 
-#include <lauxlib.h>
-#include <lua.h>
-#include <lualib.h>
+#include "luavm/lua.h"
 
 ////////////////////////////
 ///        MACROS        ///
@@ -941,8 +939,8 @@ void *nux_io_load_file(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
 nux_status_t nux_lua_load_conf(nux_ctx_t *ctx);
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
 void         nux_lua_free(nux_ctx_t *ctx);
+nux_status_t nux_lua_start(nux_ctx_t *ctx);
 void         nux_lua_tick(nux_ctx_t *ctx);
-nux_status_t nux_lua_register_ext(nux_ctx_t *ctx);
 
 // lua_api.c.inc
 
