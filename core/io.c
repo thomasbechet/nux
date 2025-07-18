@@ -60,7 +60,6 @@ nux_io_load (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size)
     NUX_CHECKM(nux_os_file_stat(ctx->userdata, slot, &stat),
                "Failed to retrieve file stat",
                goto cleanup);
-    NUX_INFO("file %d", stat.size);
     NUX_CHECKM(nux_os_file_seek(ctx->userdata, slot, 0),
                "Failed to seek file",
                goto cleanup);

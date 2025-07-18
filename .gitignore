@@ -72,9 +72,4 @@ build/**/*
 # Vscode
 .vscode
 
-runtimes/mini/sponza2_model.inc.c
-runtimes/mini/sibenik_model.inc.c
-# core/shaders/*.spv
-# core/shaders/*.vert
-# core/shaders/*.frag
-
+runtimes/web/nux.wasm

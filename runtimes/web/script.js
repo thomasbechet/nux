@@ -1,6 +1,18 @@
 var instance
 const decoder = new TextDecoder()
+const encoder = new TextEncoder()
 const decodeString = (data, len) => decoder.decode(new Int8Array(instance.exports.memory.buffer, data, len))
+const files = []
+const cart = 'return { name = "MyGame" }';
+const main = `
+function nux.init()
+  print("test")
+  -- s = nux.scene.load_gltf("../basic/assets/industrial.glb")
+end
+function nux.tick()
+  print("tick")
+end
+`;
 const importObject = {
   env: {
     STACKTOP: 0,
@@ -12,19 +24,34 @@ const importObject = {
       return 1;
     },
     nux_os_file_open: (userdata, slot, path, len) => {
-      console.log("open", decodeString(path, len));
+      path = decodeString(path, len);
+      if (path === "cart.lua") {
+        files[slot] = {
+          cursor: 0,
+          data: encoder.encode(cart),
+        }
+        return 1;
+      } else if (path === "main.lua") {
+        files[slot] = {
+          cursor: 0,
+          data: encoder.encode(main),
+        }
+        return 1;
+      }
       return 0;
     },
-    nux_os_file_seek: (userdata, slot, n) => {
-      console.log("seek", slot);
+    nux_os_file_seek: (userdata, slot, cursor) => {
+      files[slot].cursor = cursor;
       return 1;
     },
     nux_os_file_read: (userdata, slot, p, n) => {
-      console.log("read", p, n);
-      return 1;
+      const buf = new Uint8Array(instance.exports.memory.buffer, p, n)
+      buf.set(files[slot].data)
+      return n;
     },
     nux_os_file_stat: (userdata, slot, pstat) => {
-      console.log("file stat", slot, pstat);
+      const buf = new Int32Array(instance.exports.memory.buffer, pstat, 4)
+      buf[0] = files[slot].data.length;
       return 1;
     },
     nux_os_pipeline_create: (userdata, slot, pinfo) => { return 1; },
@@ -53,9 +80,6 @@ const run = async () => {
   //   .then(module => {
   //     console.log(WebAssembly.Module.imports(module))
   //     console.log(WebAssembly.Module.exports(module))
-  //     // let instance = new WebAssembly.Instance(module, {});
-  //     // console.log(instance.exports.square(15));
-  //     console.log("ok")
   //   })
   WebAssembly.instantiateStreaming(fetch("nux.wasm"), importObject).then(
     (obj) => {
@@ -67,14 +91,11 @@ const run = async () => {
   );
 
   const canvas = document.querySelector("#gl-canvas");
+
   // Initialize the GL context
   const gl = canvas.getContext("webgl");
-
-  // Only continue if WebGL is available and working
   if (gl === null) {
-    alert(
-      "Unable to initialize WebGL. Your browser or machine may not support it.",
-    );
+    alert("Unable to initialize WebGL. Your browser or machine may not support it.");
     return;
   }
 
