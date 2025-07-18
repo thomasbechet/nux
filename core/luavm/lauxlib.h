@@ -8,7 +8,6 @@
 #ifndef lauxlib_h
 #define lauxlib_h
 
-
 #include <stddef.h>
 #include <stdio.h>
 
@@ -98,7 +97,7 @@ LUALIB_API int (luaL_loadbufferx) (lua_State *L, const char *buff, size_t sz,
                                    const char *name, const char *mode);
 LUALIB_API int (luaL_loadstring) (lua_State *L, const char *s);
 
-LUALIB_API lua_State *(luaL_newstate) (void);
+LUALIB_API lua_State *(luaL_newstate) (void *ud);
 
 LUALIB_API lua_Integer (luaL_len) (lua_State *L, int idx);
 
@@ -257,18 +256,18 @@ typedef struct luaL_Stream {
 
 /* print a string */
 #if !defined(lua_writestring)
-#define lua_writestring(s,l)   fwrite((s), sizeof(char), (l), stdout)
+#define lua_writestring(s,l)   nux_log(lua_getuserdata(L), NUX_LOG_INFO, "%.*s", (l), (s))
 #endif
 
 /* print a newline and flush the output */
 #if !defined(lua_writeline)
-#define lua_writeline()        (lua_writestring("\n", 1), fflush(stdout))
+#define lua_writeline()        (lua_writestring("\n", 1))
 #endif
 
 /* print an error message */
 #if !defined(lua_writestringerror)
 #define lua_writestringerror(s,p) \
-        (fprintf(stderr, (s), (p)), fflush(stderr))
+        (nux_log(lua_getuserdata(L), NUX_LOG_ERROR, "%.*s", (s), (p)))
 #endif
 
 /* }================================================================== */

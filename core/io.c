@@ -8,6 +8,8 @@ nux_io_init (nux_ctx_t *ctx)
                goto error);
 
     nux_u32_vec_fill_reversed(&ctx->free_file_slots);
+    // Reserve slot 0 to NULL file
+    nux_u32_vec_pop(&ctx->free_file_slots);
 
     return NUX_SUCCESS;
 error:
@@ -18,25 +20,48 @@ nux_io_free (nux_ctx_t *ctx)
 {
     return NUX_SUCCESS;
 }
+
+nux_u32_t
+nux_io_open (nux_ctx_t *ctx, const nux_c8_t *path)
+{
+    // Reserve slot
+    nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_file_slots);
+    NUX_CHECKM(slot, "Out of file slots", return NUX_NULL);
+    NUX_CHECK(nux_os_file_open(
+                  ctx->userdata, *slot, path, nux_strnlen(path, NUX_PATH_MAX)),
+              goto cleanup);
+
+    return *slot;
+
+cleanup:
+    nux_u32_vec_pushv(&ctx->free_file_slots, *slot);
+    return NUX_NULL;
+}
+void
+nux_io_close (nux_ctx_t *ctx, nux_u32_t slot)
+{
+    // TODO: os close function ?
+    nux_u32_vec_pushv(&ctx->free_file_slots, slot);
+}
+nux_u32_t
+nux_io_read (nux_ctx_t *ctx, nux_u32_t slot, void *data, nux_u32_t n)
+{
+    return nux_os_file_read(ctx->userdata, slot, data, n);
+}
 void *
-nux_io_load_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size)
+nux_io_load (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size)
 {
     nux_file_stat_t stat;
     void           *data = NUX_NULL;
 
-    // Reserve slot
-    nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_file_slots);
-    NUX_CHECKM(slot, "Out of file slots", return NUX_NULL);
-
     // Open file at beginning
-    NUX_CHECKM(nux_os_file_open(
-                   ctx->userdata, *slot, path, nux_strnlen(path, NUX_PATH_MAX)),
-               "Failed to open file",
-               goto cleanup);
-    NUX_CHECKM(nux_os_file_stat(ctx->userdata, *slot, &stat),
+    nux_u32_t slot = nux_io_open(ctx, path);
+    NUX_CHECK(slot, return NUX_NULL);
+    NUX_CHECKM(nux_os_file_stat(ctx->userdata, slot, &stat),
                "Failed to retrieve file stat",
                goto cleanup);
-    NUX_CHECKM(nux_os_file_seek(ctx->userdata, *slot, 0),
+    NUX_INFO("file %d", stat.size);
+    NUX_CHECKM(nux_os_file_seek(ctx->userdata, slot, 0),
                "Failed to seek file",
                goto cleanup);
 
@@ -54,11 +79,12 @@ nux_io_load_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size)
     NUX_CHECK(data, goto cleanup);
 
     // Read file
-    NUX_CHECKM(nux_os_file_read(ctx->userdata, *slot, data, stat.size),
+    NUX_CHECKM(nux_io_read(ctx, slot, data, stat.size),
                "Failed to read file",
                goto cleanup);
 
-cleanup:
-    nux_u32_vec_pushv(&ctx->free_file_slots, *slot);
     return data;
+cleanup:
+    nux_io_close(ctx, slot);
+    return NUX_NULL;
 }

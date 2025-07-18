@@ -57,8 +57,6 @@ typedef struct LG {
 */
 #if !defined(luai_makeseed)
 
-#include <time.h>
-
 /*
 ** Compute an initial seed with some level of randomness.
 ** Rely on Address Space Layout Randomization (if present) and
@@ -70,7 +68,7 @@ typedef struct LG {
 
 static unsigned int luai_makeseed (lua_State *L) {
   char buff[3 * sizeof(size_t)];
-  unsigned int h = cast_uint(time(NULL));
+  unsigned int h = cast_uint(nux_random(lua_getuserdata(L)));
   int p = 0;
   addbuff(buff, p, L);  /* heap variable */
   addbuff(buff, p, &h);  /* local variable */
@@ -413,6 +411,10 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
     L = NULL;
   }
   return L;
+}
+
+LUA_API void *(lua_getuserdata) (lua_State *L) {
+    return L->l_G->ud;
 }
 
 

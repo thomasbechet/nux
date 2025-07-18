@@ -16,7 +16,7 @@ add_link_options(-Wl,--no-entry,--allow-undefined,--export=start,--export=malloc
 # add_link_options(-nostdlib)
 add_link_options(-nostartfiles)
 add_link_options(-lsetjmp)
-add_link_options(-Wl,--trace-symbol=__wasi_fd_write) # https://github.com/WebAssembly/wasi-sdk/issues/190
+# add_link_options(-Wl,--trace-symbol=__wasi_fd_write) # https://github.com/WebAssembly/wasi-sdk/issues/190
 
 file(GLOB SOURCES *.c)
 set(CMAKE_EXECUTABLE_SUFFIX ".wasm")

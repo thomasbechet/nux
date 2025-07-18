@@ -7,6 +7,8 @@
 #define ltablib_c
 #define LUA_LIB
 
+#include "../internal.h"
+
 #include "lprefix.h"
 
 
@@ -232,8 +234,6 @@ typedef unsigned int IdxT;
 */
 #if !defined(l_randomizePivot)		/* { */
 
-#include <time.h>
-
 /* size of 'e' measured in number of 'unsigned int's */
 #define sof(e)		(sizeof(e) / sizeof(unsigned int))
 
@@ -243,16 +243,8 @@ typedef unsigned int IdxT;
 ** anything without risking overflows. A safe way to use their values
 ** is to copy them to an array of a known type and use the array values.
 */
-static unsigned int l_randomizePivot (void) {
-  clock_t c = clock();
-  time_t t = time(NULL);
-  unsigned int buff[sof(c) + sof(t)];
-  unsigned int i, rnd = 0;
-  memcpy(buff, &c, sof(c) * sizeof(unsigned int));
-  memcpy(buff + sof(c), &t, sof(t) * sizeof(unsigned int));
-  for (i = 0; i < sof(buff); i++)
-    rnd += buff[i];
-  return rnd;
+static unsigned int l_randomizePivot (lua_State *L) {
+    return nux_random(lua_getuserdata(L));
 }
 
 #endif					/* } */
@@ -391,7 +383,7 @@ static void auxsort (lua_State *L, IdxT lo, IdxT up,
       up = p - 1;  /* tail call for [lo .. p - 1]  (lower interval) */
     }
     if ((up - lo) / 128 > n) /* partition too imbalanced? */
-      rnd = l_randomizePivot();  /* try a new randomization */
+      rnd = l_randomizePivot(L);  /* try a new randomization */
   }  /* tail call auxsort(L, lo, up, rnd) */
 }
 

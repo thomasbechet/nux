@@ -162,9 +162,13 @@ NUX_API void        *nux_os_alloc(void     *userdata,
                                   void     *p,
                                   nux_u32_t osize,
                                   nux_u32_t nsize);
+NUX_API void         nux_os_log(void           *userdata,
+                                nux_log_level_t level,
+                                const nux_c8_t *log,
+                                nux_u32_t       len);
 NUX_API nux_status_t nux_os_file_open(void           *userdata,
                                       nux_u32_t       slot,
-                                      const nux_c8_t *url,
+                                      const nux_c8_t *path,
                                       nux_u32_t       len);
 NUX_API nux_status_t nux_os_file_stat(void            *userdata,
                                       nux_u32_t        slot,
@@ -172,14 +176,10 @@ NUX_API nux_status_t nux_os_file_stat(void            *userdata,
 NUX_API nux_status_t nux_os_file_seek(void     *userdata,
                                       nux_u32_t slot,
                                       nux_u32_t n);
-NUX_API nux_status_t nux_os_file_read(void     *userdata,
+NUX_API nux_u32_t    nux_os_file_read(void     *userdata,
                                       nux_u32_t slot,
                                       void     *p,
                                       nux_u32_t n);
-NUX_API void         nux_os_log(void           *userdata,
-                                nux_log_level_t level,
-                                const nux_c8_t *log,
-                                nux_u32_t       len);
 NUX_API nux_status_t nux_os_pipeline_create(
     void *userdata, nux_u32_t slot, const nux_gpu_pipeline_info_t *info);
 NUX_API nux_status_t nux_os_framebuffer_create(void     *userdata,

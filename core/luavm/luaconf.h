@@ -48,7 +48,7 @@
 ** By default, Lua on Windows use (some) specific Windows features
 */
 #if !defined(LUA_USE_C89) && defined(_WIN32) && !defined(_WIN32_WCE)
-#define LUA_USE_WINDOWS  /* enable goodies for regular Windows */
+// #define LUA_USE_WINDOWS  /* enable goodies for regular Windows */
 #endif
 
 
@@ -59,20 +59,20 @@
 
 
 #if defined(LUA_USE_LINUX)
-#define LUA_USE_POSIX
-#define LUA_USE_DLOPEN		/* needs an extra library: -ldl */
+// #define LUA_USE_POSIX
+// #define LUA_USE_DLOPEN		/* needs an extra library: -ldl */
 #endif
 
 
 #if defined(LUA_USE_MACOSX)
-#define LUA_USE_POSIX
-#define LUA_USE_DLOPEN		/* MacOS does not need -ldl */
+// #define LUA_USE_POSIX
+// #define LUA_USE_DLOPEN		/* MacOS does not need -ldl */
 #endif
 
 
 #if defined(LUA_USE_IOS)
-#define LUA_USE_POSIX
-#define LUA_USE_DLOPEN
+// #define LUA_USE_POSIX
+// #define LUA_USE_DLOPEN
 #endif
 
 
@@ -197,66 +197,15 @@
 */
 
 #define LUA_VDIR	LUA_VERSION_MAJOR "." LUA_VERSION_MINOR
-#if defined(_WIN32)	/* { */
-/*
-** In Windows, any exclamation mark ('!') in the path is replaced by the
-** path of the directory of the executable file of the current process.
-*/
-#define LUA_LDIR	"!\\lua\\"
-#define LUA_CDIR	"!\\"
-#define LUA_SHRDIR	"!\\..\\share\\lua\\" LUA_VDIR "\\"
 
-#if !defined(LUA_PATH_DEFAULT)
-#define LUA_PATH_DEFAULT  \
-		LUA_LDIR"?.lua;"  LUA_LDIR"?\\init.lua;" \
-		LUA_CDIR"?.lua;"  LUA_CDIR"?\\init.lua;" \
-		LUA_SHRDIR"?.lua;" LUA_SHRDIR"?\\init.lua;" \
-		".\\?.lua;" ".\\?\\init.lua"
-#endif
-
-#if !defined(LUA_CPATH_DEFAULT)
-#define LUA_CPATH_DEFAULT \
-		LUA_CDIR"?.dll;" \
-		LUA_CDIR"..\\lib\\lua\\" LUA_VDIR "\\?.dll;" \
-		LUA_CDIR"loadall.dll;" ".\\?.dll"
-#endif
-
-#else			/* }{ */
-
-#define LUA_ROOT	"/usr/local/"
-#define LUA_LDIR	LUA_ROOT "share/lua/" LUA_VDIR "/"
-#define LUA_CDIR	LUA_ROOT "lib/lua/" LUA_VDIR "/"
-
-#if !defined(LUA_PATH_DEFAULT)
-#define LUA_PATH_DEFAULT  \
-		LUA_LDIR"?.lua;"  LUA_LDIR"?/init.lua;" \
-		LUA_CDIR"?.lua;"  LUA_CDIR"?/init.lua;" \
-		"./?.lua;" "./?/init.lua"
-#endif
-
-#if !defined(LUA_CPATH_DEFAULT)
-#define LUA_CPATH_DEFAULT \
-		LUA_CDIR"?.so;" LUA_CDIR"loadall.so;" "./?.so"
-#endif
-
-#endif			/* } */
-
+#define LUA_PATH_DEFAULT "?.lua;?/init.lua"
 
 /*
 @@ LUA_DIRSEP is the directory separator (for submodules).
 ** CHANGE it if your machine does not use "/" as the directory separator
 ** and is not Windows. (On Windows Lua automatically uses "\".)
 */
-#if !defined(LUA_DIRSEP)
-
-#if defined(_WIN32)
-#define LUA_DIRSEP	"\\"
-#else
 #define LUA_DIRSEP	"/"
-#endif
-
-#endif
-
 
 /*
 ** LUA_IGMARK is a mark to ignore all after it when building the

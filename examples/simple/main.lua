@@ -143,4 +143,6 @@ function nux.tick()
     nux.canvas.text(gui_canvas, 10, 40, string.format("z:%.2f", z))
     nux.canvas.render(gui_canvas, gui_texture)
     nux.texture.blit(gui_texture)
+
+    -- print("test")
 end

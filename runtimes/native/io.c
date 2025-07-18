@@ -54,8 +54,8 @@ nux_os_file_seek (void *userdata, nux_u32_t slot, nux_u32_t n)
 {
     return (fseek(files[slot], n, SEEK_SET) < 0) ? NUX_FAILURE : NUX_SUCCESS;
 }
-nux_status_t
+nux_u32_t
 nux_os_file_read (void *userdata, nux_u32_t slot, void *p, nux_u32_t n)
 {
-    return fread(p, n, 1, files[slot]) == 1 ? NUX_SUCCESS : NUX_FAILURE;
+    return fread(p, 1, n, files[slot]);
 }

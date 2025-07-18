@@ -12,15 +12,10 @@ if (NUX_BUILD_TRACE)
     add_definitions(-DNUX_BUILD_TRACE)
 endif ()
 
-# Constants for lua
-if (UNIX)
-    add_definitions(-DLUA_USE_LINUX)
-endif (UNIX)
-if (WIN32)
-endif (WIN32)
-
 file(GLOB SOURCES *.c)
 file(GLOB LUA_SOURCES luavm/*.c)
+list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/core/luavm/liolib.c)
+list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/core/luavm/loslib.c)
 
 if (NUX_BUILD_WASI)
     add_definitions(-D_WASI_EMULATED_SIGNAL)
@@ -30,8 +25,6 @@ if (NUX_BUILD_WASI)
     add_link_options(-lwasi-emulated-signal)
     add_link_options(-mexec-model=reactor)
     add_link_options(-lsetjmp)
-    list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/externals/lua/liolib.c)
-    list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/externals/lua/loslib.c)
 endif (NUX_BUILD_WASI)
 
 add_library(${PROJECT_NAME} ${SOURCES} ${LUA_SOURCES})

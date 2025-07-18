@@ -70,7 +70,9 @@ nux_arena_alloc (nux_ctx_t *ctx, nux_u32_t size)
     void *p = nux_arena_alloc_raw(ctx->active_arena, size);
     if (!p)
     {
-        NUX_ERROR("Out of memory");
+        NUX_ERROR("Out of memory (allocate %d, remaining %d)",
+                  size,
+                  ctx->active_arena->capa - ctx->active_arena->size);
         return NUX_NULL;
     }
     return p;

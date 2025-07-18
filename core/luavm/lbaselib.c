@@ -7,6 +7,7 @@
 #define lbaselib_c
 #define LUA_LIB
 
+#include "../internal.h"
 #include "lprefix.h"
 
 
@@ -32,7 +33,6 @@ static int luaB_print (lua_State *L) {
     lua_writestring(s, l);  /* print it */
     lua_pop(L, 1);  /* pop result */
   }
-  lua_writeline();
   return 0;
 }
 

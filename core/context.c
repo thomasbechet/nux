@@ -93,6 +93,9 @@ nux_instance_init (const nux_config_t *config)
     ctx->error            = NUX_ERROR_NONE;
     ctx->error_message[0] = '\0';
 
+    // Initialize PCG
+    ctx->pcg = nux_pcg(10243124, 1823719241);
+
     // Initialize modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
     NUX_CHECK(nux_io_init(ctx), goto cleanup);

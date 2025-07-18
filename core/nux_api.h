@@ -3,21 +3,20 @@
 
 #include "nux_config.h"
 
-#ifdef NUX_INCLUDE_FIXED_TYPES
-#else
-typedef int            nux_b32_t;
-typedef unsigned char  nux_u8_t;
-typedef char           nux_c8_t;
-typedef short          nux_i16_t;
-typedef unsigned short nux_u16_t;
-typedef int            nux_i32_t;
-typedef unsigned int   nux_u32_t;
-typedef long           nux_i64_t;
-typedef unsigned long  nux_u64_t;
-typedef float          nux_f32_t;
-typedef double         nux_f64_t;
-typedef long long int  nux_intptr_t;
-#endif
+#include <stdint.h>
+
+typedef _Bool    nux_b32_t;
+typedef uint8_t  nux_u8_t;
+typedef char     nux_c8_t;
+typedef int16_t  nux_i16_t;
+typedef uint16_t nux_u16_t;
+typedef int32_t  nux_i32_t;
+typedef uint32_t nux_u32_t;
+typedef int64_t  nux_i64_t;
+typedef uint64_t nux_u64_t;
+typedef float    nux_f32_t;
+typedef double   nux_f64_t;
+typedef intptr_t nux_intptr_t;
 
 typedef struct nux_context nux_ctx_t;
 
@@ -199,6 +198,10 @@ nux_u32_t nux_stat(nux_ctx_t *ctx, nux_stat_t info);
 nux_f32_t nux_time(nux_ctx_t *ctx);
 nux_f32_t nux_dt(nux_ctx_t *ctx);
 nux_u32_t nux_frame(nux_ctx_t *ctx);
+
+// Random
+
+nux_u32_t nux_random(nux_ctx_t *ctx);
 
 // Canvas API
 

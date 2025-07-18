@@ -23,8 +23,7 @@
 static int l_{{ module }}_{{ function.name }}(lua_State *L)
 {
     {% set ns = namespace(stack = 1) %}
-    lua_rawgeti(L, LUA_REGISTRYINDEX, 1);
-    nux_ctx_t *ctx = lua_touserdata(L, -1);
+    nux_ctx_t *ctx = lua_getuserdata(L);
     {%- for arg in function.args -%}
         {% if arg.typename == "nux_v3_t" %}
             nux_v3_t {{ arg.name }};

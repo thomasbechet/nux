@@ -440,6 +440,12 @@ typedef struct
     nux_v3i_t max;
 } nux_b3i_t;
 
+typedef struct
+{
+    nux_u64_t state;
+    nux_u64_t incr;
+} nux_pcg_t;
+
 typedef struct nux_type_header
 {
     nux_u32_t               id;
@@ -602,20 +608,11 @@ typedef struct
 } nux_scene_t;
 
 typedef void (*nux_type_cleanup_t)(nux_ctx_t *ctx, void *data);
-// typedef nux_status_t (*nux_type_save_lua_t)(nux_ctx_t  *ctx,
-//                                             const void *data,
-//                                             lua_State  *L);
-// typedef nux_status_t (*nux_type_load_lua_t)(nux_ctx_t *ctx,
-//                                             void      *data,
-//                                             lua_State *L);
-//
 typedef struct
 {
     const nux_c8_t    *name;
     nux_type_cleanup_t cleanup;
-    // nux_type_save_lua_t save_lua;
-    // nux_type_load_lua_t load_lua;
-    nux_u32_t component_type;
+    nux_u32_t          component_type;
 } nux_type_t;
 
 typedef struct
@@ -719,6 +716,8 @@ struct nux_context
 
     nux_callback_t init;
     nux_callback_t update;
+
+    nux_pcg_t pcg;
 };
 
 ////////////////////////////
@@ -932,7 +931,11 @@ void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 
 nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
-void *nux_io_load_file(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
+
+nux_u32_t nux_io_open(nux_ctx_t *ctx, const nux_c8_t *path);
+void      nux_io_close(nux_ctx_t *ctx, nux_u32_t slot);
+nux_u32_t nux_io_read(nux_ctx_t *ctx, nux_u32_t slot, void *data, nux_u32_t n);
+void     *nux_io_load(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
 
 // lua.c
 
@@ -965,5 +968,11 @@ void nux_input_pre_update(nux_ctx_t *ctx);
 // transform.c
 
 nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_u32_t node);
+
+// random.c
+
+nux_pcg_t nux_pcg(nux_u64_t state, nux_u64_t incr);
+nux_u32_t nux_pcg_u32(nux_pcg_t *pcg);
+nux_f32_t nux_pcg_f32(nux_pcg_t *pcg);
 
 #endif

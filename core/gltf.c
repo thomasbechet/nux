@@ -193,7 +193,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
     nux_u32_t buf_size;
     nux_u32_t prev_arena = nux_arena_get_active(ctx);
     nux_arena_set_active(ctx, nux_arena_frame(ctx));
-    void *buf = nux_io_load_file(ctx, path, &buf_size);
+    void *buf = nux_io_load(ctx, path, &buf_size);
     nux_arena_set_active(ctx, prev_arena);
     NUX_CHECKM(buf, "Failed to read gltf file", goto cleanup0);
 
