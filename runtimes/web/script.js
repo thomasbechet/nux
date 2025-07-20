@@ -3,16 +3,8 @@ const decoder = new TextDecoder()
 const encoder = new TextEncoder()
 const decodeString = (data, len) => decoder.decode(new Int8Array(instance.exports.memory.buffer, data, len))
 const files = []
-const cart = 'return { name = "MyGame" }';
-const main = `
-function nux.init()
-  print("test")
-  -- s = nux.scene.load_gltf("../basic/assets/industrial.glb")
-end
-function nux.tick()
-  print("tick")
-end
-`;
+const cart = await(await fetch("cart.lua")).text();
+const main = await(await fetch("main.lua")).text();
 const importObject = {
   env: {
     STACKTOP: 0,
@@ -39,6 +31,9 @@ const importObject = {
         return 1;
       }
       return 0;
+    },
+    nux_os_file_close: (userdata, slot) => {
+      files[slot] = null;
     },
     nux_os_file_seek: (userdata, slot, cursor) => {
       files[slot].cursor = cursor;

@@ -759,7 +759,7 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
   if (filename != NULL) {
     lua_pushfstring(L, "@%s", filename);
     errno = 0;
-    lf.slot = nux_io_open(ctx, filename);
+    lf.slot = nux_io_open(ctx, filename, NUX_IO_READ);
   }
   if (lf.slot == NUX_NULL) return errfile(L, "open", fnameindex);
   lf.n = 0;

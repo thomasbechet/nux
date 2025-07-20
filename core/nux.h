@@ -31,6 +31,7 @@ typedef enum
     NUX_GPU_TEXTURE_MAX     = 128,
     NUX_GPU_BUFFER_MAX      = 32,
     NUX_IO_FILE_MAX         = 64,
+    NUX_IO_DISK_MAX         = 4,
 } nux_os_constants_t;
 
 typedef struct
@@ -154,6 +155,12 @@ typedef struct
     nux_u32_t size;
 } nux_file_stat_t;
 
+typedef enum
+{
+    NUX_IO_READ       = 0,
+    NUX_IO_READ_WRITE = 1,
+} nux_io_mode_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Callbacks                     //////
 //////////////////////////////////////////////////////////////////////////
@@ -169,17 +176,23 @@ NUX_API void         nux_os_log(void           *userdata,
 NUX_API nux_status_t nux_os_file_open(void           *userdata,
                                       nux_u32_t       slot,
                                       const nux_c8_t *path,
-                                      nux_u32_t       len);
+                                      nux_u32_t       len,
+                                      nux_io_mode_t   mode);
+NUX_API void         nux_os_file_close(void *userdata, nux_u32_t slot);
 NUX_API nux_status_t nux_os_file_stat(void            *userdata,
                                       nux_u32_t        slot,
                                       nux_file_stat_t *stat);
 NUX_API nux_status_t nux_os_file_seek(void     *userdata,
                                       nux_u32_t slot,
-                                      nux_u32_t n);
+                                      nux_u32_t cursor);
 NUX_API nux_u32_t    nux_os_file_read(void     *userdata,
                                       nux_u32_t slot,
                                       void     *p,
                                       nux_u32_t n);
+NUX_API nux_u32_t    nux_os_file_write(void       *userdata,
+                                       nux_u32_t   slot,
+                                       const void *p,
+                                       nux_u32_t   n);
 NUX_API nux_status_t nux_os_pipeline_create(
     void *userdata, nux_u32_t slot, const nux_gpu_pipeline_info_t *info);
 NUX_API nux_status_t nux_os_framebuffer_create(void     *userdata,

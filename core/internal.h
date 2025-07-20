@@ -4,11 +4,9 @@
 #include "nux.h"
 
 #ifdef NUX_BUILD_STDLIB
-// #include <assert.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
-// #include <stdlib.h>
 #endif
 
 #include "luavm/lua.h"
@@ -57,6 +55,8 @@
     }
 
 #define NUX_MATCH(v, k) (nux_strncmp((v), k, NUX_ARRAY_SIZE(k)) == 0)
+
+#define NUX_BIG_ENDIAN (!*(unsigned char *)&(uint16_t) { 1 })
 
 #if defined(NUX_BUILD_DEBUG) && defined(NUX_BUILD_STDLIB)
 #define NUX_ASSERT(x) assert((x))
@@ -662,23 +662,43 @@ typedef struct
     const nux_u8_t   *char_to_glyph_index;
 } nux_font_t;
 
+typedef struct
+{
+    nux_b32_t compressed;
+    nux_u32_t data_type;
+    nux_u32_t data_offset;
+    nux_u32_t data_length;
+    nux_u32_t path_hash;
+    nux_u32_t path_offset;
+    nux_u32_t path_length;
+} nux_cart_entry_t;
+
+typedef struct
+{
+    nux_u32_t         file_slot;
+    nux_cart_entry_t *entries;
+    nux_u32_t         entries_count;
+} nux_cart_t;
+
 struct nux_context
 {
-    // Error handling
-    nux_error_t error;
-    nux_c8_t    error_message[256];
-
-    // Arena info
+    // Thread data
+    nux_error_t  error;
+    nux_c8_t     error_message[256];
     nux_arena_t *active_arena;
     nux_u32_t    active_arena_id;
 
-    void     *userdata;
-    nux_b32_t running;
-    nux_u64_t frame;
-    nux_f32_t time;
-    nux_u8_t  pal[NUX_PALETTE_SIZE];
-    nux_u32_t colormap[NUX_COLORMAP_SIZE];
-    nux_v2i_t cursor;
+    // System
+
+    void          *userdata;
+    nux_b32_t      running;
+    nux_u64_t      frame;
+    nux_f32_t      time;
+    nux_callback_t init;
+    nux_callback_t update;
+    nux_pcg_t      pcg;
+
+    // input
 
     nux_u32_t buttons[NUX_PLAYER_MAX];
     nux_u32_t buttons_prev[NUX_PLAYER_MAX];
@@ -687,6 +707,8 @@ struct nux_context
 
     nux_u32_t stats[NUX_STAT_MAX];
 
+    // graphics
+
     nux_gpu_pipeline_t uber_pipeline_opaque;
     nux_gpu_pipeline_t uber_pipeline_line;
     nux_gpu_pipeline_t blit_pipeline;
@@ -694,30 +716,37 @@ struct nux_context
     nux_gpu_buffer_t   vertices_buffer;
     nux_u32_t          vertices_buffer_head;
     nux_font_t         default_font;
+    nux_u8_t           pal[NUX_PALETTE_SIZE];
+    nux_u32_t          colormap[NUX_COLORMAP_SIZE];
+    nux_v2i_t          cursor;
+    nux_u32_vec_t      free_texture_slots;
+    nux_u32_vec_t      free_buffer_slots;
+    nux_u32_vec_t      free_pipeline_slots;
+    nux_u32_vec_t      free_framebuffer_slots;
+
+    // arena
 
     nux_arena_pool_t arenas;
     nux_id_pool_t    ids;
     nux_arena_t     *core_arena;
     nux_u32_t        frame_arena;
 
-    nux_type_t types[NUX_TYPE_MAX];
-    nux_u32_t  types_count;
+    // type
 
+    nux_type_t           types[NUX_TYPE_MAX];
+    nux_u32_t            types_count;
     nux_component_type_t component_types[NUX_COMPONENT_MAX];
     nux_u32_t            component_types_count;
 
-    nux_u32_vec_t free_texture_slots;
-    nux_u32_vec_t free_buffer_slots;
-    nux_u32_vec_t free_pipeline_slots;
-    nux_u32_vec_t free_framebuffer_slots;
+    // io
+
+    nux_cart_t    carts[NUX_CART_MAX];
+    nux_u32_t     carts_count;
     nux_u32_vec_t free_file_slots;
 
+    // lua
+
     lua_State *lua_state;
-
-    nux_callback_t init;
-    nux_callback_t update;
-
-    nux_pcg_t pcg;
 };
 
 ////////////////////////////
@@ -779,6 +808,9 @@ void     *nux_memset(void *dst, nux_u32_t c, nux_u32_t n);
 void      nux_memcpy(void *dst, const void *src, nux_u32_t n);
 void      nux_memswp(void *a, void *b, nux_u32_t n);
 void     *nux_memalign(void *ptr, nux_u32_t align);
+nux_u32_t nux_u32_le(nux_u32_t v);
+nux_f32_t nux_f32_le(nux_f32_t v);
+nux_u32_t nux_hash(const void *p, nux_u32_t s);
 
 // type.c
 
@@ -932,10 +964,18 @@ void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
 
-nux_u32_t nux_io_open(nux_ctx_t *ctx, const nux_c8_t *path);
+nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *cart);
+nux_status_t nux_io_unmount(nux_ctx_t *ctx, const nux_c8_t *cart);
+nux_u32_t nux_io_open(nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode);
 void      nux_io_close(nux_ctx_t *ctx, nux_u32_t slot);
 nux_u32_t nux_io_read(nux_ctx_t *ctx, nux_u32_t slot, void *data, nux_u32_t n);
-void     *nux_io_load(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
+nux_u32_t nux_io_write(nux_ctx_t  *ctx,
+                       nux_u32_t   slot,
+                       const void *data,
+                       nux_u32_t   n);
+nux_status_t nux_io_seek(nux_ctx_t *ctx, nux_u32_t slot, nux_u32_t cursor);
+
+void *nux_io_load(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
 
 // lua.c
 

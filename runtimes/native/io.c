@@ -23,18 +23,22 @@ nux_status_t
 nux_os_file_open (void           *userdata,
                   nux_u32_t       slot,
                   const nux_c8_t *path,
-                  nux_u32_t       n)
+                  nux_u32_t       n,
+                  nux_io_mode_t   mode)
 {
-    if (files[slot])
-    {
-        fclose(files[slot]);
-    }
-    files[slot] = fopen(path, "r");
+    assert(files[slot] == NULL);
+    files[slot] = fopen(path, mode == NUX_IO_READ ? "r" : "w");
     if (!files[slot])
     {
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;
+}
+void
+nux_os_file_close (void *userdata, nux_u32_t slot)
+{
+    fclose(files[slot]);
+    files[slot] = NULL;
 }
 nux_status_t
 nux_os_file_stat (void *userdata, nux_u32_t slot, nux_file_stat_t *stat)
@@ -58,4 +62,9 @@ nux_u32_t
 nux_os_file_read (void *userdata, nux_u32_t slot, void *p, nux_u32_t n)
 {
     return fread(p, 1, n, files[slot]);
+}
+nux_u32_t
+nux_os_file_write (void *userdata, nux_u32_t slot, const void *p, nux_u32_t n)
+{
+    return fwrite(p, 1, n, files[slot]);
 }

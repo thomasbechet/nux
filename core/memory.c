@@ -57,3 +57,43 @@ nux_memalign (void *ptr, nux_u32_t align)
     NUX_ASSERT(align > 0);
     return (void *)(((nux_intptr_t)ptr + align - 1) & ~(align - 1));
 }
+nux_u32_t
+nux_u32_le (nux_u32_t v)
+{
+    if (NUX_BIG_ENDIAN)
+    {
+        return ((v >> 24) & 0xff) |      // move byte 3 to byte 0
+               ((v << 8) & 0xff0000) |   // move byte 1 to byte 2
+               ((v >> 8) & 0xff00) |     // move byte 2 to byte 1
+               ((v << 24) & 0xff000000); // byte 0 to byte 3
+    }
+    else
+    {
+        return v;
+    }
+}
+nux_f32_t
+nux_f32_le (nux_f32_t v)
+{
+    nux_u32_t a;
+    nux_memcpy(&a, &v, sizeof(a));
+    a = nux_u32_le(a);
+    nux_memcpy(&v, &a, sizeof(a));
+    return v;
+}
+nux_u32_t
+nux_hash (const void *p, nux_u32_t s)
+{
+    const nux_u32_t FNV1A_HASH_32  = 0x811c9dc5;
+    const nux_u32_t FNV1A_PRIME_32 = 0x01000193;
+    const nux_u8_t *b              = p;
+    nux_u32_t       hash           = FNV1A_HASH_32;
+    nux_u32_t       i              = 0;
+    while (i < s)
+    {
+        hash ^= b[i];
+        hash *= FNV1A_PRIME_32;
+        ++i;
+    }
+    return hash;
+}
