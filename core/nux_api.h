@@ -93,7 +93,7 @@ typedef enum
     NUX_COLORMAP_SIZE    = 256,
     NUX_GPU_BUFFER_SIZE  = (1 << 24), // 16M
     NUX_GPU_COMMAND_SIZE = 1024,
-    NUX_CART_MAX         = 8,
+    NUX_DISK_MAX         = 8,
 } nux_constants_t;
 
 typedef enum

@@ -37,6 +37,7 @@ nux_instance_init (const nux_config_t *config)
     // Must be coherent with nux_type_base_t
     ctx->types_count = 0;
     nux_type_t *type;
+
     type = nux_type_register(ctx, "null");
 
     type = nux_type_register(ctx, "arena");
@@ -52,6 +53,9 @@ nux_instance_init (const nux_config_t *config)
     type->cleanup = nux_scene_cleanup;
 
     type = nux_type_register(ctx, "node");
+
+    type          = nux_type_register(ctx, "file");
+    type->cleanup = nux_file_cleanup;
 
     type                 = nux_type_register(ctx, "transform");
     type->component_type = NUX_COMPONENT_TRANSFORM;

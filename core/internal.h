@@ -77,8 +77,6 @@
         y      = SWAP;    \
     } while (0)
 
-#define NUX_PATH_MAX 256
-
 #define NUX_PI          3.14159265359
 #define NUX_FLT_MAX     3.402823E+38
 #define NUX_FLT_MIN     1.175494e-38
@@ -550,6 +548,7 @@ typedef enum
     NUX_TYPE_TRANSFORM  = 8,
     NUX_TYPE_CAMERA     = 9,
     NUX_TYPE_STATICMESH = 10,
+    NUX_TYPE_FILE       = 11,
 
     NUX_TYPE_MAX = 256,
 } nux_type_base_t;
@@ -662,6 +661,32 @@ typedef struct
     const nux_u8_t   *char_to_glyph_index;
 } nux_font_t;
 
+typedef enum
+{
+    NUX_DISK_OS,
+    NUX_DISK_CART,
+} nux_disk_type_t;
+
+typedef struct
+{
+    nux_disk_type_t type;
+    nux_io_mode_t   mode;
+    union
+    {
+        struct
+        {
+            nux_u32_t slot;
+            nux_u32_t offset;
+            nux_u32_t length;
+            nux_u32_t cursor;
+        } cart;
+        struct
+        {
+            nux_u32_t slot;
+        } os;
+    };
+} nux_file_t;
+
 typedef struct
 {
     nux_b32_t compressed;
@@ -675,10 +700,18 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t         file_slot;
-    nux_cart_entry_t *entries;
-    nux_u32_t         entries_count;
-} nux_cart_t;
+    nux_disk_type_t type;
+    nux_c8_t        path[NUX_PATH_BUF_SIZE];
+    union
+    {
+        struct
+        {
+            nux_u32_t         slot;
+            nux_cart_entry_t *entries;
+            nux_u32_t         entries_count;
+        } cart;
+    };
+} nux_disk_t;
 
 struct nux_context
 {
@@ -740,8 +773,8 @@ struct nux_context
 
     // io
 
-    nux_cart_t    carts[NUX_CART_MAX];
-    nux_u32_t     carts_count;
+    nux_disk_t    disks[NUX_DISK_MAX];
+    nux_u32_t     disks_count;
     nux_u32_vec_t free_file_slots;
 
     // lua
@@ -964,18 +997,21 @@ void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
 
-nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *cart);
-nux_status_t nux_io_unmount(nux_ctx_t *ctx, const nux_c8_t *cart);
+nux_status_t nux_io_mount(nux_ctx_t      *ctx,
+                          nux_disk_type_t type,
+                          const nux_c8_t *path);
 nux_u32_t nux_io_open(nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode);
-void      nux_io_close(nux_ctx_t *ctx, nux_u32_t slot);
-nux_u32_t nux_io_read(nux_ctx_t *ctx, nux_u32_t slot, void *data, nux_u32_t n);
+void      nux_io_close(nux_ctx_t *ctx, nux_u32_t id);
+nux_u32_t nux_io_read(nux_ctx_t *ctx, nux_u32_t id, void *data, nux_u32_t n);
 nux_u32_t nux_io_write(nux_ctx_t  *ctx,
-                       nux_u32_t   slot,
+                       nux_u32_t   id,
                        const void *data,
                        nux_u32_t   n);
-nux_status_t nux_io_seek(nux_ctx_t *ctx, nux_u32_t slot, nux_u32_t cursor);
+nux_status_t nux_io_seek(nux_ctx_t *ctx, nux_u32_t id, nux_u32_t cursor);
 
 void *nux_io_load(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
+
+void nux_file_cleanup(nux_ctx_t *ctx, void *data);
 
 // lua.c
 
