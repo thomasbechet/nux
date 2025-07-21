@@ -22,6 +22,8 @@ typedef struct
     void          *userdata;
     nux_callback_t init;
     nux_callback_t update;
+
+    const nux_c8_t *boot_device;
 } nux_config_t;
 
 typedef enum

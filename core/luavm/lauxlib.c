@@ -713,7 +713,7 @@ LUALIB_API void luaL_unref (lua_State *L, int t, int ref) {
 
 typedef struct LoadF {
   int n;  /* number of pre-read characters */
-  nux_u32_t slot;
+  nux_file_t file;
   char buff[BUFSIZ];  /* area for reading file */
 } LoadF;
 
@@ -731,7 +731,7 @@ static const char *getF (lua_State *L, void *ud, size_t *size) {
        The next check avoids this problem. */
     // if (feof(lf->f)) return NULL;
     nux_ctx_t *ctx = lua_getuserdata(L);
-    *size = nux_io_read(ctx, lf->slot, lf->buff, sizeof(lf->buff));
+    *size = nux_io_read(ctx, &lf->file, lf->buff, sizeof(lf->buff));
   }
   return lf->buff;
 }
@@ -755,17 +755,17 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
   nux_status_t readstatus;
   int fnameindex = lua_gettop(L) + 1;  /* index of filename on the stack */
   nux_ctx_t *ctx = lua_getuserdata(L);
-  lf.slot = NUX_NULL;
+  nux_status_t fstatus = NUX_FAILURE;
   if (filename != NULL) {
     lua_pushfstring(L, "@%s", filename);
     errno = 0;
-    lf.slot = nux_io_open(ctx, filename, NUX_IO_READ);
+    fstatus = nux_io_open(ctx, filename, NUX_IO_READ, &lf.file);
   }
-  if (lf.slot == NUX_NULL) return errfile(L, "open", fnameindex);
+  if (fstatus == NUX_FAILURE) return errfile(L, "open", fnameindex);
   lf.n = 0;
   errno = 0;
   status = lua_load(L, getF, &lf, lua_tostring(L, -1), mode);
-  if (filename) nux_io_close(ctx, lf.slot);  /* close file (even in case of errors) */
+  if (filename) nux_io_close(ctx, &lf.file);  /* close file (even in case of errors) */
   lua_remove(L, fnameindex);
   return status;
 }

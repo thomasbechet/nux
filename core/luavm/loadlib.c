@@ -260,9 +260,9 @@ static void setpath (lua_State *L, const char *fieldname,
 
 
 static int readable (nux_ctx_t *ctx, const char *filename) {
-  int slot = nux_io_open(ctx, filename, NUX_IO_READ);
-  if (slot == 0) return 0;
-  nux_io_close(ctx, slot);
+  nux_file_t file;
+  if (!nux_io_open(ctx, filename, NUX_IO_READ, &file)) return 0;
+  nux_io_close(ctx, &file);
   return 1;
 }
 

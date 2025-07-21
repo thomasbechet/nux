@@ -31,6 +31,7 @@ instance_init (instance_t *instance, const char *path)
         .update       = NULL,
         .memory_size  = (1 << 26), // 16Mb
         .max_id_count = 4096,
+        .boot_device  = ".",
     };
 
     strncpy(instance->path, path, PATH_MAX_LEN - 1);
@@ -44,7 +45,7 @@ instance_init (instance_t *instance, const char *path)
     instance->ctx = nux_instance_init(&config);
     if (!instance->ctx)
     {
-        logger_log(NUX_LOG_ERROR, "Failed to init instance.");
+        logger_log(NUX_LOG_ERROR, "Failed to init instance");
         goto cleanup0;
     }
 

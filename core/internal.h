@@ -700,16 +700,18 @@ typedef struct
 
 typedef struct
 {
+    nux_u32_t         slot;
+    nux_cart_entry_t *entries;
+    nux_u32_t         entries_count;
+} nux_cart_t;
+
+typedef struct
+{
     nux_disk_type_t type;
     nux_c8_t        path[NUX_PATH_BUF_SIZE];
     union
     {
-        struct
-        {
-            nux_u32_t         slot;
-            nux_cart_entry_t *entries;
-            nux_u32_t         entries_count;
-        } cart;
+        nux_cart_t cart;
     };
 } nux_disk_t;
 
@@ -1000,16 +1002,27 @@ nux_status_t nux_io_free(nux_ctx_t *ctx);
 nux_status_t nux_io_mount(nux_ctx_t      *ctx,
                           nux_disk_type_t type,
                           const nux_c8_t *path);
-nux_u32_t nux_io_open(nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode);
-void      nux_io_close(nux_ctx_t *ctx, nux_u32_t id);
-nux_u32_t nux_io_read(nux_ctx_t *ctx, nux_u32_t id, void *data, nux_u32_t n);
-nux_u32_t nux_io_write(nux_ctx_t  *ctx,
-                       nux_u32_t   id,
-                       const void *data,
-                       nux_u32_t   n);
-nux_status_t nux_io_seek(nux_ctx_t *ctx, nux_u32_t id, nux_u32_t cursor);
 
-void *nux_io_load(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
+nux_status_t nux_io_open(nux_ctx_t      *ctx,
+                         const nux_c8_t *path,
+                         nux_io_mode_t   mode,
+                         nux_file_t     *file);
+void         nux_io_close(nux_ctx_t *ctx, nux_file_t *file);
+nux_u32_t    nux_io_read(nux_ctx_t  *ctx,
+                         nux_file_t *file,
+                         void       *data,
+                         nux_u32_t   n);
+nux_u32_t    nux_io_write(nux_ctx_t  *ctx,
+                          nux_file_t *file,
+                          const void *data,
+                          nux_u32_t   n);
+nux_status_t nux_io_seek(nux_ctx_t *ctx, nux_file_t *file, nux_u32_t cursor);
+nux_status_t nux_io_stat(nux_ctx_t       *ctx,
+                         nux_file_t      *file,
+                         nux_file_stat_t *stat);
+void        *nux_io_load(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
+
+// file.c
 
 void nux_file_cleanup(nux_ctx_t *ctx, void *data);
 
