@@ -27,10 +27,10 @@ push_transforms (nux_ctx_t      *ctx,
     return NUX_SUCCESS;
 }
 
-nux_u32_t
+nux_id_t
 nux_scene_new (nux_ctx_t *ctx)
 {
-    nux_u32_t    id;
+    nux_id_t     id;
     nux_scene_t *s = nux_arena_alloc_type(ctx, NUX_TYPE_SCENE, sizeof(*s), &id);
     NUX_CHECK(s, return NUX_NULL);
 
@@ -70,9 +70,9 @@ nux_scene_new (nux_ctx_t *ctx)
     return id;
 }
 void
-nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
+nux_scene_render (nux_ctx_t *ctx, nux_id_t scene, nux_id_t camera)
 {
-    nux_scene_t *s = nux_id_get(ctx, NUX_TYPE_SCENE, scene);
+    nux_scene_t *s = nux_id_check(ctx, NUX_TYPE_SCENE, scene);
     NUX_CHECK(s, return);
 
     // Propagate transforms
@@ -136,12 +136,12 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
             nux_transform_t *t
                 = &s->components.data[n->components[NUX_COMPONENT_TRANSFORM]]
                        .transform;
-            nux_mesh_t *m = nux_id_get(ctx, NUX_TYPE_MESH, sm->mesh);
+            nux_mesh_t *m = nux_id_check(ctx, NUX_TYPE_MESH, sm->mesh);
             NUX_ASSERT(m);
             nux_texture_t *tex = NUX_NULL;
             if (sm->texture)
             {
-                tex = nux_id_get(ctx, NUX_TYPE_TEXTURE, sm->texture);
+                tex = nux_id_check(ctx, NUX_TYPE_TEXTURE, sm->texture);
             }
 
             // Push transform
@@ -199,7 +199,7 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     }
 
     // Update constants
-    nux_node_t *ce = nux_id_get(ctx, NUX_TYPE_NODE, camera);
+    nux_node_t *ce = nux_id_check(ctx, NUX_TYPE_NODE, camera);
     NUX_CHECK(ce, return);
     nux_transform_t *ct
         = nux_scene_get_component(ctx, camera, NUX_COMPONENT_TRANSFORM);
@@ -239,22 +239,22 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
     nux_gpu_command_vec_clear(&s->commands);
     nux_gpu_command_vec_clear(&s->commands_lines);
 }
-nux_u32_t
-nux_scene_get_node (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t index)
+nux_id_t
+nux_scene_get_node (nux_ctx_t *ctx, nux_id_t scene, nux_u32_t index)
 {
-    nux_scene_t *s = nux_id_get(ctx, NUX_TYPE_SCENE, scene);
+    nux_scene_t *s = nux_id_check(ctx, NUX_TYPE_SCENE, scene);
     NUX_CHECK(s, return NUX_NULL);
     NUX_CHECK(index < s->nodes.size, return NUX_NULL);
     return s->nodes.data[index].id;
 }
-nux_u32_t
-nux_node_new (nux_ctx_t *ctx, nux_u32_t scene)
+nux_id_t
+nux_node_new (nux_ctx_t *ctx, nux_id_t scene)
 {
-    nux_scene_t *s = nux_id_get(ctx, NUX_TYPE_SCENE, scene);
+    nux_scene_t *s = nux_id_check(ctx, NUX_TYPE_SCENE, scene);
     NUX_CHECK(s, return NUX_NULL);
     nux_node_t *n = nux_node_pool_add(&s->nodes);
     NUX_CHECK(n, return NUX_NULL);
-    nux_u32_t id = nux_id_create(ctx, NUX_TYPE_NODE, n);
+    nux_id_t id = nux_id_create(ctx, NUX_TYPE_NODE, n);
     NUX_CHECK(id, return NUX_NULL);
     nux_memset(n, 0, sizeof(*n));
     n->scene  = scene;
@@ -263,10 +263,10 @@ nux_node_new (nux_ctx_t *ctx, nux_u32_t scene)
     return id;
 }
 void
-nux_node_set_parent (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t parent)
+nux_node_set_parent (nux_ctx_t *ctx, nux_id_t node, nux_id_t parent)
 {
     NUX_CHECKM(node != parent, return, "setting node parent to itself");
-    nux_node_t *n = nux_id_get(ctx, NUX_TYPE_NODE, node);
+    nux_node_t *n = nux_id_check(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return);
     n->parent = parent;
 
@@ -278,17 +278,17 @@ nux_node_set_parent (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t parent)
         t->dirty = NUX_TRUE;
     }
 }
-nux_u32_t
-nux_node_get_parent (nux_ctx_t *ctx, nux_u32_t node)
+nux_id_t
+nux_node_get_parent (nux_ctx_t *ctx, nux_id_t node)
 {
-    nux_node_t *n = nux_id_get(ctx, NUX_TYPE_NODE, node);
+    nux_node_t *n = nux_id_check(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return NUX_NULL);
     return n->parent;
 }
-nux_u32_t
-nux_node_get_scene (nux_ctx_t *ctx, nux_u32_t node)
+nux_id_t
+nux_node_get_scene (nux_ctx_t *ctx, nux_id_t node)
 {
-    nux_node_t *n = nux_id_get(ctx, NUX_TYPE_NODE, node);
+    nux_node_t *n = nux_id_check(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return NUX_NULL);
     return n->scene;
 }
@@ -308,9 +308,9 @@ nux_scene_cleanup (nux_ctx_t *ctx, void *data)
     nux_scene_t *scene = data;
 }
 void *
-nux_scene_add_component (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t comp_type)
+nux_scene_add_component (nux_ctx_t *ctx, nux_id_t node, nux_u32_t comp_type)
 {
-    nux_node_t *n = nux_id_get(ctx, NUX_TYPE_NODE, node);
+    nux_node_t *n = nux_id_check(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return NUX_NULL);
     NUX_ASSERT(comp_type < ctx->component_types_count);
     nux_u32_t *comp_index = n->components + comp_type;
@@ -319,38 +319,38 @@ nux_scene_add_component (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t comp_type)
     {
         nux_scene_remove_component(ctx, node, comp_type);
     }
-    nux_scene_t     *s = nux_id_get(ctx, NUX_TYPE_SCENE, n->scene);
+    nux_scene_t     *s = nux_id_check(ctx, NUX_TYPE_SCENE, n->scene);
     nux_component_t *c = nux_component_pool_add(&s->components);
     NUX_CHECKM(c, return NUX_NULL, "out of scene items");
     *comp_index = c - s->components.data;
     return c;
 }
 void
-nux_scene_remove_component (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t comp_type)
+nux_scene_remove_component (nux_ctx_t *ctx, nux_id_t node, nux_u32_t comp_type)
 {
-    nux_node_t *n = nux_id_get(ctx, NUX_TYPE_NODE, node);
+    nux_node_t *n = nux_id_check(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return);
     NUX_ASSERT(comp_type < ctx->component_types_count);
     nux_u32_t *comp_index = n->components + comp_type;
     NUX_ASSERT(comp_index);
     if (*comp_index)
     {
-        nux_scene_t *s = nux_id_get(ctx, NUX_TYPE_SCENE, n->scene);
+        nux_scene_t *s = nux_id_check(ctx, NUX_TYPE_SCENE, n->scene);
         nux_component_pool_remove(&s->components,
                                   &s->components.data[*comp_index]);
     }
     *comp_index = NUX_NULL;
 }
 void *
-nux_scene_get_component (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t comp_type)
+nux_scene_get_component (nux_ctx_t *ctx, nux_id_t node, nux_u32_t comp_type)
 {
-    nux_node_t *n = nux_id_get(ctx, NUX_TYPE_NODE, node);
+    nux_node_t *n = nux_id_check(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return NUX_NULL);
     NUX_ASSERT(comp_type < ctx->component_types_count);
     nux_u32_t *comp_index = n->components + comp_type;
     if (*comp_index)
     {
-        nux_scene_t *s = nux_id_get(ctx, NUX_TYPE_SCENE, n->scene);
+        nux_scene_t *s = nux_id_check(ctx, NUX_TYPE_SCENE, n->scene);
         return &s->components.data[*comp_index];
     }
     return NUX_NULL;

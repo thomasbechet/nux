@@ -267,7 +267,7 @@ window_init (void)
 #endif
     if (!glfwInit())
     {
-        fprintf(stderr, "Failed to init GLFW");
+        fprintf(stderr, "failed to init GLFW");
         return NUX_FAILURE;
     }
 
@@ -279,7 +279,7 @@ window_init (void)
     window.win = glfwCreateWindow(width, height, "nux", NULL, NULL);
     if (!window.win)
     {
-        fprintf(stderr, "Failed to create GLFW window");
+        fprintf(stderr, "failed to create GLFW window");
         return NUX_FAILURE;
     }
     window.prev_time = glfwGetTime();
@@ -295,7 +295,7 @@ window_init (void)
     // Initialize GL functions
     if (!gladLoadGL(glfwGetProcAddress))
     {
-        fprintf(stderr, "Failed to load GL functions");
+        fprintf(stderr, "failed to load GL functions");
         return NUX_FAILURE;
     }
 

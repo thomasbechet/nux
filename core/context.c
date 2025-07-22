@@ -1,10 +1,14 @@
 #include "internal.h"
 
-void
-nux_error (nux_ctx_t *ctx, nux_error_t error)
+nux_error_mode_t
+nux_error_get_mode (nux_ctx_t *ctx)
 {
-    ctx->error = error;
-    nux_snprintf(ctx->error_message, sizeof(ctx->error_message), "%s", "TODO");
+    return ctx->error_mode;
+}
+void
+nux_error_set_mode (nux_ctx_t *ctx, nux_error_mode_t mode)
+{
+    ctx->error_mode = mode;
 }
 
 nux_ctx_t *
@@ -21,7 +25,10 @@ nux_instance_init (const nux_config_t *config)
         = nux_os_alloc(config->userdata, NUX_NULL, 0, config->memory_size);
     core_arena.first_type = NUX_NULL;
     core_arena.last_type  = NUX_NULL;
-    NUX_CHECK(core_arena.data, return NUX_NULL);
+    if (!core_arena.data)
+    {
+        return NUX_NULL;
+    }
     nux_memset(core_arena.data, 0, config->memory_size);
 
     // Allocate instance
@@ -32,6 +39,9 @@ nux_instance_init (const nux_config_t *config)
     ctx->running      = NUX_TRUE;
     ctx->init         = config->init;
     ctx->update       = config->update;
+
+    // Initialize state
+    ctx->error_mode = NUX_ERROR_MODE_LOG;
 
     // Register base types
     // Must be coherent with nux_type_base_t
@@ -92,10 +102,6 @@ nux_instance_init (const nux_config_t *config)
     // Register frame arena
     ctx->frame_arena = nux_arena_new(ctx, NUX_MEM_16M);
     NUX_CHECK(ctx->frame_arena, goto cleanup);
-
-    // Initialize error state
-    ctx->error            = NUX_ERROR_NONE;
-    ctx->error_message[0] = '\0';
 
     // Initialize PCG
     ctx->pcg = nux_pcg(10243124, 1823719241);

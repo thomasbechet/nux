@@ -43,7 +43,10 @@ arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
         else // grow
         {
             void *p = arena_push(arena, nsize);
-            NUX_CHECK(p, return NUX_NULL);
+            if (!p)
+            {
+                return NUX_NULL;
+            }
             nux_memcpy(p, optr, osize);
             return p;
         }
@@ -53,7 +56,10 @@ arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
         NUX_ASSERT(nsize);
         NUX_ASSERT(!osize);
         void *p = arena_push(arena, nsize);
-        NUX_CHECK(p, return NUX_NULL);
+        if (!p)
+        {
+            return NUX_NULL;
+        }
         nux_memset(p, 0, nsize);
         return p;
     }
@@ -79,7 +85,7 @@ void *
 nux_arena_alloc_type (nux_ctx_t *ctx,
                       nux_u32_t  type,
                       nux_u32_t  size,
-                      nux_u32_t *id)
+                      nux_id_t  *id)
 {
     nux_type_header_t *header
         = nux_arena_alloc(ctx, sizeof(nux_type_header_t) + size);
@@ -106,17 +112,17 @@ nux_arena_alloc_type (nux_ctx_t *ctx,
     }
     return data;
 }
-nux_u32_t
+nux_id_t
 nux_arena_get_active (nux_ctx_t *ctx)
 {
     return ctx->active_arena_id;
 }
 void
-nux_arena_set_active (nux_ctx_t *ctx, nux_u32_t id)
+nux_arena_set_active (nux_ctx_t *ctx, nux_id_t id)
 {
     if (id)
     {
-        nux_arena_t *arena = nux_id_get(ctx, NUX_TYPE_ARENA, id);
+        nux_arena_t *arena = nux_id_check(ctx, NUX_TYPE_ARENA, id);
         NUX_CHECK(arena, return);
         ctx->active_arena = arena;
     }
@@ -127,7 +133,7 @@ nux_arena_set_active (nux_ctx_t *ctx, nux_u32_t id)
     ctx->active_arena_id = id;
 }
 
-nux_u32_t
+nux_id_t
 nux_arena_new (nux_ctx_t *ctx, nux_u32_t capa)
 {
     NUX_CHECK(capa, return NUX_NULL);
@@ -150,13 +156,13 @@ cleanup0:
     return NUX_NULL;
 }
 void
-nux_arena_rewind (nux_ctx_t *ctx, nux_u32_t id)
+nux_arena_rewind (nux_ctx_t *ctx, nux_id_t id)
 {
-    nux_arena_t *arena = nux_id_get(ctx, NUX_TYPE_ARENA, id);
+    nux_arena_t *arena = nux_id_check(ctx, NUX_TYPE_ARENA, id);
     NUX_CHECK(arena, return);
     arena_rewind(ctx, arena, NUX_NULL);
 }
-nux_u32_t
+nux_id_t
 nux_arena_frame (nux_ctx_t *ctx)
 {
     return ctx->frame_arena;

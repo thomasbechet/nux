@@ -45,7 +45,7 @@ instance_init (instance_t *instance, const char *path)
     instance->ctx = nux_instance_init(&config);
     if (!instance->ctx)
     {
-        logger_log(NUX_LOG_ERROR, "Failed to init instance");
+        logger_log(NUX_LOG_ERROR, "failed to init instance");
         goto cleanup0;
     }
 
@@ -53,7 +53,7 @@ instance_init (instance_t *instance, const char *path)
         instance->ctx, instance->path, strnlen(instance->path, PATH_MAX_LEN));
     if (!status)
     {
-        logger_log(NUX_LOG_ERROR, "Failed to load cartridge.");
+        logger_log(NUX_LOG_ERROR, "failed to load cartridge.");
         goto cleanup0;
     }
 

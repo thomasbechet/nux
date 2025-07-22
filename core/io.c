@@ -97,8 +97,10 @@ open_os_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)
     nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_file_slots);
     NUX_CHECKM(slot, return NUX_NULL, "out of os file slots");
     nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
-    NUX_CHECK(nux_os_file_open(ctx->userdata, *slot, path, len, mode),
-              goto cleanup);
+    NUX_CHECKM(nux_os_file_open(ctx->userdata, *slot, path, len, mode),
+               goto cleanup,
+               "failed to open os file %s",
+               path);
     return *slot;
 cleanup:
     nux_u32_vec_pushv(&ctx->free_file_slots, *slot);
@@ -172,6 +174,19 @@ nux_io_mount (nux_ctx_t *ctx, const nux_c8_t *path)
     return NUX_SUCCESS;
 }
 
+nux_b32_t
+nux_io_exists (nux_ctx_t *ctx, const nux_c8_t *path)
+{
+    nux_file_t       file;
+    nux_error_mode_t mode = nux_error_get_mode(ctx);
+    if (!nux_io_open(ctx, path, NUX_IO_READ, &file))
+    {
+        return NUX_FALSE;
+    }
+    nux_io_close(ctx, &file);
+    nux_error_set_mode(ctx, mode);
+    return NUX_TRUE;
+}
 nux_status_t
 nux_io_open (nux_ctx_t      *ctx,
              const nux_c8_t *path,

@@ -67,11 +67,14 @@ def parse_header(args):
         src = file.read()
 
     prelude = """
-    typedef char nux_c8_t;\n
-    typedef int nux_i32_t;\n
-    typedef unsigned int nux_u32_t;\n
-    typedef float nux_f32_t;\n
-    typedef int nux_status_t;\n
+        typedef int uint8_t;
+        typedef int int16_t;
+        typedef int uint16_t;
+        typedef int int32_t;
+        typedef int uint32_t;
+        typedef int int64_t;
+        typedef int uint64_t;
+        typedef int intptr_t;
     """
 
     fixed = "\n".join([line if not re.findall("//|#include|#ifdef|#ifndef|#else|#endif|#define", line) else "" for line in src.splitlines()])

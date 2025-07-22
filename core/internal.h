@@ -27,16 +27,33 @@
 #define NUX_UNUSED4(a, b, c, d)    (void)(a), NUX_UNUSED3(b, c, d)
 #define NUX_UNUSED5(a, b, c, d, e) (void)(a), NUX_UNUSED4(b, c, d, e)
 
-#define NUX_CHECK(check, action) \
-    if (!(check))                \
-    {                            \
-        action;                  \
+#define _NU_S(x)      #x
+#define _NU_S_(x)     _NU_S(x)
+#define _NU_S__LINE__ _NU_S_(__LINE__)
+
+#ifdef __FILE_NAME__
+#define __SOURCE__ __FILE_NAME__ ":" _NU_S__LINE__
+#else
+#define __SOURCE__ ""
+#endif
+
+#define NUX_CHECK(check, action)                   \
+    if (!(check))                                  \
+    {                                              \
+        if (ctx->error_mode == NUX_ERROR_MODE_LOG) \
+        {                                          \
+            NUX_ERROR("check at "__SOURCE__);      \
+        }                                          \
+        action;                                    \
     }
-#define NUX_CHECKM(check, action, format, ...) \
-    if (!(check))                              \
-    {                                          \
-        NUX_ERROR((format), ##__VA_ARGS__);    \
-        action;                                \
+#define NUX_CHECKM(check, action, format, ...)                     \
+    if (!(check))                                                  \
+    {                                                              \
+        if (ctx->error_mode == NUX_ERROR_MODE_LOG)                 \
+        {                                                          \
+            NUX_ERROR(format " at %s", ##__VA_ARGS__, __SOURCE__); \
+        }                                                          \
+        action;                                                    \
     }
 
 #define NUX_DEBUG(format, ...) \
@@ -446,7 +463,7 @@ typedef struct
 
 typedef struct nux_type_header
 {
-    nux_u32_t               id;
+    nux_id_t                id;
     nux_u32_t               type;
     struct nux_type_header *prev;
     struct nux_type_header *next;
@@ -454,7 +471,7 @@ typedef struct nux_type_header
 
 typedef struct
 {
-    nux_u32_t          id;
+    nux_id_t           id;
     void              *data;
     nux_u32_t          capa;
     nux_u32_t          size;
@@ -531,8 +548,8 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t mesh;
-    nux_u32_t texture;
+    nux_id_t mesh;
+    nux_id_t texture;
 } nux_staticmesh_t;
 
 typedef enum
@@ -569,9 +586,9 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t scene;
-    nux_u32_t parent;
-    nux_u32_t id;
+    nux_id_t  scene;
+    nux_id_t  parent;
+    nux_id_t  id;
     nux_u32_t components[NUX_COMPONENT_MAX];
 } nux_node_t;
 
@@ -715,13 +732,19 @@ typedef struct
     };
 } nux_disk_t;
 
+typedef enum
+{
+    NUX_ERROR_MODE_LOG,
+    NUX_ERROR_MODE_DISABLE,
+} nux_error_mode_t;
+
 struct nux_context
 {
     // Thread data
-    nux_error_t  error;
-    nux_c8_t     error_message[256];
-    nux_arena_t *active_arena;
-    nux_u32_t    active_arena_id;
+
+    nux_error_mode_t error_mode;
+    nux_arena_t     *active_arena;
+    nux_id_t         active_arena_id;
 
     // System
 
@@ -764,7 +787,7 @@ struct nux_context
     nux_arena_pool_t arenas;
     nux_id_pool_t    ids;
     nux_arena_t     *core_arena;
-    nux_u32_t        frame_arena;
+    nux_id_t         frame_arena;
 
     // type
 
@@ -853,27 +876,27 @@ nux_type_t *nux_type_register(nux_ctx_t *ctx, const nux_c8_t *name);
 
 // arena.c
 
-void     *nux_arena_alloc_raw(nux_arena_t *arena, nux_u32_t size);
-void     *nux_arena_alloc(nux_ctx_t *ctx, nux_u32_t size);
-void     *nux_arena_alloc_type(nux_ctx_t *ctx,
-                               nux_u32_t  type,
-                               nux_u32_t  size,
-                               nux_u32_t *id);
-nux_u32_t nux_arena_get_active(nux_ctx_t *ctx);
-void      nux_arena_set_active(nux_ctx_t *ctx, nux_u32_t id);
+void    *nux_arena_alloc_raw(nux_arena_t *arena, nux_u32_t size);
+void    *nux_arena_alloc(nux_ctx_t *ctx, nux_u32_t size);
+void    *nux_arena_alloc_type(nux_ctx_t *ctx,
+                              nux_u32_t  type,
+                              nux_u32_t  size,
+                              nux_id_t  *id);
+nux_id_t nux_arena_get_active(nux_ctx_t *ctx);
+void     nux_arena_set_active(nux_ctx_t *ctx, nux_id_t id);
 
 // id.c
 
-nux_u32_t nux_id_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
-void      nux_id_delete(nux_ctx_t *ctx, nux_u32_t id);
-void      nux_id_update(nux_ctx_t *ctx, nux_u32_t id, void *data);
-void     *nux_id_get(nux_ctx_t *ctx, nux_u32_t type, nux_u32_t id);
+nux_id_t nux_id_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
+void     nux_id_delete(nux_ctx_t *ctx, nux_id_t id);
+void     nux_id_update(nux_ctx_t *ctx, nux_id_t id, void *data);
+void    *nux_id_check(nux_ctx_t *ctx, nux_u32_t type, nux_id_t id);
 
 // texture.c
 
 void nux_texture_cleanup(nux_ctx_t *ctx, void *data);
 void nux_texture_write(nux_ctx_t  *ctx,
-                       nux_u32_t   id,
+                       nux_id_t    id,
                        nux_u32_t   x,
                        nux_u32_t   y,
                        nux_u32_t   w,
@@ -885,13 +908,9 @@ void nux_texture_write(nux_ctx_t  *ctx,
 void nux_component_register(nux_ctx_t *ctx, nux_u32_t type);
 
 void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
-void *nux_scene_add_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
-void nux_scene_remove_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
-void *nux_scene_get_component(nux_ctx_t *ctx, nux_u32_t node, nux_u32_t type);
-
-// gltf.c
-
-nux_u32_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *url);
+void *nux_scene_add_component(nux_ctx_t *ctx, nux_id_t node, nux_u32_t type);
+void  nux_scene_remove_component(nux_ctx_t *ctx, nux_id_t node, nux_u32_t type);
+void *nux_scene_get_component(nux_ctx_t *ctx, nux_id_t node, nux_u32_t type);
 
 // vector.c
 
@@ -1001,6 +1020,7 @@ nux_status_t nux_io_free(nux_ctx_t *ctx);
 
 nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *path);
 
+nux_b32_t    nux_io_exists(nux_ctx_t *ctx, const nux_c8_t *path);
 nux_status_t nux_io_open(nux_ctx_t      *ctx,
                          const nux_c8_t *path,
                          nux_io_mode_t   mode,
@@ -1038,7 +1058,8 @@ nux_status_t nux_lua_register_base(nux_ctx_t *ctx);
 
 // context.c
 
-void nux_error(nux_ctx_t *ctx, nux_error_t error);
+nux_error_mode_t nux_error_get_mode(nux_ctx_t *ctx);
+void             nux_error_set_mode(nux_ctx_t *ctx, nux_error_mode_t mode);
 
 // logger.c
 
@@ -1054,7 +1075,7 @@ void nux_input_pre_update(nux_ctx_t *ctx);
 
 // transform.c
 
-nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_u32_t node);
+nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_id_t node);
 
 // random.c
 

@@ -45,7 +45,7 @@ buffer_index (cgltf_accessor *accessor, nux_u32_t i)
     NUX_ASSERT(index != (nux_u32_t)-1);
     return index;
 }
-static nux_u32_t
+static nux_id_t
 load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
 {
     // Access attributes
@@ -99,9 +99,9 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
     nux_u32_t       indice_count = accessor->count;
 
     // Create mesh
-    nux_u32_t id = nux_mesh_new(ctx, indice_count);
+    nux_id_t id = nux_mesh_new(ctx, indice_count);
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_id_get(ctx, NUX_TYPE_MESH, id);
+    nux_mesh_t *mesh = nux_id_check(ctx, NUX_TYPE_MESH, id);
 
     // Write vertices
     if (attributes & NUX_VERTEX_POSITION)
@@ -139,7 +139,7 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
 
     return id;
 }
-static nux_u32_t
+static nux_id_t
 load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
 {
     nux_status_t status = NUX_FAILURE;
@@ -157,20 +157,20 @@ load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
 
     NUX_DEBUG("loading texture '%s' w %d h %d", texture->name, w, h);
 
-    nux_u32_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
+    nux_id_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
     NUX_CHECK(id, return NUX_NULL);
     nux_texture_write(ctx, id, 0, 0, w, h, img);
 
     stbi_image_free(img);
     return id;
 }
-nux_u32_t
+nux_id_t
 nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     typedef struct
     {
-        void     *cgltf_ptr;
-        nux_u32_t id;
+        void    *cgltf_ptr;
+        nux_id_t id;
     } resource_t;
 
     cgltf_options options;
@@ -182,21 +182,21 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_u32_t scene_id = nux_scene_new(ctx);
-    NUX_CHECK(scene_id, goto cleanup0);
+    nux_id_t scene_id = nux_scene_new(ctx);
+    NUX_CHECK(scene_id, return NUX_NULL);
 
     // Load file
     nux_u32_t buf_size;
-    nux_u32_t prev_arena = nux_arena_get_active(ctx);
+    nux_id_t  prev_arena = nux_arena_get_active(ctx);
     nux_arena_set_active(ctx, nux_arena_frame(ctx));
     void *buf = nux_io_load(ctx, path, &buf_size);
     nux_arena_set_active(ctx, prev_arena);
-    NUX_CHECK(buf, goto cleanup0);
+    NUX_CHECK(buf, goto error);
 
     // Parse file
     result = cgltf_parse(&options, buf, buf_size, &data);
     NUX_CHECKM(result == cgltf_result_success,
-               goto cleanup0,
+               goto error,
                "failed to parse gltf file %s (code %d)",
                path,
                result);
@@ -204,7 +204,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
     // Load buffers
     result = cgltf_load_buffers(&options, data, path);
     NUX_CHECKM(result == cgltf_result_success,
-               goto cleanup0,
+               goto error,
                "failed to load gltf buffers %s",
                path);
 
@@ -214,9 +214,9 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         cgltf_mesh *mesh = data->meshes + i;
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nux_u32_t id = load_primitive_mesh(ctx, mesh->primitives + p);
-            NUX_DEBUG("loading mesh %u '%s' primitive %d", id, mesh->name, p);
-            NUX_CHECK(id, goto cleanup0);
+            NUX_DEBUG("loading mesh %s primitive %d", mesh->name, p);
+            nux_id_t id = load_primitive_mesh(ctx, mesh->primitives + p);
+            NUX_CHECK(id, goto error);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             resources[resources_count].id        = id;
             ++resources_count;
@@ -244,9 +244,9 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         }
         if (texture)
         {
-            nux_u32_t id = load_texture(ctx, texture);
-            NUX_DEBUG("loading texture %u '%s'", id, texture->name);
-            NUX_CHECK(id, goto cleanup0);
+            NUX_DEBUG("loading texture %s", texture->name);
+            nux_id_t id = load_texture(ctx, texture);
+            NUX_CHECK(id, goto error);
             resources[resources_count].cgltf_ptr = texture;
             resources[resources_count].id        = id;
             ++resources_count;
@@ -275,8 +275,8 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         {
             cgltf_node *node = scene->nodes[n];
 
-            nux_u32_t node_id = nux_node_new(ctx, scene_id);
-            NUX_CHECK(node_id, goto cleanup0);
+            nux_id_t node_id = nux_node_new(ctx, scene_id);
+            NUX_CHECK(node_id, goto error);
 
             nux_v3_t translation = NUX_V3_ZEROES;
             nux_q4_t rotation    = nux_q4_identity();
@@ -313,7 +313,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                     cgltf_primitive *primitive = node->mesh->primitives + p;
 
                     // Find mesh
-                    nux_u32_t mesh = NUX_NULL;
+                    nux_id_t mesh = NUX_NULL;
                     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(resources); ++i)
                     {
                         if (resources[i].cgltf_ptr == primitive)
@@ -323,12 +323,12 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                         }
                     }
                     NUX_CHECKM(mesh,
-                               goto cleanup0,
+                               goto error,
                                "mesh primitive not found for model %s",
                                node->name);
 
                     // Find texture
-                    nux_u32_t texture = NUX_NULL;
+                    nux_id_t texture = NUX_NULL;
                     if (primitive->material
                         && primitive->material->has_pbr_metallic_roughness
                         && primitive->material->pbr_metallic_roughness
@@ -369,7 +369,9 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         break; // TODO: support multiple scene
     }
 
-cleanup0:
     cgltf_free(data);
     return scene_id;
+error:
+    cgltf_free(data);
+    return NUX_NULL;
 }

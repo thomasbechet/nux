@@ -27,7 +27,7 @@ compile_shader (const char *source,
         glGetShaderiv(*shader, GL_INFO_LOG_LENGTH, &max_length);
         GLchar *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
         glGetShaderInfoLog(*shader, max_length, &max_length, log);
-        fprintf(stderr, "Failed to compile shader: %s", log);
+        fprintf(stderr, "failed to compile shader: %s", log);
         free(log);
         glDeleteShader(*shader);
         return NUX_FAILURE;
@@ -65,7 +65,7 @@ compile_program (const char *vert,
         glGetProgramiv(*program, GL_INFO_LOG_LENGTH, &max_length);
         GLchar *log = (GLchar *)malloc(sizeof(GLchar) * max_length);
         glGetProgramInfoLog(*program, max_length, &max_length, log);
-        fprintf(stderr, "Failed to link shader: %s", log);
+        fprintf(stderr, "failed to link shader: %s", log);
         free(log);
 
         glDeleteProgram(*program);

@@ -1,9 +1,9 @@
 #include "internal.h"
 
-nux_u32_t
+nux_id_t
 nux_mesh_new (nux_ctx_t *ctx, nux_u32_t capa)
 {
-    nux_u32_t   id;
+    nux_id_t    id;
     nux_mesh_t *mesh
         = nux_arena_alloc_type(ctx, NUX_TYPE_MESH, sizeof(*mesh), &id);
     NUX_CHECK(mesh, return NUX_NULL);
@@ -13,9 +13,9 @@ nux_mesh_new (nux_ctx_t *ctx, nux_u32_t capa)
     return id;
 }
 void
-nux_mesh_gen_bounds (nux_ctx_t *ctx, nux_u32_t id)
+nux_mesh_gen_bounds (nux_ctx_t *ctx, nux_id_t id)
 {
-    nux_mesh_t *mesh = nux_id_get(ctx, NUX_TYPE_MESH, id);
+    nux_mesh_t *mesh = nux_id_check(ctx, NUX_TYPE_MESH, id);
     NUX_CHECK(mesh, return);
     if (mesh->bounds_first || mesh->count == 0)
     {
@@ -62,7 +62,7 @@ nux_mesh_gen_bounds (nux_ctx_t *ctx, nux_u32_t id)
     nux_graphics_push_vertices(
         ctx, NUX_ARRAY_SIZE(positions), data, &mesh->bounds_first);
 }
-nux_u32_t
+nux_id_t
 nux_mesh_gen_cube (nux_ctx_t *ctx, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
     const nux_b3_t box = nux_b3(NUX_V3_ZEROES, nux_v3(sx, sy, sz));
@@ -93,9 +93,9 @@ nux_mesh_gen_cube (nux_ctx_t *ctx, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
         { { 0, 0 } },
     };
 
-    nux_u32_t id = nux_mesh_new(ctx, NUX_ARRAY_SIZE(positions));
+    nux_id_t id = nux_mesh_new(ctx, NUX_ARRAY_SIZE(positions));
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_id_get(ctx, NUX_TYPE_MESH, id);
+    nux_mesh_t *mesh = nux_id_check(ctx, NUX_TYPE_MESH, id);
 
     for (nux_u32_t i = 0; i < mesh->count; ++i)
     {

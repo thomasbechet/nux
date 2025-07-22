@@ -8,12 +8,7 @@
 static nux_status_t
 dofile (nux_ctx_t *ctx, lua_State *L, const nux_c8_t *path)
 {
-    nux_u32_t arena = nux_arena_get_active(ctx);
-    nux_arena_set_active(ctx, nux_arena_frame(ctx));
-    void *code = nux_io_load(ctx, path, NUX_NULL);
-    NUX_CHECK(code, return NUX_FAILURE);
-    nux_arena_set_active(ctx, arena);
-    if (luaL_dostring(L, code) != LUA_OK)
+    if (luaL_dofile(L, path) != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(L, -1));
         return NUX_FAILURE;
