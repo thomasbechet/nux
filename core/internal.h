@@ -32,11 +32,11 @@
     {                            \
         action;                  \
     }
-#define NUX_CHECKM(check, message, action) \
-    if (!(check))                          \
-    {                                      \
-        NUX_ERROR("%s", (message));        \
-        action;                            \
+#define NUX_CHECKM(check, action, format, ...) \
+    if (!(check))                              \
+    {                                          \
+        NUX_ERROR((format), ##__VA_ARGS__);    \
+        action;                                \
     }
 
 #define NUX_DEBUG(format, ...) \

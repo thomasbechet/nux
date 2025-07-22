@@ -12,16 +12,16 @@ push_transforms (nux_ctx_t      *ctx,
                  nux_u32_t      *index)
 {
     NUX_CHECKM(scene->transforms_buffer_head + mcount < TRANSFORMS_DEFAULT_SIZE,
-               "Out of transforms",
-               return NUX_FAILURE);
+               return NUX_FAILURE,
+               "out of transforms");
     NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
                                     scene->transforms_buffer.slot,
                                     scene->transforms_buffer_head * NUX_M4_SIZE
                                         * sizeof(nux_f32_t),
                                     mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
                                     data),
-               "Failed to update transform buffer",
-               return NUX_FAILURE);
+               return NUX_FAILURE,
+               "failed to update transform buffer");
     *index = scene->transforms_buffer_head;
     scene->transforms_buffer_head += mcount;
     return NUX_SUCCESS;
@@ -45,35 +45,27 @@ nux_scene_new (nux_ctx_t *ctx)
     nux_component_pool_add(&s->components);
 
     // Allocate gpu commands buffer
-    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands),
-               "Failed to allocate commands buffer",
-               return NUX_NULL);
-    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands_lines),
-               "Failed to allocate lines commands buffer",
-               return NUX_NULL);
+    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands),
+              return NUX_NULL);
+    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands_lines),
+              return NUX_NULL);
 
     // Allocate constants buffer
     s->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
     s->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &s->constants_buffer),
-               "Failed to create constants buffer",
-               return NUX_NULL);
+    NUX_CHECK(nux_gpu_buffer_init(ctx, &s->constants_buffer), return NUX_NULL);
 
     // Allocate batches buffer
     s->batches_buffer_head = 0;
     s->batches_buffer.type = NUX_GPU_BUFFER_STORAGE;
     s->batches_buffer.size = sizeof(nux_gpu_scene_batch_t) * BATCH_DEFAULT_SIZE;
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &s->batches_buffer),
-               "Failed to create batches buffer",
-               return NUX_NULL);
+    NUX_CHECK(nux_gpu_buffer_init(ctx, &s->batches_buffer), return NUX_NULL);
 
     // Allocate transforms buffer
     s->transforms_buffer_head = 0;
     s->transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
     s->transforms_buffer.size = NUX_M4_SIZE * TRANSFORMS_DEFAULT_SIZE;
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &s->transforms_buffer),
-               "Failed to create transforms buffer",
-               return NUX_NULL);
+    NUX_CHECK(nux_gpu_buffer_init(ctx, &s->transforms_buffer), return NUX_NULL);
 
     return id;
 }
@@ -170,8 +162,8 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
                                             batch_index * sizeof(batch),
                                             sizeof(batch),
                                             &batch),
-                       "Failed to update batches buffer",
-                       continue);
+                       continue,
+                       "failed to update batches buffer");
 
             // Create commands
             if (tex)
@@ -196,8 +188,8 @@ nux_scene_render (nux_ctx_t *ctx, nux_u32_t scene, nux_u32_t camera)
                                                 batch_index * sizeof(batch),
                                                 sizeof(batch),
                                                 &batch),
-                           "Failed to update batches buffer",
-                           continue);
+                           continue,
+                           "failed to update batches buffer");
                 nux_gpu_push_u32(&s->commands_lines,
                                  NUX_GPU_DESC_UBER_BATCH_INDEX,
                                  batch_index);
@@ -273,7 +265,7 @@ nux_node_new (nux_ctx_t *ctx, nux_u32_t scene)
 void
 nux_node_set_parent (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t parent)
 {
-    NUX_CHECKM(node != parent, "Setting node parent to itself", return);
+    NUX_CHECKM(node != parent, return, "setting node parent to itself");
     nux_node_t *n = nux_id_get(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return);
     n->parent = parent;
@@ -329,7 +321,7 @@ nux_scene_add_component (nux_ctx_t *ctx, nux_u32_t node, nux_u32_t comp_type)
     }
     nux_scene_t     *s = nux_id_get(ctx, NUX_TYPE_SCENE, n->scene);
     nux_component_t *c = nux_component_pool_add(&s->components);
-    NUX_CHECKM(c, "Out of scene items", return NUX_NULL);
+    NUX_CHECKM(c, return NUX_NULL, "out of scene items");
     *comp_index = c - s->components.data;
     return c;
 }

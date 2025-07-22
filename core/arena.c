@@ -68,13 +68,11 @@ void *
 nux_arena_alloc (nux_ctx_t *ctx, nux_u32_t size)
 {
     void *p = nux_arena_alloc_raw(ctx->active_arena, size);
-    if (!p)
-    {
-        NUX_ERROR("Out of memory (allocate %d, remaining %d)",
-                  size,
-                  ctx->active_arena->capa - ctx->active_arena->size);
-        return NUX_NULL;
-    }
+    NUX_CHECKM(p,
+               return NUX_NULL,
+               "out of memory (allocate %d, remaining %d)",
+               size,
+               ctx->active_arena->capa - ctx->active_arena->size);
     return p;
 }
 void *
@@ -134,7 +132,7 @@ nux_arena_new (nux_ctx_t *ctx, nux_u32_t capa)
 {
     NUX_CHECK(capa, return NUX_NULL);
     nux_arena_t *arena = nux_arena_pool_add(&ctx->arenas);
-    NUX_CHECKM(arena, "Failed to allocate arena", return NUX_NULL);
+    NUX_CHECK(arena, return NUX_NULL);
     arena->id = nux_id_create(ctx, NUX_TYPE_ARENA, arena);
     NUX_CHECK(arena->id, goto cleanup0);
     arena->capa       = capa;

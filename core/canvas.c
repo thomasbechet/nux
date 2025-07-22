@@ -57,8 +57,8 @@ end_batch (nux_ctx_t *ctx, nux_canvas_t *canvas)
                                     index * sizeof(canvas->active_batch),
                                     sizeof(canvas->active_batch),
                                     &canvas->active_batch),
-               "Failed to update batches buffer",
-               return NUX_FAILURE);
+               return NUX_FAILURE,
+               "failed to update batches buffer");
     ++canvas->batches_buffer_head;
 
     // Build commands
@@ -76,15 +76,15 @@ push_quads (nux_ctx_t             *ctx,
             nux_u32_t              count)
 {
     NUX_CHECKM(canvas->quads_buffer_head + count < QUADS_DEFAULT_SIZE,
-               "Out of quads",
-               return NUX_FAILURE);
+               return NUX_FAILURE,
+               "out of quads");
     NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
                                     canvas->quads_buffer.slot,
                                     canvas->quads_buffer_head * sizeof(*quads),
                                     count * sizeof(*quads),
                                     quads),
-               "Failed to update quads buffer",
-               return NUX_FAILURE);
+               return NUX_FAILURE,
+               "failed to update quads buffer");
     canvas->active_batch.count += count;
     canvas->quads_buffer_head += count;
     return NUX_SUCCESS;
@@ -96,32 +96,28 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
     // Allocate constants buffer
     canvas->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
     canvas->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &canvas->constants_buffer),
-               "Failed to create constants buffer",
-               return NUX_NULL);
+    NUX_CHECK(nux_gpu_buffer_init(ctx, &canvas->constants_buffer),
+              return NUX_NULL);
 
     // Allocate quads buffer
     canvas->quads_buffer_head = 0;
     canvas->quads_buffer.type = NUX_GPU_BUFFER_STORAGE;
     canvas->quads_buffer.size
         = sizeof(nux_gpu_canvas_quad_t) * QUADS_DEFAULT_SIZE;
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &canvas->quads_buffer),
-               "Failed to create quads buffer",
-               return NUX_FAILURE);
+    NUX_CHECK(nux_gpu_buffer_init(ctx, &canvas->quads_buffer),
+              return NUX_FAILURE);
 
     // Allocate batches buffer
     canvas->batches_buffer_head = 0;
     canvas->batches_buffer.type = NUX_GPU_BUFFER_STORAGE;
     canvas->batches_buffer.size
         = sizeof(nux_gpu_canvas_batch_t) * BATCHES_DEFAULT_SIZE;
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &canvas->batches_buffer),
-               "Failed to create batches buffer",
-               return NUX_FAILURE);
+    NUX_CHECK(nux_gpu_buffer_init(ctx, &canvas->batches_buffer),
+              return NUX_FAILURE);
 
     // Allocate commands
-    NUX_CHECKM(nux_gpu_command_vec_alloc(ctx, 4096, &canvas->commands),
-               "Failed to allocate canvas commands buffer",
-               return NUX_FAILURE);
+    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, 4096, &canvas->commands),
+              return NUX_FAILURE);
 
     // Initialize base active batch
     canvas->active_batch.mode  = 0;
@@ -168,11 +164,9 @@ nux_canvas_render (nux_ctx_t *ctx, nux_u32_t ref, nux_u32_t target)
     if (target)
     {
         nux_texture_t *rt = nux_id_get(ctx, NUX_TYPE_TEXTURE, target);
-        if (rt->gpu.type != NUX_TEXTURE_RENDER_TARGET)
-        {
-            NUX_ERROR("Canvas target is a render target");
-            return;
-        }
+        NUX_CHECKM(rt->gpu.type == NUX_TEXTURE_RENDER_TARGET,
+                   return,
+                   "canvas target is not a render target");
         framebuffer = rt->gpu.framebuffer_slot;
         width       = rt->gpu.width;
         height      = rt->gpu.height;

@@ -9,21 +9,17 @@ nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
 {
     // Initialize gpu slots
-    NUX_CHECKM(nux_u32_vec_alloc(
-                   ctx, NUX_GPU_FRAMEBUFFER_MAX, &ctx->free_framebuffer_slots),
-               "Failed to allocate gpu framebuffer slots",
-               goto error);
-    NUX_CHECKM(
+    NUX_CHECK(nux_u32_vec_alloc(
+                  ctx, NUX_GPU_FRAMEBUFFER_MAX, &ctx->free_framebuffer_slots),
+              goto error);
+    NUX_CHECK(
         nux_u32_vec_alloc(ctx, NUX_GPU_PIPELINE_MAX, &ctx->free_pipeline_slots),
-        "Failed to allocate gpu pipeline slots",
         goto error);
-    NUX_CHECKM(
+    NUX_CHECK(
         nux_u32_vec_alloc(ctx, NUX_GPU_TEXTURE_MAX, &ctx->free_texture_slots),
-        "Failed to allocate gpu texture slots",
         goto error);
-    NUX_CHECKM(
+    NUX_CHECK(
         nux_u32_vec_alloc(ctx, NUX_GPU_BUFFER_MAX, &ctx->free_buffer_slots),
-        "Failed to allocate gpu buffer slots",
         goto error);
 
     nux_u32_vec_fill_reversed(&ctx->free_framebuffer_slots);
@@ -42,43 +38,32 @@ nux_graphics_init (nux_ctx_t *ctx)
     ctx->uber_pipeline_opaque.info.primitive         = NUX_PRIMITIVE_TRIANGLES;
     ctx->uber_pipeline_opaque.info.enable_blend      = NUX_FALSE;
     ctx->uber_pipeline_opaque.info.enable_depth_test = NUX_TRUE;
-    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->uber_pipeline_opaque),
-               "Failed to create uber pipeline opaque",
-               goto error);
+    NUX_CHECK(nux_gpu_pipeline_init(ctx, &ctx->uber_pipeline_opaque),
+              goto error);
     ctx->uber_pipeline_line.info.type              = NUX_GPU_PIPELINE_UBER;
     ctx->uber_pipeline_line.info.primitive         = NUX_PRIMITIVE_LINES;
     ctx->uber_pipeline_line.info.enable_blend      = NUX_FALSE;
     ctx->uber_pipeline_line.info.enable_depth_test = NUX_TRUE;
-    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->uber_pipeline_line),
-               "Failed to create uber pipeline line",
-               goto error);
+    NUX_CHECK(nux_gpu_pipeline_init(ctx, &ctx->uber_pipeline_line), goto error);
     ctx->canvas_pipeline.info.type              = NUX_GPU_PIPELINE_CANVAS;
     ctx->uber_pipeline_opaque.info.primitive    = NUX_PRIMITIVE_TRIANGLES;
     ctx->canvas_pipeline.info.enable_blend      = NUX_TRUE;
     ctx->canvas_pipeline.info.enable_depth_test = NUX_FALSE;
-    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->canvas_pipeline),
-               "Failed to create canvas pipeline",
-               goto error);
+    NUX_CHECK(nux_gpu_pipeline_init(ctx, &ctx->canvas_pipeline), goto error);
     ctx->blit_pipeline.info.type              = NUX_GPU_PIPELINE_BLIT;
     ctx->uber_pipeline_opaque.info.primitive  = NUX_PRIMITIVE_TRIANGLES;
     ctx->blit_pipeline.info.enable_blend      = NUX_TRUE;
     ctx->blit_pipeline.info.enable_depth_test = NUX_FALSE;
-    NUX_CHECKM(nux_gpu_pipeline_init(ctx, &ctx->blit_pipeline),
-               "Failed to create blit pipeline",
-               goto error);
+    NUX_CHECK(nux_gpu_pipeline_init(ctx, &ctx->blit_pipeline), goto error);
 
     // Create vertices buffers
     ctx->vertices_buffer.type = NUX_GPU_BUFFER_STORAGE;
     ctx->vertices_buffer.size = VERTEX_SIZE * VERTICES_DEFAULT_SIZE;
     ctx->vertices_buffer_head = 0;
-    NUX_CHECKM(nux_gpu_buffer_init(ctx, &ctx->vertices_buffer),
-               "Failed to create vertices buffer",
-               goto error);
+    NUX_CHECK(nux_gpu_buffer_init(ctx, &ctx->vertices_buffer), goto error);
 
     // Create default font
-    NUX_CHECKM(nux_font_init_default(ctx, &ctx->default_font),
-               "Failed to create default font",
-               goto error);
+    NUX_CHECK(nux_font_init_default(ctx, &ctx->default_font), goto error);
 
     return NUX_SUCCESS;
 
@@ -103,16 +88,16 @@ nux_graphics_push_vertices (nux_ctx_t       *ctx,
                             nux_u32_t       *first)
 {
     NUX_CHECKM(ctx->vertices_buffer_head + vcount < VERTICES_DEFAULT_SIZE,
-               "Out of vertices",
-               return NUX_FAILURE);
+               return NUX_FAILURE,
+               "out of vertices");
     NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
                                     ctx->vertices_buffer.slot,
                                     ctx->vertices_buffer_head * VERTEX_SIZE
                                         * sizeof(nux_f32_t),
                                     vcount * VERTEX_SIZE * sizeof(nux_f32_t),
                                     data),
-               "Failed to update vertex buffer",
-               return NUX_FAILURE);
+               return NUX_FAILURE,
+               "failed to update vertex buffer");
     *first = ctx->vertices_buffer_head;
     ctx->vertices_buffer_head += vcount;
     return NUX_SUCCESS;

@@ -153,13 +153,9 @@ load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
                                           &h,
                                           &n,
                                           STBI_rgb_alpha);
-    if (!img)
-    {
-        NUX_ERROR("Failed to load image '%s'", texture->name);
-        return NUX_NULL;
-    }
+    NUX_CHECKM(img, return NUX_NULL, "failed to load image %s", texture->name);
 
-    NUX_DEBUG("Loading texture '%s' w %d h %d", texture->name, w, h);
+    NUX_DEBUG("loading texture '%s' w %d h %d", texture->name, w, h);
 
     nux_u32_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
     NUX_CHECK(id, return NUX_NULL);
@@ -195,23 +191,22 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
     nux_arena_set_active(ctx, nux_arena_frame(ctx));
     void *buf = nux_io_load(ctx, path, &buf_size);
     nux_arena_set_active(ctx, prev_arena);
-    NUX_CHECKM(buf, "Failed to read gltf file", goto cleanup0);
+    NUX_CHECK(buf, goto cleanup0);
 
     // Parse file
     result = cgltf_parse(&options, buf, buf_size, &data);
-    if (result != cgltf_result_success)
-    {
-        NUX_ERROR("Failed to parse gltf file %s (code %d)", path, result);
-        goto cleanup0;
-    }
+    NUX_CHECKM(result == cgltf_result_success,
+               goto cleanup0,
+               "failed to parse gltf file %s (code %d)",
+               path,
+               result);
 
     // Load buffers
     result = cgltf_load_buffers(&options, data, path);
-    if (result != cgltf_result_success)
-    {
-        NUX_ERROR("Failed to load gltf buffers %s", path);
-        goto cleanup0;
-    }
+    NUX_CHECKM(result == cgltf_result_success,
+               goto cleanup0,
+               "failed to load gltf buffers %s",
+               path);
 
     // Load mesh primitives
     for (nux_u32_t i = 0; i < data->meshes_count; ++i)
@@ -220,7 +215,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
             nux_u32_t id = load_primitive_mesh(ctx, mesh->primitives + p);
-            NUX_DEBUG("Loading mesh %u '%s' primitive %d", id, mesh->name, p);
+            NUX_DEBUG("loading mesh %u '%s' primitive %d", id, mesh->name, p);
             NUX_CHECK(id, goto cleanup0);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             resources[resources_count].id        = id;
@@ -250,7 +245,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         if (texture)
         {
             nux_u32_t id = load_texture(ctx, texture);
-            NUX_DEBUG("Loading texture %u '%s'", id, texture->name);
+            NUX_DEBUG("loading texture %u '%s'", id, texture->name);
             NUX_CHECK(id, goto cleanup0);
             resources[resources_count].cgltf_ptr = texture;
             resources[resources_count].id        = id;
@@ -327,12 +322,10 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                             break;
                         }
                     }
-                    if (!mesh)
-                    {
-                        NUX_ERROR("Mesh primitive not found for model %s",
-                                  node->name);
-                        goto cleanup0;
-                    }
+                    NUX_CHECKM(mesh,
+                               goto cleanup0,
+                               "mesh primitive not found for model %s",
+                               node->name);
 
                     // Find texture
                     nux_u32_t texture = NUX_NULL;
@@ -356,11 +349,11 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                     if (!texture)
                     {
                         NUX_WARNING(
-                            "Texture not found for model %s, using default",
+                            "texture not found for model %s, using default",
                             node->name);
                     }
 
-                    NUX_DEBUG("Loading node %s mesh %d texture %d",
+                    NUX_DEBUG("loading node %s mesh %d texture %d",
                               node->name,
                               mesh,
                               texture);

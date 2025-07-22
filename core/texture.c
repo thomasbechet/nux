@@ -35,8 +35,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     if (pixel_size)
     {
         tex->data = nux_arena_alloc(ctx, pixel_size * w * h);
-        NUX_CHECKM(
-            tex->data, "Failed to allocate texture data", return NUX_NULL);
+        NUX_CHECK(tex->data, return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
@@ -66,14 +65,14 @@ nux_texture_write (nux_ctx_t  *ctx,
                    const void *data)
 {
     nux_texture_t *tex = nux_id_get(ctx, NUX_TYPE_TEXTURE, id);
-    NUX_CHECKM(tex, "Invalid texture id", return);
+    NUX_CHECK(tex, return);
     NUX_CHECKM(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
-               "Trying to write render target texture",
-               return);
+               return,
+               "trying to write render target texture");
     NUX_CHECKM(
         nux_os_texture_update(ctx->userdata, tex->gpu.slot, x, y, w, h, data),
-        "Failed to update colormap texture",
-        return);
+        return,
+        "failed to update colormap texture");
 }
 void
 nux_texture_blit (nux_ctx_t *ctx, nux_u32_t ref)
