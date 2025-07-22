@@ -15,7 +15,7 @@ enum
 };
 
 static nux_status_t
-concat_path (nux_c8_t *dst, const nux_c8_t *a, const nux_c8_t *b)
+path_concat (nux_c8_t *dst, const nux_c8_t *a, const nux_c8_t *b)
 {
     nux_u32_t a_len = nux_strnlen(a, NUX_PATH_MAX);
     nux_u32_t b_len = nux_strnlen(b, NUX_PATH_MAX);
@@ -27,6 +27,68 @@ concat_path (nux_c8_t *dst, const nux_c8_t *a, const nux_c8_t *b)
     dst[a_len] = '/';
     nux_memcpy(dst + a_len + 1, b, b_len);
     dst[a_len + b_len + 1] = '\0';
+    return NUX_SUCCESS;
+}
+static nux_u32_t
+path_basename (nux_c8_t *dst, const nux_c8_t *path)
+{
+    nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
+    for (nux_u32_t n = len; n; --n)
+    {
+        if (path[n - 1] == '/')
+        {
+            nux_u32_t basename_len = len - n;
+            nux_strncpy(dst, path + n, basename_len);
+            return basename_len;
+        }
+    }
+    return 0;
+}
+static nux_status_t
+path_sanatize (nux_c8_t *path)
+{
+    NUX_ASSERT(path);
+    nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
+    nux_c8_t *p   = path;
+    nux_c8_t *w   = path;
+    while (*p)
+    {
+        if (*p == '/')
+        {
+            if (p - path == 0) // begins with /
+            {
+                ++p;
+            }
+            else if (*(p + 1) == '/') // double /
+            {
+                *w = *p;
+                p += 2;
+            }
+            ++w;
+            ++p;
+        }
+        else if (*p == '.')
+        {
+            if (*(p + 1) == '.') // double .
+            {
+                return NUX_FAILURE;
+            }
+            ++w;
+            ++p;
+        }
+        else if (*p == '\\')
+        {
+            *w = '/';
+            ++w;
+            ++p;
+        }
+        else
+        {
+            *w = *p;
+            ++w;
+            ++p;
+        }
+    }
     return NUX_SUCCESS;
 }
 static nux_u32_t
@@ -47,6 +109,17 @@ close_os_file (nux_ctx_t *ctx, nux_u32_t slot)
 {
     nux_os_file_close(ctx->userdata, slot);
     nux_u32_vec_pushv(&ctx->free_file_slots, slot);
+}
+static nux_disk_type_t
+disk_type_from_path (const nux_c8_t *path)
+{
+    nux_c8_t  basename[NUX_PATH_BUF_SIZE];
+    nux_u32_t basename_len = path_basename(basename, path);
+    if (basename_len)
+    {
+        return NUX_DISK_CART;
+    }
+    return NUX_DISK_OS;
 }
 
 nux_status_t
@@ -70,15 +143,16 @@ nux_io_free (nux_ctx_t *ctx)
 }
 
 nux_status_t
-nux_io_mount (nux_ctx_t *ctx, nux_disk_type_t type, const nux_c8_t *path)
+nux_io_mount (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     NUX_CHECKM(ctx->disks_count < NUX_ARRAY_SIZE(ctx->disks),
                "Out of disks",
                return NUX_FAILURE);
 
-    nux_u32_t   path_len = nux_strnlen(path, NUX_PATH_MAX);
-    nux_disk_t *disk     = ctx->disks + ctx->disks_count;
-    disk->type           = type;
+    nux_disk_type_t type     = disk_type_from_path(path);
+    nux_u32_t       path_len = nux_strnlen(path, NUX_PATH_MAX);
+    nux_disk_t     *disk     = ctx->disks + ctx->disks_count;
+    disk->type               = type;
     nux_strncpy(disk->path, path, path_len);
     switch (type)
     {
@@ -114,7 +188,7 @@ nux_io_open (nux_ctx_t      *ctx,
         if (disk->type == NUX_DISK_OS)
         {
             nux_c8_t os_path[NUX_PATH_BUF_SIZE];
-            if (!concat_path(os_path, disk->path, path))
+            if (!path_concat(os_path, disk->path, path))
             {
                 return NUX_FAILURE;
             }

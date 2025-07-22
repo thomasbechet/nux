@@ -108,8 +108,7 @@ nux_instance_init (const nux_config_t *config)
     // Mount base disk
     if (config->boot_device)
     {
-        NUX_CHECK(nux_io_mount(ctx, NUX_DISK_OS, config->boot_device),
-                  goto cleanup);
+        NUX_CHECK(nux_io_mount(ctx, config->boot_device), goto cleanup);
     }
 
     // Load configuration

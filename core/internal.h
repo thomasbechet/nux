@@ -999,9 +999,7 @@ void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
 
-nux_status_t nux_io_mount(nux_ctx_t      *ctx,
-                          nux_disk_type_t type,
-                          const nux_c8_t *path);
+nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *path);
 
 nux_status_t nux_io_open(nux_ctx_t      *ctx,
                          const nux_c8_t *path,
