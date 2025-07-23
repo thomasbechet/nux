@@ -1015,6 +1015,8 @@ void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 
 // io.c
 
+void nux_cart_write_mainlua(nux_ctx_t *ctx);
+
 nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
 

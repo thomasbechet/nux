@@ -123,6 +123,8 @@ nux_instance_init (const nux_config_t *config)
     // Start cartridge
     NUX_CHECK(nux_lua_start(ctx), goto cleanup);
 
+    nux_cart_write_mainlua(ctx);
+
     return ctx;
 
 cleanup:
