@@ -116,6 +116,7 @@ nux_instance_init (const nux_config_t *config)
     {
         NUX_CHECK(nux_io_mount(ctx, config->boot_device), goto cleanup);
     }
+    NUX_CHECK(nux_io_mount(ctx, "cart.bin"), goto cleanup);
 
     // Load configuration
     NUX_CHECK(nux_lua_load_conf(ctx), goto cleanup);
@@ -123,7 +124,7 @@ nux_instance_init (const nux_config_t *config)
     // Start cartridge
     NUX_CHECK(nux_lua_start(ctx), goto cleanup);
 
-    nux_cart_write_mainlua(ctx);
+    // nux_cart_write_mainlua(ctx);
 
     return ctx;
 

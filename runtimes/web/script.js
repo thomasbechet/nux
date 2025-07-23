@@ -3,8 +3,9 @@ const decoder = new TextDecoder()
 const encoder = new TextEncoder()
 const decodeString = (data, len) => decoder.decode(new Int8Array(instance.exports.memory.buffer, data, len))
 const files = []
-const cart = await(await fetch("cart.lua")).text();
-const main = await(await fetch("main.lua")).text();
+const file = await fetch("cart.bin");
+const cart = await file.arrayBuffer();
+console.log(cart)
 const importObject = {
   env: {
     STACKTOP: 0,
@@ -15,18 +16,12 @@ const importObject = {
       console.log(decodeString(data, len));
       return 1;
     },
-    nux_os_file_open: (userdata, slot, path, len) => {
+    nux_os_file_open: (userdata, slot, path, len, mode) => {
       path = decodeString(path, len);
-      if (path === "cart.lua") {
+      if (path === "cart.bin") {
         files[slot] = {
           cursor: 0,
-          data: encoder.encode(cart),
-        }
-        return 1;
-      } else if (path === "main.lua") {
-        files[slot] = {
-          cursor: 0,
-          data: encoder.encode(main),
+          data: cart,
         }
         return 1;
       }
@@ -40,8 +35,10 @@ const importObject = {
       return 1;
     },
     nux_os_file_read: (userdata, slot, p, n) => {
-      const buf = new Uint8Array(instance.exports.memory.buffer, p, n)
-      buf.set(files[slot].data)
+      const src = new Uint8Array(files[slot].data, files[slot].cursor, n)
+      const dst = new Uint8Array(instance.exports.memory.buffer, p, n)
+      dst.set(src)
+      files[slot].cursor += n
       return n;
     },
     nux_os_file_stat: (userdata, slot, pstat) => {

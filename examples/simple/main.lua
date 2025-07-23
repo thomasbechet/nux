@@ -99,7 +99,7 @@ function nux.init()
         , nil)
     end
 
-    s = nux.scene.load_gltf("../basic/assets/industrial.glb")
+    s = nux.scene.load_gltf("assets/industrial.glb")
 
     c = nux.node.new(s)
     nux.transform.add(c)

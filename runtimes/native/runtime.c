@@ -31,7 +31,7 @@ instance_init (instance_t *instance, const char *path)
         .update       = NULL,
         .memory_size  = (1 << 26), // 16Mb
         .max_id_count = 4096,
-        .boot_device  = ".",
+        .boot_device  = "",
     };
 
     strncpy(instance->path, path, PATH_MAX_LEN - 1);
