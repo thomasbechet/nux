@@ -1,13 +1,4 @@
 #include "internal.h"
-#include "nux.h"
-
-typedef struct
-{
-    nux_u32_t slot;
-    nux_u32_t entry_count;
-    nux_u32_t entry_index;
-    nux_u32_t cursor;
-} nux_cart_writer_t;
 
 enum
 {
@@ -74,7 +65,7 @@ path_normalize (nux_c8_t *dst, const nux_c8_t *path)
         }
         else if (*p == '.')
         {
-            if (*(p + 1) == '/' || *(p + 1) == '.')
+            if (*(p + 1) == '/' || *(p + 1) == '.' || (i == len - 1))
             {
                 ++p;
                 continue;
@@ -91,24 +82,24 @@ path_normalize (nux_c8_t *dst, const nux_c8_t *path)
         ++i;
         ++p;
     }
-    if (i == 0)
-    {
-        dst[0] = '/';
-        ++i;
-    }
     dst[i] = '\0';
     return i;
 }
 static nux_u32_t
 open_os_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)
 {
+    nux_c8_t  normpath[NUX_PATH_BUF_SIZE];
+    nux_u32_t len = path_normalize(normpath, path);
+    NUX_CHECKM(!path_isdir(normpath),
+               return NUX_NULL,
+               "trying to open a directory '%s' as file",
+               normpath);
     nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_file_slots);
     NUX_CHECKM(slot, return NUX_NULL, "out of os file slots");
-    nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
-    NUX_CHECKM(nux_os_file_open(ctx->userdata, *slot, path, len, mode),
+    NUX_CHECKM(nux_os_file_open(ctx->userdata, *slot, normpath, len, mode),
                goto cleanup,
-               "failed to open os file %s",
-               path);
+               "failed to open os file '%s'",
+               normpath);
     return *slot;
 cleanup:
     nux_u32_vec_pushv(&ctx->free_file_slots, *slot);
@@ -120,15 +111,6 @@ close_os_file (nux_ctx_t *ctx, nux_u32_t slot)
     nux_os_file_close(ctx->userdata, slot);
     nux_u32_vec_pushv(&ctx->free_file_slots, slot);
 }
-static nux_disk_type_t
-disk_type_from_path (const nux_c8_t *path)
-{
-    if (path_isdir(path))
-    {
-        return NUX_DISK_OS;
-    }
-    return NUX_DISK_CART;
-}
 
 nux_status_t
 nux_io_init (nux_ctx_t *ctx)
@@ -136,8 +118,15 @@ nux_io_init (nux_ctx_t *ctx)
     NUX_CHECK(nux_u32_vec_alloc(ctx, NUX_IO_FILE_MAX, &ctx->free_file_slots),
               goto error);
 
+    // Initialize values
     nux_u32_vec_fill_reversed(&ctx->free_file_slots);
     nux_u32_vec_pop(&ctx->free_file_slots); // reserve 0 for null
+    ctx->disks_count = 0;
+
+    // Add OS disk
+    nux_disk_t *disk = ctx->disks + ctx->disks_count;
+    disk->type       = NUX_DISK_OS;
+    ++ctx->disks_count;
 
     return NUX_SUCCESS;
 error:
@@ -149,7 +138,60 @@ nux_io_free (nux_ctx_t *ctx)
     return NUX_SUCCESS;
 }
 
-static nux_status_t cart_read_entries(nux_ctx_t *ctx, nux_cart_t *cart);
+static nux_status_t
+cart_read (nux_ctx_t *ctx, nux_u32_t slot, void *p, nux_u32_t n)
+{
+    NUX_CHECKM(nux_os_file_read(ctx, slot, p, n) == n,
+               return NUX_FAILURE,
+               "failed to read cart file");
+    return NUX_SUCCESS;
+}
+static nux_status_t
+cart_read_u32 (nux_ctx_t *ctx, nux_u32_t slot, nux_u32_t *v)
+{
+    NUX_CHECK(cart_read(ctx, slot, v, sizeof(*v)), return NUX_FAILURE);
+    *v = nux_u32_le(*v);
+    return NUX_SUCCESS;
+}
+static nux_status_t
+cart_read_entries (nux_ctx_t *ctx, nux_cart_t *cart)
+{
+    nux_u32_t    id, version, entry_count;
+    nux_status_t status = NUX_SUCCESS;
+    status &= cart_read_u32(ctx, cart->slot, &id);
+    status &= cart_read_u32(ctx, cart->slot, &version);
+    status &= cart_read_u32(ctx, cart->slot, &cart->entries_count);
+    NUX_CHECK(status, return NUX_FAILURE);
+    cart->entries
+        = nux_arena_alloc(ctx, sizeof(*cart->entries) * cart->entries_count);
+    NUX_CHECK(cart->entries, return NUX_FAILURE);
+    for (nux_u32_t i = 0; i < cart->entries_count; ++i)
+    {
+        nux_cart_entry_t *entry = cart->entries + i;
+        status                  = NUX_SUCCESS;
+        status &= cart_read_u32(ctx, cart->slot, &entry->data_type);
+        status &= cart_read_u32(ctx, cart->slot, &entry->data_offset);
+        status &= cart_read_u32(ctx, cart->slot, &entry->data_length);
+        status &= cart_read_u32(ctx, cart->slot, &entry->path_hash);
+        status &= cart_read_u32(ctx, cart->slot, &entry->path_offset);
+        status &= cart_read_u32(ctx, cart->slot, &entry->path_length);
+        NUX_CHECK(status, return NUX_FAILURE);
+    }
+
+    {
+        for (nux_u32_t i = 0; i < cart->entries_count; ++i)
+        {
+            nux_cart_entry_t *entry = cart->entries + i;
+            nux_os_file_seek(ctx->userdata, cart->slot, entry->path_offset);
+            nux_c8_t path[NUX_PATH_BUF_SIZE];
+            nux_os_file_read(
+                ctx->userdata, cart->slot, path, entry->path_length + 1);
+            NUX_DEBUG("[%d] 0x%08X %s", i, entry->path_hash, path);
+        }
+    }
+
+    return NUX_SUCCESS;
+}
 nux_status_t
 nux_io_mount (nux_ctx_t *ctx, const nux_c8_t *path)
 {
@@ -157,24 +199,19 @@ nux_io_mount (nux_ctx_t *ctx, const nux_c8_t *path)
                return NUX_FAILURE,
                "out of disks");
 
-    nux_disk_type_t type     = disk_type_from_path(path);
-    nux_u32_t       path_len = nux_strnlen(path, NUX_PATH_MAX);
-    nux_disk_t     *disk     = ctx->disks + ctx->disks_count;
-    disk->type               = type;
-    nux_strncpy(disk->path, path, path_len);
-    switch (type)
-    {
-        case NUX_DISK_CART: {
-            nux_u32_t file_slot = open_os_file(ctx, path, NUX_IO_READ);
-            NUX_CHECK(file_slot, return NUX_FAILURE);
-            disk->cart.slot = file_slot;
-            NUX_CHECK(cart_read_entries(ctx, &disk->cart), return NUX_FAILURE);
-        }
-        break;
-        default:
-            break;
-    }
+    // Prepare disk path
+    nux_disk_t *disk   = ctx->disks + ctx->disks_count;
+    disk->type         = NUX_DISK_CART;
+    nux_u32_t path_len = nux_strnlen(path, NUX_PATH_MAX);
+    nux_strncpy(disk->cart.path, path, path_len);
 
+    // Open file
+    nux_u32_t file_slot = open_os_file(ctx, path, NUX_IO_READ);
+    NUX_CHECK(file_slot, return NUX_FAILURE);
+    disk->cart.slot = file_slot;
+
+    // Read entries
+    NUX_CHECK(cart_read_entries(ctx, &disk->cart), return NUX_FAILURE);
     ++ctx->disks_count;
 
     return NUX_SUCCESS;
@@ -204,15 +241,9 @@ nux_io_open (nux_ctx_t      *ctx,
         nux_disk_t *disk = ctx->disks + d;
         if (disk->type == NUX_DISK_OS)
         {
-            nux_c8_t os_path[NUX_PATH_BUF_SIZE];
-            NUX_CHECKM(path_concat(os_path, disk->path, path),
-                       return NUX_FAILURE,
-                       "could not concatenate %s and %s",
-                       disk->path,
-                       path);
             nux_error_mode_t error_mode = nux_error_get_mode(ctx);
             nux_error_set_mode(ctx, NUX_ERROR_MODE_DISABLE);
-            nux_u32_t slot = open_os_file(ctx, os_path, mode);
+            nux_u32_t slot = open_os_file(ctx, path, mode);
             nux_error_set_mode(ctx, error_mode);
             if (slot)
             {
@@ -384,26 +415,11 @@ cleanup0:
 }
 
 static nux_status_t
-cart_read (nux_ctx_t *ctx, nux_u32_t slot, void *p, nux_u32_t n)
-{
-    NUX_CHECKM(nux_os_file_read(ctx, slot, p, n) == n,
-               return NUX_FAILURE,
-               "failed to read cart file");
-    return NUX_SUCCESS;
-}
-static nux_status_t
 cart_write (nux_ctx_t *ctx, nux_u32_t slot, const void *p, nux_u32_t n)
 {
     NUX_CHECKM(nux_os_file_write(ctx, slot, p, n) == n,
                return NUX_FAILURE,
                "failed to write cart file");
-    return NUX_SUCCESS;
-}
-static nux_status_t
-cart_read_u32 (nux_ctx_t *ctx, nux_u32_t slot, nux_u32_t *v)
-{
-    NUX_CHECK(cart_read(ctx, slot, v, sizeof(*v)), return NUX_FAILURE);
-    *v = nux_u32_le(*v);
     return NUX_SUCCESS;
 }
 static nux_status_t
@@ -414,64 +430,27 @@ cart_write_u32 (nux_ctx_t *ctx, nux_u32_t slot, nux_u32_t v)
     return NUX_SUCCESS;
 }
 
-static nux_status_t
-cart_read_entries (nux_ctx_t *ctx, nux_cart_t *cart)
+nux_status_t
+nux_io_cart_begin (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t entry_count)
 {
-    nux_u32_t    id, version, entry_count;
-    nux_status_t status = NUX_SUCCESS;
-    status &= cart_read_u32(ctx, cart->slot, &id);
-    status &= cart_read_u32(ctx, cart->slot, &version);
-    status &= cart_read_u32(ctx, cart->slot, &cart->entries_count);
-    NUX_CHECK(status, return NUX_FAILURE);
-    cart->entries
-        = nux_arena_alloc(ctx, sizeof(*cart->entries) * cart->entries_count);
-    NUX_CHECK(cart->entries, return NUX_FAILURE);
-    for (nux_u32_t i = 0; i < cart->entries_count; ++i)
+    if (ctx->cart_writer.slot)
     {
-        nux_cart_entry_t *entry = cart->entries + i;
-        status                  = NUX_SUCCESS;
-        status &= cart_read_u32(ctx, cart->slot, &entry->data_type);
-        status &= cart_read_u32(ctx, cart->slot, &entry->data_offset);
-        status &= cart_read_u32(ctx, cart->slot, &entry->data_length);
-        status &= cart_read_u32(ctx, cart->slot, &entry->path_hash);
-        status &= cart_read_u32(ctx, cart->slot, &entry->path_offset);
-        status &= cart_read_u32(ctx, cart->slot, &entry->path_length);
-        NUX_CHECK(status, return NUX_FAILURE);
+        NUX_CHECK(nux_io_cart_end(ctx), return NUX_FAILURE);
     }
 
-    {
-        for (nux_u32_t i = 0; i < cart->entries_count; ++i)
-        {
-            nux_cart_entry_t *entry = cart->entries + i;
-            nux_os_file_seek(ctx->userdata, cart->slot, entry->path_offset);
-            nux_c8_t path[NUX_PATH_BUF_SIZE];
-            nux_os_file_read(
-                ctx->userdata, cart->slot, path, entry->path_length + 1);
-            NUX_DEBUG("[%d] 0x%08X %s", i, entry->path_hash, path);
-        }
-    }
-
-    return NUX_SUCCESS;
-}
-
-static nux_status_t
-nux_cart_writer_begin (nux_ctx_t         *ctx,
-                       nux_cart_writer_t *writer,
-                       const nux_c8_t    *path,
-                       nux_u32_t          entry_count)
-{
     nux_u32_t slot = open_os_file(ctx, path, NUX_IO_READ_WRITE);
     NUX_CHECK(slot, return NUX_FAILURE);
 
-    writer->slot        = slot;
-    writer->entry_count = entry_count;
-    writer->entry_index = 0;
-    writer->cursor = NUX_CART_HEADER_SIZE + NUX_CART_ENTRY_SIZE * entry_count;
+    ctx->cart_writer.slot        = slot;
+    ctx->cart_writer.entry_count = entry_count;
+    ctx->cart_writer.entry_index = 0;
+    ctx->cart_writer.cursor
+        = NUX_CART_HEADER_SIZE + NUX_CART_ENTRY_SIZE * entry_count;
 
     nux_status_t status = NUX_SUCCESS;
-    status &= cart_write_u32(ctx, writer->slot, 0xCA);
-    status &= cart_write_u32(ctx, writer->slot, 0xFE);
-    status &= cart_write_u32(ctx, writer->slot, entry_count);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, 0xCA);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, 0xFE);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, entry_count);
     NUX_CHECK(status, goto cleanup);
 
     return NUX_SUCCESS;
@@ -480,92 +459,100 @@ cleanup:
     close_os_file(ctx, slot);
     return NUX_FAILURE;
 }
-static void
-nux_cart_writer_end (nux_ctx_t *ctx, nux_cart_writer_t *writer)
+nux_status_t
+nux_io_cart_end (nux_ctx_t *ctx)
 {
-    NUX_ASSERT(writer->entry_index != writer->entry_count - 1);
-    close_os_file(ctx, writer->slot);
+    if (ctx->cart_writer.slot)
+    {
+        NUX_CHECKM(ctx->cart_writer.entry_index == ctx->cart_writer.entry_index,
+                   return NUX_FAILURE,
+                   "missing cart entries (got %d, expect %d)",
+                   ctx->cart_writer.entry_index,
+                   ctx->cart_writer.entry_count);
+        close_os_file(ctx, ctx->cart_writer.slot);
+    }
+    return NUX_SUCCESS;
 }
-static nux_status_t
-nux_cart_writer_entry (nux_ctx_t         *ctx,
-                       nux_cart_writer_t *writer,
-                       const nux_c8_t    *path,
-                       nux_u32_t          type,
-                       nux_b32_t          compress,
-                       const void        *data,
-                       nux_u32_t          size)
+nux_status_t
+nux_io_write_cart_data (nux_ctx_t      *ctx,
+                        const nux_c8_t *path,
+                        nux_u32_t       type,
+                        nux_b32_t       compress,
+                        const void     *data,
+                        nux_u32_t       size)
 {
+    NUX_CHECKM(
+        ctx->cart_writer.slot, return NUX_FAILURE, "cart writer not started");
+
     nux_status_t status = NUX_SUCCESS;
 
-    nux_u32_t data_cursor = writer->cursor;
+    nux_u32_t data_cursor = ctx->cart_writer.cursor;
     nux_u32_t entry_cursor
-        = NUX_CART_HEADER_SIZE + NUX_CART_ENTRY_SIZE * writer->entry_index;
+        = NUX_CART_HEADER_SIZE
+          + NUX_CART_ENTRY_SIZE * ctx->cart_writer.entry_index;
 
     nux_u32_t path_length = nux_strnlen(path, NUX_PATH_MAX);
     nux_u32_t path_hash   = nux_hash(path, path_length);
-    nux_u32_t path_offset = writer->cursor;
+    nux_u32_t path_offset = ctx->cart_writer.cursor;
     nux_u32_t data_type   = type;
     nux_u32_t data_offset = path_offset + path_length + 1; // null terminated
     nux_u32_t data_length = size;
 
-    ++writer->entry_index;
-    writer->cursor += path_length + 1 + data_length;
+    ++ctx->cart_writer.entry_index;
+    ctx->cart_writer.cursor += path_length + 1 + data_length;
 
     // Write path + data
-    NUX_CHECKM(nux_os_file_seek(ctx, writer->slot, path_offset),
+    NUX_CHECKM(nux_os_file_seek(ctx, ctx->cart_writer.slot, path_offset),
                return NUX_FAILURE,
                "failed to seek to data section");
-    status &= cart_write(ctx, writer->slot, path, path_length);
-    status &= cart_write(ctx, writer->slot, "\0", 1); // null terminated
-    status &= cart_write(ctx, writer->slot, data, data_length);
+    status &= cart_write(ctx, ctx->cart_writer.slot, path, path_length);
+    status
+        &= cart_write(ctx, ctx->cart_writer.slot, "\0", 1); // null terminated
+    status &= cart_write(ctx, ctx->cart_writer.slot, data, data_length);
     NUX_CHECKM(status,
                return NUX_FAILURE,
                "failed to write cart data entry %d",
-               writer->entry_index);
+               ctx->cart_writer.entry_index);
 
     // Write entry
-    NUX_CHECKM(nux_os_file_seek(ctx, writer->slot, entry_cursor),
+    NUX_CHECKM(nux_os_file_seek(ctx, ctx->cart_writer.slot, entry_cursor),
                return NUX_FAILURE,
                "failed to seek entry");
-    status &= cart_write_u32(ctx, writer->slot, data_type);
-    status &= cart_write_u32(ctx, writer->slot, data_offset);
-    status &= cart_write_u32(ctx, writer->slot, data_length);
-    status &= cart_write_u32(ctx, writer->slot, path_hash);
-    status &= cart_write_u32(ctx, writer->slot, path_offset);
-    status &= cart_write_u32(ctx, writer->slot, path_length);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, data_type);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, data_offset);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, data_length);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, path_hash);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, path_offset);
+    status &= cart_write_u32(ctx, ctx->cart_writer.slot, path_length);
     NUX_CHECK(status, return NUX_FAILURE);
 
     return NUX_SUCCESS;
 }
-static nux_status_t
-nux_cart_writer_entry_file (nux_ctx_t         *ctx,
-                            nux_cart_writer_t *writer,
-                            const nux_c8_t    *path,
-                            nux_u32_t          type,
-                            nux_b32_t          compress)
+nux_status_t
+nux_io_write_cart_file (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     nux_u32_t size;
     void     *data = nux_io_load(ctx, path, &size);
     NUX_CHECK(data, return NUX_FAILURE);
-    return nux_cart_writer_entry(ctx, writer, path, 0, NUX_FALSE, data, size);
+    return nux_io_write_cart_data(ctx, path, 0, NUX_FALSE, data, size);
 }
-void
-nux_cart_write_mainlua (nux_ctx_t *ctx)
-{
-    nux_cart_writer_t writer;
-    NUX_CHECK(nux_cart_writer_begin(ctx, &writer, "cart.bin", 4), return);
-    NUX_CHECK(
-        nux_cart_writer_entry_file(ctx, &writer, "main.lua", 0, NUX_FALSE),
-        goto cleanup);
-    NUX_CHECK(
-        nux_cart_writer_entry_file(ctx, &writer, "cart.lua", 0, NUX_FALSE),
-        goto cleanup);
-    NUX_CHECK(
-        nux_cart_writer_entry_file(ctx, &writer, "inspect.lua", 0, NUX_FALSE),
-        goto cleanup);
-    NUX_CHECK(nux_cart_writer_entry_file(
-                  ctx, &writer, "assets/industrial.glb", 0, NUX_FALSE),
-              goto cleanup);
-cleanup:
-    nux_cart_writer_end(ctx, &writer);
-}
+// void
+// nux_cart_write_mainlua (nux_ctx_t *ctx)
+// {
+//     nux_cart_writer_t writer;
+//     NUX_CHECK(nux_cart_writer_begin(ctx, &writer, "cart.bin", 4), return);
+//     NUX_CHECK(
+//         nux_cart_writer_entry_file(ctx, &writer, "main.lua", 0, NUX_FALSE),
+//         goto cleanup);
+//     NUX_CHECK(
+//         nux_cart_writer_entry_file(ctx, &writer, "cart.lua", 0, NUX_FALSE),
+//         goto cleanup);
+//     NUX_CHECK(
+//         nux_cart_writer_entry_file(ctx, &writer, "inspect.lua", 0,
+//         NUX_FALSE), goto cleanup);
+//     NUX_CHECK(nux_cart_writer_entry_file(
+//                   ctx, &writer, "assets/industrial.glb", 0, NUX_FALSE),
+//               goto cleanup);
+// cleanup:
+//     nux_cart_writer_end(ctx, &writer);
+// }

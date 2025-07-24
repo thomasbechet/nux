@@ -155,7 +155,7 @@ load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
                                           STBI_rgb_alpha);
     NUX_CHECKM(img, return NUX_NULL, "failed to load image %s", texture->name);
 
-    NUX_DEBUG("loading texture '%s' w %d h %d", texture->name, w, h);
+    NUX_DEBUG("loading texture %s w %d h %d", texture->name, w, h);
 
     nux_id_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
     NUX_CHECK(id, return NUX_NULL);
@@ -244,7 +244,6 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         }
         if (texture)
         {
-            NUX_DEBUG("loading texture %s", texture->name);
             nux_id_t id = load_texture(ctx, texture);
             NUX_CHECK(id, goto error);
             resources[resources_count].cgltf_ptr = texture;
@@ -353,7 +352,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                             node->name);
                     }
 
-                    NUX_DEBUG("loading node %s mesh %d texture %d",
+                    NUX_DEBUG("loading node %s mesh 0x%08X texture 0x%08X",
                               node->name,
                               mesh,
                               texture);

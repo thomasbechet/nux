@@ -717,6 +717,7 @@ typedef struct
 
 typedef struct
 {
+    nux_c8_t          path[NUX_PATH_BUF_SIZE];
     nux_u32_t         slot;
     nux_cart_entry_t *entries;
     nux_u32_t         entries_count;
@@ -724,8 +725,15 @@ typedef struct
 
 typedef struct
 {
+    nux_u32_t slot;
+    nux_u32_t entry_count;
+    nux_u32_t entry_index;
+    nux_u32_t cursor;
+} nux_cart_writer_t;
+
+typedef struct
+{
     nux_disk_type_t type;
-    nux_c8_t        path[NUX_PATH_BUF_SIZE];
     union
     {
         nux_cart_t cart;
@@ -798,9 +806,10 @@ struct nux_context
 
     // io
 
-    nux_disk_t    disks[NUX_DISK_MAX];
-    nux_u32_t     disks_count;
-    nux_u32_vec_t free_file_slots;
+    nux_disk_t        disks[NUX_DISK_MAX];
+    nux_u32_t         disks_count;
+    nux_u32_vec_t     free_file_slots;
+    nux_cart_writer_t cart_writer;
 
     // lua
 
@@ -1015,8 +1024,6 @@ void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
 
 // io.c
 
-void nux_cart_write_mainlua(nux_ctx_t *ctx);
-
 nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
 
@@ -1041,6 +1048,13 @@ nux_status_t nux_io_stat(nux_ctx_t       *ctx,
                          nux_file_t      *file,
                          nux_file_stat_t *stat);
 void        *nux_io_load(nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size);
+
+nux_status_t nux_io_write_cart_data(nux_ctx_t      *ctx,
+                                    const nux_c8_t *path,
+                                    nux_u32_t       type,
+                                    nux_b32_t       compress,
+                                    const void     *data,
+                                    nux_u32_t       size);
 
 // file.c
 

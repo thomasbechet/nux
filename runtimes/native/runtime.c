@@ -31,10 +31,10 @@ instance_init (instance_t *instance, const char *path)
         .update       = NULL,
         .memory_size  = (1 << 26), // 16Mb
         .max_id_count = 4096,
-        .boot_device  = "",
+        .boot_device  = path,
     };
 
-    strncpy(instance->path, path, PATH_MAX_LEN - 1);
+    strncpy(instance->path, path ? path : ".", PATH_MAX_LEN - 1);
     instance->active        = true;
     instance->config        = config;
     instance->ctx           = NULL;
@@ -157,10 +157,7 @@ runtime_run (const config_t *config)
     runtime.running = true;
 
     // Initialize base
-    if (config->path)
-    {
-        runtime_open(0, config->path);
-    }
+    runtime_open(0, config->path);
 
     // Main loop
     while (runtime.running)

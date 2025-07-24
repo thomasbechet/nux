@@ -58,7 +58,19 @@ end
 
 local api
 
+local function generate_cart()
+    assert(nux.io.cart_begin("cart.bin", 4))
+    assert(nux.io.write_cart_file("cart.lua"))
+    assert(nux.io.write_cart_file("inspect.lua"))
+    assert(nux.io.write_cart_file("main.lua"))
+    assert(nux.io.write_cart_file("assets/industrial.glb"))
+    assert(nux.io.cart_end())
+end
+
 function nux.init()
+    generate_cart()
+    do return end
+
     local mesh_cube = nux.mesh.gen_cube(1, 1, 1)
     s = nux.scene.new()
 

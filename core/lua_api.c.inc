@@ -1130,6 +1130,49 @@ l_canvas_rectangle (lua_State *L)
     return 0;
 }
 
+static int
+l_io_cart_begin (lua_State *L)
+{
+
+    nux_ctx_t      *ctx  = lua_getuserdata(L);
+    const nux_c8_t *path = luaL_checkstring(L, 1);
+
+    nux_u32_t entry_count = luaL_checkinteger(L, 2);
+
+    nux_status_t ret =
+
+        nux_io_cart_begin(ctx, path, entry_count);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_cart_end (lua_State *L)
+{
+
+    nux_ctx_t   *ctx = lua_getuserdata(L);
+    nux_status_t ret =
+
+        nux_io_cart_end(ctx);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_write_cart_file (lua_State *L)
+{
+
+    nux_ctx_t      *ctx  = lua_getuserdata(L);
+    const nux_c8_t *path = luaL_checkstring(L, 1);
+
+    nux_status_t ret =
+
+        nux_io_write_cart_file(ctx, path);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+
 static const struct luaL_Reg lib_core[]
     = { { "trace", l_core_trace }, { "stat", l_core_stat },
         { "time", l_core_time },   { "dt", l_core_dt },
@@ -1224,6 +1267,12 @@ static const struct luaL_Reg lib_canvas[]
         { "rectangle", l_canvas_rectangle },
         { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_io[]
+    = { { "cart_begin", l_io_cart_begin },
+        { "cart_end", l_io_cart_end },
+        { "write_cart_file", l_io_write_cart_file },
+        { NUX_NULL, NUX_NULL } };
+
 nux_status_t
 nux_lua_register_base (nux_ctx_t *ctx)
 {
@@ -1275,6 +1324,10 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_newtable(L);
     luaL_setfuncs(L, lib_canvas, 0);
     lua_setfield(L, -2, "canvas");
+
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_io, 0);
+    lua_setfield(L, -2, "io");
 
     lua_pushinteger(L, 512);
     lua_setfield(L, -2, "CANVAS_WIDTH");

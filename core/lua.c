@@ -34,12 +34,10 @@ nux_lua_load_conf (nux_ctx_t *ctx)
     lua_State *L = luaL_newstate(ctx);
     NUX_CHECKM(L, return NUX_FAILURE, "failed to initialize lua VM");
 
-    NUX_CHECK(dofile(ctx, L, "cart.lua"), goto error);
-    if (!lua_istable(L, -1))
-    {
-        NUX_ERROR("return value from cart.lua is not a table");
-        goto error;
-    }
+    NUX_CHECK(dofile(ctx, L, "conf.lua"), goto error);
+    NUX_CHECKM(lua_istable(L, -1),
+               goto error,
+               "return value from conf.lua is not a table");
 
     if (!lua_getfield(L, -1, "name"))
     {

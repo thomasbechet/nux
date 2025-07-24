@@ -350,4 +350,10 @@ void     nux_canvas_rectangle(nux_ctx_t *ctx,
 //                             nux_i32_t  y1,
 //                             nux_u8_t   c);
 
+nux_status_t nux_io_cart_begin(nux_ctx_t      *ctx,
+                               const nux_c8_t *path,
+                               nux_u32_t       entry_count);
+nux_status_t nux_io_cart_end(nux_ctx_t *ctx);
+nux_status_t nux_io_write_cart_file(nux_ctx_t *ctx, const nux_c8_t *path);
+
 #endif
