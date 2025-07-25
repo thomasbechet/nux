@@ -1276,8 +1276,8 @@ static const struct luaL_Reg lib_io[]
 nux_status_t
 nux_lua_register_base (nux_ctx_t *ctx)
 {
-    lua_State *L = ctx->lua_state;
-    lua_newtable(L);
+    lua_State *L = ctx->L;
+    lua_getglobal(L, "nux");
 
     luaL_setfuncs(L, lib_core, 0);
 
@@ -1515,6 +1515,6 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_pushinteger(L, 2);
     lua_setfield(L, -2, "LOG_ERROR");
 
-    lua_setglobal(L, "nux");
+    lua_pop(L, 1);
     return NUX_SUCCESS;
 }

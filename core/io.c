@@ -536,23 +536,3 @@ nux_io_write_cart_file (nux_ctx_t *ctx, const nux_c8_t *path)
     NUX_CHECK(data, return NUX_FAILURE);
     return nux_io_write_cart_data(ctx, path, 0, NUX_FALSE, data, size);
 }
-// void
-// nux_cart_write_mainlua (nux_ctx_t *ctx)
-// {
-//     nux_cart_writer_t writer;
-//     NUX_CHECK(nux_cart_writer_begin(ctx, &writer, "cart.bin", 4), return);
-//     NUX_CHECK(
-//         nux_cart_writer_entry_file(ctx, &writer, "main.lua", 0, NUX_FALSE),
-//         goto cleanup);
-//     NUX_CHECK(
-//         nux_cart_writer_entry_file(ctx, &writer, "cart.lua", 0, NUX_FALSE),
-//         goto cleanup);
-//     NUX_CHECK(
-//         nux_cart_writer_entry_file(ctx, &writer, "inspect.lua", 0,
-//         NUX_FALSE), goto cleanup);
-//     NUX_CHECK(nux_cart_writer_entry_file(
-//                   ctx, &writer, "assets/industrial.glb", 0, NUX_FALSE),
-//               goto cleanup);
-// cleanup:
-//     nux_cart_writer_end(ctx, &writer);
-// }

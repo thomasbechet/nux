@@ -67,9 +67,13 @@ local function generate_cart()
     assert(nux.io.cart_end())
 end
 
+function nux.conf(conf)
+    print("hello")
+end
+
 function nux.init()
-    generate_cart()
-    do return end
+    -- generate_cart()
+    -- do return end
 
     local mesh_cube = nux.mesh.gen_cube(1, 1, 1)
     s = nux.scene.new()

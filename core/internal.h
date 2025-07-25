@@ -813,7 +813,7 @@ struct nux_context
 
     // lua
 
-    lua_State *lua_state;
+    lua_State *L;
 };
 
 ////////////////////////////
@@ -1062,10 +1062,9 @@ void nux_file_cleanup(nux_ctx_t *ctx, void *data);
 
 // lua.c
 
-nux_status_t nux_lua_load_conf(nux_ctx_t *ctx);
+nux_status_t nux_lua_configure(nux_ctx_t *ctx);
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
 void         nux_lua_free(nux_ctx_t *ctx);
-nux_status_t nux_lua_start(nux_ctx_t *ctx);
 void         nux_lua_tick(nux_ctx_t *ctx);
 
 // lua_api.c.inc

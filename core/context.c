@@ -106,10 +106,8 @@ nux_instance_init (const nux_config_t *config)
     // Initialize PCG
     ctx->pcg = nux_pcg(10243124, 1823719241);
 
-    // Initialize modules
-    NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
+    // Initialize core modules
     NUX_CHECK(nux_io_init(ctx), goto cleanup);
-    NUX_CHECK(nux_lua_init(ctx), goto cleanup);
 
     // Mount base disk
     if (config->boot_device)
@@ -117,11 +115,12 @@ nux_instance_init (const nux_config_t *config)
         NUX_CHECK(nux_io_mount(ctx, config->boot_device), goto cleanup);
     }
 
-    // Load configuration
-    NUX_CHECK(nux_lua_load_conf(ctx), goto cleanup);
+    // Configure
+    NUX_CHECK(nux_lua_configure(ctx), goto cleanup);
 
-    // Start cartridge
-    NUX_CHECK(nux_lua_start(ctx), goto cleanup);
+    // Initialize modules
+    NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
+    NUX_CHECK(nux_lua_init(ctx), goto cleanup);
 
     return ctx;
 
