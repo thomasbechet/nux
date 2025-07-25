@@ -15,12 +15,12 @@ if __name__ == "__main__":
 
     shaders = []
     sources = [
-        "core/shaders/uber.vert",
-        "core/shaders/uber.frag",
-        "core/shaders/canvas.vert",
-        "core/shaders/canvas.frag",
-        "core/shaders/blit.vert",
-        "core/shaders/blit.frag",
+        "core/graphics/shaders/uber.vert",
+        "core/graphics/shaders/uber.frag",
+        "core/graphics/shaders/canvas.vert",
+        "core/graphics/shaders/canvas.frag",
+        "core/graphics/shaders/blit.vert",
+        "core/graphics/shaders/blit.frag",
     ]
     for source in sources:
         file = os.path.join(args.rootdir, source)
@@ -37,4 +37,4 @@ if __name__ == "__main__":
             shader['code'] = tohex(f.read())
             shaders.append(shader)
 
-    apply_template(args.rootdir, "shaders_data.c.inc.jinja", "core/shaders_data.c.inc", shaders=shaders)
+    apply_template(args.rootdir, "shaders_data.c.inc.jinja", "core/graphics/shaders_data.c.inc", shaders=shaders)

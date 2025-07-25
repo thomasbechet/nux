@@ -1,7 +1,7 @@
 #include "internal.h"
 
-#include "luavm/lualib.h"
-#include "luavm/lauxlib.h"
+#include "vm/lualib.h"
+#include "vm/lauxlib.h"
 #include "lua_api.c.inc"
 #include "lua_ext.c.inc"
 

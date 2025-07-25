@@ -13,8 +13,7 @@ if (NUX_BUILD_TRACE)
 endif ()
 
 include_directories(${CMAKE_SOURCE_DIR}/core)
-file(GLOB SOURCES *.c)
-file(GLOB LUA_SOURCES luavm/*.c)
+file(GLOB_RECURSE SOURCES *.c)
 list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/core/luavm/liolib.c)
 list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/core/luavm/loslib.c)
 
@@ -28,5 +27,5 @@ if (NUX_BUILD_WASI)
     add_link_options(-lsetjmp)
 endif (NUX_BUILD_WASI)
 
-add_library(${PROJECT_NAME} ${SOURCES} ${LUA_SOURCES})
+add_library(${PROJECT_NAME} ${SOURCES})
 

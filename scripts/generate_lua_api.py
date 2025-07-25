@@ -91,34 +91,7 @@ def dump():
 def generate_files(args):
 
     # lua_api.c.inc
-    apply_template(args.rootdir, "lua_api.c.inc.jinja", "core/lua_api.c.inc", modules=modules, constants=constants)
-
-    # # nux.h
-    # template = env.get_template("nux.h.jinja")
-    # r = template.render(functions=functions, enums=enums)
-    # for output in ["sdk/templates/c/src/nux.h", "sdk/templates/cxx/src/nux.h"]:
-    #     with open(os.path.join(args.rootdir, output), "w") as f:
-    #         f.write(r)
-    #         f.close()
-    #         subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
-    #
-    # # wasm_native.h
-    # template = env.get_template("wasm_native.h.jinja")
-    # r = template.render(functions=functions, enums=enums)
-    # output = "runtimes/native/wasm_native.c.inc"
-    # with open(os.path.join(args.rootdir, output), "w") as f:
-    #     f.write(r)
-    #     f.close()
-    #     subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
-    #
-    # # wasm3_native.h
-    # template = env.get_template("wasm3_native.h.jinja")
-    # r = template.render(functions=functions, enums=enums)
-    # output = "core/wasm3_native.c.inc"
-    # with open(os.path.join(args.rootdir, output), "w") as f:
-    #     f.write(r)
-    #     f.close()
-    #     subprocess.call(["clang-format", "-i", output], cwd=args.rootdir)
+    apply_template(args.rootdir, "lua_api.c.inc.jinja", "core/lua/lua_api.c.inc", modules=modules, constants=constants)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

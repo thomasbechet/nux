@@ -9,7 +9,7 @@
 #include <stdio.h>
 #endif
 
-#include "luavm/lua.h"
+#include "lua/vm/lua.h"
 
 ////////////////////////////
 ///        MACROS        ///

@@ -9,5 +9,5 @@ CompileFlags:
     - "-I../externals"
     - "-I../externals/wasm3/source"
 Diagnostics:
-  MissingIncludes: Strict
+  MissingIncludes: None
   UnusedIncludes: None

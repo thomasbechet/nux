@@ -1,6 +1,6 @@
 #include "internal.h"
 
-#include <shaders_data.c.inc>
+#include <graphics/shaders_data.c.inc>
 
 static struct
 {
