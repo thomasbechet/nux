@@ -8,3 +8,6 @@ CompileFlags:
     - "-Icore"
     - "-I../externals"
     - "-I../externals/wasm3/source"
+Diagnostics:
+  MissingIncludes: Strict
+  UnusedIncludes: None

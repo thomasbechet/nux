@@ -7,8 +7,6 @@
 #define ltablib_c
 #define LUA_LIB
 
-#include "../internal.h"
-
 #include "lprefix.h"
 
 

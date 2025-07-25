@@ -7,7 +7,6 @@
 #ifndef lstate_h
 #define lstate_h
 
-#include "../internal.h"
 #include "lua.h"
 
 

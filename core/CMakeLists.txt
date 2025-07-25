@@ -12,6 +12,7 @@ if (NUX_BUILD_TRACE)
     add_definitions(-DNUX_BUILD_TRACE)
 endif ()
 
+include_directories(${CMAKE_SOURCE_DIR}/core)
 file(GLOB SOURCES *.c)
 file(GLOB LUA_SOURCES luavm/*.c)
 list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/core/luavm/liolib.c)
