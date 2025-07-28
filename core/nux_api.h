@@ -251,7 +251,7 @@ nux_id_t nux_texture_new(nux_ctx_t         *ctx,
 void     nux_texture_blit(nux_ctx_t *ctx, nux_id_t id);
 
 nux_id_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
-void     nux_arena_rewind(nux_ctx_t *ctx, nux_id_t id);
+void     nux_arena_reset(nux_ctx_t *ctx, nux_id_t id);
 nux_id_t nux_arena_frame(nux_ctx_t *ctx);
 
 nux_id_t nux_scene_new(nux_ctx_t *ctx);

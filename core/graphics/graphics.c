@@ -87,10 +87,10 @@ nux_graphics_push_vertices (nux_ctx_t       *ctx,
                             const nux_f32_t *data,
                             nux_u32_t       *first)
 {
-    NUX_CHECKM(ctx->vertices_buffer_head + vcount < VERTICES_DEFAULT_SIZE,
+    NUX_ENSURE(ctx->vertices_buffer_head + vcount < VERTICES_DEFAULT_SIZE,
                return NUX_FAILURE,
                "out of vertices");
-    NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
+    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                     ctx->vertices_buffer.slot,
                                     ctx->vertices_buffer_head * VERTEX_SIZE
                                         * sizeof(nux_f32_t),

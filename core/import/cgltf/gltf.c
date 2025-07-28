@@ -153,7 +153,7 @@ load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
                                           &h,
                                           &n,
                                           STBI_rgb_alpha);
-    NUX_CHECKM(img, return NUX_NULL, "failed to load image %s", texture->name);
+    NUX_ENSURE(img, return NUX_NULL, "failed to load image %s", texture->name);
 
     NUX_DEBUG("loading texture %s w %d h %d", texture->name, w, h);
 
@@ -195,7 +195,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
 
     // Parse file
     result = cgltf_parse(&options, buf, buf_size, &data);
-    NUX_CHECKM(result == cgltf_result_success,
+    NUX_ENSURE(result == cgltf_result_success,
                goto error,
                "failed to parse gltf file %s (code %d)",
                path,
@@ -203,7 +203,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
 
     // Load buffers
     result = cgltf_load_buffers(&options, data, path);
-    NUX_CHECKM(result == cgltf_result_success,
+    NUX_ENSURE(result == cgltf_result_success,
                goto error,
                "failed to load gltf buffers %s",
                path);
@@ -321,7 +321,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                             break;
                         }
                     }
-                    NUX_CHECKM(mesh,
+                    NUX_ENSURE(mesh,
                                goto error,
                                "mesh primitive not found for model %s",
                                node->name);

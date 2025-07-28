@@ -9,7 +9,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     // Create object
     nux_id_t       id;
     nux_texture_t *tex
-        = nux_arena_alloc_type(ctx, NUX_TYPE_TEXTURE, sizeof(*tex), &id);
+        = nux_arena_alloc_resource(ctx, NUX_TYPE_TEXTURE, sizeof(*tex), &id);
     NUX_CHECK(tex, return NUX_NULL);
     tex->gpu.type   = type;
     tex->gpu.width  = w;
@@ -66,10 +66,10 @@ nux_texture_write (nux_ctx_t  *ctx,
 {
     nux_texture_t *tex = nux_id_check(ctx, NUX_TYPE_TEXTURE, id);
     NUX_CHECK(tex, return);
-    NUX_CHECKM(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
+    NUX_ENSURE(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
                return,
                "trying to write render target texture");
-    NUX_CHECKM(
+    NUX_ENSURE(
         nux_os_texture_update(ctx->userdata, tex->gpu.slot, x, y, w, h, data),
         return,
         "failed to update colormap texture");

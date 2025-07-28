@@ -1,14 +1,29 @@
 #include "internal.h"
 
-nux_error_mode_t
-nux_error_get_mode (nux_ctx_t *ctx)
+void
+nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
 {
-    return ctx->error_mode;
+    va_list args;
+    va_start(args, fmt);
+    nux_vsnprintf(ctx->error_message, sizeof(ctx->error_message), fmt, args);
+    va_end(args);
+    ctx->error_status = NUX_FAILURE;
 }
 void
-nux_error_set_mode (nux_ctx_t *ctx, nux_error_mode_t mode)
+nux_error_reset (nux_ctx_t *ctx)
 {
-    ctx->error_mode = mode;
+    ctx->error_status = NUX_SUCCESS;
+    nux_memset(ctx->error_message, 0, sizeof(ctx->error_message));
+}
+const nux_c8_t *
+nux_error_get_message (nux_ctx_t *ctx)
+{
+    return ctx->error_message;
+}
+nux_status_t
+nux_error_get_status (nux_ctx_t *ctx)
+{
+    return ctx->error_status;
 }
 
 nux_ctx_t *
@@ -23,8 +38,8 @@ nux_instance_init (const nux_config_t *config)
     core_arena.size = 0;
     core_arena.data
         = nux_os_alloc(config->userdata, NUX_NULL, 0, config->memory_size);
-    core_arena.first_type = NUX_NULL;
-    core_arena.last_type  = NUX_NULL;
+    core_arena.first_resource = NUX_NULL;
+    core_arena.last_resource  = NUX_NULL;
     if (!core_arena.data)
     {
         return NUX_NULL;
@@ -41,44 +56,35 @@ nux_instance_init (const nux_config_t *config)
     ctx->update       = config->update;
 
     // Initialize state
-    ctx->error_mode = NUX_ERROR_MODE_LOG;
+    nux_error_reset(ctx);
 
     // Register base types
     // Must be coherent with nux_type_base_t
-    ctx->types_count = 0;
-    nux_type_t *type;
+    ctx->resources_count = 0;
+    nux_resource_t *type;
 
-    type = nux_type_register(ctx, "null");
-
-    type = nux_type_register(ctx, "arena");
-
-    type = nux_type_register(ctx, "lua");
-
-    type          = nux_type_register(ctx, "texture");
+    type          = nux_resource_register(ctx, "null");
+    type          = nux_resource_register(ctx, "arena");
+    type          = nux_resource_register(ctx, "lua");
+    type          = nux_resource_register(ctx, "texture");
     type->cleanup = nux_texture_cleanup;
-
-    type = nux_type_register(ctx, "mesh");
-
-    type          = nux_type_register(ctx, "scene");
+    type          = nux_resource_register(ctx, "mesh");
+    type          = nux_resource_register(ctx, "scene");
     type->cleanup = nux_scene_cleanup;
-
-    type = nux_type_register(ctx, "node");
-
-    type          = nux_type_register(ctx, "file");
+    type          = nux_resource_register(ctx, "node");
+    type          = nux_resource_register(ctx, "file");
     type->cleanup = nux_file_cleanup;
 
-    type                 = nux_type_register(ctx, "transform");
+    type                 = nux_resource_register(ctx, "transform");
     type->component_type = NUX_COMPONENT_TRANSFORM;
-
-    type                 = nux_type_register(ctx, "camera");
+    type                 = nux_resource_register(ctx, "camera");
     type->component_type = NUX_COMPONENT_CAMERA;
-
-    type                 = nux_type_register(ctx, "staticmesh");
+    type                 = nux_resource_register(ctx, "staticmesh");
     type->component_type = NUX_COMPONENT_STATICMESH;
 
     // Register base component types
     // Must be coherent with nux_component_type_base_t
-    ctx->types_count = 0;
+    ctx->resources_count = 0;
     nux_component_register(ctx, NUX_TYPE_TRANSFORM);
     nux_component_register(ctx, NUX_TYPE_CAMERA);
     nux_component_register(ctx, NUX_TYPE_STATICMESH);
@@ -125,13 +131,17 @@ nux_instance_init (const nux_config_t *config)
     return ctx;
 
 cleanup:
+    if (!nux_error_get_status(ctx))
+    {
+        NUX_ERROR("%s", nux_error_get_message(ctx));
+    }
     nux_instance_free(ctx);
     return NUX_NULL;
 }
 void
 nux_instance_free (nux_ctx_t *ctx)
 {
-    nux_arena_rewind(ctx, ctx->core_arena->id);
+    nux_arena_reset(ctx, ctx->core_arena->id);
 
     // Free modules
     nux_lua_free(ctx);
@@ -170,12 +180,16 @@ nux_instance_tick (nux_ctx_t *ctx)
 
     // Update lua
     nux_lua_tick(ctx);
+    if (!nux_error_get_status(ctx))
+    {
+        NUX_ERROR("%s", nux_error_get_message(ctx));
+    }
 
     // Render
     nux_graphics_render(ctx);
 
     // Reset frame arena
-    nux_arena_rewind(ctx, ctx->frame_arena);
+    nux_arena_reset(ctx, ctx->frame_arena);
 
     // Frame integration
     ctx->time += nux_dt(ctx);

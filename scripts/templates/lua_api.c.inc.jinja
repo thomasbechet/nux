@@ -18,68 +18,76 @@
     "nux_status_t": "lua_pushinteger"
 } %}
 
+static void l_checkerror(lua_State *L, nux_ctx_t *ctx)
+{
+    if (!nux_error_get_status(ctx))
+    {
+        luaL_error(L, nux_error_get_message(ctx));
+    }
+}
+
 {% for module, functions in modules.items() %}
 {% for function in functions %}
 static int l_{{ module }}_{{ function.name }}(lua_State *L)
 {
-    {% set ns = namespace(stack = 1) %}
+    {%- set ns = namespace(stack = 1) %}
     nux_ctx_t *ctx = lua_getuserdata(L);
     {%- for arg in function.args -%}
-        {% if arg.typename == "nux_v3_t" %}
+        {%- if arg.typename == "nux_v3_t" %}
             nux_v3_t {{ arg.name }};
             {{ arg.name }}.x = luaL_checknumber(L, {{ ns.stack + 0 }});
             {{ arg.name }}.y = luaL_checknumber(L, {{ ns.stack + 1 }});
             {{ arg.name }}.z = luaL_checknumber(L, {{ ns.stack + 2 }});
             {% set ns.stack = ns.stack + 3 %}
-        {% elif arg.typename == "nux_q4_t" %}
+        {%- elif arg.typename == "nux_q4_t" %}
             nux_q4_t {{ arg.name }};
             {{ arg.name }}.x = luaL_checknumber(L, {{ ns.stack + 0 }});
             {{ arg.name }}.y = luaL_checknumber(L, {{ ns.stack + 1 }});
             {{ arg.name }}.z = luaL_checknumber(L, {{ ns.stack + 2 }});
             {{ arg.name }}.w = luaL_checknumber(L, {{ ns.stack + 3 }});
             {% set ns.stack = ns.stack + 4 %}
-        {% elif arg.typename == "nux_c8_t" and arg.isptr %}
+        {%- elif arg.typename == "nux_c8_t" and arg.isptr %}
             const nux_c8_t *{{ arg.name }} = luaL_checkstring(L, {{ ns.stack }});
             {% set ns.stack = ns.stack + 1 %}
-        {% elif arg.typename == "nux_id_t" %}
+        {%- elif arg.typename == "nux_id_t" %}
             nux_id_t {{ arg.name }} = (nux_id_t)(nux_intptr_t)luaL_checknumber(L, {{ ns.stack }});
             {% set ns.stack = ns.stack + 1 %}
-        {% else %}
+        {%- else %}
             {{ arg.typename }} {{ arg.name }} = {{ checkmap.get(arg.typename, "luaL_checkinteger") }}(L, {{ ns.stack }});
             {% set ns.stack = ns.stack + 1 %}
         {% endif %}
     {%- endfor -%}
-    {% if function.returntype != "void" %}
+    {%- if function.returntype != "void" %}
         {{ function.returntype }} ret =
-    {% endif %}
-    {{ "nux_" + module if module != "core" else "nux" }}_{{ function.name }}(ctx
+    {% endif %}{{ "nux_" + module if module != "core" else "nux" }}_{{ function.name }}(ctx
     {%- for arg in function.args -%}
         , {{ arg.name }}
     {%- endfor -%}
     );
-    {% if function.returntype == "nux_v3_t" %}
+    l_checkerror(L, ctx);
+    {%- if function.returntype == "nux_v3_t" %}
         lua_pushnumber(L, ret.x);
         lua_pushnumber(L, ret.y);
         lua_pushnumber(L, ret.z);
         return 3;
-    {% elif function.returntype == "nux_q4_t" %}
+    {%- elif function.returntype == "nux_q4_t" %}
         lua_pushnumber(L, ret.x);
         lua_pushnumber(L, ret.y);
         lua_pushnumber(L, ret.z);
         lua_pushnumber(L, ret.w);
         return 4;
-    {% elif function.returntype == "nux_id_t" %}
+    {%- elif function.returntype == "nux_id_t" %}
         if (ret)
             lua_pushnumber(L, (nux_intptr_t)ret);
         else
             lua_pushnil(L);
         return 1;
-    {% elif function.returntype != "void" %}
+    {%- elif function.returntype != "void" %}
         {{ retmap.get(function.returntype, "lua_pushinteger") }}(L, ret);
         return 1;
-    {% else %}
+    {%- else %}
         return 0;
-    {% endif %}
+    {%- endif %}
 }
 {%- endfor %}
 {% endfor %}

@@ -52,7 +52,7 @@ end_batch (nux_ctx_t *ctx, nux_canvas_t *canvas)
 {
     // Update buffer
     nux_u32_t index = canvas->batches_buffer_head;
-    NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
+    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                     canvas->batches_buffer.slot,
                                     index * sizeof(canvas->active_batch),
                                     sizeof(canvas->active_batch),
@@ -75,10 +75,10 @@ push_quads (nux_ctx_t             *ctx,
             nux_gpu_canvas_quad_t *quads,
             nux_u32_t              count)
 {
-    NUX_CHECKM(canvas->quads_buffer_head + count < QUADS_DEFAULT_SIZE,
+    NUX_ENSURE(canvas->quads_buffer_head + count < QUADS_DEFAULT_SIZE,
                return NUX_FAILURE,
                "out of quads");
-    NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
+    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                     canvas->quads_buffer.slot,
                                     canvas->quads_buffer_head * sizeof(*quads),
                                     count * sizeof(*quads),
@@ -133,7 +133,7 @@ nux_canvas_new (nux_ctx_t *ctx)
 {
     nux_id_t      id;
     nux_canvas_t *c
-        = nux_arena_alloc_type(ctx, NUX_TYPE_CANVAS, sizeof(*c), &id);
+        = nux_arena_alloc_resource(ctx, NUX_TYPE_CANVAS, sizeof(*c), &id);
     NUX_CHECK(c, return NUX_NULL);
     NUX_CHECK(nux_canvas_init(ctx, c), return NUX_NULL);
     return id;
@@ -165,7 +165,7 @@ nux_canvas_render (nux_ctx_t *ctx, nux_id_t id, nux_id_t target)
     {
         nux_texture_t *rt = nux_id_check(ctx, NUX_TYPE_TEXTURE, target);
         NUX_CHECK(rt, return);
-        NUX_CHECKM(rt->gpu.type == NUX_TEXTURE_RENDER_TARGET,
+        NUX_ENSURE(rt->gpu.type == NUX_TEXTURE_RENDER_TARGET,
                    return,
                    "canvas target is not a render target");
         framebuffer = rt->gpu.framebuffer_slot;

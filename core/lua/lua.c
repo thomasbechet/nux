@@ -17,13 +17,27 @@ lua_register_ext (nux_ctx_t *ctx)
 
     return NUX_SUCCESS;
 }
+static nux_status_t
+call_nux_function (nux_ctx_t *ctx, const nux_c8_t *name)
+{
+    lua_getglobal(ctx->L, "nux");
+    lua_getfield(ctx->L, -1, name);
+    if (lua_pcall(ctx->L, 0, 0, 0))
+    {
+        nux_error(ctx, "%s", lua_tostring(ctx->L, -1));
+        lua_pop(ctx->L, 1);
+        return NUX_FAILURE;
+    }
+    lua_pop(ctx->L, 1);
+    return NUX_SUCCESS;
+}
 
 nux_status_t
 nux_lua_configure (nux_ctx_t *ctx)
 {
     // Initialize Lua VM
     ctx->L = luaL_newstate(ctx);
-    NUX_CHECKM(ctx->L, return NUX_FAILURE, "failed to initialize lua state");
+    NUX_ENSURE(ctx->L, return NUX_FAILURE, "failed to initialize lua state");
 
     // Create nux table
     lua_newtable(ctx->L);
@@ -61,16 +75,7 @@ nux_lua_init (nux_ctx_t *ctx)
     lua_register_ext(ctx);
 
     // Call nux.init
-    lua_getglobal(ctx->L, "nux");
-    lua_getfield(ctx->L, -1, "init");
-    if (lua_pcall(ctx->L, 0, 0, 0))
-    {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
-        return NUX_FAILURE;
-    }
-    lua_pop(ctx->L, 1);
-
-    return NUX_SUCCESS;
+    return call_nux_function(ctx, "init");
 }
 void
 nux_lua_free (nux_ctx_t *ctx)
@@ -80,14 +85,8 @@ nux_lua_free (nux_ctx_t *ctx)
         lua_close(ctx->L);
     }
 }
-void
+nux_status_t
 nux_lua_tick (nux_ctx_t *ctx)
 {
-    lua_getglobal(ctx->L, "nux");
-    lua_getfield(ctx->L, -1, "tick");
-    if (lua_pcall(ctx->L, 0, 0, 0))
-    {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
-    }
-    lua_pop(ctx->L, 1);
+    return call_nux_function(ctx, "tick");
 }

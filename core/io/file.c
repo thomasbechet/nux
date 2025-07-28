@@ -5,7 +5,7 @@ nux_file_open (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)
 {
     nux_id_t    id;
     nux_file_t *file
-        = nux_arena_alloc_type(ctx, NUX_TYPE_FILE, sizeof(*file), &id);
+        = nux_arena_alloc_resource(ctx, NUX_TYPE_FILE, sizeof(*file), &id);
     NUX_CHECK(file, return NUX_NULL);
 
     if (!nux_io_open(ctx, path, mode, file))

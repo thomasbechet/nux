@@ -11,10 +11,10 @@ push_transforms (nux_ctx_t      *ctx,
                  const nux_m4_t *data,
                  nux_u32_t      *index)
 {
-    NUX_CHECKM(scene->transforms_buffer_head + mcount < TRANSFORMS_DEFAULT_SIZE,
+    NUX_ENSURE(scene->transforms_buffer_head + mcount < TRANSFORMS_DEFAULT_SIZE,
                return NUX_FAILURE,
                "out of transforms");
-    NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
+    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                     scene->transforms_buffer.slot,
                                     scene->transforms_buffer_head * NUX_M4_SIZE
                                         * sizeof(nux_f32_t),
@@ -31,7 +31,8 @@ nux_id_t
 nux_scene_new (nux_ctx_t *ctx)
 {
     nux_id_t     id;
-    nux_scene_t *s = nux_arena_alloc_type(ctx, NUX_TYPE_SCENE, sizeof(*s), &id);
+    nux_scene_t *s
+        = nux_arena_alloc_resource(ctx, NUX_TYPE_SCENE, sizeof(*s), &id);
     NUX_CHECK(s, return NUX_NULL);
 
     s->arena = ctx->active_arena;
@@ -157,7 +158,7 @@ nux_scene_render (nux_ctx_t *ctx, nux_id_t scene, nux_id_t camera)
             batch.first_transform = transform_index;
             batch.first_vertex    = m->first;
             batch.has_texture     = tex ? 1 : 0;
-            NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
+            NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                             s->batches_buffer.slot,
                                             batch_index * sizeof(batch),
                                             sizeof(batch),
@@ -183,7 +184,7 @@ nux_scene_render (nux_ctx_t *ctx, nux_id_t scene, nux_id_t camera)
                 batch.first_transform = transform_index;
                 batch.first_vertex    = m->bounds_first;
                 batch.has_texture     = 0;
-                NUX_CHECKM(nux_os_buffer_update(ctx->userdata,
+                NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                                 s->batches_buffer.slot,
                                                 batch_index * sizeof(batch),
                                                 sizeof(batch),
@@ -265,7 +266,7 @@ nux_node_new (nux_ctx_t *ctx, nux_id_t scene)
 void
 nux_node_set_parent (nux_ctx_t *ctx, nux_id_t node, nux_id_t parent)
 {
-    NUX_CHECKM(node != parent, return, "setting node parent to itself");
+    NUX_ENSURE(node != parent, return, "setting node parent to itself");
     nux_node_t *n = nux_id_check(ctx, NUX_TYPE_NODE, node);
     NUX_CHECK(n, return);
     n->parent = parent;
@@ -321,7 +322,7 @@ nux_scene_add_component (nux_ctx_t *ctx, nux_id_t node, nux_u32_t comp_type)
     }
     nux_scene_t     *s = nux_id_check(ctx, NUX_TYPE_SCENE, n->scene);
     nux_component_t *c = nux_component_pool_add(&s->components);
-    NUX_CHECKM(c, return NUX_NULL, "out of scene items");
+    NUX_ENSURE(c, return NUX_NULL, "out of scene items");
     *comp_index = c - s->components.data;
     return c;
 }

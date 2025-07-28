@@ -5,7 +5,7 @@ nux_mesh_new (nux_ctx_t *ctx, nux_u32_t capa)
 {
     nux_id_t    id;
     nux_mesh_t *mesh
-        = nux_arena_alloc_type(ctx, NUX_TYPE_MESH, sizeof(*mesh), &id);
+        = nux_arena_alloc_resource(ctx, NUX_TYPE_MESH, sizeof(*mesh), &id);
     NUX_CHECK(mesh, return NUX_NULL);
     mesh->count = capa;
     mesh->data  = nux_arena_alloc(ctx, sizeof(nux_f32_t) * 5 * mesh->count);
