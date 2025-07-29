@@ -147,7 +147,7 @@ nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
 
 void nux_texture_cleanup(nux_ctx_t *ctx, void *data);
 void nux_texture_write(nux_ctx_t  *ctx,
-                       nux_id_t    id,
+                       nux_res_t   res,
                        nux_u32_t   x,
                        nux_u32_t   y,
                        nux_u32_t   w,

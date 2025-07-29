@@ -15,7 +15,7 @@ struct nux_context
     nux_c8_t     error_message[256];
     nux_status_t error_status;
     nux_arena_t *active_arena;
-    nux_id_t     active_arena_id;
+    nux_res_t    active_arena_id;
 
     // System
 
@@ -55,15 +55,15 @@ struct nux_context
 
     // arena
 
-    nux_arena_pool_t arenas;
-    nux_id_pool_t    ids;
-    nux_arena_t     *core_arena;
-    nux_id_t         frame_arena;
+    nux_arena_pool_t    arenas;
+    nux_resource_pool_t resources;
+    nux_arena_t        *core_arena;
+    nux_res_t           frame_arena;
 
     // type
 
-    nux_resource_t       resources[NUX_TYPE_MAX];
-    nux_u32_t            resources_count;
+    nux_resource_type_t       resources_types[NUX_RES_MAX];
+    nux_u32_t            resources_types_count;
     nux_component_type_t component_types[NUX_COMPONENT_MAX];
     nux_u32_t            component_types_count;
 
@@ -79,6 +79,9 @@ struct nux_context
     lua_State *L;
 
     // ecs
+
+    nux_ecs_component_vec_t components;
+    nux_ecs_iter_t          iters;
 };
 
 #endif

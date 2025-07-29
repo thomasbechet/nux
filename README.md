@@ -7,9 +7,9 @@ Version 0.0.1
 ## Dependencies
 
 - lua-5.8.4
-  - License : core/luavm/LICENSE.md
+  - License : core/lua/vm/LICENSE.md
   - Modified version
 - stb
-  - License : core/stb/LICENSE.md
+  - License : core/import/stb/LICENSE.md
 - cgltf
-  - License : core/cgltf/LICENSE.md
+  - License : core/import/cgltf/LICENSE.md

@@ -26,8 +26,8 @@ typedef struct
 
 typedef struct
 {
-    nux_id_t mesh;
-    nux_id_t texture;
+    nux_res_t mesh;
+    nux_res_t texture;
 } nux_staticmesh_t;
 
 typedef enum
@@ -46,9 +46,9 @@ typedef struct
 
 typedef struct
 {
-    nux_id_t  scene;
-    nux_id_t  parent;
-    nux_id_t  id;
+    nux_res_t  scene;
+    nux_res_t  parent;
+    nux_res_t  id;
     nux_u32_t components[NUX_COMPONENT_MAX];
 } nux_node_t;
 
@@ -92,12 +92,12 @@ typedef struct
 void nux_component_register(nux_ctx_t *ctx, nux_u32_t type);
 
 void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
-void *nux_scene_add_component(nux_ctx_t *ctx, nux_id_t node, nux_u32_t type);
-void  nux_scene_remove_component(nux_ctx_t *ctx, nux_id_t node, nux_u32_t type);
-void *nux_scene_get_component(nux_ctx_t *ctx, nux_id_t node, nux_u32_t type);
+void *nux_scene_add_component(nux_ctx_t *ctx, nux_res_t node, nux_u32_t type);
+void  nux_scene_remove_component(nux_ctx_t *ctx, nux_res_t node, nux_u32_t type);
+void *nux_scene_get_component(nux_ctx_t *ctx, nux_res_t node, nux_u32_t type);
 
 // transform.c
 
-nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_id_t node);
+nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_res_t node);
 
 #endif

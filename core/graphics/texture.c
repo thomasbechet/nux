@@ -1,15 +1,15 @@
 #include "internal.h"
 
-nux_id_t
+nux_res_t
 nux_texture_new (nux_ctx_t         *ctx,
                  nux_texture_type_t type,
                  nux_u32_t          w,
                  nux_u32_t          h)
 {
     // Create object
-    nux_id_t       id;
+    nux_res_t      res;
     nux_texture_t *tex
-        = nux_arena_alloc_resource(ctx, NUX_TYPE_TEXTURE, sizeof(*tex), &id);
+        = nux_arena_alloc_res(ctx, NUX_RES_TEXTURE, sizeof(*tex), &res);
     NUX_CHECK(tex, return NUX_NULL);
     tex->gpu.type   = type;
     tex->gpu.width  = w;
@@ -39,7 +39,7 @@ nux_texture_new (nux_ctx_t         *ctx,
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
-    return id;
+    return res;
 }
 void
 nux_texture_cleanup (nux_ctx_t *ctx, void *data)
@@ -57,14 +57,14 @@ nux_texture_cleanup (nux_ctx_t *ctx, void *data)
 }
 void
 nux_texture_write (nux_ctx_t  *ctx,
-                   nux_id_t    id,
+                   nux_res_t   id,
                    nux_u32_t   x,
                    nux_u32_t   y,
                    nux_u32_t   w,
                    nux_u32_t   h,
                    const void *data)
 {
-    nux_texture_t *tex = nux_id_check(ctx, NUX_TYPE_TEXTURE, id);
+    nux_texture_t *tex = nux_res_check(ctx, NUX_RES_TEXTURE, id);
     NUX_CHECK(tex, return);
     NUX_ENSURE(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
                return,
@@ -75,9 +75,9 @@ nux_texture_write (nux_ctx_t  *ctx,
         "failed to update colormap texture");
 }
 void
-nux_texture_blit (nux_ctx_t *ctx, nux_id_t id)
+nux_texture_blit (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_texture_t *tex = nux_id_check(ctx, NUX_TYPE_TEXTURE, id);
+    nux_texture_t *tex = nux_res_check(ctx, NUX_RES_TEXTURE, res);
     NUX_CHECK(tex, return);
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_command_t     cmds_data[10];

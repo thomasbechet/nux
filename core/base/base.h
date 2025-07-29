@@ -301,21 +301,21 @@
 
 typedef enum
 {
-    NUX_TYPE_NULL       = 0,
-    NUX_TYPE_ARENA      = 1,
-    NUX_TYPE_LUA        = 2,
-    NUX_TYPE_TEXTURE    = 3,
-    NUX_TYPE_MESH       = 4,
-    NUX_TYPE_CANVAS     = 5,
-    NUX_TYPE_SCENE      = 6,
-    NUX_TYPE_NODE       = 7,
-    NUX_TYPE_TRANSFORM  = 8,
-    NUX_TYPE_CAMERA     = 9,
-    NUX_TYPE_STATICMESH = 10,
-    NUX_TYPE_FILE       = 11,
+    NUX_RES_NULL       = 0,
+    NUX_RES_ARENA      = 1,
+    NUX_RES_LUA        = 2,
+    NUX_RES_TEXTURE    = 3,
+    NUX_RES_MESH       = 4,
+    NUX_RES_CANVAS     = 5,
+    NUX_RES_SCENE      = 6,
+    NUX_RES_NODE       = 7,
+    NUX_RES_TRANSFORM  = 8,
+    NUX_RES_CAMERA     = 9,
+    NUX_RES_STATICMESH = 10,
+    NUX_RES_FILE       = 11,
 
-    NUX_TYPE_MAX = 256,
-} nux_type_base_t;
+    NUX_RES_MAX = 256,
+} nux_resource_base_t;
 
 typedef union
 {
@@ -472,7 +472,7 @@ typedef struct
 
 typedef struct nux_resource_header
 {
-    nux_id_t                    id;
+    nux_res_t                   self;
     nux_u32_t                   type;
     struct nux_resource_header *prev;
     struct nux_resource_header *next;
@@ -480,7 +480,7 @@ typedef struct nux_resource_header
 
 typedef struct
 {
-    nux_id_t               id;
+    nux_res_t              self;
     void                  *data;
     nux_u32_t              capa;
     nux_u32_t              size;
@@ -496,16 +496,16 @@ typedef struct
     const nux_c8_t        *name;
     nux_resource_cleanup_t cleanup;
     nux_u32_t              component_type;
-} nux_resource_t;
+} nux_resource_type_t;
 
 typedef struct
 {
-    nux_u8_t  version;
+    nux_res_t self;
     nux_u32_t type;
     void     *data;
-} nux_id_entry_t;
+} nux_resource_t;
 
-NUX_POOL_DEFINE(nux_id_pool, nux_id_entry_t);
+NUX_POOL_DEFINE(nux_resource_pool, nux_resource_t);
 
 ////////////////////////////
 ///      FUNCTIONS       ///
@@ -570,27 +570,23 @@ nux_u32_t nux_u32_le(nux_u32_t v);
 nux_f32_t nux_f32_le(nux_f32_t v);
 nux_u32_t nux_hash(const void *p, nux_u32_t s);
 
-// type.c
+// resource.c
 
-nux_resource_t *nux_resource_register(nux_ctx_t *ctx, const nux_c8_t *name);
+nux_resource_type_t *nux_res_register(nux_ctx_t *ctx, const nux_c8_t *name);
+nux_res_t            nux_res_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
+void                 nux_res_delete(nux_ctx_t *ctx, nux_res_t res);
+void *nux_res_check(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
 
 // arena.c
 
-void    *nux_arena_alloc_raw(nux_arena_t *arena, nux_u32_t size);
-void    *nux_arena_alloc(nux_ctx_t *ctx, nux_u32_t size);
-void    *nux_arena_alloc_resource(nux_ctx_t *ctx,
-                                  nux_u32_t  type,
-                                  nux_u32_t  size,
-                                  nux_id_t  *id);
-nux_id_t nux_arena_get_active(nux_ctx_t *ctx);
-void     nux_arena_set_active(nux_ctx_t *ctx, nux_id_t id);
-
-// id.c
-
-nux_id_t nux_id_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
-void     nux_id_delete(nux_ctx_t *ctx, nux_id_t id);
-void     nux_id_update(nux_ctx_t *ctx, nux_id_t id, void *data);
-void    *nux_id_check(nux_ctx_t *ctx, nux_u32_t type, nux_id_t id);
+void     *nux_arena_alloc_raw(nux_arena_t *arena, nux_u32_t size);
+void     *nux_arena_alloc(nux_ctx_t *ctx, nux_u32_t size);
+void     *nux_arena_alloc_res(nux_ctx_t *ctx,
+                              nux_u32_t  type,
+                              nux_u32_t  size,
+                              nux_res_t *res);
+nux_res_t nux_arena_get_active(nux_ctx_t *ctx);
+void      nux_arena_set_active(nux_ctx_t *ctx, nux_res_t res);
 
 // random.c
 

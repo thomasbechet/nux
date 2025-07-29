@@ -45,7 +45,7 @@ buffer_index (cgltf_accessor *accessor, nux_u32_t i)
     NUX_ASSERT(index != (nux_u32_t)-1);
     return index;
 }
-static nux_id_t
+static nux_res_t
 load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
 {
     // Access attributes
@@ -99,9 +99,9 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
     nux_u32_t       indice_count = accessor->count;
 
     // Create mesh
-    nux_id_t id = nux_mesh_new(ctx, indice_count);
+    nux_res_t id = nux_mesh_new(ctx, indice_count);
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_id_check(ctx, NUX_TYPE_MESH, id);
+    nux_mesh_t *mesh = nux_res_check(ctx, NUX_RES_MESH, id);
 
     // Write vertices
     if (attributes & NUX_VERTEX_POSITION)
@@ -139,7 +139,7 @@ load_primitive_mesh (nux_ctx_t *ctx, const cgltf_primitive *primitive)
 
     return id;
 }
-static nux_id_t
+static nux_res_t
 load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
 {
     nux_status_t status = NUX_FAILURE;
@@ -157,20 +157,20 @@ load_texture (nux_ctx_t *ctx, const cgltf_texture *texture)
 
     NUX_DEBUG("loading texture %s w %d h %d", texture->name, w, h);
 
-    nux_id_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
+    nux_res_t id = nux_texture_new(ctx, NUX_TEXTURE_IMAGE_RGBA, w, h);
     NUX_CHECK(id, return NUX_NULL);
     nux_texture_write(ctx, id, 0, 0, w, h, img);
 
     stbi_image_free(img);
     return id;
 }
-nux_id_t
+nux_res_t
 nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     typedef struct
     {
         void    *cgltf_ptr;
-        nux_id_t id;
+        nux_res_t id;
     } resource_t;
 
     cgltf_options options;
@@ -182,12 +182,12 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_id_t scene_id = nux_scene_new(ctx);
+    nux_res_t scene_id = nux_scene_new(ctx);
     NUX_CHECK(scene_id, return NUX_NULL);
 
     // Load file
     nux_u32_t buf_size;
-    nux_id_t  prev_arena = nux_arena_get_active(ctx);
+    nux_res_t  prev_arena = nux_arena_get_active(ctx);
     nux_arena_set_active(ctx, nux_arena_frame(ctx));
     void *buf = nux_io_load(ctx, path, &buf_size);
     nux_arena_set_active(ctx, prev_arena);
@@ -215,7 +215,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
             NUX_DEBUG("loading mesh %s primitive %d", mesh->name, p);
-            nux_id_t id = load_primitive_mesh(ctx, mesh->primitives + p);
+            nux_res_t id = load_primitive_mesh(ctx, mesh->primitives + p);
             NUX_CHECK(id, goto error);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             resources[resources_count].id        = id;
@@ -244,7 +244,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         }
         if (texture)
         {
-            nux_id_t id = load_texture(ctx, texture);
+            nux_res_t id = load_texture(ctx, texture);
             NUX_CHECK(id, goto error);
             resources[resources_count].cgltf_ptr = texture;
             resources[resources_count].id        = id;
@@ -274,7 +274,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
         {
             cgltf_node *node = scene->nodes[n];
 
-            nux_id_t node_id = nux_node_new(ctx, scene_id);
+            nux_res_t node_id = nux_node_new(ctx, scene_id);
             NUX_CHECK(node_id, goto error);
 
             nux_v3_t translation = NUX_V3_ZEROES;
@@ -312,7 +312,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                     cgltf_primitive *primitive = node->mesh->primitives + p;
 
                     // Find mesh
-                    nux_id_t mesh = NUX_NULL;
+                    nux_res_t mesh = NUX_NULL;
                     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(resources); ++i)
                     {
                         if (resources[i].cgltf_ptr == primitive)
@@ -327,7 +327,7 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
                                node->name);
 
                     // Find texture
-                    nux_id_t texture = NUX_NULL;
+                    nux_res_t texture = NUX_NULL;
                     if (primitive->material
                         && primitive->material->has_pbr_metallic_roughness
                         && primitive->material->pbr_metallic_roughness

@@ -60,41 +60,41 @@ nux_instance_init (const nux_config_t *config)
 
     // Register base types
     // Must be coherent with nux_type_base_t
-    ctx->resources_count = 0;
-    nux_resource_t *type;
+    ctx->resources_types_count = 0;
+    nux_resource_type_t *type;
 
-    type          = nux_resource_register(ctx, "null");
-    type          = nux_resource_register(ctx, "arena");
-    type          = nux_resource_register(ctx, "lua");
-    type          = nux_resource_register(ctx, "texture");
+    type          = nux_res_register(ctx, "null");
+    type          = nux_res_register(ctx, "arena");
+    type          = nux_res_register(ctx, "lua");
+    type          = nux_res_register(ctx, "texture");
     type->cleanup = nux_texture_cleanup;
-    type          = nux_resource_register(ctx, "mesh");
-    type          = nux_resource_register(ctx, "scene");
+    type          = nux_res_register(ctx, "mesh");
+    type          = nux_res_register(ctx, "scene");
     type->cleanup = nux_scene_cleanup;
-    type          = nux_resource_register(ctx, "node");
-    type          = nux_resource_register(ctx, "file");
+    type          = nux_res_register(ctx, "node");
+    type          = nux_res_register(ctx, "file");
     type->cleanup = nux_file_cleanup;
 
-    type                 = nux_resource_register(ctx, "transform");
+    type                 = nux_res_register(ctx, "transform");
     type->component_type = NUX_COMPONENT_TRANSFORM;
-    type                 = nux_resource_register(ctx, "camera");
+    type                 = nux_res_register(ctx, "camera");
     type->component_type = NUX_COMPONENT_CAMERA;
-    type                 = nux_resource_register(ctx, "staticmesh");
+    type                 = nux_res_register(ctx, "staticmesh");
     type->component_type = NUX_COMPONENT_STATICMESH;
 
     // Register base component types
     // Must be coherent with nux_component_type_base_t
-    ctx->resources_count = 0;
-    nux_component_register(ctx, NUX_TYPE_TRANSFORM);
-    nux_component_register(ctx, NUX_TYPE_CAMERA);
-    nux_component_register(ctx, NUX_TYPE_STATICMESH);
+    ctx->resources_types_count = 0;
+    nux_component_register(ctx, NUX_RES_TRANSFORM);
+    nux_component_register(ctx, NUX_RES_CAMERA);
+    nux_component_register(ctx, NUX_RES_STATICMESH);
 
-    // Create ids pool
-    NUX_CHECK(nux_id_pool_alloc(ctx, config->max_id_count, &ctx->ids),
+    // Create resource pool
+    NUX_CHECK(nux_resource_pool_alloc(ctx, config->max_id_count, &ctx->resources),
               goto cleanup);
 
     // Reserve index 0 for null id
-    nux_id_pool_add(&ctx->ids);
+    nux_resource_pool_add(&ctx->resources);
 
     // Allocate arena pool
     NUX_CHECK(nux_arena_pool_alloc(ctx, 32, &ctx->arenas), goto cleanup);
@@ -103,7 +103,7 @@ nux_instance_init (const nux_config_t *config)
     ctx->core_arena     = nux_arena_pool_add(&ctx->arenas);
     *ctx->core_arena    = core_arena; // copy by value
     ctx->active_arena   = ctx->core_arena;
-    ctx->core_arena->id = nux_id_create(ctx, NUX_TYPE_ARENA, ctx->core_arena);
+    ctx->core_arena->self = nux_res_create(ctx, NUX_RES_ARENA, ctx->core_arena);
 
     // Register frame arena
     ctx->frame_arena = nux_arena_new(ctx, NUX_MEM_16M);
@@ -141,7 +141,7 @@ cleanup:
 void
 nux_instance_free (nux_ctx_t *ctx)
 {
-    nux_arena_reset(ctx, ctx->core_arena->id);
+    nux_arena_reset(ctx, ctx->core_arena->self);
 
     // Free modules
     nux_lua_free(ctx);

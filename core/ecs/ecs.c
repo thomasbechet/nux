@@ -102,3 +102,13 @@ ecs_bitset_capacity (const nux_ecs_bitset_t *bitset)
 {
     return bitset->capa * ECS_ENTITY_PER_MASK;
 }
+
+nux_status_t
+nux_ecs_init (nux_ctx_t *ctx)
+{
+    NUX_CHECK(
+        nux_ecs_component_vec_alloc(ctx, ECS_COMPONENT_MAX, &ctx->components),
+        return NUX_FAILURE);
+    // NUX_CHECK(nux_ecs_iter_vec_alloc(ctx, ECS_ITER_MAX, &ctx->iters),
+    //           return NUX_FAILURE);
+}

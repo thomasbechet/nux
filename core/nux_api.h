@@ -17,7 +17,7 @@ typedef uint64_t       nux_u64_t;
 typedef float          nux_f32_t;
 typedef double         nux_f64_t;
 typedef intptr_t       nux_intptr_t;
-typedef struct nux_id *nux_id_t;
+typedef struct nux_id *nux_res_t;
 
 typedef struct nux_context nux_ctx_t;
 
@@ -244,96 +244,96 @@ nux_b32_t nux_button_just_released(nux_ctx_t   *ctx,
                                    nux_u32_t    player,
                                    nux_button_t button);
 
-nux_id_t nux_texture_new(nux_ctx_t         *ctx,
-                         nux_texture_type_t format,
-                         nux_u32_t          w,
-                         nux_u32_t          h);
-void     nux_texture_blit(nux_ctx_t *ctx, nux_id_t id);
+nux_res_t nux_texture_new(nux_ctx_t         *ctx,
+                          nux_texture_type_t format,
+                          nux_u32_t          w,
+                          nux_u32_t          h);
+void      nux_texture_blit(nux_ctx_t *ctx, nux_res_t res);
 
-nux_id_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
-void     nux_arena_reset(nux_ctx_t *ctx, nux_id_t id);
-nux_id_t nux_arena_frame(nux_ctx_t *ctx);
+nux_res_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
+void      nux_arena_reset(nux_ctx_t *ctx, nux_res_t res);
+nux_res_t nux_arena_frame(nux_ctx_t *ctx);
 
-nux_id_t nux_scene_new(nux_ctx_t *ctx);
-void     nux_scene_render(nux_ctx_t *ctx, nux_id_t scene, nux_id_t camera);
-nux_id_t nux_scene_get_node(nux_ctx_t *ctx, nux_id_t scene, nux_u32_t index);
-nux_id_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *path);
+nux_res_t nux_scene_new(nux_ctx_t *ctx);
+void      nux_scene_render(nux_ctx_t *ctx, nux_res_t scene, nux_res_t camera);
+nux_res_t nux_scene_get_node(nux_ctx_t *ctx, nux_res_t scene, nux_u32_t index);
+nux_res_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *path);
 
-nux_id_t nux_node_new(nux_ctx_t *ctx, nux_id_t scene);
-void     nux_node_set_parent(nux_ctx_t *ctx, nux_id_t id, nux_id_t parent);
-nux_id_t nux_node_get_parent(nux_ctx_t *ctx, nux_id_t id);
-nux_id_t nux_node_get_scene(nux_ctx_t *ctx, nux_id_t id);
+nux_res_t nux_node_new(nux_ctx_t *ctx, nux_res_t scene);
+void      nux_node_set_parent(nux_ctx_t *ctx, nux_res_t res, nux_res_t parent);
+nux_res_t nux_node_get_parent(nux_ctx_t *ctx, nux_res_t res);
+nux_res_t nux_node_get_scene(nux_ctx_t *ctx, nux_res_t res);
 
-void     nux_transform_add(nux_ctx_t *ctx, nux_id_t id);
-void     nux_transform_remove(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_get_local_translation(nux_ctx_t *ctx, nux_id_t id);
-nux_q4_t nux_transform_get_local_rotation(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_get_local_scale(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_get_translation(nux_ctx_t *ctx, nux_id_t id);
-nux_q4_t nux_transform_get_rotation(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_get_scale(nux_ctx_t *ctx, nux_id_t id);
+void     nux_transform_add(nux_ctx_t *ctx, nux_res_t res);
+void     nux_transform_remove(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_get_local_translation(nux_ctx_t *ctx, nux_res_t res);
+nux_q4_t nux_transform_get_local_rotation(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_get_local_scale(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_get_translation(nux_ctx_t *ctx, nux_res_t res);
+nux_q4_t nux_transform_get_rotation(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_get_scale(nux_ctx_t *ctx, nux_res_t res);
 void     nux_transform_set_translation(nux_ctx_t *ctx,
-                                       nux_id_t   node,
+                                       nux_res_t  node,
                                        nux_v3_t   position);
 void     nux_transform_set_rotation(nux_ctx_t *ctx,
-                                    nux_id_t   node,
+                                    nux_res_t  node,
                                     nux_q4_t   rotation);
 void     nux_transform_set_rotation_euler(nux_ctx_t *ctx,
-                                          nux_id_t   node,
+                                          nux_res_t  node,
                                           nux_v3_t   euler);
-void     nux_transform_set_scale(nux_ctx_t *ctx, nux_id_t id, nux_v3_t scale);
-nux_v3_t nux_transform_forward(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_backward(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_left(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_right(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_up(nux_ctx_t *ctx, nux_id_t id);
-nux_v3_t nux_transform_down(nux_ctx_t *ctx, nux_id_t id);
+void     nux_transform_set_scale(nux_ctx_t *ctx, nux_res_t res, nux_v3_t scale);
+nux_v3_t nux_transform_forward(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_backward(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_left(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_right(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_up(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_down(nux_ctx_t *ctx, nux_res_t res);
 void     nux_transform_rotate(nux_ctx_t *ctx,
-                              nux_id_t   node,
+                              nux_res_t  node,
                               nux_v3_t   axis,
                               nux_f32_t  angle);
-void     nux_transform_rotate_x(nux_ctx_t *ctx, nux_id_t id, nux_f32_t angle);
-void     nux_transform_rotate_y(nux_ctx_t *ctx, nux_id_t id, nux_f32_t angle);
-void     nux_transform_rotate_z(nux_ctx_t *ctx, nux_id_t id, nux_f32_t angle);
-void     nux_transform_look_at(nux_ctx_t *ctx, nux_id_t id, nux_v3_t center);
+void     nux_transform_rotate_x(nux_ctx_t *ctx, nux_res_t res, nux_f32_t angle);
+void     nux_transform_rotate_y(nux_ctx_t *ctx, nux_res_t res, nux_f32_t angle);
+void     nux_transform_rotate_z(nux_ctx_t *ctx, nux_res_t res, nux_f32_t angle);
+void     nux_transform_look_at(nux_ctx_t *ctx, nux_res_t res, nux_v3_t center);
 
-void nux_camera_add(nux_ctx_t *ctx, nux_id_t id);
-void nux_camera_remove(nux_ctx_t *ctx, nux_id_t id);
-void nux_camera_set_fov(nux_ctx_t *ctx, nux_id_t id, nux_f32_t fov);
-void nux_camera_set_near(nux_ctx_t *ctx, nux_id_t id, nux_f32_t near);
-void nux_camera_set_far(nux_ctx_t *ctx, nux_id_t id, nux_f32_t far);
+void nux_camera_add(nux_ctx_t *ctx, nux_res_t res);
+void nux_camera_remove(nux_ctx_t *ctx, nux_res_t res);
+void nux_camera_set_fov(nux_ctx_t *ctx, nux_res_t res, nux_f32_t fov);
+void nux_camera_set_near(nux_ctx_t *ctx, nux_res_t res, nux_f32_t near);
+void nux_camera_set_far(nux_ctx_t *ctx, nux_res_t res, nux_f32_t far);
 
-void nux_staticmesh_add(nux_ctx_t *ctx, nux_id_t id);
-void nux_staticmesh_remove(nux_ctx_t *ctx, nux_id_t id);
-void nux_staticmesh_set_mesh(nux_ctx_t *ctx, nux_id_t id, nux_id_t mesh);
+void nux_staticmesh_add(nux_ctx_t *ctx, nux_res_t res);
+void nux_staticmesh_remove(nux_ctx_t *ctx, nux_res_t res);
+void nux_staticmesh_set_mesh(nux_ctx_t *ctx, nux_res_t res, nux_res_t mesh);
 void nux_staticmesh_set_texture(nux_ctx_t *ctx,
-                                nux_id_t   node,
-                                nux_id_t   texture);
+                                nux_res_t  node,
+                                nux_res_t  texture);
 void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
-                                 nux_id_t   node,
-                                 nux_id_t   colormap);
+                                 nux_res_t  node,
+                                 nux_res_t  colormap);
 
-nux_id_t nux_mesh_new(nux_ctx_t *ctx, nux_u32_t capa);
-void     nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_id_t id);
-nux_id_t nux_mesh_gen_cube(nux_ctx_t *ctx,
-                           nux_f32_t  sx,
-                           nux_f32_t  sy,
-                           nux_f32_t  sz);
+nux_res_t nux_mesh_new(nux_ctx_t *ctx, nux_u32_t capa);
+void      nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_res_t res);
+nux_res_t nux_mesh_gen_cube(nux_ctx_t *ctx,
+                            nux_f32_t  sx,
+                            nux_f32_t  sy,
+                            nux_f32_t  sz);
 
-nux_id_t nux_canvas_new(nux_ctx_t *ctx);
-void     nux_canvas_clear(nux_ctx_t *ctx, nux_id_t id);
-void     nux_canvas_render(nux_ctx_t *ctx, nux_id_t id, nux_id_t target);
-void     nux_canvas_text(nux_ctx_t      *ctx,
-                         nux_id_t        id,
-                         nux_u32_t       x,
-                         nux_u32_t       y,
-                         const nux_c8_t *text);
-void     nux_canvas_rectangle(nux_ctx_t *ctx,
-                              nux_id_t   id,
-                              nux_u32_t  x,
-                              nux_u32_t  y,
-                              nux_u32_t  w,
-                              nux_u32_t  h);
+nux_res_t nux_canvas_new(nux_ctx_t *ctx);
+void      nux_canvas_clear(nux_ctx_t *ctx, nux_res_t res);
+void      nux_canvas_render(nux_ctx_t *ctx, nux_res_t res, nux_res_t target);
+void      nux_canvas_text(nux_ctx_t      *ctx,
+                          nux_res_t       res,
+                          nux_u32_t       x,
+                          nux_u32_t       y,
+                          const nux_c8_t *text);
+void      nux_canvas_rectangle(nux_ctx_t *ctx,
+                               nux_res_t  res,
+                               nux_u32_t  x,
+                               nux_u32_t  y,
+                               nux_u32_t  w,
+                               nux_u32_t  h);
 // void      nux_graphics_line(nux_ctx_t *ctx,
 //                             nux_i32_t  x0,
 //                             nux_i32_t  y0,
