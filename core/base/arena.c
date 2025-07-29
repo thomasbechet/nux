@@ -115,7 +115,7 @@ nux_arena_alloc_res (nux_ctx_t *ctx,
 nux_res_t
 nux_arena_get_active (nux_ctx_t *ctx)
 {
-    return ctx->active_arena_id;
+    return ctx->active_arena_res;
 }
 void
 nux_arena_set_active (nux_ctx_t *ctx, nux_res_t id)
@@ -130,7 +130,7 @@ nux_arena_set_active (nux_ctx_t *ctx, nux_res_t id)
     {
         ctx->active_arena = ctx->core_arena;
     }
-    ctx->active_arena_id = id;
+    ctx->active_arena_res = id;
 }
 
 nux_res_t

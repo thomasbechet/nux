@@ -313,6 +313,8 @@ typedef enum
     NUX_RES_CAMERA     = 9,
     NUX_RES_STATICMESH = 10,
     NUX_RES_FILE       = 11,
+    NUX_RES_ECS        = 12,
+    NUX_RES_ECS_ITER   = 13,
 
     NUX_RES_MAX = 256,
 } nux_resource_base_t;

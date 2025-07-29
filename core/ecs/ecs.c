@@ -1,5 +1,8 @@
 #include "internal.h"
 
+#define ID_INDEX(id)   (id - 1)
+#define ID_MAKE(index) (index + 1)
+
 static void
 ecs_mask_set (nux_ecs_mask_t *mask, nux_u32_t n)
 {
@@ -109,6 +112,39 @@ nux_ecs_init (nux_ctx_t *ctx)
     NUX_CHECK(
         nux_ecs_component_vec_alloc(ctx, ECS_COMPONENT_MAX, &ctx->components),
         return NUX_FAILURE);
-    // NUX_CHECK(nux_ecs_iter_vec_alloc(ctx, ECS_ITER_MAX, &ctx->iters),
-    //           return NUX_FAILURE);
+    return NUX_SUCCESS;
+}
+nux_u32_t
+nux_ecs_register_component (nux_ctx_t      *ctx,
+                            const nux_c8_t *name,
+                            nux_u32_t       size)
+{
+    nux_ecs_component_t *comp = nux_ecs_component_vec_push(&ctx->components);
+    NUX_ENSURE(comp, return NUX_NULL, "max ecs component count reached");
+    nux_strncpy(comp->name, name, ECS_COMPONENT_NAME_LEN);
+    comp->size = size;
+    return ID_MAKE(ctx->components.size - 1);
+}
+
+nux_res_t
+nux_ecs_new_iter (nux_ctx_t *ctx,
+                  nux_u32_t  include_count,
+                  nux_u32_t  exclude_count)
+{
+}
+void
+nux_ecs_includes (nux_ctx_t *ctx, nux_u32_t iter, nux_u32_t c)
+{
+}
+void
+nux_ecs_excludes (nux_ctx_t *ctx, nux_u32_t iter, nux_u32_t c)
+{
+}
+nux_u32_t
+nux_ecs_begin (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t iter)
+{
+}
+nux_u32_t
+nux_ecs_next (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t iter)
+{
 }

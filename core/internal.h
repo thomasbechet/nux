@@ -15,7 +15,7 @@ struct nux_context
     nux_c8_t     error_message[256];
     nux_status_t error_status;
     nux_arena_t *active_arena;
-    nux_res_t    active_arena_id;
+    nux_res_t    active_arena_res;
 
     // System
 
@@ -62,7 +62,7 @@ struct nux_context
 
     // type
 
-    nux_resource_type_t       resources_types[NUX_RES_MAX];
+    nux_resource_type_t  resources_types[NUX_RES_MAX];
     nux_u32_t            resources_types_count;
     nux_component_type_t component_types[NUX_COMPONENT_MAX];
     nux_u32_t            component_types_count;

@@ -74,6 +74,8 @@ nux_instance_init (const nux_config_t *config)
     type          = nux_res_register(ctx, "node");
     type          = nux_res_register(ctx, "file");
     type->cleanup = nux_file_cleanup;
+    type          = nux_res_register(ctx, "ecs");
+    type          = nux_res_register(ctx, "ecs_iter");
 
     type                 = nux_res_register(ctx, "transform");
     type->component_type = NUX_COMPONENT_TRANSFORM;
@@ -90,8 +92,9 @@ nux_instance_init (const nux_config_t *config)
     nux_component_register(ctx, NUX_RES_STATICMESH);
 
     // Create resource pool
-    NUX_CHECK(nux_resource_pool_alloc(ctx, config->max_id_count, &ctx->resources),
-              goto cleanup);
+    NUX_CHECK(
+        nux_resource_pool_alloc(ctx, config->max_id_count, &ctx->resources),
+        goto cleanup);
 
     // Reserve index 0 for null id
     nux_resource_pool_add(&ctx->resources);
@@ -100,9 +103,9 @@ nux_instance_init (const nux_config_t *config)
     NUX_CHECK(nux_arena_pool_alloc(ctx, 32, &ctx->arenas), goto cleanup);
 
     // Register core arena object
-    ctx->core_arena     = nux_arena_pool_add(&ctx->arenas);
-    *ctx->core_arena    = core_arena; // copy by value
-    ctx->active_arena   = ctx->core_arena;
+    ctx->core_arena       = nux_arena_pool_add(&ctx->arenas);
+    *ctx->core_arena      = core_arena; // copy by value
+    ctx->active_arena     = ctx->core_arena;
     ctx->core_arena->self = nux_res_create(ctx, NUX_RES_ARENA, ctx->core_arena);
 
     // Register frame arena
