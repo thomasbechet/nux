@@ -235,14 +235,16 @@ l_button_just_released (lua_State *L)
 static int
 l_texture_new (lua_State *L)
 {
-    nux_ctx_t         *ctx    = lua_getuserdata(L);
-    nux_texture_type_t format = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_u32_t w = luaL_checkinteger(L, 2);
+    nux_texture_type_t format = luaL_checkinteger(L, 2);
 
-    nux_u32_t h = luaL_checkinteger(L, 3);
+    nux_u32_t w = luaL_checkinteger(L, 3);
 
-    nux_res_t ret = nux_texture_new(ctx, format, w, h);
+    nux_u32_t h = luaL_checkinteger(L, 4);
+
+    nux_res_t ret = nux_texture_new(ctx, arena, format, w, h);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -285,9 +287,9 @@ l_arena_new (lua_State *L)
 static int
 l_arena_reset (lua_State *L)
 {
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_arena_reset(ctx, res);
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_arena_reset(ctx, arena);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -308,10 +310,10 @@ l_arena_frame (lua_State *L)
     return 1;
 }
 static int
-l_arena_get (lua_State *L)
+l_arena_scratch (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_arena_get(ctx);
+    nux_res_t  ret = nux_arena_scratch(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -323,21 +325,14 @@ l_arena_get (lua_State *L)
     }
     return 1;
 }
-static int
-l_arena_set (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_arena_set(ctx, res);
-    l_checkerror(L, ctx);
-    return 0;
-}
 
 static int
 l_scene_new (lua_State *L)
 {
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_scene_new(ctx);
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_res_t ret = nux_scene_new(ctx, arena);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -383,10 +378,12 @@ l_scene_get_node (lua_State *L)
 static int
 l_scene_load_gltf (lua_State *L)
 {
-    nux_ctx_t      *ctx  = lua_getuserdata(L);
-    const nux_c8_t *path = luaL_checkstring(L, 1);
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_res_t ret = nux_scene_load_gltf(ctx, path);
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+
+    nux_res_t ret = nux_scene_load_gltf(ctx, arena, path);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -876,10 +873,36 @@ l_staticmesh_set_colormap (lua_State *L)
 static int
 l_mesh_new (lua_State *L)
 {
-    nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_u32_t  capa = luaL_checkinteger(L, 1);
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_res_t ret = nux_mesh_new(ctx, capa);
+    nux_u32_t capa = luaL_checkinteger(L, 2);
+
+    nux_res_t ret = nux_mesh_new(ctx, arena, capa);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushnumber(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_mesh_new_cube (lua_State *L)
+{
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_f32_t sx = luaL_checknumber(L, 2);
+
+    nux_f32_t sy = luaL_checknumber(L, 3);
+
+    nux_f32_t sz = luaL_checknumber(L, 4);
+
+    nux_res_t ret = nux_mesh_new_cube(ctx, arena, sx, sy, sz);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -894,40 +917,20 @@ l_mesh_new (lua_State *L)
 static int
 l_mesh_gen_bounds (lua_State *L)
 {
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_mesh_gen_bounds(ctx, res);
+    nux_ctx_t *ctx  = lua_getuserdata(L);
+    nux_res_t  mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_mesh_gen_bounds(ctx, mesh);
     l_checkerror(L, ctx);
     return 0;
-}
-static int
-l_mesh_gen_cube (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_f32_t  sx  = luaL_checknumber(L, 1);
-
-    nux_f32_t sy = luaL_checknumber(L, 2);
-
-    nux_f32_t sz = luaL_checknumber(L, 3);
-
-    nux_res_t ret = nux_mesh_gen_cube(ctx, sx, sy, sz);
-    l_checkerror(L, ctx);
-    if (ret)
-    {
-        lua_pushnumber(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
 }
 
 static int
 l_canvas_new (lua_State *L)
 {
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_canvas_new(ctx);
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_res_t ret = nux_canvas_new(ctx, arena);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -1052,10 +1055,11 @@ static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
                                                { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_arena[]
-    = { { "new", l_arena_new },     { "reset", l_arena_reset },
-        { "frame", l_arena_frame }, { "get", l_arena_get },
-        { "set", l_arena_set },     { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
+                                             { "reset", l_arena_reset },
+                                             { "frame", l_arena_frame },
+                                             { "scratch", l_arena_scratch },
+                                             { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_scene[] = { { "new", l_scene_new },
                                              { "render", l_scene_render },
@@ -1109,8 +1113,8 @@ static const struct luaL_Reg lib_staticmesh[]
         { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_mesh[] = { { "new", l_mesh_new },
+                                            { "new_cube", l_mesh_new_cube },
                                             { "gen_bounds", l_mesh_gen_bounds },
-                                            { "gen_cube", l_mesh_gen_cube },
                                             { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_canvas[]

@@ -43,6 +43,7 @@ typedef struct
 
 typedef struct
 {
+    nux_arena_t            *arena;
     nux_ecs_bitset_t        bitset;
     nux_ecs_container_vec_t containers;
 } nux_ecs_t;
@@ -61,6 +62,7 @@ nux_u32_t    nux_ecs_register_component(nux_ctx_t      *ctx,
                                         nux_u32_t       size);
 
 nux_res_t nux_ecs_new_iter(nux_ctx_t *ctx,
+                           nux_res_t  arena,
                            nux_u32_t  include_count,
                            nux_u32_t  exclude_count);
 void      nux_ecs_includes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
@@ -68,7 +70,7 @@ void      nux_ecs_excludes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
 nux_u32_t nux_ecs_begin(nux_ctx_t *ctx, nux_res_t iter, nux_res_t ecs);
 nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_res_t iter);
 
-nux_res_t nux_ecs_new(nux_ctx_t *ctx, nux_u32_t capa);
+nux_res_t nux_ecs_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
 nux_u32_t nux_ecs_add(nux_ctx_t *ctx, nux_res_t ecs);
 void      nux_ecs_add_at(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);
 void      nux_ecs_remove(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);

@@ -116,7 +116,8 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
               return NUX_FAILURE);
 
     // Allocate commands
-    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, 4096, &canvas->commands),
+    NUX_CHECK(nux_gpu_command_vec_alloc(
+                  ctx, ctx->core_arena, 4096, &canvas->commands),
               return NUX_FAILURE);
 
     // Initialize base active batch
@@ -129,11 +130,11 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
 }
 
 nux_res_t
-nux_canvas_new (nux_ctx_t *ctx)
+nux_canvas_new (nux_ctx_t *ctx, nux_res_t arena)
 {
-    nux_res_t      id;
+    nux_res_t     id;
     nux_canvas_t *c
-        = nux_arena_alloc_res(ctx, NUX_RES_CANVAS, sizeof(*c), &id);
+        = nux_arena_alloc_res(ctx, arena, NUX_RES_CANVAS, sizeof(*c), &id);
     NUX_CHECK(c, return NUX_NULL);
     NUX_CHECK(nux_canvas_init(ctx, c), return NUX_NULL);
     return id;
@@ -197,8 +198,11 @@ nux_canvas_render (nux_ctx_t *ctx, nux_res_t id, nux_res_t target)
     nux_os_gpu_submit(ctx->userdata, c->commands.data, c->commands.size);
 }
 void
-nux_canvas_text (
-    nux_ctx_t *ctx, nux_res_t id, nux_u32_t x, nux_u32_t y, const nux_c8_t *text)
+nux_canvas_text (nux_ctx_t      *ctx,
+                 nux_res_t       id,
+                 nux_u32_t       x,
+                 nux_u32_t       y,
+                 const nux_c8_t *text)
 {
     nux_canvas_t *c = nux_res_check(ctx, NUX_RES_CANVAS, id);
     NUX_CHECK(c, return);
@@ -247,7 +251,7 @@ nux_canvas_text (
 }
 void
 nux_canvas_rectangle (nux_ctx_t *ctx,
-                      nux_res_t   id,
+                      nux_res_t  id,
                       nux_u32_t  x,
                       nux_u32_t  y,
                       nux_u32_t  w,

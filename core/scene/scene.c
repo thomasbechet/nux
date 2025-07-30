@@ -28,27 +28,29 @@ push_transforms (nux_ctx_t      *ctx,
 }
 
 nux_res_t
-nux_scene_new (nux_ctx_t *ctx)
+nux_scene_new (nux_ctx_t *ctx, nux_res_t arena)
 {
-    nux_res_t     id;
+    nux_res_t    id;
+    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    NUX_CHECK(a, return NUX_NULL);
     nux_scene_t *s
-        = nux_arena_alloc_res(ctx, NUX_RES_SCENE, sizeof(*s), &id);
+        = nux_arena_alloc_res(ctx, arena, NUX_RES_SCENE, sizeof(*s), &id);
     NUX_CHECK(s, return NUX_NULL);
 
-    s->arena = ctx->active_arena;
-    NUX_CHECK(nux_node_pool_alloc(ctx, DEFAULT_NODE_COUNT, &s->nodes),
+    NUX_CHECK(nux_node_pool_alloc(ctx, a, DEFAULT_NODE_COUNT, &s->nodes),
               return NUX_NULL);
-    NUX_CHECK(nux_component_pool_alloc(ctx, DEFAULT_NODE_COUNT, &s->components),
-              return NUX_NULL);
+    NUX_CHECK(
+        nux_component_pool_alloc(ctx, a, DEFAULT_NODE_COUNT, &s->components),
+        return NUX_NULL);
 
     // Reserve index 0 to null
     nux_node_pool_add(&s->nodes);
     nux_component_pool_add(&s->components);
 
     // Allocate gpu commands buffer
-    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands),
+    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, a, 4096, &s->commands),
               return NUX_NULL);
-    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, 4096, &s->commands_lines),
+    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, a, 4096, &s->commands_lines),
               return NUX_NULL);
 
     // Allocate constants buffer

@@ -9,17 +9,24 @@ nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
 {
     // Initialize gpu slots
-    NUX_CHECK(nux_u32_vec_alloc(
-                  ctx, NUX_GPU_FRAMEBUFFER_MAX, &ctx->free_framebuffer_slots),
+    NUX_CHECK(nux_u32_vec_alloc(ctx,
+                                ctx->core_arena,
+                                NUX_GPU_FRAMEBUFFER_MAX,
+                                &ctx->free_framebuffer_slots),
+              goto error);
+    NUX_CHECK(nux_u32_vec_alloc(ctx,
+                                ctx->core_arena,
+                                NUX_GPU_PIPELINE_MAX,
+                                &ctx->free_pipeline_slots),
+              goto error);
+    NUX_CHECK(nux_u32_vec_alloc(ctx,
+                                ctx->core_arena,
+                                NUX_GPU_TEXTURE_MAX,
+                                &ctx->free_texture_slots),
               goto error);
     NUX_CHECK(
-        nux_u32_vec_alloc(ctx, NUX_GPU_PIPELINE_MAX, &ctx->free_pipeline_slots),
-        goto error);
-    NUX_CHECK(
-        nux_u32_vec_alloc(ctx, NUX_GPU_TEXTURE_MAX, &ctx->free_texture_slots),
-        goto error);
-    NUX_CHECK(
-        nux_u32_vec_alloc(ctx, NUX_GPU_BUFFER_MAX, &ctx->free_buffer_slots),
+        nux_u32_vec_alloc(
+            ctx, ctx->core_arena, NUX_GPU_BUFFER_MAX, &ctx->free_buffer_slots),
         goto error);
 
     nux_u32_vec_fill_reversed(&ctx->free_framebuffer_slots);

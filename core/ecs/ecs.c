@@ -109,9 +109,9 @@ ecs_bitset_capacity (const nux_ecs_bitset_t *bitset)
 nux_status_t
 nux_ecs_init (nux_ctx_t *ctx)
 {
-    NUX_CHECK(
-        nux_ecs_component_vec_alloc(ctx, ECS_COMPONENT_MAX, &ctx->components),
-        return NUX_FAILURE);
+    NUX_CHECK(nux_ecs_component_vec_alloc(
+                  ctx, ctx->core_arena, ECS_COMPONENT_MAX, &ctx->components),
+              return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 nux_u32_t
@@ -128,16 +128,19 @@ nux_ecs_register_component (nux_ctx_t      *ctx,
 
 nux_res_t
 nux_ecs_new_iter (nux_ctx_t *ctx,
+                  nux_res_t  arena,
                   nux_u32_t  include_count,
                   nux_u32_t  exclude_count)
 {
     nux_res_t       res;
     nux_ecs_iter_t *it
-        = nux_arena_alloc_res(ctx, NUX_RES_ECS_ITER, sizeof(*it), &res);
+        = nux_arena_alloc_res(ctx, arena, NUX_RES_ECS_ITER, sizeof(*it), &res);
     NUX_CHECK(res, return NUX_NULL);
-    NUX_CHECK(nux_u32_vec_alloc(ctx, include_count, &it->includes),
+    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    NUX_CHECK(a, return NUX_NULL);
+    NUX_CHECK(nux_u32_vec_alloc(ctx, a, include_count, &it->includes),
               return NUX_NULL);
-    NUX_CHECK(nux_u32_vec_alloc(ctx, exclude_count, &it->excludes),
+    NUX_CHECK(nux_u32_vec_alloc(ctx, a, exclude_count, &it->excludes),
               return NUX_NULL);
     return res;
 }
@@ -223,16 +226,20 @@ nux_ecs_next (nux_ctx_t *ctx, nux_res_t iter)
 }
 
 nux_res_t
-nux_ecs_new (nux_ctx_t *ctx, nux_u32_t capa)
+nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
 {
-    nux_res_t  res;
-    nux_ecs_t *ins = nux_arena_alloc_res(ctx, NUX_RES_ECS, sizeof(*ins), &res);
+    nux_res_t    res;
+    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    NUX_CHECK(a, return NUX_NULL);
+    nux_ecs_t *ins
+        = nux_arena_alloc_res(ctx, arena, NUX_RES_ECS, sizeof(*ins), &res);
     NUX_CHECK(ins, return NUX_NULL);
+    ins->arena = a;
     NUX_CHECK(nux_ecs_container_vec_alloc(
-                  ctx, ctx->components.size, &ins->containers),
+                  ctx, a, ctx->components.size, &ins->containers),
               return NUX_NULL);
     NUX_CHECK(nux_ecs_bitset_alloc(
-                  ctx, (capa / ECS_ENTITY_PER_MASK) + 1, &ins->bitset),
+                  ctx, a, (capa / ECS_ENTITY_PER_MASK) + 1, &ins->bitset),
               return NUX_NULL);
     return res;
 }
@@ -330,11 +337,13 @@ nux_ecs_set (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
         {
             nux_ecs_container_t *container = ins->containers.data + i;
             container->component_size      = ctx->components.data[i].size;
-            NUX_CHECK(nux_ecs_chunk_vec_alloc(
-                          ctx, ins->bitset.capa, &container->chunks),
-                      return NUX_NULL);
             NUX_CHECK(
-                nux_ecs_bitset_alloc(ctx, ins->bitset.capa, &container->bitset),
+                nux_ecs_chunk_vec_alloc(
+                    ctx, ins->arena, ins->bitset.capa, &container->chunks),
+                return NUX_NULL);
+            NUX_CHECK(
+                nux_ecs_bitset_alloc(
+                    ctx, ins->arena, ins->bitset.capa, &container->bitset),
                 return NUX_NULL);
             for (nux_u32_t i = 0; i < ins->bitset.capa; ++i)
             {
@@ -357,8 +366,10 @@ nux_ecs_set (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
         if (!container->chunks.data[mask])
         {
             // allocate new chunk
-            container->chunks.data[mask] = nux_arena_alloc(
-                ctx, container->component_size * ECS_ENTITY_PER_MASK);
+            container->chunks.data[mask] = nux_arena_alloc_raw(
+                ctx,
+                ins->arena,
+                container->component_size * ECS_ENTITY_PER_MASK);
             // expect zero memory by default
             nux_memset(container->chunks.data[mask],
                        0,

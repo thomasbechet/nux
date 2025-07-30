@@ -66,40 +66,44 @@ arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)
 }
 
 void *
-nux_arena_alloc_raw (nux_arena_t *arena, nux_u32_t size)
+nux_arena_alloc_raw (nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size)
 {
-    return arena_alloc(arena, NUX_NULL, 0, size);
-}
-void *
-nux_arena_alloc (nux_ctx_t *ctx, nux_u32_t size)
-{
-    void *p = nux_arena_alloc_raw(ctx->active_arena, size);
+    void *p = arena_alloc(arena, NUX_NULL, 0, size);
     NUX_ENSURE(p,
                return NUX_NULL,
                "out of memory (allocate %d, remaining %d)",
                size,
-               ctx->active_arena->capa - ctx->active_arena->size);
+               arena->capa - arena->size);
     return p;
 }
 void *
-nux_arena_alloc_res (nux_ctx_t *ctx,
-                          nux_u32_t  type,
-                          nux_u32_t  size,
-                          nux_res_t  *id)
+nux_arena_alloc (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t size)
 {
+    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    NUX_CHECK(a, return NUX_NULL);
+    return nux_arena_alloc_raw(ctx, a, size);
+}
+void *
+nux_arena_alloc_res (nux_ctx_t *ctx,
+                     nux_res_t  arena,
+                     nux_u32_t  type,
+                     nux_u32_t  size,
+                     nux_res_t *id)
+{
+    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    NUX_CHECK(a, return NUX_NULL);
     nux_resource_header_t *header
-        = nux_arena_alloc(ctx, sizeof(nux_resource_header_t) + size);
+        = nux_arena_alloc(ctx, arena, sizeof(nux_resource_header_t) + size);
     NUX_CHECK(header, return NUX_NULL);
-    nux_arena_t *arena = ctx->active_arena;
-    header->type       = type;
-    header->prev       = arena->last_resource;
-    header->next       = NUX_NULL;
-    if (!arena->first_resource)
+    header->type = type;
+    header->prev = a->last_resource;
+    header->next = NUX_NULL;
+    if (!a->first_resource)
     {
-        arena->first_resource = header;
+        a->first_resource = header;
     }
-    arena->last_resource = header;
-    void *data           = header + 1; // TODO: handle proper memory alignment
+    a->last_resource = header;
+    void *data       = header + 1; // TODO: handle proper memory alignment
     if (id)
     {
         *id = nux_res_create(ctx, type, data);
@@ -111,26 +115,6 @@ nux_arena_alloc_res (nux_ctx_t *ctx,
         header->self = *id;
     }
     return data;
-}
-nux_res_t
-nux_arena_get (nux_ctx_t *ctx)
-{
-    return ctx->active_arena_res;
-}
-void
-nux_arena_set (nux_ctx_t *ctx, nux_res_t id)
-{
-    if (id)
-    {
-        nux_arena_t *arena = nux_res_check(ctx, NUX_RES_ARENA, id);
-        NUX_CHECK(arena, return);
-        ctx->active_arena = arena;
-    }
-    else
-    {
-        ctx->active_arena = ctx->core_arena;
-    }
-    ctx->active_arena_res = id;
 }
 
 nux_res_t
@@ -145,7 +129,7 @@ nux_arena_new (nux_ctx_t *ctx, nux_u32_t capa)
     arena->size           = 0;
     arena->first_resource = NUX_NULL;
     arena->last_resource  = NUX_NULL;
-    arena->data           = nux_arena_alloc(ctx, arena->capa);
+    arena->data = nux_arena_alloc_raw(ctx, ctx->core_arena, arena->capa);
     NUX_CHECK(arena->data, goto cleanup1);
     return arena->self;
 
@@ -156,14 +140,19 @@ cleanup0:
     return NUX_NULL;
 }
 void
-nux_arena_reset (nux_ctx_t *ctx, nux_res_t id)
+nux_arena_reset (nux_ctx_t *ctx, nux_res_t arena)
 {
-    nux_arena_t *arena = nux_res_check(ctx, NUX_RES_ARENA, id);
-    NUX_CHECK(arena, return);
-    arena_reset(ctx, arena, NUX_NULL);
+    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    NUX_CHECK(a, return);
+    arena_reset(ctx, a, NUX_NULL);
 }
 nux_res_t
 nux_arena_frame (nux_ctx_t *ctx)
 {
     return ctx->frame_arena;
+}
+nux_res_t
+nux_arena_scratch (nux_ctx_t *ctx)
+{
+    return nux_arena_frame(ctx);
 }

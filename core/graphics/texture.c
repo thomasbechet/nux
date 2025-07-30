@@ -2,6 +2,7 @@
 
 nux_res_t
 nux_texture_new (nux_ctx_t         *ctx,
+                 nux_res_t          arena,
                  nux_texture_type_t type,
                  nux_u32_t          w,
                  nux_u32_t          h)
@@ -9,7 +10,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     // Create object
     nux_res_t      res;
     nux_texture_t *tex
-        = nux_arena_alloc_res(ctx, NUX_RES_TEXTURE, sizeof(*tex), &res);
+        = nux_arena_alloc_res(ctx, arena, NUX_RES_TEXTURE, sizeof(*tex), &res);
     NUX_CHECK(tex, return NUX_NULL);
     tex->gpu.type   = type;
     tex->gpu.width  = w;
@@ -34,7 +35,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     }
     if (pixel_size)
     {
-        tex->data = nux_arena_alloc(ctx, pixel_size * w * h);
+        tex->data = nux_arena_alloc(ctx, arena, pixel_size * w * h);
         NUX_CHECK(tex->data, return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }

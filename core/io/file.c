@@ -1,11 +1,14 @@
 #include "internal.h"
 
 nux_res_t
-nux_file_open (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)
+nux_file_open (nux_ctx_t      *ctx,
+               nux_res_t       arena,
+               const nux_c8_t *path,
+               nux_io_mode_t   mode)
 {
     nux_res_t   res;
     nux_file_t *file
-        = nux_arena_alloc_res(ctx, NUX_RES_FILE, sizeof(*file), &res);
+        = nux_arena_alloc_res(ctx, arena, NUX_RES_FILE, sizeof(*file), &res);
     NUX_CHECK(file, return NUX_NULL);
 
     if (!nux_io_open(ctx, path, mode, file))

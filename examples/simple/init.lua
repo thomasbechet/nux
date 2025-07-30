@@ -10,6 +10,7 @@ local monolith_texture
 local cube
 local gui_canvas
 local gui_texture
+local arena
 
 local function controller(e)
     local speed = 10
@@ -74,9 +75,10 @@ end
 function nux.init()
     -- generate_cart()
     -- do return end
+    arena = nux.arena.new(1 << 24)
 
-    local mesh_cube = nux.mesh.gen_cube(1, 1, 1)
-    s = nux.scene.new()
+    local mesh_cube = nux.mesh.new_cube(arena, 1, 1, 1)
+    s = nux.scene.new(arena)
 
     local template = {
         staticmesh = { mesh = mesh_cube }
@@ -115,7 +117,7 @@ function nux.init()
         , nil)
     end
 
-    s = nux.scene.load_gltf("assets/industrial.glb")
+    s = nux.scene.load_gltf(arena, "assets/industrial.glb")
 
     c = nux.node.new(s)
     nux.transform.add(c)
@@ -124,13 +126,13 @@ function nux.init()
     nux.camera.set_fov(c, 70)
 
     -- Create canvas
-    gui_canvas = nux.canvas.new()
-    gui_texture = nux.texture.new(nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH, nux.CANVAS_HEIGHT)
+    gui_canvas = nux.canvas.new(arena)
+    gui_texture = nux.texture.new(arena, nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH, nux.CANVAS_HEIGHT)
 
     -- Create the API monolith
-    monolith_canvas = nux.canvas.new()
+    monolith_canvas = nux.canvas.new(arena)
     local x, y = 350, 1500
-    monolith_texture = nux.texture.new(nux.TEXTURE_RENDER_TARGET, x, y)
+    monolith_texture = nux.texture.new(arena, nux.TEXTURE_RENDER_TARGET, x, y)
     cube = nux.node.new(s)
     nux.transform.add(cube)
     nux.transform.set_translation(cube, 10, 0, 0)

@@ -245,23 +245,23 @@ nux_b32_t nux_button_just_released(nux_ctx_t   *ctx,
                                    nux_button_t button);
 
 nux_res_t nux_texture_new(nux_ctx_t         *ctx,
+                          nux_res_t          arena,
                           nux_texture_type_t format,
                           nux_u32_t          w,
                           nux_u32_t          h);
 void      nux_texture_blit(nux_ctx_t *ctx, nux_res_t res);
 
 nux_res_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
-void      nux_arena_reset(nux_ctx_t *ctx, nux_res_t res);
+void      nux_arena_reset(nux_ctx_t *ctx, nux_res_t arena);
 nux_res_t nux_arena_frame(nux_ctx_t *ctx);
-nux_res_t nux_arena_get(nux_ctx_t *ctx);
-void      nux_arena_set(nux_ctx_t *ctx, nux_res_t res);
-// void      nux_arena_push(nux_ctx_t *ctx, nux_res_t res);
-// void      nux_arena_pop(nux_ctx_t *ctx, nux_res_t res);
+nux_res_t nux_arena_scratch(nux_ctx_t *ctx);
 
-nux_res_t nux_scene_new(nux_ctx_t *ctx);
+nux_res_t nux_scene_new(nux_ctx_t *ctx, nux_res_t arena);
 void      nux_scene_render(nux_ctx_t *ctx, nux_res_t scene, nux_res_t camera);
 nux_res_t nux_scene_get_node(nux_ctx_t *ctx, nux_res_t scene, nux_u32_t index);
-nux_res_t nux_scene_load_gltf(nux_ctx_t *ctx, const nux_c8_t *path);
+nux_res_t nux_scene_load_gltf(nux_ctx_t      *ctx,
+                              nux_res_t       arena,
+                              const nux_c8_t *path);
 
 nux_res_t nux_node_new(nux_ctx_t *ctx, nux_res_t scene);
 void      nux_node_set_parent(nux_ctx_t *ctx, nux_res_t res, nux_res_t parent);
@@ -317,14 +317,12 @@ void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
                                  nux_res_t  node,
                                  nux_res_t  colormap);
 
-nux_res_t nux_mesh_new(nux_ctx_t *ctx, nux_u32_t capa);
-void      nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_res_t res);
-nux_res_t nux_mesh_gen_cube(nux_ctx_t *ctx,
-                            nux_f32_t  sx,
-                            nux_f32_t  sy,
-                            nux_f32_t  sz);
+nux_res_t nux_mesh_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
+nux_res_t nux_mesh_new_cube(
+    nux_ctx_t *ctx, nux_res_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz);
+void nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_res_t mesh);
 
-nux_res_t nux_canvas_new(nux_ctx_t *ctx);
+nux_res_t nux_canvas_new(nux_ctx_t *ctx, nux_res_t arena);
 void      nux_canvas_clear(nux_ctx_t *ctx, nux_res_t res);
 void      nux_canvas_render(nux_ctx_t *ctx, nux_res_t res, nux_res_t target);
 void      nux_canvas_text(nux_ctx_t      *ctx,

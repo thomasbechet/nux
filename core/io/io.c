@@ -115,7 +115,8 @@ close_os_file (nux_ctx_t *ctx, nux_u32_t slot)
 nux_status_t
 nux_io_init (nux_ctx_t *ctx)
 {
-    NUX_CHECK(nux_u32_vec_alloc(ctx, NUX_IO_FILE_MAX, &ctx->free_file_slots),
+    NUX_CHECK(nux_u32_vec_alloc(
+                  ctx, ctx->core_arena, NUX_IO_FILE_MAX, &ctx->free_file_slots),
               goto error);
 
     // Initialize values
@@ -162,8 +163,8 @@ cart_read_entries (nux_ctx_t *ctx, nux_cart_t *cart)
     status &= cart_read_u32(ctx, cart->slot, &version);
     status &= cart_read_u32(ctx, cart->slot, &cart->entries_count);
     NUX_CHECK(status, return NUX_FAILURE);
-    cart->entries
-        = nux_arena_alloc(ctx, sizeof(*cart->entries) * cart->entries_count);
+    cart->entries = nux_arena_alloc_raw(
+        ctx, ctx->core_arena, sizeof(*cart->entries) * cart->entries_count);
     NUX_CHECK(cart->entries, return NUX_FAILURE);
     for (nux_u32_t i = 0; i < cart->entries_count; ++i)
     {
@@ -372,7 +373,10 @@ nux_io_stat (nux_ctx_t *ctx, nux_file_t *file, nux_file_stat_t *stat)
     return NUX_FAILURE;
 }
 void *
-nux_io_load (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size)
+nux_io_load (nux_ctx_t      *ctx,
+             nux_res_t       arena,
+             const nux_c8_t *path,
+             nux_u32_t      *size)
 {
     void      *data = NUX_NULL;
     nux_file_t file;
@@ -396,7 +400,7 @@ nux_io_load (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t *size)
     }
 
     // Allocate memory
-    data = nux_arena_alloc(ctx, stat.size);
+    data = nux_arena_alloc(ctx, arena, stat.size);
     NUX_CHECK(data, goto cleanup0);
 
     // Read file
@@ -529,7 +533,7 @@ nux_status_t
 nux_io_write_cart_file (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     nux_u32_t size;
-    void     *data = nux_io_load(ctx, path, &size);
+    void     *data = nux_io_load(ctx, nux_arena_scratch(ctx), path, &size);
     NUX_CHECK(data, return NUX_FAILURE);
     return nux_io_write_cart_data(ctx, path, 0, NUX_FALSE, data, size);
 }

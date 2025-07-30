@@ -14,8 +14,6 @@ struct nux_context
 
     nux_c8_t     error_message[256];
     nux_status_t error_status;
-    nux_arena_t *active_arena;
-    nux_res_t    active_arena_res;
 
     // System
 
