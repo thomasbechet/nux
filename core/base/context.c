@@ -91,6 +91,10 @@ nux_instance_init (const nux_config_t *config)
     nux_component_register(ctx, NUX_RES_CAMERA);
     nux_component_register(ctx, NUX_RES_STATICMESH);
 
+    nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
+    nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
+    nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
+
     // Create resource pool
     NUX_CHECK(
         nux_resource_pool_alloc(ctx, config->max_id_count, &ctx->resources),

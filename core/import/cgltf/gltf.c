@@ -187,10 +187,10 @@ nux_scene_load_gltf (nux_ctx_t *ctx, const nux_c8_t *path)
 
     // Load file
     nux_u32_t buf_size;
-    nux_res_t  prev_arena = nux_arena_get_active(ctx);
-    nux_arena_set_active(ctx, nux_arena_frame(ctx));
+    nux_res_t  prev_arena = nux_arena_get(ctx);
+    nux_arena_set(ctx, nux_arena_frame(ctx));
     void *buf = nux_io_load(ctx, path, &buf_size);
-    nux_arena_set_active(ctx, prev_arena);
+    nux_arena_set(ctx, prev_arena);
     NUX_CHECK(buf, goto error);
 
     // Parse file

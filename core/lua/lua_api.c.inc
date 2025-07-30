@@ -258,8 +258,8 @@ static int
 l_texture_blit (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_texture_blit(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_texture_blit(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -286,8 +286,8 @@ static int
 l_arena_reset (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_arena_reset(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_arena_reset(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -295,7 +295,7 @@ static int
 l_arena_frame (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   ret = nux_arena_frame(ctx);
+    nux_res_t  ret = nux_arena_frame(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -307,12 +307,37 @@ l_arena_frame (lua_State *L)
     }
     return 1;
 }
+static int
+l_arena_get (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ret = nux_arena_get(ctx);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushnumber(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_arena_set (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_arena_set(ctx, res);
+    l_checkerror(L, ctx);
+    return 0;
+}
 
 static int
 l_scene_new (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   ret = nux_scene_new(ctx);
+    nux_res_t  ret = nux_scene_new(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -328,7 +353,7 @@ static int
 l_scene_render (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t   scene = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  scene = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_res_t camera = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_scene_render(ctx, scene, camera);
@@ -339,7 +364,7 @@ static int
 l_scene_get_node (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t   scene = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  scene = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t index = luaL_checkinteger(L, 2);
 
@@ -378,7 +403,7 @@ static int
 l_node_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t   scene = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  scene = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_res_t ret = nux_node_new(ctx, scene);
     l_checkerror(L, ctx);
@@ -396,10 +421,10 @@ static int
 l_node_set_parent (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_res_t parent = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
-    nux_node_set_parent(ctx, id, parent);
+    nux_node_set_parent(ctx, res, parent);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -407,9 +432,9 @@ static int
 l_node_get_parent (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_res_t ret = nux_node_get_parent(ctx, id);
+    nux_res_t ret = nux_node_get_parent(ctx, res);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -425,9 +450,9 @@ static int
 l_node_get_scene (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_res_t ret = nux_node_get_scene(ctx, id);
+    nux_res_t ret = nux_node_get_scene(ctx, res);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -444,8 +469,8 @@ static int
 l_transform_add (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_transform_add(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_transform_add(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -453,8 +478,8 @@ static int
 l_transform_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_transform_remove(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_transform_remove(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -462,9 +487,9 @@ static int
 l_transform_get_local_translation (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_get_local_translation(ctx, id);
+    nux_v3_t ret = nux_transform_get_local_translation(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -475,9 +500,9 @@ static int
 l_transform_get_local_rotation (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_q4_t ret = nux_transform_get_local_rotation(ctx, id);
+    nux_q4_t ret = nux_transform_get_local_rotation(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -489,9 +514,9 @@ static int
 l_transform_get_local_scale (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_get_local_scale(ctx, id);
+    nux_v3_t ret = nux_transform_get_local_scale(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -502,9 +527,9 @@ static int
 l_transform_get_translation (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_get_translation(ctx, id);
+    nux_v3_t ret = nux_transform_get_translation(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -515,9 +540,9 @@ static int
 l_transform_get_rotation (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_q4_t ret = nux_transform_get_rotation(ctx, id);
+    nux_q4_t ret = nux_transform_get_rotation(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -529,9 +554,9 @@ static int
 l_transform_get_scale (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_get_scale(ctx, id);
+    nux_v3_t ret = nux_transform_get_scale(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -542,7 +567,7 @@ static int
 l_transform_set_translation (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t   node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_v3_t position;
     position.x = luaL_checknumber(L, 2);
@@ -556,7 +581,7 @@ static int
 l_transform_set_rotation (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t   node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_q4_t rotation;
     rotation.x = luaL_checknumber(L, 2);
@@ -571,7 +596,7 @@ static int
 l_transform_set_rotation_euler (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t   node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_v3_t euler;
     euler.x = luaL_checknumber(L, 2);
@@ -585,13 +610,13 @@ static int
 l_transform_set_scale (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_v3_t scale;
     scale.x = luaL_checknumber(L, 2);
     scale.y = luaL_checknumber(L, 3);
     scale.z = luaL_checknumber(L, 4);
-    nux_transform_set_scale(ctx, id, scale);
+    nux_transform_set_scale(ctx, res, scale);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -599,9 +624,9 @@ static int
 l_transform_forward (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_forward(ctx, id);
+    nux_v3_t ret = nux_transform_forward(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -612,9 +637,9 @@ static int
 l_transform_backward (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_backward(ctx, id);
+    nux_v3_t ret = nux_transform_backward(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -625,9 +650,9 @@ static int
 l_transform_left (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_left(ctx, id);
+    nux_v3_t ret = nux_transform_left(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -638,9 +663,9 @@ static int
 l_transform_right (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_right(ctx, id);
+    nux_v3_t ret = nux_transform_right(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -651,9 +676,9 @@ static int
 l_transform_up (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_up(ctx, id);
+    nux_v3_t ret = nux_transform_up(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -664,9 +689,9 @@ static int
 l_transform_down (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_down(ctx, id);
+    nux_v3_t ret = nux_transform_down(ctx, res);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -677,7 +702,7 @@ static int
 l_transform_rotate (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t   node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_v3_t axis;
     axis.x = luaL_checknumber(L, 2);
@@ -694,11 +719,11 @@ static int
 l_transform_rotate_x (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_f32_t angle = luaL_checknumber(L, 2);
 
-    nux_transform_rotate_x(ctx, id, angle);
+    nux_transform_rotate_x(ctx, res, angle);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -706,11 +731,11 @@ static int
 l_transform_rotate_y (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_f32_t angle = luaL_checknumber(L, 2);
 
-    nux_transform_rotate_y(ctx, id, angle);
+    nux_transform_rotate_y(ctx, res, angle);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -718,11 +743,11 @@ static int
 l_transform_rotate_z (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_f32_t angle = luaL_checknumber(L, 2);
 
-    nux_transform_rotate_z(ctx, id, angle);
+    nux_transform_rotate_z(ctx, res, angle);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -730,13 +755,13 @@ static int
 l_transform_look_at (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_v3_t center;
     center.x = luaL_checknumber(L, 2);
     center.y = luaL_checknumber(L, 3);
     center.z = luaL_checknumber(L, 4);
-    nux_transform_look_at(ctx, id, center);
+    nux_transform_look_at(ctx, res, center);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -745,8 +770,8 @@ static int
 l_camera_add (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_camera_add(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_camera_add(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -754,8 +779,8 @@ static int
 l_camera_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_camera_remove(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_camera_remove(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -763,11 +788,11 @@ static int
 l_camera_set_fov (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_f32_t fov = luaL_checknumber(L, 2);
 
-    nux_camera_set_fov(ctx, id, fov);
+    nux_camera_set_fov(ctx, res, fov);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -775,11 +800,11 @@ static int
 l_camera_set_near (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_f32_t near = luaL_checknumber(L, 2);
 
-    nux_camera_set_near(ctx, id, near);
+    nux_camera_set_near(ctx, res, near);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -787,11 +812,11 @@ static int
 l_camera_set_far (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_f32_t far = luaL_checknumber(L, 2);
 
-    nux_camera_set_far(ctx, id, far);
+    nux_camera_set_far(ctx, res, far);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -800,8 +825,8 @@ static int
 l_staticmesh_add (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_staticmesh_add(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_staticmesh_add(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -809,8 +834,8 @@ static int
 l_staticmesh_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_staticmesh_remove(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_staticmesh_remove(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -818,10 +843,10 @@ static int
 l_staticmesh_set_mesh (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_res_t mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
-    nux_staticmesh_set_mesh(ctx, id, mesh);
+    nux_staticmesh_set_mesh(ctx, res, mesh);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -829,7 +854,7 @@ static int
 l_staticmesh_set_texture (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t   node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_res_t texture = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_staticmesh_set_texture(ctx, node, texture);
@@ -840,7 +865,7 @@ static int
 l_staticmesh_set_colormap (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t   node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  node = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_res_t colormap = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_staticmesh_set_colormap(ctx, node, colormap);
@@ -870,8 +895,8 @@ static int
 l_mesh_gen_bounds (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_mesh_gen_bounds(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_mesh_gen_bounds(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -902,7 +927,7 @@ static int
 l_canvas_new (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   ret = nux_canvas_new(ctx);
+    nux_res_t  ret = nux_canvas_new(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -918,8 +943,8 @@ static int
 l_canvas_clear (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_canvas_clear(ctx, id);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_canvas_clear(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -927,10 +952,10 @@ static int
 l_canvas_render (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_res_t target = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
-    nux_canvas_render(ctx, id, target);
+    nux_canvas_render(ctx, res, target);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -938,14 +963,14 @@ static int
 l_canvas_text (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t x = luaL_checkinteger(L, 2);
 
     nux_u32_t y = luaL_checkinteger(L, 3);
 
     const nux_c8_t *text = luaL_checkstring(L, 4);
-    nux_canvas_text(ctx, id, x, y, text);
+    nux_canvas_text(ctx, res, x, y, text);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -953,7 +978,7 @@ static int
 l_canvas_rectangle (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t   id  = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t x = luaL_checkinteger(L, 2);
 
@@ -963,7 +988,7 @@ l_canvas_rectangle (lua_State *L)
 
     nux_u32_t h = luaL_checkinteger(L, 5);
 
-    nux_canvas_rectangle(ctx, id, x, y, w, h);
+    nux_canvas_rectangle(ctx, res, x, y, w, h);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -1027,10 +1052,10 @@ static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
                                                { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
-                                             { "reset", l_arena_reset },
-                                             { "frame", l_arena_frame },
-                                             { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_arena[]
+    = { { "new", l_arena_new },     { "reset", l_arena_reset },
+        { "frame", l_arena_frame }, { "get", l_arena_get },
+        { "set", l_arena_set },     { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_scene[] = { { "new", l_scene_new },
                                              { "render", l_scene_render },

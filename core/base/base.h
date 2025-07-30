@@ -581,14 +581,12 @@ void *nux_res_check(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
 
 // arena.c
 
-void     *nux_arena_alloc_raw(nux_arena_t *arena, nux_u32_t size);
-void     *nux_arena_alloc(nux_ctx_t *ctx, nux_u32_t size);
-void     *nux_arena_alloc_res(nux_ctx_t *ctx,
-                              nux_u32_t  type,
-                              nux_u32_t  size,
-                              nux_res_t *res);
-nux_res_t nux_arena_get_active(nux_ctx_t *ctx);
-void      nux_arena_set_active(nux_ctx_t *ctx, nux_res_t res);
+void *nux_arena_alloc_raw(nux_arena_t *arena, nux_u32_t size);
+void *nux_arena_alloc(nux_ctx_t *ctx, nux_u32_t size);
+void *nux_arena_alloc_res(nux_ctx_t *ctx,
+                          nux_u32_t  type,
+                          nux_u32_t  size,
+                          nux_res_t *res);
 
 // random.c
 

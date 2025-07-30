@@ -35,6 +35,7 @@ typedef struct
 {
     nux_u32_vec_t  includes;
     nux_u32_vec_t  excludes;
+    nux_res_t      ecs; // current ecs
     nux_ecs_mask_t mask;
     nux_u32_t      mask_index;
     nux_u32_t      mask_offset;
@@ -62,19 +63,19 @@ nux_u32_t    nux_ecs_register_component(nux_ctx_t      *ctx,
 nux_res_t nux_ecs_new_iter(nux_ctx_t *ctx,
                            nux_u32_t  include_count,
                            nux_u32_t  exclude_count);
-void      nux_ecs_includes(nux_ctx_t *ctx, nux_u32_t iter, nux_u32_t c);
-void      nux_ecs_excludes(nux_ctx_t *ctx, nux_u32_t iter, nux_u32_t c);
-nux_u32_t nux_ecs_begin(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t iter);
-nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t iter);
+void      nux_ecs_includes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
+void      nux_ecs_excludes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
+nux_u32_t nux_ecs_begin(nux_ctx_t *ctx, nux_res_t iter, nux_res_t ecs);
+nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_res_t iter);
 
 nux_res_t nux_ecs_new(nux_ctx_t *ctx, nux_u32_t capa);
 nux_u32_t nux_ecs_add(nux_ctx_t *ctx, nux_res_t ecs);
-nux_u32_t nux_ecs_add_at(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t index);
+void      nux_ecs_add_at(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);
 void      nux_ecs_remove(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);
 nux_b32_t nux_ecs_valid(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);
 nux_u32_t nux_ecs_count(nux_ctx_t *ctx, nux_res_t ecs);
 nux_u32_t nux_ecs_capacity(nux_ctx_t *ctx, nux_res_t ecs);
-nux_u32_t nux_ecs_clear(nux_ctx_t *ctx, nux_res_t ecs);
+void      nux_ecs_clear(nux_ctx_t *ctx, nux_res_t ecs);
 void     *nux_ecs_set(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c);
 void nux_ecs_unset(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c);
 nux_b32_t nux_ecs_has(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c);

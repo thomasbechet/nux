@@ -5,19 +5,19 @@
 
 #include <stdint.h>
 
-typedef _Bool          nux_b32_t;
-typedef uint8_t        nux_u8_t;
-typedef char           nux_c8_t;
-typedef int16_t        nux_i16_t;
-typedef uint16_t       nux_u16_t;
-typedef int32_t        nux_i32_t;
-typedef uint32_t       nux_u32_t;
-typedef int64_t        nux_i64_t;
-typedef uint64_t       nux_u64_t;
-typedef float          nux_f32_t;
-typedef double         nux_f64_t;
-typedef intptr_t       nux_intptr_t;
-typedef struct nux_id *nux_res_t;
+typedef _Bool           nux_b32_t;
+typedef uint8_t         nux_u8_t;
+typedef char            nux_c8_t;
+typedef int16_t         nux_i16_t;
+typedef uint16_t        nux_u16_t;
+typedef int32_t         nux_i32_t;
+typedef uint32_t        nux_u32_t;
+typedef int64_t         nux_i64_t;
+typedef uint64_t        nux_u64_t;
+typedef float           nux_f32_t;
+typedef double          nux_f64_t;
+typedef intptr_t        nux_intptr_t;
+typedef struct nux_res *nux_res_t;
 
 typedef struct nux_context nux_ctx_t;
 
@@ -253,6 +253,10 @@ void      nux_texture_blit(nux_ctx_t *ctx, nux_res_t res);
 nux_res_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
 void      nux_arena_reset(nux_ctx_t *ctx, nux_res_t res);
 nux_res_t nux_arena_frame(nux_ctx_t *ctx);
+nux_res_t nux_arena_get(nux_ctx_t *ctx);
+void      nux_arena_set(nux_ctx_t *ctx, nux_res_t res);
+// void      nux_arena_push(nux_ctx_t *ctx, nux_res_t res);
+// void      nux_arena_pop(nux_ctx_t *ctx, nux_res_t res);
 
 nux_res_t nux_scene_new(nux_ctx_t *ctx);
 void      nux_scene_render(nux_ctx_t *ctx, nux_res_t scene, nux_res_t camera);

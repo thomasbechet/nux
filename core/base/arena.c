@@ -113,12 +113,12 @@ nux_arena_alloc_res (nux_ctx_t *ctx,
     return data;
 }
 nux_res_t
-nux_arena_get_active (nux_ctx_t *ctx)
+nux_arena_get (nux_ctx_t *ctx)
 {
     return ctx->active_arena_res;
 }
 void
-nux_arena_set_active (nux_ctx_t *ctx, nux_res_t id)
+nux_arena_set (nux_ctx_t *ctx, nux_res_t id)
 {
     if (id)
     {
