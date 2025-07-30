@@ -1030,6 +1030,205 @@ l_io_write_cart_file (lua_State *L)
     return 1;
 }
 
+static int
+l_ecs_new_iter (lua_State *L)
+{
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t include_count = luaL_checkinteger(L, 2);
+
+    nux_u32_t exclude_count = luaL_checkinteger(L, 3);
+
+    nux_res_t ret = nux_ecs_new_iter(ctx, arena, include_count, exclude_count);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushnumber(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_ecs_includes (lua_State *L)
+{
+    nux_ctx_t *ctx  = lua_getuserdata(L);
+    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t c = luaL_checkinteger(L, 2);
+
+    nux_ecs_includes(ctx, iter, c);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_ecs_excludes (lua_State *L)
+{
+    nux_ctx_t *ctx  = lua_getuserdata(L);
+    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t c = luaL_checkinteger(L, 2);
+
+    nux_ecs_excludes(ctx, iter, c);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_ecs_begin (lua_State *L)
+{
+    nux_ctx_t *ctx  = lua_getuserdata(L);
+    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_res_t ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+
+    nux_u32_t ret = nux_ecs_begin(ctx, iter, ecs);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_ecs_next (lua_State *L)
+{
+    nux_ctx_t *ctx  = lua_getuserdata(L);
+    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t ret = nux_ecs_next(ctx, iter);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_ecs_new (lua_State *L)
+{
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t capa = luaL_checkinteger(L, 2);
+
+    nux_res_t ret = nux_ecs_new(ctx, arena, capa);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushnumber(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_ecs_add (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t ret = nux_ecs_add(ctx, ecs);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_ecs_add_at (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t e = luaL_checkinteger(L, 2);
+
+    nux_ecs_add_at(ctx, ecs, e);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_ecs_remove (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t e = luaL_checkinteger(L, 2);
+
+    nux_ecs_remove(ctx, ecs, e);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_ecs_valid (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t e = luaL_checkinteger(L, 2);
+
+    nux_b32_t ret = nux_ecs_valid(ctx, ecs, e);
+    l_checkerror(L, ctx);
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_ecs_count (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t ret = nux_ecs_count(ctx, ecs);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_ecs_capacity (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t ret = nux_ecs_capacity(ctx, ecs);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_ecs_clear (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_ecs_clear(ctx, ecs);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_ecs_unset (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t e = luaL_checkinteger(L, 2);
+
+    nux_u32_t c = luaL_checkinteger(L, 3);
+
+    nux_ecs_unset(ctx, ecs, e, c);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_ecs_has (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t e = luaL_checkinteger(L, 2);
+
+    nux_u32_t c = luaL_checkinteger(L, 3);
+
+    nux_b32_t ret = nux_ecs_has(ctx, ecs, e, c);
+    l_checkerror(L, ctx);
+    lua_pushboolean(L, ret);
+    return 1;
+}
+
 static const struct luaL_Reg lib_core[]
     = { { "trace", l_core_trace }, { "stat", l_core_stat },
         { "time", l_core_time },   { "dt", l_core_dt },
@@ -1131,6 +1330,16 @@ static const struct luaL_Reg lib_io[]
         { "write_cart_file", l_io_write_cart_file },
         { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_ecs[]
+    = { { "new_iter", l_ecs_new_iter }, { "includes", l_ecs_includes },
+        { "excludes", l_ecs_excludes }, { "begin", l_ecs_begin },
+        { "next", l_ecs_next },         { "new", l_ecs_new },
+        { "add", l_ecs_add },           { "add_at", l_ecs_add_at },
+        { "remove", l_ecs_remove },     { "valid", l_ecs_valid },
+        { "count", l_ecs_count },       { "capacity", l_ecs_capacity },
+        { "clear", l_ecs_clear },       { "unset", l_ecs_unset },
+        { "has", l_ecs_has },           { NUX_NULL, NUX_NULL } };
+
 nux_status_t
 nux_lua_register_base (nux_ctx_t *ctx)
 {
@@ -1186,6 +1395,10 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_newtable(L);
     luaL_setfuncs(L, lib_io, 0);
     lua_setfield(L, -2, "io");
+
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_ecs, 0);
+    lua_setfield(L, -2, "ecs");
 
     lua_pushinteger(L, 512);
     lua_setfield(L, -2, "CANVAS_WIDTH");

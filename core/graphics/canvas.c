@@ -1,6 +1,6 @@
 #include "internal.h"
 
-#define QUADS_DEFAULT_SIZE   4096
+#define QUADS_DEFAULT_SIZE   4096 * 2
 #define BATCHES_DEFAULT_SIZE 512
 
 static nux_gpu_canvas_quad_t

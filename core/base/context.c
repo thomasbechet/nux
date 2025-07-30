@@ -190,6 +190,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     {
         NUX_ERROR("%s", nux_error_get_message(ctx));
     }
+    nux_error_reset(ctx);
 
     // Render
     nux_graphics_render(ctx);

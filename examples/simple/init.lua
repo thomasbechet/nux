@@ -131,7 +131,7 @@ function nux.init()
 
     -- Create the API monolith
     monolith_canvas = nux.canvas.new(arena)
-    local x, y = 350, 1500
+    local x, y = 350, 1600
     monolith_texture = nux.texture.new(arena, nux.TEXTURE_RENDER_TARGET, x, y)
     cube = nux.node.new(s)
     nux.transform.add(cube)
