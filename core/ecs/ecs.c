@@ -105,6 +105,14 @@ ecs_bitset_capacity (const nux_ecs_bitset_t *bitset)
 {
     return bitset->capa * ECS_ENTITY_PER_MASK;
 }
+static nux_ecs_t *
+ecs_active (nux_ctx_t *ctx)
+{
+    NUX_ENSURE(ctx->active_ecs,
+               return NUX_NULL,
+               "using ecs api with no active ecs instance");
+    return ctx->active_ecs;
+}
 
 nux_status_t
 nux_ecs_init (nux_ctx_t *ctx)
@@ -112,6 +120,8 @@ nux_ecs_init (nux_ctx_t *ctx)
     NUX_CHECK(nux_ecs_component_vec_alloc(
                   ctx, ctx->core_arena, ECS_COMPONENT_MAX, &ctx->components),
               return NUX_FAILURE);
+    ctx->active_ecs     = NUX_NULL;
+    ctx->active_ecs_res = NUX_NULL;
     return NUX_SUCCESS;
 }
 nux_u32_t
@@ -243,69 +253,82 @@ nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
               return NUX_NULL);
     return res;
 }
-nux_u32_t
-nux_ecs_add (nux_ctx_t *ctx, nux_res_t ecs)
+nux_res_t
+nux_ecs_get_active (nux_ctx_t *ctx)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    return ctx->active_ecs_res;
+}
+void
+nux_ecs_set_active (nux_ctx_t *ctx, nux_res_t ecs)
+{
+    nux_ecs_t *e = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    NUX_CHECK(e, return);
+    ctx->active_ecs_res = ecs;
+    ctx->active_ecs     = e;
+}
+nux_u32_t
+nux_ecs_add (nux_ctx_t *ctx)
+{
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_NULL);
     nux_u32_t index = ecs_bitset_find_unset(&ins->bitset);
     ecs_bitset_set(&ins->bitset, index);
     return ID_MAKE(index);
 }
 void
-nux_ecs_add_at (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e)
+nux_ecs_add_at (nux_ctx_t *ctx, nux_u32_t e)
 {
     NUX_CHECK(e, return);
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
-    if (nux_ecs_valid(ctx, ecs, e))
+    if (nux_ecs_valid(ctx, e))
     {
         return;
     }
     ecs_bitset_set(&ins->bitset, ID_INDEX(e));
 }
 void
-nux_ecs_remove (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e)
+nux_ecs_remove (nux_ctx_t *ctx, nux_u32_t e)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
     nux_u32_t index = ID_INDEX(e);
 
     // remove from components
     for (nux_u32_t i = 0; i < ins->containers.size; ++i)
     {
-        nux_ecs_unset(ctx, ecs, e, ID_MAKE(i));
+        nux_ecs_unset(ctx, e, ID_MAKE(i));
     }
 
     // mask entity as invalid
     ecs_bitset_unset(&ins->bitset, index);
 }
 nux_b32_t
-nux_ecs_valid (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e)
+nux_ecs_valid (nux_ctx_t *ctx, nux_u32_t e)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_FALSE);
     nux_u32_t index = ID_INDEX(e);
     return ecs_bitset_isset(&ins->bitset, index);
 }
 nux_u32_t
-nux_ecs_count (nux_ctx_t *ctx, nux_res_t ecs)
+nux_ecs_count (nux_ctx_t *ctx)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return 0);
     return ecs_bitset_count(&ins->bitset);
 }
 nux_u32_t
-nux_ecs_capacity (nux_ctx_t *ctx, nux_res_t ecs)
+nux_ecs_capacity (nux_ctx_t *ctx)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return 0);
     return ins->bitset.capa * ECS_ENTITY_PER_MASK;
 }
 void
-nux_ecs_clear (nux_ctx_t *ctx, nux_res_t ecs)
+nux_ecs_clear (nux_ctx_t *ctx)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
     for (nux_u32_t i = 0; i < ins->containers.size; ++i)
     {
@@ -315,9 +338,9 @@ nux_ecs_clear (nux_ctx_t *ctx, nux_res_t ecs)
     nux_ecs_bitset_clear(&ins->bitset);
 }
 void *
-nux_ecs_set (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
+nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_NULL);
     nux_u32_t index = ID_INDEX(e);
 
@@ -377,38 +400,38 @@ nux_ecs_set (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
         }
     }
 
-    return nux_ecs_get(ctx, ecs, e, c);
+    return nux_ecs_get(ctx, e, c);
 }
 void
-nux_ecs_unset (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
+nux_ecs_unset (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
     nux_u32_t            index     = ID_INDEX(e);
     nux_ecs_container_t *container = ins->containers.data + ID_INDEX(c);
     ecs_bitset_unset(&container->bitset, index);
 }
 nux_b32_t
-nux_ecs_has (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
+nux_ecs_has (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
     NUX_ASSERT(e);
     NUX_ASSERT(c);
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_FALSE);
     nux_u32_t            index     = ID_INDEX(e);
     nux_ecs_container_t *container = ins->containers.data + ID_INDEX(c);
     return ecs_bitset_isset(&container->bitset, index);
 }
 void *
-nux_ecs_get (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
+nux_ecs_get (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
     NUX_ASSERT(e);
     NUX_ASSERT(c);
-    if (!nux_ecs_has(ctx, ecs, e, c))
+    if (!nux_ecs_has(ctx, e, c))
     {
         return NUX_NULL;
     }
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
+    nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_FALSE);
     nux_u32_t            index     = ID_INDEX(e);
     nux_u32_t            mask      = index / ECS_ENTITY_PER_MASK;
@@ -416,4 +439,15 @@ nux_ecs_get (nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c)
     nux_ecs_container_t *container = ins->containers.data + ID_INDEX(c);
     return (void *)((nux_intptr_t)container->chunks.data[mask]
                     + container->component_size * offset);
+}
+
+void
+nux_ecs_cleanup (nux_ctx_t *ctx, void *data)
+{
+    nux_ecs_t *ecs = data;
+    if (ctx->active_ecs == ecs)
+    {
+        ctx->active_ecs     = NUX_NULL;
+        ctx->active_ecs_res = NUX_NULL;
+    }
 }

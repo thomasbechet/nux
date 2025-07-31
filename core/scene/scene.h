@@ -17,6 +17,7 @@ typedef struct
 
 typedef struct
 {
+    nux_u32_t parent;
     nux_v3_t  local_translation;
     nux_q4_t  local_rotation;
     nux_v3_t  local_scale;
@@ -46,9 +47,9 @@ typedef struct
 
 typedef struct
 {
-    nux_res_t  scene;
-    nux_res_t  parent;
-    nux_res_t  id;
+    nux_res_t scene;
+    nux_res_t parent;
+    nux_res_t id;
     nux_u32_t components[NUX_COMPONENT_MAX];
 } nux_node_t;
 
@@ -93,7 +94,7 @@ void nux_component_register(nux_ctx_t *ctx, nux_u32_t type);
 
 void  nux_scene_cleanup(nux_ctx_t *ctx, void *data);
 void *nux_scene_add_component(nux_ctx_t *ctx, nux_res_t node, nux_u32_t type);
-void  nux_scene_remove_component(nux_ctx_t *ctx, nux_res_t node, nux_u32_t type);
+void nux_scene_remove_component(nux_ctx_t *ctx, nux_res_t node, nux_u32_t type);
 void *nux_scene_get_component(nux_ctx_t *ctx, nux_res_t node, nux_u32_t type);
 
 // transform.c

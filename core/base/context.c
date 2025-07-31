@@ -74,6 +74,7 @@ nux_instance_init (const nux_config_t *config)
     type          = nux_res_register(ctx, "file");
     type->cleanup = nux_file_cleanup;
     type          = nux_res_register(ctx, "ecs");
+    type->cleanup = nux_ecs_cleanup;
     type          = nux_res_register(ctx, "ecs_iter");
 
     type                 = nux_res_register(ctx, "transform");

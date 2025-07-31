@@ -484,9 +484,9 @@ static int
 l_transform_get_local_translation (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_res_t  e   = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_v3_t ret = nux_transform_get_local_translation(ctx, res);
+    nux_v3_t ret = nux_transform_get_local_translation(ctx, e);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret.x);
     lua_pushnumber(L, ret.y);
@@ -1121,12 +1121,35 @@ l_ecs_new (lua_State *L)
     return 1;
 }
 static int
-l_ecs_add (lua_State *L)
+l_ecs_get_active (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ret = nux_ecs_get_active(ctx);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushnumber(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_ecs_set_active (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-
-    nux_u32_t ret = nux_ecs_add(ctx, ecs);
+    nux_ecs_set_active(ctx, ecs);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_ecs_add (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_u32_t  ret = nux_ecs_add(ctx);
     l_checkerror(L, ctx);
     lua_pushinteger(L, ret);
     return 1;
@@ -1135,11 +1158,9 @@ static int
 l_ecs_add_at (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_u32_t  e   = luaL_checkinteger(L, 1);
 
-    nux_u32_t e = luaL_checkinteger(L, 2);
-
-    nux_ecs_add_at(ctx, ecs, e);
+    nux_ecs_add_at(ctx, e);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -1147,11 +1168,9 @@ static int
 l_ecs_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_u32_t  e   = luaL_checkinteger(L, 1);
 
-    nux_u32_t e = luaL_checkinteger(L, 2);
-
-    nux_ecs_remove(ctx, ecs, e);
+    nux_ecs_remove(ctx, e);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -1159,11 +1178,9 @@ static int
 l_ecs_valid (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_u32_t  e   = luaL_checkinteger(L, 1);
 
-    nux_u32_t e = luaL_checkinteger(L, 2);
-
-    nux_b32_t ret = nux_ecs_valid(ctx, ecs, e);
+    nux_b32_t ret = nux_ecs_valid(ctx, e);
     l_checkerror(L, ctx);
     lua_pushboolean(L, ret);
     return 1;
@@ -1172,9 +1189,7 @@ static int
 l_ecs_count (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-
-    nux_u32_t ret = nux_ecs_count(ctx, ecs);
+    nux_u32_t  ret = nux_ecs_count(ctx);
     l_checkerror(L, ctx);
     lua_pushinteger(L, ret);
     return 1;
@@ -1183,9 +1198,7 @@ static int
 l_ecs_capacity (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-
-    nux_u32_t ret = nux_ecs_capacity(ctx, ecs);
+    nux_u32_t  ret = nux_ecs_capacity(ctx);
     l_checkerror(L, ctx);
     lua_pushinteger(L, ret);
     return 1;
@@ -1194,8 +1207,7 @@ static int
 l_ecs_clear (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_ecs_clear(ctx, ecs);
+    nux_ecs_clear(ctx);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -1203,13 +1215,11 @@ static int
 l_ecs_unset (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_u32_t  e   = luaL_checkinteger(L, 1);
 
-    nux_u32_t e = luaL_checkinteger(L, 2);
+    nux_u32_t c = luaL_checkinteger(L, 2);
 
-    nux_u32_t c = luaL_checkinteger(L, 3);
-
-    nux_ecs_unset(ctx, ecs, e, c);
+    nux_ecs_unset(ctx, e, c);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -1217,13 +1227,11 @@ static int
 l_ecs_has (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_u32_t  e   = luaL_checkinteger(L, 1);
 
-    nux_u32_t e = luaL_checkinteger(L, 2);
+    nux_u32_t c = luaL_checkinteger(L, 2);
 
-    nux_u32_t c = luaL_checkinteger(L, 3);
-
-    nux_b32_t ret = nux_ecs_has(ctx, ecs, e, c);
+    nux_b32_t ret = nux_ecs_has(ctx, e, c);
     l_checkerror(L, ctx);
     lua_pushboolean(L, ret);
     return 1;
@@ -1330,15 +1338,24 @@ static const struct luaL_Reg lib_io[]
         { "write_cart_file", l_io_write_cart_file },
         { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_ecs[]
-    = { { "new_iter", l_ecs_new_iter }, { "includes", l_ecs_includes },
-        { "excludes", l_ecs_excludes }, { "begin", l_ecs_begin },
-        { "next", l_ecs_next },         { "new", l_ecs_new },
-        { "add", l_ecs_add },           { "add_at", l_ecs_add_at },
-        { "remove", l_ecs_remove },     { "valid", l_ecs_valid },
-        { "count", l_ecs_count },       { "capacity", l_ecs_capacity },
-        { "clear", l_ecs_clear },       { "unset", l_ecs_unset },
-        { "has", l_ecs_has },           { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_ecs[] = { { "new_iter", l_ecs_new_iter },
+                                           { "includes", l_ecs_includes },
+                                           { "excludes", l_ecs_excludes },
+                                           { "begin", l_ecs_begin },
+                                           { "next", l_ecs_next },
+                                           { "new", l_ecs_new },
+                                           { "get_active", l_ecs_get_active },
+                                           { "set_active", l_ecs_set_active },
+                                           { "add", l_ecs_add },
+                                           { "add_at", l_ecs_add_at },
+                                           { "remove", l_ecs_remove },
+                                           { "valid", l_ecs_valid },
+                                           { "count", l_ecs_count },
+                                           { "capacity", l_ecs_capacity },
+                                           { "clear", l_ecs_clear },
+                                           { "unset", l_ecs_unset },
+                                           { "has", l_ecs_has },
+                                           { NUX_NULL, NUX_NULL } };
 
 nux_status_t
 nux_lua_register_base (nux_ctx_t *ctx)

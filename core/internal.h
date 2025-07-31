@@ -14,6 +14,8 @@ struct nux_context
 
     nux_c8_t     error_message[256];
     nux_status_t error_status;
+    nux_ecs_t   *active_ecs;
+    nux_res_t    active_ecs_res;
 
     // System
 
@@ -79,7 +81,6 @@ struct nux_context
     // ecs
 
     nux_ecs_component_vec_t components;
-    nux_ecs_iter_t          iters;
 };
 
 #endif

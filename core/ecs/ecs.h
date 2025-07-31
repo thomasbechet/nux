@@ -61,7 +61,9 @@ nux_u32_t    nux_ecs_register_component(nux_ctx_t      *ctx,
                                         const nux_c8_t *name,
                                         nux_u32_t       size);
 
-void *nux_ecs_set(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c);
-void *nux_ecs_get(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c);
+void *nux_ecs_set(nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c);
+void *nux_ecs_get(nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c);
+
+void nux_ecs_cleanup(nux_ctx_t *ctx, void *data);
 
 #endif

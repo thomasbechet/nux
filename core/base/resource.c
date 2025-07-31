@@ -1,10 +1,9 @@
 #include "internal.h"
 
-#define RES_INDEX(res)   (((nux_intptr_t)(res) >> 0) & 0xFFFFFF)
-#define RES_VERSION(res) (((nux_intptr_t)(res) >> 24) & 0xFF)
-#define RES_BUILD(old, type, index)                                     \
-    (nux_res_t)(((nux_intptr_t)(RES_VERSION(old) + 1) << (nux_u32_t)24) \
-                | (index))
+#define RES_INDEX(res)   (((nux_res_t)(res) >> 0) & 0xFFFFFF)
+#define RES_VERSION(res) (((nux_res_t)(res) >> 24) & 0xFF)
+#define RES_BUILD(old, type, index) \
+    (nux_res_t)(((nux_res_t)(RES_VERSION(old) + 1) << (nux_res_t)24) | (index))
 
 nux_resource_type_t *
 nux_res_register (nux_ctx_t *ctx, const nux_c8_t *name)

@@ -142,6 +142,21 @@ function nux.init()
     nux.staticmesh.set_texture(cube, monolith_texture)
 
     api = inspect(nux)
+
+    -- ECS tests
+    local ecs = nux.ecs.new(arena, 100)
+    nux.ecs.set_active(ecs)
+    for i = 0, 100 do
+        local e = nux.ecs.add()
+        print(e)
+    end
+    for i = 5, 15 do
+        nux.ecs.remove(i)
+    end
+    for i = 0, 10 do
+        local e = nux.ecs.add()
+        print(e)
+    end
 end
 
 function nux.tick()

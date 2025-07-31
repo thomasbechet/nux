@@ -5,19 +5,20 @@
 
 #include <stdint.h>
 
-typedef _Bool           nux_b32_t;
-typedef uint8_t         nux_u8_t;
-typedef char            nux_c8_t;
-typedef int16_t         nux_i16_t;
-typedef uint16_t        nux_u16_t;
-typedef int32_t         nux_i32_t;
-typedef uint32_t        nux_u32_t;
-typedef int64_t         nux_i64_t;
-typedef uint64_t        nux_u64_t;
-typedef float           nux_f32_t;
-typedef double          nux_f64_t;
-typedef intptr_t        nux_intptr_t;
-typedef struct nux_res *nux_res_t;
+typedef _Bool     nux_b32_t;
+typedef uint8_t   nux_u8_t;
+typedef char      nux_c8_t;
+typedef int16_t   nux_i16_t;
+typedef uint16_t  nux_u16_t;
+typedef int32_t   nux_i32_t;
+typedef uint32_t  nux_u32_t;
+typedef int64_t   nux_i64_t;
+typedef uint64_t  nux_u64_t;
+typedef float     nux_f32_t;
+typedef double    nux_f64_t;
+typedef intptr_t  nux_intptr_t;
+typedef nux_u32_t nux_res_t;
+typedef nux_u32_t nux_ent_t;
 
 typedef struct nux_context nux_ctx_t;
 
@@ -270,7 +271,7 @@ nux_res_t nux_node_get_scene(nux_ctx_t *ctx, nux_res_t res);
 
 void     nux_transform_add(nux_ctx_t *ctx, nux_res_t res);
 void     nux_transform_remove(nux_ctx_t *ctx, nux_res_t res);
-nux_v3_t nux_transform_get_local_translation(nux_ctx_t *ctx, nux_res_t res);
+nux_v3_t nux_transform_get_local_translation(nux_ctx_t *ctx, nux_res_t e);
 nux_q4_t nux_transform_get_local_rotation(nux_ctx_t *ctx, nux_res_t res);
 nux_v3_t nux_transform_get_local_scale(nux_ctx_t *ctx, nux_res_t res);
 nux_v3_t nux_transform_get_translation(nux_ctx_t *ctx, nux_res_t res);
@@ -370,14 +371,16 @@ nux_u32_t nux_ecs_begin(nux_ctx_t *ctx, nux_res_t iter, nux_res_t ecs);
 nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_res_t iter);
 
 nux_res_t nux_ecs_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
-nux_u32_t nux_ecs_add(nux_ctx_t *ctx, nux_res_t ecs);
-void      nux_ecs_add_at(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);
-void      nux_ecs_remove(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);
-nux_b32_t nux_ecs_valid(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e);
-nux_u32_t nux_ecs_count(nux_ctx_t *ctx, nux_res_t ecs);
-nux_u32_t nux_ecs_capacity(nux_ctx_t *ctx, nux_res_t ecs);
-void      nux_ecs_clear(nux_ctx_t *ctx, nux_res_t ecs);
-void nux_ecs_unset(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c);
-nux_b32_t nux_ecs_has(nux_ctx_t *ctx, nux_res_t ecs, nux_u32_t e, nux_u32_t c);
+nux_res_t nux_ecs_get_active(nux_ctx_t *ctx);
+void      nux_ecs_set_active(nux_ctx_t *ctx, nux_res_t ecs);
+nux_u32_t nux_ecs_add(nux_ctx_t *ctx);
+void      nux_ecs_add_at(nux_ctx_t *ctx, nux_u32_t e);
+void      nux_ecs_remove(nux_ctx_t *ctx, nux_u32_t e);
+nux_b32_t nux_ecs_valid(nux_ctx_t *ctx, nux_u32_t e);
+nux_u32_t nux_ecs_count(nux_ctx_t *ctx);
+nux_u32_t nux_ecs_capacity(nux_ctx_t *ctx);
+void      nux_ecs_clear(nux_ctx_t *ctx);
+void      nux_ecs_unset(nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c);
+nux_b32_t nux_ecs_has(nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c);
 
 #endif
