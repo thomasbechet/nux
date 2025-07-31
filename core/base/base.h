@@ -7,6 +7,9 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#ifdef NUX_BUILD_DEBUG
+#include <assert.h>
+#endif
 #endif
 
 ////////////////////////////
@@ -305,20 +308,15 @@
 
 typedef enum
 {
-    NUX_RES_NULL       = 0,
-    NUX_RES_ARENA      = 1,
-    NUX_RES_LUA        = 2,
-    NUX_RES_TEXTURE    = 3,
-    NUX_RES_MESH       = 4,
-    NUX_RES_CANVAS     = 5,
-    NUX_RES_SCENE      = 6,
-    NUX_RES_NODE       = 7,
-    NUX_RES_TRANSFORM  = 8,
-    NUX_RES_CAMERA     = 9,
-    NUX_RES_STATICMESH = 10,
-    NUX_RES_FILE       = 11,
-    NUX_RES_ECS        = 12,
-    NUX_RES_ECS_ITER   = 13,
+    NUX_RES_NULL     = 0,
+    NUX_RES_ARENA    = 1,
+    NUX_RES_LUA      = 2,
+    NUX_RES_TEXTURE  = 3,
+    NUX_RES_MESH     = 4,
+    NUX_RES_CANVAS   = 5,
+    NUX_RES_FILE     = 6,
+    NUX_RES_ECS      = 7,
+    NUX_RES_ECS_ITER = 8,
 
     NUX_RES_MAX = 256,
 } nux_resource_base_t;

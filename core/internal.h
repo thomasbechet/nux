@@ -5,7 +5,6 @@
 #include "io/io.h"
 #include "graphics/graphics.h"
 #include "lua/lua.h"
-#include "scene/scene.h"
 #include "ecs/ecs.h"
 
 struct nux_context
@@ -15,7 +14,6 @@ struct nux_context
     nux_c8_t     error_message[256];
     nux_status_t error_status;
     nux_ecs_t   *active_ecs;
-    nux_res_t    active_ecs_res;
 
     // System
 
@@ -52,6 +50,7 @@ struct nux_context
     nux_u32_vec_t      free_buffer_slots;
     nux_u32_vec_t      free_pipeline_slots;
     nux_u32_vec_t      free_framebuffer_slots;
+    nux_renderer_t     renderer;
 
     // arena
 
@@ -60,12 +59,10 @@ struct nux_context
     nux_arena_t        *core_arena;
     nux_res_t           frame_arena;
 
-    // type
+    // resource
 
-    nux_resource_type_t  resources_types[NUX_RES_MAX];
-    nux_u32_t            resources_types_count;
-    nux_component_type_t component_types[NUX_COMPONENT_MAX];
-    nux_u32_t            component_types_count;
+    nux_resource_type_t resources_types[NUX_RES_MAX];
+    nux_u32_t           resources_types_count;
 
     // io
 

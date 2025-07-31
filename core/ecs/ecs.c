@@ -81,10 +81,10 @@ ecs_bitset_count (const nux_ecs_bitset_t *bitset)
     }
     return n;
 }
-static nux_u32_t
-ecs_bitset_find_unset (const nux_ecs_bitset_t *bitset)
+static nux_b32_t
+ecs_bitset_find_unset (const nux_ecs_bitset_t *bitset, nux_u32_t *found)
 {
-    for (nux_u32_t i = 0; i < bitset->size; ++i)
+    for (nux_u32_t i = 0; i < bitset->capa; ++i)
     {
         nux_ecs_mask_t mask = bitset->data[i];
         if (bitset->data[i] != 0xFFFFFFFF)
@@ -95,10 +95,11 @@ ecs_bitset_find_unset (const nux_ecs_bitset_t *bitset)
                 mask >>= 1;
                 ++index;
             }
-            return i * ECS_ENTITY_PER_MASK + index;
+            *found = i * ECS_ENTITY_PER_MASK + index;
+            return NUX_TRUE;
         }
     }
-    return bitset->size * ECS_ENTITY_PER_MASK;
+    return NUX_FALSE;
 }
 static nux_u32_t
 ecs_bitset_capacity (const nux_ecs_bitset_t *bitset)
@@ -120,8 +121,7 @@ nux_ecs_init (nux_ctx_t *ctx)
     NUX_CHECK(nux_ecs_component_vec_alloc(
                   ctx, ctx->core_arena, ECS_COMPONENT_MAX, &ctx->components),
               return NUX_FAILURE);
-    ctx->active_ecs     = NUX_NULL;
-    ctx->active_ecs_res = NUX_NULL;
+    ctx->active_ecs = NUX_NULL;
     return NUX_SUCCESS;
 }
 nux_u32_t
@@ -148,10 +148,16 @@ nux_ecs_new_iter (nux_ctx_t *ctx,
     NUX_CHECK(res, return NUX_NULL);
     nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
-    NUX_CHECK(nux_u32_vec_alloc(ctx, a, include_count, &it->includes),
-              return NUX_NULL);
-    NUX_CHECK(nux_u32_vec_alloc(ctx, a, exclude_count, &it->excludes),
-              return NUX_NULL);
+    if (include_count)
+    {
+        NUX_CHECK(nux_u32_vec_alloc(ctx, a, include_count, &it->includes),
+                  return NUX_NULL);
+    }
+    if (exclude_count)
+    {
+        NUX_CHECK(nux_u32_vec_alloc(ctx, a, exclude_count, &it->excludes),
+                  return NUX_NULL);
+    }
     return res;
 }
 void
@@ -213,8 +219,9 @@ ecs_iter_next (const nux_ecs_t *ins, nux_ecs_iter_t *it)
     return ID_MAKE(it->mask_index * ECS_ENTITY_PER_MASK + offset);
 }
 nux_u32_t
-nux_ecs_begin (nux_ctx_t *ctx, nux_res_t iter, nux_res_t ecs)
+nux_ecs_begin (nux_ctx_t *ctx, nux_res_t iter)
 {
+    nux_res_t  ecs = nux_ecs_get_active(ctx);
     nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
     NUX_CHECK(ins, return NUX_NULL);
     nux_ecs_iter_t *it = nux_res_check(ctx, NUX_RES_ECS_ITER, iter);
@@ -245,6 +252,7 @@ nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
         = nux_arena_alloc_res(ctx, arena, NUX_RES_ECS, sizeof(*ins), &res);
     NUX_CHECK(ins, return NUX_NULL);
     ins->arena = a;
+    ins->self  = res;
     NUX_CHECK(nux_ecs_container_vec_alloc(
                   ctx, a, ctx->components.size, &ins->containers),
               return NUX_NULL);
@@ -256,22 +264,36 @@ nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
 nux_res_t
 nux_ecs_get_active (nux_ctx_t *ctx)
 {
-    return ctx->active_ecs_res;
+    return ctx->active_ecs ? ctx->active_ecs->self : NUX_NULL;
 }
 void
 nux_ecs_set_active (nux_ctx_t *ctx, nux_res_t ecs)
 {
-    nux_ecs_t *e = nux_res_check(ctx, NUX_RES_ECS, ecs);
-    NUX_CHECK(e, return);
-    ctx->active_ecs_res = ecs;
-    ctx->active_ecs     = e;
+    if (ecs)
+    {
+        nux_ecs_t *e = nux_res_check(ctx, NUX_RES_ECS, ecs);
+        NUX_CHECK(e, return);
+        ctx->active_ecs = e;
+    }
+    else
+    {
+        ctx->active_ecs = NUX_NULL;
+    }
+}
+void
+nux_ecs_render (nux_ctx_t *ctx, nux_ent_t camera)
+{
+    nux_renderer_render_ecs(ctx, nux_ecs_get_active(ctx), camera);
 }
 nux_u32_t
 nux_ecs_add (nux_ctx_t *ctx)
 {
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_NULL);
-    nux_u32_t index = ecs_bitset_find_unset(&ins->bitset);
+    nux_u32_t index;
+    NUX_ENSURE(ecs_bitset_find_unset(&ins->bitset, &index),
+               return NUX_NULL,
+               "out of entities");
     ecs_bitset_set(&ins->bitset, index);
     return ID_MAKE(index);
 }
@@ -341,7 +363,11 @@ void *
 nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
     nux_ecs_t *ins = ecs_active(ctx);
-    NUX_CHECK(ins, return NUX_NULL);
+    NUX_ENSURE(ins,
+               return NUX_NULL,
+               "trying to set component %d on entity %e but no ecs is active",
+               c,
+               e);
     nux_u32_t index = ID_INDEX(e);
 
     nux_u32_t                  c_index   = ID_INDEX(c);
@@ -447,7 +473,6 @@ nux_ecs_cleanup (nux_ctx_t *ctx, void *data)
     nux_ecs_t *ecs = data;
     if (ctx->active_ecs == ecs)
     {
-        ctx->active_ecs     = NUX_NULL;
-        ctx->active_ecs_res = NUX_NULL;
+        ctx->active_ecs = NUX_NULL;
     }
 }

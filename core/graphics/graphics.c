@@ -72,6 +72,9 @@ nux_graphics_init (nux_ctx_t *ctx)
     // Create default font
     NUX_CHECK(nux_font_init_default(ctx, &ctx->default_font), goto error);
 
+    // Initialize renderer
+    NUX_CHECK(nux_renderer_init(ctx), goto error);
+
     return NUX_SUCCESS;
 
 error:

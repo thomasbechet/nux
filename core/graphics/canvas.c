@@ -62,10 +62,13 @@ end_batch (nux_ctx_t *ctx, nux_canvas_t *canvas)
     ++canvas->batches_buffer_head;
 
     // Build commands
-    nux_gpu_bind_texture(
-        &canvas->commands, NUX_GPU_DESC_CANVAS_TEXTURE, canvas->active_texture);
-    nux_gpu_push_u32(&canvas->commands, NUX_GPU_DESC_CANVAS_BATCH_INDEX, index);
-    nux_gpu_draw(&canvas->commands, canvas->active_batch.count * 6);
+    nux_gpu_bind_texture(ctx,
+                         &canvas->commands,
+                         NUX_GPU_DESC_CANVAS_TEXTURE,
+                         canvas->active_texture);
+    nux_gpu_push_u32(
+        ctx, &canvas->commands, NUX_GPU_DESC_CANVAS_BATCH_INDEX, index);
+    nux_gpu_draw(ctx, &canvas->commands, canvas->active_batch.count * 6);
 
     return NUX_SUCCESS;
 }
@@ -147,7 +150,7 @@ nux_canvas_clear (nux_ctx_t *ctx, nux_res_t id)
     c->batches_buffer_head = 0;
     c->quads_buffer_head   = 0;
     nux_gpu_command_vec_clear(&c->commands);
-    nux_gpu_clear(&c->commands, 0x00);
+    nux_gpu_clear(ctx, &c->commands, 0x00);
 }
 void
 nux_canvas_render (nux_ctx_t *ctx, nux_res_t id, nux_res_t target)
@@ -185,13 +188,14 @@ nux_canvas_render (nux_ctx_t *ctx, nux_res_t id, nux_res_t target)
                          &constants);
 
     // Begin canvas render
-    nux_gpu_bind_framebuffer(&cmds, framebuffer);
-    nux_gpu_bind_pipeline(&cmds, ctx->canvas_pipeline.slot);
+    nux_gpu_bind_framebuffer(ctx, &cmds, framebuffer);
+    nux_gpu_bind_pipeline(ctx, &cmds, ctx->canvas_pipeline.slot);
     nux_gpu_bind_buffer(
-        &cmds, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
+        ctx, &cmds, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
     nux_gpu_bind_buffer(
-        &cmds, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
-    nux_gpu_bind_buffer(&cmds, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
+        ctx, &cmds, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
+    nux_gpu_bind_buffer(
+        ctx, &cmds, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
 
     // Submit commands
     nux_os_gpu_submit(ctx->userdata, cmds.data, cmds.size);

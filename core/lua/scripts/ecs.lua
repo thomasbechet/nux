@@ -1,15 +1,15 @@
 local nux = nux
 
-function nux.node.instantiate(scene, tab, parent)
+function nux.ecs.instantiate(tab, parent)
     local loaders
 
-    local function load_node(n, t)
+    local function load_entity(n, t)
         for k, v in pairs(t) do
             local load = loaders[k]
             if load then
                 load(n, v)
             else
-                nux.node.instantiate(scene, v, n)
+                nux.ecs.instantiate(v, n)
             end
         end
     end
@@ -17,7 +17,7 @@ function nux.node.instantiate(scene, tab, parent)
     -- Component loaders
     loaders = {
         template = function(n, v)
-            load_node(n, v)
+            load_entity(n, v)
         end,
         transform = function(n, v)
             nux.transform.add(n)
@@ -42,16 +42,19 @@ function nux.node.instantiate(scene, tab, parent)
         end,
     }
 
-    local n = nux.node.new(scene)
+    local e = nux.ecs.add()
+    load_entity(e, tab)
     if parent then
-        nux.node.set_parent(n, parent)
+        nux.transform.set_parent(e, parent)
     end
-    load_node(n, tab)
-    return n
+    return e
 end
 
-function nux.scene.load(tab)
-    local scene = nux.scene.new()
-    nux.node.instantiate(scene, tab, nil)
-    return scene
+function nux.ecs.load(tab)
+    local ecs = nux.ecs.new(100)
+    local prev = nux.ecs.get_active()
+    nux.ecs.set_active(ecs)
+    nux.ecs.instantiate(tab, nil)
+    nux.ecs.set_active(prev)
+    return ecs
 end

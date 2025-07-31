@@ -7,6 +7,10 @@ nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
     va_start(args, fmt);
     nux_vsnprintf(ctx->error_message, sizeof(ctx->error_message), fmt, args);
     va_end(args);
+#ifdef NUX_BUILD_DEBUG
+    NUX_ERROR("%s", nux_error_get_message(ctx));
+    NUX_ASSERT(NUX_FALSE);
+#endif
     ctx->error_status = NUX_FAILURE;
 }
 void
@@ -68,32 +72,11 @@ nux_instance_init (const nux_config_t *config)
     type          = nux_res_register(ctx, "texture");
     type->cleanup = nux_texture_cleanup;
     type          = nux_res_register(ctx, "mesh");
-    type          = nux_res_register(ctx, "scene");
-    type->cleanup = nux_scene_cleanup;
-    type          = nux_res_register(ctx, "node");
     type          = nux_res_register(ctx, "file");
     type->cleanup = nux_file_cleanup;
     type          = nux_res_register(ctx, "ecs");
     type->cleanup = nux_ecs_cleanup;
     type          = nux_res_register(ctx, "ecs_iter");
-
-    type                 = nux_res_register(ctx, "transform");
-    type->component_type = NUX_COMPONENT_TRANSFORM;
-    type                 = nux_res_register(ctx, "camera");
-    type->component_type = NUX_COMPONENT_CAMERA;
-    type                 = nux_res_register(ctx, "staticmesh");
-    type->component_type = NUX_COMPONENT_STATICMESH;
-
-    // Register base component types
-    // Must be coherent with nux_component_type_base_t
-    ctx->resources_types_count = 0;
-    nux_component_register(ctx, NUX_RES_TRANSFORM);
-    nux_component_register(ctx, NUX_RES_CAMERA);
-    nux_component_register(ctx, NUX_RES_STATICMESH);
-
-    nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
-    nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
-    nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
 
     // Create resource pool
     NUX_CHECK(nux_resource_pool_alloc(
@@ -127,6 +110,13 @@ nux_instance_init (const nux_config_t *config)
     {
         NUX_CHECK(nux_io_mount(ctx, config->boot_device), goto cleanup);
     }
+
+    NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
+    // Register base component types
+    // Must be coherent with nux_component_type_base_t
+    nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
+    nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
+    nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
 
     // Configure
     NUX_CHECK(nux_lua_configure(ctx), goto cleanup);

@@ -8,8 +8,6 @@ NUX_VEC_IMPL(nux_ecs_container_vec, nux_ecs_container_t);
 NUX_VEC_IMPL(nux_ecs_component_vec, nux_ecs_component_t);
 NUX_POOL_IMPL(nux_resource_pool, nux_resource_t)
 NUX_POOL_IMPL(nux_arena_pool, nux_arena_t)
-NUX_POOL_IMPL(nux_node_pool, nux_node_t)
-NUX_POOL_IMPL(nux_component_pool, nux_component_t)
 
 void
 nux_u32_vec_fill_reversed (nux_u32_vec_t *v)

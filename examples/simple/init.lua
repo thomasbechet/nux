@@ -1,5 +1,5 @@
 local inspect = require("inspect")
-local s
+local ecs
 local c
 local nux = nux
 
@@ -78,18 +78,20 @@ function nux.init()
     arena = nux.arena.new(1 << 24)
 
     local mesh_cube = nux.mesh.new_cube(arena, 1, 1, 1)
-    s = nux.scene.new(arena)
+
+    ecs = nux.ecs.load_gltf(arena, "assets/industrial.glb")
+    nux.ecs.set_active(ecs)
 
     local template = {
         staticmesh = { mesh = mesh_cube }
     }
     local template2 = {
         {
-            transform = { translation = { 1, 0, 0 } },
+            transform = { translation = { 2, 0, 0 } },
             template = template
         },
         {
-            transform = { translation = { -1, 0, 0 } },
+            transform = { translation = { -2, 0, 0 } },
             template = template
         },
         {
@@ -103,23 +105,21 @@ function nux.init()
             template = template2,
         },
         {
-            transform = { translation = { -1.5, 0, 0 } },
+            transform = { translation = { -2, 0, 0 } },
             template = template2,
         }
     }
     for i = 0, 100 do
         local x = i // 10
         local y = i % 10
-        local n = nux.node.instantiate(s, {
+        local n = nux.ecs.instantiate({
             template = template3,
-            transform = { translation = { x * 5, 0, y * 5 } }
+            transform = { translation = { x * 8, 0, y * 5 } }
         }
         , nil)
     end
 
-    s = nux.scene.load_gltf(arena, "assets/industrial.glb")
-
-    c = nux.node.new(s)
+    c = nux.ecs.add()
     nux.transform.add(c)
     nux.transform.set_translation(c, 0, 1, 3)
     nux.camera.add(c)
@@ -133,7 +133,7 @@ function nux.init()
     monolith_canvas = nux.canvas.new(arena)
     local x, y = 350, 1600
     monolith_texture = nux.texture.new(arena, nux.TEXTURE_RENDER_TARGET, x, y)
-    cube = nux.node.new(s)
+    cube = nux.ecs.add()
     nux.transform.add(cube)
     nux.transform.set_translation(cube, 10, 0, 0)
     nux.transform.set_scale(cube, x / 50, y / 50, 1)
@@ -142,27 +142,12 @@ function nux.init()
     nux.staticmesh.set_texture(cube, monolith_texture)
 
     api = inspect(nux)
-
-    -- ECS tests
-    local ecs = nux.ecs.new(arena, 100)
-    nux.ecs.set_active(ecs)
-    for i = 0, 100 do
-        local e = nux.ecs.add()
-        print(e)
-    end
-    for i = 5, 15 do
-        nux.ecs.remove(i)
-    end
-    for i = 0, 10 do
-        local e = nux.ecs.add()
-        print(e)
-    end
 end
 
 function nux.tick()
     controller(c)
     -- nux.transform.rotate_y(cube, nux.dt() / 50)
-    nux.scene.render(s, c)
+    nux.ecs.render(c)
     nux.canvas.clear(monolith_canvas)
     nux.canvas.text(monolith_canvas, 10, 10, string.format("time:%.2fs", nux.time()))
     nux.canvas.text(monolith_canvas, 10, 20, api)

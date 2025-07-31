@@ -167,7 +167,7 @@ load_texture (nux_ctx_t *ctx, nux_res_t arena, const cgltf_texture *texture)
     return id;
 }
 nux_res_t
-nux_scene_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
+nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
 {
     typedef struct
     {
@@ -184,8 +184,8 @@ nux_scene_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_res_t scene_id = nux_scene_new(ctx, arena);
-    NUX_CHECK(scene_id, return NUX_NULL);
+    nux_res_t prev_ecs = nux_ecs_get_active(ctx);
+    nux_res_t ecs      = NUX_NULL;
 
     // Load file
     nux_u32_t buf_size;
@@ -269,13 +269,18 @@ nux_scene_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
             }
         }
 
+        // Create ECS
+        ecs = nux_ecs_new(ctx, arena, node_count + 8192);
+        NUX_CHECK(ecs, goto error);
+        nux_ecs_set_active(ctx, ecs);
+
         // Create nodes
         for (nux_u32_t n = 0; n < scene->nodes_count; ++n)
         {
             cgltf_node *node = scene->nodes[n];
 
-            nux_res_t node_id = nux_node_new(ctx, scene_id);
-            NUX_CHECK(node_id, goto error);
+            nux_ent_t e = nux_ecs_add(ctx);
+            NUX_CHECK(e, goto error);
 
             nux_v3_t translation = NUX_V3_ZEROES;
             nux_q4_t rotation    = nux_q4_identity();
@@ -300,10 +305,10 @@ nux_scene_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
             }
 
             // Set transform
-            nux_transform_add(ctx, node_id);
-            nux_transform_set_translation(ctx, node_id, translation);
-            nux_transform_set_rotation(ctx, node_id, rotation);
-            nux_transform_set_scale(ctx, node_id, scale);
+            nux_transform_add(ctx, e);
+            nux_transform_set_translation(ctx, e, translation);
+            nux_transform_set_rotation(ctx, e, rotation);
+            nux_transform_set_scale(ctx, e, scale);
 
             if (node->mesh)
             {
@@ -358,9 +363,9 @@ nux_scene_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
                               texture);
 
                     // Write staticmesh
-                    nux_staticmesh_add(ctx, node_id);
-                    nux_staticmesh_set_mesh(ctx, node_id, mesh);
-                    nux_staticmesh_set_texture(ctx, node_id, texture);
+                    nux_staticmesh_add(ctx, e);
+                    nux_staticmesh_set_mesh(ctx, e, mesh);
+                    nux_staticmesh_set_texture(ctx, e, texture);
                 }
             }
         }
@@ -369,8 +374,10 @@ nux_scene_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
     }
 
     cgltf_free(data);
-    return scene_id;
+    nux_ecs_set_active(ctx, prev_ecs);
+    return ecs;
 error:
     cgltf_free(data);
+    nux_ecs_set_active(ctx, prev_ecs);
     return NUX_NULL;
 }

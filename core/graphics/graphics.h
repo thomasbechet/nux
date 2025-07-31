@@ -93,9 +93,35 @@ typedef struct
     const nux_u8_t   *char_to_glyph_index;
 } nux_font_t;
 
+typedef struct
+{
+    nux_u32_t first_vertex;
+    nux_u32_t first_transform;
+    nux_u32_t has_texture;
+} nux_gpu_scene_batch_t;
+
+typedef struct
+{
+    nux_arena_t          *arena;
+    nux_gpu_buffer_t      constants_buffer;
+    nux_gpu_buffer_t      batches_buffer;
+    nux_u32_t             batches_buffer_head;
+    nux_gpu_buffer_t      transforms_buffer;
+    nux_u32_t             transforms_buffer_head;
+    nux_gpu_command_vec_t commands;
+    nux_gpu_command_vec_t commands_lines;
+    nux_res_t             transform_iter;
+    nux_res_t             transform_staticmesh_iter;
+} nux_renderer_t;
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
+
+// renderer.c
+
+nux_status_t nux_renderer_init(nux_ctx_t *ctx);
+void nux_renderer_render_ecs(nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera);
 
 // font.c
 
@@ -112,25 +138,36 @@ nux_status_t nux_gpu_texture_init(nux_ctx_t *ctx, nux_gpu_texture_t *texture);
 nux_status_t nux_gpu_pipeline_init(nux_ctx_t          *ctx,
                                    nux_gpu_pipeline_t *pipeline);
 
-void nux_gpu_bind_framebuffer(nux_gpu_command_vec_t *cmds, nux_u32_t slot);
-void nux_gpu_bind_pipeline(nux_gpu_command_vec_t *cmds, nux_u32_t slot);
-void nux_gpu_bind_texture(nux_gpu_command_vec_t *cmds,
+void nux_gpu_bind_framebuffer(nux_ctx_t             *ctx,
+                              nux_gpu_command_vec_t *cmds,
+                              nux_u32_t              slot);
+void nux_gpu_bind_pipeline(nux_ctx_t             *ctx,
+                           nux_gpu_command_vec_t *cmds,
+                           nux_u32_t              slot);
+void nux_gpu_bind_texture(nux_ctx_t             *ctx,
+                          nux_gpu_command_vec_t *cmds,
                           nux_u32_t              desc,
                           nux_u32_t              slot);
-void nux_gpu_bind_buffer(nux_gpu_command_vec_t *cmds,
+void nux_gpu_bind_buffer(nux_ctx_t             *ctx,
+                         nux_gpu_command_vec_t *cmds,
                          nux_u32_t              desc,
                          nux_u32_t              slot);
-void nux_gpu_push_u32(nux_gpu_command_vec_t *cmds,
+void nux_gpu_push_u32(nux_ctx_t             *ctx,
+                      nux_gpu_command_vec_t *cmds,
                       nux_u32_t              desc,
                       nux_u32_t              value);
-void nux_gpu_push_f32(nux_gpu_command_vec_t *cmds,
+void nux_gpu_push_f32(nux_ctx_t             *ctx,
+                      nux_gpu_command_vec_t *cmds,
                       nux_u32_t              desc,
                       nux_f32_t              value);
-void nux_gpu_push_v2(nux_gpu_command_vec_t *cmds,
+void nux_gpu_push_v2(nux_ctx_t             *ctx,
+                     nux_gpu_command_vec_t *cmds,
                      nux_u32_t              desc,
                      nux_v2_t               value);
-void nux_gpu_draw(nux_gpu_command_vec_t *cmds, nux_u32_t count);
-void nux_gpu_clear(nux_gpu_command_vec_t *cmds, nux_u32_t color);
+void nux_gpu_draw(nux_ctx_t *ctx, nux_gpu_command_vec_t *cmds, nux_u32_t count);
+void nux_gpu_clear(nux_ctx_t             *ctx,
+                   nux_gpu_command_vec_t *cmds,
+                   nux_u32_t              color);
 
 // graphics.c
 
