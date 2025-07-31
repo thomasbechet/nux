@@ -2,7 +2,7 @@
 #define NUX_LUA_H
 
 #include "base/base.h"
-#include "lua/vm/lua.h"
+#include "externals/lua/lua.h"
 
 ////////////////////////////
 ///      FUNCTIONS       ///
