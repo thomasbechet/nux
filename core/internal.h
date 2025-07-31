@@ -11,11 +11,12 @@ struct nux_context
 {
     // Thread data
 
-    nux_c8_t     error_message[256];
-    nux_status_t error_status;
-    nux_ecs_t   *active_ecs;
+    nux_c8_t        error_message[256];
+    nux_status_t    error_status;
+    nux_ecs_t      *active_ecs;
+    nux_log_level_t log_level;
 
-    // System
+    // system
 
     void          *userdata;
     nux_b32_t      running;

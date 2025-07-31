@@ -155,6 +155,17 @@ l_core_cset (lua_State *L)
 }
 
 static int
+l_log_set_level (lua_State *L)
+{
+    nux_ctx_t      *ctx   = lua_getuserdata(L);
+    nux_log_level_t level = luaL_checkinteger(L, 1);
+
+    nux_log_set_level(ctx, level);
+    l_checkerror(L, ctx);
+    return 0;
+}
+
+static int
 l_input_button (lua_State *L)
 {
     nux_ctx_t *ctx    = lua_getuserdata(L);
@@ -1168,6 +1179,9 @@ static const struct luaL_Reg lib_core[]
         { "cget", l_core_cget },   { "cset", l_core_cset },
         { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_log[]
+    = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
+
 static const struct luaL_Reg lib_input[] = { { "button", l_input_button },
                                              { "axis", l_input_axis },
                                              { NUX_NULL, NUX_NULL } };
@@ -1277,6 +1291,10 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_getglobal(L, "nux");
 
     luaL_setfuncs(L, lib_core, 0);
+
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_log, 0);
+    lua_setfield(L, -2, "log");
 
     lua_newtable(L);
     luaL_setfuncs(L, lib_input, 0);
@@ -1496,16 +1514,16 @@ nux_lua_register_base (nux_ctx_t *ctx)
     lua_pushinteger(L, 2);
     lua_setfield(L, -2, "TEXTURE_RENDER_TARGET");
 
-    lua_pushinteger(L, 5);
+    lua_pushinteger(L, 4);
     lua_setfield(L, -2, "LOG_DEBUG");
 
-    lua_pushinteger(L, 4);
+    lua_pushinteger(L, 3);
     lua_setfield(L, -2, "LOG_INFO");
 
-    lua_pushinteger(L, 3);
+    lua_pushinteger(L, 2);
     lua_setfield(L, -2, "LOG_WARNING");
 
-    lua_pushinteger(L, 2);
+    lua_pushinteger(L, 1);
     lua_setfield(L, -2, "LOG_ERROR");
 
     lua_pop(L, 1);

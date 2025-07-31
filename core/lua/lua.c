@@ -5,6 +5,11 @@
 #include "lua_api.c.inc"
 #include "lua_ext.c.inc"
 
+#define NUX_TABLE     "nux"
+#define NUX_FUNC_CONF "conf"
+#define NUX_FUNC_INIT "init"
+#define NUX_FUNC_TICK "tick"
+
 static nux_status_t
 lua_register_ext (nux_ctx_t *ctx)
 {
@@ -18,22 +23,25 @@ lua_register_ext (nux_ctx_t *ctx)
     return NUX_SUCCESS;
 }
 static nux_status_t
-call_nux_function (nux_ctx_t *ctx, const nux_c8_t *name)
+try_call_function (nux_ctx_t *ctx, const nux_c8_t *name)
 {
-    lua_getglobal(ctx->L, "nux");
+    lua_getglobal(ctx->L, NUX_TABLE);
     lua_getfield(ctx->L, -1, name);
-    if (lua_pcall(ctx->L, 0, 0, 0))
+    if (!lua_isnil(ctx->L, -1))
     {
-        nux_error(ctx, "%s", lua_tostring(ctx->L, -1));
-        lua_pop(ctx->L, 1);
-        return NUX_FAILURE;
+        if (lua_pcall(ctx->L, 0, 0, 0))
+        {
+            nux_error(ctx, "%s", lua_tostring(ctx->L, -1));
+            lua_pop(ctx->L, 1);
+            return NUX_FAILURE;
+        }
     }
     lua_pop(ctx->L, 1);
     return NUX_SUCCESS;
 }
 
 nux_status_t
-nux_lua_configure (nux_ctx_t *ctx)
+nux_lua_configure (nux_ctx_t *ctx, const nux_config_t *config)
 {
     // Initialize Lua VM
     ctx->L = luaL_newstate(ctx);
@@ -41,25 +49,18 @@ nux_lua_configure (nux_ctx_t *ctx)
 
     // Create nux table
     lua_newtable(ctx->L);
-    lua_setglobal(ctx->L, "nux");
+    lua_setglobal(ctx->L, NUX_TABLE);
     luaL_openlibs(ctx->L);
 
     // Configuration callback
-    if (luaL_dofile(ctx->L, "init.lua") != LUA_OK)
+    if (luaL_dofile(ctx->L, config->init_script) != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(ctx->L, -1));
         return NUX_FAILURE;
     }
 
     // Call nux.conf
-    lua_getglobal(ctx->L, "nux");
-    lua_getfield(ctx->L, -1, "conf");
-    if (lua_pcall(ctx->L, 0, 0, 0))
-    {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
-        return NUX_FAILURE;
-    }
-    lua_pop(ctx->L, 1);
+    NUX_CHECK(try_call_function(ctx, NUX_FUNC_CONF), return NUX_FAILURE);
 
     return NUX_SUCCESS;
 
@@ -75,7 +76,7 @@ nux_lua_init (nux_ctx_t *ctx)
     lua_register_ext(ctx);
 
     // Call nux.init
-    return call_nux_function(ctx, "init");
+    return try_call_function(ctx, NUX_FUNC_INIT);
 }
 void
 nux_lua_free (nux_ctx_t *ctx)
@@ -88,5 +89,5 @@ nux_lua_free (nux_ctx_t *ctx)
 nux_status_t
 nux_lua_tick (nux_ctx_t *ctx)
 {
-    return call_nux_function(ctx, "tick");
+    return try_call_function(ctx, NUX_FUNC_TICK);
 }

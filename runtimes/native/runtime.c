@@ -25,14 +25,13 @@ instance_init (instance_t *instance, const char *path)
 {
     instance_free(instance);
 
-    nux_config_t config = {
-        .userdata     = instance,
-        .init         = NULL,
-        .update       = NULL,
-        .memory_size  = (1 << 26), // 16Mb
-        .max_id_count = 4096,
-        .boot_device  = path,
-    };
+    nux_config_t config = { .userdata     = instance,
+                            .init         = NULL,
+                            .update       = NULL,
+                            .memory_size  = (1 << 26), // 16Mb
+                            .max_id_count = 4096,
+                            .boot_device  = path,
+                            .init_script  = "build.lua" };
 
     strncpy(instance->path, path ? path : ".", PATH_MAX_LEN - 1);
     instance->active        = true;

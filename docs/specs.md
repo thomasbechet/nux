@@ -20,32 +20,28 @@ TODO
 # Fantasy console
 - integrated IDE
 
-## Objects
+## Resources
 
-- An object belongs to an arena which correspond to a lifetime
-- Each objects are referenced with and id (using index + version) in a global table
-- The object's state must be contained only in a single arena
-- Objects pool is possible
+- A resource belongs to an arena which define to a lifetime
+- Each resources are referenced by an handle (using index + version) in a global table
+- The resource's state must be contained only in a single arena
 
 ## Program
 
-- The runtime execute a single program
+1) nux.conf(config)
+
+Define program configuration with access to the config table. The API is
+not available.
+
+2) nux.init()
+
+Call once the program is initialized.
+
+3) nux.tick()
+
+Call each frame.
 
 ## Gui rendering
 
 2D api -> canvas -> render to texture
-3D api -> scene  -> render to texture
-
-nux.graphics.set_canvas(c)
-nux.graphics.line(0, 0, 50, 50)
-
-local rt = nux.texture.new(...)
-local s  = nux.scene.new(...)
-local c  = nux.canvas.new(...)
-
-nux.scene.render(s, rt)
-nux.canvas.render(c, rt)
-
-- render targets => texture or screen
-- canvas => texture
-- scene => render target
+3D api -> ecs    -> render to texture

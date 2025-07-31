@@ -24,6 +24,7 @@ typedef struct
     nux_callback_t update;
 
     const nux_c8_t *boot_device;
+    const nux_c8_t *init_script;
 } nux_config_t;
 
 typedef enum

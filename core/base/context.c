@@ -105,6 +105,9 @@ nux_instance_init (const nux_config_t *config)
     // Initialize core modules
     NUX_CHECK(nux_io_init(ctx), goto cleanup);
 
+    // Initialize logger
+    ctx->log_level = NUX_LOG_INFO;
+
     // Mount base disk
     if (config->boot_device)
     {
@@ -119,7 +122,7 @@ nux_instance_init (const nux_config_t *config)
     nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
 
     // Configure
-    NUX_CHECK(nux_lua_configure(ctx), goto cleanup);
+    NUX_CHECK(nux_lua_configure(ctx, config), goto cleanup);
 
     // Initialize modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);

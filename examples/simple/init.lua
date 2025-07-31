@@ -59,22 +59,12 @@ end
 
 local api
 
-local function generate_cart()
-    assert(nux.io.cart_begin("cart.bin", 4))
-    assert(nux.io.write_cart_file("cart.lua"))
-    assert(nux.io.write_cart_file("inspect.lua"))
-    assert(nux.io.write_cart_file("main.lua"))
-    assert(nux.io.write_cart_file("assets/industrial.glb"))
-    assert(nux.io.cart_end())
-end
-
-function nux.conf(conf)
+function nux.conf(config)
     print("hello")
 end
 
 function nux.init()
-    -- generate_cart()
-    -- do return end
+    nux.log.set_level(nux.LOG_INFO)
     arena = nux.arena.new(1 << 24)
 
     local mesh_cube = nux.mesh.new_cube(arena, 1, 1, 1)

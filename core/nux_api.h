@@ -187,14 +187,15 @@ typedef enum
 
 typedef enum
 {
-    NUX_LOG_DEBUG   = 5,
-    NUX_LOG_INFO    = 4,
-    NUX_LOG_WARNING = 3,
-    NUX_LOG_ERROR   = 2,
+    NUX_LOG_DEBUG   = 4,
+    NUX_LOG_INFO    = 3,
+    NUX_LOG_WARNING = 2,
+    NUX_LOG_ERROR   = 1,
 } nux_log_level_t;
 
 // Debug API
 void nux_trace(nux_ctx_t *ctx, const nux_c8_t *text);
+void nux_log_set_level(nux_ctx_t *ctx, nux_log_level_t level);
 
 // System API
 nux_u32_t nux_stat(nux_ctx_t *ctx, nux_stat_t info);
