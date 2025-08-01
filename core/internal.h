@@ -13,6 +13,7 @@ struct nux_context
 
     nux_c8_t        error_message[256];
     nux_status_t    error_status;
+    nux_status_t    error_enable;
     nux_ecs_t      *active_ecs;
     nux_log_level_t log_level;
 

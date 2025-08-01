@@ -3,15 +3,29 @@
 void
 nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
-    nux_vsnprintf(ctx->error_message, sizeof(ctx->error_message), fmt, args);
-    va_end(args);
+    if (ctx->error_enable)
+    {
+        va_list args;
+        va_start(args, fmt);
+        nux_vsnprintf(
+            ctx->error_message, sizeof(ctx->error_message), fmt, args);
+        va_end(args);
 #ifdef NUX_BUILD_DEBUG
-    NUX_ERROR("%s", nux_error_get_message(ctx));
-    NUX_ASSERT(NUX_FALSE);
+        NUX_ERROR("%s", nux_error_get_message(ctx));
+        NUX_ASSERT(NUX_FALSE);
 #endif
-    ctx->error_status = NUX_FAILURE;
+        ctx->error_status = NUX_FAILURE;
+    }
+}
+void
+nux_error_enable (nux_ctx_t *ctx)
+{
+    ctx->error_enable = NUX_TRUE;
+}
+void
+nux_error_disable (nux_ctx_t *ctx)
+{
+    ctx->error_enable = NUX_FALSE;
 }
 void
 nux_error_reset (nux_ctx_t *ctx)
@@ -100,13 +114,12 @@ nux_instance_init (const nux_config_t *config)
     NUX_CHECK(ctx->frame_arena, goto cleanup);
 
     // Initialize PCG
-    ctx->pcg = nux_pcg(10243124, 1823719241);
+    ctx->log_level    = NUX_LOG_DEBUG;
+    ctx->error_enable = NUX_TRUE;
+    ctx->pcg          = nux_pcg(10243124, 1823719241);
 
     // Initialize core modules
     NUX_CHECK(nux_io_init(ctx), goto cleanup);
-
-    // Initialize logger
-    ctx->log_level = NUX_LOG_INFO;
 
     // Mount base disk
     if (config->boot_device)

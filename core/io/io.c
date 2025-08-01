@@ -241,8 +241,9 @@ nux_io_open (nux_ctx_t      *ctx,
         nux_disk_t *disk = ctx->disks + d;
         if (disk->type == NUX_DISK_OS)
         {
+            nux_error_disable(ctx);
             nux_u32_t slot = open_os_file(ctx, path, mode);
-            nux_error_reset(ctx); // ignore error
+            nux_error_enable(ctx);
             if (slot)
             {
                 file->type    = NUX_DISK_OS;

@@ -649,6 +649,8 @@ nux_m4_t  nux_q4_mulm4(nux_q4_t a, nux_m4_t m);
 // context.c
 
 void            nux_error(nux_ctx_t *ctx, const nux_c8_t *fmt, ...);
+void            nux_error_enable(nux_ctx_t *ctx);
+void            nux_error_disable(nux_ctx_t *ctx);
 void            nux_error_reset(nux_ctx_t *ctx);
 const nux_c8_t *nux_error_get_message(nux_ctx_t *ctx);
 nux_status_t    nux_error_get_status(nux_ctx_t *ctx);

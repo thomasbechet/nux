@@ -31,7 +31,7 @@ instance_init (instance_t *instance, const char *path)
                             .memory_size  = (1 << 26), // 16Mb
                             .max_id_count = 4096,
                             .boot_device  = path,
-                            .init_script  = "build.lua" };
+                            .init_script  = "init.lua" };
 
     strncpy(instance->path, path ? path : ".", PATH_MAX_LEN - 1);
     instance->active        = true;
