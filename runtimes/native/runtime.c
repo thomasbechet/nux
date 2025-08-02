@@ -2,7 +2,7 @@
 
 static struct
 {
-    instance_t instances[4];
+    instance_t instance;
     bool       running;
     int        fps;
 } runtime;
@@ -37,7 +37,6 @@ instance_init (instance_t *instance, const char *path)
     instance->active        = true;
     instance->config        = config;
     instance->ctx           = NULL;
-    instance->pause         = false;
     instance->viewport_ui   = nk_rect(0, 0, 10, 10);
     instance->viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
 
@@ -45,14 +44,6 @@ instance_init (instance_t *instance, const char *path)
     if (!instance->ctx)
     {
         logger_log(NUX_LOG_ERROR, "failed to init instance");
-        goto cleanup0;
-    }
-
-    nux_status_t status = nux_instance_load(
-        instance->ctx, instance->path, strnlen(instance->path, PATH_MAX_LEN));
-    if (!status)
-    {
-        logger_log(NUX_LOG_ERROR, "failed to load cartridge.");
         goto cleanup0;
     }
 
@@ -156,7 +147,7 @@ runtime_run (const config_t *config)
     runtime.running = true;
 
     // Initialize base
-    runtime_open(0, config->path);
+    runtime_open(config->path);
 
     // Main loop
     while (runtime.running)
@@ -168,25 +159,21 @@ runtime_run (const config_t *config)
         // Clear background
         renderer_clear();
 
-        // Update active instances
-        for (int i = 0; i < (int)ARRAY_LEN(runtime.instances); ++i)
+        // Update instance
+        if (runtime.instance.active)
         {
-            instance_t *instance = runtime.instances + i;
-            if (instance->active && !instance->pause)
-            {
-                // Compute viewport
-                apply_viewport_mode(instance, window_size);
+            // Compute viewport
+            apply_viewport_mode(&runtime.instance, window_size);
 
-                // Begin renderer
-                renderer_begin(nk_rect(0, 0, window_size.x, window_size.y),
-                               window_size);
+            // Begin renderer
+            renderer_begin(nk_rect(0, 0, window_size.x, window_size.y),
+                           window_size);
 
-                // Tick
-                nux_instance_tick(instance->ctx);
+            // Tick
+            nux_instance_tick(runtime.instance.ctx);
 
-                // End renderer
-                renderer_end();
-            }
+            // End renderer
+            renderer_end();
         }
 
         // Update GUI
@@ -215,11 +202,8 @@ runtime_run (const config_t *config)
         }
     }
 
-    // Free instances
-    for (int i = 0; i < (int)ARRAY_LEN(runtime.instances); ++i)
-    {
-        instance_free(runtime.instances + i);
-    }
+    // Free instance
+    instance_free(&runtime.instance);
 
     renderer_free();
 cleanup1:
@@ -228,32 +212,30 @@ cleanup0:
     return status;
 }
 nux_status_t
-runtime_open (int index, const char *path)
+runtime_open (const char *path)
 {
-    assert(index < (int)ARRAY_LEN(runtime.instances));
-    return instance_init(&runtime.instances[index], path);
+    return instance_init(&runtime.instance, path);
 }
 void
-runtime_close (int index)
+runtime_close (void)
 {
-    instance_free(runtime.instances + index);
+    instance_free(&runtime.instance);
 }
 void
-runtime_reset (int index)
+runtime_reset (void)
 {
-    instance_t *instance = runtime_instance();
-    if (instance->active)
+    if (runtime.instance.active)
     {
         char path[PATH_MAX_LEN];
-        memcpy(path, instance->path, PATH_MAX_LEN);
-        runtime_close(0);
-        runtime_open(0, path);
+        memcpy(path, runtime.instance.path, PATH_MAX_LEN);
+        runtime_close();
+        runtime_open(path);
     }
 }
 instance_t *
 runtime_instance (void)
 {
-    return &runtime.instances[0];
+    return &runtime.instance;
 }
 void
 runtime_quit (void)

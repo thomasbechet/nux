@@ -20,7 +20,7 @@ enable_c_compiler_flag_if_supported("-Werror")
 enable_c_compiler_flag_if_supported("-Wno-unused-function")
 enable_c_compiler_flag_if_supported("-Wno-unused-parameter")
 enable_c_compiler_flag_if_supported("-Wno-unused-variable")
-enable_c_compiler_flag_if_supported("-fsanitize=address")
+# enable_c_compiler_flag_if_supported("-fsanitize=address")
 
 # add_compile_options(-fsanitize=address)
 # add_link_options(-fsanitize=address)

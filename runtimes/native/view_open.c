@@ -311,7 +311,7 @@ view_open (struct nk_context *ctx, struct nk_rect bounds)
         char file[PATH_MAX_LEN];
         if (file_dialog(&filedialog, ctx, bounds, file))
         {
-            runtime_open(0, file);
+            runtime_open(file);
         }
     }
 }

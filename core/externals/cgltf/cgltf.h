@@ -903,7 +903,9 @@ cgltf_size cgltf_animation_channel_index(const cgltf_animation* animation, const
 #ifdef CGLTF_IMPLEMENTATION
 
 // #include <assert.h> /* For assert */
-// #define assert(x) (void)(x)
+#ifndef assert
+#define assert(x) (void)(x)
+#endif
 #include <string.h> /* For strncpy */
 // #include <stdio.h>  /* For fopen */
 #include <limits.h> /* For UINT_MAX etc */

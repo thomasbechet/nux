@@ -135,7 +135,7 @@ nux_instance_init (const nux_config_t *config)
     nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
 
     // Configure
-    NUX_CHECK(nux_lua_configure(ctx, config), goto cleanup);
+    NUX_CHECK(nux_lua_preinit(ctx, config), goto cleanup);
 
     // Initialize modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
@@ -154,12 +154,12 @@ cleanup:
 void
 nux_instance_free (nux_ctx_t *ctx)
 {
-    nux_arena_reset(ctx, ctx->core_arena->self);
-
     // Free modules
     nux_lua_free(ctx);
     nux_io_free(ctx);
     nux_graphics_free(ctx);
+
+    nux_arena_reset(ctx, ctx->core_arena->self);
 
     // Free core memory
     if (ctx->core_arena->data)
@@ -208,11 +208,6 @@ nux_instance_tick (nux_ctx_t *ctx)
     // Frame integration
     ctx->time += nux_dt(ctx);
     ++ctx->frame;
-}
-nux_status_t
-nux_instance_load (nux_ctx_t *ctx, const nux_c8_t *cart, nux_u32_t n)
-{
-    return NUX_SUCCESS;
 }
 
 void

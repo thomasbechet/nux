@@ -28,6 +28,9 @@ arena_reset (nux_ctx_t *ctx, nux_arena_t *arena, nux_resource_header_t *to)
         }
         header = header->prev;
     }
+    arena->last_resource  = NUX_NULL;
+    arena->first_resource = NUX_NULL;
+    arena->size           = 0;
 }
 static void *
 arena_alloc (nux_arena_t *arena, void *optr, nux_u32_t osize, nux_u32_t nsize)

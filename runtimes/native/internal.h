@@ -98,7 +98,6 @@ typedef struct
     bool            active;
     nux_config_t    config;
     nux_ctx_t      *ctx;
-    bool            pause;
     struct nk_rect  viewport_ui;
     viewport_mode_t viewport_mode;
     struct nk_rect  viewport;
@@ -122,9 +121,9 @@ void logger_log(nux_log_level_t level, const char *fmt, ...);
 void logger_vlog(nux_log_level_t level, const char *fmt, va_list args);
 
 nux_status_t runtime_run(const config_t *config);
-nux_status_t runtime_open(int index, const char *path);
-void         runtime_close(int index);
-void         runtime_reset(int index);
+nux_status_t runtime_open(const char *path);
+void         runtime_close(void);
+void         runtime_reset(void);
 instance_t  *runtime_instance(void);
 void         runtime_quit(void);
 

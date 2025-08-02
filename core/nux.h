@@ -235,11 +235,8 @@ NUX_API void         nux_os_stats_update(void *userdata, nux_u32_t *stats);
 //////////////////////////////////////////////////////////////////////////
 
 NUX_API
-nux_ctx_t           *nux_instance_init(const nux_config_t *config);
-NUX_API void         nux_instance_free(nux_ctx_t *ctx);
-NUX_API void         nux_instance_tick(nux_ctx_t *ctx);
-NUX_API nux_status_t nux_instance_load(nux_ctx_t      *ctx,
-                                       const nux_c8_t *cart,
-                                       nux_u32_t       n);
+nux_ctx_t   *nux_instance_init(const nux_config_t *config);
+NUX_API void nux_instance_free(nux_ctx_t *ctx);
+NUX_API void nux_instance_tick(nux_ctx_t *ctx);
 
 #endif
