@@ -29,9 +29,7 @@ enable_c_compiler_flag_if_supported("-Wno-unused-variable")
 
 # Add externals
 include_directories(${CMAKE_SOURCE_DIR}/core)
-include_directories(${CMAKE_SOURCE_DIR}/externals)
-include_directories(${CMAKE_SOURCE_DIR}/externals/glfw-3.4/include)
-include_directories(${CMAKE_SOURCE_DIR}/externals/tiny-fixedpoint-c/src)
+include_directories(${CMAKE_SOURCE_DIR}/runtimes/externals)
 file(GLOB SOURCES *.c)
 add_executable(${PROJECT_NAME} ${SOURCES})
 set(OpenGL_GL_PREFERENCE GLVND)

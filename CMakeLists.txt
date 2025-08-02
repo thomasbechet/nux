@@ -9,7 +9,7 @@ option(NUX_BUILD_SDK "Build nux with sdk tools" ON)
 option(NUX_BUILD_WASI "Build nux using wasi-sdk toolchain" OFF)
 
 if (NOT NUX_BUILD_WASI)
-    add_subdirectory(${CMAKE_SOURCE_DIR}/externals/glfw-3.4 EXCLUDE_FROM_ALL)
+    add_subdirectory(${CMAKE_SOURCE_DIR}/runtimes/externals/glfw-3.4 EXCLUDE_FROM_ALL)
 endif()
 
 # Show options

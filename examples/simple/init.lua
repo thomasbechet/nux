@@ -104,7 +104,7 @@ function nux.init()
         local y = i % 10
         local n = nux.ecs.instantiate({
             template = template3,
-            transform = { translation = { x * 8, 0, y * 5 } }
+            transform = { translation = { x * 8, 0.1, y * 5 + 0.1 } }
         }
         , nil)
     end
