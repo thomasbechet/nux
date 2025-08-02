@@ -19,6 +19,7 @@
 #define NK_INCLUDE_DEFAULT_FONT
 #include <nuklear/nuklear.h>
 #include <glad/gl.h>
+#include <nuklear/nuklear_glfw_gl3.h>
 
 #define MAX_COMMAND   64
 #define PATH_MAX_LEN  256
@@ -48,6 +49,12 @@ typedef enum
 
 typedef struct
 {
+    viewport_mode_t viewport_mode;
+    view_t          active_view;
+} settings_t;
+
+typedef struct
+{
     enum
     {
         COMMAND_EXIT,
@@ -57,6 +64,12 @@ typedef struct
     } type;
     view_t view;
 } command_t;
+
+typedef struct
+{
+    bool        debug;
+    const char *path;
+} config_t;
 
 typedef struct
 {
@@ -94,38 +107,57 @@ typedef struct
 
 typedef struct
 {
+    // instance
+
+    int             fps;
     char            path[PATH_MAX_LEN];
-    bool            active;
     nux_config_t    config;
     nux_ctx_t      *ctx;
     struct nk_rect  viewport_ui;
     viewport_mode_t viewport_mode;
     struct nk_rect  viewport;
-    pipeline_t      pipelines[NUX_GPU_PIPELINE_MAX];
-    framebuffer_t   framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
-    texture_t       textures[NUX_GPU_TEXTURE_MAX];
-    buffer_t        buffers[NUX_GPU_BUFFER_MAX];
-} instance_t;
 
-typedef struct
-{
-    bool        debug;
-    const char *path;
-} config_t;
+    // renderer
 
-void *native_malloc(size_t n);
-void  native_free(void *p);
-void *native_realloc(void *p, size_t n);
+    pipeline_t    pipelines[NUX_GPU_PIPELINE_MAX];
+    framebuffer_t framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
+    texture_t     textures[NUX_GPU_TEXTURE_MAX];
+    buffer_t      buffers[NUX_GPU_BUFFER_MAX];
+    GLuint        empty_vao;
+    pipeline_t   *active_pipeline;
 
-void logger_log(nux_log_level_t level, const char *fmt, ...);
-void logger_vlog(nux_log_level_t level, const char *fmt, va_list args);
+    // io
+
+    FILE *files[NUX_IO_FILE_MAX];
+
+    // commands
+
+    command_t cmds[MAX_COMMAND];
+    int       cmds_count;
+
+    // gui
+
+    view_t active_view;
+
+    // window
+
+    bool            fullscreen;
+    bool            switch_fullscreen;
+    GLFWwindow     *win;
+    int             buttons[NUX_PLAYER_MAX];
+    float           axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
+    struct nk_vec2i size;
+    double          prev_time;
+    struct nk_glfw  nk_glfw;
+} runtime_t;
+
+extern runtime_t runtime;
 
 nux_status_t runtime_run(const config_t *config);
 nux_status_t runtime_open(const char *path);
 void         runtime_close(void);
 void         runtime_reset(void);
-instance_t  *runtime_instance(void);
-void         runtime_quit(void);
+void         runtime_push_command(command_t cmd);
 
 nux_status_t renderer_init(void);
 void         renderer_free(void);
@@ -133,20 +165,13 @@ void         renderer_clear(void);
 void renderer_begin(struct nk_rect viewport, struct nk_vec2i window_size);
 void renderer_end(void);
 
-nux_status_t       window_init(void);
-void               window_free(void);
-void               window_begin_frame(void);
-int                window_end_frame(void);
-struct nk_vec2i    window_get_size(void);
-struct nk_context *window_nk_context(void);
-bool               window_is_double_click(void);
-bool               window_is_fullscreen(void);
+nux_status_t window_init(void);
+void         window_free(void);
+void         window_begin_frame(void);
+int          window_end_frame(void);
 
 void io_init(void);
 void io_free(void);
-
-void command_push(command_t cmd);
-bool command_poll(command_t *cmd);
 
 void view_game(struct nk_context *ctx, struct nk_rect bounds);
 void view_controls(struct nk_context *ctx, struct nk_rect bounds);
@@ -154,6 +179,5 @@ void view_settings(struct nk_context *ctx, struct nk_rect bounds);
 void view_open(struct nk_context *ctx, struct nk_rect bounds);
 
 void gui_update(void);
-void gui_set_view(view_t view);
 
 #endif

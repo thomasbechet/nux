@@ -1,14 +1,6 @@
 #include "internal.h"
 
-void
-logger_log (nux_log_level_t level, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-    logger_vlog(level, fmt, args);
-    va_end(args);
-}
-void
+static void
 logger_vlog (nux_log_level_t level, const char *fmt, va_list args)
 {
     switch (level)
@@ -28,4 +20,20 @@ logger_vlog (nux_log_level_t level, const char *fmt, va_list args)
     }
     vfprintf(stdout, fmt, args);
     fprintf(stdout, "\x1B[0m\n");
+}
+static void
+logger_log (nux_log_level_t level, const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    logger_vlog(level, fmt, args);
+    va_end(args);
+}
+void
+nux_os_log (void           *userdata,
+            nux_log_level_t level,
+            const nux_c8_t *log,
+            nux_u32_t       n)
+{
+    logger_log(level, "%.*s", n, log);
 }

@@ -8,18 +8,6 @@
 #define MAX_VERTEX_BUFFER  512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-static struct
-{
-    bool            fullscreen;
-    bool            switch_fullscreen;
-    GLFWwindow     *win;
-    int             buttons[NUX_PLAYER_MAX];
-    float           axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
-    struct nk_vec2i size;
-    double          prev_time;
-    struct nk_glfw  nk_glfw;
-} window;
-
 static const GLchar *
 gl_message_type_string (GLenum type)
 {
@@ -195,8 +183,8 @@ gamepad_button_to_button (int button)
 static void
 resize_callback (GLFWwindow *win, int w, int h)
 {
-    window.size.x = w;
-    window.size.y = h;
+    runtime.size.x = w;
+    runtime.size.y = h;
 }
 static void
 key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
@@ -208,41 +196,41 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
         nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
-            window.buttons[0] |= button;
+            runtime.buttons[0] |= button;
         }
         if (axis != (nux_axis_t)-1)
         {
-            window.axis[0][axis] = axvalue;
+            runtime.axis[0][axis] = axvalue;
         }
     }
     else if (action == GLFW_RELEASE)
     {
         if (key == GLFW_KEY_ESCAPE)
         {
-            command_push((command_t) { .type = COMMAND_EXIT });
+            runtime_push_command((command_t) { .type = COMMAND_EXIT });
         }
         if (key == GLFW_KEY_P)
         {
-            window.switch_fullscreen = true;
+            runtime.switch_fullscreen = true;
         }
         if (key == GLFW_KEY_T)
         {
-            command_push((command_t) { .type = COMMAND_SAVE_STATE });
+            runtime_push_command((command_t) { .type = COMMAND_SAVE_STATE });
         }
         if (key == GLFW_KEY_Y)
         {
-            command_push((command_t) { .type = COMMAND_LOAD_STATE });
+            runtime_push_command((command_t) { .type = COMMAND_LOAD_STATE });
         }
         nux_button_t button = key_to_button(key);
         float        axvalue;
         nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
-            window.buttons[0] &= ~button;
+            runtime.buttons[0] &= ~button;
         }
         if (axis != (nux_axis_t)-1)
         {
-            window.axis[0][axis] = 0;
+            runtime.axis[0][axis] = 0;
         }
     }
 
@@ -257,8 +245,8 @@ window_init (void)
     const int height = 700;
 
     // Initialize values
-    window.fullscreen        = false;
-    window.switch_fullscreen = false;
+    runtime.fullscreen        = false;
+    runtime.switch_fullscreen = false;
 
     // Initialized GLFW
 #ifdef NUX_PLATFORM_UNIX
@@ -276,18 +264,18 @@ window_init (void)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_SAMPLES, 4);
-    window.win = glfwCreateWindow(width, height, "nux", NULL, NULL);
-    if (!window.win)
+    runtime.win = glfwCreateWindow(width, height, "nux", NULL, NULL);
+    if (!runtime.win)
     {
         fprintf(stderr, "failed to create GLFW window");
         return NUX_FAILURE;
     }
-    window.prev_time = glfwGetTime();
+    runtime.prev_time = glfwGetTime();
 
     // Bind callbacks
-    glfwMakeContextCurrent(window.win);
-    glfwSetFramebufferSizeCallback(window.win, resize_callback);
-    glfwSetKeyCallback(window.win, key_callback);
+    glfwMakeContextCurrent(runtime.win);
+    glfwSetFramebufferSizeCallback(runtime.win, resize_callback);
+    glfwSetKeyCallback(runtime.win, key_callback);
 
     // Configure vsync
     // glfwSwapInterval(0);
@@ -306,27 +294,27 @@ window_init (void)
 
     // Initialize viewport
     int w, h;
-    glfwGetFramebufferSize(window.win, &w, &h);
-    window.size.x = w;
-    window.size.y = h;
+    glfwGetFramebufferSize(runtime.win, &w, &h);
+    runtime.size.x = w;
+    runtime.size.y = h;
 
     // Initialize nuklear context
-    glfwSetScrollCallback(window.win, nk_gflw3_scroll_callback);
-    glfwSetCharCallback(window.win, nk_glfw3_char_callback);
-    glfwSetMouseButtonCallback(window.win, nk_glfw3_mouse_button_callback);
-    nk_glfw3_init(&window.nk_glfw, window.win, NK_GLFW3_DEFAULT);
+    glfwSetScrollCallback(runtime.win, nk_gflw3_scroll_callback);
+    glfwSetCharCallback(runtime.win, nk_glfw3_char_callback);
+    glfwSetMouseButtonCallback(runtime.win, nk_glfw3_mouse_button_callback);
+    nk_glfw3_init(&runtime.nk_glfw, runtime.win, NK_GLFW3_DEFAULT);
 
     struct nk_font_atlas *atlas;
-    nk_glfw3_font_stash_begin(&window.nk_glfw, &atlas);
-    nk_glfw3_font_stash_end(&window.nk_glfw);
+    nk_glfw3_font_stash_begin(&runtime.nk_glfw, &atlas);
+    nk_glfw3_font_stash_end(&runtime.nk_glfw);
 
     return NUX_SUCCESS;
 }
 void
 window_free (void)
 {
-    nk_glfw3_shutdown(&window.nk_glfw);
-    glfwDestroyWindow(window.win);
+    nk_glfw3_shutdown(&runtime.nk_glfw);
+    glfwDestroyWindow(runtime.win);
     glfwTerminate();
 }
 void
@@ -334,47 +322,47 @@ window_begin_frame (void)
 {
     glfwPollEvents();
 
-    if (window.win)
+    if (runtime.win)
     {
         // Check close requested
-        if (glfwWindowShouldClose(window.win))
+        if (glfwWindowShouldClose(runtime.win))
         {
-            command_push((command_t) { .type = COMMAND_EXIT });
+            runtime_push_command((command_t) { .type = COMMAND_EXIT });
         }
 
         // Process events
         // case RGFW_gamepadButtonPressed: {
         //     nux_button_t button
-        //         = gamepad_button_to_button(window.win->event.button);
+        //         = gamepad_button_to_button(runtime.win->event.button);
         //     if (button != (nux_button_t)-1)
         //     {
-        //         window.buttons[1] |= button;
+        //         runtime.buttons[1] |= button;
         //     }
         // }
         // break;
         // case RGFW_gamepadButtonReleased: {
         //     nux_button_t button
-        //         = gamepad_button_to_button(window.win->event.button);
+        //         = gamepad_button_to_button(runtime.win->event.button);
         //     if (button != (nux_button_t)-1)
         //     {
-        //         window.buttons[1] &= ~button;
+        //         runtime.buttons[1] &= ~button;
         //     }
         // }
         // break;
 
         // Check fullscreen button
-        if (window.switch_fullscreen)
+        if (runtime.switch_fullscreen)
         {
-            if (window.fullscreen)
+            if (runtime.fullscreen)
             {
-                glfwSetWindowMonitor(window.win, NULL, 50, 50, 1200, 800, 0);
+                glfwSetWindowMonitor(runtime.win, NULL, 50, 50, 1200, 800, 0);
             }
             else
             {
                 GLFWmonitor       *mon = glfwGetPrimaryMonitor();
                 const GLFWvidmode *mode
                     = glfwGetVideoMode(glfwGetPrimaryMonitor());
-                glfwSetWindowMonitor(window.win,
+                glfwSetWindowMonitor(runtime.win,
                                      mon,
                                      0,
                                      0,
@@ -382,8 +370,8 @@ window_begin_frame (void)
                                      mode->height,
                                      mode->refreshRate);
             }
-            window.switch_fullscreen = false;
-            window.fullscreen        = !window.fullscreen;
+            runtime.switch_fullscreen = false;
+            runtime.fullscreen        = !runtime.fullscreen;
         }
 
         // Update gamepad related axis
@@ -391,75 +379,54 @@ window_begin_frame (void)
             // const int controller = 0;
             // const int player     = 1;
             // nu_v2_t        ax         = nu_v2(
-            //     RGFW_getGamepadAxis(window.win, controller, 0).x / 100.0,
-            //     RGFW_getGamepadAxis(window.win, controller, 0).y / 100.0);
+            //     RGFW_getGamepadAxis(runtime.win, controller, 0).x / 100.0,
+            //     RGFW_getGamepadAxis(runtime.win, controller, 0).y / 100.0);
             // if (nu_v2_norm(ax) < 0.3)
             // {
             //     ax = NU_V2_ZEROS;
             // }
-            // window.axis[player][NUX_AXIS_LEFTX] = ax.x;
-            // window.axis[player][NUX_AXIS_LEFTY] = -ax.y;
-            // ax = nu_v2(RGFW_getGamepadAxis(window.win, controller, 1).x /
+            // runtime.axis[player][NUX_AXIS_LEFTX] = ax.x;
+            // runtime.axis[player][NUX_AXIS_LEFTY] = -ax.y;
+            // ax = nu_v2(RGFW_getGamepadAxis(runtime.win, controller, 1).x /
             // 100.0,
-            //            RGFW_getGamepadAxis(window.win, controller, 1).y
+            //            RGFW_getGamepadAxis(runtime.win, controller, 1).y
             //                / 100.0);
             // if (nu_v2_norm(ax) < 0.1)
             // {
             //     ax = NU_V2_ZEROS;
             // }
-            // window.axis[player][NUX_AXIS_RIGHTX] = ax.x;
-            // window.axis[player][NUX_AXIS_RIGHTY] = -ax.y;
+            // runtime.axis[player][NUX_AXIS_RIGHTX] = ax.x;
+            // runtime.axis[player][NUX_AXIS_RIGHTY] = -ax.y;
         }
     }
 
     // Begin nuklear context
-    nk_glfw3_new_frame(&window.nk_glfw);
+    nk_glfw3_new_frame(&runtime.nk_glfw);
 }
 int
 window_end_frame (void)
 {
     // Render GUI
-    nk_glfw3_render(&window.nk_glfw,
+    nk_glfw3_render(&runtime.nk_glfw,
                     NK_ANTI_ALIASING_ON,
                     MAX_VERTEX_BUFFER,
                     MAX_ELEMENT_BUFFER);
 
     // Swap buffers
-    glfwSwapBuffers(window.win);
-    double time      = glfwGetTime();
-    double delta     = time - window.prev_time;
-    int    fps       = (int)(1. / ((float)delta));
-    window.prev_time = time;
+    glfwSwapBuffers(runtime.win);
+    double time       = glfwGetTime();
+    double delta      = time - runtime.prev_time;
+    int    fps        = (int)(1. / ((float)delta));
+    runtime.prev_time = time;
     return fps;
-}
-struct nk_vec2i
-window_get_size (void)
-{
-    return window.size;
-}
-struct nk_context *
-window_nk_context (void)
-{
-    return &window.nk_glfw.ctx;
-}
-bool
-window_is_double_click (void)
-{
-    return window.nk_glfw.is_double_click_down;
-}
-bool
-window_is_fullscreen (void)
-{
-    return window.fullscreen;
 }
 
 void
 nux_os_input_update (void *userdata, nux_u32_t *buttons, nux_f32_t *axis)
 {
-    instance_t *inst = userdata;
-    buttons[0]       = window.buttons[0];
+    buttons[0] = runtime.buttons[0];
     for (int a = 0; a < NUX_AXIS_MAX; ++a)
     {
-        axis[a] = window.axis[0][a];
+        axis[a] = runtime.axis[0][a];
     }
 }

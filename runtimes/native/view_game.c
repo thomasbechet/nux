@@ -3,8 +3,7 @@
 void
 view_game (struct nk_context *ctx, struct nk_rect bounds)
 {
-    instance_t *instance = runtime_instance();
-    const int   row      = 30;
+    const int row = 30;
     // if (nk_begin(ctx, "Games", left_bounds, NK_WINDOW_NO_SCROLLBAR))
     // {
     //     nk_layout_row_dynamic(ctx, row, 1);
@@ -37,7 +36,7 @@ view_game (struct nk_context *ctx, struct nk_rect bounds)
     // }
     // nk_end(ctx);
 
-    if (!instance->active)
+    if (!runtime.ctx)
     {
         if (nk_begin(ctx,
                      "Welcome",
@@ -58,7 +57,7 @@ view_game (struct nk_context *ctx, struct nk_rect bounds)
             nk_spacer(ctx);
             if (nk_button_label(ctx, "Open File"))
             {
-                command_push((command_t) { .type = COMMAND_CHANGE_VIEW,
+                runtime_push_command((command_t) { .type = COMMAND_CHANGE_VIEW,
                                            .view = VIEW_OPEN });
             }
             nk_spacer(ctx);
@@ -66,5 +65,5 @@ view_game (struct nk_context *ctx, struct nk_rect bounds)
         nk_end(ctx);
     }
 
-    instance->viewport_ui = bounds;
+    runtime.viewport_ui = bounds;
 }

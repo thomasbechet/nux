@@ -2,12 +2,6 @@
 
 #include <graphics/shaders_data.c.inc>
 
-static struct
-{
-    GLuint      empty_vao;
-    pipeline_t *active_pipeline;
-} renderer;
-
 static nux_status_t
 compile_shader (const char *source,
                 size_t      source_len,
@@ -87,9 +81,8 @@ nux_os_pipeline_create (void                          *userdata,
                         nux_u32_t                      slot,
                         const nux_gpu_pipeline_info_t *info)
 {
-    instance_t *inst = userdata;
-    CHECK(slot < ARRAY_LEN(inst->pipelines), return NUX_FAILURE);
-    pipeline_t *pipeline        = inst->pipelines + slot;
+    CHECK(slot < ARRAY_LEN(runtime.pipelines), return NUX_FAILURE);
+    pipeline_t *pipeline        = runtime.pipelines + slot;
     pipeline->type              = info->type;
     pipeline->enable_blend      = info->enable_blend ? GL_TRUE : GL_FALSE;
     pipeline->enable_depth_test = info->enable_depth_test ? GL_TRUE : GL_FALSE;
@@ -196,11 +189,10 @@ nux_os_pipeline_create (void                          *userdata,
 nux_status_t
 nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
 {
-    instance_t *inst = userdata;
-    CHECK(slot < ARRAY_LEN(inst->framebuffers), return NUX_FAILURE);
-    CHECK(slot < ARRAY_LEN(inst->textures), return NUX_FAILURE);
-    framebuffer_t *fb  = inst->framebuffers + slot;
-    texture_t     *tex = inst->textures + texture;
+    CHECK(slot < ARRAY_LEN(runtime.framebuffers), return NUX_FAILURE);
+    CHECK(slot < ARRAY_LEN(runtime.textures), return NUX_FAILURE);
+    framebuffer_t *fb  = runtime.framebuffers + slot;
+    texture_t     *tex = runtime.textures + texture;
 
     if (!fb->handle)
     {
@@ -246,9 +238,8 @@ nux_os_texture_create (void                         *userdata,
                        nux_u32_t                     slot,
                        const nux_gpu_texture_info_t *info)
 {
-    instance_t *inst = userdata;
-    CHECK(slot < ARRAY_LEN(inst->textures), return NUX_FAILURE);
-    texture_t *tex = inst->textures + slot;
+    CHECK(slot < ARRAY_LEN(runtime.textures), return NUX_FAILURE);
+    texture_t *tex = runtime.textures + slot;
     tex->info      = *info;
 
     switch (info->type)
@@ -306,9 +297,8 @@ nux_os_texture_update (void       *userdata,
                        nux_u32_t   h,
                        const void *data)
 {
-    instance_t *inst = userdata;
-    CHECK(slot < ARRAY_LEN(inst->textures), return NUX_FAILURE);
-    texture_t *tex = inst->textures + slot;
+    CHECK(slot < ARRAY_LEN(runtime.textures), return NUX_FAILURE);
+    texture_t *tex = runtime.textures + slot;
 
     glBindTexture(GL_TEXTURE_2D, tex->handle);
     glTexSubImage2D(
@@ -323,9 +313,8 @@ nux_os_buffer_create (void                 *userdata,
                       nux_gpu_buffer_type_t type,
                       nux_u32_t             size)
 {
-    instance_t *inst = userdata;
-    CHECK(slot < ARRAY_LEN(inst->buffers), return NUX_FAILURE);
-    buffer_t *buffer = inst->buffers + slot;
+    CHECK(slot < ARRAY_LEN(runtime.buffers), return NUX_FAILURE);
+    buffer_t *buffer = runtime.buffers + slot;
 
     switch (type)
     {
@@ -354,9 +343,8 @@ nux_os_buffer_update (void       *userdata,
                       nux_u32_t   size,
                       const void *data)
 {
-    instance_t *inst = userdata;
-    CHECK(slot < ARRAY_LEN(inst->buffers), return NUX_FAILURE);
-    buffer_t *buffer = inst->buffers + slot;
+    CHECK(slot < ARRAY_LEN(runtime.buffers), return NUX_FAILURE);
+    buffer_t *buffer = runtime.buffers + slot;
 
     glBindBuffer(buffer->buffer_type, buffer->handle);
     glBufferSubData(buffer->buffer_type, offset, size, data);
@@ -369,8 +357,6 @@ nux_os_gpu_submit (void                    *userdata,
                    const nux_gpu_command_t *cmds,
                    nux_u32_t                count)
 {
-    instance_t *inst = userdata;
-
     // Execute commands
     for (nux_u32_t i = 0; i < count; ++i)
     {
@@ -381,7 +367,7 @@ nux_os_gpu_submit (void                    *userdata,
                 if (cmd->bind_framebuffer.slot)
                 {
                     framebuffer_t *fb
-                        = inst->framebuffers + cmd->bind_framebuffer.slot;
+                        = runtime.framebuffers + cmd->bind_framebuffer.slot;
                     glBindFramebuffer(GL_FRAMEBUFFER, fb->handle);
                     glViewport(0, 0, fb->width, fb->height);
                     glEnable(GL_SCISSOR_TEST);
@@ -389,24 +375,19 @@ nux_os_gpu_submit (void                    *userdata,
                 }
                 else
                 {
+                    struct nk_rect vp = runtime.viewport;
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                    glViewport(inst->viewport.x,
-                               inst->viewport.y,
-                               inst->viewport.w,
-                               inst->viewport.h);
+                    glViewport(vp.x, vp.y, vp.w, vp.h);
                     glEnable(GL_SCISSOR_TEST);
-                    glScissor(inst->viewport.x,
-                              inst->viewport.y,
-                              inst->viewport.w,
-                              inst->viewport.h);
+                    glScissor(vp.x, vp.y, vp.w, vp.h);
                 }
             }
             break;
             case NUX_GPU_COMMAND_BIND_PIPELINE: {
-                renderer.active_pipeline
-                    = inst->pipelines + cmd->bind_pipeline.slot;
-                glUseProgram(renderer.active_pipeline->program);
-                if (renderer.active_pipeline->enable_depth_test)
+                runtime.active_pipeline
+                    = runtime.pipelines + cmd->bind_pipeline.slot;
+                glUseProgram(runtime.active_pipeline->program);
+                if (runtime.active_pipeline->enable_depth_test)
                 {
                     glEnable(GL_DEPTH_TEST);
                 }
@@ -414,7 +395,7 @@ nux_os_gpu_submit (void                    *userdata,
                 {
                     glDisable(GL_DEPTH_TEST);
                 }
-                if (renderer.active_pipeline->enable_blend)
+                if (runtime.active_pipeline->enable_blend)
                 {
                     glEnable(GL_BLEND);
                 }
@@ -422,7 +403,7 @@ nux_os_gpu_submit (void                    *userdata,
                 {
                     glDisable(GL_BLEND);
                 }
-                switch ((nux_gpu_pipeline_type_t)renderer.active_pipeline->type)
+                switch ((nux_gpu_pipeline_type_t)runtime.active_pipeline->type)
                 {
                     case NUX_GPU_PIPELINE_UBER: {
                         // glEnable(GL_MULTISAMPLE);
@@ -440,39 +421,39 @@ nux_os_gpu_submit (void                    *userdata,
             }
             break;
             case NUX_GPU_COMMAND_BIND_BUFFER: {
-                buffer_t *buffer = inst->buffers + cmd->bind_buffer.slot;
+                buffer_t *buffer = runtime.buffers + cmd->bind_buffer.slot;
                 GLuint    index
-                    = renderer.active_pipeline->indices[cmd->bind_buffer.desc];
+                    = runtime.active_pipeline->indices[cmd->bind_buffer.desc];
                 glBindBufferBase(buffer->buffer_type, index, buffer->handle);
             }
             break;
             case NUX_GPU_COMMAND_BIND_TEXTURE: {
                 GLuint unit
-                    = renderer.active_pipeline->units[cmd->bind_texture.desc];
+                    = runtime.active_pipeline->units[cmd->bind_texture.desc];
                 glActiveTexture(GL_TEXTURE0 + unit);
                 glBindTexture(GL_TEXTURE_2D,
-                              inst->textures[cmd->bind_texture.slot].handle);
-                GLuint location = renderer.active_pipeline
+                              runtime.textures[cmd->bind_texture.slot].handle);
+                GLuint location = runtime.active_pipeline
                                       ->locations[cmd->bind_texture.desc];
                 glUniform1i(location, unit);
             }
             break;
             case NUX_GPU_COMMAND_PUSH_U32: {
                 GLuint location
-                    = renderer.active_pipeline->locations[cmd->push_u32.desc];
+                    = runtime.active_pipeline->locations[cmd->push_u32.desc];
                 glUniform1ui(location, cmd->push_u32.value);
             }
             break;
             case NUX_GPU_COMMAND_PUSH_F32: {
                 GLuint location
-                    = renderer.active_pipeline->locations[cmd->push_f32.desc];
+                    = runtime.active_pipeline->locations[cmd->push_f32.desc];
                 glUniform1f(location, cmd->push_f32.value);
             }
             break;
             case NUX_GPU_COMMAND_DRAW: {
-                glBindVertexArray(renderer.empty_vao);
+                glBindVertexArray(runtime.empty_vao);
                 glDrawArrays(
-                    renderer.active_pipeline->primitive, 0, cmd->draw.count);
+                    runtime.active_pipeline->primitive, 0, cmd->draw.count);
                 glBindVertexArray(0);
             }
             break;
@@ -494,16 +475,16 @@ renderer_init (void)
     nux_status_t status = NUX_SUCCESS;
 
     // Create empty vao
-    glGenVertexArrays(1, &renderer.empty_vao);
+    glGenVertexArrays(1, &runtime.empty_vao);
 
     return status;
 }
 void
 renderer_free (void)
 {
-    if (renderer.empty_vao)
+    if (runtime.empty_vao)
     {
-        glDeleteVertexArrays(1, &renderer.empty_vao);
+        glDeleteVertexArrays(1, &runtime.empty_vao);
     }
 }
 static float
@@ -550,13 +531,11 @@ renderer_begin (struct nk_rect viewport, struct nk_vec2i window_size)
 void
 renderer_end (void)
 {
-    instance_t *inst = runtime_instance();
-
     // Restore state
+    struct nk_rect vp = runtime.viewport;
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_MULTISAMPLE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(
-        inst->viewport.x, inst->viewport.y, inst->viewport.w, inst->viewport.h);
+    glViewport(vp.x, vp.y, vp.w, vp.h);
     glDisable(GL_FRAMEBUFFER_SRGB);
 }

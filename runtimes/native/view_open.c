@@ -223,7 +223,7 @@ file_dialog (file_dialog_t     *fd,
                 path_basename(basename, file);
 
                 // Must be checked before selectable label update
-                if (selected && window_is_double_click())
+                if (selected && runtime.nk_glfw.is_double_click_down)
                 {
                     if (path_isdir(file))
                     {

@@ -1,10 +1,5 @@
 #include "internal.h"
 
-static struct
-{
-    view_t active_view;
-} gui;
-
 static const struct
 {
     const char *name;
@@ -17,11 +12,11 @@ static const struct
 void
 gui_update (void)
 {
-    struct nk_vec2i    size = window_get_size();
-    struct nk_context *ctx  = window_nk_context();
+    struct nk_vec2i    size = runtime.size;
+    struct nk_context *ctx  = &runtime.nk_glfw.ctx;
 
     struct nk_rect viewport;
-    if (window_is_fullscreen())
+    if (runtime.fullscreen)
     {
         viewport = nk_rect(0, 0, size.x, size.y);
     }
@@ -44,20 +39,20 @@ gui_update (void)
             for (int i = 0; i < (int)ARRAY_LEN(views); ++i)
             {
                 if (nk_button_symbol_label(ctx,
-                                           (gui.active_view == (view_t)i)
+                                           (runtime.active_view == (view_t)i)
                                                ? NK_SYMBOL_CIRCLE_SOLID
                                                : NK_SYMBOL_CIRCLE_OUTLINE,
                                            views[i].name,
                                            NK_TEXT_CENTERED))
                 {
-                    gui.active_view = i;
+                    runtime.active_view = i;
                 }
             }
 
             nk_spacer(ctx);
             if (nk_button_label(ctx, "Exit"))
             {
-                runtime_quit();
+                runtime_push_command((command_t) { .type = COMMAND_EXIT });
             }
 
             nk_end(ctx);
@@ -68,10 +63,5 @@ gui_update (void)
     }
 
     // Active view
-    views[gui.active_view].update(ctx, viewport);
-}
-void
-gui_set_view (view_t view)
-{
-    gui.active_view = view;
+    views[runtime.active_view].update(ctx, viewport);
 }

@@ -1,31 +1,22 @@
 #include "internal.h"
 
-static struct
-{
-    instance_t instance;
-    bool       running;
-    int        fps;
-} runtime;
+runtime_t runtime;
 
 static void
-instance_free (instance_t *instance)
+instance_free (void)
 {
-    if (!instance->active)
+    if (runtime.ctx)
     {
-        return;
+        nux_instance_free(runtime.ctx);
+        runtime.ctx = NULL;
     }
-    if (instance->ctx)
-    {
-        nux_instance_free(instance->ctx);
-    }
-    instance->active = false;
 }
 static nux_status_t
-instance_init (instance_t *instance, const char *path)
+instance_init (const char *path)
 {
-    instance_free(instance);
+    instance_free();
 
-    nux_config_t config = { .userdata     = instance,
+    nux_config_t config = { .userdata     = NULL,
                             .init         = NULL,
                             .update       = NULL,
                             .memory_size  = (1 << 26), // 16Mb
@@ -33,29 +24,28 @@ instance_init (instance_t *instance, const char *path)
                             .boot_device  = path,
                             .init_script  = "init.lua" };
 
-    strncpy(instance->path, path ? path : ".", PATH_MAX_LEN - 1);
-    instance->active        = true;
-    instance->config        = config;
-    instance->ctx           = NULL;
-    instance->viewport_ui   = nk_rect(0, 0, 10, 10);
-    instance->viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
+    strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
+    runtime.config        = config;
+    runtime.ctx           = NULL;
+    runtime.viewport_ui   = nk_rect(0, 0, 10, 10);
+    runtime.viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
 
-    instance->ctx = nux_instance_init(&config);
-    if (!instance->ctx)
+    runtime.ctx = nux_instance_init(&config);
+    if (!runtime.ctx)
     {
-        logger_log(NUX_LOG_ERROR, "failed to init instance");
+        fprintf(stderr, "failed to init instance");
         goto cleanup0;
     }
 
     return NUX_SUCCESS;
 cleanup0:
-    instance_free(instance);
+    instance_free();
     return NUX_FAILURE;
 }
 static void
-apply_viewport_mode (instance_t *instance, struct nk_vec2i window_size)
+apply_viewport_mode (struct nk_vec2i window_size)
 {
-    struct nk_rect viewport = instance->viewport_ui;
+    struct nk_rect viewport = runtime.viewport_ui;
 
     struct nk_vec2 global_pos  = { viewport.x, viewport.y };
     struct nk_vec2 global_size = { viewport.w, viewport.h };
@@ -64,7 +54,7 @@ apply_viewport_mode (instance_t *instance, struct nk_vec2i window_size)
     float           aspect_ratio = (float)screen.x / screen.y;
 
     struct nk_vec2 vsize = { 0, 0 };
-    switch (instance->viewport_mode)
+    switch (runtime.viewport_mode)
     {
         case VIEWPORT_FIXED: {
             vsize.x = screen.x;
@@ -122,10 +112,10 @@ apply_viewport_mode (instance_t *instance, struct nk_vec2i window_size)
     // Patch pos (bottom left in opengl)
     vpos.y = window_size.y - (vpos.y + vsize.y);
 
-    instance->viewport.x = vpos.x;
-    instance->viewport.y = vpos.y;
-    instance->viewport.w = vsize.x;
-    instance->viewport.h = vsize.y;
+    runtime.viewport.x = vpos.x;
+    runtime.viewport.y = vpos.y;
+    runtime.viewport.w = vsize.x;
+    runtime.viewport.h = vsize.y;
 }
 
 nux_status_t
@@ -144,33 +134,32 @@ runtime_run (const config_t *config)
         goto cleanup1;
     }
 
-    runtime.running = true;
-
     // Initialize base
     runtime_open(config->path);
 
     // Main loop
-    while (runtime.running)
+    bool running = true;
+    while (running)
     {
         // Retrieve window events
         window_begin_frame();
-        struct nk_vec2i window_size = window_get_size();
+        struct nk_vec2i window_size = runtime.size;
 
         // Clear background
         renderer_clear();
 
         // Update instance
-        if (runtime.instance.active)
+        if (runtime.ctx)
         {
             // Compute viewport
-            apply_viewport_mode(&runtime.instance, window_size);
+            apply_viewport_mode(window_size);
 
             // Begin renderer
             renderer_begin(nk_rect(0, 0, window_size.x, window_size.y),
                            window_size);
 
             // Tick
-            nux_instance_tick(runtime.instance.ctx);
+            nux_instance_tick(runtime.ctx);
 
             // End renderer
             renderer_end();
@@ -183,27 +172,28 @@ runtime_run (const config_t *config)
         runtime.fps = window_end_frame();
 
         // Process runtime events
-        command_t cmd;
-        while (command_poll(&cmd))
+        while (runtime.cmds_count)
         {
+            --runtime.cmds_count;
+            command_t cmd = runtime.cmds[runtime.cmds_count];
             switch (cmd.type)
             {
                 case COMMAND_EXIT:
-                    runtime.running = false;
+                    running = false;
                     break;
                 case COMMAND_SAVE_STATE:
                     break;
                 case COMMAND_LOAD_STATE:
                     break;
                 case COMMAND_CHANGE_VIEW:
-                    gui_set_view(cmd.view);
+                    runtime.active_view = cmd.view;
                     break;
             }
         }
     }
 
     // Free instance
-    instance_free(&runtime.instance);
+    instance_free();
 
     renderer_free();
 cleanup1:
@@ -214,49 +204,31 @@ cleanup0:
 nux_status_t
 runtime_open (const char *path)
 {
-    return instance_init(&runtime.instance, path);
+    return instance_init(path);
 }
 void
 runtime_close (void)
 {
-    instance_free(&runtime.instance);
+    instance_free();
 }
 void
 runtime_reset (void)
 {
-    if (runtime.instance.active)
+    if (runtime.ctx)
     {
         char path[PATH_MAX_LEN];
-        memcpy(path, runtime.instance.path, PATH_MAX_LEN);
+        memcpy(path, runtime.path, PATH_MAX_LEN);
         runtime_close();
         runtime_open(path);
     }
 }
-instance_t *
-runtime_instance (void)
-{
-    return &runtime.instance;
-}
 void
-runtime_quit (void)
+runtime_push_command (command_t cmd)
 {
-    runtime.running = false;
-}
-
-void *
-native_malloc (size_t n)
-{
-    return malloc(n);
-}
-void
-native_free (void *p)
-{
-    free(p);
-}
-void *
-native_realloc (void *p, size_t n)
-{
-    return realloc(p, n);
+    if (runtime.cmds_count < MAX_COMMAND)
+    {
+        runtime.cmds[runtime.cmds_count++] = cmd;
+    }
 }
 
 void *
@@ -264,31 +236,22 @@ nux_os_alloc (void *userdata, void *p, nux_u32_t o, nux_u32_t n)
 {
     if (!p)
     {
-        return native_malloc(n);
+        return malloc(n);
     }
     else if (!n)
     {
-        native_free(p);
+        free(p);
         return NULL;
     }
     else
     {
-        return native_realloc(p, n);
+        return realloc(p, n);
     }
-}
-void
-nux_os_log (void           *userdata,
-            nux_log_level_t level,
-            const nux_c8_t *log,
-            nux_u32_t       n)
-{
-    logger_log(level, "%.*s", n, log);
 }
 void
 nux_os_stats_update (void *userdata, nux_u32_t *stats)
 {
-    instance_t *inst              = userdata;
     stats[NUX_STAT_FPS]           = runtime.fps;
-    stats[NUX_STAT_SCREEN_WIDTH]  = inst->viewport.w;
-    stats[NUX_STAT_SCREEN_HEIGHT] = inst->viewport.h;
+    stats[NUX_STAT_SCREEN_WIDTH]  = runtime.viewport.w;
+    stats[NUX_STAT_SCREEN_HEIGHT] = runtime.viewport.h;
 }

@@ -9,7 +9,7 @@
 
 struct nux_context
 {
-    // Thread data
+    // thread data
 
     nux_c8_t        error_message[256];
     nux_status_t    error_status;
