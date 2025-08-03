@@ -57,8 +57,7 @@ view_game (struct nk_context *ctx, struct nk_rect bounds)
             nk_spacer(ctx);
             if (nk_button_label(ctx, "Open File"))
             {
-                runtime_push_command((command_t) { .type = COMMAND_CHANGE_VIEW,
-                                           .view = VIEW_OPEN });
+                runtime.active_view = VIEW_OPEN;
             }
             nk_spacer(ctx);
         }

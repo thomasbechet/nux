@@ -207,19 +207,11 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE)
         {
-            runtime_push_command((command_t) { .type = COMMAND_EXIT });
+            runtime.running = false;
         }
         if (key == GLFW_KEY_P)
         {
             runtime.switch_fullscreen = true;
-        }
-        if (key == GLFW_KEY_T)
-        {
-            runtime_push_command((command_t) { .type = COMMAND_SAVE_STATE });
-        }
-        if (key == GLFW_KEY_Y)
-        {
-            runtime_push_command((command_t) { .type = COMMAND_LOAD_STATE });
         }
         nux_button_t button = key_to_button(key);
         float        axvalue;
@@ -327,7 +319,7 @@ window_begin_frame (void)
         // Check close requested
         if (glfwWindowShouldClose(runtime.win))
         {
-            runtime_push_command((command_t) { .type = COMMAND_EXIT });
+            runtime.running = false;
         }
 
         // Process events

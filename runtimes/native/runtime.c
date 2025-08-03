@@ -3,46 +3,6 @@
 runtime_t runtime;
 
 static void
-instance_free (void)
-{
-    if (runtime.ctx)
-    {
-        nux_instance_free(runtime.ctx);
-        runtime.ctx = NULL;
-    }
-}
-static nux_status_t
-instance_init (const char *path)
-{
-    instance_free();
-
-    nux_config_t config = { .userdata     = NULL,
-                            .init         = NULL,
-                            .update       = NULL,
-                            .memory_size  = (1 << 26), // 16Mb
-                            .max_id_count = 4096,
-                            .boot_device  = path,
-                            .init_script  = "init.lua" };
-
-    strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
-    runtime.config        = config;
-    runtime.ctx           = NULL;
-    runtime.viewport_ui   = nk_rect(0, 0, 10, 10);
-    runtime.viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
-
-    runtime.ctx = nux_instance_init(&config);
-    if (!runtime.ctx)
-    {
-        fprintf(stderr, "failed to init instance");
-        goto cleanup0;
-    }
-
-    return NUX_SUCCESS;
-cleanup0:
-    instance_free();
-    return NUX_FAILURE;
-}
-static void
 apply_viewport_mode (struct nk_vec2i window_size)
 {
     struct nk_rect viewport = runtime.viewport_ui;
@@ -117,6 +77,15 @@ apply_viewport_mode (struct nk_vec2i window_size)
     runtime.viewport.w = vsize.x;
     runtime.viewport.h = vsize.y;
 }
+static void
+runtime_close (void)
+{
+    if (runtime.ctx)
+    {
+        nux_instance_free(runtime.ctx);
+        runtime.ctx = NULL;
+    }
+}
 
 nux_status_t
 runtime_run (const config_t *config)
@@ -138,8 +107,8 @@ runtime_run (const config_t *config)
     runtime_open(config->path);
 
     // Main loop
-    bool running = true;
-    while (running)
+    runtime.running = true;
+    while (runtime.running)
     {
         // Retrieve window events
         window_begin_frame();
@@ -170,30 +139,9 @@ runtime_run (const config_t *config)
 
         // Swap buffers
         runtime.fps = window_end_frame();
-
-        // Process runtime events
-        while (runtime.cmds_count)
-        {
-            --runtime.cmds_count;
-            command_t cmd = runtime.cmds[runtime.cmds_count];
-            switch (cmd.type)
-            {
-                case COMMAND_EXIT:
-                    running = false;
-                    break;
-                case COMMAND_SAVE_STATE:
-                    break;
-                case COMMAND_LOAD_STATE:
-                    break;
-                case COMMAND_CHANGE_VIEW:
-                    runtime.active_view = cmd.view;
-                    break;
-            }
-        }
     }
 
-    // Free instance
-    instance_free();
+    runtime_close();
 
     renderer_free();
 cleanup1:
@@ -204,12 +152,33 @@ cleanup0:
 nux_status_t
 runtime_open (const char *path)
 {
-    return instance_init(path);
-}
-void
-runtime_close (void)
-{
-    instance_free();
+    runtime_close();
+
+    nux_config_t config = { .userdata     = NULL,
+                            .init         = NULL,
+                            .update       = NULL,
+                            .memory_size  = (1 << 26), // 16Mb
+                            .max_id_count = 4096,
+                            .boot_device  = path,
+                            .init_script  = "init.lua" };
+
+    strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
+    runtime.config        = config;
+    runtime.ctx           = NULL;
+    runtime.viewport_ui   = nk_rect(0, 0, 10, 10);
+    runtime.viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
+
+    runtime.ctx = nux_instance_init(&config);
+    if (!runtime.ctx)
+    {
+        fprintf(stderr, "failed to init instance");
+        goto cleanup0;
+    }
+
+    return NUX_SUCCESS;
+cleanup0:
+    runtime_close();
+    return NUX_FAILURE;
 }
 void
 runtime_reset (void)
@@ -220,14 +189,6 @@ runtime_reset (void)
         memcpy(path, runtime.path, PATH_MAX_LEN);
         runtime_close();
         runtime_open(path);
-    }
-}
-void
-runtime_push_command (command_t cmd)
-{
-    if (runtime.cmds_count < MAX_COMMAND)
-    {
-        runtime.cmds[runtime.cmds_count++] = cmd;
     }
 }
 

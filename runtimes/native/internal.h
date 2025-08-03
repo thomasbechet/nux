@@ -55,18 +55,6 @@ typedef struct
 
 typedef struct
 {
-    enum
-    {
-        COMMAND_EXIT,
-        COMMAND_SAVE_STATE,
-        COMMAND_LOAD_STATE,
-        COMMAND_CHANGE_VIEW,
-    } type;
-    view_t view;
-} command_t;
-
-typedef struct
-{
     bool        debug;
     const char *path;
 } config_t;
@@ -116,6 +104,7 @@ typedef struct
     struct nk_rect  viewport_ui;
     viewport_mode_t viewport_mode;
     struct nk_rect  viewport;
+    bool            running;
 
     // renderer
 
@@ -129,11 +118,6 @@ typedef struct
     // io
 
     FILE *files[NUX_IO_FILE_MAX];
-
-    // commands
-
-    command_t cmds[MAX_COMMAND];
-    int       cmds_count;
 
     // gui
 
@@ -155,9 +139,7 @@ extern runtime_t runtime;
 
 nux_status_t runtime_run(const config_t *config);
 nux_status_t runtime_open(const char *path);
-void         runtime_close(void);
 void         runtime_reset(void);
-void         runtime_push_command(command_t cmd);
 
 nux_status_t renderer_init(void);
 void         renderer_free(void);

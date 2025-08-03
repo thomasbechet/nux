@@ -52,7 +52,7 @@ gui_update (void)
             nk_spacer(ctx);
             if (nk_button_label(ctx, "Exit"))
             {
-                runtime_push_command((command_t) { .type = COMMAND_EXIT });
+                runtime.running = true;
             }
 
             nk_end(ctx);
