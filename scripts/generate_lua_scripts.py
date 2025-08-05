@@ -16,5 +16,5 @@ if __name__ == "__main__":
             return l
         code += tohex(string)
     code.append("0x00") # null terminated
-    apply_template(args.rootdir, "lua_ext.c.inc.jinja", "core/lua/lua_ext.c.inc", code=code)
+    apply_template(args.rootdir, "lua_data.c.inc.jinja", "core/lua/lua_data.c.inc", code=code)
 

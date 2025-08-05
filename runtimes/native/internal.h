@@ -99,7 +99,7 @@ typedef struct
 
     int             fps;
     char            path[PATH_MAX_LEN];
-    nux_config_t    config;
+    nux_init_info_t    config;
     nux_ctx_t      *ctx;
     struct nk_rect  viewport_ui;
     viewport_mode_t viewport_mode;

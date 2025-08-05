@@ -17,15 +17,22 @@ struct nux_context
     nux_ecs_t      *active_ecs;
     nux_log_level_t log_level;
 
-    // system
+    // base
 
-    void          *userdata;
-    nux_b32_t      running;
-    nux_u64_t      frame;
-    nux_f32_t      time;
-    nux_callback_t init;
-    nux_callback_t update;
-    nux_pcg_t      pcg;
+    void               *userdata;
+    nux_b32_t           running;
+    nux_u64_t           frame;
+    nux_f32_t           time;
+    nux_callback_t      init_callback;
+    nux_callback_t      tick_callback;
+    nux_pcg_t           pcg;
+    nux_arena_pool_t    arenas;
+    nux_resource_pool_t resources;
+    nux_arena_t         core_arena;
+    nux_res_t           frame_arena;
+    nux_resource_type_t resources_types[NUX_RES_MAX];
+    nux_u32_t           resources_types_count;
+    nux_u32_t           stats[NUX_STAT_MAX];
 
     // input
 
@@ -33,8 +40,6 @@ struct nux_context
     nux_u32_t buttons_prev[NUX_PLAYER_MAX];
     nux_f32_t axis[NUX_PLAYER_MAX * NUX_AXIS_MAX];
     nux_f32_t axis_prev[NUX_PLAYER_MAX * NUX_AXIS_MAX];
-
-    nux_u32_t stats[NUX_STAT_MAX];
 
     // graphics
 
@@ -53,18 +58,6 @@ struct nux_context
     nux_u32_vec_t      free_pipeline_slots;
     nux_u32_vec_t      free_framebuffer_slots;
     nux_renderer_t     renderer;
-
-    // arena
-
-    nux_arena_pool_t    arenas;
-    nux_resource_pool_t resources;
-    nux_arena_t        *core_arena;
-    nux_res_t           frame_arena;
-
-    // resource
-
-    nux_resource_type_t resources_types[NUX_RES_MAX];
-    nux_u32_t           resources_types_count;
 
     // io
 

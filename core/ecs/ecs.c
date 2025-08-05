@@ -119,9 +119,16 @@ nux_status_t
 nux_ecs_init (nux_ctx_t *ctx)
 {
     NUX_CHECK(nux_ecs_component_vec_alloc(
-                  ctx, ctx->core_arena, ECS_COMPONENT_MAX, &ctx->components),
+                  ctx, &ctx->core_arena, ECS_COMPONENT_MAX, &ctx->components),
               return NUX_FAILURE);
     ctx->active_ecs = NUX_NULL;
+
+    // Register base component types
+    // Must be coherent with nux_component_type_base_t
+    nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
+    nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
+    nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
+
     return NUX_SUCCESS;
 }
 nux_u32_t

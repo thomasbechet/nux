@@ -30,7 +30,7 @@ nux_status_t
 nux_renderer_init (nux_ctx_t *ctx)
 {
     nux_renderer_t *r = &ctx->renderer;
-    nux_arena_t    *a = ctx->core_arena;
+    nux_arena_t    *a = &ctx->core_arena;
 
     // Allocate gpu commands buffer
     NUX_CHECK(nux_gpu_command_vec_alloc(ctx, a, 4096, &r->commands),
@@ -59,11 +59,11 @@ nux_renderer_init (nux_ctx_t *ctx)
               return NUX_FAILURE);
 
     // Create iterators
-    r->transform_iter = nux_ecs_new_iter(ctx, ctx->core_arena->self, 1, 0);
+    r->transform_iter = nux_ecs_new_iter(ctx, ctx->core_arena.self, 1, 0);
     NUX_CHECK(r->transform_iter, return NUX_FAILURE);
     nux_ecs_includes(ctx, r->transform_iter, NUX_COMPONENT_TRANSFORM);
     r->transform_staticmesh_iter
-        = nux_ecs_new_iter(ctx, ctx->core_arena->self, 2, 0);
+        = nux_ecs_new_iter(ctx, ctx->core_arena.self, 2, 0);
     NUX_CHECK(r->transform_staticmesh_iter, return NUX_FAILURE);
     nux_ecs_includes(
         ctx, r->transform_staticmesh_iter, NUX_COMPONENT_TRANSFORM);

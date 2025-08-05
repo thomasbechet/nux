@@ -2,7 +2,9 @@
 #define NUX_H
 
 #include "nux_config.h"
-#include "nux_api.h"
+#include "nux_api_base.h"
+#include "nux_api_graphics.h"
+#include "nux_api_ecs.h"
 
 //////////////////////////////////////////////////////////////////////////
 //////                               Types                          //////
@@ -12,20 +14,15 @@ typedef void (*nux_callback_t)(nux_ctx_t *);
 
 typedef struct
 {
-    nux_u32_t max_id_count;
-    nux_u32_t memory_size;
-
-    nux_u32_t width;
-    nux_u32_t height;
-    nux_u32_t tick_frequency;
-
-    void          *userdata;
-    nux_callback_t init;
-    nux_callback_t update;
-
+    void *userdata;
+    struct
+    {
+        nux_callback_t init;
+        nux_callback_t tick;
+    } hooks;
     const nux_c8_t *boot_device;
     const nux_c8_t *init_script;
-} nux_config_t;
+} nux_init_info_t;
 
 typedef enum
 {
@@ -235,7 +232,7 @@ NUX_API void         nux_os_stats_update(void *userdata, nux_u32_t *stats);
 //////////////////////////////////////////////////////////////////////////
 
 NUX_API
-nux_ctx_t   *nux_instance_init(const nux_config_t *config);
+nux_ctx_t   *nux_instance_init(const nux_init_info_t *info);
 NUX_API void nux_instance_free(nux_ctx_t *ctx);
 NUX_API void nux_instance_tick(nux_ctx_t *ctx);
 

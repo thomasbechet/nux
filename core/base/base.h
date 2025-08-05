@@ -511,6 +511,14 @@ typedef struct
 
 NUX_POOL_DEFINE(nux_resource_pool, nux_resource_t);
 
+typedef struct
+{
+    nux_u32_t resource_capa;
+    nux_u32_t arena_core_capa;
+    nux_u32_t arena_frame_capa;
+    nux_u32_t arena_scratch_capa;
+} nux_config_t;
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
@@ -590,6 +598,7 @@ void *nux_arena_alloc_res(nux_ctx_t *ctx,
                           nux_u32_t  type,
                           nux_u32_t  size,
                           nux_res_t *res);
+void  nux_arena_reset_raw(nux_ctx_t *ctx, nux_arena_t *arena);
 
 // random.c
 
@@ -654,5 +663,10 @@ void            nux_error_disable(nux_ctx_t *ctx);
 void            nux_error_reset(nux_ctx_t *ctx);
 const nux_c8_t *nux_error_get_message(nux_ctx_t *ctx);
 nux_status_t    nux_error_get_status(nux_ctx_t *ctx);
+
+// base.c
+
+nux_status_t nux_base_init(nux_ctx_t *ctx, const nux_init_info_t *info);
+void         nux_base_free(nux_ctx_t *ctx);
 
 #endif

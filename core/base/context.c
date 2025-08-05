@@ -45,101 +45,43 @@ nux_error_get_status (nux_ctx_t *ctx)
 }
 
 nux_ctx_t *
-nux_instance_init (const nux_config_t *config)
+nux_instance_init (const nux_init_info_t *info)
 {
-    NUX_ASSERT(config->max_id_count);
-    NUX_ASSERT(config->memory_size);
-
     // Allocate core memory
     nux_arena_t core_arena;
-    core_arena.capa = config->memory_size;
+    core_arena.capa = NUX_MEM_1M;
     core_arena.size = 0;
     core_arena.data
-        = nux_os_alloc(config->userdata, NUX_NULL, 0, config->memory_size);
+        = nux_os_alloc(info->userdata, NUX_NULL, 0, core_arena.capa);
     core_arena.first_resource = NUX_NULL;
     core_arena.last_resource  = NUX_NULL;
     if (!core_arena.data)
     {
         return NUX_NULL;
     }
-    nux_memset(core_arena.data, 0, config->memory_size);
+    nux_memset(core_arena.data, 0, core_arena.capa);
 
-    // Allocate instance
+    // Initialize context
     nux_ctx_t *ctx = nux_arena_alloc_raw(NUX_NULL, &core_arena, sizeof(*ctx));
     NUX_ASSERT(ctx);
-    ctx->userdata = config->userdata;
-    ctx->running  = NUX_TRUE;
-    ctx->init     = config->init;
-    ctx->update   = config->update;
+    ctx->core_arena = core_arena;
 
-    // Initialize state
-    nux_error_reset(ctx);
-
-    // Register base types
-    // Must be coherent with nux_type_base_t
-    ctx->resources_types_count = 0;
-    nux_resource_type_t *type;
-
-    type          = nux_res_register(ctx, "null");
-    type          = nux_res_register(ctx, "arena");
-    type          = nux_res_register(ctx, "lua");
-    type          = nux_res_register(ctx, "texture");
-    type->cleanup = nux_texture_cleanup;
-    type          = nux_res_register(ctx, "mesh");
-    type          = nux_res_register(ctx, "file");
-    type->cleanup = nux_file_cleanup;
-    type          = nux_res_register(ctx, "ecs");
-    type->cleanup = nux_ecs_cleanup;
-    type          = nux_res_register(ctx, "ecs_iter");
-
-    // Create resource pool
-    NUX_CHECK(nux_resource_pool_alloc(
-                  ctx, &core_arena, config->max_id_count, &ctx->resources),
-              goto cleanup);
-
-    // Reserve index 0 for null id
-    nux_resource_pool_add(&ctx->resources);
-
-    // Allocate arena pool
-    NUX_CHECK(nux_arena_pool_alloc(ctx, &core_arena, 32, &ctx->arenas),
-              goto cleanup);
-
-    // Register core arena object
-    ctx->core_arena       = nux_arena_pool_add(&ctx->arenas);
-    *ctx->core_arena      = core_arena; // copy by value
-    ctx->core_arena->self = nux_res_create(ctx, NUX_RES_ARENA, ctx->core_arena);
-
-    // Register frame arena
-    ctx->frame_arena = nux_arena_new(ctx, NUX_MEM_16M);
-    NUX_CHECK(ctx->frame_arena, goto cleanup);
-
-    // Initialize PCG
-    ctx->log_level    = NUX_LOG_DEBUG;
-    ctx->error_enable = NUX_TRUE;
-    ctx->pcg          = nux_pcg(10243124, 1823719241);
-
-    // Initialize core modules
-    NUX_CHECK(nux_io_init(ctx), goto cleanup);
-
-    // Mount base disk
-    if (config->boot_device)
-    {
-        NUX_CHECK(nux_io_mount(ctx, config->boot_device), goto cleanup);
-    }
-
-    NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
-    // Register base component types
-    // Must be coherent with nux_component_type_base_t
-    nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
-    nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
-    nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
-
-    // Configure
-    NUX_CHECK(nux_lua_preinit(ctx, config), goto cleanup);
-
-    // Initialize modules
-    NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
+    // Initialize mandatory modules
+    NUX_CHECK(nux_base_init(ctx, info), goto cleanup);
+    NUX_CHECK(nux_io_init(ctx, info), goto cleanup);
     NUX_CHECK(nux_lua_init(ctx), goto cleanup);
+
+    // Get program configuration
+    nux_config_t    config;
+    const nux_c8_t *path = info->init_script ? info->init_script : "init.lua";
+    NUX_CHECK(nux_lua_configure(ctx, path, &config), goto cleanup);
+
+    // Initialize optional modules
+    NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
+    NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
+
+    // Initialize program
+    nux_lua_invoke(ctx, NUX_FUNC_INIT);
 
     return ctx;
 
@@ -154,26 +96,28 @@ cleanup:
 void
 nux_instance_free (nux_ctx_t *ctx)
 {
-    // Free modules
+    // Cleanup all resources
+    nux_arena_reset_raw(ctx, &ctx->core_arena);
+
+    // Reset runtime
+    nux_graphics_free(ctx);
     nux_lua_free(ctx);
     nux_io_free(ctx);
-    nux_graphics_free(ctx);
-
-    nux_arena_reset(ctx, ctx->core_arena->self);
+    nux_base_free(ctx);
 
     // Free core memory
-    if (ctx->core_arena->data)
+    if (ctx->core_arena.data)
     {
-        nux_os_alloc(ctx->userdata, ctx->core_arena->data, 0, 0);
+        nux_os_alloc(ctx->userdata, ctx->core_arena.data, 0, 0);
     }
 }
 void
 nux_instance_tick (nux_ctx_t *ctx)
 {
     // Init
-    if (ctx->frame == 0 && ctx->init)
+    if (ctx->frame == 0 && ctx->init_callback)
     {
-        ctx->init(ctx);
+        ctx->init_callback(ctx);
     }
 
     // Update stats
@@ -186,13 +130,13 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_os_input_update(ctx->userdata, ctx->buttons, ctx->axis);
 
     // Update
-    if (ctx->update)
+    if (ctx->tick_callback)
     {
-        ctx->update(ctx);
+        ctx->tick_callback(ctx);
     }
 
     // Update lua
-    nux_lua_tick(ctx);
+    nux_lua_invoke(ctx, NUX_FUNC_TICK);
     if (!nux_error_get_status(ctx))
     {
         NUX_ERROR("%s", nux_error_get_message(ctx));
@@ -208,12 +152,6 @@ nux_instance_tick (nux_ctx_t *ctx)
     // Frame integration
     ctx->time += nux_dt(ctx);
     ++ctx->frame;
-}
-
-void
-nux_trace (nux_ctx_t *ctx, const nux_c8_t *text)
-{
-    nux_log(ctx, NUX_LOG_INFO, text, nux_strnlen(text, 1024));
 }
 
 nux_u32_t

@@ -1,3 +1,6 @@
+function nux.conf(config)
+end
+
 function nux.init()
     assert(nux.io.cart_begin("cart.bin", 3))
     assert(nux.io.write_cart_file("init.lua"))

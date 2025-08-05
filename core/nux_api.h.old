@@ -194,7 +194,6 @@ typedef enum
 } nux_log_level_t;
 
 // Debug API
-void nux_trace(nux_ctx_t *ctx, const nux_c8_t *text);
 void nux_log_set_level(nux_ctx_t *ctx, nux_log_level_t level);
 
 // System API

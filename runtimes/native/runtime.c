@@ -154,13 +154,11 @@ runtime_open (const char *path)
 {
     runtime_close();
 
-    nux_config_t config = { .userdata     = NULL,
-                            .init         = NULL,
-                            .update       = NULL,
-                            .memory_size  = (1 << 26), // 16Mb
-                            .max_id_count = 4096,
-                            .boot_device  = path,
-                            .init_script  = "init.lua" };
+    nux_init_info_t config = { .userdata    = NULL,
+                               .hooks.init  = NULL,
+                               .hooks.tick  = NULL,
+                               .boot_device = path,
+                               .init_script = path };
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
     runtime.config        = config;
@@ -171,7 +169,7 @@ runtime_open (const char *path)
     runtime.ctx = nux_instance_init(&config);
     if (!runtime.ctx)
     {
-        fprintf(stderr, "failed to init instance");
+        fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
     }
 

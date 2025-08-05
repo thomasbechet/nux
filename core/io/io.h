@@ -75,7 +75,7 @@ typedef struct
 
 // io.c
 
-nux_status_t nux_io_init(nux_ctx_t *ctx);
+nux_status_t nux_io_init(nux_ctx_t *ctx, const nux_init_info_t *info);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
 
 nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *path);

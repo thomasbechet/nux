@@ -103,7 +103,7 @@ static const struct luaL_Reg lib_{{ module }}[] = {
 };
 {% endfor %}
 
-nux_status_t nux_lua_register_base(nux_ctx_t *ctx)
+nux_status_t nux_lua_open_{{ api_name }}(nux_ctx_t *ctx)
 {
     lua_State *L = ctx->L;
     lua_getglobal(L, "nux");

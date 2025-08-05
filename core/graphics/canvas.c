@@ -120,7 +120,7 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
 
     // Allocate commands
     NUX_CHECK(nux_gpu_command_vec_alloc(
-                  ctx, ctx->core_arena, 4096, &canvas->commands),
+                  ctx, &ctx->core_arena, 4096, &canvas->commands),
               return NUX_FAILURE);
 
     // Initialize base active batch

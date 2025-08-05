@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "nux.h"
 
 static void *
 arena_push (nux_arena_t *arena, nux_u32_t size)
@@ -119,6 +120,11 @@ nux_arena_alloc_res (nux_ctx_t *ctx,
     }
     return data;
 }
+void
+nux_arena_reset_raw (nux_ctx_t *ctx, nux_arena_t *arena)
+{
+    arena_reset(ctx, arena, NUX_NULL);
+}
 
 nux_res_t
 nux_arena_new (nux_ctx_t *ctx, nux_u32_t capa)
@@ -132,7 +138,7 @@ nux_arena_new (nux_ctx_t *ctx, nux_u32_t capa)
     arena->size           = 0;
     arena->first_resource = NUX_NULL;
     arena->last_resource  = NUX_NULL;
-    arena->data = nux_arena_alloc_raw(ctx, ctx->core_arena, arena->capa);
+    arena->data           = nux_os_alloc(ctx->userdata, NUX_NULL, 0, capa);
     NUX_CHECK(arena->data, goto cleanup1);
     return arena->self;
 

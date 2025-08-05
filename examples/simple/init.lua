@@ -60,11 +60,14 @@ end
 local api
 
 function nux.conf(config)
-    print("hello")
+    -- config.memory.scratch = 10000
+    -- config.memory.frame = 10000
+    -- config.window.width = 1920
+    -- config.window.height = 1080
+    -- config.log.level = nux.LOG_DEBUG
 end
 
 function nux.init()
-    nux.log.set_level(nux.LOG_INFO)
     arena = nux.arena.new(1 << 24)
 
     local mesh_cube = nux.mesh.new_cube(arena, 1, 1, 1)
@@ -152,5 +155,5 @@ function nux.tick()
     nux.canvas.render(gui_canvas, gui_texture)
     nux.texture.blit(gui_texture)
 
-    -- print("test")
+    -- print(nux.random())
 end

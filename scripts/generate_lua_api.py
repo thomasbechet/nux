@@ -8,10 +8,7 @@ import os
 import json
 from template import apply_template
 
-constants = []
-modules = {}
-
-def parse_function(node):
+def parse_function(node, modules):
     parts = node.type.declname.split("_", 2)
     if len(parts) < 3: # In core module
         module = "core"
@@ -41,7 +38,7 @@ def parse_function(node):
         func["args"].append(arg)
     modules[module].append(func)
 
-def parse_enum(node):
+def parse_enum(node, constants):
     constant = {}
     constant["name"] = node.name.replace("nux_", "")
     constant["values"] = []
@@ -53,18 +50,27 @@ def parse_enum(node):
     constants.append(constant)
 
 class FuncDefVisitor(c_ast.NodeVisitor):
+    def __init__(self, modules):
+        self._modules = modules
+
     def visit_FuncDecl(self, node):
-        parse_function(node)
+        parse_function(node, self._modules)
 
 class TypeDefVisitor(c_ast.NodeVisitor):
+    def __init__(self, constants):
+        self._constants = constants 
+
     def visit_Typedef(self, node):
         if type(node.type.type) is c_ast.Enum:
-            parse_enum(node)
+            parse_enum(node, self._constants)
 
-def parse_header(args):
-    api_header = os.path.join(args.rootdir, "core/nux_api.h")
+def parse_header(args, header):
+    api_header = os.path.join(args.rootdir, header)
     with open(api_header, 'r') as file:
         src = file.read()
+
+    constants = []
+    modules = {}
 
     prelude = """
         typedef int uint8_t;
@@ -75,23 +81,64 @@ def parse_header(args):
         typedef int int64_t;
         typedef int uint64_t;
         typedef int intptr_t;
+
+        typedef int nux_b32_t;
+        typedef int nux_u8_t;
+        typedef int nux_c8_t;
+        typedef int nux_i16_t;
+        typedef int nux_u16_t;
+        typedef int nux_i32_t;
+        typedef int nux_u32_t;
+        typedef int nux_i64_t;
+        typedef int nux_u64_t;
+        typedef int nux_f32_t;
+        typedef int nux_f64_t;
+        typedef int nux_intptr_t;
+        typedef int nux_res_t;
+        typedef int nux_ent_t;
+        
+        typedef struct nux_context nux_ctx_t;
+        
+        typedef union
+        {
+            struct
+            {
+                nux_f32_t x;
+                nux_f32_t y;
+                nux_f32_t z;
+            };
+            nux_f32_t data[3];
+        } nux_v3_t;
+        
+        typedef union
+        {
+            struct
+            {
+                nux_f32_t x;
+                nux_f32_t y;
+                nux_f32_t z;
+                nux_f32_t w;
+            };
+            nux_f32_t data[4];
+        } nux_q4_t;
     """
 
     fixed = "\n".join([line if not re.findall("//|#include|#ifdef|#ifndef|#else|#endif|#define", line) else "" for line in src.splitlines()])
     ast = c_parser.CParser().parse(prelude + fixed)
-    v = FuncDefVisitor()
+    v = FuncDefVisitor(modules)
     v.visit(ast)
-    v = TypeDefVisitor()
+    v = TypeDefVisitor(constants)
     v.visit(ast)
+    return modules, constants
 
-def dump():
-    print(json.dumps(constants, indent=4))
-    print(json.dumps(modules, indent=4))
+# def dump():
+#     print(json.dumps(constants, indent=4))
+#     print(json.dumps(modules, indent=4))
 
-def generate_files(args):
+def generate_files(args, source, api_name, modules, constants):
 
     # lua_api.c.inc
-    apply_template(args.rootdir, "lua_api.c.inc.jinja", "core/lua/lua_api.c.inc", modules=modules, constants=constants)
+    apply_template(args.rootdir, "lua_api.c.inc.jinja", source, modules=modules, constants=constants, api_name=api_name)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -99,12 +146,17 @@ if __name__ == "__main__":
     parser.add_argument("--dump", dest="dump", action="store_true")
     args = parser.parse_args()
 
-    parse_header(args)
+    m, c = parse_header(args, "core/nux_api_base.h")
+    generate_files(args, "core/lua/lua_api_base.c", "base", m, c)
+    m, c = parse_header(args, "core/nux_api_graphics.h")
+    generate_files(args, "core/lua/lua_api_graphics.c", "graphics", m, c)
+    m, c = parse_header(args, "core/nux_api_ecs.h")
+    generate_files(args, "core/lua/lua_api_ecs.c", "ecs", m, c)
 
-    if args.dump:
-        dump()
-    else:
-        generate_files(args)
+    # if args.dump:
+    #     dump()
+    # else:
+    #     generate_files(args)
 
 
     

@@ -113,11 +113,12 @@ close_os_file (nux_ctx_t *ctx, nux_u32_t slot)
 }
 
 nux_status_t
-nux_io_init (nux_ctx_t *ctx)
+nux_io_init (nux_ctx_t *ctx, const nux_init_info_t *info)
 {
-    NUX_CHECK(nux_u32_vec_alloc(
-                  ctx, ctx->core_arena, NUX_IO_FILE_MAX, &ctx->free_file_slots),
-              goto error);
+    NUX_CHECK(
+        nux_u32_vec_alloc(
+            ctx, &ctx->core_arena, NUX_IO_FILE_MAX, &ctx->free_file_slots),
+        goto error);
 
     // Initialize values
     nux_u32_vec_fill_reversed(&ctx->free_file_slots);
@@ -128,6 +129,12 @@ nux_io_init (nux_ctx_t *ctx)
     nux_disk_t *disk = ctx->disks + ctx->disks_count;
     disk->type       = NUX_DISK_OS;
     ++ctx->disks_count;
+
+    // Mount base disk
+    if (info->boot_device)
+    {
+        NUX_CHECK(nux_io_mount(ctx, info->boot_device), goto error);
+    }
 
     return NUX_SUCCESS;
 error:
@@ -164,7 +171,7 @@ cart_read_entries (nux_ctx_t *ctx, nux_cart_t *cart)
     status &= cart_read_u32(ctx, cart->slot, &cart->entries_count);
     NUX_CHECK(status, return NUX_FAILURE);
     cart->entries = nux_arena_alloc_raw(
-        ctx, ctx->core_arena, sizeof(*cart->entries) * cart->entries_count);
+        ctx, &ctx->core_arena, sizeof(*cart->entries) * cart->entries_count);
     NUX_CHECK(cart->entries, return NUX_FAILURE);
     for (nux_u32_t i = 0; i < cart->entries_count; ++i)
     {
@@ -196,6 +203,7 @@ cart_read_entries (nux_ctx_t *ctx, nux_cart_t *cart)
 nux_status_t
 nux_io_mount (nux_ctx_t *ctx, const nux_c8_t *path)
 {
+    NUX_DEBUG("mounting '%s", path);
     NUX_ENSURE(ctx->disks_count < NUX_ARRAY_SIZE(ctx->disks),
                return NUX_FAILURE,
                "out of disks");
