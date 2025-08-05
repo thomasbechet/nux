@@ -414,7 +414,13 @@ nux_io_load (nux_ctx_t      *ctx,
 
     // Read file
     nux_u32_t read = nux_io_read(ctx, &file, data, stat.size);
-    NUX_CHECK(read == stat.size, goto cleanup0);
+    NUX_ENSURE(
+        read == stat.size,
+        goto cleanup0,
+        "failed to read file content '%s' (expect %d bytes, got %d bytes)",
+        path,
+        stat.size,
+        read);
 
     nux_io_close(ctx, &file);
     return data;

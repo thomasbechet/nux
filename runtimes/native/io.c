@@ -27,7 +27,7 @@ nux_os_file_open (void           *userdata,
     assert(runtime.files[slot] == NULL);
     nux_c8_t finalpath[NUX_PATH_BUF_SIZE + 2];
     snprintf(finalpath, sizeof(finalpath), "./%s", path);
-    runtime.files[slot] = fopen(path, mode == NUX_IO_READ ? "r" : "w");
+    runtime.files[slot] = fopen(path, mode == NUX_IO_READ ? "rb" : "wb");
     if (!runtime.files[slot])
     {
         return NUX_FAILURE;
