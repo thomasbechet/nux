@@ -8,10 +8,10 @@
 typedef struct
 {
     bool open;
-    char dir[PATH_MAX_LEN];
-    char edit_dir[PATH_MAX_LEN];
+    char dir[PATH_BUF_LEN];
+    char edit_dir[PATH_BUF_LEN];
     int  edit_dir_len;
-    char edit_filename[PATH_MAX_LEN];
+    char edit_filename[PATH_BUF_LEN];
     int  edit_filename_len;
     int  file_selected;
     int  filetype;
@@ -24,12 +24,12 @@ path_concat (char *buf, const char *p1, const char *p2)
 {
     if (!p1 || !strnlen(p1, PATH_MAX_LEN))
     {
-        strncpy(buf, p2, PATH_MAX_LEN);
+        memcpy(buf, p2, PATH_BUF_LEN);
         return;
     }
     if (!p2)
     {
-        strncpy(buf, p1, PATH_MAX_LEN);
+        memcpy(buf, p1, PATH_BUF_LEN);
         return;
     }
 
@@ -48,13 +48,13 @@ path_concat (char *buf, const char *p1, const char *p2)
 }
 static nux_status_t
 path_list_files (const char *path,
-                 char (*files)[PATH_MAX_LEN],
+                 char (*files)[PATH_BUF_LEN],
                  int  capa,
                  int *count)
 {
     assert(path);
     *count = 0;
-    char s[PATH_MAX_LEN];
+    char s[PATH_BUF_LEN];
     memcpy(s, path, PATH_MAX_LEN);
     DIR *d;
     d = opendir(s);
@@ -150,9 +150,9 @@ file_dialog_change_dir (file_dialog_t *fd, const char *dir)
 static void
 file_dialog_open (file_dialog_t *fd)
 {
-    char        cwd_buf[PATH_MAX_LEN];
+    char        cwd_buf[PATH_BUF_LEN];
     const char *cwd = getcwd(cwd_buf, PATH_MAX_LEN);
-    char        dir[PATH_MAX_LEN];
+    char        dir[PATH_BUF_LEN];
     memcpy(dir, cwd, PATH_MAX_LEN - 1);
     file_dialog_change_dir(fd, dir);
     fd->open = true;
@@ -162,7 +162,7 @@ static bool
 file_dialog (file_dialog_t     *fd,
              struct nk_context *ctx,
              struct nk_rect     bounds,
-             char               output[PATH_MAX_LEN])
+             char               output[PATH_BUF_LEN])
 {
     if (!fd->open)
     {
@@ -176,7 +176,7 @@ file_dialog (file_dialog_t     *fd,
                  NK_WINDOW_TITLE | NK_WINDOW_NO_SCROLLBAR))
     {
         const int row = 30;
-        char      files[64][PATH_MAX_LEN];
+        char      files[64][PATH_BUF_LEN];
         int       count;
 
         nux_status_t status
@@ -194,12 +194,12 @@ file_dialog (file_dialog_t     *fd,
 
         if (nk_button_symbol(ctx, NK_SYMBOL_TRIANGLE_UP))
         {
-            char parent[PATH_MAX_LEN];
+            char parent[PATH_BUF_LEN];
             path_parent(parent, fd->dir);
             int parent_len = strnlen(parent, PATH_MAX_LEN);
             if (parent_len)
             {
-                char temp[PATH_MAX_LEN];
+                char temp[PATH_BUF_LEN];
                 strncpy(temp, parent, PATH_MAX_LEN);
                 file_dialog_change_dir(fd, temp);
             }
@@ -308,7 +308,7 @@ view_open (struct nk_context *ctx, struct nk_rect bounds)
 
     if (filedialog.open)
     {
-        char file[PATH_MAX_LEN];
+        char file[PATH_BUF_LEN];
         if (file_dialog(&filedialog, ctx, bounds, file))
         {
             runtime_open(file);
