@@ -104,7 +104,10 @@ runtime_run (const config_t *config)
     }
 
     // Initialize base
-    runtime_open(config->path);
+    if (config->path)
+    {
+        runtime_open(config->path);
+    }
 
     // Main loop
     runtime.running = true;
@@ -154,11 +157,9 @@ runtime_open (const char *path)
 {
     runtime_close();
 
-    nux_init_info_t config = { .userdata    = NULL,
-                               .hooks.init  = NULL,
-                               .hooks.tick  = NULL,
-                               .boot_device = path,
-                               .init_script = path };
+    nux_init_info_t config = {
+        .userdata = NULL, .hooks.init = NULL, .hooks.tick = NULL, .entry = path
+    };
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
     runtime.config        = config;

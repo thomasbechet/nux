@@ -570,6 +570,13 @@ nux_u32_t nux_vsnprintf(nux_c8_t       *buf,
                         nux_u32_t       n,
                         const nux_c8_t *format,
                         va_list         args);
+nux_b32_t nux_path_isdir(const nux_c8_t *path);
+nux_status_t nux_path_concat(nux_c8_t       *dst,
+                             const nux_c8_t *a,
+                             const nux_c8_t *b);
+nux_u32_t    nux_path_basename(nux_c8_t *dst, const nux_c8_t *path);
+nux_u32_t    nux_path_normalize(nux_c8_t *dst, const nux_c8_t *path);
+nux_b32_t    nux_path_endswith(const nux_c8_t *path, const nux_c8_t *end);
 
 // memory.c
 

@@ -20,8 +20,7 @@ typedef struct
         nux_callback_t init;
         nux_callback_t tick;
     } hooks;
-    const nux_c8_t *boot_device;
-    const nux_c8_t *init_script;
+    const nux_c8_t *entry;
 } nux_init_info_t;
 
 typedef enum

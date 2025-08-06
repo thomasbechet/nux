@@ -71,17 +71,30 @@ nux_instance_init (const nux_init_info_t *info)
     NUX_CHECK(nux_io_init(ctx, info), goto cleanup);
     NUX_CHECK(nux_lua_init(ctx), goto cleanup);
 
+    // Detect entry point type
+    NUX_ASSERT(info->entry);
+    nux_c8_t normpath[NUX_PATH_BUF_SIZE];
+    nux_path_normalize(normpath, info->entry);
+    const nux_c8_t *entry_script;
+    if (nux_path_endswith(normpath, ".lua"))
+    {
+        // Direct script loading
+        entry_script = normpath;
+    }
+    else
+    {
+        // Expect cartridge
+        NUX_CHECK(nux_io_mount(ctx, normpath), goto cleanup);
+        entry_script = "init.lua";
+    }
+
     // Get program configuration
-    nux_config_t    config;
-    const nux_c8_t *path = info->init_script ? info->init_script : "init.lua";
-    NUX_CHECK(nux_lua_configure(ctx, path, &config), goto cleanup);
+    nux_config_t config;
+    NUX_CHECK(nux_lua_configure(ctx, entry_script, &config), goto cleanup);
 
     // Initialize optional modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
     NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
-
-    // Initialize program
-    nux_lua_invoke(ctx, NUX_FUNC_INIT);
 
     return ctx;
 
@@ -115,9 +128,13 @@ void
 nux_instance_tick (nux_ctx_t *ctx)
 {
     // Init
-    if (ctx->frame == 0 && ctx->init_callback)
+    if (ctx->frame == 0)
     {
-        ctx->init_callback(ctx);
+        if (ctx->init_callback)
+        {
+            ctx->init_callback(ctx);
+        }
+        nux_lua_invoke(ctx, NUX_FUNC_INIT);
     }
 
     // Update stats
@@ -134,9 +151,9 @@ nux_instance_tick (nux_ctx_t *ctx)
     {
         ctx->tick_callback(ctx);
     }
-
-    // Update lua
     nux_lua_invoke(ctx, NUX_FUNC_TICK);
+
+    // Error handling
     if (!nux_error_get_status(ctx))
     {
         NUX_ERROR("%s", nux_error_get_message(ctx));

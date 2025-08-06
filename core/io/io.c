@@ -1,96 +1,11 @@
 #include "internal.h"
 
-enum
-{
-    NUX_CART_HEADER_SIZE = 4 * 3,
-    NUX_CART_ENTRY_SIZE  = 4 * 6,
-};
-
-static nux_b32_t
-path_isdir (const nux_c8_t *path)
-{
-    nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
-    return len == 0 || path[len - 1] == '/';
-}
-static nux_status_t
-path_concat (nux_c8_t *dst, const nux_c8_t *a, const nux_c8_t *b)
-{
-    if (!path_isdir(a))
-    {
-        return NUX_FAILURE;
-    }
-    nux_u32_t a_len = nux_strnlen(a, NUX_PATH_MAX);
-    nux_u32_t b_len = nux_strnlen(b, NUX_PATH_MAX);
-    if (a_len + b_len + 1 > NUX_PATH_MAX)
-    {
-        return NUX_FAILURE;
-    }
-    nux_memcpy(dst, a, a_len);
-    dst[a_len] = '/';
-    nux_memcpy(dst + a_len + 1, b, b_len);
-    dst[a_len + b_len + 1] = '\0';
-    return NUX_SUCCESS;
-}
-static nux_u32_t
-path_basename (nux_c8_t *dst, const nux_c8_t *path)
-{
-    nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
-    for (nux_u32_t n = len; n; --n)
-    {
-        if (path[n - 1] == '/')
-        {
-            nux_u32_t basename_len = len - n;
-            nux_strncpy(dst, path + n, basename_len);
-            return basename_len;
-        }
-    }
-    nux_strncpy(dst, path, len);
-    return len;
-}
-static nux_u32_t
-path_normalize (nux_c8_t *dst, const nux_c8_t *path)
-{
-    nux_u32_t       len = nux_strnlen(path, NUX_PATH_MAX);
-    nux_u32_t       i   = 0;
-    const nux_c8_t *p   = path;
-    while (*p)
-    {
-        if (*p == '/')
-        {
-            if (i == 0 || dst[i - 1] == '/')
-            {
-                ++p;
-                continue;
-            }
-        }
-        else if (*p == '.')
-        {
-            if (*(p + 1) == '/' || *(p + 1) == '.' || (i == len - 1))
-            {
-                ++p;
-                continue;
-            }
-        }
-        else if (*p == '\\' || *p == ' ' || *p == ':' || *p == '~' || *p == '<'
-                 || *p == '>' || *p == '?' || *p == '*'
-                 || *p == '|') // forbidden characters
-        {
-            ++p;
-            continue;
-        }
-        dst[i] = *p;
-        ++i;
-        ++p;
-    }
-    dst[i] = '\0';
-    return i;
-}
 static nux_u32_t
 open_os_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)
 {
     nux_c8_t  normpath[NUX_PATH_BUF_SIZE];
-    nux_u32_t len = path_normalize(normpath, path);
-    NUX_ENSURE(!path_isdir(normpath),
+    nux_u32_t len = nux_path_normalize(normpath, path);
+    NUX_ENSURE(!nux_path_isdir(normpath),
                return NUX_NULL,
                "trying to open a directory '%s' as file",
                normpath);
@@ -129,12 +44,6 @@ nux_io_init (nux_ctx_t *ctx, const nux_init_info_t *info)
     nux_disk_t *disk = ctx->disks + ctx->disks_count;
     disk->type       = NUX_DISK_OS;
     ++ctx->disks_count;
-
-    // Mount base disk
-    if (info->boot_device)
-    {
-        NUX_CHECK(nux_io_mount(ctx, info->boot_device), goto error);
-    }
 
     return NUX_SUCCESS;
 error:

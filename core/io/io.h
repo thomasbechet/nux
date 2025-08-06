@@ -9,6 +9,12 @@
 
 typedef enum
 {
+    NUX_CART_HEADER_SIZE = 4 * 3,
+    NUX_CART_ENTRY_SIZE  = 4 * 6,
+} nux_cart_layout_t;
+
+typedef enum
+{
     NUX_DISK_OS,
     NUX_DISK_CART,
 } nux_disk_type_t;

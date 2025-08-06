@@ -24,7 +24,7 @@
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
 void         nux_lua_free(nux_ctx_t *ctx);
 nux_status_t nux_lua_configure(nux_ctx_t      *ctx,
-                               const nux_c8_t *path,
+                               const nux_c8_t *entry_script,
                                nux_config_t   *config);
 nux_status_t nux_lua_invoke(nux_ctx_t *ctx, const nux_c8_t *func);
 

@@ -14,18 +14,8 @@ nux_lua_init (nux_ctx_t *ctx)
     lua_newtable(ctx->L);
     lua_setglobal(ctx->L, NUX_TABLE);
 
-    // Register API
+    // Register base lua API
     luaL_openlibs(ctx->L);
-    nux_lua_open_base(ctx);
-    nux_lua_open_graphics(ctx);
-    nux_lua_open_ecs(ctx);
-
-    // Register lua scripts
-    if (luaL_dostring(ctx->L, lua_data_code) != LUA_OK)
-    {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
-        return NUX_FAILURE;
-    }
 
     return NUX_SUCCESS;
 }
@@ -38,10 +28,12 @@ nux_lua_free (nux_ctx_t *ctx)
     }
 }
 nux_status_t
-nux_lua_configure (nux_ctx_t *ctx, const nux_c8_t *path, nux_config_t *config)
+nux_lua_configure (nux_ctx_t      *ctx,
+                   const nux_c8_t *entry_script,
+                   nux_config_t   *config)
 {
     // Load init script
-    if (luaL_dofile(ctx->L, path) != LUA_OK)
+    if (luaL_dofile(ctx->L, entry_script) != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(ctx->L, -1));
         return NUX_FAILURE;
@@ -49,6 +41,18 @@ nux_lua_configure (nux_ctx_t *ctx, const nux_c8_t *path, nux_config_t *config)
 
     // Call nux.conf
     NUX_CHECK(nux_lua_invoke(ctx, NUX_FUNC_CONF), return NUX_FAILURE);
+
+    // Register API
+    nux_lua_open_base(ctx);
+    nux_lua_open_graphics(ctx);
+    nux_lua_open_ecs(ctx);
+
+    // Register lua scripts
+    if (luaL_dostring(ctx->L, lua_data_code) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        return NUX_FAILURE;
+    }
 
     return NUX_SUCCESS;
 }
