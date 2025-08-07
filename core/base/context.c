@@ -96,6 +96,7 @@ nux_instance_init (const nux_init_info_t *info)
     config.window.enable          = NUX_TRUE;
     config.window.width           = 900;
     config.window.height          = 400;
+    config.ecs.enable             = NUX_TRUE;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &config), goto cleanup);
 
     // Initialize optional modules

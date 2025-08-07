@@ -1,5 +1,7 @@
 #include "internal.h"
 
+#include "lua_code.c.inc"
+
 #define ID_INDEX(id)   (id - 1)
 #define ID_MAKE(index) (index + 1)
 
@@ -128,6 +130,10 @@ nux_ecs_init (nux_ctx_t *ctx)
     nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
     nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
     nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
+
+    // Register lua api
+    nux_lua_open_ecs(ctx);
+    nux_lua_dostring(ctx, lua_data_code);
 
     return NUX_SUCCESS;
 }

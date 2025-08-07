@@ -1,7 +1,7 @@
-#ifndef NUX_ECS_H
-#define NUX_ECS_H
+#ifndef NUX_ECS_PRIVATE_H
+#define NUX_ECS_PRIVATE_H
 
-#include "graphics/graphics.h"
+#include "graphics/private.h"
 
 ////////////////////////////
 ///        TYPES         ///
@@ -99,6 +99,10 @@ void *nux_ecs_set(nux_ctx_t *ctx, nux_ent_t e, nux_u32_t c);
 void *nux_ecs_get(nux_ctx_t *ctx, nux_ent_t e, nux_u32_t c);
 
 void nux_ecs_cleanup(nux_ctx_t *ctx, void *data);
+
+// lua_bindings.c
+
+nux_status_t nux_lua_open_ecs(nux_ctx_t *ctx);
 
 // transform.c
 

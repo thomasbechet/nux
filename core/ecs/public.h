@@ -1,7 +1,7 @@
-#ifndef NUX_API_ECS_H
-#define NUX_API_ECS_H
+#ifndef NUX_ECS_PUBLIC_H
+#define NUX_ECS_PUBLIC_H
 
-#include "nux_api_base.h"
+#include "base/public.h"
 
 void nux_transform_add(nux_ctx_t *ctx, nux_ent_t e);
 void nux_transform_remove(nux_ctx_t *ctx, nux_ent_t e);

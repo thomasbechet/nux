@@ -1,6 +1,6 @@
 #include "internal.h"
 
-#include "lua_data.c.inc"
+#include "lua_code.c.inc"
 
 typedef struct
 {
@@ -208,18 +208,7 @@ nux_lua_configure (nux_ctx_t      *ctx,
 
     // Register base API
     nux_lua_open_base(ctx);
-    nux_lua_open_graphics(ctx);
-    if (config->ecs.enable)
-    {
-        nux_lua_open_ecs(ctx);
-    }
-
-    // Register lua scripts
-    if (luaL_dostring(ctx->L, lua_data_code) != LUA_OK)
-    {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
-        return NUX_FAILURE;
-    }
+    nux_lua_dostring(ctx, lua_data_code);
 
     return NUX_SUCCESS;
 }
@@ -238,6 +227,16 @@ nux_lua_call_tick (nux_ctx_t *ctx)
     if (nux_lua_get_function(ctx->L, NUX_FUNC_TICK))
     {
         NUX_CHECK(nux_lua_call(ctx, 0, 0), return NUX_FAILURE);
+    }
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_lua_dostring (nux_ctx_t *ctx, const nux_c8_t *string)
+{
+    if (luaL_dostring(ctx->L, string) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        return NUX_FAILURE;
     }
     return NUX_SUCCESS;
 }

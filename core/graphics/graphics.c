@@ -75,6 +75,9 @@ nux_graphics_init (nux_ctx_t *ctx)
     // Initialize renderer
     NUX_CHECK(nux_renderer_init(ctx), goto error);
 
+    // Register lua api
+    nux_lua_open_graphics(ctx);
+
     return NUX_SUCCESS;
 
 error:

@@ -1,11 +1,9 @@
 #ifndef NUX_INTERNAL_H
 #define NUX_INTERNAL_H
 
-#include "base/base.h"
-#include "io/io.h"
-#include "graphics/graphics.h"
-#include "lua/lua.h"
-#include "ecs/ecs.h"
+#include "base/private.h"
+#include "ecs/private.h"
+#include "graphics/private.h"
 
 struct nux_context
 {
@@ -33,13 +31,15 @@ struct nux_context
     nux_resource_type_t resources_types[NUX_RES_MAX];
     nux_u32_t           resources_types_count;
     nux_u32_t           stats[NUX_STAT_MAX];
-
-    // input
-
-    nux_u32_t buttons[NUX_PLAYER_MAX];
-    nux_u32_t buttons_prev[NUX_PLAYER_MAX];
-    nux_f32_t axis[NUX_PLAYER_MAX * NUX_AXIS_MAX];
-    nux_f32_t axis_prev[NUX_PLAYER_MAX * NUX_AXIS_MAX];
+    nux_u32_t           buttons[NUX_PLAYER_MAX];
+    nux_u32_t           buttons_prev[NUX_PLAYER_MAX];
+    nux_f32_t           axis[NUX_PLAYER_MAX * NUX_AXIS_MAX];
+    nux_f32_t           axis_prev[NUX_PLAYER_MAX * NUX_AXIS_MAX];
+    nux_disk_t          disks[NUX_DISK_MAX];
+    nux_u32_t           disks_count;
+    nux_u32_vec_t       free_file_slots;
+    nux_cart_writer_t   cart_writer;
+    lua_State          *L;
 
     // graphics
 
@@ -58,17 +58,6 @@ struct nux_context
     nux_u32_vec_t      free_pipeline_slots;
     nux_u32_vec_t      free_framebuffer_slots;
     nux_renderer_t     renderer;
-
-    // io
-
-    nux_disk_t        disks[NUX_DISK_MAX];
-    nux_u32_t         disks_count;
-    nux_u32_vec_t     free_file_slots;
-    nux_cart_writer_t cart_writer;
-
-    // lua
-
-    lua_State *L;
 
     // ecs
 

@@ -1,7 +1,7 @@
-#ifndef NUX_GRAPHICS_H
-#define NUX_GRAPHICS_H
+#ifndef NUX_GRAPHICS_PRIVATE_H
+#define NUX_GRAPHICS_PRIVATE_H
 
-#include "base/base.h"
+#include "base/private.h"
 
 ////////////////////////////
 ///        TYPES         ///
@@ -179,6 +179,10 @@ nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
                                         nux_u32_t        vcount,
                                         const nux_f32_t *data,
                                         nux_u32_t       *first);
+
+// lua_bindings.c
+
+nux_status_t nux_lua_open_graphics(nux_ctx_t *ctx);
 
 // texture.c
 

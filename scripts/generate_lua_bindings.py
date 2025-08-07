@@ -132,9 +132,7 @@ def parse_header(args, header):
     return modules, constants
 
 def generate_files(args, source, api_name, modules, constants):
-
-    # lua_api.c.inc
-    apply_template(args.rootdir, "lua_api.c.inc.jinja", source, modules=modules, constants=constants, api_name=api_name)
+    apply_template(args.rootdir, "lua_bindings.c.jinja", source, modules=modules, constants=constants, api_name=api_name)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -142,9 +140,9 @@ if __name__ == "__main__":
     parser.add_argument("--dump", dest="dump", action="store_true")
     args = parser.parse_args()
 
-    m, c = parse_header(args, "core/nux_api_base.h")
-    generate_files(args, "core/lua/lua_api_base.c", "base", m, c)
-    m, c = parse_header(args, "core/nux_api_graphics.h")
-    generate_files(args, "core/lua/lua_api_graphics.c", "graphics", m, c)
-    m, c = parse_header(args, "core/nux_api_ecs.h")
-    generate_files(args, "core/lua/lua_api_ecs.c", "ecs", m, c)
+    m, c = parse_header(args, "core/base/public.h")
+    generate_files(args, "core/base/lua_bindings.c", "base", m, c)
+    m, c = parse_header(args, "core/graphics/public.h")
+    generate_files(args, "core/graphics/lua_bindings.c", "graphics", m, c)
+    m, c = parse_header(args, "core/ecs/public.h")
+    generate_files(args, "core/ecs/lua_bindings.c", "ecs", m, c)
