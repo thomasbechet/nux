@@ -131,10 +131,6 @@ def parse_header(args, header):
     v.visit(ast)
     return modules, constants
 
-# def dump():
-#     print(json.dumps(constants, indent=4))
-#     print(json.dumps(modules, indent=4))
-
 def generate_files(args, source, api_name, modules, constants):
 
     # lua_api.c.inc
@@ -152,12 +148,3 @@ if __name__ == "__main__":
     generate_files(args, "core/lua/lua_api_graphics.c", "graphics", m, c)
     m, c = parse_header(args, "core/nux_api_ecs.h")
     generate_files(args, "core/lua/lua_api_ecs.c", "ecs", m, c)
-
-    # if args.dump:
-    #     dump()
-    # else:
-    #     generate_files(args)
-
-
-    
-

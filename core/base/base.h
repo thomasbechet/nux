@@ -513,10 +513,25 @@ NUX_POOL_DEFINE(nux_resource_pool, nux_resource_t);
 
 typedef struct
 {
-    nux_u32_t resource_capa;
-    nux_u32_t arena_core_capa;
-    nux_u32_t arena_frame_capa;
-    nux_u32_t arena_scratch_capa;
+    struct
+    {
+        nux_u32_t global_capacity;
+        nux_u32_t frame_capacity;
+        nux_u32_t scratch_capacity;
+    } arena;
+
+    struct
+    {
+        nux_b32_t enable;
+        nux_u32_t width;
+        nux_u32_t height;
+    } window;
+
+    struct
+    {
+        nux_b32_t enable;
+    } ecs;
+
 } nux_config_t;
 
 ////////////////////////////

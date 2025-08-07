@@ -59,13 +59,16 @@ end
 
 local api
 
-function nux.conf(config)
-    -- config.memory.scratch = 10000
-    -- config.memory.frame = 10000
-    -- config.window.width = 1920
-    -- config.window.height = 1080
-    -- config.log.level = nux.LOG_DEBUG
-end
+-- function nux.conf(config)
+--     -- config.memory.scratch = 10000
+--     -- config.memory.frame = 10000
+--     -- config.window.width = 1920
+--     -- config.window.height = 1080
+--     -- config.log.level = nux.LOG_DEBUG
+--     -- config.window = nil
+--     config.arena.global_capacity = 123
+--     -- config.window = 3
+-- end
 
 function nux.init()
     arena = nux.arena.new(1 << 24)

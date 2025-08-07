@@ -90,11 +90,20 @@ nux_instance_init (const nux_init_info_t *info)
 
     // Get program configuration
     nux_config_t config;
+    config.arena.global_capacity  = NUX_MEM_1M;
+    config.arena.frame_capacity   = NUX_MEM_1M;
+    config.arena.scratch_capacity = NUX_MEM_1M;
+    config.window.enable          = NUX_TRUE;
+    config.window.width           = 900;
+    config.window.height          = 400;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &config), goto cleanup);
 
     // Initialize optional modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
-    NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
+    if (config.ecs.enable)
+    {
+        NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
+    }
 
     return ctx;
 
@@ -134,7 +143,7 @@ nux_instance_tick (nux_ctx_t *ctx)
         {
             ctx->init_callback(ctx);
         }
-        nux_lua_invoke(ctx, NUX_FUNC_INIT);
+        nux_lua_call_init(ctx);
     }
 
     // Update stats
@@ -151,7 +160,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     {
         ctx->tick_callback(ctx);
     }
-    nux_lua_invoke(ctx, NUX_FUNC_TICK);
+    nux_lua_call_tick(ctx);
 
     // Error handling
     if (!nux_error_get_status(ctx))
