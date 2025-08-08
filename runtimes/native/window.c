@@ -196,11 +196,11 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
         nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
-            runtime.buttons[0] |= button;
+            runtime.buttons |= button;
         }
         if (axis != (nux_axis_t)-1)
         {
-            runtime.axis[0][axis] = axvalue;
+            runtime.axis[axis] = axvalue;
         }
     }
     else if (action == GLFW_RELEASE)
@@ -218,11 +218,11 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
         nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
-            runtime.buttons[0] &= ~button;
+            runtime.buttons &= ~button;
         }
         if (axis != (nux_axis_t)-1)
         {
-            runtime.axis[0][axis] = 0;
+            runtime.axis[axis] = 0;
         }
     }
 
@@ -415,11 +415,15 @@ window_end_frame (void)
 }
 
 void
-nux_os_input_update (void *userdata, nux_u32_t *buttons, nux_f32_t *axis)
+nux_os_input_update (void      *user,
+                     nux_u32_t  controller,
+                     nux_u32_t *buttons,
+                     nux_f32_t *axis,
+                     nux_f32_t *cursor)
 {
-    buttons[0] = runtime.buttons[0];
+    *buttons = runtime.buttons;
     for (int a = 0; a < NUX_AXIS_MAX; ++a)
     {
-        axis[a] = runtime.axis[0][a];
+        axis[a] = runtime.axis[a];
     }
 }

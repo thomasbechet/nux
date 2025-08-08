@@ -50,6 +50,16 @@ nux_base_init (nux_ctx_t *ctx, const nux_init_info_t *info)
     ctx->frame_arena = nux_arena_new(ctx, NUX_MEM_16M);
     NUX_CHECK(ctx->frame_arena, return NUX_FAILURE);
 
+    // Initialize controllers
+    for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
+    {
+        nux_controller_t *controller      = ctx->controllers + i;
+        controller->mode                  = NUX_CONTROLLER_MODE_MOTION;
+        controller->cursor_motion_axis[0] = NUX_AXIS_LEFTX;
+        controller->cursor_motion_axis[1] = NUX_AXIS_LEFTY;
+        controller->cursor_motion_speed   = 100;
+    }
+
     return NUX_SUCCESS;
 }
 void

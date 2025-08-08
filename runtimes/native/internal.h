@@ -129,8 +129,8 @@ typedef struct
     bool            fullscreen;
     bool            switch_fullscreen;
     GLFWwindow     *win;
-    int             buttons[NUX_PLAYER_MAX];
-    float           axis[NUX_PLAYER_MAX][NUX_AXIS_MAX];
+    int             buttons;
+    float           axis[NUX_AXIS_MAX];
     struct nk_vec2i size;
     double          prev_time;
     struct nk_glfw  nk_glfw;

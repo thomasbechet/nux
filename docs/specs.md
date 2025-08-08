@@ -45,3 +45,21 @@ Call each frame.
 
 2D api -> canvas -> render to texture
 3D api -> ecs    -> render to texture
+
+## Inputs
+
+Platform inputs :
+- axis
+- text
+- cursor
+- buttons
+
+Virtual Cursor :
+- from joystick
+- from mouse
+
+- Buttons
+
+- Axis
+
+- Cursor

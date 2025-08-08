@@ -611,6 +611,29 @@ typedef struct
     };
 } nux_disk_t;
 
+typedef enum
+{
+    NUX_CONTROLLER_MODE_MOTION,
+    NUX_CONTROLLER_MODE_CURSOR,
+} nux_controller_mode_t;
+
+typedef struct
+{
+    nux_controller_mode_t mode;
+
+    nux_u32_t buttons;
+    nux_u32_t buttons_prev;
+    nux_f32_t axis[NUX_AXIS_MAX];
+    nux_f32_t axis_prev[NUX_AXIS_MAX];
+
+    nux_v2_t cursor;
+    nux_v2_t cursor_prev;
+
+    nux_button_t cursor_motion_buttons[4];
+    nux_axis_t   cursor_motion_axis[2];
+    nux_f32_t    cursor_motion_speed;
+} nux_controller_t;
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
@@ -806,7 +829,7 @@ void nux_file_cleanup(nux_ctx_t *ctx, void *data);
 
 // input.c
 
-void nux_input_pre_update(nux_ctx_t *ctx);
+void nux_input_update(nux_ctx_t *ctx);
 
 // lua.c
 

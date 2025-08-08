@@ -15,16 +15,16 @@ local arena
 local function controller(e)
     local speed = 10
 
-    local mx = nux.input.axis(0, nux.AXIS_LEFTX)
-    local mz = nux.input.axis(0, nux.AXIS_LEFTY)
+    local mx = nux.axis(0, nux.AXIS_LEFTX)
+    local mz = nux.axis(0, nux.AXIS_LEFTY)
     local my = 0
     if nux.button.pressed(0, nux.BUTTON_Y) then
         my = 1
     elseif nux.button.pressed(0, nux.BUTTON_X) then
         my = -1
     end
-    local rx = nux.input.axis(0, nux.AXIS_RIGHTX)
-    local ry = nux.input.axis(0, nux.AXIS_RIGHTY)
+    local rx = nux.axis(0, nux.AXIS_RIGHTX)
+    local ry = nux.axis(0, nux.AXIS_RIGHTY)
 
     -- Translation
     local fx, fy, fz = nux.transform.forward(e)
@@ -106,6 +106,9 @@ function nux.init()
             transform = { translation = { x * 8, 0.1, y * 5 + 0.1 } }
         }
         , nil)
+        if i == 50 then
+            rotating = n
+        end
     end
 
     c = nux.ecs.add()
@@ -135,7 +138,7 @@ end
 
 function nux.tick()
     controller(c)
-    -- nux.transform.rotate_y(cube, nux.dt() / 50)
+    nux.transform.rotate_y(rotating, nux.dt())
     nux.ecs.render(c)
     nux.canvas.clear(monolith_canvas)
     nux.canvas.text(monolith_canvas, 10, 10, string.format("time:%.2fs", nux.time()))
@@ -148,8 +151,7 @@ function nux.tick()
     nux.canvas.text(gui_canvas, 10, 20, string.format("x:%.2f", x))
     nux.canvas.text(gui_canvas, 10, 30, string.format("y:%.2f", y))
     nux.canvas.text(gui_canvas, 10, 40, string.format("z:%.2f", z))
+    nux.canvas.text(gui_canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
     nux.canvas.render(gui_canvas, gui_texture)
     nux.texture.blit(gui_texture)
-
-    -- print(nux.random())
 end

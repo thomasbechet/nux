@@ -30,11 +30,8 @@ struct nux_context
     nux_res_t           frame_arena;
     nux_resource_type_t resources_types[NUX_RES_MAX];
     nux_u32_t           resources_types_count;
+    nux_controller_t    controllers[NUX_CONTROLLER_MAX];
     nux_u32_t           stats[NUX_STAT_MAX];
-    nux_u32_t           buttons[NUX_PLAYER_MAX];
-    nux_u32_t           buttons_prev[NUX_PLAYER_MAX];
-    nux_f32_t           axis[NUX_PLAYER_MAX * NUX_AXIS_MAX];
-    nux_f32_t           axis_prev[NUX_PLAYER_MAX * NUX_AXIS_MAX];
     nux_disk_t          disks[NUX_DISK_MAX];
     nux_u32_t           disks_count;
     nux_u32_vec_t       free_file_slots;

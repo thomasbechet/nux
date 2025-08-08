@@ -47,11 +47,11 @@ typedef union
 
 typedef enum
 {
-    NUX_PLAYER_MAX = 4,
-    NUX_BUTTON_MAX = 10,
-    NUX_AXIS_MAX   = 6,
-    NUX_NAME_MAX   = 64,
-    NUX_DISK_MAX   = 8,
+    NUX_CONTROLLER_MAX = 4,
+    NUX_BUTTON_MAX     = 10,
+    NUX_AXIS_MAX       = 6,
+    NUX_NAME_MAX       = 64,
+    NUX_DISK_MAX       = 8,
 } nux_base_constants_t;
 
 typedef enum
@@ -136,20 +136,26 @@ void nux_tracefmt(nux_ctx_t *ctx, const nux_c8_t *fmt, ...);
 
 // Input
 
-nux_u32_t nux_input_button(nux_ctx_t *ctx, nux_u32_t player);
-nux_f32_t nux_input_axis(nux_ctx_t *ctx, nux_u32_t player, nux_axis_t axis);
+nux_u32_t nux_button_state(nux_ctx_t *ctx, nux_u32_t controller);
 nux_b32_t nux_button_pressed(nux_ctx_t   *ctx,
-                             nux_u32_t    player,
+                             nux_u32_t    controller,
                              nux_button_t button);
 nux_b32_t nux_button_released(nux_ctx_t   *ctx,
-                              nux_u32_t    player,
+                              nux_u32_t    controller,
                               nux_button_t button);
 nux_b32_t nux_button_just_pressed(nux_ctx_t   *ctx,
-                                  nux_u32_t    player,
+                                  nux_u32_t    controller,
                                   nux_button_t button);
 nux_b32_t nux_button_just_released(nux_ctx_t   *ctx,
-                                   nux_u32_t    player,
+                                   nux_u32_t    controller,
                                    nux_button_t button);
+nux_f32_t nux_axis(nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis);
+nux_f32_t nux_cursor_x(nux_ctx_t *ctx, nux_u32_t controller);
+nux_f32_t nux_cursor_y(nux_ctx_t *ctx, nux_u32_t controller);
+void      nux_cursor_set(nux_ctx_t *ctx,
+                         nux_u32_t  controller,
+                         nux_f32_t  x,
+                         nux_f32_t  y);
 
 nux_res_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
 void      nux_arena_reset(nux_ctx_t *ctx, nux_res_t arena);

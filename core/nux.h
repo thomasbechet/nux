@@ -222,9 +222,12 @@ NUX_API void         nux_os_gpu_submit(void                    *userdata,
                                        const nux_gpu_command_t *cmds,
                                        nux_u32_t                count);
 NUX_API void         nux_os_input_update(void      *user,
+                                         nux_u32_t  controller,
                                          nux_u32_t *buttons,
-                                         nux_f32_t *axis);
-NUX_API void         nux_os_stats_update(void *userdata, nux_u32_t *stats);
+                                         nux_f32_t *axis,
+                                         nux_f32_t *cursor);
+
+NUX_API void nux_os_stats_update(void *userdata, nux_u32_t *stats);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////

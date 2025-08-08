@@ -150,11 +150,8 @@ nux_instance_tick (nux_ctx_t *ctx)
     // Update stats
     nux_os_stats_update(ctx->userdata, ctx->stats);
 
-    // Keep previous input state
-    nux_input_pre_update(ctx);
-
     // Update inputs
-    nux_os_input_update(ctx->userdata, ctx->buttons, ctx->axis);
+    nux_input_update(ctx);
 
     // Update
     if (ctx->tick_callback)
