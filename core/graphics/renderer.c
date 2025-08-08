@@ -214,7 +214,7 @@ nux_renderer_render_ecs (nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera)
                           cc->far);
     constants.screen_size = nux_v2u(ctx->stats[NUX_STAT_SCREEN_WIDTH],
                                     ctx->stats[NUX_STAT_SCREEN_HEIGHT]);
-    constants.time        = ctx->time;
+    constants.time        = ctx->time_elapsed;
     nux_os_buffer_update(ctx->userdata,
                          r->constants_buffer.slot,
                          0,

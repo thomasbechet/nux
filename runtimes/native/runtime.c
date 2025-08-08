@@ -209,9 +209,10 @@ nux_os_alloc (void *userdata, void *p, nux_u32_t o, nux_u32_t n)
     }
 }
 void
-nux_os_stats_update (void *userdata, nux_u32_t *stats)
+nux_os_stats_update (void *userdata, nux_u64_t *stats)
 {
     stats[NUX_STAT_FPS]           = runtime.fps;
     stats[NUX_STAT_SCREEN_WIDTH]  = runtime.viewport.w;
     stats[NUX_STAT_SCREEN_HEIGHT] = runtime.viewport.h;
+    stats[NUX_STAT_TIMESTAMP]     = time(NULL);
 }

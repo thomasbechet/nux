@@ -174,7 +174,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_arena_reset(ctx, ctx->frame_arena);
 
     // Frame integration
-    ctx->time += nux_dt(ctx);
+    ctx->time_elapsed += nux_time_delta(ctx);
     ++ctx->frame;
 }
 
@@ -184,17 +184,22 @@ nux_stat (nux_ctx_t *ctx, nux_stat_t stat)
     return ctx->stats[stat];
 }
 nux_f32_t
-nux_time (nux_ctx_t *ctx)
+nux_time_elapsed (nux_ctx_t *ctx)
 {
-    return ctx->time;
+    return ctx->time_elapsed;
 }
 nux_f32_t
-nux_dt (nux_ctx_t *ctx)
+nux_time_delta (nux_ctx_t *ctx)
 {
     return 1. / 60;
 }
 nux_u32_t
-nux_frame (nux_ctx_t *ctx)
+nux_time_frame (nux_ctx_t *ctx)
 {
     return ctx->frame;
+}
+nux_u64_t
+nux_time_timestamp (nux_ctx_t *ctx)
+{
+    return ctx->stats[NUX_STAT_TIMESTAMP];
 }

@@ -20,7 +20,7 @@ struct nux_context
     void               *userdata;
     nux_b32_t           running;
     nux_u64_t           frame;
-    nux_f32_t           time;
+    nux_f32_t           time_elapsed;
     nux_callback_t      init_callback;
     nux_callback_t      tick_callback;
     nux_pcg_t           pcg;
@@ -31,7 +31,7 @@ struct nux_context
     nux_resource_type_t resources_types[NUX_RES_MAX];
     nux_u32_t           resources_types_count;
     nux_controller_t    controllers[NUX_CONTROLLER_MAX];
-    nux_u32_t           stats[NUX_STAT_MAX];
+    nux_u64_t           stats[NUX_STAT_MAX];
     nux_disk_t          disks[NUX_DISK_MAX];
     nux_u32_t           disks_count;
     nux_u32_vec_t       free_file_slots;

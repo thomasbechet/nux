@@ -227,7 +227,7 @@ NUX_API void         nux_os_input_update(void      *user,
                                          nux_f32_t *axis,
                                          nux_f32_t *cursor);
 
-NUX_API void nux_os_stats_update(void *userdata, nux_u32_t *stats);
+NUX_API void nux_os_stats_update(void *userdata, nux_u64_t *stats);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////

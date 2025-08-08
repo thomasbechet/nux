@@ -32,33 +32,6 @@ l_core_stat (lua_State *L)
     return 1;
 }
 static int
-l_core_time (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_f32_t  ret = nux_time(ctx);
-    l_checkerror(L, ctx);
-    lua_pushnumber(L, ret);
-    return 1;
-}
-static int
-l_core_dt (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_f32_t  ret = nux_dt(ctx);
-    l_checkerror(L, ctx);
-    lua_pushnumber(L, ret);
-    return 1;
-}
-static int
-l_core_frame (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_u32_t  ret = nux_frame(ctx);
-    l_checkerror(L, ctx);
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
 l_core_random (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
@@ -78,6 +51,43 @@ l_core_axis (lua_State *L)
     nux_f32_t ret = nux_axis(ctx, controller, axis);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret);
+    return 1;
+}
+
+static int
+l_time_elapsed (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_f32_t  ret = nux_time_elapsed(ctx);
+    l_checkerror(L, ctx);
+    lua_pushnumber(L, ret);
+    return 1;
+}
+static int
+l_time_delta (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_f32_t  ret = nux_time_delta(ctx);
+    l_checkerror(L, ctx);
+    lua_pushnumber(L, ret);
+    return 1;
+}
+static int
+l_time_frame (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_u32_t  ret = nux_time_frame(ctx);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_time_timestamp (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_u64_t  ret = nux_time_timestamp(ctx);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
     return 1;
 }
 
@@ -279,11 +289,16 @@ l_io_write_cart_file (lua_State *L)
 static const struct luaL_Reg lib_log[]
     = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_core[]
-    = { { "stat", l_core_stat },     { "time", l_core_time },
-        { "dt", l_core_dt },         { "frame", l_core_frame },
-        { "random", l_core_random }, { "axis", l_core_axis },
-        { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_core[] = { { "stat", l_core_stat },
+                                            { "random", l_core_random },
+                                            { "axis", l_core_axis },
+                                            { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_time[] = { { "elapsed", l_time_elapsed },
+                                            { "delta", l_time_delta },
+                                            { "frame", l_time_frame },
+                                            { "timestamp", l_time_timestamp },
+                                            { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_button[]
     = { { "state", l_button_state },
@@ -321,6 +336,10 @@ nux_lua_open_base (nux_ctx_t *ctx)
     lua_setfield(L, -2, "log");
 
     luaL_setfuncs(L, lib_core, 0);
+
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_time, 0);
+    lua_setfield(L, -2, "time");
 
     lua_newtable(L);
     luaL_setfuncs(L, lib_button, 0);
@@ -435,6 +454,9 @@ nux_lua_open_base (nux_ctx_t *ctx)
     lua_setfield(L, -2, "STAT_SCREEN_HEIGHT");
 
     lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "STAT_TIMESTAMP");
+
+    lua_pushinteger(L, 4);
     lua_setfield(L, -2, "STAT_MAX");
 
     lua_pushinteger(L, 4);

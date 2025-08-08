@@ -32,7 +32,7 @@ local function controller(e)
     local dx = 0
     local dy = 0
     local dz = 0
-    local dt = nux.dt()
+    local dt = nux.time.delta()
     -- Forward
     dx = dx + fx * mz * dt * speed
     dy = dy + fy * mz * dt * speed
@@ -48,10 +48,10 @@ local function controller(e)
 
     -- Rotation
     if rx ~= 0 then
-        yaw = yaw + rx * nux.dt() * 100
+        yaw = yaw + rx * nux.time.delta() * 100
     end
     if ry ~= 0 then
-        pitch = pitch - ry * nux.dt() * 100
+        pitch = pitch - ry * nux.time.delta() * 100
     end
     pitch = math.clamp(pitch, -90, 90)
     nux.transform.set_rotation_euler(e, -math.rad(pitch), -math.rad(yaw), 0)
@@ -138,19 +138,20 @@ end
 
 function nux.tick()
     controller(c)
-    nux.transform.rotate_y(rotating, nux.dt())
+    nux.transform.rotate_y(rotating, nux.time.delta())
     nux.ecs.render(c)
     nux.canvas.clear(monolith_canvas)
-    nux.canvas.text(monolith_canvas, 10, 10, string.format("time:%.2fs", nux.time()))
+    nux.canvas.text(monolith_canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(monolith_canvas, 10, 20, api)
     nux.canvas.render(monolith_canvas, monolith_texture)
 
     local x, y, z = nux.transform.get_translation(c)
     nux.canvas.clear(gui_canvas)
-    nux.canvas.text(gui_canvas, 10, 10, string.format("time:%.2fs", nux.time()))
-    nux.canvas.text(gui_canvas, 10, 20, string.format("x:%.2f", x))
-    nux.canvas.text(gui_canvas, 10, 30, string.format("y:%.2f", y))
-    nux.canvas.text(gui_canvas, 10, 40, string.format("z:%.2f", z))
+    nux.canvas.text(gui_canvas, 10, 10, nux.time.date())
+    nux.canvas.text(gui_canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
+    nux.canvas.text(gui_canvas, 10, 30, string.format("x:%.2f", x))
+    nux.canvas.text(gui_canvas, 10, 40, string.format("y:%.2f", y))
+    nux.canvas.text(gui_canvas, 10, 50, string.format("z:%.2f", z))
     nux.canvas.text(gui_canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
     nux.canvas.render(gui_canvas, gui_texture)
     nux.texture.blit(gui_texture)

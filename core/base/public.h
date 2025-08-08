@@ -99,7 +99,8 @@ typedef enum
     NUX_STAT_FPS           = 0,
     NUX_STAT_SCREEN_WIDTH  = 1,
     NUX_STAT_SCREEN_HEIGHT = 2,
-    NUX_STAT_MAX           = 3
+    NUX_STAT_TIMESTAMP     = 3,
+    NUX_STAT_MAX           = 4
 } nux_stat_t;
 
 typedef enum
@@ -115,9 +116,16 @@ void nux_log_set_level(nux_ctx_t *ctx, nux_log_level_t level);
 
 // System API
 nux_u32_t nux_stat(nux_ctx_t *ctx, nux_stat_t info);
-nux_f32_t nux_time(nux_ctx_t *ctx);
-nux_f32_t nux_dt(nux_ctx_t *ctx);
-nux_u32_t nux_frame(nux_ctx_t *ctx);
+nux_f32_t nux_time_elapsed(nux_ctx_t *ctx);
+nux_f32_t nux_time_delta(nux_ctx_t *ctx);
+nux_u32_t nux_time_frame(nux_ctx_t *ctx);
+nux_u64_t nux_time_timestamp(nux_ctx_t *ctx);
+// nux_u32_t nux_time_years(nux_ctx_t *ctx);
+// nux_u32_t nux_time_months(nux_ctx_t *ctx);
+// nux_u32_t nux_time_days(nux_ctx_t *ctx);
+// nux_u32_t nux_time_hour(nux_ctx_t *ctx);
+// nux_u32_t nux_time_minutes(nux_ctx_t *ctx);
+// nux_u32_t nux_time_seconds(nux_ctx_t *ctx);
 
 // Random
 
