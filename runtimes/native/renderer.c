@@ -406,7 +406,7 @@ nux_os_gpu_submit (void                    *userdata,
                 switch ((nux_gpu_pipeline_type_t)runtime.active_pipeline->type)
                 {
                     case NUX_GPU_PIPELINE_UBER: {
-                        // glEnable(GL_MULTISAMPLE);
+                        glEnable(GL_MULTISAMPLE);
                     }
                     break;
                     case NUX_GPU_PIPELINE_BLIT: {
