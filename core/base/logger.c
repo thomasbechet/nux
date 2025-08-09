@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 void
 nux_vlog (nux_ctx_t      *ctx,

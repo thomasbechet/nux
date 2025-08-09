@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 static void
 l_checkerror (lua_State *L, nux_ctx_t *ctx)

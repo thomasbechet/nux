@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 void
 nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)

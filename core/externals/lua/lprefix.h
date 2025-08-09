@@ -7,7 +7,7 @@
 #ifndef lprefix_h
 #define lprefix_h
 
-#include "internal.h"
+#include "nux_internal.h"
 
 /*
 ** Allows POSIX/XSI stuff

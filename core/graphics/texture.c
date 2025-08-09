@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 nux_res_t
 nux_texture_new (nux_ctx_t         *ctx,

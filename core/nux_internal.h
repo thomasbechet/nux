@@ -1,9 +1,9 @@
 #ifndef NUX_INTERNAL_H
 #define NUX_INTERNAL_H
 
-#include "base/private.h"
-#include "ecs/private.h"
-#include "graphics/private.h"
+#include "base/internal.h"
+#include "ecs/internal.h"
+#include "graphics/internal.h"
 
 struct nux_context
 {

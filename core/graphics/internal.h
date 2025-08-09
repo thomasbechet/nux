@@ -1,7 +1,7 @@
-#ifndef NUX_GRAPHICS_PRIVATE_H
-#define NUX_GRAPHICS_PRIVATE_H
+#ifndef NUX_GRAPHICS_INTERNAL_H
+#define NUX_GRAPHICS_INTERNAL_H
 
-#include "base/private.h"
+#include "base/internal.h"
 
 ////////////////////////////
 ///        TYPES         ///

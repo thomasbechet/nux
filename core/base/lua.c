@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 #include "lua_code.c.inc"
 

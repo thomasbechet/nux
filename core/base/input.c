@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 void
 nux_input_update (nux_ctx_t *ctx)
@@ -22,7 +22,8 @@ nux_input_update (nux_ctx_t *ctx)
         // Integrate cursor motion
         if (controller->mode == NUX_CONTROLLER_MODE_CURSOR)
         {
-            nux_f32_t speed = nux_time_delta(ctx) * controller->cursor_motion_speed;
+            nux_f32_t speed
+                = nux_time_delta(ctx) * controller->cursor_motion_speed;
             const nux_v2_t motion[] = {
                 nux_v2(1, 0),
                 nux_v2(-1, 0),

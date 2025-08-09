@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 #define RES_INDEX(res)   (((nux_res_t)(res) >> 0) & 0xFFFFFF)
 #define RES_VERSION(res) (((nux_res_t)(res) >> 24) & 0xFF)

@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 #define TRANSFORMS_DEFAULT_SIZE 4096 * 2
 #define BATCH_DEFAULT_SIZE      4096 * 2

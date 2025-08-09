@@ -2,9 +2,9 @@
 #define NUX_H
 
 #include "nux_config.h"
-#include "base/public.h"
-#include "ecs/public.h"
-#include "graphics/public.h"
+#include "base/api.h"
+#include "ecs/api.h"
+#include "graphics/api.h"
 
 //////////////////////////////////////////////////////////////////////////
 //////                               Types                          //////

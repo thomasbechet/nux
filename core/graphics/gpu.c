@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 nux_status_t
 nux_gpu_buffer_init (nux_ctx_t *ctx, nux_gpu_buffer_t *buffer)

@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 nux_m4_t
 nux_perspective (nux_f32_t fov,

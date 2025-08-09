@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 NUX_VEC_IMPL(nux_u32_vec, nux_u32_t);
 NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)

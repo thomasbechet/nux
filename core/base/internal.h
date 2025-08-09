@@ -1,5 +1,5 @@
-#ifndef NUX_BASE_PRIVATE_H
-#define NUX_BASE_PRIVATE_H
+#ifndef NUX_BASE_INTERNAL_H
+#define NUX_BASE_INTERNAL_H
 
 #include "nux.h"
 

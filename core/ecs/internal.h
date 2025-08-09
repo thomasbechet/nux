@@ -1,7 +1,7 @@
-#ifndef NUX_ECS_PRIVATE_H
-#define NUX_ECS_PRIVATE_H
+#ifndef NUX_ECS_INTERNAL_H
+#define NUX_ECS_INTERNAL_H
 
-#include "graphics/private.h"
+#include "graphics/internal.h"
 
 ////////////////////////////
 ///        TYPES         ///

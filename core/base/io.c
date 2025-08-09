@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 static nux_u32_t
 open_os_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)

@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "nux_internal.h"
 
 nux_status_t
 nux_base_init (nux_ctx_t *ctx, const nux_init_info_t *info)
