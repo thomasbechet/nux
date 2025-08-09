@@ -18,15 +18,15 @@ view_controls (struct nk_context *ctx, struct nk_rect bounds)
 
         for (int i = 0; i < NUX_BUTTON_MAX; ++i)
         {
-            nk_label(ctx, button_to_name[i], NK_TEXT_LEFT);
-            if (nk_button_label(ctx, "A"))
+            nk_label(ctx, button_to_name[i], NK_TEXT_CENTERED);
+            if (nk_button_label(ctx, ""))
             {
             }
         }
         for (int i = 0; i < NUX_AXIS_MAX; ++i)
         {
-            nk_label(ctx, axis_to_name[i], NK_TEXT_LEFT);
-            if (nk_button_label(ctx, "A"))
+            nk_label(ctx, axis_to_name[i], NK_TEXT_CENTERED);
+            if (nk_button_label(ctx, ""))
             {
             }
         }

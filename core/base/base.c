@@ -13,17 +13,18 @@ nux_base_init (nux_ctx_t *ctx, const nux_init_info_t *info)
     // Must be coherent with nux_type_base_t
     ctx->resources_types_count = 0;
     nux_resource_type_t *type;
-    type          = nux_res_register(ctx, "null");
-    type          = nux_res_register(ctx, "arena");
-    type          = nux_res_register(ctx, "lua");
-    type          = nux_res_register(ctx, "texture");
-    type->cleanup = nux_texture_cleanup;
-    type          = nux_res_register(ctx, "mesh");
-    type          = nux_res_register(ctx, "file");
-    type->cleanup = nux_file_cleanup;
-    type          = nux_res_register(ctx, "ecs");
-    type->cleanup = nux_ecs_cleanup;
-    type          = nux_res_register(ctx, "ecs_iter");
+    type            = nux_res_register(ctx, "null");
+    type            = nux_res_register(ctx, "arena");
+    type            = nux_res_register(ctx, "lua");
+    type->hotreload = nux_lua_hotreload;
+    type            = nux_res_register(ctx, "texture");
+    type->cleanup   = nux_texture_cleanup;
+    type            = nux_res_register(ctx, "mesh");
+    type            = nux_res_register(ctx, "file");
+    type->cleanup   = nux_file_cleanup;
+    type            = nux_res_register(ctx, "ecs");
+    type->cleanup   = nux_ecs_cleanup;
+    type            = nux_res_register(ctx, "ecs_iter");
 
     // Create resource pool
     NUX_CHECK(

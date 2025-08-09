@@ -122,6 +122,23 @@ nux_arena_alloc_res (nux_ctx_t *ctx,
     }
     return data;
 }
+nux_c8_t *
+nux_arena_alloc_path (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
+{
+    if (!path)
+    {
+        return NUX_NULL;
+    }
+    nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
+    if (!len)
+    {
+        return NUX_NULL;
+    }
+    nux_c8_t *p = nux_arena_alloc(ctx, arena, len + 1);
+    NUX_CHECK(p, return NUX_NULL);
+    nux_memcpy(p, path, len + 1); // include '\0'
+    return p;
+}
 void
 nux_arena_reset_raw (nux_ctx_t *ctx, nux_arena_t *arena)
 {

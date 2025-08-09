@@ -505,11 +505,13 @@ typedef struct
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 
 typedef void (*nux_resource_cleanup_t)(nux_ctx_t *ctx, void *data);
+typedef void (*nux_resource_hotreload_t)(nux_ctx_t *ctx, void *data);
 typedef struct
 {
-    const nux_c8_t        *name;
-    nux_resource_cleanup_t cleanup;
-    nux_u32_t              component_type;
+    const nux_c8_t          *name;
+    nux_resource_cleanup_t   cleanup;
+    nux_resource_hotreload_t hotreload;
+    nux_u32_t                component_type;
 } nux_resource_type_t;
 
 typedef struct
@@ -546,6 +548,8 @@ typedef struct
     {
         nux_b32_t enable;
     } physics;
+
+    nux_b32_t hotreload;
 
 } nux_config_t;
 
@@ -640,6 +644,11 @@ typedef struct
     nux_f32_t    cursor_motion_speed;
 } nux_controller_t;
 
+typedef struct
+{
+    const nux_c8_t *path;
+} nux_lua_t;
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
@@ -726,7 +735,10 @@ void *nux_arena_alloc_res(nux_ctx_t *ctx,
                           nux_u32_t  type,
                           nux_u32_t  size,
                           nux_res_t *res);
-void  nux_arena_reset_raw(nux_ctx_t *ctx, nux_arena_t *arena);
+nux_c8_t *nux_arena_alloc_path(nux_ctx_t      *ctx,
+                               nux_res_t       arena,
+                               const nux_c8_t *path);
+void      nux_arena_reset_raw(nux_ctx_t *ctx, nux_arena_t *arena);
 
 // random.c
 
@@ -847,6 +859,7 @@ nux_status_t nux_lua_configure(nux_ctx_t      *ctx,
 nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
 nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
+void         nux_lua_hotreload(nux_ctx_t *ctx, void *data);
 
 // lua_bindings*.c
 

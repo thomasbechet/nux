@@ -90,24 +90,24 @@ nux_instance_init (const nux_init_info_t *info)
     }
 
     // Get program configuration
-    nux_config_t config;
-    config.arena.global_capacity  = NUX_MEM_1M;
-    config.arena.frame_capacity   = NUX_MEM_1M;
-    config.arena.scratch_capacity = NUX_MEM_1M;
-    config.window.enable          = NUX_TRUE;
-    config.window.width           = 900;
-    config.window.height          = 400;
-    config.ecs.enable             = NUX_TRUE;
-    config.physics.enable         = NUX_TRUE;
-    NUX_CHECK(nux_lua_configure(ctx, entry_script, &config), goto cleanup);
+    ctx->config.hotreload              = NUX_FALSE;
+    ctx->config.arena.global_capacity  = NUX_MEM_1M;
+    ctx->config.arena.frame_capacity   = NUX_MEM_1M;
+    ctx->config.arena.scratch_capacity = NUX_MEM_1M;
+    ctx->config.window.enable          = NUX_TRUE;
+    ctx->config.window.width           = 900;
+    ctx->config.window.height          = 400;
+    ctx->config.ecs.enable             = NUX_TRUE;
+    ctx->config.physics.enable         = NUX_TRUE;
+    NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
 
     // Initialize optional modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
-    if (config.ecs.enable)
+    if (ctx->config.ecs.enable)
     {
         NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
     }
-    if (config.physics.enable)
+    if (ctx->config.physics.enable)
     {
         NUX_CHECK(nux_physics_init(ctx), goto cleanup);
     }

@@ -90,8 +90,6 @@ typedef enum
     NUX_TEXTURE_RENDER_TARGET = 2,
 } nux_texture_type_t;
 
-// Draw State API
-
 void      nux_pal(nux_ctx_t *ctx, nux_u8_t index, nux_u8_t color);
 void      nux_palt(nux_ctx_t *ctx, nux_u8_t c);
 void      nux_palr(nux_ctx_t *ctx);

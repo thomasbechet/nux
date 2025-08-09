@@ -226,16 +226,20 @@ NUX_API void         nux_os_input_update(void      *user,
                                          nux_u32_t *buttons,
                                          nux_f32_t *axis,
                                          nux_f32_t *cursor);
-
-NUX_API void nux_os_stats_update(void *userdata, nux_u64_t *stats);
+NUX_API void         nux_os_stats_update(void *userdata, nux_u64_t *stats);
+NUX_API void         nux_os_hotreload_add(void           *userdata,
+                                          const nux_c8_t *path,
+                                          nux_res_t       handle);
+NUX_API void         nux_os_hotreload_pull(void      *userdata,
+                                           nux_res_t *handles,
+                                           nux_u32_t *count);
 
 //////////////////////////////////////////////////////////////////////////
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API
-nux_ctx_t   *nux_instance_init(const nux_init_info_t *info);
-NUX_API void nux_instance_free(nux_ctx_t *ctx);
-NUX_API void nux_instance_tick(nux_ctx_t *ctx);
+NUX_API nux_ctx_t *nux_instance_init(const nux_init_info_t *info);
+NUX_API void       nux_instance_free(nux_ctx_t *ctx);
+NUX_API void       nux_instance_tick(nux_ctx_t *ctx);
 
 #endif

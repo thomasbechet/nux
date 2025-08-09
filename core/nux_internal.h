@@ -19,6 +19,7 @@ struct nux_context
     // base
 
     void               *userdata;
+    nux_config_t        config;
     nux_b32_t           running;
     nux_u64_t           frame;
     nux_f32_t           time_elapsed;

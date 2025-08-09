@@ -1,3 +1,4 @@
+#include "nux.h"
 #include "nux_internal.h"
 
 #include "lua_code.c.inc"
@@ -33,6 +34,27 @@ nux_serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
 static void
 nux_serde_end (nux_lua_serde_t *s)
 {
+}
+static void
+nux_serde_field_b32 (nux_lua_serde_t *s, const nux_c8_t *name, nux_b32_t *value)
+{
+    if (s->serialize)
+    {
+        NUX_ASSERT(lua_istable(s->L, -1));
+        lua_pushboolean(s->L, *value);
+        lua_setfield(s->L, -2, name);
+    }
+    else
+    {
+        if (lua_istable(s->L, -1))
+        {
+            if (lua_getfield(s->L, -1, name) == LUA_TBOOLEAN)
+            {
+                *value = lua_toboolean(s->L, -1);
+            }
+        }
+        lua_pop(s->L, 1);
+    }
 }
 static void
 nux_serde_field_u32 (nux_lua_serde_t *s,
@@ -187,6 +209,9 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
     nux_serde_begin_table(&s, "physics", &config->physics.enable);
     nux_serde_end_table(&s);
 
+    // hotreload
+    nux_serde_field_b32(&s, "hotreload", &config->hotreload);
+
     nux_serde_end(&s);
 }
 nux_status_t
@@ -243,4 +268,31 @@ nux_lua_dostring (nux_ctx_t *ctx, const nux_c8_t *string)
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;
+}
+
+nux_res_t
+nux_lua_load (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
+{
+    if (luaL_dofile(ctx->L, path) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        return NUX_NULL;
+    }
+    nux_res_t  res;
+    nux_lua_t *lua
+        = nux_arena_alloc_res(ctx, arena, NUX_RES_LUA, sizeof(*lua), &res);
+    NUX_CHECK(lua, return NUX_NULL);
+    lua->path = nux_arena_alloc_path(ctx, arena, path);
+    NUX_CHECK(lua->path, return NUX_NULL);
+    if (ctx->config.hotreload)
+    {
+        nux_os_hotreload_add(ctx->userdata, lua->path, res);
+    }
+    return res;
+}
+void
+nux_lua_hotreload (nux_ctx_t *ctx, void *data)
+{
+    nux_lua_t *lua = data;
+    NUX_INFO("hotreload %s", lua->path);
 }

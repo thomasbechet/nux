@@ -111,10 +111,8 @@ typedef enum
     NUX_LOG_ERROR   = 1,
 } nux_log_level_t;
 
-// Debug API
 void nux_log_set_level(nux_ctx_t *ctx, nux_log_level_t level);
 
-// System API
 nux_u32_t nux_stat(nux_ctx_t *ctx, nux_stat_t info);
 nux_f32_t nux_time_elapsed(nux_ctx_t *ctx);
 nux_f32_t nux_time_delta(nux_ctx_t *ctx);
@@ -141,8 +139,6 @@ void nux_textfmt(nux_ctx_t      *ctx,
 void nux_printfmt(nux_ctx_t *ctx, nux_u8_t c, const nux_c8_t *fmt, ...);
 void nux_tracefmt(nux_ctx_t *ctx, const nux_c8_t *fmt, ...);
 #endif
-
-// Input
 
 nux_u32_t nux_button_state(nux_ctx_t *ctx, nux_u32_t controller);
 nux_b32_t nux_button_pressed(nux_ctx_t   *ctx,
@@ -175,5 +171,7 @@ nux_status_t nux_io_cart_begin(nux_ctx_t      *ctx,
                                nux_u32_t       entry_count);
 nux_status_t nux_io_cart_end(nux_ctx_t *ctx);
 nux_status_t nux_io_write_cart_file(nux_ctx_t *ctx, const nux_c8_t *path);
+
+nux_res_t nux_lua_load(nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path);
 
 #endif
