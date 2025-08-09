@@ -49,12 +49,13 @@ nux_instance_init (const nux_init_info_t *info)
 {
     // Allocate core memory
     nux_arena_t core_arena;
-    core_arena.capa = NUX_MEM_1M;
+    core_arena.capa = NUX_MEM_8M;
     core_arena.size = 0;
     core_arena.data
         = nux_os_alloc(info->userdata, NUX_NULL, 0, core_arena.capa);
     core_arena.first_resource = NUX_NULL;
     core_arena.last_resource  = NUX_NULL;
+    nux_strncpy(core_arena.name, "core_arena", sizeof(core_arena.name) - 1);
     if (!core_arena.data)
     {
         return NUX_NULL;
@@ -97,6 +98,7 @@ nux_instance_init (const nux_init_info_t *info)
     config.window.width           = 900;
     config.window.height          = 400;
     config.ecs.enable             = NUX_TRUE;
+    config.physics.enable         = NUX_TRUE;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &config), goto cleanup);
 
     // Initialize optional modules
@@ -104,6 +106,10 @@ nux_instance_init (const nux_init_info_t *info)
     if (config.ecs.enable)
     {
         NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
+    }
+    if (config.physics.enable)
+    {
+        NUX_CHECK(nux_physics_init(ctx), goto cleanup);
     }
 
     return ctx;
@@ -123,7 +129,9 @@ nux_instance_free (nux_ctx_t *ctx)
     nux_arena_reset_raw(ctx, &ctx->core_arena);
 
     // Reset runtime
+    nux_physics_free(ctx);
     nux_graphics_free(ctx);
+    nux_ecs_free(ctx);
     nux_lua_free(ctx);
     nux_io_free(ctx);
     nux_base_free(ctx);

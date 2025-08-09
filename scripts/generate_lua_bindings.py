@@ -140,9 +140,12 @@ if __name__ == "__main__":
     parser.add_argument("--dump", dest="dump", action="store_true")
     args = parser.parse_args()
 
-    m, c = parse_header(args, "core/base/api.h")
-    generate_files(args, "core/base/lua_bindings.c", "base", m, c)
-    m, c = parse_header(args, "core/graphics/api.h")
-    generate_files(args, "core/graphics/lua_bindings.c", "graphics", m, c)
-    m, c = parse_header(args, "core/ecs/api.h")
-    generate_files(args, "core/ecs/lua_bindings.c", "ecs", m, c)
+    triples = [
+        ("core/base/api.h", "core/base/lua_bindings.c", "base"),
+        ("core/ecs/api.h", "core/ecs/lua_bindings.c", "ecs"),
+        ("core/graphics/api.h", "core/graphics/lua_bindings.c", "graphics"),
+        ("core/physics/api.h", "core/physics/lua_bindings.c", "physics"),
+    ]
+    for header, target, name in triples:
+        m, c = parse_header(args, header)
+        generate_files(args, target, name, m, c)

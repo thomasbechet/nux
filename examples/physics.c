@@ -15,21 +15,21 @@ typedef struct
     float   m; // mass
     float   w; // inv mass
     nu_v3_t p; // previous position
-} point_mass_t;
+} nux_point_mass_t;
 
 typedef struct
 {
     nu_u32_t a; // index of point mass
     nu_v3_t  q; // position of collision
     nu_v3_t  n; // normal
-} collision_constraint_t;
+} nux_collision_constraint_t;
 
 typedef struct
 {
     nu_u32_t a; // index of first point mass
     nu_u32_t b; // index of second point mass
     float    d; // distance
-} distance_constraint_t;
+} nux_distance_constraint_t;
 
 typedef NU_VEC(point_mass_t) point_mass_vec_t;
 typedef NU_VEC(collision_constraint_t) collision_constraint_vec_t;
@@ -51,7 +51,7 @@ static context_t g_ctx;
 static nu_u32_t
 add_pm (nu_v3_t pos, nu_v3_t vel)
 {
-    point_mass_t *pm = NU_VEC_PUSH(&g_ctx.point_masses);
+    nux_point_mass_t *pm = NU_VEC_PUSH(&g_ctx.point_masses);
     NU_ASSERT(pm);
     pm->x = pos;
     pm->v = vel;
@@ -64,7 +64,7 @@ add_pm (nu_v3_t pos, nu_v3_t vel)
 static void
 add_distance_constraint (nu_u32_t a, nu_u32_t b, float distance)
 {
-    distance_constraint_t *c = NU_VEC_PUSH(&g_ctx.distance_constraints);
+    nux_distance_constraint_t *c = NU_VEC_PUSH(&g_ctx.distance_constraints);
     NU_ASSERT(c);
     c->a = a;
     c->b = b;
@@ -135,7 +135,7 @@ init_context (void)
     NU_VEC_INIT_A(&g_ctx.distance_constraints, malloc, count);
 }
 static nu_v3_t
-compute_sum_forces (point_mass_t *pm)
+compute_sum_forces (nux_point_mass_t *pm)
 {
     (void)pm;
     return nu_v3(0, -9.81, 0);

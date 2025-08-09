@@ -252,7 +252,7 @@ nux_v3_normalize (nux_v3_t a)
     nux_f32_t norm = nux_v3_norm(a);
     if (norm == 0)
     {
-        return NUX_V3_ZEROES;
+        return NUX_V3_ZEROS;
     }
     nux_v3_t ret;
     ret.x = a.x / norm;

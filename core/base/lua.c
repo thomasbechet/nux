@@ -183,6 +183,10 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
     nux_serde_begin_table(&s, "ecs", &config->ecs.enable);
     nux_serde_end_table(&s);
 
+    // physics
+    nux_serde_begin_table(&s, "physics", &config->physics.enable);
+    nux_serde_end_table(&s);
+
     nux_serde_end(&s);
 }
 nux_status_t

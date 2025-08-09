@@ -91,6 +91,7 @@ typedef enum
 // ecs.c
 
 nux_status_t nux_ecs_init(nux_ctx_t *ctx);
+void         nux_ecs_free(nux_ctx_t *ctx);
 nux_u32_t    nux_ecs_register_component(nux_ctx_t      *ctx,
                                         const nux_c8_t *name,
                                         nux_u32_t       size);

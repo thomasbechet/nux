@@ -64,7 +64,7 @@ function nux.conf(config)
 end
 
 function nux.init()
-    arena = nux.arena.new(1 << 24)
+    arena = nux.arena.new("main_arena", 1 << 24)
 
     local mesh_cube = nux.mesh.new_cube(arena, 1, 1, 1)
 

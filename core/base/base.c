@@ -47,7 +47,7 @@ nux_base_init (nux_ctx_t *ctx, const nux_init_info_t *info)
     NUX_ASSERT(ctx->core_arena.self);
 
     // Register frame arena
-    ctx->frame_arena = nux_arena_new(ctx, NUX_MEM_16M);
+    ctx->frame_arena = nux_arena_new(ctx, "frame_arena", NUX_MEM_16M);
     NUX_CHECK(ctx->frame_arena, return NUX_FAILURE);
 
     // Initialize controllers

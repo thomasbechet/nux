@@ -282,7 +282,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
             nux_ent_t e = nux_ecs_add(ctx);
             NUX_CHECK(e, goto error);
 
-            nux_v3_t translation = NUX_V3_ZEROES;
+            nux_v3_t translation = NUX_V3_ZEROS;
             nux_q4_t rotation    = nux_q4_identity();
             NUX_UNUSED1(rotation);
             nux_v3_t scale = NUX_V3_ONES;

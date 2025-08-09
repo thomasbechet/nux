@@ -72,11 +72,14 @@ void *
 nux_arena_alloc_raw (nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size)
 {
     void *p = arena_alloc(arena, NUX_NULL, 0, size);
-    NUX_ENSURE(p,
-               return NUX_NULL,
-               "out of memory (allocate %d, remaining %d)",
-               size,
-               arena->capa - arena->size);
+    NUX_ENSURE(
+        p,
+        return NUX_NULL,
+        "out of memory for '%s' (allocate %d, remaining %d, capacity %d)",
+        arena->name,
+        size,
+        arena->capa - arena->size,
+        arena->capa);
     return p;
 }
 void *
@@ -126,7 +129,7 @@ nux_arena_reset_raw (nux_ctx_t *ctx, nux_arena_t *arena)
 }
 
 nux_res_t
-nux_arena_new (nux_ctx_t *ctx, nux_u32_t capa)
+nux_arena_new (nux_ctx_t *ctx, const nux_c8_t *name, nux_u32_t capa)
 {
     NUX_CHECK(capa, return NUX_NULL);
     nux_arena_t *arena = nux_arena_pool_add(&ctx->arenas);
@@ -139,6 +142,7 @@ nux_arena_new (nux_ctx_t *ctx, nux_u32_t capa)
     arena->last_resource  = NUX_NULL;
     arena->data           = nux_os_alloc(ctx->userdata, NUX_NULL, 0, capa);
     NUX_CHECK(arena->data, goto cleanup1);
+    nux_strncpy(arena->name, name, sizeof(arena->name) - 1);
     return arena->self;
 
 cleanup1:

@@ -17,7 +17,7 @@ nux_res_t
 nux_mesh_new_cube (
     nux_ctx_t *ctx, nux_res_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
-    const nux_b3_t box = nux_b3(NUX_V3_ZEROES, nux_v3(sx, sy, sz));
+    const nux_b3_t box = nux_b3(NUX_V3_ZEROS, nux_v3(sx, sy, sz));
 
     const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
     const nux_v3_t v1 = nux_v3(box.max.x, box.min.y, box.min.z);

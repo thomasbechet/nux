@@ -128,7 +128,7 @@
 #define NUX_M4_SIZE 16
 
 #define NUX_V3_ONES     nux_v3s(1)
-#define NUX_V3_ZEROES   nux_v3s(0)
+#define NUX_V3_ZEROS    nux_v3s(0)
 #define NUX_V3_UP       nux_v3(0, 1, 0)
 #define NUX_V3_DOWN     nux_v3(0, -1, 0)
 #define NUX_V3_FORWARD  nux_v3(0, 0, -1)
@@ -499,6 +499,7 @@ typedef struct
     nux_u32_t              size;
     nux_resource_header_t *first_resource;
     nux_resource_header_t *last_resource;
+    nux_c8_t               name[32];
 } nux_arena_t;
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
@@ -540,6 +541,11 @@ typedef struct
     {
         nux_b32_t enable;
     } ecs;
+
+    struct
+    {
+        nux_b32_t enable;
+    } physics;
 
 } nux_config_t;
 

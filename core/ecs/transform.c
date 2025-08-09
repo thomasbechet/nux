@@ -56,7 +56,7 @@ nux_transform_add (nux_ctx_t *ctx, nux_ent_t e)
 {
     nux_transform_t *t = nux_ecs_set(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
-    t->local_translation = NUX_V3_ZEROES;
+    t->local_translation = NUX_V3_ZEROS;
     t->local_rotation    = nux_q4_identity();
     t->local_scale       = NUX_V3_ONES;
     t->dirty             = NUX_TRUE;
@@ -86,7 +86,7 @@ nux_v3_t
 nux_transform_get_local_translation (nux_ctx_t *ctx, nux_ent_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROES);
+    NUX_CHECK(t, return NUX_V3_ZEROS);
     return t->local_translation;
 }
 nux_q4_t
@@ -100,14 +100,14 @@ nux_v3_t
 nux_transform_get_local_scale (nux_ctx_t *ctx, nux_ent_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROES);
+    NUX_CHECK(t, return NUX_V3_ZEROS);
     return t->local_scale;
 }
 nux_v3_t
 nux_transform_get_translation (nux_ctx_t *ctx, nux_ent_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROES);
+    NUX_CHECK(t, return NUX_V3_ZEROS);
     nux_transform_update_matrix(ctx, e);
     nux_v3_t translation;
     nux_m4_trs_decompose(t->global_matrix, &translation, NUX_NULL, NUX_NULL);
@@ -166,7 +166,7 @@ static nux_v3_t
 rotate_v3 (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t v)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROES);
+    NUX_CHECK(t, return NUX_V3_ZEROS);
     nux_transform_update_matrix(ctx, e);
     return nux_m4_mulv3(t->global_matrix, v, 0);
 }

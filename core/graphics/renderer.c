@@ -201,7 +201,7 @@ nux_renderer_render_ecs (nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera)
     nux_camera_t *cc = nux_ecs_get(ctx, camera, NUX_COMPONENT_CAMERA);
     NUX_CHECK(cc, goto error);
 
-    nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROES, 1);
+    nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROS, 1);
     nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
     nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 0);
 

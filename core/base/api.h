@@ -165,7 +165,7 @@ void      nux_cursor_set(nux_ctx_t *ctx,
                          nux_f32_t  x,
                          nux_f32_t  y);
 
-nux_res_t nux_arena_new(nux_ctx_t *ctx, nux_u32_t capa);
+nux_res_t nux_arena_new(nux_ctx_t *ctx, const nux_c8_t *name, nux_u32_t capa);
 void      nux_arena_reset(nux_ctx_t *ctx, nux_res_t arena);
 nux_res_t nux_arena_frame(nux_ctx_t *ctx);
 nux_res_t nux_arena_scratch(nux_ctx_t *ctx);

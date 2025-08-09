@@ -195,10 +195,12 @@ l_cursor_set (lua_State *L)
 static int
 l_arena_new (lua_State *L)
 {
-    nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_u32_t  capa = luaL_checknumber(L, 1);
+    nux_ctx_t      *ctx  = lua_getuserdata(L);
+    const nux_c8_t *name = luaL_checkstring(L, 1);
 
-    nux_res_t ret = nux_arena_new(ctx, capa);
+    nux_u32_t capa = luaL_checknumber(L, 2);
+
+    nux_res_t ret = nux_arena_new(ctx, name, capa);
     l_checkerror(L, ctx);
     if (ret)
     {
