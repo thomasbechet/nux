@@ -1,0 +1,4 @@
+#ifndef NUX_PHYSICS_INTERNAL_H
+#define NUX_PHYSICS_INTERNAL_H
+
+#endif

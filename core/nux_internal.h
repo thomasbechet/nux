@@ -4,6 +4,7 @@
 #include "base/internal.h"
 #include "ecs/internal.h"
 #include "graphics/internal.h"
+#include "physics/internal.h"
 
 struct nux_context
 {
@@ -38,6 +39,10 @@ struct nux_context
     nux_cart_writer_t   cart_writer;
     lua_State          *L;
 
+    // ecs
+
+    nux_ecs_component_vec_t components;
+
     // graphics
 
     nux_gpu_pipeline_t uber_pipeline_opaque;
@@ -56,9 +61,7 @@ struct nux_context
     nux_u32_vec_t      free_framebuffer_slots;
     nux_renderer_t     renderer;
 
-    // ecs
-
-    nux_ecs_component_vec_t components;
+    // physics
 };
 
 #endif
