@@ -134,6 +134,8 @@ typedef struct
     float           axis[NUX_AXIS_MAX];
     struct nk_vec2i size;
     double          prev_time;
+    struct nk_vec2i prev_position;
+    struct nk_vec2i prev_size;
     struct nk_glfw  nk_glfw;
 } runtime_t;
 
@@ -163,5 +165,8 @@ void view_settings(struct nk_context *ctx, struct nk_rect bounds);
 void view_open(struct nk_context *ctx, struct nk_rect bounds);
 
 void gui_update(void);
+
+nux_status_t hotreload_init(void);
+void         hotreload_free(void);
 
 #endif

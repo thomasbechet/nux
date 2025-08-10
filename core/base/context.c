@@ -10,10 +10,10 @@ nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
         nux_vsnprintf(
             ctx->error_message, sizeof(ctx->error_message), fmt, args);
         va_end(args);
-#ifdef NUX_BUILD_DEBUG
-        NUX_ERROR("%s", nux_error_get_message(ctx));
-        NUX_ASSERT(NUX_FALSE);
-#endif
+        // #ifdef NUX_BUILD_DEBUG
+        //         NUX_ERROR("%s", nux_error_get_message(ctx));
+        //         NUX_ASSERT(NUX_FALSE);
+        // #endif
         ctx->error_status = NUX_FAILURE;
     }
 }
@@ -180,6 +180,21 @@ nux_instance_tick (nux_ctx_t *ctx)
 
     // Reset frame arena
     nux_arena_reset(ctx, ctx->frame_arena);
+
+    // Hotreload
+    if (ctx->config.hotreload)
+    {
+        nux_u32_t count;
+        nux_res_t handles[256];
+        nux_os_hotreload_pull(ctx->userdata, handles, &count);
+        for (nux_u32_t i = 0; i < count; ++i)
+        {
+            if (nux_res_hotreload(ctx, handles[i]))
+            {
+                NUX_INFO("Resource 0x%08X successfully reloaded", handles[i]);
+            }
+        }
+    }
 
     // Frame integration
     ctx->time_elapsed += nux_time_delta(ctx);

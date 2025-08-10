@@ -54,3 +54,18 @@ nux_res_check (nux_ctx_t *ctx, nux_u32_t type, nux_res_t res)
                res);
     return ctx->resources.data[index].data;
 }
+nux_status_t
+nux_res_hotreload (nux_ctx_t *ctx, nux_res_t res)
+{
+    nux_u32_t index = RES_INDEX(res);
+    NUX_CHECK(index < ctx->resources.size
+                  && ctx->resources.data[index].self == res,
+              return NUX_FAILURE);
+    nux_resource_t      *entry = ctx->resources.data + index;
+    nux_resource_type_t *type  = ctx->resources_types + entry->type;
+    if (type->hotreload)
+    {
+        type->hotreload(ctx, entry->data);
+    }
+    return NUX_SUCCESS;
+}

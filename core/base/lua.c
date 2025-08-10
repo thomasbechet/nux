@@ -1,5 +1,4 @@
 #include "nux.h"
-#include "nux_internal.h"
 
 #include "lua_code.c.inc"
 
@@ -220,11 +219,8 @@ nux_lua_configure (nux_ctx_t      *ctx,
                    nux_config_t   *config)
 {
     // Load init script
-    if (luaL_dofile(ctx->L, entry_script) != LUA_OK)
-    {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
-        return NUX_FAILURE;
-    }
+    nux_res_t res = nux_lua_load(ctx, ctx->core_arena.self, entry_script);
+    NUX_CHECK(res, return NUX_FAILURE);
 
     // Call nux.conf
     serde_config(ctx, config, NUX_TRUE); // serialize config
@@ -234,6 +230,14 @@ nux_lua_configure (nux_ctx_t      *ctx,
         NUX_CHECK(nux_lua_call(ctx, 1, 0), return NUX_FAILURE);
     }
     serde_config(ctx, config, NUX_FALSE); // deserialize config
+
+    // Register file to os for hotreload (before configuration)
+    if (config->hotreload)
+    {
+        const nux_c8_t *path
+            = ((nux_lua_t *)nux_res_check(ctx, NUX_RES_LUA, res))->path;
+        nux_os_hotreload_add(ctx->userdata, path, res);
+    }
 
     // Register base API
     nux_lua_open_base(ctx);
@@ -290,9 +294,15 @@ nux_lua_load (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
     }
     return res;
 }
-void
+nux_status_t
 nux_lua_hotreload (nux_ctx_t *ctx, void *data)
 {
     nux_lua_t *lua = data;
-    NUX_INFO("hotreload %s", lua->path);
+    NUX_ASSERT(lua->path);
+    if (luaL_dofile(ctx->L, lua->path) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        return NUX_FAILURE;
+    }
+    return NUX_SUCCESS;
 }

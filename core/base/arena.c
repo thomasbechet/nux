@@ -115,7 +115,7 @@ nux_arena_alloc_res (nux_ctx_t *ctx,
         *id = nux_res_create(ctx, type, data);
         if (!(*id))
         {
-            // TODO: rewind arena
+            // TODO: rewind arena ?
             return NUX_NULL;
         }
         header->self = *id;

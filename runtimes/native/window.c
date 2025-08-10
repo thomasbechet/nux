@@ -348,7 +348,13 @@ window_begin_frame (void)
         {
             if (runtime.fullscreen)
             {
-                glfwSetWindowMonitor(runtime.win, NULL, 50, 50, 1200, 800, 0);
+                glfwSetWindowMonitor(runtime.win,
+                                     NULL,
+                                     runtime.prev_position.x,
+                                     runtime.prev_position.y,
+                                     runtime.prev_size.x,
+                                     runtime.prev_size.y,
+                                     0);
             }
             else
             {
@@ -362,6 +368,10 @@ window_begin_frame (void)
                                      mode->width,
                                      mode->height,
                                      mode->refreshRate);
+                int xpos, ypos;
+                glfwGetWindowPos(runtime.win, &xpos, &ypos);
+                runtime.prev_position = (struct nk_vec2i) { xpos, ypos };
+                runtime.prev_size     = runtime.size;
             }
             runtime.switch_fullscreen = false;
             runtime.fullscreen        = !runtime.fullscreen;

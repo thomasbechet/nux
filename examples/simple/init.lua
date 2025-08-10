@@ -1,19 +1,8 @@
 local inspect = require("inspect")
-local ecs
-local c
 local nux = nux
 
-local yaw = 0
-local pitch = 0
-local monolith_canvas
-local monolith_texture
-local cube
-local gui_canvas
-local gui_texture
-local arena
-
 local function controller(e)
-    local speed = 10
+    local speed = 100
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
@@ -48,28 +37,32 @@ local function controller(e)
 
     -- Rotation
     if rx ~= 0 then
-        yaw = yaw + rx * nux.time.delta() * 100
+        YAW = YAW + rx * nux.time.delta() * 100
     end
     if ry ~= 0 then
-        pitch = pitch - ry * nux.time.delta() * 100
+        PITCH = PITCH - ry * nux.time.delta() * 100
     end
-    pitch = math.clamp(pitch, -90, 90)
-    nux.transform.set_rotation_euler(e, -math.rad(pitch), -math.rad(yaw), 0)
+    PITCH = math.clamp(PITCH, -90, 90)
+    nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
+    nux.camera.set_fov(e, 60)
+    nux.camera.set_far(e, 1000)
+    nux.camera.set_near(e, 1)
 end
-
-local api
 
 function nux.conf(config)
     print(inspect(config))
+    config.hotreload = true
 end
 
 function nux.init()
-    arena = nux.arena.new("main_arena", 1 << 24)
+    ARENA = nux.arena.new("main_arena", 1 << 24)
+    PITCH = 0
+    YAW = 0
 
-    local mesh_cube = nux.mesh.new_cube(arena, 1, 1, 1)
+    local mesh_cube = nux.mesh.new_cube(ARENA, 1, 1, 1)
 
-    ecs = nux.ecs.load_gltf(arena, "assets/industrial.glb")
-    nux.ecs.set_active(ecs)
+    ECS = nux.ecs.load_gltf(ARENA, "assets/industrial.glb")
+    nux.ecs.set_active(ECS)
 
     local template = {
         staticmesh = { mesh = mesh_cube }
@@ -107,52 +100,54 @@ function nux.init()
         }
         , nil)
         if i == 50 then
-            rotating = n
+            ROTATING = n
         end
     end
 
-    c = nux.ecs.add()
-    nux.transform.add(c)
-    nux.transform.set_translation(c, 0, 1, 3)
-    nux.camera.add(c)
-    nux.camera.set_fov(c, 70)
+    C = nux.ecs.add()
+    nux.transform.add(C)
+    nux.transform.set_translation(C, 0, 1, 3)
+    nux.camera.add(C)
+    nux.camera.set_fov(C, 70)
 
     -- Create canvas
-    gui_canvas = nux.canvas.new(arena)
-    gui_texture = nux.texture.new(arena, nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH, nux.CANVAS_HEIGHT)
+    GUI_CANVAS = nux.canvas.new(ARENA)
+    GUI_TEXTURE = nux.texture.new(ARENA, nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH, nux.CANVAS_HEIGHT)
 
     -- Create the API monolith
-    monolith_canvas = nux.canvas.new(arena)
+    MONOLITH_CANVAS = nux.canvas.new(ARENA)
     local x, y = 350, 1600
-    monolith_texture = nux.texture.new(arena, nux.TEXTURE_RENDER_TARGET, x, y)
-    cube = nux.ecs.add()
-    nux.transform.add(cube)
-    nux.transform.set_translation(cube, 10, 0, 0)
-    nux.transform.set_scale(cube, x / 50, y / 50, 1)
-    nux.staticmesh.add(cube)
-    nux.staticmesh.set_mesh(cube, mesh_cube)
-    nux.staticmesh.set_texture(cube, monolith_texture)
+    MONOLITH_TEXTURE = nux.texture.new(ARENA, nux.TEXTURE_RENDER_TARGET, x, y)
+    CUBE = nux.ecs.add()
+    nux.transform.add(CUBE)
+    nux.transform.set_translation(CUBE, 10, 0, 0)
+    nux.transform.set_scale(CUBE, x / 50, y / 50, 1)
+    nux.staticmesh.add(CUBE)
+    nux.staticmesh.set_mesh(CUBE, mesh_cube)
+    nux.staticmesh.set_texture(CUBE, MONOLITH_TEXTURE)
 
-    api = inspect(nux)
+    API = inspect(nux)
 end
 
 function nux.tick()
-    controller(c)
-    nux.transform.rotate_y(rotating, nux.time.delta())
-    nux.ecs.render(c)
-    nux.canvas.clear(monolith_canvas)
-    nux.canvas.text(monolith_canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(monolith_canvas, 10, 20, api)
-    nux.canvas.render(monolith_canvas, monolith_texture)
+    controller(C)
+    nux.transform.rotate_y(ROTATING, nux.time.delta() * 1)
+    nux.ecs.render(C)
+    nux.canvas.clear(MONOLITH_CANVAS)
+    nux.canvas.text(MONOLITH_CANVAS, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
+    nux.canvas.text(MONOLITH_CANVAS, 10, 20, API)
+    nux.canvas.render(MONOLITH_CANVAS, MONOLITH_TEXTURE)
 
-    local x, y, z = nux.transform.get_translation(c)
-    nux.canvas.clear(gui_canvas)
-    nux.canvas.text(gui_canvas, 10, 10, nux.time.date())
-    nux.canvas.text(gui_canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(gui_canvas, 10, 30, string.format("x:%.2f", x))
-    nux.canvas.text(gui_canvas, 10, 40, string.format("y:%.2f", y))
-    nux.canvas.text(gui_canvas, 10, 50, string.format("z:%.2f", z))
-    nux.canvas.text(gui_canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
-    nux.canvas.render(gui_canvas, gui_texture)
-    nux.texture.blit(gui_texture)
+    local x, y, z = nux.transform.get_translation(C)
+    nux.canvas.clear(GUI_CANVAS)
+    nux.canvas.text(GUI_CANVAS, 10, 10, nux.time.date())
+    nux.canvas.text(GUI_CANVAS, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
+    nux.canvas.text(GUI_CANVAS, 10, 30, string.format("x:%.2f", x))
+    nux.canvas.text(GUI_CANVAS, 10, 40, string.format("y:%.2f", y))
+    nux.canvas.text(GUI_CANVAS, 10, 50, string.format("z:%.2f", z))
+    nux.canvas.text(GUI_CANVAS, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
+
+    nux.canvas.text(GUI_CANVAS, 100, 100, "Hello")
+    nux.canvas.render(GUI_CANVAS, GUI_TEXTURE)
+    nux.texture.blit(GUI_TEXTURE)
 end

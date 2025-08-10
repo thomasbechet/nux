@@ -93,15 +93,11 @@ runtime_run (const config_t *config)
     // Initialize runtime
     nux_status_t status;
     status = window_init();
-    if (!status)
-    {
-        goto cleanup0;
-    }
+    CHECK(status, goto cleanup0);
     status = renderer_init();
-    if (!status)
-    {
-        goto cleanup1;
-    }
+    CHECK(status, goto cleanup1);
+    status = hotreload_init();
+    CHECK(status, goto cleanup2);
 
     // Initialize base
     if (config->path)
@@ -146,6 +142,8 @@ runtime_run (const config_t *config)
 
     runtime_close();
 
+    hotreload_free();
+cleanup2:
     renderer_free();
 cleanup1:
     window_free();

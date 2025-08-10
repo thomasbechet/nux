@@ -505,7 +505,7 @@ typedef struct
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 
 typedef void (*nux_resource_cleanup_t)(nux_ctx_t *ctx, void *data);
-typedef void (*nux_resource_hotreload_t)(nux_ctx_t *ctx, void *data);
+typedef nux_status_t (*nux_resource_hotreload_t)(nux_ctx_t *ctx, void *data);
 typedef struct
 {
     const nux_c8_t          *name;
@@ -724,7 +724,8 @@ nux_u32_t nux_hash(const void *p, nux_u32_t s);
 nux_resource_type_t *nux_res_register(nux_ctx_t *ctx, const nux_c8_t *name);
 nux_res_t            nux_res_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
 void                 nux_res_delete(nux_ctx_t *ctx, nux_res_t res);
-void *nux_res_check(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
+void        *nux_res_check(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
+nux_status_t nux_res_hotreload(nux_ctx_t *ctx, nux_res_t res);
 
 // arena.c
 
@@ -859,7 +860,7 @@ nux_status_t nux_lua_configure(nux_ctx_t      *ctx,
 nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
 nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
-void         nux_lua_hotreload(nux_ctx_t *ctx, void *data);
+nux_status_t nux_lua_hotreload(nux_ctx_t *ctx, void *data);
 
 // lua_bindings*.c
 
