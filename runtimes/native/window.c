@@ -213,6 +213,10 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
         {
             runtime.switch_fullscreen = true;
         }
+        if (key == GLFW_KEY_R && mods == GLFW_MOD_CONTROL)
+        {
+            printf("ctrl r\n");
+        }
         nux_button_t button = key_to_button(key);
         float        axvalue;
         nux_axis_t   axis = key_to_axis(key, &axvalue);

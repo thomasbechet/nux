@@ -11,6 +11,12 @@ nux_gpu_buffer_init (nux_ctx_t *ctx, nux_gpu_buffer_t *buffer)
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
+void
+nux_gpu_buffer_free (nux_ctx_t *ctx, nux_gpu_buffer_t *buffer)
+{
+    nux_os_buffer_delete(ctx->userdata, buffer->slot);
+    nux_u32_vec_pushv(&ctx->free_buffer_slots, buffer->slot);
+}
 nux_status_t
 nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
 {
@@ -40,6 +46,12 @@ nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
     }
     return NUX_SUCCESS;
 }
+void
+nux_gpu_texture_free (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
+{
+    nux_os_texture_delete(ctx->userdata, texture->slot);
+    nux_u32_vec_pushv(&ctx->free_texture_slots, texture->slot);
+}
 nux_status_t
 nux_gpu_pipeline_init (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
 {
@@ -51,6 +63,12 @@ nux_gpu_pipeline_init (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
         return NUX_FAILURE,
         "failed to create pipeline");
     return NUX_SUCCESS;
+}
+void
+nux_gpu_pipeline_free (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
+{
+    nux_os_pipeline_delete(ctx->userdata, pipeline->slot);
+    nux_u32_vec_pushv(&ctx->free_pipeline_slots, pipeline->slot);
 }
 
 nux_gpu_command_t *

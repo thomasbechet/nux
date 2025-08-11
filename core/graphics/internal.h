@@ -126,17 +126,22 @@ void nux_renderer_render_ecs(nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera);
 // font.c
 
 nux_status_t nux_font_init_default(nux_ctx_t *ctx, nux_font_t *font);
+void         nux_font_cleanup(nux_ctx_t *ctx, void *data);
 
 // canvas.c
 
 nux_status_t nux_canvas_init(nux_ctx_t *ctx, nux_canvas_t *canvas);
+void         nux_canvas_cleanup(nux_ctx_t *ctx, void *data);
 
 // gpu.c
 
 nux_status_t nux_gpu_buffer_init(nux_ctx_t *ctx, nux_gpu_buffer_t *buffer);
+void         nux_gpu_buffer_free(nux_ctx_t *ctx, nux_gpu_buffer_t *buffer);
 nux_status_t nux_gpu_texture_init(nux_ctx_t *ctx, nux_gpu_texture_t *texture);
+void         nux_gpu_texture_free(nux_ctx_t *ctx, nux_gpu_texture_t *texture);
 nux_status_t nux_gpu_pipeline_init(nux_ctx_t          *ctx,
                                    nux_gpu_pipeline_t *pipeline);
+void nux_gpu_pipeline_free(nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline);
 
 void nux_gpu_bind_framebuffer(nux_ctx_t             *ctx,
                               nux_gpu_command_vec_t *cmds,
@@ -173,7 +178,6 @@ void nux_gpu_clear(nux_ctx_t             *ctx,
 
 nux_status_t nux_graphics_init(nux_ctx_t *ctx);
 nux_status_t nux_graphics_free(nux_ctx_t *ctx);
-nux_status_t nux_graphics_render(nux_ctx_t *ctx);
 
 nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
                                         nux_u32_t        vcount,

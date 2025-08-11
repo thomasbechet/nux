@@ -155,22 +155,18 @@ runtime_open (const char *path)
 {
     runtime_close();
 
-    nux_init_info_t config = {
-        .userdata = NULL, .hooks.init = NULL, .hooks.tick = NULL, .entry = path
-    };
-
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
-    runtime.config        = config;
     runtime.ctx           = NULL;
     runtime.viewport_ui   = nk_rect(0, 0, 10, 10);
     runtime.viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
 
-    runtime.ctx = nux_instance_init(&config);
+    runtime.ctx = nux_instance_init(NULL);
     if (!runtime.ctx)
     {
         fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
     }
+    nux_instance_load(runtime.ctx, path);
 
     return NUX_SUCCESS;
 cleanup0:

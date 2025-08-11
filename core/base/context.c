@@ -45,14 +45,13 @@ nux_error_get_status (nux_ctx_t *ctx)
 }
 
 nux_ctx_t *
-nux_instance_init (const nux_init_info_t *info)
+nux_instance_init (void *userdata)
 {
     // Allocate core memory
     nux_arena_t core_arena;
     core_arena.capa = NUX_MEM_8M;
     core_arena.size = 0;
-    core_arena.data
-        = nux_os_alloc(info->userdata, NUX_NULL, 0, core_arena.capa);
+    core_arena.data = nux_os_alloc(userdata, NUX_NULL, 0, core_arena.capa);
     core_arena.first_resource = NUX_NULL;
     core_arena.last_resource  = NUX_NULL;
     nux_strncpy(core_arena.name, "core_arena", sizeof(core_arena.name) - 1);
@@ -66,16 +65,28 @@ nux_instance_init (const nux_init_info_t *info)
     nux_ctx_t *ctx = nux_arena_alloc_raw(NUX_NULL, &core_arena, sizeof(*ctx));
     NUX_ASSERT(ctx);
     ctx->core_arena = core_arena;
+    ctx->userdata   = userdata;
 
     // Initialize mandatory modules
-    NUX_CHECK(nux_base_init(ctx, info), goto cleanup);
-    NUX_CHECK(nux_io_init(ctx, info), goto cleanup);
-    NUX_CHECK(nux_lua_init(ctx), goto cleanup);
+    NUX_CHECK(nux_base_init(ctx), goto cleanup);
 
+    return ctx;
+
+cleanup:
+    if (!nux_error_get_status(ctx))
+    {
+        NUX_ERROR("%s", nux_error_get_message(ctx));
+    }
+    nux_instance_free(ctx);
+    return NUX_NULL;
+}
+nux_status_t
+nux_instance_load (nux_ctx_t *ctx, const nux_c8_t *entry)
+{
     // Detect entry point type
-    NUX_ASSERT(info->entry);
+    NUX_ASSERT(entry);
     nux_c8_t normpath[NUX_PATH_BUF_SIZE];
-    nux_path_normalize(normpath, info->entry);
+    nux_path_normalize(normpath, entry);
     const nux_c8_t *entry_script;
     if (nux_path_endswith(normpath, ".lua"))
     {
@@ -112,15 +123,10 @@ nux_instance_init (const nux_init_info_t *info)
         NUX_CHECK(nux_physics_init(ctx), goto cleanup);
     }
 
-    return ctx;
+    return NUX_SUCCESS;
 
 cleanup:
-    if (!nux_error_get_status(ctx))
-    {
-        NUX_ERROR("%s", nux_error_get_message(ctx));
-    }
-    nux_instance_free(ctx);
-    return NUX_NULL;
+    return NUX_FAILURE;
 }
 void
 nux_instance_free (nux_ctx_t *ctx)
@@ -148,10 +154,6 @@ nux_instance_tick (nux_ctx_t *ctx)
     // Init
     if (ctx->frame == 0)
     {
-        if (ctx->init_callback)
-        {
-            ctx->init_callback(ctx);
-        }
         nux_lua_call_init(ctx);
     }
 
@@ -162,10 +164,6 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_input_update(ctx);
 
     // Update
-    if (ctx->tick_callback)
-    {
-        ctx->tick_callback(ctx);
-    }
     nux_lua_call_tick(ctx);
 
     // Error handling
@@ -174,9 +172,6 @@ nux_instance_tick (nux_ctx_t *ctx)
         NUX_ERROR("%s", nux_error_get_message(ctx));
     }
     nux_error_reset(ctx);
-
-    // Render
-    nux_graphics_render(ctx);
 
     // Reset frame arena
     nux_arena_reset(ctx, ctx->frame_arena);

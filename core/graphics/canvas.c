@@ -143,6 +143,14 @@ nux_canvas_new (nux_ctx_t *ctx, nux_res_t arena)
     return id;
 }
 void
+nux_canvas_cleanup (nux_ctx_t *ctx, void *data)
+{
+    nux_canvas_t *canvas = data;
+    nux_gpu_buffer_free(ctx, &canvas->constants_buffer);
+    nux_gpu_buffer_free(ctx, &canvas->batches_buffer);
+    nux_gpu_buffer_free(ctx, &canvas->quads_buffer);
+}
+void
 nux_canvas_clear (nux_ctx_t *ctx, nux_res_t id)
 {
     nux_canvas_t *c = nux_res_check(ctx, NUX_RES_CANVAS, id);

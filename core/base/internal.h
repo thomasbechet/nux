@@ -323,9 +323,10 @@ typedef enum
     NUX_RES_TEXTURE  = 3,
     NUX_RES_MESH     = 4,
     NUX_RES_CANVAS   = 5,
-    NUX_RES_FILE     = 6,
-    NUX_RES_ECS      = 7,
-    NUX_RES_ECS_ITER = 8,
+    NUX_RES_FONT     = 6,
+    NUX_RES_FILE     = 7,
+    NUX_RES_ECS      = 8,
+    NUX_RES_ECS_ITER = 9,
 
     NUX_RES_MAX = 256,
 } nux_resource_base_t;
@@ -807,7 +808,7 @@ nux_status_t    nux_error_get_status(nux_ctx_t *ctx);
 
 // io.c
 
-nux_status_t nux_io_init(nux_ctx_t *ctx, const nux_init_info_t *info);
+nux_status_t nux_io_init(nux_ctx_t *ctx);
 nux_status_t nux_io_free(nux_ctx_t *ctx);
 
 nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *path);
@@ -868,7 +869,7 @@ nux_status_t nux_lua_open_base(nux_ctx_t *ctx);
 
 // base.c
 
-nux_status_t nux_base_init(nux_ctx_t *ctx, const nux_init_info_t *info);
+nux_status_t nux_base_init(nux_ctx_t *ctx);
 void         nux_base_free(nux_ctx_t *ctx);
 
 #endif

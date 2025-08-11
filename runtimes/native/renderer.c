@@ -186,6 +186,12 @@ nux_os_pipeline_create (void                          *userdata,
 
     return NUX_SUCCESS;
 }
+void
+nux_os_pipeline_delete (void *userdata, nux_u32_t slot)
+{
+    pipeline_t *pipeline = runtime.pipelines + slot;
+    glDeleteProgram(pipeline->program);
+}
 nux_status_t
 nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
 {
@@ -232,6 +238,12 @@ nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
     //     GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
     return NUX_SUCCESS;
+}
+void
+nux_os_framebuffer_delete (void *userdata, nux_u32_t slot)
+{
+    framebuffer_t *fb = runtime.framebuffers + slot;
+    glDeleteFramebuffers(1, &fb->handle);
 }
 nux_status_t
 nux_os_texture_create (void                         *userdata,
@@ -288,6 +300,12 @@ nux_os_texture_create (void                         *userdata,
 
     return NUX_SUCCESS;
 }
+void
+nux_os_texture_delete (void *userdata, nux_u32_t slot)
+{
+    texture_t *tex = runtime.textures + slot;
+    glDeleteTextures(1, &tex->handle);
+}
 nux_status_t
 nux_os_texture_update (void       *userdata,
                        nux_u32_t   slot,
@@ -335,6 +353,12 @@ nux_os_buffer_create (void                 *userdata,
     glBindBuffer(buffer->buffer_type, 0);
 
     return NUX_SUCCESS;
+}
+void
+nux_os_buffer_delete (void *userdata, nux_u32_t slot)
+{
+    buffer_t *buffer = runtime.buffers + slot;
+    glDeleteBuffers(1, &buffer->handle);
 }
 nux_status_t
 nux_os_buffer_update (void       *userdata,

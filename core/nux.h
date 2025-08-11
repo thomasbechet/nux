@@ -10,19 +10,6 @@
 //////                               Types                          //////
 //////////////////////////////////////////////////////////////////////////
 
-typedef void (*nux_callback_t)(nux_ctx_t *);
-
-typedef struct
-{
-    void *userdata;
-    struct
-    {
-        nux_callback_t init;
-        nux_callback_t tick;
-    } hooks;
-    const nux_c8_t *entry;
-} nux_init_info_t;
-
 typedef enum
 {
     NUX_GPU_PIPELINE_MAX    = 128,
@@ -196,12 +183,15 @@ NUX_API nux_u32_t    nux_os_file_write(void       *userdata,
                                        nux_u32_t   n);
 NUX_API nux_status_t nux_os_pipeline_create(
     void *userdata, nux_u32_t slot, const nux_gpu_pipeline_info_t *info);
+NUX_API void         nux_os_pipeline_delete(void *userdata, nux_u32_t slot);
 NUX_API nux_status_t nux_os_framebuffer_create(void     *userdata,
                                                nux_u32_t slot,
                                                nux_u32_t texture);
+NUX_API void         nux_os_framebuffer_delete(void *userdata, nux_u32_t slot);
 NUX_API nux_status_t nux_os_texture_create(void     *userdata,
                                            nux_u32_t slot,
                                            const nux_gpu_texture_info_t *info);
+NUX_API void         nux_os_texture_delete(void *userdata, nux_u32_t slot);
 NUX_API nux_status_t nux_os_texture_update(void       *userdata,
                                            nux_u32_t   slot,
                                            nux_u32_t   x,
@@ -213,6 +203,7 @@ NUX_API nux_status_t nux_os_buffer_create(void                 *userdata,
                                           nux_u32_t             slot,
                                           nux_gpu_buffer_type_t type,
                                           nux_u32_t             size);
+NUX_API void         nux_os_buffer_delete(void *userdata, nux_u32_t slot);
 NUX_API nux_status_t nux_os_buffer_update(void       *userdata,
                                           nux_u32_t   slot,
                                           nux_u32_t   offset,
@@ -238,8 +229,9 @@ NUX_API void         nux_os_hotreload_pull(void      *userdata,
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_ctx_t *nux_instance_init(const nux_init_info_t *info);
-NUX_API void       nux_instance_free(nux_ctx_t *ctx);
-NUX_API void       nux_instance_tick(nux_ctx_t *ctx);
+NUX_API nux_ctx_t   *nux_instance_init(void *userdata);
+NUX_API nux_status_t nux_instance_load(nux_ctx_t *ctx, const nux_c8_t *entry);
+NUX_API void         nux_instance_free(nux_ctx_t *ctx);
+NUX_API void         nux_instance_tick(nux_ctx_t *ctx);
 
 #endif

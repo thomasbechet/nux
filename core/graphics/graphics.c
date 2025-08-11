@@ -88,11 +88,6 @@ nux_graphics_free (nux_ctx_t *ctx)
 {
     return NUX_SUCCESS;
 }
-nux_status_t
-nux_graphics_render (nux_ctx_t *ctx)
-{
-    return NUX_SUCCESS;
-}
 
 nux_status_t
 nux_graphics_push_vertices (nux_ctx_t       *ctx,

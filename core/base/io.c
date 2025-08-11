@@ -28,7 +28,7 @@ close_os_file (nux_ctx_t *ctx, nux_u32_t slot)
 }
 
 nux_status_t
-nux_io_init (nux_ctx_t *ctx, const nux_init_info_t *info)
+nux_io_init (nux_ctx_t *ctx)
 {
     NUX_CHECK(
         nux_u32_vec_alloc(

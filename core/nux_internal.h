@@ -23,8 +23,6 @@ struct nux_context
     nux_b32_t           running;
     nux_u64_t           frame;
     nux_f32_t           time_elapsed;
-    nux_callback_t      init_callback;
-    nux_callback_t      tick_callback;
     nux_pcg_t           pcg;
     nux_arena_pool_t    arenas;
     nux_resource_pool_t resources;

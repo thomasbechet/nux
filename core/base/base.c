@@ -1,12 +1,9 @@
 #include "nux_internal.h"
 
 nux_status_t
-nux_base_init (nux_ctx_t *ctx, const nux_init_info_t *info)
+nux_base_init (nux_ctx_t *ctx)
 {
-    ctx->userdata      = info->userdata;
-    ctx->running       = NUX_TRUE;
-    ctx->init_callback = info->hooks.init;
-    ctx->tick_callback = info->hooks.tick;
+    ctx->running = NUX_TRUE;
     nux_error_reset(ctx);
 
     // Register base types
@@ -20,6 +17,10 @@ nux_base_init (nux_ctx_t *ctx, const nux_init_info_t *info)
     type            = nux_res_register(ctx, "texture");
     type->cleanup   = nux_texture_cleanup;
     type            = nux_res_register(ctx, "mesh");
+    type            = nux_res_register(ctx, "canvas");
+    type->cleanup   = nux_canvas_cleanup;
+    type            = nux_res_register(ctx, "font");
+    type->cleanup   = nux_font_cleanup;
     type            = nux_res_register(ctx, "file");
     type->cleanup   = nux_file_cleanup;
     type            = nux_res_register(ctx, "ecs");
@@ -60,6 +61,12 @@ nux_base_init (nux_ctx_t *ctx, const nux_init_info_t *info)
         controller->cursor_motion_axis[1] = NUX_AXIS_LEFTY;
         controller->cursor_motion_speed   = 100;
     }
+
+    // Initialize io
+    NUX_CHECK(nux_io_init(ctx), return NUX_FAILURE);
+
+    // Initialize lua
+    NUX_CHECK(nux_lua_init(ctx), return NUX_FAILURE);
 
     return NUX_SUCCESS;
 }

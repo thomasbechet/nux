@@ -2,7 +2,7 @@ local inspect = require("inspect")
 local nux = nux
 
 local function controller(e)
-    local speed = 100
+    local speed = 20
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
@@ -44,7 +44,7 @@ local function controller(e)
     end
     PITCH = math.clamp(PITCH, -90, 90)
     nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
-    nux.camera.set_fov(e, 60)
+    nux.camera.set_fov(e, 90)
     nux.camera.set_far(e, 1000)
     nux.camera.set_near(e, 1)
 end
@@ -131,7 +131,8 @@ end
 
 function nux.tick()
     controller(C)
-    nux.transform.rotate_y(ROTATING, nux.time.delta() * 1)
+    nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
+    nux.transform.set_scale(ROTATING, 1, 5, 1)
     nux.ecs.render(C)
     nux.canvas.clear(MONOLITH_CANVAS)
     nux.canvas.text(MONOLITH_CANVAS, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
