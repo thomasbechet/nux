@@ -30,7 +30,6 @@ typedef struct
 } nux_gpu_pipeline_t;
 
 NUX_VEC_DEFINE(nux_gpu_command_vec, nux_gpu_command_t);
-NUX_POOL_DEFINE(nux_arena_pool, nux_arena_t);
 
 typedef struct
 {
@@ -121,11 +120,13 @@ typedef struct
 // renderer.c
 
 nux_status_t nux_renderer_init(nux_ctx_t *ctx);
+void         nux_renderer_free(nux_ctx_t *ctx);
 void nux_renderer_render_ecs(nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera);
 
 // font.c
 
 nux_status_t nux_font_init_default(nux_ctx_t *ctx, nux_font_t *font);
+void         nux_font_free(nux_ctx_t *ctx, nux_font_t *font);
 void         nux_font_cleanup(nux_ctx_t *ctx, void *data);
 
 // canvas.c

@@ -73,6 +73,14 @@ nux_renderer_init (nux_ctx_t *ctx)
     return NUX_SUCCESS;
 }
 void
+nux_renderer_free (nux_ctx_t *ctx)
+{
+    nux_renderer_t *r = &ctx->renderer;
+    nux_gpu_buffer_free(ctx, &r->constants_buffer);
+    nux_gpu_buffer_free(ctx, &r->batches_buffer);
+    nux_gpu_buffer_free(ctx, &r->transforms_buffer);
+}
+void
 nux_renderer_render_ecs (nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera)
 {
     nux_res_t       prev_ecs = nux_ecs_get_active(ctx);

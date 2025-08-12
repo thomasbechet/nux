@@ -187,7 +187,7 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
     // arena
     nux_serde_begin_table(&s, "arena", NUX_NULL);
     nux_serde_field_u32(
-        &s, "global_capacity", &config->arena.global_capacity, 0, NUX_MEM_2G);
+        &s, "main_capacity", &config->arena.main_capacity, 0, NUX_MEM_2G);
     nux_serde_field_u32(
         &s, "frame_capacity", &config->arena.frame_capacity, 0, NUX_MEM_2G);
     nux_serde_field_u32(

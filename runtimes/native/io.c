@@ -49,7 +49,6 @@ nux_os_file_stat (void *userdata, nux_u32_t slot, nux_file_stat_t *stat)
         return NUX_FAILURE;
     }
     stat->size = ftell(runtime.files[slot]);
-    // reset file cursor
     fseek(runtime.files[slot], cursor, SEEK_SET);
     return NUX_SUCCESS;
 }

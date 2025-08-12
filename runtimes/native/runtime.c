@@ -109,6 +109,16 @@ runtime_run (const config_t *config)
     runtime.running = true;
     while (runtime.running)
     {
+        if (runtime.reload)
+        {
+            runtime_close();
+            if (config->path)
+            {
+                CHECK(runtime_open(config->path), runtime.running = false);
+            }
+            runtime.reload = false;
+        }
+
         // Retrieve window events
         window_begin_frame();
         struct nk_vec2i window_size = runtime.size;
@@ -160,13 +170,12 @@ runtime_open (const char *path)
     runtime.viewport_ui   = nk_rect(0, 0, 10, 10);
     runtime.viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
 
-    runtime.ctx = nux_instance_init(NULL);
+    runtime.ctx = nux_instance_init(NULL, path);
     if (!runtime.ctx)
     {
         fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
     }
-    nux_instance_load(runtime.ctx, path);
 
     return NUX_SUCCESS;
 cleanup0:

@@ -200,10 +200,7 @@ nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
     framebuffer_t *fb  = runtime.framebuffers + slot;
     texture_t     *tex = runtime.textures + texture;
 
-    if (!fb->handle)
-    {
-        glGenFramebuffers(1, &fb->handle);
-    }
+    glGenFramebuffers(1, &fb->handle);
     fb->width  = tex->info.width;
     fb->height = tex->info.height;
     glBindFramebuffer(GL_FRAMEBUFFER, fb->handle);
@@ -280,10 +277,7 @@ nux_os_texture_create (void                         *userdata,
     }
 
     // Create texture object
-    if (!tex->handle)
-    {
-        glGenTextures(1, &tex->handle);
-    }
+    glGenTextures(1, &tex->handle);
     glBindTexture(GL_TEXTURE_2D, tex->handle);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
@@ -344,10 +338,7 @@ nux_os_buffer_create (void                 *userdata,
             break;
     }
 
-    if (!buffer->handle)
-    {
-        glGenBuffers(1, &buffer->handle);
-    }
+    glGenBuffers(1, &buffer->handle);
     glBindBuffer(buffer->buffer_type, buffer->handle);
     glBufferData(buffer->buffer_type, size, NULL, GL_DYNAMIC_DRAW);
     glBindBuffer(buffer->buffer_type, 0);

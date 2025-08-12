@@ -54,8 +54,13 @@ nux_font_init_default (nux_ctx_t *ctx, nux_font_t *font)
     return NUX_SUCCESS;
 }
 void
+nux_font_free (nux_ctx_t *ctx, nux_font_t *font)
+{
+    nux_gpu_texture_free(ctx, &font->texture);
+}
+void
 nux_font_cleanup (nux_ctx_t *ctx, void *data)
 {
     nux_font_t *font = data;
-    nux_gpu_texture_free(ctx, &font->texture);
+    nux_font_free(ctx, font);
 }

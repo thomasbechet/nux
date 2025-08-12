@@ -53,6 +53,20 @@ nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_res_t handle)
     ++hotreload.entries_count;
 }
 void
+nux_os_hotreload_remove (void *userdata, nux_res_t handle)
+{
+    for (nux_u32_t i = 0; i < hotreload.entries_count; ++i)
+    {
+        if (hotreload.entries[i].handle == handle)
+        {
+            // swap remove
+            hotreload.entries[i]
+                = hotreload.entries[hotreload.entries_count - 1];
+            return;
+        }
+    }
+}
+void
 nux_os_hotreload_pull (void *userdata, nux_res_t *handles, nux_u32_t *count)
 {
     char                        buf[BUF_LEN];

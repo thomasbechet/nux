@@ -4,6 +4,7 @@ local nux = nux
 local function controller(e)
     local speed = 20
 
+
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
     local my = 0
@@ -44,7 +45,7 @@ local function controller(e)
     end
     PITCH = math.clamp(PITCH, -90, 90)
     nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
-    nux.camera.set_fov(e, 90)
+    nux.camera.set_fov(e, 60)
     nux.camera.set_far(e, 1000)
     nux.camera.set_near(e, 1)
 end
@@ -52,10 +53,11 @@ end
 function nux.conf(config)
     print(inspect(config))
     config.hotreload = true
+    config.arena.main_capacity = (1 << 27)
 end
 
 function nux.init()
-    ARENA = nux.arena.new("main_arena", 1 << 24)
+    ARENA = nux.arena.main()
     PITCH = 0
     YAW = 0
 
@@ -148,7 +150,6 @@ function nux.tick()
     nux.canvas.text(GUI_CANVAS, 10, 50, string.format("z:%.2f", z))
     nux.canvas.text(GUI_CANVAS, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
 
-    nux.canvas.text(GUI_CANVAS, 100, 100, "Hello")
     nux.canvas.render(GUI_CANVAS, GUI_TEXTURE)
     nux.texture.blit(GUI_TEXTURE)
 end

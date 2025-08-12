@@ -48,30 +48,30 @@ gl_message_callback (GLenum        source,
     {
         case GL_DEBUG_SEVERITY_HIGH:
             fprintf(stderr,
-                    "GL: %s, message = %s",
+                    "GL: %s, message = %s\n",
                     gl_message_type_string(type),
                     message);
             break;
         case GL_DEBUG_SEVERITY_MEDIUM:
             fprintf(stderr,
-                    "GL: %s, message = %s",
+                    "GL: %s, message = %s\n",
                     gl_message_type_string(type),
                     message);
             break;
         case GL_DEBUG_SEVERITY_LOW:
             fprintf(stderr,
-                    "GL: %s, message = %s",
+                    "GL: %s, message = %s\n",
                     gl_message_type_string(type),
                     message);
             break;
         case GL_DEBUG_SEVERITY_NOTIFICATION:
             fprintf(stderr,
-                    "GL: %s, message = %s",
+                    "GL: %s, message = %s\n",
                     gl_message_type_string(type),
                     message);
             break;
     }
-    // NU_ASSERT(severity != GL_DEBUG_SEVERITY_HIGH);
+    assert(severity != GL_DEBUG_SEVERITY_HIGH);
 }
 
 static nux_button_t
@@ -215,7 +215,7 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
         }
         if (key == GLFW_KEY_R && mods == GLFW_MOD_CONTROL)
         {
-            printf("ctrl r\n");
+            runtime.reload = true;
         }
         nux_button_t button = key_to_button(key);
         float        axvalue;
@@ -243,6 +243,7 @@ window_init (void)
     // Initialize values
     runtime.fullscreen        = false;
     runtime.switch_fullscreen = false;
+    runtime.reload            = false;
 
     // Initialized GLFW
 #ifdef NUX_PLATFORM_UNIX

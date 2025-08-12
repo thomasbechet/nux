@@ -128,6 +128,7 @@ typedef struct
 
     bool            fullscreen;
     bool            switch_fullscreen;
+    bool            reload;
     GLFWwindow     *win;
     int             buttons;
     float           axis[NUX_AXIS_MAX];

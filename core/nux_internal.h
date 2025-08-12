@@ -24,9 +24,9 @@ struct nux_context
     nux_u64_t           frame;
     nux_f32_t           time_elapsed;
     nux_pcg_t           pcg;
-    nux_arena_pool_t    arenas;
     nux_resource_pool_t resources;
     nux_arena_t         core_arena;
+    nux_res_t           main_arena;
     nux_res_t           frame_arena;
     nux_resource_type_t resources_types[NUX_RES_MAX];
     nux_u32_t           resources_types_count;

@@ -195,12 +195,14 @@ l_cursor_set (lua_State *L)
 static int
 l_arena_new (lua_State *L)
 {
-    nux_ctx_t      *ctx  = lua_getuserdata(L);
-    const nux_c8_t *name = luaL_checkstring(L, 1);
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_u32_t capa = luaL_checknumber(L, 2);
+    const nux_c8_t *name = luaL_checkstring(L, 2);
 
-    nux_res_t ret = nux_arena_new(ctx, name, capa);
+    nux_u32_t capa = luaL_checknumber(L, 3);
+
+    nux_res_t ret = nux_arena_new(ctx, arena, name, capa);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -220,6 +222,22 @@ l_arena_reset (lua_State *L)
     nux_arena_reset(ctx, arena);
     l_checkerror(L, ctx);
     return 0;
+}
+static int
+l_arena_main (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_res_t  ret = nux_arena_main(ctx);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushnumber(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
 }
 static int
 l_arena_frame (lua_State *L)
@@ -288,6 +306,27 @@ l_io_write_cart_file (lua_State *L)
     return 1;
 }
 
+static int
+l_lua_load (lua_State *L)
+{
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+
+    nux_res_t ret = nux_lua_load(ctx, arena, path);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushnumber(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
 static const struct luaL_Reg lib_log[]
     = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
 
@@ -315,17 +354,19 @@ static const struct luaL_Reg lib_cursor[] = { { "x", l_cursor_x },
                                               { "set", l_cursor_set },
                                               { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
-                                             { "reset", l_arena_reset },
-                                             { "frame", l_arena_frame },
-                                             { "scratch", l_arena_scratch },
-                                             { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_arena[]
+    = { { "new", l_arena_new },         { "reset", l_arena_reset },
+        { "main", l_arena_main },       { "frame", l_arena_frame },
+        { "scratch", l_arena_scratch }, { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_io[]
     = { { "cart_begin", l_io_cart_begin },
         { "cart_end", l_io_cart_end },
         { "write_cart_file", l_io_write_cart_file },
         { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_lua[]
+    = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
 
 nux_status_t
 nux_lua_open_base (nux_ctx_t *ctx)
@@ -358,6 +399,10 @@ nux_lua_open_base (nux_ctx_t *ctx)
     lua_newtable(L);
     luaL_setfuncs(L, lib_io, 0);
     lua_setfield(L, -2, "io");
+
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_lua, 0);
+    lua_setfield(L, -2, "lua");
 
     lua_pushinteger(L, 4);
     lua_setfield(L, -2, "CONTROLLER_MAX");

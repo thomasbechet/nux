@@ -484,23 +484,23 @@ typedef struct
     nux_u64_t incr;
 } nux_pcg_t;
 
-typedef struct nux_resource_header
+typedef struct nux_resource_finalizer
 {
-    nux_res_t                   self;
-    nux_u32_t                   type;
-    struct nux_resource_header *prev;
-    struct nux_resource_header *next;
-} nux_resource_header_t;
+    nux_res_t                      self;
+    nux_u32_t                      type;
+    struct nux_resource_finalizer *prev;
+    struct nux_resource_finalizer *next;
+} nux_resource_finalizer_t;
 
 typedef struct
 {
-    nux_res_t              self;
-    void                  *data;
-    nux_u32_t              capa;
-    nux_u32_t              size;
-    nux_resource_header_t *first_resource;
-    nux_resource_header_t *last_resource;
-    nux_c8_t               name[32];
+    nux_res_t                 self;
+    void                     *data;
+    nux_u32_t                 capa;
+    nux_u32_t                 size;
+    nux_resource_finalizer_t *first_finalizer;
+    nux_resource_finalizer_t *last_finalizer;
+    nux_c8_t                  name[32];
 } nux_arena_t;
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
@@ -512,23 +512,22 @@ typedef struct
     const nux_c8_t          *name;
     nux_resource_cleanup_t   cleanup;
     nux_resource_hotreload_t hotreload;
-    nux_u32_t                component_type;
 } nux_resource_type_t;
 
 typedef struct
 {
-    nux_res_t self;
+    nux_res_t self; // for validity check
     nux_u32_t type;
     void     *data;
-} nux_resource_t;
+} nux_resource_entry_t;
 
-NUX_POOL_DEFINE(nux_resource_pool, nux_resource_t);
+NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
 
 typedef struct
 {
     struct
     {
-        nux_u32_t global_capacity;
+        nux_u32_t main_capacity;
         nux_u32_t frame_capacity;
         nux_u32_t scratch_capacity;
     } arena;
@@ -741,6 +740,7 @@ nux_c8_t *nux_arena_alloc_path(nux_ctx_t      *ctx,
                                nux_res_t       arena,
                                const nux_c8_t *path);
 void      nux_arena_reset_raw(nux_ctx_t *ctx, nux_arena_t *arena);
+void      nux_arena_cleanup(nux_ctx_t *ctx, void *data);
 
 // random.c
 

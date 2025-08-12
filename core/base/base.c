@@ -12,6 +12,7 @@ nux_base_init (nux_ctx_t *ctx)
     nux_resource_type_t *type;
     type            = nux_res_register(ctx, "null");
     type            = nux_res_register(ctx, "arena");
+    type->cleanup   = nux_arena_cleanup;
     type            = nux_res_register(ctx, "lua");
     type->hotreload = nux_lua_hotreload;
     type            = nux_res_register(ctx, "texture");
@@ -35,10 +36,6 @@ nux_base_init (nux_ctx_t *ctx)
     // Reserve index 0 for null id
     NUX_ASSERT(nux_resource_pool_add(&ctx->resources));
 
-    // Allocate arena pool
-    NUX_CHECK(nux_arena_pool_alloc(ctx, &ctx->core_arena, 32, &ctx->arenas),
-              return NUX_FAILURE);
-
     // Initialize system state
     ctx->log_level    = NUX_LOG_DEBUG;
     ctx->error_enable = NUX_TRUE;
@@ -49,7 +46,8 @@ nux_base_init (nux_ctx_t *ctx)
     NUX_ASSERT(ctx->core_arena.self);
 
     // Register frame arena
-    ctx->frame_arena = nux_arena_new(ctx, "frame_arena", NUX_MEM_16M);
+    ctx->frame_arena
+        = nux_arena_new(ctx, ctx->core_arena.self, "frame_arena", NUX_MEM_16M);
     NUX_CHECK(ctx->frame_arena, return NUX_FAILURE);
 
     // Initialize controllers
@@ -73,4 +71,8 @@ nux_base_init (nux_ctx_t *ctx)
 void
 nux_base_free (nux_ctx_t *ctx)
 {
+    nux_lua_free(ctx);
+    nux_io_free(ctx);
+
+    NUX_ASSERT(ctx->free_file_slots.size == NUX_IO_FILE_MAX);
 }

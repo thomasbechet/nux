@@ -221,6 +221,7 @@ NUX_API void         nux_os_stats_update(void *userdata, nux_u64_t *stats);
 NUX_API void         nux_os_hotreload_add(void           *userdata,
                                           const nux_c8_t *path,
                                           nux_res_t       handle);
+NUX_API void         nux_os_hotreload_remove(void *userdata, nux_res_t handle);
 NUX_API void         nux_os_hotreload_pull(void      *userdata,
                                            nux_res_t *handles,
                                            nux_u32_t *count);
@@ -229,9 +230,8 @@ NUX_API void         nux_os_hotreload_pull(void      *userdata,
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_ctx_t   *nux_instance_init(void *userdata);
-NUX_API nux_status_t nux_instance_load(nux_ctx_t *ctx, const nux_c8_t *entry);
-NUX_API void         nux_instance_free(nux_ctx_t *ctx);
-NUX_API void         nux_instance_tick(nux_ctx_t *ctx);
+NUX_API nux_ctx_t *nux_instance_init(void *userdata, const nux_c8_t *entry);
+NUX_API void       nux_instance_free(nux_ctx_t *ctx);
+NUX_API void       nux_instance_tick(nux_ctx_t *ctx);
 
 #endif

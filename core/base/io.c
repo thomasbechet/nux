@@ -1,7 +1,10 @@
 #include "nux_internal.h"
 
-static nux_u32_t
-open_os_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)
+static nux_status_t
+open_os_file (nux_ctx_t      *ctx,
+              const nux_c8_t *path,
+              nux_io_mode_t   mode,
+              nux_u32_t      *ret_slot)
 {
     nux_c8_t  normpath[NUX_PATH_BUF_SIZE];
     nux_u32_t len = nux_path_normalize(normpath, path);
@@ -15,10 +18,11 @@ open_os_file (nux_ctx_t *ctx, const nux_c8_t *path, nux_io_mode_t mode)
                goto cleanup,
                "failed to open os file '%s'",
                normpath);
-    return *slot;
+    *ret_slot = *slot;
+    return NUX_SUCCESS;
 cleanup:
     nux_u32_vec_pushv(&ctx->free_file_slots, *slot);
-    return NUX_NULL;
+    return NUX_FAILURE;
 }
 static void
 close_os_file (nux_ctx_t *ctx, nux_u32_t slot)
@@ -37,7 +41,6 @@ nux_io_init (nux_ctx_t *ctx)
 
     // Initialize values
     nux_u32_vec_fill_reversed(&ctx->free_file_slots);
-    nux_u32_vec_pop(&ctx->free_file_slots); // reserve 0 for null
     ctx->disks_count = 0;
 
     // Add OS disk
@@ -52,6 +55,8 @@ error:
 nux_status_t
 nux_io_free (nux_ctx_t *ctx)
 {
+    NUX_ASSERT(ctx->free_file_slots.size == NUX_IO_FILE_MAX);
+
     return NUX_SUCCESS;
 }
 
@@ -124,8 +129,9 @@ nux_io_mount (nux_ctx_t *ctx, const nux_c8_t *path)
     nux_strncpy(disk->cart.path, path, path_len);
 
     // Open file
-    nux_u32_t file_slot = open_os_file(ctx, path, NUX_IO_READ);
-    NUX_CHECK(file_slot, return NUX_FAILURE);
+    nux_u32_t file_slot;
+    NUX_CHECK(open_os_file(ctx, path, NUX_IO_READ, &file_slot),
+              return NUX_FAILURE);
     disk->cart.slot = file_slot;
 
     // Read entries
@@ -158,10 +164,11 @@ nux_io_open (nux_ctx_t      *ctx,
         nux_disk_t *disk = ctx->disks + d;
         if (disk->type == NUX_DISK_OS)
         {
+            nux_u32_t slot;
             nux_error_disable(ctx);
-            nux_u32_t slot = open_os_file(ctx, path, mode);
+            nux_status_t status = open_os_file(ctx, path, mode, &slot);
             nux_error_enable(ctx);
-            if (slot)
+            if (status)
             {
                 file->type    = NUX_DISK_OS;
                 file->mode    = mode;
@@ -363,8 +370,9 @@ nux_io_cart_begin (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t entry_count)
         NUX_CHECK(nux_io_cart_end(ctx), return NUX_FAILURE);
     }
 
-    nux_u32_t slot = open_os_file(ctx, path, NUX_IO_READ_WRITE);
-    NUX_CHECK(slot, return NUX_FAILURE);
+    nux_u32_t slot;
+    NUX_CHECK(open_os_file(ctx, path, NUX_IO_READ_WRITE, &slot),
+              return NUX_FAILURE);
 
     ctx->cart_writer.slot        = slot;
     ctx->cart_writer.entry_count = entry_count;

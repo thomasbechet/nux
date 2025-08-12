@@ -1,7 +1,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <nux.h>
+
+static FILE *files[NUX_IO_FILE_MAX];
 
 void *
 nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
@@ -20,21 +23,6 @@ nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
         return realloc(p, nsize);
     }
 }
-nux_status_t
-nux_os_open (void *userdata, nux_u32_t slot, const nux_c8_t *url, nux_u32_t n)
-{
-    return NUX_SUCCESS;
-}
-nux_status_t
-nux_os_seek (void *userdata, nux_u32_t slot, nux_u32_t n)
-{
-    return NUX_SUCCESS;
-}
-nux_u32_t
-nux_os_read (void *userdata, nux_u32_t slot, void *p, nux_u32_t n)
-{
-    return 0;
-}
 void
 nux_os_log (void           *userdata,
             nux_log_level_t level,
@@ -44,26 +32,89 @@ nux_os_log (void           *userdata,
     printf("%.*s\n", n, log);
 }
 nux_status_t
-nux_os_create_pipeline (void                          *userdata,
+nux_os_file_open (void           *userdata,
+                  nux_u32_t       slot,
+                  const nux_c8_t *path,
+                  nux_u32_t       len,
+                  nux_io_mode_t   mode)
+{
+    assert(files[slot] == NULL);
+    nux_c8_t finalpath[NUX_PATH_BUF_SIZE + 2];
+    snprintf(finalpath, sizeof(finalpath), "./%s", path);
+    files[slot] = fopen(path, mode == NUX_IO_READ ? "rb" : "wb");
+    if (!files[slot])
+    {
+        return NUX_FAILURE;
+    }
+    return NUX_SUCCESS;
+}
+void
+nux_os_file_close (void *userdata, nux_u32_t slot)
+{
+    fclose(files[slot]);
+    files[slot] = NULL;
+}
+nux_status_t
+nux_os_file_stat (void *userdata, nux_u32_t slot, nux_file_stat_t *stat)
+{
+    long cursor = ftell(files[slot]);
+    if (fseek(files[slot], 0, SEEK_END) < 0)
+    {
+        return NUX_FAILURE;
+    }
+    stat->size = ftell(files[slot]);
+    fseek(files[slot], cursor, SEEK_SET);
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_os_file_seek (void *userdata, nux_u32_t slot, nux_u32_t cursor)
+{
+    return (fseek(files[slot], cursor, SEEK_SET) < 0) ? NUX_FAILURE
+                                                      : NUX_SUCCESS;
+}
+nux_u32_t
+nux_os_file_read (void *userdata, nux_u32_t slot, void *p, nux_u32_t n)
+{
+    return fread(p, 1, n, files[slot]);
+}
+nux_u32_t
+nux_os_file_write (void *userdata, nux_u32_t slot, const void *p, nux_u32_t n)
+{
+    return fwrite(p, 1, n, files[slot]);
+}
+nux_status_t
+nux_os_pipeline_create (void                          *userdata,
                         nux_u32_t                      slot,
                         const nux_gpu_pipeline_info_t *info)
 {
     return NUX_SUCCESS;
 }
+void
+nux_os_pipeline_delete (void *userdata, nux_u32_t slot)
+{
+}
 nux_status_t
-nux_os_create_framebuffer (void *userdata, nux_u32_t slot, nux_u32_t texture)
+nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
 {
     return NUX_SUCCESS;
 }
+void
+nux_os_framebuffer_delete (void *userdata, nux_u32_t slot)
+{
+}
 nux_status_t
-nux_os_create_texture (void                         *userdata,
+nux_os_texture_create (void                         *userdata,
                        nux_u32_t                     slot,
                        const nux_gpu_texture_info_t *info)
 {
     return NUX_SUCCESS;
 }
+void
+nux_os_texture_delete (void *userdata, nux_u32_t slot)
+{
+}
 nux_status_t
-nux_os_update_texture (void       *userdata,
+nux_os_texture_update (void       *userdata,
                        nux_u32_t   slot,
                        nux_u32_t   x,
                        nux_u32_t   y,
@@ -74,15 +125,19 @@ nux_os_update_texture (void       *userdata,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_create_buffer (void                 *userdata,
+nux_os_buffer_create (void                 *userdata,
                       nux_u32_t             slot,
                       nux_gpu_buffer_type_t type,
                       nux_u32_t             size)
 {
     return NUX_SUCCESS;
 }
+void
+nux_os_buffer_delete (void *userdata, nux_u32_t slot)
+{
+}
 nux_status_t
-nux_os_update_buffer (void       *userdata,
+nux_os_buffer_update (void       *userdata,
                       nux_u32_t   slot,
                       nux_u32_t   offset,
                       nux_u32_t   size,
@@ -97,29 +152,32 @@ nux_os_gpu_submit (void                    *userdata,
 {
 }
 void
-nux_os_update_inputs (void *user, nux_u32_t *buttons, nux_f32_t *axis)
+nux_os_input_update (void      *user,
+                     nux_u32_t  controller,
+                     nux_u32_t *buttons,
+                     nux_f32_t *axis,
+                     nux_f32_t *cursor)
 {
 }
 void
-nux_os_update_stats (void *userdata, nux_u32_t *stats)
+nux_os_stats_update (void *userdata, nux_u64_t *stats)
 {
+}
+void
+nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_res_t handle)
+{
+}
+void
+nux_os_hotreload_pull (void *userdata, nux_res_t *handles, nux_u32_t *count)
+{
+    *count = 0;
 }
 
 int
-main (int argc, char *arv[])
+main (int argc, char *argv[])
 {
-    nux_config_t config;
-    memset(&config, 0, sizeof(config));
-    config.max_id_count   = 4096;
-    config.memory_size    = (1 << 24);
-    config.width          = 800;
-    config.height         = 400;
-    config.tick_frequency = 60;
-    config.userdata       = NULL;
-
-    nux_ctx_t *ctx = nux_instance_init(&config);
+    nux_ctx_t *ctx = nux_instance_init(NULL, argc > 1 ? argv[1] : "init.lua");
     nux_instance_tick(ctx);
     nux_instance_free(ctx);
-
     return 0;
 }

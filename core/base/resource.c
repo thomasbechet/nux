@@ -19,7 +19,7 @@ nux_res_register (nux_ctx_t *ctx, const nux_c8_t *name)
 nux_res_t
 nux_res_create (nux_ctx_t *ctx, nux_u32_t type, void *data)
 {
-    nux_resource_t *entry = nux_resource_pool_add(&ctx->resources);
+    nux_resource_entry_t *entry = nux_resource_pool_add(&ctx->resources);
     NUX_ENSURE(entry, return NUX_NULL, "out of resources");
     nux_u32_t index = entry - ctx->resources.data;
     entry->self     = RES_BUILD(entry->self, type, index);
@@ -36,7 +36,7 @@ nux_res_delete (nux_ctx_t *ctx, nux_res_t res)
                return,
                "failed to delete resource %d",
                res);
-    nux_resource_t *entry = ctx->resources.data + index;
+    nux_resource_entry_t *entry = ctx->resources.data + index;
     entry->data           = NUX_NULL;
     entry->self           = NUX_NULL;
     entry->type           = NUX_NULL;
@@ -61,7 +61,7 @@ nux_res_hotreload (nux_ctx_t *ctx, nux_res_t res)
     NUX_CHECK(index < ctx->resources.size
                   && ctx->resources.data[index].self == res,
               return NUX_FAILURE);
-    nux_resource_t      *entry = ctx->resources.data + index;
+    nux_resource_entry_t      *entry = ctx->resources.data + index;
     nux_resource_type_t *type  = ctx->resources_types + entry->type;
     if (type->hotreload)
     {

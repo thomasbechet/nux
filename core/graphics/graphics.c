@@ -86,6 +86,23 @@ error:
 nux_status_t
 nux_graphics_free (nux_ctx_t *ctx)
 {
+    nux_renderer_free(ctx);
+
+    nux_gpu_pipeline_free(ctx, &ctx->uber_pipeline_line);
+    nux_gpu_pipeline_free(ctx, &ctx->uber_pipeline_opaque);
+    nux_gpu_pipeline_free(ctx, &ctx->canvas_pipeline);
+    nux_gpu_pipeline_free(ctx, &ctx->blit_pipeline);
+
+    nux_gpu_buffer_free(ctx, &ctx->vertices_buffer);
+
+    nux_font_free(ctx, &ctx->default_font);
+
+    NUX_ASSERT(ctx->free_texture_slots.size == NUX_GPU_TEXTURE_MAX);
+    NUX_ASSERT(ctx->free_buffer_slots.size == NUX_GPU_BUFFER_MAX);
+    NUX_ASSERT(ctx->free_pipeline_slots.size == NUX_GPU_PIPELINE_MAX);
+    NUX_ASSERT(ctx->free_framebuffer_slots.size
+               == NUX_GPU_FRAMEBUFFER_MAX - 1); // 0 reserved for default
+
     return NUX_SUCCESS;
 }
 

@@ -45,15 +45,15 @@ nux_error_get_status (nux_ctx_t *ctx)
 }
 
 nux_ctx_t *
-nux_instance_init (void *userdata)
+nux_instance_init (void *userdata, const nux_c8_t *entry)
 {
     // Allocate core memory
     nux_arena_t core_arena;
     core_arena.capa = NUX_MEM_8M;
     core_arena.size = 0;
     core_arena.data = nux_os_alloc(userdata, NUX_NULL, 0, core_arena.capa);
-    core_arena.first_resource = NUX_NULL;
-    core_arena.last_resource  = NUX_NULL;
+    core_arena.first_finalizer = NUX_NULL;
+    core_arena.last_finalizer  = NUX_NULL;
     nux_strncpy(core_arena.name, "core_arena", sizeof(core_arena.name) - 1);
     if (!core_arena.data)
     {
@@ -70,19 +70,6 @@ nux_instance_init (void *userdata)
     // Initialize mandatory modules
     NUX_CHECK(nux_base_init(ctx), goto cleanup);
 
-    return ctx;
-
-cleanup:
-    if (!nux_error_get_status(ctx))
-    {
-        NUX_ERROR("%s", nux_error_get_message(ctx));
-    }
-    nux_instance_free(ctx);
-    return NUX_NULL;
-}
-nux_status_t
-nux_instance_load (nux_ctx_t *ctx, const nux_c8_t *entry)
-{
     // Detect entry point type
     NUX_ASSERT(entry);
     nux_c8_t normpath[NUX_PATH_BUF_SIZE];
@@ -102,7 +89,7 @@ nux_instance_load (nux_ctx_t *ctx, const nux_c8_t *entry)
 
     // Get program configuration
     ctx->config.hotreload              = NUX_FALSE;
-    ctx->config.arena.global_capacity  = NUX_MEM_1M;
+    ctx->config.arena.main_capacity    = NUX_MEM_1M;
     ctx->config.arena.frame_capacity   = NUX_MEM_1M;
     ctx->config.arena.scratch_capacity = NUX_MEM_1M;
     ctx->config.window.enable          = NUX_TRUE;
@@ -123,10 +110,25 @@ nux_instance_load (nux_ctx_t *ctx, const nux_c8_t *entry)
         NUX_CHECK(nux_physics_init(ctx), goto cleanup);
     }
 
-    return NUX_SUCCESS;
+    // Create main arena
+    ctx->main_arena = nux_arena_new(ctx,
+                                    ctx->core_arena.self,
+                                    "main_arena",
+                                    ctx->config.arena.main_capacity);
+    NUX_CHECK(ctx->main_arena, goto cleanup);
+
+    // Initialize program
+    NUX_CHECK(nux_lua_call_init(ctx), goto cleanup);
+
+    return ctx;
 
 cleanup:
-    return NUX_FAILURE;
+    if (!nux_error_get_status(ctx))
+    {
+        NUX_ERROR("%s", nux_error_get_message(ctx));
+    }
+    nux_instance_free(ctx);
+    return NUX_NULL;
 }
 void
 nux_instance_free (nux_ctx_t *ctx)
@@ -138,8 +140,6 @@ nux_instance_free (nux_ctx_t *ctx)
     nux_physics_free(ctx);
     nux_graphics_free(ctx);
     nux_ecs_free(ctx);
-    nux_lua_free(ctx);
-    nux_io_free(ctx);
     nux_base_free(ctx);
 
     // Free core memory
@@ -151,12 +151,6 @@ nux_instance_free (nux_ctx_t *ctx)
 void
 nux_instance_tick (nux_ctx_t *ctx)
 {
-    // Init
-    if (ctx->frame == 0)
-    {
-        nux_lua_call_init(ctx);
-    }
-
     // Update stats
     nux_os_stats_update(ctx->userdata, ctx->stats);
 
