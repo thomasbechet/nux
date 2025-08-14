@@ -17,7 +17,6 @@ arena_push (nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size)
         }
         else
         {
-            NUX_INFO("allocate new block");
             // allocate new block
             nux_arena_block_t *new_block
                 = nux_os_alloc(ctx->userdata, NUX_NULL, 0, arena->block_size);

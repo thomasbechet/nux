@@ -9,6 +9,12 @@ typedef struct
     nux_u32_t       head;
 } nux_lua_serde_t;
 
+typedef struct
+{
+    const nux_c8_t *name;
+    nux_u32_t       value;
+} nux_lua_serde_enum_t;
+
 static void
 nux_serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
 {
@@ -68,6 +74,54 @@ nux_serde_field_u32 (nux_lua_serde_t *s,
             }
         }
         lua_pop(s->L, 1);
+    }
+}
+static nux_u32_t
+nux_serde_field_enum (nux_lua_serde_t            *s,
+                      const nux_lua_serde_enum_t *enums,
+                      const nux_c8_t             *name,
+                      nux_u32_t                   value)
+{
+    if (s->serialize)
+    {
+        NUX_ASSERT(lua_istable(s->L, -1));
+
+        const nux_lua_serde_enum_t *e = enums;
+        while (e->name)
+        {
+            if (e->value == value)
+            {
+                lua_pushstring(s->L, e->name);
+                lua_setfield(s->L, -2, name);
+                return value;
+            }
+            ++e;
+        }
+        NUX_ASSERT(NUX_FALSE);
+    }
+    else
+    {
+        nux_u32_t ret = value;
+        if (lua_istable(s->L, -1))
+        {
+            if (lua_getfield(s->L, -1, name) == LUA_TSTRING)
+            {
+                const nux_c8_t             *str = lua_tostring(s->L, -1);
+                const nux_lua_serde_enum_t *e   = enums;
+                while (e->name)
+                {
+                    if (nux_strncmp(e->name, str, nux_strnlen(e->name, 64))
+                        == 0)
+                    {
+                        ret = e->value;
+                        break;
+                    }
+                    ++e;
+                }
+            }
+        }
+        lua_pop(s->L, 1);
+        return ret;
     }
 }
 static void
@@ -186,6 +240,18 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
 
     // physics
     nux_serde_begin_table(&s, "physics", &config->physics.enable);
+    nux_serde_end_table(&s);
+
+    // log
+    nux_serde_begin_table(&s, "log", NUX_NULL);
+    const nux_lua_serde_enum_t levels[]
+        = { { .name = "debug", .value = NUX_LOG_DEBUG },
+            { .name = "info", .value = NUX_LOG_INFO },
+            { .name = "warning", .value = NUX_LOG_WARNING },
+            { .name = "error", .value = NUX_LOG_ERROR },
+            { .name = NUX_NULL, .value = 0 } };
+    config->log.level
+        = nux_serde_field_enum(&s, levels, "level", config->log.level);
     nux_serde_end_table(&s);
 
     // hotreload

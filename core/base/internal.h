@@ -555,6 +555,11 @@ typedef struct
         nux_b32_t enable;
     } physics;
 
+    struct
+    {
+        nux_log_level_t level;
+    } log;
+
     nux_b32_t hotreload;
 
 } nux_config_t;

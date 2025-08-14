@@ -75,6 +75,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
 
     // Get program configuration
     ctx->config.hotreload      = NUX_FALSE;
+    ctx->config.log.level      = NUX_LOG_INFO;
     ctx->config.window.enable  = NUX_TRUE;
     ctx->config.window.width   = 900;
     ctx->config.window.height  = 400;

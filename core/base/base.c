@@ -49,7 +49,6 @@ nux_base_init (nux_ctx_t *ctx)
     NUX_ASSERT(ctx->frame_arena);
 
     // Initialize system state
-    ctx->log_level    = NUX_LOG_DEBUG;
     ctx->error_enable = NUX_TRUE;
     ctx->pcg          = nux_pcg(10243124, 1823719241);
 

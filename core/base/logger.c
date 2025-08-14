@@ -6,7 +6,7 @@ nux_vlog (nux_ctx_t      *ctx,
           const nux_c8_t *fmt,
           va_list         args)
 {
-    if (level <= ctx->log_level)
+    if (level <= ctx->config.log.level)
     {
         nux_c8_t  buf[256];
         nux_u32_t n = nux_vsnprintf(buf, sizeof(buf), fmt, args);
@@ -25,5 +25,5 @@ nux_log (nux_ctx_t *ctx, nux_log_level_t level, const nux_c8_t *fmt, ...)
 void
 nux_log_set_level (nux_ctx_t *ctx, nux_log_level_t level)
 {
-    ctx->log_level = level;
+    ctx->config.log.level = level;
 }
