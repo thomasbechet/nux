@@ -10,10 +10,10 @@ nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
         nux_vsnprintf(
             ctx->error_message, sizeof(ctx->error_message), fmt, args);
         va_end(args);
-        // #ifdef NUX_BUILD_DEBUG
-        //         NUX_ERROR("%s", nux_error_get_message(ctx));
-        //         NUX_ASSERT(NUX_FALSE);
-        // #endif
+#ifdef NUX_BUILD_DEBUG
+        NUX_ERROR("%s", nux_error_get_message(ctx));
+        NUX_ASSERT(NUX_FALSE);
+#endif
         ctx->error_status = NUX_FAILURE;
     }
 }

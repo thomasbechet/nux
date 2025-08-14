@@ -51,7 +51,6 @@
     if (!(check))                                                   \
     {                                                               \
         nux_error(ctx, format " at %s", ##__VA_ARGS__, __SOURCE__); \
-        NUX_ASSERT(0);                                              \
         action;                                                     \
     }
 
@@ -617,6 +616,7 @@ typedef struct
 
 typedef struct
 {
+    nux_b32_t started;
     nux_u32_t slot;
     nux_u32_t entry_count;
     nux_u32_t entry_index;

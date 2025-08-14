@@ -55,8 +55,16 @@ error:
 nux_status_t
 nux_io_free (nux_ctx_t *ctx)
 {
+    // Unmount disks
+    for (nux_u32_t i = 0; i < ctx->disks_count; ++i)
+    {
+        nux_disk_t *disk = ctx->disks + i;
+        if (disk->type == NUX_DISK_CART)
+        {
+            close_os_file(ctx, disk->cart.slot);
+        }
+    }
     NUX_ASSERT(ctx->free_file_slots.size == NUX_IO_FILE_MAX);
-
     return NUX_SUCCESS;
 }
 
@@ -365,7 +373,7 @@ cart_write_u32 (nux_ctx_t *ctx, nux_u32_t slot, nux_u32_t v)
 nux_status_t
 nux_io_cart_begin (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t entry_count)
 {
-    if (ctx->cart_writer.slot)
+    if (ctx->cart_writer.started)
     {
         NUX_CHECK(nux_io_cart_end(ctx), return NUX_FAILURE);
     }
@@ -386,6 +394,8 @@ nux_io_cart_begin (nux_ctx_t *ctx, const nux_c8_t *path, nux_u32_t entry_count)
     status &= cart_write_u32(ctx, ctx->cart_writer.slot, entry_count);
     NUX_CHECK(status, goto cleanup);
 
+    ctx->cart_writer.started = NUX_TRUE;
+
     return NUX_SUCCESS;
 
 cleanup:
@@ -395,7 +405,7 @@ cleanup:
 nux_status_t
 nux_io_cart_end (nux_ctx_t *ctx)
 {
-    if (ctx->cart_writer.slot)
+    if (ctx->cart_writer.started)
     {
         NUX_ENSURE(ctx->cart_writer.entry_index == ctx->cart_writer.entry_index,
                    return NUX_FAILURE,
@@ -403,6 +413,7 @@ nux_io_cart_end (nux_ctx_t *ctx)
                    ctx->cart_writer.entry_index,
                    ctx->cart_writer.entry_count);
         close_os_file(ctx, ctx->cart_writer.slot);
+        ctx->cart_writer.started = NUX_FALSE;
     }
     return NUX_SUCCESS;
 }
@@ -414,8 +425,9 @@ nux_io_write_cart_data (nux_ctx_t      *ctx,
                         const void     *data,
                         nux_u32_t       size)
 {
-    NUX_ENSURE(
-        ctx->cart_writer.slot, return NUX_FAILURE, "cart writer not started");
+    NUX_ENSURE(ctx->cart_writer.started,
+               return NUX_FAILURE,
+               "cart writer not started");
 
     nux_status_t status = NUX_SUCCESS;
 
