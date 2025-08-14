@@ -200,9 +200,7 @@ l_arena_new (lua_State *L)
 
     const nux_c8_t *name = luaL_checkstring(L, 2);
 
-    nux_u32_t capa = luaL_checknumber(L, 3);
-
-    nux_res_t ret = nux_arena_new(ctx, arena, name, capa);
+    nux_res_t ret = nux_arena_new(ctx, arena, name);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -224,10 +222,10 @@ l_arena_reset (lua_State *L)
     return 0;
 }
 static int
-l_arena_main (lua_State *L)
+l_arena_core (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_arena_main(ctx);
+    nux_res_t  ret = nux_arena_core(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -244,22 +242,6 @@ l_arena_frame (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_res_t  ret = nux_arena_frame(ctx);
-    l_checkerror(L, ctx);
-    if (ret)
-    {
-        lua_pushnumber(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
-l_arena_scratch (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_arena_scratch(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -354,10 +336,11 @@ static const struct luaL_Reg lib_cursor[] = { { "x", l_cursor_x },
                                               { "set", l_cursor_set },
                                               { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_arena[]
-    = { { "new", l_arena_new },         { "reset", l_arena_reset },
-        { "main", l_arena_main },       { "frame", l_arena_frame },
-        { "scratch", l_arena_scratch }, { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
+                                             { "reset", l_arena_reset },
+                                             { "core", l_arena_core },
+                                             { "frame", l_arena_frame },
+                                             { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_io[]
     = { { "cart_begin", l_io_cart_begin },

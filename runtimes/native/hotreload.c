@@ -62,6 +62,7 @@ nux_os_hotreload_remove (void *userdata, nux_res_t handle)
             // swap remove
             hotreload.entries[i]
                 = hotreload.entries[hotreload.entries_count - 1];
+            --hotreload.entries_count;
             return;
         }
     }

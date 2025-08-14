@@ -1,6 +1,5 @@
-#include "nux.h"
-
-#include "lua_code.c.inc"
+#include "base/internal.h"
+#include "nux_internal.h"
 
 typedef struct
 {
@@ -9,11 +8,6 @@ typedef struct
     const nux_c8_t *stack[8];
     nux_u32_t       head;
 } nux_lua_serde_t;
-
-typedef enum
-{
-    NUX_SERDE_SERIALIZE,
-} nux_lua_serde_mode_t;
 
 static void
 nux_serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
@@ -29,10 +23,6 @@ nux_serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
     {
         NUX_ASSERT(lua_istable(L, -1));
     }
-}
-static void
-nux_serde_end (nux_lua_serde_t *s)
-{
 }
 static void
 nux_serde_field_b32 (nux_lua_serde_t *s, const nux_c8_t *name, nux_b32_t *value)
@@ -184,16 +174,6 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
     nux_lua_serde_t s;
     nux_serde_begin(&s, ctx->L, serialize);
 
-    // arena
-    nux_serde_begin_table(&s, "arena", NUX_NULL);
-    nux_serde_field_u32(
-        &s, "main_capacity", &config->arena.main_capacity, 0, NUX_MEM_2G);
-    nux_serde_field_u32(
-        &s, "frame_capacity", &config->arena.frame_capacity, 0, NUX_MEM_2G);
-    nux_serde_field_u32(
-        &s, "scratch_capacity", &config->arena.scratch_capacity, 0, NUX_MEM_2G);
-    nux_serde_end_table(&s);
-
     // window
     nux_serde_begin_table(&s, "window", &config->window.enable);
     nux_serde_field_u32(&s, "width", &config->window.width, 1, 8192);
@@ -210,8 +190,16 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
 
     // hotreload
     nux_serde_field_b32(&s, "hotreload", &config->hotreload);
-
-    nux_serde_end(&s);
+}
+static void
+serialize_config (nux_ctx_t *ctx, nux_config_t *config)
+{
+    serde_config(ctx, config, NUX_TRUE);
+}
+static void
+deserialize_config (nux_ctx_t *ctx, nux_config_t *config)
+{
+    serde_config(ctx, config, NUX_FALSE);
 }
 nux_status_t
 nux_lua_configure (nux_ctx_t      *ctx,
@@ -219,29 +207,20 @@ nux_lua_configure (nux_ctx_t      *ctx,
                    nux_config_t   *config)
 {
     // Load init script
-    nux_res_t res = nux_lua_load(ctx, ctx->core_arena.self, entry_script);
-    NUX_CHECK(res, return NUX_FAILURE);
+    if (luaL_dofile(ctx->L, entry_script) != LUA_OK)
+    {
+        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        return NUX_FAILURE;
+    }
 
     // Call nux.conf
-    serde_config(ctx, config, NUX_TRUE); // serialize config
+    serialize_config(ctx, config);
     if (nux_lua_get_function(ctx->L, NUX_FUNC_CONF))
     {
         lua_pushvalue(ctx->L, -2); // push config as argument
         NUX_CHECK(nux_lua_call(ctx, 1, 0), return NUX_FAILURE);
     }
-    serde_config(ctx, config, NUX_FALSE); // deserialize config
-
-    // Register file to os for hotreload (before configuration)
-    if (config->hotreload)
-    {
-        const nux_c8_t *path
-            = ((nux_lua_t *)nux_res_check(ctx, NUX_RES_LUA, res))->path;
-        nux_os_hotreload_add(ctx->userdata, path, res);
-    }
-
-    // Register base API
-    nux_lua_open_base(ctx);
-    nux_lua_dostring(ctx, lua_data_code);
+    deserialize_config(ctx, config);
 
     return NUX_SUCCESS;
 }
@@ -283,23 +262,16 @@ nux_lua_load (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
         return NUX_NULL;
     }
     nux_res_t  res;
-    nux_lua_t *lua
-        = nux_arena_alloc_res(ctx, arena, NUX_RES_LUA, sizeof(*lua), &res);
+    nux_lua_t *lua = nux_res_new(ctx, arena, NUX_RES_LUA, sizeof(*lua), &res);
     NUX_CHECK(lua, return NUX_NULL);
-    lua->path = nux_arena_alloc_path(ctx, arena, path);
-    NUX_CHECK(lua->path, return NUX_NULL);
-    if (ctx->config.hotreload)
-    {
-        nux_os_hotreload_add(ctx->userdata, lua->path, res);
-    }
+    nux_res_watch(ctx, res, path);
     return res;
 }
 nux_status_t
-nux_lua_hotreload (nux_ctx_t *ctx, void *data)
+nux_lua_reload (nux_ctx_t *ctx, nux_res_t res, const nux_c8_t *path)
 {
-    nux_lua_t *lua = data;
-    NUX_ASSERT(lua->path);
-    if (luaL_dofile(ctx->L, lua->path) != LUA_OK)
+    nux_lua_t *lua = nux_res_check(ctx, NUX_RES_LUA, res);
+    if (luaL_dofile(ctx->L, path) != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(ctx->L, -1));
         return NUX_FAILURE;

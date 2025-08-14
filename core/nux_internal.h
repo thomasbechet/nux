@@ -26,7 +26,7 @@ struct nux_context
     nux_pcg_t           pcg;
     nux_resource_pool_t resources;
     nux_arena_t         core_arena;
-    nux_res_t           main_arena;
+    nux_res_t           core_arena_res;
     nux_res_t           frame_arena;
     nux_resource_type_t resources_types[NUX_RES_MAX];
     nux_u32_t           resources_types_count;

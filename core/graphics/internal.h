@@ -117,6 +117,16 @@ typedef struct
 ///      FUNCTIONS       ///
 ////////////////////////////
 
+// graphics.c
+
+nux_status_t nux_graphics_init(nux_ctx_t *ctx);
+nux_status_t nux_graphics_free(nux_ctx_t *ctx);
+
+nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
+                                        nux_u32_t        vcount,
+                                        const nux_f32_t *data,
+                                        nux_u32_t       *first);
+
 // renderer.c
 
 nux_status_t nux_renderer_init(nux_ctx_t *ctx);
@@ -127,12 +137,12 @@ void nux_renderer_render_ecs(nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera);
 
 nux_status_t nux_font_init_default(nux_ctx_t *ctx, nux_font_t *font);
 void         nux_font_free(nux_ctx_t *ctx, nux_font_t *font);
-void         nux_font_cleanup(nux_ctx_t *ctx, void *data);
+void         nux_font_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // canvas.c
 
 nux_status_t nux_canvas_init(nux_ctx_t *ctx, nux_canvas_t *canvas);
-void         nux_canvas_cleanup(nux_ctx_t *ctx, void *data);
+void         nux_canvas_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // gpu.c
 
@@ -175,23 +185,13 @@ void nux_gpu_clear(nux_ctx_t             *ctx,
                    nux_gpu_command_vec_t *cmds,
                    nux_u32_t              color);
 
-// graphics.c
-
-nux_status_t nux_graphics_init(nux_ctx_t *ctx);
-nux_status_t nux_graphics_free(nux_ctx_t *ctx);
-
-nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
-                                        nux_u32_t        vcount,
-                                        const nux_f32_t *data,
-                                        nux_u32_t       *first);
-
 // lua_bindings.c
 
 nux_status_t nux_lua_open_graphics(nux_ctx_t *ctx);
 
 // texture.c
 
-void nux_texture_cleanup(nux_ctx_t *ctx, void *data);
+void nux_texture_cleanup(nux_ctx_t *ctx, nux_res_t res);
 void nux_texture_write(nux_ctx_t  *ctx,
                        nux_res_t   res,
                        nux_u32_t   x,

@@ -2,8 +2,7 @@ local inspect = require("inspect")
 local nux = nux
 
 local function controller(e)
-    local speed = 20
-
+    local speed = 10
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
@@ -51,13 +50,11 @@ local function controller(e)
 end
 
 function nux.conf(config)
-    print(inspect(config))
     config.hotreload = true
-    config.arena.main_capacity = (1 << 27)
 end
 
 function nux.init()
-    ARENA = nux.arena.main()
+    ARENA = nux.arena.core()
     PITCH = 0
     YAW = 0
 

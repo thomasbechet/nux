@@ -59,8 +59,8 @@ nux_font_free (nux_ctx_t *ctx, nux_font_t *font)
     nux_gpu_texture_free(ctx, &font->texture);
 }
 void
-nux_font_cleanup (nux_ctx_t *ctx, void *data)
+nux_font_cleanup (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_font_t *font = data;
+    nux_font_t *font = nux_res_check(ctx, NUX_RES_FONT, res);
     nux_font_free(ctx, font);
 }

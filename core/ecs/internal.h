@@ -99,7 +99,7 @@ nux_u32_t    nux_ecs_register_component(nux_ctx_t      *ctx,
 void *nux_ecs_set(nux_ctx_t *ctx, nux_ent_t e, nux_u32_t c);
 void *nux_ecs_get(nux_ctx_t *ctx, nux_ent_t e, nux_u32_t c);
 
-void nux_ecs_cleanup(nux_ctx_t *ctx, void *data);
+void nux_ecs_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // lua_bindings.c
 

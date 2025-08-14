@@ -189,7 +189,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
 
     // Load file
     nux_u32_t buf_size;
-    void     *buf = nux_io_load(ctx, nux_arena_scratch(ctx), path, &buf_size);
+    void     *buf = nux_io_load(ctx, nux_arena_frame(ctx), path, &buf_size);
     NUX_CHECK(buf, goto error);
 
     // Parse file

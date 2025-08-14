@@ -136,16 +136,15 @@ nux_res_t
 nux_canvas_new (nux_ctx_t *ctx, nux_res_t arena)
 {
     nux_res_t     id;
-    nux_canvas_t *c
-        = nux_arena_alloc_res(ctx, arena, NUX_RES_CANVAS, sizeof(*c), &id);
+    nux_canvas_t *c = nux_res_new(ctx, arena, NUX_RES_CANVAS, sizeof(*c), &id);
     NUX_CHECK(c, return NUX_NULL);
     NUX_CHECK(nux_canvas_init(ctx, c), return NUX_NULL);
     return id;
 }
 void
-nux_canvas_cleanup (nux_ctx_t *ctx, void *data)
+nux_canvas_cleanup (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_canvas_t *canvas = data;
+    nux_canvas_t *canvas = nux_res_check(ctx, NUX_RES_CANVAS, res);
     nux_gpu_buffer_free(ctx, &canvas->constants_buffer);
     nux_gpu_buffer_free(ctx, &canvas->batches_buffer);
     nux_gpu_buffer_free(ctx, &canvas->quads_buffer);
@@ -277,12 +276,4 @@ nux_canvas_rectangle (nux_ctx_t *ctx,
     nux_u32_t first;
     NUX_CHECK(push_quads(ctx, c, &quad, 1), return);
     end_batch(ctx, c);
-}
-void
-nux_canvas_print (nux_ctx_t *ctx, const nux_c8_t *text)
-{
-    // nux_i32_t x = nux_graphics_cursor_x(ctx);
-    // nux_i32_t y = nux_graphics_cursor_y(ctx);
-    // nux_graphics_text(ctx, x, y, text, c);
-    // nux_graphics_cursor(ctx, x, y + DEFAULT_FONT_DATA_HEIGHT);
 }

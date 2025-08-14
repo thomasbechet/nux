@@ -161,7 +161,7 @@ nux_ecs_new_iter (nux_ctx_t *ctx,
 {
     nux_res_t       res;
     nux_ecs_iter_t *it
-        = nux_arena_alloc_res(ctx, arena, NUX_RES_ECS_ITER, sizeof(*it), &res);
+        = nux_res_new(ctx, arena, NUX_RES_ECS_ITER, sizeof(*it), &res);
     NUX_CHECK(res, return NUX_NULL);
     nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
@@ -265,8 +265,7 @@ nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
     nux_res_t    res;
     nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
-    nux_ecs_t *ins
-        = nux_arena_alloc_res(ctx, arena, NUX_RES_ECS, sizeof(*ins), &res);
+    nux_ecs_t *ins = nux_res_new(ctx, arena, NUX_RES_ECS, sizeof(*ins), &res);
     NUX_CHECK(ins, return NUX_NULL);
     ins->arena = a;
     ins->self  = res;
@@ -485,9 +484,9 @@ nux_ecs_get (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 }
 
 void
-nux_ecs_cleanup (nux_ctx_t *ctx, void *data)
+nux_ecs_cleanup (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_ecs_t *ecs = data;
+    nux_ecs_t *ecs = nux_res_check(ctx, NUX_RES_ECS, res);
     if (ctx->active_ecs == ecs)
     {
         ctx->active_ecs = NUX_NULL;

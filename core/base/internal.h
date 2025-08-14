@@ -51,6 +51,7 @@
     if (!(check))                                                   \
     {                                                               \
         nux_error(ctx, format " at %s", ##__VA_ARGS__, __SOURCE__); \
+        NUX_ASSERT(0);                                              \
         action;                                                     \
     }
 
@@ -486,52 +487,57 @@ typedef struct
 
 typedef struct nux_resource_finalizer
 {
-    nux_res_t                      self;
-    nux_u32_t                      type;
+    nux_res_t                      res;
     struct nux_resource_finalizer *prev;
     struct nux_resource_finalizer *next;
 } nux_resource_finalizer_t;
 
+typedef struct nux_arena_block
+{
+    nux_u32_t               capa;
+    nux_u32_t               size;
+    struct nux_arena_block *prev;
+    struct nux_arena_block *next;
+} nux_arena_block_t;
+
 typedef struct
 {
-    nux_res_t                 self;
-    void                     *data;
-    nux_u32_t                 capa;
-    nux_u32_t                 size;
     nux_resource_finalizer_t *first_finalizer;
     nux_resource_finalizer_t *last_finalizer;
+    nux_arena_block_t        *first_block;
+    nux_arena_block_t        *last_block;
+    nux_u32_t                 block_size;
     nux_c8_t                  name[32];
+    nux_u8_t                 *head;
+    nux_u8_t                 *end;
 } nux_arena_t;
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 
-typedef void (*nux_resource_cleanup_t)(nux_ctx_t *ctx, void *data);
-typedef nux_status_t (*nux_resource_hotreload_t)(nux_ctx_t *ctx, void *data);
+typedef void (*nux_resource_cleanup_t)(nux_ctx_t *ctx, nux_res_t res);
+typedef nux_status_t (*nux_resource_reload_t)(nux_ctx_t      *ctx,
+                                              nux_res_t       res,
+                                              const nux_c8_t *path);
 typedef struct
 {
-    const nux_c8_t          *name;
-    nux_resource_cleanup_t   cleanup;
-    nux_resource_hotreload_t hotreload;
+    const nux_c8_t        *name;
+    nux_resource_cleanup_t cleanup;
+    nux_resource_reload_t  reload;
 } nux_resource_type_t;
 
 typedef struct
 {
-    nux_res_t self; // for validity check
-    nux_u32_t type;
-    void     *data;
+    nux_res_t       self; // for validity check
+    nux_res_t       arena;
+    nux_u32_t       type;
+    void           *data;
+    const nux_c8_t *path;
 } nux_resource_entry_t;
 
 NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
 
 typedef struct
 {
-    struct
-    {
-        nux_u32_t main_capacity;
-        nux_u32_t frame_capacity;
-        nux_u32_t scratch_capacity;
-    } arena;
-
     struct
     {
         nux_b32_t enable;
@@ -646,7 +652,7 @@ typedef struct
 
 typedef struct
 {
-    const nux_c8_t *path;
+    nux_u32_t dummy;
 } nux_lua_t;
 
 ////////////////////////////
@@ -722,25 +728,30 @@ nux_u32_t nux_hash(const void *p, nux_u32_t s);
 // resource.c
 
 nux_resource_type_t *nux_res_register(nux_ctx_t *ctx, const nux_c8_t *name);
-nux_res_t            nux_res_create(nux_ctx_t *ctx, nux_u32_t type, void *data);
+nux_res_t            nux_res_add(nux_ctx_t *ctx,
+                                 nux_res_t  arena,
+                                 nux_u32_t  type,
+                                 void      *data);
+void                *nux_res_new(nux_ctx_t *ctx,
+                                 nux_res_t  arena,
+                                 nux_u32_t  type,
+                                 nux_u32_t  size,
+                                 nux_res_t *res);
 void                 nux_res_delete(nux_ctx_t *ctx, nux_res_t res);
 void        *nux_res_check(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
-nux_status_t nux_res_hotreload(nux_ctx_t *ctx, nux_res_t res);
+void         nux_res_watch(nux_ctx_t *ctx, nux_res_t res, const nux_c8_t *path);
+nux_status_t nux_res_reload(nux_ctx_t *ctx, nux_res_t res);
 
 // arena.c
 
+void  nux_arena_init(nux_arena_t *arena, const nux_c8_t *name);
+void  nux_arena_free(nux_ctx_t *ctx, nux_arena_t *arena);
 void *nux_arena_alloc_raw(nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size);
 void *nux_arena_alloc(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t size);
-void *nux_arena_alloc_res(nux_ctx_t *ctx,
-                          nux_res_t  arena,
-                          nux_u32_t  type,
-                          nux_u32_t  size,
-                          nux_res_t *res);
 nux_c8_t *nux_arena_alloc_path(nux_ctx_t      *ctx,
                                nux_res_t       arena,
                                const nux_c8_t *path);
-void      nux_arena_reset_raw(nux_ctx_t *ctx, nux_arena_t *arena);
-void      nux_arena_cleanup(nux_ctx_t *ctx, void *data);
+void      nux_arena_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // random.c
 
@@ -845,7 +856,7 @@ nux_status_t nux_io_write_cart_data(nux_ctx_t      *ctx,
 
 // file.c
 
-void nux_file_cleanup(nux_ctx_t *ctx, void *data);
+void nux_file_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // input.c
 
@@ -861,7 +872,9 @@ nux_status_t nux_lua_configure(nux_ctx_t      *ctx,
 nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
 nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
-nux_status_t nux_lua_hotreload(nux_ctx_t *ctx, void *data);
+nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
+                            nux_res_t       res,
+                            const nux_c8_t *path);
 
 // lua_bindings*.c
 

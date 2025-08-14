@@ -8,7 +8,7 @@ nux_file_open (nux_ctx_t      *ctx,
 {
     nux_res_t   res;
     nux_file_t *file
-        = nux_arena_alloc_res(ctx, arena, NUX_RES_FILE, sizeof(*file), &res);
+        = nux_res_new(ctx, arena, NUX_RES_FILE, sizeof(*file), &res);
     NUX_CHECK(file, return NUX_NULL);
 
     if (!nux_io_open(ctx, path, mode, file))
@@ -48,8 +48,8 @@ nux_file_seek (nux_ctx_t *ctx, nux_res_t res, nux_u32_t cursor)
 }
 
 void
-nux_file_cleanup (nux_ctx_t *ctx, void *data)
+nux_file_cleanup (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_file_t *file = data;
+    nux_file_t *file = nux_res_check(ctx, NUX_RES_FILE, res);
     nux_io_close(ctx, file);
 }

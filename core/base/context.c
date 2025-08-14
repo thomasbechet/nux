@@ -47,25 +47,11 @@ nux_error_get_status (nux_ctx_t *ctx)
 nux_ctx_t *
 nux_instance_init (void *userdata, const nux_c8_t *entry)
 {
-    // Allocate core memory
-    nux_arena_t core_arena;
-    core_arena.capa = NUX_MEM_8M;
-    core_arena.size = 0;
-    core_arena.data = nux_os_alloc(userdata, NUX_NULL, 0, core_arena.capa);
-    core_arena.first_finalizer = NUX_NULL;
-    core_arena.last_finalizer  = NUX_NULL;
-    nux_strncpy(core_arena.name, "core_arena", sizeof(core_arena.name) - 1);
-    if (!core_arena.data)
-    {
-        return NUX_NULL;
-    }
-    nux_memset(core_arena.data, 0, core_arena.capa);
-
     // Initialize context
-    nux_ctx_t *ctx = nux_arena_alloc_raw(NUX_NULL, &core_arena, sizeof(*ctx));
+    nux_ctx_t *ctx = nux_os_alloc(userdata, NUX_NULL, 0, sizeof(*ctx));
     NUX_ASSERT(ctx);
-    ctx->core_arena = core_arena;
-    ctx->userdata   = userdata;
+    nux_memset(ctx, 0, sizeof(*ctx));
+    ctx->userdata = userdata;
 
     // Initialize mandatory modules
     NUX_CHECK(nux_base_init(ctx), goto cleanup);
@@ -88,34 +74,28 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     }
 
     // Get program configuration
-    ctx->config.hotreload              = NUX_FALSE;
-    ctx->config.arena.main_capacity    = NUX_MEM_1M;
-    ctx->config.arena.frame_capacity   = NUX_MEM_1M;
-    ctx->config.arena.scratch_capacity = NUX_MEM_1M;
-    ctx->config.window.enable          = NUX_TRUE;
-    ctx->config.window.width           = 900;
-    ctx->config.window.height          = 400;
-    ctx->config.ecs.enable             = NUX_TRUE;
-    ctx->config.physics.enable         = NUX_TRUE;
+    ctx->config.hotreload      = NUX_FALSE;
+    ctx->config.window.enable  = NUX_TRUE;
+    ctx->config.window.width   = 900;
+    ctx->config.window.height  = 400;
+    ctx->config.ecs.enable     = NUX_TRUE;
+    ctx->config.physics.enable = NUX_TRUE;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
+
+    // Register entry script
+    nux_res_t  res;
+    nux_lua_t *lua = nux_res_new(
+        ctx, ctx->core_arena_res, NUX_RES_LUA, sizeof(*lua), &res);
+    NUX_CHECK(lua, goto cleanup);
+    if (ctx->config.hotreload)
+    {
+        nux_res_watch(ctx, res, entry_script);
+    }
 
     // Initialize optional modules
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
-    if (ctx->config.ecs.enable)
-    {
-        NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
-    }
-    if (ctx->config.physics.enable)
-    {
-        NUX_CHECK(nux_physics_init(ctx), goto cleanup);
-    }
-
-    // Create main arena
-    ctx->main_arena = nux_arena_new(ctx,
-                                    ctx->core_arena.self,
-                                    "main_arena",
-                                    ctx->config.arena.main_capacity);
-    NUX_CHECK(ctx->main_arena, goto cleanup);
+    NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
+    NUX_CHECK(nux_physics_init(ctx), goto cleanup);
 
     // Initialize program
     NUX_CHECK(nux_lua_call_init(ctx), goto cleanup);
@@ -134,7 +114,7 @@ void
 nux_instance_free (nux_ctx_t *ctx)
 {
     // Cleanup all resources
-    nux_arena_reset_raw(ctx, &ctx->core_arena);
+    nux_arena_reset(ctx, ctx->core_arena_res);
 
     // Reset runtime
     nux_physics_free(ctx);
@@ -143,10 +123,8 @@ nux_instance_free (nux_ctx_t *ctx)
     nux_base_free(ctx);
 
     // Free core memory
-    if (ctx->core_arena.data)
-    {
-        nux_os_alloc(ctx->userdata, ctx->core_arena.data, 0, 0);
-    }
+    nux_arena_free(ctx, &ctx->core_arena);
+    nux_os_alloc(ctx->userdata, ctx, 0, 0);
 }
 void
 nux_instance_tick (nux_ctx_t *ctx)
@@ -167,9 +145,6 @@ nux_instance_tick (nux_ctx_t *ctx)
     }
     nux_error_reset(ctx);
 
-    // Reset frame arena
-    nux_arena_reset(ctx, ctx->frame_arena);
-
     // Hotreload
     if (ctx->config.hotreload)
     {
@@ -178,7 +153,7 @@ nux_instance_tick (nux_ctx_t *ctx)
         nux_os_hotreload_pull(ctx->userdata, handles, &count);
         for (nux_u32_t i = 0; i < count; ++i)
         {
-            if (nux_res_hotreload(ctx, handles[i]))
+            if (nux_res_reload(ctx, handles[i]))
             {
                 NUX_INFO("Resource 0x%08X successfully reloaded", handles[i]);
             }
