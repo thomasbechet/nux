@@ -227,8 +227,11 @@ nux_physics_free (nux_ctx_t *ctx)
 void
 nux_physics_update (nux_ctx_t *ctx)
 {
-    integrate(ctx);
-    pm_to_transforms(ctx);
+    if (nux_ecs_get_active(ctx))
+    {
+        integrate(ctx);
+        pm_to_transforms(ctx);
+    }
 }
 nux_u32_t
 nux_physics_add_pm (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t vel)
