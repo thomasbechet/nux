@@ -60,6 +60,10 @@ struct nux_context
     nux_renderer_t     renderer;
 
     // physics
+
+    nux_point_mass_vec_t           point_masses;
+    nux_collision_constraint_vec_t collision_constraints;
+    nux_distance_constraint_vec_t  distance_constraints;
 };
 
 #endif

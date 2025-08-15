@@ -43,5 +43,10 @@ NUX_VEC_DEFINE(nux_distance_constraint_vec, nux_distance_constraint_t);
 
 nux_status_t nux_physics_init(nux_ctx_t *ctx);
 void         nux_physics_free(nux_ctx_t *ctx);
+void         nux_physics_update(nux_ctx_t *ctx);
+
+// lua_bindings.c
+
+nux_status_t nux_lua_open_physics(nux_ctx_t *ctx);
 
 #endif

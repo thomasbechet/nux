@@ -2,7 +2,7 @@ local inspect = require("inspect")
 local nux = nux
 
 local function controller(e)
-    local speed = 10
+    local speed = 20
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
@@ -106,7 +106,7 @@ function nux.init()
 
     C = nux.ecs.add()
     nux.transform.add(C)
-    nux.transform.set_translation(C, 0, 1, 3)
+    nux.transform.set_translation(C, 13, 15, 10)
     nux.camera.add(C)
     nux.camera.set_fov(C, 70)
 
@@ -132,11 +132,12 @@ end
 function nux.tick()
     controller(C)
     nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
-    nux.transform.set_scale(ROTATING, 1, 5, 1)
+    nux.transform.set_scale(ROTATING, 1, 5, 10)
     nux.ecs.render(C)
     nux.canvas.clear(MONOLITH_CANVAS)
     nux.canvas.text(MONOLITH_CANVAS, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(MONOLITH_CANVAS, 10, 20, API)
+    nux.canvas.text(MONOLITH_CANVAS, 50, 50, "hello Julia")
     nux.canvas.render(MONOLITH_CANVAS, MONOLITH_TEXTURE)
 
     local x, y, z = nux.transform.get_translation(C)
@@ -150,4 +151,9 @@ function nux.tick()
 
     nux.canvas.render(GUI_CANVAS, GUI_TEXTURE)
     nux.texture.blit(GUI_TEXTURE)
+
+    local fx, fy, fz = nux.transform.forward(C)
+    if nux.button.just_pressed(0, nux.BUTTON_RB) then
+        nux.physics.shoot(x, y, z, fx, fy, fz)
+    end
 end
