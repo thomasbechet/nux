@@ -130,6 +130,7 @@ nux_ecs_init (nux_ctx_t *ctx)
     nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
     nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
     nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
+    nux_ecs_register_component(ctx, "rigidbody", sizeof(nux_rigidbody_t));
 
     // Register lua api
     nux_lua_open_ecs(ctx);

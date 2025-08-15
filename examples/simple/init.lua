@@ -2,7 +2,7 @@ local inspect = require("inspect")
 local nux = nux
 
 local function controller(e)
-    local speed = 20
+    local speed = 50
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
@@ -60,6 +60,7 @@ function nux.init()
     YAW = 0
 
     local mesh_cube = nux.mesh.new_cube(ARENA, 1, 1, 1)
+    MESH_CUBE = mesh_cube
 
     ECS = nux.ecs.load_gltf(ARENA, "assets/industrial.glb")
     nux.ecs.set_active(ECS)
@@ -153,7 +154,14 @@ function nux.tick()
     nux.texture.blit(GUI_TEXTURE)
 
     local fx, fy, fz = nux.transform.forward(C)
-    if nux.button.just_pressed(0, nux.BUTTON_RB) then
-        nux.physics.shoot(x, y, z, fx, fy, fz)
+    if nux.button.pressed(0, nux.BUTTON_RB) then
+        local e = nux.ecs.add()
+        nux.transform.add(e)
+        nux.transform.set_translation(e, x, y, z)
+        nux.rigidbody.add(e)
+        local force = 10
+        nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
+        nux.staticmesh.add(e)
+        nux.staticmesh.set_mesh(e, MESH_CUBE)
     end
 end

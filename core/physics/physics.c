@@ -4,126 +4,18 @@ NUX_VEC_IMPL(nux_point_mass_vec, nux_point_mass_t);
 NUX_VEC_IMPL(nux_collision_constraint_vec, nux_collision_constraint_t);
 NUX_VEC_IMPL(nux_distance_constraint_vec, nux_distance_constraint_t);
 
-static nux_u32_t
-add_pm (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t vel)
-{
-    nux_point_mass_t *pm = nux_point_mass_vec_push(&ctx->point_masses);
-    NUX_ASSERT(pm);
-    pm->x = pos;
-    pm->v = vel;
-    pm->f = NUX_V3_ZEROS;
-    pm->m = 1;
-    pm->w = 1.0 / pm->m;
-    pm->p = NUX_V3_ZEROS;
-    return ctx->point_masses.size - 1;
-}
-static void
-add_distance_constraint (nux_ctx_t *ctx,
-                         nux_u32_t  a,
-                         nux_u32_t  b,
-                         float      distance)
-{
-    nux_distance_constraint_t *c
-        = nux_distance_constraint_vec_push(&ctx->distance_constraints);
-    NUX_ASSERT(c);
-    c->a = a;
-    c->b = b;
-    c->d = distance;
-}
-void
-nux_physics_shoot (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
-{
-    nux_v3_t    vel = nux_v3_muls(dir, 10);
-    const float s   = 1.0;
-    const float h   = s / 2;
-    const float s2  = nux_sqrt(s + s);
-    const float s3  = nux_sqrt(s + s + s);
-
-    nux_u32_t p0 = add_pm(ctx, nux_v3_add(pos, nux_v3(-h, h, h)), vel);
-    nux_u32_t p1 = add_pm(ctx, nux_v3_add(pos, nux_v3(-h, h, -h)), vel);
-    nux_u32_t p2 = add_pm(ctx, nux_v3_add(pos, nux_v3(h, h, -h)), vel);
-    nux_u32_t p3 = add_pm(ctx, nux_v3_add(pos, nux_v3(h, h, h)), vel);
-    nux_u32_t p4 = add_pm(ctx, nux_v3_add(pos, nux_v3(-h, -h, h)), vel);
-    nux_u32_t p5 = add_pm(ctx, nux_v3_add(pos, nux_v3(-h, -h, -h)), vel);
-    nux_u32_t p6 = add_pm(ctx, nux_v3_add(pos, nux_v3(h, -h, -h)), vel);
-    nux_u32_t p7 = add_pm(ctx, nux_v3_add(pos, nux_v3(h, -h, h)), vel);
-
-    add_distance_constraint(ctx, p0, p1, s);
-    add_distance_constraint(ctx, p1, p2, s);
-    add_distance_constraint(ctx, p2, p3, s);
-    add_distance_constraint(ctx, p3, p0, s);
-
-    add_distance_constraint(ctx, p4, p5, s);
-    add_distance_constraint(ctx, p5, p6, s);
-    add_distance_constraint(ctx, p6, p7, s);
-    add_distance_constraint(ctx, p7, p4, s);
-
-    add_distance_constraint(ctx, p0, p4, s);
-    add_distance_constraint(ctx, p1, p5, s);
-    add_distance_constraint(ctx, p2, p6, s);
-    add_distance_constraint(ctx, p3, p7, s);
-
-    add_distance_constraint(ctx, p0, p2, s2);
-    // add_distance_constraictx, nt(p1, p3, s2);
-
-    add_distance_constraint(ctx, p4, p6, s2);
-    // add_distance_constraictx, nt(p5, p7, s2);
-
-    add_distance_constraint(ctx, p0, p7, s2);
-    // add_distance_constraictx, nt(p4, p3, s2);
-
-    add_distance_constraint(ctx, p5, p2, s2);
-    // add_distance_constraictx, nt(p1, p6, s2);
-
-    add_distance_constraint(ctx, p4, p1, s2);
-    // add_distance_constraictx, nt(p0, p5, s2);
-
-    add_distance_constraint(ctx, p3, p6, s2);
-    // add_distance_constraictx, nt(p7, p2, s2);
-
-    add_distance_constraint(ctx, p4, p2, s3);
-    add_distance_constraint(ctx, p0, p6, s3);
-    add_distance_constraint(ctx, p7, p1, s3);
-    add_distance_constraint(ctx, p3, p5, s3);
-}
 static nux_v3_t
 compute_sum_forces (nux_point_mass_t *pm)
 {
     return nux_v3(0, -9.81, 0);
 }
-
-nux_status_t
-nux_physics_init (nux_ctx_t *ctx)
+static void
+integrate (nux_ctx_t *ctx)
 {
-    const nux_u32_t count = 1024 * 10;
-
-    NUX_CHECK(nux_point_mass_vec_alloc(
-                  ctx, &ctx->core_arena, count, &ctx->point_masses),
-              return NUX_FAILURE);
-    NUX_CHECK(nux_collision_constraint_vec_alloc(
-                  ctx, &ctx->core_arena, count, &ctx->collision_constraints),
-              return NUX_FAILURE);
-    NUX_CHECK(nux_distance_constraint_vec_alloc(
-                  ctx, &ctx->core_arena, count, &ctx->distance_constraints),
-              return NUX_FAILURE);
-
-    nux_lua_open_physics(ctx);
-
-    return NUX_SUCCESS;
-}
-void
-nux_physics_free (nux_ctx_t *ctx)
-{
-}
-void
-nux_physics_update (nux_ctx_t *ctx)
-{
-    // Convert to seconds
-    nux_f32_t dt = nux_time_delta(ctx) * 0.001;
+    nux_f32_t dt = nux_time_delta(ctx);
 
     const nux_u32_t substep = 10;
     nux_f32_t       subdt   = dt / substep;
-    NUX_INFO("%d", ctx->point_masses.size);
     for (nux_u32_t n = 0; n < substep; ++n)
     {
         // (7) integrate position (TODO: integrate rotation)
@@ -269,7 +161,8 @@ nux_physics_update (nux_ctx_t *ctx)
         // (16) solve velocities
         for (nux_u32_t i = 0; i < ctx->collision_constraints.size; ++i)
         {
-            const nux_f32_t elasticity = 0.1;
+            // const nux_f32_t elasticity = 0.1;
+            const nux_f32_t elasticity = 3;
             const nux_f32_t friction   = 30;
 
             nux_collision_constraint_t *c = ctx->collision_constraints.data + i;
@@ -282,4 +175,84 @@ nux_physics_update (nux_ctx_t *ctx)
             pm->v       = nux_v3_add(vn, vt);
         }
     }
+}
+void
+pm_to_transforms (nux_ctx_t *ctx)
+{
+    nux_ent_t e = nux_ecs_begin(ctx, ctx->rigidbody_transform_iter);
+    while (e)
+    {
+        nux_transform_t *transform
+            = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
+        nux_rigidbody_t  *body = nux_ecs_get(ctx, e, NUX_COMPONENT_RIGIDBODY);
+        nux_point_mass_t *pm   = &ctx->point_masses.data[body->first];
+        nux_v3_t          v    = pm->v;
+        transform->local_translation = pm->x;
+        transform->dirty             = NUX_TRUE;
+        e = nux_ecs_next(ctx, ctx->rigidbody_transform_iter);
+    }
+}
+
+nux_status_t
+nux_physics_init (nux_ctx_t *ctx)
+{
+    const nux_u32_t count = 1024 * 10;
+
+    NUX_CHECK(nux_point_mass_vec_alloc(
+                  ctx, &ctx->core_arena, count, &ctx->point_masses),
+              return NUX_FAILURE);
+    NUX_CHECK(nux_collision_constraint_vec_alloc(
+                  ctx, &ctx->core_arena, count, &ctx->collision_constraints),
+              return NUX_FAILURE);
+    NUX_CHECK(nux_distance_constraint_vec_alloc(
+                  ctx, &ctx->core_arena, count, &ctx->distance_constraints),
+              return NUX_FAILURE);
+
+    nux_lua_open_physics(ctx);
+
+    ctx->rigidbody_transform_iter
+        = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
+    NUX_CHECK(ctx->rigidbody_transform_iter, return NUX_FAILURE);
+    nux_ecs_includes(
+        ctx, ctx->rigidbody_transform_iter, NUX_COMPONENT_RIGIDBODY);
+    nux_ecs_includes(
+        ctx, ctx->rigidbody_transform_iter, NUX_COMPONENT_TRANSFORM);
+
+    return NUX_SUCCESS;
+}
+void
+nux_physics_free (nux_ctx_t *ctx)
+{
+}
+void
+nux_physics_update (nux_ctx_t *ctx)
+{
+    integrate(ctx);
+    pm_to_transforms(ctx);
+}
+nux_u32_t
+nux_physics_add_pm (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t vel)
+{
+    nux_point_mass_t *pm = nux_point_mass_vec_push(&ctx->point_masses);
+    NUX_ASSERT(pm);
+    pm->x = pos;
+    pm->v = vel;
+    pm->f = NUX_V3_ZEROS;
+    pm->m = 1;
+    pm->w = 1.0 / pm->m;
+    pm->p = NUX_V3_ZEROS;
+    return ctx->point_masses.size - 1;
+}
+void
+nux_physics_add_distance_constraint (nux_ctx_t *ctx,
+                                     nux_u32_t  a,
+                                     nux_u32_t  b,
+                                     float      distance)
+{
+    nux_distance_constraint_t *c
+        = nux_distance_constraint_vec_push(&ctx->distance_constraints);
+    NUX_ASSERT(c);
+    c->a = a;
+    c->b = b;
+    c->d = distance;
 }

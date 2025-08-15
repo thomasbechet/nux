@@ -80,6 +80,7 @@ typedef enum
     NUX_COMPONENT_TRANSFORM  = 1,
     NUX_COMPONENT_CAMERA     = 2,
     NUX_COMPONENT_STATICMESH = 3,
+    NUX_COMPONENT_RIGIDBODY  = 4,
 
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_base_t;
