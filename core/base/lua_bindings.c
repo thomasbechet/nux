@@ -204,7 +204,7 @@ l_arena_new (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -229,7 +229,7 @@ l_arena_core (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -245,7 +245,7 @@ l_arena_frame (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -300,7 +300,7 @@ l_lua_load (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {

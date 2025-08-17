@@ -157,6 +157,7 @@
     nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b);   \
     nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b);   \
     nux_##name##_t nux_##name##_div(nux_##name##_t a, nux_##name##_t b);   \
+    nux_##name##_t nux_##name##_inv(nux_##name##_t a);                     \
     nux_##name##_t nux_##name##_adds(nux_##name##_t a, type b);            \
     nux_##name##_t nux_##name##_subs(nux_##name##_t a, type b);            \
     nux_##name##_t nux_##name##_muls(nux_##name##_t a, type b);            \

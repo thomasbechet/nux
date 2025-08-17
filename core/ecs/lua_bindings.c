@@ -49,7 +49,14 @@ l_transform_get_parent (lua_State *L)
 
     nux_ent_t ret = nux_transform_get_parent(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushinteger(L, ret);
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
     return 1;
 }
 static int
@@ -460,7 +467,7 @@ l_ecs_new_iter (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -526,7 +533,7 @@ l_ecs_new (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -546,7 +553,7 @@ l_ecs_load_gltf (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -562,7 +569,7 @@ l_ecs_get_active (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {

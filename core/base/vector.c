@@ -98,6 +98,10 @@
     {                                                                         \
         return nux_##name##_div(a, nux_##name##s(b));                         \
     }                                                                         \
+    nux_##name##_t nux_##name##_inv(nux_##name##_t a)                         \
+    {                                                                         \
+        return nux_##name##_div(nux_##name##s(1), a);                         \
+    }                                                                         \
     nux_##name##_t nux_##name##_cross(nux_##name##_t a, nux_##name##_t b)     \
     {                                                                         \
         nux_##name##_t v;                                                     \

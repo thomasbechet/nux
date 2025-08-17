@@ -78,7 +78,13 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
         return 4;
     {%- elif function.returntype == "nux_res_t" %}
         if (ret)
-            lua_pushnumber(L, (nux_intptr_t)ret);
+            lua_pushinteger(L, (nux_intptr_t)ret);
+        else
+            lua_pushnil(L);
+        return 1;
+    {%- elif function.returntype == "nux_ent_t" %}
+        if (ret)
+            lua_pushinteger(L, (nux_intptr_t)ret);
         else
             lua_pushnil(L);
         return 1;

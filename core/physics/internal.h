@@ -9,6 +9,36 @@
 
 typedef struct
 {
+    nux_v3_t p0;
+    nux_v3_t p1;
+} nux_segment_t;
+
+typedef struct
+{
+    nux_v3_t p;
+    nux_v3_t d;
+} nux_ray_t;
+
+typedef struct
+{
+    nux_v3_t p;
+    nux_v3_t n;
+} nux_plane_t;
+
+typedef struct
+{
+    nux_v3_t  p;
+    nux_f32_t r;
+} nux_sphere_t;
+
+typedef struct
+{
+    nux_b32_t hit;
+    nux_v3_t  p;
+} nux_hit_t;
+
+typedef struct
+{
     nux_v3_t x; // position
     nux_v3_t v; // velocity
     nux_v3_t f; // force
@@ -41,6 +71,22 @@ typedef struct
     nux_u32_t count;
 } nux_rigidbody_t;
 
+typedef struct
+{
+    nux_collider_type_t type;
+    union
+    {
+        struct
+        {
+            nux_f32_t radius;
+        } sphere;
+        struct
+        {
+            nux_b3_t box;
+        } aabb;
+    };
+} nux_collider_t;
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
@@ -59,5 +105,13 @@ void         nux_physics_add_distance_constraint(nux_ctx_t *ctx,
 // lua_bindings.c
 
 nux_status_t nux_lua_open_physics(nux_ctx_t *ctx);
+
+// intersect.c
+
+nux_b32_t nux_intersect_ray_sphere(nux_ray_t r, nux_sphere_t s, nux_hit_t *hit);
+nux_b32_t nux_intersect_segment_plane(nux_segment_t s,
+                                      nux_plane_t   p,
+                                      nux_hit_t    *hit);
+nux_b32_t nux_intersect_ray_box(nux_ray_t r, nux_b3_t box, nux_hit_t *hit);
 
 #endif

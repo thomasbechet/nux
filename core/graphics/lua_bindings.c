@@ -114,7 +114,7 @@ l_texture_new (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -144,7 +144,7 @@ l_mesh_new (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -168,7 +168,7 @@ l_mesh_new_cube (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {
@@ -196,7 +196,7 @@ l_canvas_new (lua_State *L)
     l_checkerror(L, ctx);
     if (ret)
     {
-        lua_pushnumber(L, (nux_intptr_t)ret);
+        lua_pushinteger(L, (nux_intptr_t)ret);
     }
     else
     {

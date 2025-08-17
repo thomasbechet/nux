@@ -65,6 +65,7 @@ struct nux_context
     nux_collision_constraint_vec_t collision_constraints;
     nux_distance_constraint_vec_t  distance_constraints;
     nux_res_t                      rigidbody_transform_iter;
+    nux_res_t                      collider_transform_iter;
 };
 
 #endif

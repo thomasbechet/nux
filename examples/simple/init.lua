@@ -126,6 +126,7 @@ function nux.init()
     nux.staticmesh.add(CUBE)
     nux.staticmesh.set_mesh(CUBE, mesh_cube)
     nux.staticmesh.set_texture(CUBE, MONOLITH_TEXTURE)
+    nux.collider.add_aabb(CUBE, 0, 0, 0, x / 50, y / 50, 1)
 
     API = inspect(nux)
 end
@@ -155,13 +156,18 @@ function nux.tick()
 
     local fx, fy, fz = nux.transform.forward(C)
     if nux.button.pressed(0, nux.BUTTON_RB) then
-        local e = nux.ecs.add()
-        nux.transform.add(e)
-        nux.transform.set_translation(e, x, y, z)
-        nux.rigidbody.add(e)
-        local force = 10
-        nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
-        nux.staticmesh.add(e)
-        nux.staticmesh.set_mesh(e, MESH_CUBE)
+        -- local e = nux.ecs.add()
+        -- nux.transform.add(e)
+        -- nux.transform.set_translation(e, x, y, z)
+        -- nux.rigidbody.add(e)
+        -- local force = 10
+        -- nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
+        -- nux.staticmesh.add(e)
+        -- nux.staticmesh.set_mesh(e, MESH_CUBE)
+
+        local hit = nux.physics.query(x, y, z, fx, fy, fz)
+        if hit then
+            print("hit " .. hit)
+        end
     end
 end
