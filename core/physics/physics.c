@@ -161,8 +161,8 @@ integrate (nux_ctx_t *ctx)
         // (16) solve velocities
         for (nux_u32_t i = 0; i < ctx->collision_constraints.size; ++i)
         {
-            // const nux_f32_t elasticity = 0.1;
-            const nux_f32_t elasticity = 3;
+            const nux_f32_t elasticity = 0.1;
+            // const nux_f32_t elasticity = 3;
             const nux_f32_t friction   = 30;
 
             nux_collision_constraint_t *c = ctx->collision_constraints.data + i;

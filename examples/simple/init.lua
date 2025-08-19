@@ -155,19 +155,19 @@ function nux.tick()
     nux.texture.blit(GUI_TEXTURE)
 
     local fx, fy, fz = nux.transform.forward(C)
-    if nux.button.pressed(0, nux.BUTTON_RB) then
-        -- local e = nux.ecs.add()
-        -- nux.transform.add(e)
-        -- nux.transform.set_translation(e, x, y, z)
-        -- nux.rigidbody.add(e)
-        -- local force = 10
-        -- nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
-        -- nux.staticmesh.add(e)
-        -- nux.staticmesh.set_mesh(e, MESH_CUBE)
-
+    if nux.button.just_pressed(0, nux.BUTTON_RB) then
         local hit = nux.physics.query(x, y, z, fx, fy, fz)
         if hit then
             print("hit " .. hit)
+        else
+            local e = nux.ecs.add()
+            nux.transform.add(e)
+            nux.transform.set_translation(e, x, y, z)
+            nux.rigidbody.add(e)
+            local force = 10
+            nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
+            nux.staticmesh.add(e)
+            nux.staticmesh.set_mesh(e, MESH_CUBE)
         end
     end
 end

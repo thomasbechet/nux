@@ -111,6 +111,8 @@ typedef struct
     nux_gpu_command_vec_t commands_lines;
     nux_res_t             transform_iter;
     nux_res_t             transform_staticmesh_iter;
+
+    const nux_texture_t *active_texture;
 } nux_renderer_t;
 
 ////////////////////////////
@@ -132,6 +134,9 @@ nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
 nux_status_t nux_renderer_init(nux_ctx_t *ctx);
 void         nux_renderer_free(nux_ctx_t *ctx);
 void nux_renderer_render_ecs(nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera);
+void nux_renderer_draw_mesh(nux_ctx_t        *ctx,
+                            const nux_mesh_t *mesh,
+                            nux_u32_t         transform_index);
 
 // font.c
 
