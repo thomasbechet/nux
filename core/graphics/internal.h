@@ -99,22 +99,6 @@ typedef struct
     nux_u32_t has_texture;
 } nux_gpu_scene_batch_t;
 
-typedef struct
-{
-    nux_arena_t          *arena;
-    nux_gpu_buffer_t      constants_buffer;
-    nux_gpu_buffer_t      batches_buffer;
-    nux_u32_t             batches_buffer_head;
-    nux_gpu_buffer_t      transforms_buffer;
-    nux_u32_t             transforms_buffer_head;
-    nux_gpu_command_vec_t commands;
-    nux_gpu_command_vec_t commands_lines;
-    nux_res_t             transform_iter;
-    nux_res_t             transform_staticmesh_iter;
-
-    const nux_texture_t *active_texture;
-} nux_renderer_t;
-
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
@@ -123,16 +107,19 @@ typedef struct
 
 nux_status_t nux_graphics_init(nux_ctx_t *ctx);
 nux_status_t nux_graphics_free(nux_ctx_t *ctx);
+nux_status_t nux_graphics_render(nux_ctx_t *ctx);
 
 nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
                                         nux_u32_t        vcount,
                                         const nux_f32_t *data,
                                         nux_u32_t       *first);
+nux_status_t nux_graphics_push_frame_vertices(nux_ctx_t       *ctx,
+                                              nux_u32_t        vcount,
+                                              const nux_f32_t *data,
+                                              nux_u32_t       *first);
 
 // renderer.c
 
-nux_status_t nux_renderer_init(nux_ctx_t *ctx);
-void         nux_renderer_free(nux_ctx_t *ctx);
 void nux_renderer_render_ecs(nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera);
 void nux_renderer_draw_mesh(nux_ctx_t        *ctx,
                             const nux_mesh_t *mesh,

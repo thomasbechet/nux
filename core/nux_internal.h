@@ -49,6 +49,7 @@ struct nux_context
     nux_gpu_pipeline_t canvas_pipeline;
     nux_gpu_buffer_t   vertices_buffer;
     nux_u32_t          vertices_buffer_head;
+    nux_u32_t          vertices_buffer_head_frame;
     nux_font_t         default_font;
     nux_u8_t           pal[NUX_PALETTE_SIZE];
     nux_u32_t          colormap[NUX_COLORMAP_SIZE];
@@ -57,7 +58,18 @@ struct nux_context
     nux_u32_vec_t      free_buffer_slots;
     nux_u32_vec_t      free_pipeline_slots;
     nux_u32_vec_t      free_framebuffer_slots;
-    nux_renderer_t     renderer;
+
+    nux_gpu_buffer_t      constants_buffer;
+    nux_gpu_buffer_t      batches_buffer;
+    nux_u32_t             batches_buffer_head;
+    nux_gpu_buffer_t      transforms_buffer;
+    nux_u32_t             transforms_buffer_head;
+    nux_gpu_command_vec_t commands;
+    nux_gpu_command_vec_t commands_lines;
+    nux_res_t             transform_iter;
+    nux_res_t             transform_staticmesh_iter;
+
+    const nux_texture_t *active_texture;
 
     // physics
 

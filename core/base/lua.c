@@ -1,19 +1,4 @@
-#include "base/internal.h"
 #include "nux_internal.h"
-
-typedef struct
-{
-    lua_State      *L;
-    nux_b32_t       serialize;
-    const nux_c8_t *stack[8];
-    nux_u32_t       head;
-} nux_lua_serde_t;
-
-typedef struct
-{
-    const nux_c8_t *name;
-    nux_u32_t       value;
-} nux_lua_serde_enum_t;
 
 static void
 nux_serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
@@ -52,11 +37,11 @@ nux_serde_field_b32 (nux_lua_serde_t *s, const nux_c8_t *name, nux_b32_t *value)
     }
 }
 static void
-nux_serde_field_u32 (nux_lua_serde_t *s,
-                     const nux_c8_t  *name,
-                     nux_u32_t       *value,
-                     nux_u32_t        min,
-                     nux_u32_t        max)
+nux_serde_field_u32_minmax (nux_lua_serde_t *s,
+                            const nux_c8_t  *name,
+                            nux_u32_t       *value,
+                            nux_u32_t        min,
+                            nux_u32_t        max)
 {
     if (s->serialize)
     {
@@ -75,6 +60,11 @@ nux_serde_field_u32 (nux_lua_serde_t *s,
         }
         lua_pop(s->L, 1);
     }
+}
+static void
+nux_serde_field_u32 (nux_lua_serde_t *s, const nux_c8_t *name, nux_u32_t *value)
+{
+    return nux_serde_field_u32_minmax(s, name, value, NUX_U32_MIN, NUX_U32_MAX);
 }
 static nux_u32_t
 nux_serde_field_enum (nux_lua_serde_t            *s,
@@ -230,8 +220,8 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
 
     // window
     nux_serde_begin_table(&s, "window", &config->window.enable);
-    nux_serde_field_u32(&s, "width", &config->window.width, 1, 8192);
-    nux_serde_field_u32(&s, "height", &config->window.height, 1, 8192);
+    nux_serde_field_u32(&s, "width", &config->window.width);
+    nux_serde_field_u32(&s, "height", &config->window.height);
     nux_serde_end_table(&s);
 
     // ecs
@@ -256,6 +246,16 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
 
     // hotreload
     nux_serde_field_b32(&s, "hotreload", &config->hotreload);
+
+    // graphics
+    nux_serde_begin_table(&s, "graphics", NUX_NULL);
+    nux_serde_field_u32(
+        &s, "batches_buffer_size", &config->graphics.batches_buffer_size);
+    nux_serde_field_u32(
+        &s, "transforms_buffer_size", &config->graphics.transforms_buffer_size);
+    nux_serde_field_u32(
+        &s, "vertices_buffer_size", &config->graphics.vertices_buffer_size);
+    nux_serde_end_table(&s);
 }
 static void
 serialize_config (nux_ctx_t *ctx, nux_config_t *config)

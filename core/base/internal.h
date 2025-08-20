@@ -97,6 +97,8 @@
 #define NUX_FLT_MIN     1.175494e-38
 #define NUX_I32_MAX     2147483647
 #define NUX_I32_MIN     -2147483648
+#define NUX_U32_MAX     4294967295
+#define NUX_U32_MIN     0
 #define NUX_F32_EPSILON 0.00001
 
 #define NUX_MEM_1K   (1 << 10)
@@ -560,6 +562,13 @@ typedef struct
         nux_log_level_t level;
     } log;
 
+    struct
+    {
+        nux_u32_t transforms_buffer_size;
+        nux_u32_t batches_buffer_size;
+        nux_u32_t vertices_buffer_size;
+    } graphics;
+
     nux_b32_t hotreload;
 
 } nux_config_t;
@@ -660,6 +669,20 @@ typedef struct
 {
     nux_u32_t dummy;
 } nux_lua_t;
+
+typedef struct
+{
+    lua_State      *L;
+    nux_b32_t       serialize;
+    const nux_c8_t *stack[8];
+    nux_u32_t       head;
+} nux_lua_serde_t;
+
+typedef struct
+{
+    const nux_c8_t *name;
+    nux_u32_t       value;
+} nux_lua_serde_enum_t;
 
 ////////////////////////////
 ///      FUNCTIONS       ///

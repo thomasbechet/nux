@@ -51,7 +51,7 @@ end
 
 function nux.conf(config)
     config.hotreload = true
-    config.log.level = 'info'
+    print(inspect(config.graphics))
 end
 
 function nux.init()

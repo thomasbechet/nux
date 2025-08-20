@@ -74,13 +74,16 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     }
 
     // Get program configuration
-    ctx->config.hotreload      = NUX_FALSE;
-    ctx->config.log.level      = NUX_LOG_INFO;
-    ctx->config.window.enable  = NUX_TRUE;
-    ctx->config.window.width   = 900;
-    ctx->config.window.height  = 400;
-    ctx->config.ecs.enable     = NUX_TRUE;
-    ctx->config.physics.enable = NUX_TRUE;
+    ctx->config.hotreload                       = NUX_FALSE;
+    ctx->config.log.level                       = NUX_LOG_INFO;
+    ctx->config.window.enable                   = NUX_TRUE;
+    ctx->config.window.width                    = 900;
+    ctx->config.window.height                   = 400;
+    ctx->config.ecs.enable                      = NUX_TRUE;
+    ctx->config.physics.enable                  = NUX_TRUE;
+    ctx->config.graphics.transforms_buffer_size = 8192;
+    ctx->config.graphics.batches_buffer_size    = 8192;
+    ctx->config.graphics.vertices_buffer_size   = 1 << 18;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
 
     // Register entry script
@@ -148,6 +151,9 @@ nux_instance_tick (nux_ctx_t *ctx)
         NUX_ERROR("%s", nux_error_get_message(ctx));
     }
     nux_error_reset(ctx);
+
+    // Render
+    nux_graphics_render(ctx);
 
     // Hotreload
     if (ctx->config.hotreload)
