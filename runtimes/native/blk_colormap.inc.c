@@ -11,12 +11,12 @@ static nux_u32_t blk_colormap[]
         0x721c2f, 0xb22e69, 0xe54286, 0xff6eaf, 0xffa5d5, 0xffd3ad, 0xcc817a,
         0x895654, 0x61393b, 0x3f1f3c, 0x723352, 0x994c69, 0xc37289, 0xf29faa,
         0xffccd0 };
-void
-load_blk_colormap (nux_ctx_t *ctx)
-{
-    for (nux_u8_t i = 0; i < sizeof(blk_colormap) / sizeof(blk_colormap[0]);
-         ++i)
-    {
-        nux_cset(ctx, i, blk_colormap[i]);
-    }
-}
+// void
+// load_blk_colormap (nux_ctx_t *ctx)
+// {
+//     for (nux_u8_t i = 0; i < sizeof(blk_colormap) / sizeof(blk_colormap[0]);
+//          ++i)
+//     {
+//         nux_cset(ctx, i, blk_colormap[i]);
+//     }
+// }

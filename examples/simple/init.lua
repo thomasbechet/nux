@@ -2,7 +2,7 @@ local inspect = require("inspect")
 local nux = nux
 
 local function controller(e)
-    local speed = 50
+    local speed = 20
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)

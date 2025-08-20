@@ -137,7 +137,7 @@ load_primitive_mesh (nux_ctx_t             *ctx,
         return NUX_NULL);
 
     // Optional : Generate bounds
-    nux_mesh_gen_bounds(ctx, id);
+    nux_mesh_update_bounds(ctx, id);
 
     return id;
 }

@@ -51,9 +51,6 @@ struct nux_context
     nux_u32_t          vertices_buffer_head;
     nux_u32_t          vertices_buffer_head_frame;
     nux_font_t         default_font;
-    nux_u8_t           pal[NUX_PALETTE_SIZE];
-    nux_u32_t          colormap[NUX_COLORMAP_SIZE];
-    nux_v2i_t          cursor;
     nux_u32_vec_t      free_texture_slots;
     nux_u32_vec_t      free_buffer_slots;
     nux_u32_vec_t      free_pipeline_slots;

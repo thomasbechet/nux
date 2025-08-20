@@ -10,95 +10,6 @@ l_checkerror (lua_State *L, nux_ctx_t *ctx)
 }
 
 static int
-l_core_pal (lua_State *L)
-{
-    nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_u8_t   index = luaL_checknumber(L, 1);
-
-    nux_u8_t color = luaL_checknumber(L, 2);
-
-    nux_pal(ctx, index, color);
-    l_checkerror(L, ctx);
-    return 0;
-}
-static int
-l_core_palt (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_u8_t   c   = luaL_checknumber(L, 1);
-
-    nux_palt(ctx, c);
-    l_checkerror(L, ctx);
-    return 0;
-}
-static int
-l_core_palr (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_palr(ctx);
-    l_checkerror(L, ctx);
-    return 0;
-}
-static int
-l_core_palc (lua_State *L)
-{
-    nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_u8_t   index = luaL_checknumber(L, 1);
-
-    nux_u8_t ret = nux_palc(ctx, index);
-    l_checkerror(L, ctx);
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_core_cls (lua_State *L)
-{
-    nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_u32_t  color = luaL_checknumber(L, 1);
-
-    nux_cls(ctx, color);
-    l_checkerror(L, ctx);
-    return 0;
-}
-static int
-l_core_pset (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_i32_t  x   = luaL_checknumber(L, 1);
-
-    nux_i32_t y = luaL_checknumber(L, 2);
-
-    nux_u8_t c = luaL_checknumber(L, 3);
-
-    nux_pset(ctx, x, y, c);
-    l_checkerror(L, ctx);
-    return 0;
-}
-static int
-l_core_cget (lua_State *L)
-{
-    nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_u8_t   index = luaL_checknumber(L, 1);
-
-    nux_u32_t ret = nux_cget(ctx, index);
-    l_checkerror(L, ctx);
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_core_cset (lua_State *L)
-{
-    nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_u8_t   index = luaL_checknumber(L, 1);
-
-    nux_u32_t c = luaL_checknumber(L, 2);
-
-    nux_cset(ctx, index, c);
-    l_checkerror(L, ctx);
-    return 0;
-}
-
-static int
 l_texture_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
@@ -177,11 +88,11 @@ l_mesh_new_cube (lua_State *L)
     return 1;
 }
 static int
-l_mesh_gen_bounds (lua_State *L)
+l_mesh_update_bounds (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
     nux_res_t  mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_mesh_gen_bounds(ctx, mesh);
+    nux_mesh_update_bounds(ctx, mesh);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -258,20 +169,15 @@ l_canvas_rectangle (lua_State *L)
     return 0;
 }
 
-static const struct luaL_Reg lib_core[] = {
-    { "pal", l_core_pal },   { "palt", l_core_palt }, { "palr", l_core_palr },
-    { "palc", l_core_palc }, { "cls", l_core_cls },   { "pset", l_core_pset },
-    { "cget", l_core_cget }, { "cset", l_core_cset }, { NUX_NULL, NUX_NULL }
-};
-
 static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
                                                { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_mesh[] = { { "new", l_mesh_new },
-                                            { "new_cube", l_mesh_new_cube },
-                                            { "gen_bounds", l_mesh_gen_bounds },
-                                            { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_mesh[]
+    = { { "new", l_mesh_new },
+        { "new_cube", l_mesh_new_cube },
+        { "update_bounds", l_mesh_update_bounds },
+        { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
@@ -286,8 +192,6 @@ nux_lua_open_graphics (nux_ctx_t *ctx)
 {
     lua_State *L = ctx->L;
     lua_getglobal(L, "nux");
-
-    luaL_setfuncs(L, lib_core, 0);
 
     lua_newtable(L);
     luaL_setfuncs(L, lib_texture, 0);

@@ -2,8 +2,6 @@
 
 #include "fonts_data.c.inc"
 
-#define VERTEX_SIZE 5
-
 nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
 {
@@ -32,9 +30,6 @@ nux_graphics_init (nux_ctx_t *ctx)
     // Reserve slot 0 for main framebuffer
     nux_u32_vec_pop(&ctx->free_framebuffer_slots);
 
-    // Initialize state
-    nux_palr(ctx);
-
     // Create pipelines
     ctx->uber_pipeline_opaque.info.type              = NUX_GPU_PIPELINE_UBER;
     ctx->uber_pipeline_opaque.info.primitive         = NUX_PRIMITIVE_TRIANGLES;
@@ -60,8 +55,9 @@ nux_graphics_init (nux_ctx_t *ctx)
 
     // Create vertices buffers
     ctx->vertices_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    ctx->vertices_buffer.size
-        = VERTEX_SIZE * ctx->config.graphics.vertices_buffer_size;
+    ctx->vertices_buffer.size = NUX_VERTEX_SIZE
+                                * ctx->config.graphics.vertices_buffer_size
+                                * sizeof(nux_f32_t);
     ctx->vertices_buffer_head       = 0;
     ctx->vertices_buffer_head_frame = ctx->config.graphics.vertices_buffer_size;
     NUX_CHECK(nux_gpu_buffer_init(ctx, &ctx->vertices_buffer), goto error);
@@ -159,9 +155,8 @@ update_vertex_buffer (nux_ctx_t       *ctx,
 {
     NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                     ctx->vertices_buffer.slot,
-                                    ctx->vertices_buffer_head * VERTEX_SIZE
-                                        * sizeof(nux_f32_t),
-                                    count * VERTEX_SIZE * sizeof(nux_f32_t),
+                                    first * NUX_VERTEX_SIZE * sizeof(nux_f32_t),
+                                    count * NUX_VERTEX_SIZE * sizeof(nux_f32_t),
                                     data),
                return NUX_FAILURE,
                "failed to update vertex buffer");
@@ -199,125 +194,25 @@ nux_graphics_push_frame_vertices (nux_ctx_t       *ctx,
     ctx->vertices_buffer_head_frame -= vcount;
     return NUX_SUCCESS;
 }
-
-void
-nux_pal (nux_ctx_t *ctx, nux_u8_t index, nux_u8_t color)
+nux_status_t
+nux_graphics_push_transforms (nux_ctx_t      *ctx,
+                              nux_u32_t       mcount,
+                              const nux_m4_t *data,
+                              nux_u32_t      *index)
 {
-    ctx->pal[index] = color;
-}
-void
-nux_palt (nux_ctx_t *ctx, nux_u8_t c)
-{
-}
-void
-nux_palr (nux_ctx_t *ctx)
-{
-    for (nux_u32_t i = 0; i < NUX_PALETTE_SIZE; ++i)
-    {
-        ctx->pal[i] = i;
-    }
-    nux_palt(ctx, 0);
-}
-nux_u8_t
-nux_palc (nux_ctx_t *ctx, nux_u8_t index)
-{
-    return ctx->pal[index];
-}
-void
-nux_cls (nux_ctx_t *ctx, nux_u32_t color)
-{
-    // nux_rectfill(ctx, 0, 0, NUX_CANVAS_WIDTH - 1, NUX_CANVAS_HEIGHT - 1,
-    // color);
-}
-// #ifdef NUX_BUILD_VARARGS
-// void
-// nux_textfmt (nux_ctx_t      *ctx,
-//              nux_i32_t       x,
-//              nux_i32_t       y,
-//              nux_u8_t        c,
-//              const nux_c8_t *fmt,
-//              ...)
-// {
-//     nux_c8_t buf[128];
-//     va_list  args;
-//     va_start(args, fmt);
-//     nux_vsnprintf(buf, sizeof(buf), fmt, args);
-//     va_end(args);
-//     nux_graphics_text(ctx, x, y, buf, c);
-// }
-// void
-// nux_printfmt (nux_ctx_t *ctx, nux_u8_t c, const nux_c8_t *fmt, ...)
-// {
-//     nux_c8_t buf[128];
-//     va_list  args;
-//     va_start(args, fmt);
-//     nux_vsnprintf(buf, sizeof(buf), fmt, args);
-//     va_end(args);
-//     nux_graphics_print(ctx, buf, c);
-// }
-// void
-// nux_tracefmt (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
-// {
-//     nux_c8_t buf[128];
-//     va_list  args;
-//     va_start(args, fmt);
-//     nux_vsnprintf(buf, sizeof(buf), fmt, args);
-//     va_end(args);
-//     nux_trace(ctx, buf);
-// }
-// #endif
-
-nux_i32_t
-nux_graphics_cursor_x (nux_ctx_t *ctx)
-{
-    return ctx->cursor.x;
-}
-nux_i32_t
-nux_graphics_cursor_y (nux_ctx_t *ctx)
-{
-    return ctx->cursor.y;
-}
-void
-nux_graphics_cursor (nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y)
-{
-    ctx->cursor = nux_v2i(x, y);
-}
-nux_u32_t
-nux_cget (nux_ctx_t *ctx, nux_u8_t index)
-{
-    const nux_u8_t *map = (const nux_u8_t *)ctx->colormap;
-    return (map[index * 3 + 0] << 16 | map[index * 3 + 1] << 8
-            | map[index * 3 + 0]);
-}
-void
-nux_cset (nux_ctx_t *ctx, nux_u8_t index, nux_u32_t color)
-{
-    nux_u8_t *map      = (nux_u8_t *)ctx->colormap;
-    map[index * 3 + 0] = (color & 0xFF0000) >> 16;
-    map[index * 3 + 1] = (color & 0xFF00) >> 8;
-    map[index * 3 + 2] = color & 0xFF;
-}
-
-void
-nux_write_texture (nux_ctx_t      *ctx,
-                   nux_u32_t       x,
-                   nux_u32_t       y,
-                   nux_u32_t       w,
-                   nux_u32_t       h,
-                   const nux_u8_t *data)
-{
-    // Clamp to region
-    x = NUX_MIN(x, NUX_TEXTURE_WIDTH - 1);
-    y = NUX_MIN(y, NUX_TEXTURE_HEIGHT - 1);
-    w = NUX_MIN(w, NUX_TEXTURE_WIDTH - x - 1);
-    h = NUX_MIN(h, NUX_TEXTURE_HEIGHT - y - 1);
-
-    // Copy row by row
-    // nux_u8_t *tex = NUX_MEMPTR(ctx->NUX_RAM_TEXTURE, nux_u8_t);
-    // for (nux_u32_t i = 0; i < h; ++i)
-    // {
-    //     nux_u8_t       *dst = tex + ((y + i) * NUX_TEXTURE_WIDTH + x);
-    //     const nux_u8_t *src = data + (i * w);
-    //     nux_memcpy(dst, src, w);
-    // }
+    NUX_ENSURE(ctx->transforms_buffer_head + mcount
+                   < ctx->config.graphics.transforms_buffer_size,
+               return NUX_FAILURE,
+               "out of transforms");
+    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
+                                    ctx->transforms_buffer.slot,
+                                    ctx->transforms_buffer_head * NUX_M4_SIZE
+                                        * sizeof(nux_f32_t),
+                                    mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    data),
+               return NUX_FAILURE,
+               "failed to update transform buffer");
+    *index = ctx->transforms_buffer_head;
+    ctx->transforms_buffer_head += mcount;
+    return NUX_SUCCESS;
 }

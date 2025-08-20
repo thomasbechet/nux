@@ -51,7 +51,7 @@ typedef struct
     nux_f32_t *data;
     nux_u32_t  first;
     nux_u32_t  count; // vertex count
-    nux_u32_t  bounds_first;
+    nux_b3_t   bounds;
 } nux_mesh_t;
 
 typedef struct
@@ -99,6 +99,11 @@ typedef struct
     nux_u32_t has_texture;
 } nux_gpu_scene_batch_t;
 
+typedef enum
+{
+    NUX_VERTEX_SIZE = 5
+} nux_graphics_constants_internal_t;
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
@@ -117,6 +122,10 @@ nux_status_t nux_graphics_push_frame_vertices(nux_ctx_t       *ctx,
                                               nux_u32_t        vcount,
                                               const nux_f32_t *data,
                                               nux_u32_t       *first);
+nux_status_t nux_graphics_push_transforms(nux_ctx_t      *ctx,
+                                          nux_u32_t       mcount,
+                                          const nux_m4_t *data,
+                                          nux_u32_t      *index);
 
 // renderer.c
 

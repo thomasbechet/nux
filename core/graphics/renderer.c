@@ -1,27 +1,5 @@
 #include "nux_internal.h"
 
-static nux_status_t
-push_transforms (nux_ctx_t      *ctx,
-                 nux_u32_t       mcount,
-                 const nux_m4_t *data,
-                 nux_u32_t      *index)
-{
-    NUX_ENSURE(ctx->transforms_buffer_head + mcount
-                   < ctx->config.graphics.transforms_buffer_size,
-               return NUX_FAILURE,
-               "out of transforms");
-    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
-                                    ctx->transforms_buffer.slot,
-                                    ctx->transforms_buffer_head * NUX_M4_SIZE
-                                        * sizeof(nux_f32_t),
-                                    mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    data),
-               return NUX_FAILURE,
-               "failed to update transform buffer");
-    *index = ctx->transforms_buffer_head;
-    ctx->transforms_buffer_head += mcount;
-    return NUX_SUCCESS;
-}
 static void
 bind_texture (nux_ctx_t             *ctx,
               nux_gpu_command_vec_t *cmds,
@@ -74,22 +52,14 @@ draw (nux_ctx_t             *ctx,
     return NUX_SUCCESS;
 }
 static void
-draw_box (nux_ctx_t *ctx, nux_u32_t transform_index, nux_b3_t box)
+draw_rect (nux_ctx_t      *ctx,
+           nux_u32_t       transform_index,
+           nux_primitive_t primitive,
+           const nux_v3_t *positions)
 {
-    const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
-    const nux_v3_t v1 = nux_v3(box.max.x, box.min.y, box.min.z);
-    const nux_v3_t v2 = nux_v3(box.max.x, box.min.y, box.max.z);
-    const nux_v3_t v3 = nux_v3(box.min.x, box.min.y, box.max.z);
-
-    const nux_v3_t v4 = nux_v3(box.min.x, box.max.y, box.min.z);
-    const nux_v3_t v5 = nux_v3(box.max.x, box.max.y, box.min.z);
-    const nux_v3_t v6 = nux_v3(box.max.x, box.max.y, box.max.z);
-    const nux_v3_t v7 = nux_v3(box.min.x, box.max.y, box.max.z);
-
-    const nux_v3_t positions[]
-        = { v0, v1, v2, v2, v3, v0, v4, v6, v5, v6, v4, v7,
-            v0, v3, v7, v7, v4, v0, v1, v5, v6, v6, v2, v1,
-            v0, v4, v5, v5, v1, v0, v3, v2, v6, v6, v7, v3 };
+    const nux_u32_t indices[]
+        = { 0, 1, 2, 2, 3, 0, 4, 6, 5, 6, 4, 7, 0, 3, 7, 7, 4, 0,
+            1, 5, 6, 6, 2, 1, 0, 4, 5, 5, 1, 0, 3, 2, 6, 6, 7, 3 };
 
     const nux_v2_t uvs[] = {
         { { 0, 0 } }, { { 1, 0 } }, { { 1, 1 } }, { { 1, 1 } }, { { 0, 1 } },
@@ -102,15 +72,16 @@ draw_box (nux_ctx_t *ctx, nux_u32_t transform_index, nux_b3_t box)
         { { 0, 0 } },
     };
 
-    const nux_u32_t vertices_count = NUX_ARRAY_SIZE(positions);
-    nux_f32_t       data[vertices_count * 5];
+    const nux_u32_t vertices_count = NUX_ARRAY_SIZE(indices);
+    nux_f32_t       data[vertices_count * NUX_VERTEX_SIZE];
     for (nux_u32_t i = 0; i < vertices_count; ++i)
     {
-        data[i * 5 + 0] = positions[i].x;
-        data[i * 5 + 1] = positions[i].y;
-        data[i * 5 + 2] = positions[i].z;
-        data[i * 5 + 3] = uvs[i].x;
-        data[i * 5 + 4] = uvs[i].y;
+        nux_u32_t index               = indices[i];
+        data[i * NUX_VERTEX_SIZE + 0] = positions[index].x;
+        data[i * NUX_VERTEX_SIZE + 1] = positions[index].y;
+        data[i * NUX_VERTEX_SIZE + 2] = positions[index].z;
+        data[i * NUX_VERTEX_SIZE + 3] = uvs[index].x;
+        data[i * NUX_VERTEX_SIZE + 4] = uvs[index].y;
     }
 
     nux_u32_t first;
@@ -118,7 +89,59 @@ draw_box (nux_ctx_t *ctx, nux_u32_t transform_index, nux_b3_t box)
         nux_graphics_push_frame_vertices(ctx, vertices_count, data, &first),
         return);
 
-    draw(ctx, &ctx->commands_lines, first, vertices_count * 2, transform_index);
+    draw(ctx, &ctx->commands, first, vertices_count, transform_index);
+}
+static void
+draw_box (nux_ctx_t *ctx, nux_u32_t transform_index, nux_b3_t box)
+{
+    const nux_v3_t positions[] = { nux_v3(box.min.x, box.min.y, box.min.z),
+                                   nux_v3(box.max.x, box.min.y, box.min.z),
+                                   nux_v3(box.max.x, box.min.y, box.max.z),
+                                   nux_v3(box.min.x, box.min.y, box.max.z),
+                                   nux_v3(box.min.x, box.max.y, box.min.z),
+                                   nux_v3(box.max.x, box.max.y, box.min.z),
+                                   nux_v3(box.max.x, box.max.y, box.max.z),
+                                   nux_v3(box.min.x, box.max.y, box.max.z) };
+    draw_rect(ctx, transform_index, positions);
+}
+static void
+draw_line_rect (nux_ctx_t      *ctx,
+                nux_u32_t       transform_index,
+                const nux_v3_t *positions)
+{
+    const nux_u32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
+                                  6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
+
+    const nux_u32_t vertices_count = NUX_ARRAY_SIZE(indices);
+    nux_f32_t       data[vertices_count * NUX_VERTEX_SIZE];
+    for (nux_u32_t i = 0; i < vertices_count; ++i)
+    {
+        data[i * NUX_VERTEX_SIZE + 0] = positions[indices[i]].x;
+        data[i * NUX_VERTEX_SIZE + 1] = positions[indices[i]].y;
+        data[i * NUX_VERTEX_SIZE + 2] = positions[indices[i]].z;
+        data[i * NUX_VERTEX_SIZE + 3] = 0;
+        data[i * NUX_VERTEX_SIZE + 4] = 0;
+    }
+
+    nux_u32_t first;
+    NUX_CHECK(nux_graphics_push_frame_vertices(
+                  ctx, NUX_ARRAY_SIZE(indices), data, &first),
+              return);
+
+    draw(ctx, &ctx->commands_lines, first, vertices_count, transform_index);
+}
+static void
+draw_line_box (nux_ctx_t *ctx, nux_u32_t transform_index, nux_b3_t box)
+{
+    const nux_v3_t positions[] = { nux_v3(box.min.x, box.min.y, box.min.z),
+                                   nux_v3(box.max.x, box.min.y, box.min.z),
+                                   nux_v3(box.max.x, box.min.y, box.max.z),
+                                   nux_v3(box.min.x, box.min.y, box.max.z),
+                                   nux_v3(box.min.x, box.max.y, box.min.z),
+                                   nux_v3(box.max.x, box.max.y, box.min.z),
+                                   nux_v3(box.max.x, box.max.y, box.max.z),
+                                   nux_v3(box.min.x, box.max.y, box.max.z) };
+    draw_line_rect(ctx, transform_index, positions);
 }
 void
 nux_renderer_render_ecs (nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera)
@@ -189,7 +212,8 @@ nux_renderer_render_ecs (nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera)
 
         // Push transform
         nux_u32_t transform_index;
-        NUX_CHECK(push_transforms(ctx, 1, &t->global_matrix, &transform_index),
+        NUX_CHECK(nux_graphics_push_transforms(
+                      ctx, 1, &t->global_matrix, &transform_index),
                   continue);
 
         // Bind texture
@@ -201,27 +225,8 @@ nux_renderer_render_ecs (nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera)
             return);
 
         // Create line batch
-        if (m->bounds_first)
-        {
-            // batch_index = ctx->batches_buffer_head;
-            // ++ctx->batches_buffer_head;
-            // batch.first_transform = transform_index;
-            // batch.first_vertex    = m->bounds_first;
-            // batch.has_texture     = 0;
-            // NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
-            //                                 ctx->batches_buffer.slot,
-            //                                 batch_index * sizeof(batch),
-            //                                 sizeof(batch),
-            //                                 &batch),
-            //            continue,
-            //            "failed to update batches buffer");
-            // nux_gpu_push_u32(ctx,
-            //                  &ctx->commands_lines,
-            //                  NUX_GPU_DESC_UBER_BATCH_INDEX,
-            //                  batch_index);
-            // nux_gpu_draw(ctx, &ctx->commands_lines, 12 * 2);
-        }
-        draw_box(ctx, transform_index, nux_b3(nux_v3s(0), nux_v3s(10)));
+        bind_texture(ctx, &ctx->commands_lines, NUX_NULL);
+        draw_line_box(ctx, transform_index, m->bounds);
 
         e = nux_ecs_next(ctx, ctx->transform_staticmesh_iter);
     }
@@ -254,8 +259,8 @@ nux_renderer_render_ecs (nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera)
 
     // Submit commands
     nux_os_gpu_submit(ctx->userdata, ctx->commands.data, ctx->commands.size);
-    // nux_os_gpu_submit(
-    //     ctx->userdata, ctx->commands_lines.data, ctx->commands_lines.size);
+    nux_os_gpu_submit(
+        ctx->userdata, ctx->commands_lines.data, ctx->commands_lines.size);
 
 error:
     nux_ecs_set_active(ctx, prev_ecs);

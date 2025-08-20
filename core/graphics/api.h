@@ -90,15 +90,6 @@ typedef enum
     NUX_TEXTURE_RENDER_TARGET = 2,
 } nux_texture_type_t;
 
-void      nux_pal(nux_ctx_t *ctx, nux_u8_t index, nux_u8_t color);
-void      nux_palt(nux_ctx_t *ctx, nux_u8_t c);
-void      nux_palr(nux_ctx_t *ctx);
-nux_u8_t  nux_palc(nux_ctx_t *ctx, nux_u8_t index);
-void      nux_cls(nux_ctx_t *ctx, nux_u32_t color);
-void      nux_pset(nux_ctx_t *ctx, nux_i32_t x, nux_i32_t y, nux_u8_t c);
-nux_u32_t nux_cget(nux_ctx_t *ctx, nux_u8_t index);
-void      nux_cset(nux_ctx_t *ctx, nux_u8_t index, nux_u32_t c);
-
 nux_res_t nux_texture_new(nux_ctx_t         *ctx,
                           nux_res_t          arena,
                           nux_texture_type_t format,
@@ -109,7 +100,7 @@ void      nux_texture_blit(nux_ctx_t *ctx, nux_res_t res);
 nux_res_t nux_mesh_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
 nux_res_t nux_mesh_new_cube(
     nux_ctx_t *ctx, nux_res_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz);
-void nux_mesh_gen_bounds(nux_ctx_t *ctx, nux_res_t mesh);
+void nux_mesh_update_bounds(nux_ctx_t *ctx, nux_res_t mesh);
 
 nux_res_t nux_canvas_new(nux_ctx_t *ctx, nux_res_t arena);
 void      nux_canvas_clear(nux_ctx_t *ctx, nux_res_t res);
