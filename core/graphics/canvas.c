@@ -63,12 +63,12 @@ end_batch (nux_ctx_t *ctx, nux_canvas_t *canvas)
 
     // Build commands
     nux_gpu_bind_texture(ctx,
-                         &canvas->commands,
+                         &canvas->encoder,
                          NUX_GPU_DESC_CANVAS_TEXTURE,
                          canvas->active_texture);
     nux_gpu_push_u32(
-        ctx, &canvas->commands, NUX_GPU_DESC_CANVAS_BATCH_INDEX, index);
-    nux_gpu_draw(ctx, &canvas->commands, canvas->active_batch.count * 6);
+        ctx, &canvas->encoder, NUX_GPU_DESC_CANVAS_BATCH_INDEX, index);
+    nux_gpu_draw(ctx, &canvas->encoder, canvas->active_batch.count * 6);
 
     return NUX_SUCCESS;
 }
@@ -94,7 +94,7 @@ push_quads (nux_ctx_t             *ctx,
 }
 
 nux_status_t
-nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
+nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas, nux_u32_t encoder_capa)
 {
     // Allocate constants buffer
     canvas->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
@@ -119,8 +119,8 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
               return NUX_FAILURE);
 
     // Allocate commands
-    NUX_CHECK(nux_gpu_command_vec_alloc(
-                  ctx, &ctx->core_arena, 4096, &canvas->commands),
+    NUX_CHECK(nux_gpu_encoder_init(
+                  ctx, &ctx->core_arena, encoder_capa, &canvas->encoder),
               return NUX_FAILURE);
 
     // Initialize base active batch
@@ -133,12 +133,12 @@ nux_canvas_init (nux_ctx_t *ctx, nux_canvas_t *canvas)
 }
 
 nux_res_t
-nux_canvas_new (nux_ctx_t *ctx, nux_res_t arena)
+nux_canvas_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t encoder_capa)
 {
     nux_res_t     id;
     nux_canvas_t *c = nux_res_new(ctx, arena, NUX_RES_CANVAS, sizeof(*c), &id);
     NUX_CHECK(c, return NUX_NULL);
-    NUX_CHECK(nux_canvas_init(ctx, c), return NUX_NULL);
+    NUX_CHECK(nux_canvas_init(ctx, c, encoder_capa), return NUX_NULL);
     return id;
 }
 void
@@ -150,24 +150,12 @@ nux_canvas_cleanup (nux_ctx_t *ctx, nux_res_t res)
     nux_gpu_buffer_free(ctx, &canvas->quads_buffer);
 }
 void
-nux_canvas_clear (nux_ctx_t *ctx, nux_res_t id)
+nux_canvas_begin (nux_ctx_t *ctx, nux_res_t id, nux_res_t target)
 {
     nux_canvas_t *c = nux_res_check(ctx, NUX_RES_CANVAS, id);
     NUX_CHECK(c, return);
     c->batches_buffer_head = 0;
     c->quads_buffer_head   = 0;
-    nux_gpu_command_vec_clear(&c->commands);
-    nux_gpu_clear(ctx, &c->commands, 0x00);
-}
-void
-nux_canvas_render (nux_ctx_t *ctx, nux_res_t id, nux_res_t target)
-{
-    nux_canvas_t *c = nux_res_check(ctx, NUX_RES_CANVAS, id);
-    NUX_CHECK(c, return);
-
-    nux_gpu_command_t     cmds_data[16];
-    nux_gpu_command_vec_t cmds;
-    nux_gpu_command_vec_init(cmds_data, NUX_ARRAY_SIZE(cmds_data), &cmds);
 
     nux_u32_t framebuffer = NUX_NULL;
     nux_u32_t width       = 1000;
@@ -195,18 +183,23 @@ nux_canvas_render (nux_ctx_t *ctx, nux_res_t id, nux_res_t target)
                          &constants);
 
     // Begin canvas render
-    nux_gpu_bind_framebuffer(ctx, &cmds, framebuffer);
-    nux_gpu_bind_pipeline(ctx, &cmds, ctx->canvas_pipeline.slot);
+    nux_gpu_encoder_t *enc = &c->encoder;
+    nux_gpu_bind_framebuffer(ctx, enc, framebuffer);
+    nux_gpu_bind_pipeline(ctx, enc, ctx->canvas_pipeline.slot);
     nux_gpu_bind_buffer(
-        ctx, &cmds, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
+        ctx, enc, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
     nux_gpu_bind_buffer(
-        ctx, &cmds, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
+        ctx, enc, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
     nux_gpu_bind_buffer(
-        ctx, &cmds, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
-
-    // Submit commands
-    nux_os_gpu_submit(ctx->userdata, cmds.data, cmds.size);
-    nux_os_gpu_submit(ctx->userdata, c->commands.data, c->commands.size);
+        ctx, enc, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
+    nux_gpu_clear(ctx, &c->encoder, 0x00);
+}
+void
+nux_canvas_render (nux_ctx_t *ctx, nux_res_t id)
+{
+    nux_canvas_t *c = nux_res_check(ctx, NUX_RES_CANVAS, id);
+    NUX_CHECK(c, return);
+    nux_gpu_encoder_submit(ctx, &c->encoder);
 }
 void
 nux_canvas_text (nux_ctx_t      *ctx,

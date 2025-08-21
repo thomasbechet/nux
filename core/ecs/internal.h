@@ -73,6 +73,7 @@ typedef struct
 {
     nux_res_t mesh;
     nux_res_t texture;
+    nux_u32_t transform;
 } nux_staticmesh_t;
 
 typedef enum

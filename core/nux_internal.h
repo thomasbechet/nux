@@ -55,16 +55,16 @@ struct nux_context
     nux_u32_vec_t      free_buffer_slots;
     nux_u32_vec_t      free_pipeline_slots;
     nux_u32_vec_t      free_framebuffer_slots;
+    nux_u32_t          identity_transform_index;
 
-    nux_gpu_buffer_t      constants_buffer;
-    nux_gpu_buffer_t      batches_buffer;
-    nux_u32_t             batches_buffer_head;
-    nux_gpu_buffer_t      transforms_buffer;
-    nux_u32_t             transforms_buffer_head;
-    nux_gpu_command_vec_t commands;
-    nux_gpu_command_vec_t commands_lines;
-    nux_res_t             transform_iter;
-    nux_res_t             transform_staticmesh_iter;
+    nux_gpu_encoder_t encoder;
+    nux_gpu_buffer_t  constants_buffer;
+    nux_gpu_buffer_t  batches_buffer;
+    nux_u32_t         batches_buffer_head;
+    nux_gpu_buffer_t  transforms_buffer;
+    nux_u32_t         transforms_buffer_head;
+    nux_res_t         transform_iter;
+    nux_res_t         transform_staticmesh_iter;
 
     const nux_texture_t *active_texture;
 

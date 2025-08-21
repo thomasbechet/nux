@@ -567,6 +567,7 @@ typedef struct
         nux_u32_t transforms_buffer_size;
         nux_u32_t batches_buffer_size;
         nux_u32_t vertices_buffer_size;
+        nux_u32_t encoder_size;
     } graphics;
 
     nux_b32_t hotreload;

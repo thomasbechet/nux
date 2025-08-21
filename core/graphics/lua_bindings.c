@@ -103,7 +103,9 @@ l_canvas_new (lua_State *L)
     nux_ctx_t *ctx   = lua_getuserdata(L);
     nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_res_t ret = nux_canvas_new(ctx, arena);
+    nux_u32_t encoder_capa = luaL_checknumber(L, 2);
+
+    nux_res_t ret = nux_canvas_new(ctx, arena, encoder_capa);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -116,11 +118,13 @@ l_canvas_new (lua_State *L)
     return 1;
 }
 static int
-l_canvas_clear (lua_State *L)
+l_canvas_begin (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_canvas_clear(ctx, res);
+
+    nux_res_t target = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+    nux_canvas_begin(ctx, res, target);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -129,9 +133,7 @@ l_canvas_render (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-
-    nux_res_t target = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
-    nux_canvas_render(ctx, res, target);
+    nux_canvas_render(ctx, res);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -181,7 +183,7 @@ static const struct luaL_Reg lib_mesh[]
 
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
-        { "clear", l_canvas_clear },
+        { "begin", l_canvas_begin },
         { "render", l_canvas_render },
         { "text", l_canvas_text },
         { "rectangle", l_canvas_rectangle },

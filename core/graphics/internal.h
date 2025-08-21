@@ -29,8 +29,6 @@ typedef struct
     nux_u32_t               slot;
 } nux_gpu_pipeline_t;
 
-NUX_VEC_DEFINE(nux_gpu_command_vec, nux_gpu_command_t);
-
 typedef struct
 {
     nux_u32_t          slot;
@@ -72,9 +70,16 @@ typedef struct
     nux_v4_t  color;
 } nux_gpu_canvas_batch_t;
 
+NUX_VEC_DEFINE(nux_gpu_command_vec, nux_gpu_command_t);
+
 typedef struct
 {
-    nux_gpu_command_vec_t  commands;
+    nux_gpu_command_vec_t cmds;
+} nux_gpu_encoder_t;
+
+typedef struct
+{
+    nux_gpu_encoder_t      encoder;
     nux_gpu_buffer_t       constants_buffer;
     nux_gpu_buffer_t       quads_buffer;
     nux_u32_t              quads_buffer_head;
@@ -112,7 +117,8 @@ typedef enum
 
 nux_status_t nux_graphics_init(nux_ctx_t *ctx);
 nux_status_t nux_graphics_free(nux_ctx_t *ctx);
-nux_status_t nux_graphics_render(nux_ctx_t *ctx);
+nux_status_t nux_graphics_begin_render(nux_ctx_t *ctx);
+nux_status_t nux_graphics_end_render(nux_ctx_t *ctx);
 
 nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
                                         nux_u32_t        vcount,
@@ -142,7 +148,9 @@ void         nux_font_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // canvas.c
 
-nux_status_t nux_canvas_init(nux_ctx_t *ctx, nux_canvas_t *canvas);
+nux_status_t nux_canvas_init(nux_ctx_t    *ctx,
+                             nux_canvas_t *canvas,
+                             nux_u32_t     encoder_capa);
 void         nux_canvas_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // gpu.c
@@ -155,36 +163,39 @@ nux_status_t nux_gpu_pipeline_init(nux_ctx_t          *ctx,
                                    nux_gpu_pipeline_t *pipeline);
 void nux_gpu_pipeline_free(nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline);
 
-void nux_gpu_bind_framebuffer(nux_ctx_t             *ctx,
-                              nux_gpu_command_vec_t *cmds,
-                              nux_u32_t              slot);
-void nux_gpu_bind_pipeline(nux_ctx_t             *ctx,
-                           nux_gpu_command_vec_t *cmds,
-                           nux_u32_t              slot);
-void nux_gpu_bind_texture(nux_ctx_t             *ctx,
-                          nux_gpu_command_vec_t *cmds,
-                          nux_u32_t              desc,
-                          nux_u32_t              slot);
-void nux_gpu_bind_buffer(nux_ctx_t             *ctx,
-                         nux_gpu_command_vec_t *cmds,
-                         nux_u32_t              desc,
-                         nux_u32_t              slot);
-void nux_gpu_push_u32(nux_ctx_t             *ctx,
-                      nux_gpu_command_vec_t *cmds,
-                      nux_u32_t              desc,
-                      nux_u32_t              value);
-void nux_gpu_push_f32(nux_ctx_t             *ctx,
-                      nux_gpu_command_vec_t *cmds,
-                      nux_u32_t              desc,
-                      nux_f32_t              value);
-void nux_gpu_push_v2(nux_ctx_t             *ctx,
-                     nux_gpu_command_vec_t *cmds,
-                     nux_u32_t              desc,
-                     nux_v2_t               value);
-void nux_gpu_draw(nux_ctx_t *ctx, nux_gpu_command_vec_t *cmds, nux_u32_t count);
-void nux_gpu_clear(nux_ctx_t             *ctx,
-                   nux_gpu_command_vec_t *cmds,
-                   nux_u32_t              color);
+nux_status_t nux_gpu_encoder_init(nux_ctx_t         *ctx,
+                                  nux_arena_t       *arena,
+                                  nux_u32_t          capa,
+                                  nux_gpu_encoder_t *enc);
+void         nux_gpu_encoder_submit(nux_ctx_t *ctx, nux_gpu_encoder_t *enc);
+void         nux_gpu_bind_framebuffer(nux_ctx_t         *ctx,
+                                      nux_gpu_encoder_t *enc,
+                                      nux_u32_t          slot);
+void         nux_gpu_bind_pipeline(nux_ctx_t         *ctx,
+                                   nux_gpu_encoder_t *enc,
+                                   nux_u32_t          slot);
+void         nux_gpu_bind_texture(nux_ctx_t         *ctx,
+                                  nux_gpu_encoder_t *enc,
+                                  nux_u32_t          desc,
+                                  nux_u32_t          slot);
+void         nux_gpu_bind_buffer(nux_ctx_t         *ctx,
+                                 nux_gpu_encoder_t *enc,
+                                 nux_u32_t          desc,
+                                 nux_u32_t          slot);
+void         nux_gpu_push_u32(nux_ctx_t         *ctx,
+                              nux_gpu_encoder_t *enc,
+                              nux_u32_t          desc,
+                              nux_u32_t          value);
+void         nux_gpu_push_f32(nux_ctx_t         *ctx,
+                              nux_gpu_encoder_t *enc,
+                              nux_u32_t          desc,
+                              nux_f32_t          value);
+void         nux_gpu_push_v2(nux_ctx_t         *ctx,
+                             nux_gpu_encoder_t *enc,
+                             nux_u32_t          desc,
+                             nux_v2_t           value);
+void nux_gpu_draw(nux_ctx_t *ctx, nux_gpu_encoder_t *enc, nux_u32_t count);
+void nux_gpu_clear(nux_ctx_t *ctx, nux_gpu_encoder_t *enc, nux_u32_t color);
 
 // lua_bindings.c
 

@@ -112,11 +112,11 @@ function nux.init()
     nux.camera.set_fov(C, 70)
 
     -- Create canvas
-    GUI_CANVAS = nux.canvas.new(ARENA)
+    GUI_CANVAS = nux.canvas.new(ARENA, 100)
     GUI_TEXTURE = nux.texture.new(ARENA, nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH, nux.CANVAS_HEIGHT)
 
     -- Create the API monolith
-    MONOLITH_CANVAS = nux.canvas.new(ARENA)
+    MONOLITH_CANVAS = nux.canvas.new(ARENA, 1000)
     local x, y = 350, 1600
     MONOLITH_TEXTURE = nux.texture.new(ARENA, nux.TEXTURE_RENDER_TARGET, x, y)
     CUBE = nux.ecs.add()
@@ -136,22 +136,21 @@ function nux.tick()
     nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
     nux.transform.set_scale(ROTATING, 1, 5, 10)
     nux.ecs.render(C)
-    nux.canvas.clear(MONOLITH_CANVAS)
+    nux.canvas.begin(MONOLITH_CANVAS, MONOLITH_TEXTURE)
     nux.canvas.text(MONOLITH_CANVAS, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(MONOLITH_CANVAS, 10, 20, API)
     nux.canvas.text(MONOLITH_CANVAS, 50, 50, "hello Julia")
-    nux.canvas.render(MONOLITH_CANVAS, MONOLITH_TEXTURE)
+    nux.canvas.render(MONOLITH_CANVAS)
 
     local x, y, z = nux.transform.get_translation(C)
-    nux.canvas.clear(GUI_CANVAS)
+    nux.canvas.begin(GUI_CANVAS, GUI_TEXTURE)
     nux.canvas.text(GUI_CANVAS, 10, 10, nux.time.date())
     nux.canvas.text(GUI_CANVAS, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(GUI_CANVAS, 10, 30, string.format("x:%.2f", x))
     nux.canvas.text(GUI_CANVAS, 10, 40, string.format("y:%.2f", y))
     nux.canvas.text(GUI_CANVAS, 10, 50, string.format("z:%.2f", z))
     nux.canvas.text(GUI_CANVAS, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
-
-    nux.canvas.render(GUI_CANVAS, GUI_TEXTURE)
+    nux.canvas.render(GUI_CANVAS)
     nux.texture.blit(GUI_TEXTURE)
 
     local fx, fy, fz = nux.transform.forward(C)

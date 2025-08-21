@@ -255,6 +255,7 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
         &s, "transforms_buffer_size", &config->graphics.transforms_buffer_size);
     nux_serde_field_u32(
         &s, "vertices_buffer_size", &config->graphics.vertices_buffer_size);
+    nux_serde_field_u32(&s, "encoder_size", &config->graphics.encoder_size);
     nux_serde_end_table(&s);
 }
 static void

@@ -1,3 +1,4 @@
+#include "graphics/internal.h"
 #include "nux_internal.h"
 
 #include "fonts_data.c.inc"
@@ -69,9 +70,8 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_lua_open_graphics(ctx);
 
     // Allocate gpu commands buffer
-    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, a, 4096, &ctx->commands),
-              return NUX_NULL);
-    NUX_CHECK(nux_gpu_command_vec_alloc(ctx, a, 4096, &ctx->commands_lines),
+    NUX_CHECK(nux_gpu_encoder_init(
+                  ctx, a, ctx->config.graphics.encoder_size, &ctx->encoder),
               return NUX_NULL);
 
     // Allocate constants buffer
@@ -109,7 +109,10 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_ecs_includes(
         ctx, ctx->transform_staticmesh_iter, NUX_COMPONENT_STATICMESH);
 
-    return NUX_SUCCESS;
+    // Push identity transform
+    nux_m4_t identity = nux_m4_identity();
+    NUX_ASSERT(nux_graphics_push_transforms(
+        ctx, 1, &identity, &ctx->identity_transform_index));
 
     return NUX_SUCCESS;
 
@@ -141,9 +144,21 @@ nux_graphics_free (nux_ctx_t *ctx)
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_graphics_render (nux_ctx_t *ctx)
+nux_graphics_begin_render (nux_ctx_t *ctx)
 {
+    // Reset frame data
+    ctx->transforms_buffer_head     = 0;
+    ctx->batches_buffer_head        = 0;
     ctx->vertices_buffer_head_frame = ctx->config.graphics.vertices_buffer_size;
+    ctx->active_texture             = NUX_NULL;
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_graphics_end_render (nux_ctx_t *ctx)
+{
+    // Submit commands
+    nux_gpu_encoder_submit(ctx, &ctx->encoder);
+
     return NUX_SUCCESS;
 }
 

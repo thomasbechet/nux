@@ -81,16 +81,12 @@ nux_texture_blit (nux_ctx_t *ctx, nux_res_t res)
     nux_texture_t *tex = nux_res_check(ctx, NUX_RES_TEXTURE, res);
     NUX_CHECK(tex, return);
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
-    nux_gpu_command_t     cmds_data[10];
-    nux_gpu_command_vec_t cmds;
-    nux_gpu_command_vec_init(cmds_data, NUX_ARRAY_SIZE(cmds_data), &cmds);
-    nux_gpu_bind_framebuffer(ctx, &cmds, 0);
-    nux_gpu_bind_pipeline(ctx, &cmds, ctx->blit_pipeline.slot);
-    nux_gpu_bind_texture(ctx, &cmds, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
+    nux_gpu_encoder_t *enc = &ctx->encoder;
+    nux_gpu_bind_framebuffer(ctx, enc, 0);
+    nux_gpu_bind_pipeline(ctx, enc, ctx->blit_pipeline.slot);
+    nux_gpu_bind_texture(ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
+    nux_gpu_push_u32(ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
     nux_gpu_push_u32(
-        ctx, &cmds, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
-    nux_gpu_push_u32(
-        ctx, &cmds, NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT, tex->gpu.height);
-    nux_gpu_draw(ctx, &cmds, 3);
-    nux_os_gpu_submit(ctx->userdata, cmds.data, cmds.size);
+        ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT, tex->gpu.height);
+    nux_gpu_draw(ctx, enc, 3);
 }

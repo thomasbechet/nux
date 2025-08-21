@@ -84,6 +84,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     ctx->config.graphics.transforms_buffer_size = 8192;
     ctx->config.graphics.batches_buffer_size    = 8192;
     ctx->config.graphics.vertices_buffer_size   = 1 << 18;
+    ctx->config.graphics.encoder_size           = 8192;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
 
     // Register entry script
@@ -136,6 +137,9 @@ nux_instance_tick (nux_ctx_t *ctx)
     // Update stats
     nux_os_stats_update(ctx->userdata, ctx->stats);
 
+    // Prepare render
+    nux_graphics_begin_render(ctx);
+
     // Update inputs
     nux_input_update(ctx);
 
@@ -153,7 +157,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_error_reset(ctx);
 
     // Render
-    nux_graphics_render(ctx);
+    nux_graphics_end_render(ctx);
 
     // Hotreload
     if (ctx->config.hotreload)
