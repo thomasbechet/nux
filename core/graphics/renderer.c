@@ -5,10 +5,11 @@ bind_texture (nux_ctx_t           *ctx,
               nux_gpu_encoder_t   *enc,
               const nux_texture_t *texture)
 {
-    if (ctx->active_texture != texture)
+    nux_graphics_module_t *module = ctx->graphics;
+    if (module->active_texture != texture)
     {
-        ctx->active_texture = texture;
-        if (ctx->active_texture)
+        module->active_texture = texture;
+        if (module->active_texture)
         {
             nux_gpu_bind_texture(
                 ctx, enc, NUX_GPU_DESC_UBER_TEXTURE0, texture->gpu.slot);
@@ -26,19 +27,21 @@ draw (nux_ctx_t         *ctx,
       nux_u32_t          count,
       nux_u32_t          transform)
 {
+    nux_graphics_module_t *module = ctx->graphics;
+
     // Create batch
-    NUX_ENSURE(ctx->batches_buffer_head
+    NUX_ENSURE(module->batches_buffer_head
                    < ctx->config.graphics.batches_buffer_size,
                return NUX_FAILURE,
                "out of batches");
-    nux_u32_t batch_index = ctx->batches_buffer_head;
-    ++ctx->batches_buffer_head;
+    nux_u32_t batch_index = module->batches_buffer_head;
+    ++module->batches_buffer_head;
     nux_gpu_scene_batch_t batch;
     batch.first_transform = transform;
     batch.first_vertex    = first;
-    batch.has_texture     = ctx->active_texture ? 1 : 0;
+    batch.has_texture     = module->active_texture ? 1 : 0;
     NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
-                                    ctx->batches_buffer.slot,
+                                    module->batches_buffer.slot,
                                     batch_index * sizeof(batch),
                                     sizeof(batch),
                                     &batch),
@@ -131,11 +134,13 @@ draw_box (nux_ctx_t         *ctx,
 void
 nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
 {
-    nux_gpu_encoder_t *enc = &ctx->encoder;
+    nux_graphics_module_t *module = ctx->graphics;
+
+    nux_gpu_encoder_t *enc = &module->encoder;
 
     // Propagate transforms
     nux_ent_t it = NUX_NULL;
-    while ((it = nux_ecs_next(ctx, ctx->transform_iter, it)))
+    while ((it = nux_ecs_next(ctx, module->transform_iter, it)))
     {
         nux_transform_update_matrix(ctx, it);
     }
@@ -143,7 +148,7 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
     // Find current camera
     nux_ent_t camera = NUX_NULL;
     it               = NUX_NULL;
-    while ((it = nux_ecs_next(ctx, ctx->transform_camera_iter, it)))
+    while ((it = nux_ecs_next(ctx, module->transform_camera_iter, it)))
     {
         nux_camera_t *c = nux_ecs_get(ctx, it, NUX_COMPONENT_CAMERA);
         // TODO: check current / active
@@ -181,7 +186,7 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
                                         ctx->stats[NUX_STAT_SCREEN_HEIGHT]);
         constants.time        = ctx->time_elapsed;
         nux_os_buffer_update(ctx->userdata,
-                             ctx->constants_buffer.slot,
+                             module->constants_buffer.slot,
                              0,
                              sizeof(constants),
                              &constants);
@@ -191,19 +196,21 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
         nux_gpu_clear(ctx, enc, 0x4f9bd9);
 
         // Render nodes
-        nux_gpu_bind_pipeline(ctx, enc, ctx->uber_pipeline_opaque.slot);
+        nux_gpu_bind_pipeline(ctx, enc, module->uber_pipeline_opaque.slot);
+        nux_gpu_bind_buffer(ctx,
+                            enc,
+                            NUX_GPU_DESC_UBER_CONSTANTS,
+                            module->constants_buffer.slot);
         nux_gpu_bind_buffer(
-            ctx, enc, NUX_GPU_DESC_UBER_CONSTANTS, ctx->constants_buffer.slot);
-        nux_gpu_bind_buffer(
-            ctx, enc, NUX_GPU_DESC_UBER_BATCHES, ctx->batches_buffer.slot);
+            ctx, enc, NUX_GPU_DESC_UBER_BATCHES, module->batches_buffer.slot);
         nux_gpu_bind_buffer(ctx,
                             enc,
                             NUX_GPU_DESC_UBER_TRANSFORMS,
-                            ctx->transforms_buffer.slot);
+                            module->transforms_buffer.slot);
         nux_gpu_bind_buffer(
-            ctx, enc, NUX_GPU_DESC_UBER_VERTICES, ctx->vertices_buffer.slot);
+            ctx, enc, NUX_GPU_DESC_UBER_VERTICES, module->vertices_buffer.slot);
         it = NUX_NULL;
-        while ((it = nux_ecs_next(ctx, ctx->transform_staticmesh_iter, it)))
+        while ((it = nux_ecs_next(ctx, module->transform_staticmesh_iter, it)))
         {
             nux_staticmesh_t *sm
                 = nux_ecs_get(ctx, it, NUX_COMPONENT_STATICMESH);
@@ -232,9 +239,9 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
         }
 
         // Draw debug lines
-        nux_gpu_bind_pipeline(ctx, enc, ctx->uber_pipeline_line.slot);
+        nux_gpu_bind_pipeline(ctx, enc, module->uber_pipeline_line.slot);
         it = NUX_NULL;
-        while ((it = nux_ecs_next(ctx, ctx->transform_staticmesh_iter, it)))
+        while ((it = nux_ecs_next(ctx, module->transform_staticmesh_iter, it)))
         {
             nux_staticmesh_t *sm
                 = nux_ecs_get(ctx, it, NUX_COMPONENT_STATICMESH);
@@ -253,7 +260,7 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
 
     // Render canvas layers
     it = NUX_NULL;
-    while ((it = nux_ecs_next(ctx, ctx->canvaslayer_iter, it)))
+    while ((it = nux_ecs_next(ctx, module->canvaslayer_iter, it)))
     {
         nux_canvaslayer_t *layer
             = nux_ecs_get(ctx, it, NUX_COMPONENT_CANVASLAYER);
@@ -269,16 +276,19 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
     }
 
     // Submit commands
-    nux_gpu_encoder_submit(ctx, &ctx->encoder);
+    nux_gpu_encoder_submit(ctx, &module->encoder);
 }
 void
 nux_renderer_draw_rect (nux_ctx_t *ctx, const nux_v3_t *positions)
 {
-    nux_gpu_bind_framebuffer(ctx, &ctx->encoder, 0);
-    nux_gpu_bind_pipeline(ctx, &ctx->encoder, ctx->uber_pipeline_line.slot);
+    nux_graphics_module_t *module = ctx->graphics;
+
+    nux_gpu_bind_framebuffer(ctx, &module->encoder, 0);
+    nux_gpu_bind_pipeline(
+        ctx, &module->encoder, module->uber_pipeline_line.slot);
     draw_rect(ctx,
-              &ctx->encoder,
-              ctx->identity_transform_index,
+              &module->encoder,
+              module->identity_transform_index,
               NUX_PRIMITIVE_LINES,
               positions);
 }

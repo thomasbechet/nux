@@ -3,7 +3,7 @@
 nux_status_t
 nux_gpu_buffer_init (nux_ctx_t *ctx, nux_gpu_buffer_t *buffer)
 {
-    nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_buffer_slots);
+    nux_u32_t *slot = nux_u32_vec_pop(&ctx->graphics->free_buffer_slots);
     NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu buffer");
     buffer->slot = *slot;
     NUX_CHECK(nux_os_buffer_create(
@@ -15,7 +15,7 @@ void
 nux_gpu_buffer_free (nux_ctx_t *ctx, nux_gpu_buffer_t *buffer)
 {
     nux_os_buffer_delete(ctx->userdata, buffer->slot);
-    nux_u32_vec_pushv(&ctx->free_buffer_slots, buffer->slot);
+    nux_u32_vec_pushv(&ctx->graphics->free_buffer_slots, buffer->slot);
 }
 nux_status_t
 nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
@@ -26,7 +26,7 @@ nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
         .width  = texture->width,
         .height = texture->height,
     };
-    nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_texture_slots);
+    nux_u32_t *slot = nux_u32_vec_pop(&ctx->graphics->free_texture_slots);
     NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu textures");
     texture->slot = *slot;
     NUX_ENSURE(nux_os_texture_create(ctx->userdata, texture->slot, &info),
@@ -36,7 +36,7 @@ nux_gpu_texture_init (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
     if (texture->type == NUX_TEXTURE_RENDER_TARGET)
     {
         // Create framebuffer
-        slot = nux_u32_vec_pop(&ctx->free_framebuffer_slots);
+        slot = nux_u32_vec_pop(&ctx->graphics->free_framebuffer_slots);
         NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu framebuffer slots");
         texture->framebuffer_slot = *slot;
         NUX_ENSURE(nux_os_framebuffer_create(
@@ -50,12 +50,12 @@ void
 nux_gpu_texture_free (nux_ctx_t *ctx, nux_gpu_texture_t *texture)
 {
     nux_os_texture_delete(ctx->userdata, texture->slot);
-    nux_u32_vec_pushv(&ctx->free_texture_slots, texture->slot);
+    nux_u32_vec_pushv(&ctx->graphics->free_texture_slots, texture->slot);
 }
 nux_status_t
 nux_gpu_pipeline_init (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
 {
-    nux_u32_t *slot = nux_u32_vec_pop(&ctx->free_pipeline_slots);
+    nux_u32_t *slot = nux_u32_vec_pop(&ctx->graphics->free_pipeline_slots);
     NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu pipelines");
     pipeline->slot = *slot;
     NUX_ENSURE(
@@ -68,7 +68,7 @@ void
 nux_gpu_pipeline_free (nux_ctx_t *ctx, nux_gpu_pipeline_t *pipeline)
 {
     nux_os_pipeline_delete(ctx->userdata, pipeline->slot);
-    nux_u32_vec_pushv(&ctx->free_pipeline_slots, pipeline->slot);
+    nux_u32_vec_pushv(&ctx->graphics->free_pipeline_slots, pipeline->slot);
 }
 
 static nux_gpu_command_t *

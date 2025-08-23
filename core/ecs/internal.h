@@ -93,6 +93,11 @@ typedef enum
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_base_t;
 
+typedef struct
+{
+    nux_ecs_component_vec_t components;
+} nux_ecs_module_t;
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////

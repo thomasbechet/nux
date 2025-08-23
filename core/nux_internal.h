@@ -39,44 +39,15 @@ struct nux_context
 
     // ecs
 
-    nux_ecs_component_vec_t components;
+    nux_ecs_module_t *ecs;
 
     // graphics
 
-    nux_gpu_pipeline_t uber_pipeline_opaque;
-    nux_gpu_pipeline_t uber_pipeline_line;
-    nux_gpu_pipeline_t blit_pipeline;
-    nux_gpu_pipeline_t canvas_pipeline;
-    nux_gpu_buffer_t   vertices_buffer;
-    nux_u32_t          vertices_buffer_head;
-    nux_u32_t          vertices_buffer_head_frame;
-    nux_font_t         default_font;
-    nux_u32_vec_t      free_texture_slots;
-    nux_u32_vec_t      free_buffer_slots;
-    nux_u32_vec_t      free_pipeline_slots;
-    nux_u32_vec_t      free_framebuffer_slots;
-    nux_u32_t          identity_transform_index;
-
-    nux_gpu_encoder_t encoder;
-    nux_gpu_buffer_t  constants_buffer;
-    nux_gpu_buffer_t  batches_buffer;
-    nux_u32_t         batches_buffer_head;
-    nux_gpu_buffer_t  transforms_buffer;
-    nux_u32_t         transforms_buffer_head;
-    nux_res_t         transform_iter;
-    nux_res_t         transform_staticmesh_iter;
-    nux_res_t         transform_camera_iter;
-    nux_res_t         canvaslayer_iter;
-
-    const nux_texture_t *active_texture;
+    nux_graphics_module_t *graphics;
 
     // physics
 
-    nux_point_mass_vec_t           point_masses;
-    nux_collision_constraint_vec_t collision_constraints;
-    nux_distance_constraint_vec_t  distance_constraints;
-    nux_res_t                      rigidbody_transform_iter;
-    nux_res_t                      collider_transform_iter;
+    nux_physics_module_t *physics;
 };
 
 #endif

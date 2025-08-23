@@ -90,7 +90,8 @@ nux_rigidbody_set_velocity (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t velocity)
     NUX_CHECK(body, return);
     for (nux_u32_t i = 0; i < body->count; ++i)
     {
-        nux_point_mass_t *pm = ctx->point_masses.data + body->first + i;
-        pm->v                = velocity;
+        nux_point_mass_t *pm
+            = ctx->physics->point_masses.data + body->first + i;
+        pm->v = velocity;
     }
 }

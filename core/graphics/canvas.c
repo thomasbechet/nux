@@ -164,7 +164,7 @@ nux_canvas_text (nux_ctx_t      *ctx,
     nux_canvas_t *c = nux_res_check(ctx, NUX_RES_CANVAS, id);
     NUX_CHECK(c, return);
 
-    nux_font_t *font = &ctx->default_font;
+    nux_font_t *font = &ctx->graphics->default_font;
 
     begin_batch_textured(ctx,
                          c,
@@ -227,9 +227,10 @@ nux_canvas_rectangle (nux_ctx_t *ctx,
 void
 nux_canvas_render (nux_ctx_t *ctx, nux_canvas_t *c)
 {
-    nux_u32_t framebuffer;
-    nux_u32_t width;
-    nux_u32_t height;
+    nux_graphics_module_t *module = ctx->graphics;
+    nux_u32_t              framebuffer;
+    nux_u32_t              width;
+    nux_u32_t              height;
     if (c->target)
     {
         nux_texture_t *rt = nux_res_check(ctx, NUX_RES_TEXTURE, c->target);
@@ -263,7 +264,7 @@ nux_canvas_render (nux_ctx_t *ctx, nux_canvas_t *c)
     nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, nux_arena_frame(ctx));
     nux_gpu_encoder_init(ctx, a, 6, &enc);
     nux_gpu_bind_framebuffer(ctx, &enc, framebuffer);
-    nux_gpu_bind_pipeline(ctx, &enc, ctx->canvas_pipeline.slot);
+    nux_gpu_bind_pipeline(ctx, &enc, module->canvas_pipeline.slot);
     nux_gpu_bind_buffer(
         ctx, &enc, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
     nux_gpu_bind_buffer(

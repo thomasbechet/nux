@@ -12,6 +12,8 @@ compute_sum_forces (nux_point_mass_t *pm)
 static void
 integrate (nux_ctx_t *ctx)
 {
+    nux_physics_module_t *module = ctx->physics;
+
     nux_f32_t dt = nux_time_delta(ctx);
 
     const nux_u32_t substep = 10;
@@ -19,9 +21,9 @@ integrate (nux_ctx_t *ctx)
     for (nux_u32_t n = 0; n < substep; ++n)
     {
         // (7) integrate position (TODO: integrate rotation)
-        for (nux_u32_t i = 0; i < ctx->point_masses.size; ++i)
+        for (nux_u32_t i = 0; i < module->point_masses.size; ++i)
         {
-            nux_point_mass_t *pm        = ctx->point_masses.data + i;
+            nux_point_mass_t *pm        = module->point_masses.data + i;
             nux_v3_t          sum_force = compute_sum_forces(pm);
 
             // keep previous position
@@ -34,10 +36,10 @@ integrate (nux_ctx_t *ctx)
         }
 
         // (8) generate collision constraints
-        nux_collision_constraint_vec_clear(&ctx->collision_constraints);
-        for (nux_u32_t i = 0; i < ctx->point_masses.size; ++i)
+        nux_collision_constraint_vec_clear(&module->collision_constraints);
+        for (nux_u32_t i = 0; i < module->point_masses.size; ++i)
         {
-            nux_point_mass_t *pm = ctx->point_masses.data + i;
+            nux_point_mass_t *pm = module->point_masses.data + i;
 
             // ground collision
             const nux_f32_t ground = 0;
@@ -45,7 +47,7 @@ integrate (nux_ctx_t *ctx)
             {
                 nux_collision_constraint_t *c
                     = nux_collision_constraint_vec_push(
-                        &ctx->collision_constraints);
+                        &module->collision_constraints);
                 NUX_ASSERT(c);
                 c->q = nux_v3(pm->x.x, ground, pm->x.z);
                 c->n = NUX_V3_UP;
@@ -122,23 +124,25 @@ integrate (nux_ctx_t *ctx)
 
         // (9) solve constraints
         // solve collision constraints
-        for (nux_u32_t i = 0; i < ctx->collision_constraints.size; ++i)
+        for (nux_u32_t i = 0; i < module->collision_constraints.size; ++i)
         {
-            nux_collision_constraint_t *c = ctx->collision_constraints.data + i;
-            nux_point_mass_t           *a = ctx->point_masses.data + c->a;
-            nux_v3_t                    v = nux_v3_sub(a->x, c->q);
-            nux_f32_t                   depth = -nux_v3_dot(v, c->n);
+            nux_collision_constraint_t *c
+                = module->collision_constraints.data + i;
+            nux_point_mass_t *a     = module->point_masses.data + c->a;
+            nux_v3_t          v     = nux_v3_sub(a->x, c->q);
+            nux_f32_t         depth = -nux_v3_dot(v, c->n);
             if (depth > 0)
             {
                 a->x = nux_v3_add(a->x, nux_v3_muls(c->n, depth));
             }
         }
         // solve distance constraints
-        for (nux_u32_t i = 0; i < ctx->distance_constraints.size; ++i)
+        for (nux_u32_t i = 0; i < module->distance_constraints.size; ++i)
         {
-            nux_distance_constraint_t *c = ctx->distance_constraints.data + i;
-            nux_point_mass_t          *a = ctx->point_masses.data + c->a;
-            nux_point_mass_t          *b = ctx->point_masses.data + c->b;
+            nux_distance_constraint_t *c
+                = module->distance_constraints.data + i;
+            nux_point_mass_t *a = module->point_masses.data + c->a;
+            nux_point_mass_t *b = module->point_masses.data + c->b;
 
             nux_v3_t  delta          = nux_v3_sub(b->x, a->x);
             nux_f32_t distance       = nux_v3_norm(delta);
@@ -153,20 +157,21 @@ integrate (nux_ctx_t *ctx)
             b->x = nux_v3_add(b->x, cb);
         }
         // (12) compute new velocity
-        for (nux_u32_t i = 0; i < ctx->point_masses.size; ++i)
+        for (nux_u32_t i = 0; i < module->point_masses.size; ++i)
         {
-            nux_point_mass_t *pm = ctx->point_masses.data + i;
+            nux_point_mass_t *pm = module->point_masses.data + i;
             pm->v                = nux_v3_divs(nux_v3_sub(pm->x, pm->p), subdt);
         }
         // (16) solve velocities
-        for (nux_u32_t i = 0; i < ctx->collision_constraints.size; ++i)
+        for (nux_u32_t i = 0; i < module->collision_constraints.size; ++i)
         {
             const nux_f32_t elasticity = 0.1;
             // const nux_f32_t elasticity = 3;
             const nux_f32_t friction = 30;
 
-            nux_collision_constraint_t *c = ctx->collision_constraints.data + i;
-            nux_point_mass_t           *pm = ctx->point_masses.data + c->a;
+            nux_collision_constraint_t *c
+                = module->collision_constraints.data + i;
+            nux_point_mass_t *pm = module->point_masses.data + c->a;
 
             nux_v3_t vn = nux_v3_muls(c->n, nux_v3_dot(c->n, pm->v));
             nux_v3_t vt = nux_v3_sub(pm->v, vn);
@@ -179,13 +184,14 @@ integrate (nux_ctx_t *ctx)
 void
 pm_to_transforms (nux_ctx_t *ctx)
 {
-    nux_ent_t it = NUX_NULL;
-    while ((it = nux_ecs_next(ctx, ctx->rigidbody_transform_iter, it)))
+    nux_physics_module_t *module = ctx->physics;
+    nux_ent_t             it     = NUX_NULL;
+    while ((it = nux_ecs_next(ctx, module->rigidbody_transform_iter, it)))
     {
         nux_transform_t *transform
             = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
         nux_rigidbody_t  *body = nux_ecs_get(ctx, it, NUX_COMPONENT_RIGIDBODY);
-        nux_point_mass_t *pm   = &ctx->point_masses.data[body->first];
+        nux_point_mass_t *pm   = &module->point_masses.data[body->first];
         nux_v3_t          v    = pm->v;
         transform->local_translation = pm->x;
         transform->dirty             = NUX_TRUE;
@@ -193,7 +199,7 @@ pm_to_transforms (nux_ctx_t *ctx)
         nux_v3_t positions[8];
         for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(positions); ++i)
         {
-            positions[i] = ctx->point_masses.data[body->first + i].x;
+            positions[i] = module->point_masses.data[body->first + i].x;
         }
         nux_renderer_draw_rect(ctx, positions);
     }
@@ -202,34 +208,41 @@ pm_to_transforms (nux_ctx_t *ctx)
 nux_status_t
 nux_physics_init (nux_ctx_t *ctx)
 {
+    ctx->physics
+        = nux_arena_alloc(ctx, ctx->core_arena_res, sizeof(*ctx->physics));
+    NUX_CHECK(ctx->physics, return NUX_FAILURE);
+
+    nux_physics_module_t *module = ctx->physics;
+
     const nux_u32_t count = 1024 * 10;
 
     NUX_CHECK(nux_point_mass_vec_alloc(
-                  ctx, &ctx->core_arena, count, &ctx->point_masses),
+                  ctx, &ctx->core_arena, count, &module->point_masses),
               return NUX_FAILURE);
     NUX_CHECK(nux_collision_constraint_vec_alloc(
-                  ctx, &ctx->core_arena, count, &ctx->collision_constraints),
+                  ctx, &ctx->core_arena, count, &module->collision_constraints),
               return NUX_FAILURE);
     NUX_CHECK(nux_distance_constraint_vec_alloc(
-                  ctx, &ctx->core_arena, count, &ctx->distance_constraints),
+                  ctx, &ctx->core_arena, count, &module->distance_constraints),
               return NUX_FAILURE);
 
     nux_lua_open_physics(ctx);
 
-    ctx->rigidbody_transform_iter
+    module->rigidbody_transform_iter
         = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
-    NUX_CHECK(ctx->rigidbody_transform_iter, return NUX_FAILURE);
+    NUX_CHECK(module->rigidbody_transform_iter, return NUX_FAILURE);
     nux_ecs_includes(
-        ctx, ctx->rigidbody_transform_iter, NUX_COMPONENT_RIGIDBODY);
+        ctx, module->rigidbody_transform_iter, NUX_COMPONENT_RIGIDBODY);
     nux_ecs_includes(
-        ctx, ctx->rigidbody_transform_iter, NUX_COMPONENT_TRANSFORM);
+        ctx, module->rigidbody_transform_iter, NUX_COMPONENT_TRANSFORM);
 
-    ctx->collider_transform_iter
+    module->collider_transform_iter
         = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
-    NUX_CHECK(ctx->collider_transform_iter, return NUX_FAILURE);
-    nux_ecs_includes(ctx, ctx->collider_transform_iter, NUX_COMPONENT_COLLIDER);
+    NUX_CHECK(module->collider_transform_iter, return NUX_FAILURE);
     nux_ecs_includes(
-        ctx, ctx->collider_transform_iter, NUX_COMPONENT_TRANSFORM);
+        ctx, module->collider_transform_iter, NUX_COMPONENT_COLLIDER);
+    nux_ecs_includes(
+        ctx, module->collider_transform_iter, NUX_COMPONENT_TRANSFORM);
 
     return NUX_SUCCESS;
 }
@@ -249,7 +262,8 @@ nux_physics_update (nux_ctx_t *ctx)
 nux_u32_t
 nux_physics_add_pm (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t vel)
 {
-    nux_point_mass_t *pm = nux_point_mass_vec_push(&ctx->point_masses);
+    nux_physics_module_t *module = ctx->physics;
+    nux_point_mass_t     *pm = nux_point_mass_vec_push(&module->point_masses);
     NUX_ASSERT(pm);
     pm->x = pos;
     pm->v = vel;
@@ -257,7 +271,7 @@ nux_physics_add_pm (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t vel)
     pm->m = 1;
     pm->w = 1.0 / pm->m;
     pm->p = NUX_V3_ZEROS;
-    return ctx->point_masses.size - 1;
+    return module->point_masses.size - 1;
 }
 void
 nux_physics_add_distance_constraint (nux_ctx_t *ctx,
@@ -265,8 +279,9 @@ nux_physics_add_distance_constraint (nux_ctx_t *ctx,
                                      nux_u32_t  b,
                                      float      distance)
 {
+    nux_physics_module_t      *module = ctx->physics;
     nux_distance_constraint_t *c
-        = nux_distance_constraint_vec_push(&ctx->distance_constraints);
+        = nux_distance_constraint_vec_push(&module->distance_constraints);
     NUX_ASSERT(c);
     c->a = a;
     c->b = b;
@@ -276,9 +291,10 @@ nux_physics_add_distance_constraint (nux_ctx_t *ctx,
 nux_ent_t
 nux_physics_query (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
 {
-    nux_ray_t r  = { .p = pos, .d = nux_v3_normalize(dir) };
-    nux_ent_t it = NUX_NULL;
-    while ((it = nux_ecs_next(ctx, ctx->collider_transform_iter, it)))
+    nux_physics_module_t *module = ctx->physics;
+    nux_ray_t             r      = { .p = pos, .d = nux_v3_normalize(dir) };
+    nux_ent_t             it     = NUX_NULL;
+    while ((it = nux_ecs_next(ctx, module->collider_transform_iter, it)))
     {
         nux_transform_update_matrix(ctx, it);
         nux_transform_t *transform

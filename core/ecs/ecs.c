@@ -120,9 +120,15 @@ ecs_active (nux_ctx_t *ctx)
 nux_status_t
 nux_ecs_init (nux_ctx_t *ctx)
 {
-    NUX_CHECK(nux_ecs_component_vec_alloc(
-                  ctx, &ctx->core_arena, ECS_COMPONENT_MAX, &ctx->components),
-              return NUX_FAILURE);
+    ctx->ecs = nux_arena_alloc(ctx, ctx->core_arena_res, sizeof(*ctx->ecs));
+    NUX_CHECK(ctx->ecs, return NUX_FAILURE);
+
+    nux_ecs_module_t *module = ctx->ecs;
+
+    NUX_CHECK(
+        nux_ecs_component_vec_alloc(
+            ctx, &ctx->core_arena, ECS_COMPONENT_MAX, &module->components),
+        return NUX_FAILURE);
     ctx->active_ecs = NUX_NULL;
 
     // Register base component types
@@ -149,11 +155,12 @@ nux_ecs_register_component (nux_ctx_t      *ctx,
                             const nux_c8_t *name,
                             nux_u32_t       size)
 {
-    nux_ecs_component_t *comp = nux_ecs_component_vec_push(&ctx->components);
+    nux_ecs_module_t    *module = ctx->ecs;
+    nux_ecs_component_t *comp = nux_ecs_component_vec_push(&module->components);
     NUX_ENSURE(comp, return NUX_NULL, "max ecs component count reached");
     nux_strncpy(comp->name, name, ECS_COMPONENT_NAME_LEN);
     comp->size = size;
-    return ID_MAKE(ctx->components.size - 1);
+    return ID_MAKE(module->components.size - 1);
 }
 
 nux_res_t
@@ -258,15 +265,16 @@ nux_ecs_next (nux_ctx_t *ctx, nux_res_t iter, nux_ent_t e)
 nux_res_t
 nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
 {
-    nux_res_t    res;
-    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    nux_ecs_module_t *module = ctx->ecs;
+    nux_res_t         res;
+    nux_arena_t      *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
     nux_ecs_t *ins = nux_res_new(ctx, arena, NUX_RES_ECS, sizeof(*ins), &res);
     NUX_CHECK(ins, return NUX_NULL);
     ins->arena = a;
     ins->self  = res;
     NUX_CHECK(nux_ecs_container_vec_alloc(
-                  ctx, a, ctx->components.size, &ins->containers),
+                  ctx, a, module->components.size, &ins->containers),
               return NUX_NULL);
     NUX_CHECK(nux_ecs_bitset_alloc(
                   ctx, a, (capa / ECS_ENTITY_PER_MASK) + 1, &ins->bitset),
@@ -369,7 +377,8 @@ nux_ecs_clear (nux_ctx_t *ctx)
 void *
 nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
-    nux_ecs_t *ins = ecs_active(ctx);
+    nux_ecs_module_t *module = ctx->ecs;
+    nux_ecs_t        *ins    = ecs_active(ctx);
     NUX_ENSURE(ins,
                return NUX_NULL,
                "trying to set component %d on entity %e but no ecs is active",
@@ -378,7 +387,7 @@ nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     nux_u32_t index = ID_INDEX(e);
 
     nux_u32_t                  c_index   = ID_INDEX(c);
-    const nux_ecs_component_t *component = ctx->components.data + c_index;
+    const nux_ecs_component_t *component = module->components.data + c_index;
 
     NUX_ENSURE(c_index < ins->containers.capa,
                return NUX_NULL,
@@ -392,7 +401,7 @@ nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
         for (nux_u32_t i = prev_size; i < ins->containers.size; ++i)
         {
             nux_ecs_container_t *container = ins->containers.data + i;
-            container->component_size      = ctx->components.data[i].size;
+            container->component_size      = module->components.data[i].size;
             NUX_CHECK(
                 nux_ecs_chunk_vec_alloc(
                     ctx, ins->arena, ins->bitset.capa, &container->chunks),

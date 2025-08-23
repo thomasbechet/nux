@@ -45,14 +45,15 @@ nux_texture_new (nux_ctx_t         *ctx,
 void
 nux_texture_cleanup (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_texture_t *tex = nux_res_check(ctx, NUX_RES_TEXTURE, res);
+    nux_graphics_module_t *module = ctx->graphics;
+    nux_texture_t         *tex    = nux_res_check(ctx, NUX_RES_TEXTURE, res);
     if (tex->gpu.slot)
     {
-        nux_u32_vec_pushv(&ctx->free_texture_slots, tex->gpu.slot);
+        nux_u32_vec_pushv(&module->free_texture_slots, tex->gpu.slot);
     }
     if (tex->gpu.framebuffer_slot)
     {
-        nux_u32_vec_pushv(&ctx->free_framebuffer_slots,
+        nux_u32_vec_pushv(&module->free_framebuffer_slots,
                           tex->gpu.framebuffer_slot);
     }
 }
@@ -78,12 +79,13 @@ nux_texture_write (nux_ctx_t  *ctx,
 void
 nux_texture_blit (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_texture_t *tex = nux_res_check(ctx, NUX_RES_TEXTURE, res);
+    nux_graphics_module_t *module = ctx->graphics;
+    nux_texture_t         *tex    = nux_res_check(ctx, NUX_RES_TEXTURE, res);
     NUX_CHECK(tex, return);
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
-    nux_gpu_encoder_t *enc = &ctx->encoder;
+    nux_gpu_encoder_t *enc = &module->encoder;
     nux_gpu_bind_framebuffer(ctx, enc, 0);
-    nux_gpu_bind_pipeline(ctx, enc, ctx->blit_pipeline.slot);
+    nux_gpu_bind_pipeline(ctx, enc, module->blit_pipeline.slot);
     nux_gpu_bind_texture(ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
     nux_gpu_push_u32(ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
     nux_gpu_push_u32(
