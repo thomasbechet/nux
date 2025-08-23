@@ -58,8 +58,7 @@ nux_res_t nux_ecs_new_iter(nux_ctx_t *ctx,
                            nux_u32_t  exclude_count);
 void      nux_ecs_includes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
 void      nux_ecs_excludes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
-nux_u32_t nux_ecs_begin(nux_ctx_t *ctx, nux_res_t iter);
-nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_res_t iter);
+nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t e);
 
 nux_res_t nux_ecs_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
 nux_res_t nux_ecs_load_gltf(nux_ctx_t      *ctx,

@@ -239,24 +239,17 @@ ecs_iter_next (const nux_ecs_t *ins, nux_ecs_iter_t *it)
     return ID_MAKE(it->mask_index * ECS_ENTITY_PER_MASK + offset);
 }
 nux_u32_t
-nux_ecs_begin (nux_ctx_t *ctx, nux_res_t iter)
-{
-    nux_res_t  ecs = nux_ecs_get_active(ctx);
-    nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, ecs);
-    NUX_CHECK(ins, return NUX_NULL);
-    nux_ecs_iter_t *it = nux_res_check(ctx, NUX_RES_ECS_ITER, iter);
-    NUX_CHECK(it, return NUX_NULL);
-    it->ecs         = ecs;
-    it->mask        = 0;
-    it->mask_offset = 0;
-    it->mask_index  = (nux_u32_t)-1; // trick for first iteration
-    return ecs_iter_next(ins, it);
-}
-nux_u32_t
-nux_ecs_next (nux_ctx_t *ctx, nux_res_t iter)
+nux_ecs_next (nux_ctx_t *ctx, nux_res_t iter, nux_ent_t e)
 {
     nux_ecs_iter_t *it = nux_res_check(ctx, NUX_RES_ECS_ITER, iter);
     NUX_CHECK(it, return NUX_NULL);
+    if (!e) // initialize iterator
+    {
+        it->ecs         = nux_ecs_get_active(ctx);
+        it->mask        = 0;
+        it->mask_offset = 0;
+        it->mask_index  = (nux_u32_t)-1; // trick for first iteration
+    }
     nux_ecs_t *ins = nux_res_check(ctx, NUX_RES_ECS, it->ecs);
     NUX_CHECK(ins, return NUX_NULL);
     return ecs_iter_next(ins, it);

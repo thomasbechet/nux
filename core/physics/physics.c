@@ -179,12 +179,12 @@ integrate (nux_ctx_t *ctx)
 void
 pm_to_transforms (nux_ctx_t *ctx)
 {
-    nux_ent_t e = nux_ecs_begin(ctx, ctx->rigidbody_transform_iter);
-    while (e)
+    nux_ent_t it = NUX_NULL;
+    while ((it = nux_ecs_next(ctx, ctx->rigidbody_transform_iter, it)))
     {
         nux_transform_t *transform
-            = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
-        nux_rigidbody_t  *body = nux_ecs_get(ctx, e, NUX_COMPONENT_RIGIDBODY);
+            = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
+        nux_rigidbody_t  *body = nux_ecs_get(ctx, it, NUX_COMPONENT_RIGIDBODY);
         nux_point_mass_t *pm   = &ctx->point_masses.data[body->first];
         nux_v3_t          v    = pm->v;
         transform->local_translation = pm->x;
@@ -196,8 +196,6 @@ pm_to_transforms (nux_ctx_t *ctx)
             positions[i] = ctx->point_masses.data[body->first + i].x;
         }
         nux_renderer_draw_rect(ctx, positions);
-
-        e = nux_ecs_next(ctx, ctx->rigidbody_transform_iter);
     }
 }
 
@@ -278,16 +276,16 @@ nux_physics_add_distance_constraint (nux_ctx_t *ctx,
 nux_ent_t
 nux_physics_query (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
 {
-    nux_ent_t e = nux_ecs_begin(ctx, ctx->collider_transform_iter);
-    nux_ray_t r = { .p = pos, .d = nux_v3_normalize(dir) };
-    while (e)
+    nux_ray_t r  = { .p = pos, .d = nux_v3_normalize(dir) };
+    nux_ent_t it = NUX_NULL;
+    while ((it = nux_ecs_next(ctx, ctx->collider_transform_iter, it)))
     {
-        nux_transform_update_matrix(ctx, e);
+        nux_transform_update_matrix(ctx, it);
         nux_transform_t *transform
-            = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
-        nux_collider_t *collider = nux_ecs_get(ctx, e, NUX_COMPONENT_COLLIDER);
+            = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
+        nux_collider_t *collider = nux_ecs_get(ctx, it, NUX_COMPONENT_COLLIDER);
 
-        nux_v3_t translation = nux_transform_get_translation(ctx, e);
+        nux_v3_t translation = nux_transform_get_translation(ctx, it);
         switch (collider->type)
         {
             case NUX_COLLIDER_SPHERE: {
@@ -297,7 +295,7 @@ nux_physics_query (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
                 };
                 if (nux_intersect_ray_sphere(r, s, NUX_NULL))
                 {
-                    return e;
+                    return it;
                 }
             }
             break;
@@ -307,13 +305,11 @@ nux_physics_query (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
                              nux_v3_add(collider->aabb.box.max, translation));
                 if (nux_intersect_ray_box(r, box, NUX_NULL))
                 {
-                    return e;
+                    return it;
                 }
             }
             break;
         }
-
-        e = nux_ecs_next(ctx, ctx->collider_transform_iter);
     }
     return NUX_NULL;
 }

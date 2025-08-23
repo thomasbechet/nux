@@ -500,23 +500,14 @@ l_ecs_excludes (lua_State *L)
     return 0;
 }
 static int
-l_ecs_begin (lua_State *L)
-{
-    nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-
-    nux_u32_t ret = nux_ecs_begin(ctx, iter);
-    l_checkerror(L, ctx);
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
 l_ecs_next (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
     nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_u32_t ret = nux_ecs_next(ctx, iter);
+    nux_u32_t e = luaL_checknumber(L, 2);
+
+    nux_u32_t ret = nux_ecs_next(ctx, iter, e);
     l_checkerror(L, ctx);
     lua_pushinteger(L, ret);
     return 1;
@@ -722,7 +713,6 @@ static const struct luaL_Reg lib_staticmesh[]
 static const struct luaL_Reg lib_ecs[] = { { "new_iter", l_ecs_new_iter },
                                            { "includes", l_ecs_includes },
                                            { "excludes", l_ecs_excludes },
-                                           { "begin", l_ecs_begin },
                                            { "next", l_ecs_next },
                                            { "new", l_ecs_new },
                                            { "load_gltf", l_ecs_load_gltf },

@@ -134,23 +134,21 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
     nux_gpu_encoder_t *enc = &ctx->encoder;
 
     // Propagate transforms
-    nux_ent_t e = nux_ecs_begin(ctx, ctx->transform_iter);
-    while (e)
+    nux_ent_t it = NUX_NULL;
+    while ((it = nux_ecs_next(ctx, ctx->transform_iter, it)))
     {
-        nux_transform_update_matrix(ctx, e);
-        e = nux_ecs_next(ctx, ctx->transform_iter);
+        nux_transform_update_matrix(ctx, it);
     }
 
     // Find current camera
     nux_ent_t camera = NUX_NULL;
-    e                = nux_ecs_begin(ctx, ctx->transform_camera_iter);
-    while (e)
+    it               = NUX_NULL;
+    while ((it = nux_ecs_next(ctx, ctx->transform_camera_iter, it)))
     {
-        nux_camera_t *c = nux_ecs_get(ctx, e, NUX_COMPONENT_CAMERA);
+        nux_camera_t *c = nux_ecs_get(ctx, it, NUX_COMPONENT_CAMERA);
         // TODO: check current / active
-        camera = e;
+        camera = it;
         break;
-        e = nux_ecs_next(ctx, ctx->transform_camera_iter);
     }
 
     // Render canvas
@@ -204,16 +202,16 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
                             ctx->transforms_buffer.slot);
         nux_gpu_bind_buffer(
             ctx, enc, NUX_GPU_DESC_UBER_VERTICES, ctx->vertices_buffer.slot);
-        e = nux_ecs_begin(ctx, ctx->transform_staticmesh_iter);
-        while (e)
+        it = NUX_NULL;
+        while ((it = nux_ecs_next(ctx, ctx->transform_staticmesh_iter, it)))
         {
             nux_staticmesh_t *sm
-                = nux_ecs_get(ctx, e, NUX_COMPONENT_STATICMESH);
+                = nux_ecs_get(ctx, it, NUX_COMPONENT_STATICMESH);
             if (!sm->mesh)
             {
                 continue;
             }
-            nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
+            nux_transform_t *t = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
             nux_mesh_t      *m = nux_res_check(ctx, NUX_RES_MESH, sm->mesh);
             NUX_ASSERT(m);
             nux_texture_t *tex = NUX_NULL;
@@ -231,17 +229,15 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
             bind_texture(ctx, enc, tex);
             NUX_CHECK(draw(ctx, enc, m->first, m->count, sm->transform),
                       return);
-
-            e = nux_ecs_next(ctx, ctx->transform_staticmesh_iter);
         }
 
         // Draw debug lines
         nux_gpu_bind_pipeline(ctx, enc, ctx->uber_pipeline_line.slot);
-        e = nux_ecs_begin(ctx, ctx->transform_staticmesh_iter);
-        while (e)
+        it = NUX_NULL;
+        while ((it = nux_ecs_next(ctx, ctx->transform_staticmesh_iter, it)))
         {
             nux_staticmesh_t *sm
-                = nux_ecs_get(ctx, e, NUX_COMPONENT_STATICMESH);
+                = nux_ecs_get(ctx, it, NUX_COMPONENT_STATICMESH);
             if (!sm->mesh)
             {
                 continue;
@@ -252,17 +248,15 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
             // Draw
             bind_texture(ctx, enc, NUX_NULL);
             draw_box(ctx, enc, sm->transform, NUX_PRIMITIVE_LINES, m->bounds);
-
-            e = nux_ecs_next(ctx, ctx->transform_staticmesh_iter);
         }
     }
 
     // Render canvas layers
-    e = nux_ecs_begin(ctx, ctx->canvaslayer_iter);
-    while (e)
+    it = NUX_NULL;
+    while ((it = nux_ecs_next(ctx, ctx->canvaslayer_iter, it)))
     {
         nux_canvaslayer_t *layer
-            = nux_ecs_get(ctx, e, NUX_COMPONENT_CANVASLAYER);
+            = nux_ecs_get(ctx, it, NUX_COMPONENT_CANVASLAYER);
         if (layer->canvas)
         {
             nux_canvas_t *canvas
@@ -272,7 +266,6 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
                 nux_texture_blit(ctx, canvas->target);
             }
         }
-        e = nux_ecs_next(ctx, ctx->canvaslayer_iter);
     }
 
     // Submit commands
