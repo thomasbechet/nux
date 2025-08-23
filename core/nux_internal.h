@@ -65,6 +65,8 @@ struct nux_context
     nux_u32_t         transforms_buffer_head;
     nux_res_t         transform_iter;
     nux_res_t         transform_staticmesh_iter;
+    nux_res_t         transform_camera_iter;
+    nux_res_t         canvaslayer_iter;
 
     const nux_texture_t *active_texture;
 

@@ -1,7 +1,7 @@
 #ifndef NUX_GRAPHICS_INTERNAL_H
 #define NUX_GRAPHICS_INTERNAL_H
 
-#include "base/internal.h"
+#include <ecs/internal.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -77,7 +77,7 @@ typedef struct
     nux_gpu_command_vec_t cmds;
 } nux_gpu_encoder_t;
 
-typedef struct
+typedef struct nux_canvas
 {
     nux_gpu_encoder_t      encoder;
     nux_gpu_buffer_t       constants_buffer;
@@ -87,6 +87,9 @@ typedef struct
     nux_u32_t              batches_buffer_head;
     nux_gpu_canvas_batch_t active_batch;
     nux_u32_t              active_texture;
+    nux_res_t              target;
+    struct nux_canvas     *prev;
+    struct nux_canvas     *next;
 } nux_canvas_t;
 
 typedef struct
@@ -117,8 +120,8 @@ typedef enum
 
 nux_status_t nux_graphics_init(nux_ctx_t *ctx);
 nux_status_t nux_graphics_free(nux_ctx_t *ctx);
-nux_status_t nux_graphics_begin_render(nux_ctx_t *ctx);
-nux_status_t nux_graphics_end_render(nux_ctx_t *ctx);
+nux_status_t nux_graphics_pre_update(nux_ctx_t *ctx);
+nux_status_t nux_graphics_update(nux_ctx_t *ctx);
 
 nux_status_t nux_graphics_push_vertices(nux_ctx_t       *ctx,
                                         nux_u32_t        vcount,
@@ -135,10 +138,8 @@ nux_status_t nux_graphics_push_transforms(nux_ctx_t      *ctx,
 
 // renderer.c
 
-void nux_renderer_render_ecs(nux_ctx_t *ctx, nux_res_t ecs, nux_ent_t camera);
-void nux_renderer_draw_mesh(nux_ctx_t        *ctx,
-                            const nux_mesh_t *mesh,
-                            nux_u32_t         transform_index);
+void nux_renderer_render(nux_ctx_t *ctx, nux_ecs_t *ecs);
+void nux_renderer_draw_rect(nux_ctx_t *ctx, const nux_v3_t *positions);
 
 // font.c
 
@@ -148,10 +149,8 @@ void         nux_font_cleanup(nux_ctx_t *ctx, nux_res_t res);
 
 // canvas.c
 
-nux_status_t nux_canvas_init(nux_ctx_t    *ctx,
-                             nux_canvas_t *canvas,
-                             nux_u32_t     encoder_capa);
-void         nux_canvas_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void nux_canvas_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void nux_canvas_render(nux_ctx_t *ctx, nux_canvas_t *c);
 
 // gpu.c
 

@@ -136,3 +136,21 @@ nux_res_reload (nux_ctx_t *ctx, nux_res_t res)
     }
     return NUX_SUCCESS;
 }
+nux_res_t
+nux_res_next (nux_ctx_t *ctx, nux_u32_t type, nux_res_t res)
+{
+    nux_u32_t start = 0;
+    if (res)
+    {
+        start = RES_INDEX(res) + 1;
+    }
+    for (nux_u32_t i = start; i < ctx->resources.size; ++i)
+    {
+        nux_resource_entry_t *r = ctx->resources.data + i;
+        if (r->type == type)
+        {
+            return r->self;
+        }
+    }
+    return NUX_NULL;
+}

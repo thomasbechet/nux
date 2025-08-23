@@ -132,6 +132,7 @@ nux_ecs_init (nux_ctx_t *ctx)
     nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
     nux_ecs_register_component(ctx, "rigidbody", sizeof(nux_rigidbody_t));
     nux_ecs_register_component(ctx, "collider", sizeof(nux_collider_t));
+    nux_ecs_register_component(ctx, "canvaslayer", sizeof(nux_canvaslayer_t));
 
     // Register lua api
     nux_lua_open_ecs(ctx);
@@ -297,11 +298,6 @@ nux_ecs_set_active (nux_ctx_t *ctx, nux_res_t ecs)
     {
         ctx->active_ecs = NUX_NULL;
     }
-}
-void
-nux_ecs_render (nux_ctx_t *ctx, nux_ent_t camera)
-{
-    nux_renderer_render_ecs(ctx, nux_ecs_get_active(ctx), camera);
 }
 nux_u32_t
 nux_ecs_add (nux_ctx_t *ctx)

@@ -163,7 +163,7 @@ integrate (nux_ctx_t *ctx)
         {
             const nux_f32_t elasticity = 0.1;
             // const nux_f32_t elasticity = 3;
-            const nux_f32_t friction   = 30;
+            const nux_f32_t friction = 30;
 
             nux_collision_constraint_t *c = ctx->collision_constraints.data + i;
             nux_point_mass_t           *pm = ctx->point_masses.data + c->a;
@@ -189,6 +189,14 @@ pm_to_transforms (nux_ctx_t *ctx)
         nux_v3_t          v    = pm->v;
         transform->local_translation = pm->x;
         transform->dirty             = NUX_TRUE;
+
+        nux_v3_t positions[8];
+        for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(positions); ++i)
+        {
+            positions[i] = ctx->point_masses.data[body->first + i].x;
+        }
+        nux_renderer_draw_rect(ctx, positions);
+
         e = nux_ecs_next(ctx, ctx->rigidbody_transform_iter);
     }
 }

@@ -98,14 +98,70 @@ l_mesh_update_bounds (lua_State *L)
 }
 
 static int
+l_canvaslayer_add (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_ent_t  e   = luaL_checkinteger(L, 1);
+
+    nux_canvaslayer_add(ctx, e);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_canvaslayer_remove (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_ent_t  e   = luaL_checkinteger(L, 1);
+
+    nux_canvaslayer_remove(ctx, e);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_canvaslayer_set_canvas (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_ent_t  e   = luaL_checkinteger(L, 1);
+
+    nux_res_t canvas = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+    nux_canvaslayer_set_canvas(ctx, e, canvas);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_canvaslayer_get_canvas (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_ent_t  e   = luaL_checkinteger(L, 1);
+
+    nux_res_t canvas = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+
+    nux_res_t ret = nux_canvaslayer_get_canvas(ctx, e, canvas);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int
 l_canvas_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
     nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_u32_t encoder_capa = luaL_checknumber(L, 2);
+    nux_u32_t width = luaL_checknumber(L, 2);
 
-    nux_res_t ret = nux_canvas_new(ctx, arena, encoder_capa);
+    nux_u32_t height = luaL_checknumber(L, 3);
+
+    nux_u32_t capa = luaL_checknumber(L, 4);
+
+    nux_res_t ret = nux_canvas_new(ctx, arena, width, height, capa);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -118,24 +174,22 @@ l_canvas_new (lua_State *L)
     return 1;
 }
 static int
-l_canvas_begin (lua_State *L)
+l_canvas_get_texture (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_res_t target = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
-    nux_canvas_begin(ctx, res, target);
+    nux_res_t ret = nux_canvas_get_texture(ctx, res);
     l_checkerror(L, ctx);
-    return 0;
-}
-static int
-l_canvas_render (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_canvas_render(ctx, res);
-    l_checkerror(L, ctx);
-    return 0;
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
 }
 static int
 l_canvas_text (lua_State *L)
@@ -181,10 +235,16 @@ static const struct luaL_Reg lib_mesh[]
         { "update_bounds", l_mesh_update_bounds },
         { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_canvaslayer[]
+    = { { "add", l_canvaslayer_add },
+        { "remove", l_canvaslayer_remove },
+        { "set_canvas", l_canvaslayer_set_canvas },
+        { "get_canvas", l_canvaslayer_get_canvas },
+        { NUX_NULL, NUX_NULL } };
+
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
-        { "begin", l_canvas_begin },
-        { "render", l_canvas_render },
+        { "get_texture", l_canvas_get_texture },
         { "text", l_canvas_text },
         { "rectangle", l_canvas_rectangle },
         { NUX_NULL, NUX_NULL } };
@@ -204,6 +264,10 @@ nux_lua_open_graphics (nux_ctx_t *ctx)
     lua_setfield(L, -2, "mesh");
 
     lua_newtable(L);
+    luaL_setfuncs(L, lib_canvaslayer, 0);
+    lua_setfield(L, -2, "canvaslayer");
+
+    lua_newtable(L);
     luaL_setfuncs(L, lib_canvas, 0);
     lua_setfield(L, -2, "canvas");
 
@@ -213,20 +277,11 @@ nux_lua_open_graphics (nux_ctx_t *ctx)
     lua_pushinteger(L, 320);
     lua_setfield(L, -2, "CANVAS_HEIGHT");
 
-    lua_pushinteger(L, 4096);
-    lua_setfield(L, -2, "TEXTURE_WIDTH");
-
-    lua_pushinteger(L, 4096);
-    lua_setfield(L, -2, "TEXTURE_HEIGHT");
-
     lua_pushinteger(L, 256);
     lua_setfield(L, -2, "PALETTE_SIZE");
 
     lua_pushinteger(L, 256);
     lua_setfield(L, -2, "COLORMAP_SIZE");
-
-    lua_pushinteger(L, 1024);
-    lua_setfield(L, -2, "GPU_COMMAND_SIZE");
 
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "PRIMITIVE_TRIANGLES");

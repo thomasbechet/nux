@@ -67,7 +67,6 @@ nux_res_t nux_ecs_load_gltf(nux_ctx_t      *ctx,
                             const nux_c8_t *path);
 nux_res_t nux_ecs_get_active(nux_ctx_t *ctx);
 void      nux_ecs_set_active(nux_ctx_t *ctx, nux_res_t ecs);
-void      nux_ecs_render(nux_ctx_t *ctx, nux_ent_t camera);
 nux_u32_t nux_ecs_add(nux_ctx_t *ctx);
 void      nux_ecs_add_at(nux_ctx_t *ctx, nux_u32_t e);
 void      nux_ecs_remove(nux_ctx_t *ctx, nux_u32_t e);

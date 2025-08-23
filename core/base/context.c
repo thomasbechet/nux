@@ -10,10 +10,10 @@ nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
         nux_vsnprintf(
             ctx->error_message, sizeof(ctx->error_message), fmt, args);
         va_end(args);
-        // #ifdef NUX_BUILD_DEBUG
-        //         NUX_ERROR("%s", nux_error_get_message(ctx));
-        //         NUX_ASSERT(NUX_FALSE);
-        // #endif
+        #ifdef NUX_BUILD_DEBUG
+                NUX_ERROR("%s", nux_error_get_message(ctx));
+                NUX_ASSERT(NUX_FALSE);
+        #endif
         ctx->error_status = NUX_FAILURE;
     }
 }
@@ -138,7 +138,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_os_stats_update(ctx->userdata, ctx->stats);
 
     // Prepare render
-    nux_graphics_begin_render(ctx);
+    nux_graphics_pre_update(ctx);
 
     // Update inputs
     nux_input_update(ctx);
@@ -157,7 +157,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_error_reset(ctx);
 
     // Render
-    nux_graphics_end_render(ctx);
+    nux_graphics_update(ctx);
 
     // Hotreload
     if (ctx->config.hotreload)

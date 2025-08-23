@@ -105,55 +105,54 @@ function nux.init()
         end
     end
 
-    C = nux.ecs.add()
-    nux.transform.add(C)
-    nux.transform.set_translation(C, 13, 15, 10)
-    nux.camera.add(C)
-    nux.camera.set_fov(C, 70)
+    local camera = nux.ecs.add()
+    nux.transform.add(camera)
+    nux.transform.set_translation(camera, 13, 15, 10)
+    nux.camera.add(camera)
+    nux.camera.set_fov(camera, 70)
+    CAMERA = camera
 
     -- Create canvas
-    GUI_CANVAS = nux.canvas.new(ARENA, 100)
-    GUI_TEXTURE = nux.texture.new(ARENA, nux.TEXTURE_RENDER_TARGET, nux.CANVAS_WIDTH, nux.CANVAS_HEIGHT)
+    GUI_CANVAS = nux.canvas.new(ARENA, nux.CANVAS_WIDTH, nux.CANVAS_HEIGHT, 4096)
+    local e = nux.ecs.add()
+    nux.canvaslayer.add(e)
+    nux.canvaslayer.set_canvas(e, GUI_CANVAS)
 
     -- Create the API monolith
-    MONOLITH_CANVAS = nux.canvas.new(ARENA, 1000)
     local x, y = 350, 1600
-    MONOLITH_TEXTURE = nux.texture.new(ARENA, nux.TEXTURE_RENDER_TARGET, x, y)
+    MONOLITH_CANVAS = nux.canvas.new(ARENA, x, y, 1000)
     CUBE = nux.ecs.add()
     nux.transform.add(CUBE)
     nux.transform.set_translation(CUBE, 10, 0, 0)
     nux.transform.set_scale(CUBE, x / 50, y / 50, 1)
     nux.staticmesh.add(CUBE)
     nux.staticmesh.set_mesh(CUBE, mesh_cube)
-    nux.staticmesh.set_texture(CUBE, MONOLITH_TEXTURE)
+    nux.staticmesh.set_texture(CUBE, nux.canvas.get_texture(MONOLITH_CANVAS))
     nux.collider.add_aabb(CUBE, 0, 0, 0, x / 50, y / 50, 1)
 
     API = inspect(nux)
 end
 
 function nux.tick()
-    controller(C)
+    controller(CAMERA)
     nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
     nux.transform.set_scale(ROTATING, 1, 5, 10)
-    nux.ecs.render(C)
-    nux.canvas.begin(MONOLITH_CANVAS, MONOLITH_TEXTURE)
-    nux.canvas.text(MONOLITH_CANVAS, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(MONOLITH_CANVAS, 10, 20, API)
-    nux.canvas.text(MONOLITH_CANVAS, 50, 50, "hello Julia")
-    nux.canvas.render(MONOLITH_CANVAS)
 
-    local x, y, z = nux.transform.get_translation(C)
-    nux.canvas.begin(GUI_CANVAS, GUI_TEXTURE)
-    nux.canvas.text(GUI_CANVAS, 10, 10, nux.time.date())
-    nux.canvas.text(GUI_CANVAS, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(GUI_CANVAS, 10, 30, string.format("x:%.2f", x))
-    nux.canvas.text(GUI_CANVAS, 10, 40, string.format("y:%.2f", y))
-    nux.canvas.text(GUI_CANVAS, 10, 50, string.format("z:%.2f", z))
-    nux.canvas.text(GUI_CANVAS, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
-    nux.canvas.render(GUI_CANVAS)
-    nux.texture.blit(GUI_TEXTURE)
+    local canvas = MONOLITH_CANVAS
+    nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
+    nux.canvas.text(canvas, 10, 20, API)
+    nux.canvas.text(canvas, 50, 50, "hello Julia")
 
-    local fx, fy, fz = nux.transform.forward(C)
+    local x, y, z = nux.transform.get_translation(CAMERA)
+    local canvas = GUI_CANVAS
+    nux.canvas.text(canvas, 10, 10, nux.time.date())
+    nux.canvas.text(canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
+    nux.canvas.text(canvas, 10, 30, string.format("x:%.2f", x))
+    nux.canvas.text(canvas, 10, 40, string.format("y:%.2f", y))
+    nux.canvas.text(canvas, 10, 50, string.format("z:%.2f", z))
+    nux.canvas.text(canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
+
+    local fx, fy, fz = nux.transform.forward(CAMERA)
     if nux.button.just_pressed(0, nux.BUTTON_RB) then
         local hit = nux.physics.query(x, y, z, fx, fy, fz)
         if hit then

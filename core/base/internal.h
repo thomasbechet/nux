@@ -771,6 +771,7 @@ void                 nux_res_delete(nux_ctx_t *ctx, nux_res_t res);
 void        *nux_res_check(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
 void         nux_res_watch(nux_ctx_t *ctx, nux_res_t res, const nux_c8_t *path);
 nux_status_t nux_res_reload(nux_ctx_t *ctx, nux_res_t res);
+nux_res_t    nux_res_next(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
 
 // arena.c
 

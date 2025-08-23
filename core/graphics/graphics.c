@@ -1,4 +1,3 @@
-#include "graphics/internal.h"
 #include "nux_internal.h"
 
 #include "fonts_data.c.inc"
@@ -101,6 +100,13 @@ nux_graphics_init (nux_ctx_t *ctx)
     ctx->transform_iter = nux_ecs_new_iter(ctx, ctx->core_arena_res, 1, 0);
     NUX_CHECK(ctx->transform_iter, return NUX_FAILURE);
     nux_ecs_includes(ctx, ctx->transform_iter, NUX_COMPONENT_TRANSFORM);
+
+    ctx->transform_camera_iter
+        = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
+    NUX_CHECK(ctx->transform_camera_iter, return NUX_FAILURE);
+    nux_ecs_includes(ctx, ctx->transform_camera_iter, NUX_COMPONENT_TRANSFORM);
+    nux_ecs_includes(ctx, ctx->transform_camera_iter, NUX_COMPONENT_CAMERA);
+
     ctx->transform_staticmesh_iter
         = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
     NUX_CHECK(ctx->transform_staticmesh_iter, return NUX_FAILURE);
@@ -108,6 +114,10 @@ nux_graphics_init (nux_ctx_t *ctx)
         ctx, ctx->transform_staticmesh_iter, NUX_COMPONENT_TRANSFORM);
     nux_ecs_includes(
         ctx, ctx->transform_staticmesh_iter, NUX_COMPONENT_STATICMESH);
+
+    ctx->canvaslayer_iter = nux_ecs_new_iter(ctx, ctx->core_arena_res, 1, 0);
+    NUX_CHECK(ctx->canvaslayer_iter, return NUX_FAILURE);
+    nux_ecs_includes(ctx, ctx->canvaslayer_iter, NUX_COMPONENT_CANVASLAYER);
 
     // Push identity transform
     nux_m4_t identity = nux_m4_identity();
@@ -144,20 +154,25 @@ nux_graphics_free (nux_ctx_t *ctx)
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_graphics_begin_render (nux_ctx_t *ctx)
+nux_graphics_pre_update (nux_ctx_t *ctx)
 {
     // Reset frame data
     ctx->transforms_buffer_head     = 0;
     ctx->batches_buffer_head        = 0;
     ctx->vertices_buffer_head_frame = ctx->config.graphics.vertices_buffer_size;
     ctx->active_texture             = NUX_NULL;
+
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_graphics_end_render (nux_ctx_t *ctx)
+nux_graphics_update (nux_ctx_t *ctx)
 {
-    // Submit commands
-    nux_gpu_encoder_submit(ctx, &ctx->encoder);
+    nux_res_t res = nux_ecs_get_active(ctx);
+    if (res)
+    {
+        nux_ecs_t *ecs = nux_res_check(ctx, NUX_RES_ECS, res);
+        nux_renderer_render(ctx, ecs);
+    }
 
     return NUX_SUCCESS;
 }

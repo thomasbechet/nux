@@ -587,16 +587,6 @@ l_ecs_set_active (lua_State *L)
     return 0;
 }
 static int
-l_ecs_render (lua_State *L)
-{
-    nux_ctx_t *ctx    = lua_getuserdata(L);
-    nux_ent_t  camera = luaL_checkinteger(L, 1);
-
-    nux_ecs_render(ctx, camera);
-    l_checkerror(L, ctx);
-    return 0;
-}
-static int
 l_ecs_add (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
@@ -738,7 +728,6 @@ static const struct luaL_Reg lib_ecs[] = { { "new_iter", l_ecs_new_iter },
                                            { "load_gltf", l_ecs_load_gltf },
                                            { "get_active", l_ecs_get_active },
                                            { "set_active", l_ecs_set_active },
-                                           { "render", l_ecs_render },
                                            { "add", l_ecs_add },
                                            { "add_at", l_ecs_add_at },
                                            { "remove", l_ecs_remove },

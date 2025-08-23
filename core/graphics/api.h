@@ -43,12 +43,8 @@ typedef enum
     // NUX_CANVAS_WIDTH  = 320,
     // NUX_CANVAS_HEIGHT = 200,
 
-    NUX_TEXTURE_WIDTH    = 4096,
-    NUX_TEXTURE_HEIGHT   = 4096,
-    NUX_PALETTE_SIZE     = 256,
-    NUX_COLORMAP_SIZE    = 256,
-    NUX_GPU_BUFFER_SIZE  = (1 << 24), // 16M
-    NUX_GPU_COMMAND_SIZE = 1024,
+    NUX_PALETTE_SIZE  = 256,
+    NUX_COLORMAP_SIZE = 256,
 } nux_graphics_constants_t;
 
 typedef enum
@@ -102,11 +98,19 @@ nux_res_t nux_mesh_new_cube(
     nux_ctx_t *ctx, nux_res_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz);
 void nux_mesh_update_bounds(nux_ctx_t *ctx, nux_res_t mesh);
 
+void nux_canvaslayer_add(nux_ctx_t *ctx, nux_ent_t e);
+void nux_canvaslayer_remove(nux_ctx_t *ctx, nux_ent_t e);
+void nux_canvaslayer_set_canvas(nux_ctx_t *ctx, nux_ent_t e, nux_res_t canvas);
+nux_res_t nux_canvaslayer_get_canvas(nux_ctx_t *ctx,
+                                     nux_ent_t  e,
+                                     nux_res_t  canvas);
+
 nux_res_t nux_canvas_new(nux_ctx_t *ctx,
                          nux_res_t  arena,
-                         nux_u32_t  encoder_capa);
-void      nux_canvas_begin(nux_ctx_t *ctx, nux_res_t res, nux_res_t target);
-void      nux_canvas_render(nux_ctx_t *ctx, nux_res_t res);
+                         nux_u32_t  width,
+                         nux_u32_t  height,
+                         nux_u32_t  capa);
+nux_res_t nux_canvas_get_texture(nux_ctx_t *ctx, nux_res_t res);
 void      nux_canvas_text(nux_ctx_t      *ctx,
                           nux_res_t       res,
                           nux_u32_t       x,
