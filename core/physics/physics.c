@@ -1,4 +1,6 @@
-#include "nux_internal.h"
+#include "internal.h"
+
+#include <graphics/internal.h>
 
 NUX_VEC_IMPL(nux_point_mass_vec, nux_point_mass_t);
 NUX_VEC_IMPL(nux_collision_constraint_vec, nux_collision_constraint_t);
@@ -216,6 +218,13 @@ nux_physics_init (nux_ctx_t *ctx)
 
     const nux_u32_t count = 1024 * 10;
 
+    // Register components
+    nux_ecs_register_component(
+        ctx, NUX_COMPONENT_RIGIDBODY, "rigidbody", sizeof(nux_rigidbody_t));
+    nux_ecs_register_component(
+        ctx, NUX_COMPONENT_COLLIDER, "collider", sizeof(nux_collider_t));
+
+    // Initialize values
     NUX_CHECK(nux_point_mass_vec_alloc(
                   ctx, &ctx->core_arena, count, &module->point_masses),
               return NUX_FAILURE);

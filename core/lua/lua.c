@@ -1,4 +1,6 @@
-#include "nux_internal.h"
+#include "internal.h"
+
+#include "lua_code.c.inc"
 
 static void
 nux_serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
@@ -179,9 +181,10 @@ nux_lua_get_function (lua_State *L, const nux_c8_t *func)
 static nux_status_t
 nux_lua_call (nux_ctx_t *ctx, nux_u32_t nargs, nux_u32_t nreturns)
 {
-    if (lua_pcall(ctx->L, nargs, nreturns, 0) != LUA_OK) // consume field
+    nux_lua_module_t *module = ctx->lua;
+    if (lua_pcall(module->L, nargs, nreturns, 0) != LUA_OK) // consume field
     {
-        nux_error(ctx, "%s", lua_tostring(ctx->L, -1));
+        nux_error(ctx, "%s", lua_tostring(module->L, -1));
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;
@@ -190,33 +193,53 @@ nux_lua_call (nux_ctx_t *ctx, nux_u32_t nargs, nux_u32_t nreturns)
 nux_status_t
 nux_lua_init (nux_ctx_t *ctx)
 {
+    ctx->lua = nux_arena_alloc(ctx, ctx->core_arena_res, sizeof(*ctx->lua));
+    NUX_CHECK(ctx->lua, return NUX_FAILURE);
+
+    nux_lua_module_t *module = ctx->lua;
+
+    // Register types
+    nux_resource_type_t *type;
+    type         = nux_res_register(ctx, NUX_RES_LUA, "lua");
+    type->reload = nux_lua_reload;
+
     // Initialize Lua VM
-    ctx->L = luaL_newstate(ctx);
-    NUX_ASSERT(lua_getuserdata(ctx->L) == ctx);
-    NUX_ENSURE(ctx->L, return NUX_FAILURE, "failed to initialize lua state");
+    module->L = luaL_newstate(ctx);
+    NUX_ASSERT(lua_getuserdata(module->L) == ctx);
+    NUX_ENSURE(module->L, return NUX_FAILURE, "failed to initialize lua state");
 
     // Create nux table
-    lua_newtable(ctx->L);
-    lua_setglobal(ctx->L, NUX_TABLE);
+    lua_newtable(module->L);
+    lua_setglobal(module->L, NUX_TABLE);
 
     // Register base lua API
-    luaL_openlibs(ctx->L);
+    luaL_openlibs(module->L);
+
+    // Register lua API
+    nux_lua_open_base(ctx);
+    nux_lua_open_lua(ctx);
+    nux_lua_open_io(ctx);
+    nux_lua_dostring(ctx, lua_data_code);
 
     return NUX_SUCCESS;
 }
 void
 nux_lua_free (nux_ctx_t *ctx)
 {
-    if (ctx->L)
+    nux_lua_module_t *module = ctx->lua;
+
+    if (module->L)
     {
-        lua_close(ctx->L);
+        lua_close(module->L);
     }
 }
 static void
 serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
 {
+    nux_lua_module_t *module = ctx->lua;
+
     nux_lua_serde_t s;
-    nux_serde_begin(&s, ctx->L, serialize);
+    nux_serde_begin(&s, module->L, serialize);
 
     // window
     nux_serde_begin_table(&s, "window", &config->window.enable);
@@ -256,6 +279,8 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
     nux_serde_field_u32(
         &s, "vertices_buffer_size", &config->graphics.vertices_buffer_size);
     nux_serde_field_u32(&s, "encoder_size", &config->graphics.encoder_size);
+    nux_serde_field_u32(
+        &s, "immediate_encoder_size", &config->graphics.immediate_encoder_size);
     nux_serde_end_table(&s);
 }
 static void
@@ -273,18 +298,20 @@ nux_lua_configure (nux_ctx_t      *ctx,
                    const nux_c8_t *entry_script,
                    nux_config_t   *config)
 {
+    nux_lua_module_t *module = ctx->lua;
+
     // Load init script
-    if (luaL_dofile(ctx->L, entry_script) != LUA_OK)
+    if (luaL_dofile(module->L, entry_script) != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        NUX_ERROR("%s", lua_tostring(module->L, -1));
         return NUX_FAILURE;
     }
 
     // Call nux.conf
     serialize_config(ctx, config);
-    if (nux_lua_get_function(ctx->L, NUX_FUNC_CONF))
+    if (nux_lua_get_function(module->L, NUX_FUNC_CONF))
     {
-        lua_pushvalue(ctx->L, -2); // push config as argument
+        lua_pushvalue(module->L, -2); // push config as argument
         NUX_CHECK(nux_lua_call(ctx, 1, 0), return NUX_FAILURE);
     }
     deserialize_config(ctx, config);
@@ -294,7 +321,7 @@ nux_lua_configure (nux_ctx_t      *ctx,
 nux_status_t
 nux_lua_call_init (nux_ctx_t *ctx)
 {
-    if (nux_lua_get_function(ctx->L, NUX_FUNC_INIT))
+    if (nux_lua_get_function(ctx->lua->L, NUX_FUNC_INIT))
     {
         NUX_CHECK(nux_lua_call(ctx, 0, 0), return NUX_FAILURE);
     }
@@ -303,7 +330,7 @@ nux_lua_call_init (nux_ctx_t *ctx)
 nux_status_t
 nux_lua_call_tick (nux_ctx_t *ctx)
 {
-    if (nux_lua_get_function(ctx->L, NUX_FUNC_TICK))
+    if (nux_lua_get_function(ctx->lua->L, NUX_FUNC_TICK))
     {
         NUX_CHECK(nux_lua_call(ctx, 0, 0), return NUX_FAILURE);
     }
@@ -312,9 +339,9 @@ nux_lua_call_tick (nux_ctx_t *ctx)
 nux_status_t
 nux_lua_dostring (nux_ctx_t *ctx, const nux_c8_t *string)
 {
-    if (luaL_dostring(ctx->L, string) != LUA_OK)
+    if (luaL_dostring(ctx->lua->L, string) != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        NUX_ERROR("%s", lua_tostring(ctx->lua->L, -1));
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;
@@ -323,9 +350,9 @@ nux_lua_dostring (nux_ctx_t *ctx, const nux_c8_t *string)
 nux_res_t
 nux_lua_load (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
 {
-    if (luaL_dofile(ctx->L, path) != LUA_OK)
+    if (luaL_dofile(ctx->lua->L, path) != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        NUX_ERROR("%s", lua_tostring(ctx->lua->L, -1));
         return NUX_NULL;
     }
     nux_res_t  res;
@@ -338,9 +365,9 @@ nux_status_t
 nux_lua_reload (nux_ctx_t *ctx, nux_res_t res, const nux_c8_t *path)
 {
     nux_lua_t *lua = nux_res_check(ctx, NUX_RES_LUA, res);
-    if (luaL_dofile(ctx->L, path) != LUA_OK)
+    if (luaL_dofile(ctx->lua->L, path) != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(ctx->L, -1));
+        NUX_ERROR("%s", lua_tostring(ctx->lua->L, -1));
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;

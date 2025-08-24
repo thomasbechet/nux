@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 static void
 bind_texture (nux_ctx_t           *ctx,
@@ -135,8 +135,7 @@ void
 nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
 {
     nux_graphics_module_t *module = ctx->graphics;
-
-    nux_gpu_encoder_t *enc = &module->encoder;
+    nux_gpu_encoder_t     *enc    = &module->encoder;
 
     // Propagate transforms
     nux_ent_t it = NUX_NULL;
@@ -256,6 +255,12 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
             bind_texture(ctx, enc, NUX_NULL);
             draw_box(ctx, enc, sm->transform, NUX_PRIMITIVE_LINES, m->bounds);
         }
+
+        // Submit commands
+        nux_gpu_encoder_submit(ctx, &module->encoder);
+
+        // Submit immediate commands
+        nux_gpu_encoder_submit(ctx, &module->immediate_encoder);
     }
 
     // Render canvas layers
@@ -274,20 +279,25 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
             }
         }
     }
-
-    // Submit commands
-    nux_gpu_encoder_submit(ctx, &module->encoder);
 }
 void
 nux_renderer_draw_rect (nux_ctx_t *ctx, const nux_v3_t *positions)
 {
     nux_graphics_module_t *module = ctx->graphics;
+    nux_gpu_encoder_t     *enc    = &module->immediate_encoder;
 
-    nux_gpu_bind_framebuffer(ctx, &module->encoder, 0);
-    nux_gpu_bind_pipeline(
-        ctx, &module->encoder, module->uber_pipeline_line.slot);
+    nux_gpu_bind_framebuffer(ctx, enc, 0);
+    nux_gpu_bind_pipeline(ctx, enc, module->uber_pipeline_line.slot);
+    nux_gpu_bind_buffer(
+        ctx, enc, NUX_GPU_DESC_UBER_CONSTANTS, module->constants_buffer.slot);
+    nux_gpu_bind_buffer(
+        ctx, enc, NUX_GPU_DESC_UBER_BATCHES, module->batches_buffer.slot);
+    nux_gpu_bind_buffer(
+        ctx, enc, NUX_GPU_DESC_UBER_TRANSFORMS, module->transforms_buffer.slot);
+    nux_gpu_bind_buffer(
+        ctx, enc, NUX_GPU_DESC_UBER_VERTICES, module->vertices_buffer.slot);
     draw_rect(ctx,
-              &module->encoder,
+              enc,
               module->identity_transform_index,
               NUX_PRIMITIVE_LINES,
               positions);

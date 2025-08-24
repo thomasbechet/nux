@@ -2,6 +2,7 @@
 #define NUX_GRAPHICS_INTERNAL_H
 
 #include <ecs/internal.h>
+#include <io/internal.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -112,7 +113,7 @@ typedef enum
     NUX_VERTEX_SIZE = 5
 } nux_graphics_constants_internal_t;
 
-typedef struct
+typedef struct nux_graphics_module
 {
     nux_gpu_pipeline_t uber_pipeline_opaque;
     nux_gpu_pipeline_t uber_pipeline_line;
@@ -129,6 +130,7 @@ typedef struct
     nux_u32_t          identity_transform_index;
 
     nux_gpu_encoder_t encoder;
+    nux_gpu_encoder_t immediate_encoder;
     nux_gpu_buffer_t  constants_buffer;
     nux_gpu_buffer_t  batches_buffer;
     nux_u32_t         batches_buffer_head;

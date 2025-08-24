@@ -1,6 +1,4 @@
-#include "nux_internal.h"
-
-#include "lua_code.c.inc"
+#include "internal.h"
 
 nux_status_t
 nux_base_init (nux_ctx_t *ctx)
@@ -12,26 +10,10 @@ nux_base_init (nux_ctx_t *ctx)
     nux_arena_init(&ctx->core_arena, "core_arena");
 
     // Register base types
-    // Must be coherent with nux_type_base_t
-    ctx->resources_types_count = 0;
     nux_resource_type_t *type;
-    type          = nux_res_register(ctx, "null");
-    type          = nux_res_register(ctx, "arena");
+    type          = nux_res_register(ctx, NUX_RES_NULL, "null");
+    type          = nux_res_register(ctx, NUX_RES_ARENA, "arena");
     type->cleanup = nux_arena_cleanup;
-    type          = nux_res_register(ctx, "lua");
-    type->reload  = nux_lua_reload;
-    type          = nux_res_register(ctx, "texture");
-    type->cleanup = nux_texture_cleanup;
-    type          = nux_res_register(ctx, "mesh");
-    type          = nux_res_register(ctx, "canvas");
-    type->cleanup = nux_canvas_cleanup;
-    type          = nux_res_register(ctx, "font");
-    type->cleanup = nux_font_cleanup;
-    type          = nux_res_register(ctx, "file");
-    type->cleanup = nux_file_cleanup;
-    type          = nux_res_register(ctx, "ecs");
-    type->cleanup = nux_ecs_cleanup;
-    type          = nux_res_register(ctx, "ecs_iter");
 
     // Create resource pool
     NUX_CHECK(
@@ -52,33 +34,35 @@ nux_base_init (nux_ctx_t *ctx)
     ctx->error_enable = NUX_TRUE;
     ctx->pcg          = nux_pcg(10243124, 1823719241);
 
-    // Initialize controllers
-    for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
-    {
-        nux_controller_t *controller      = ctx->controllers + i;
-        controller->mode                  = NUX_CONTROLLER_MODE_MOTION;
-        controller->cursor_motion_axis[0] = NUX_AXIS_LEFTX;
-        controller->cursor_motion_axis[1] = NUX_AXIS_LEFTY;
-        controller->cursor_motion_speed   = 100;
-    }
-
-    // Initialize io
-    NUX_CHECK(nux_io_init(ctx), return NUX_FAILURE);
-
-    // Initialize lua
-    NUX_CHECK(nux_lua_init(ctx), return NUX_FAILURE);
-
-    // Register base API
-    nux_lua_open_base(ctx);
-    nux_lua_dostring(ctx, lua_data_code);
-
     return NUX_SUCCESS;
 }
 void
 nux_base_free (nux_ctx_t *ctx)
 {
-    nux_lua_free(ctx);
-    nux_io_free(ctx);
+}
 
-    NUX_ASSERT(ctx->free_file_slots.size == NUX_IO_FILE_MAX);
+nux_u32_t
+nux_stat (nux_ctx_t *ctx, nux_stat_t stat)
+{
+    return ctx->stats[stat];
+}
+nux_f32_t
+nux_time_elapsed (nux_ctx_t *ctx)
+{
+    return ctx->time_elapsed;
+}
+nux_f32_t
+nux_time_delta (nux_ctx_t *ctx)
+{
+    return 1. / 60;
+}
+nux_u32_t
+nux_time_frame (nux_ctx_t *ctx)
+{
+    return ctx->frame;
+}
+nux_u64_t
+nux_time_timestamp (nux_ctx_t *ctx)
+{
+    return ctx->stats[NUX_STAT_TIMESTAMP];
 }

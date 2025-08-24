@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 void
 nux_collider_add_sphere (nux_ctx_t *ctx, nux_ent_t e, nux_f32_t radius)

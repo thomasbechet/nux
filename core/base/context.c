@@ -1,4 +1,9 @@
-#include "nux_internal.h"
+#include <base/internal.h>
+#include <io/internal.h>
+#include <lua/internal.h>
+#include <ecs/internal.h>
+#include <graphics/internal.h>
+#include <physics/internal.h>
 
 void
 nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
@@ -10,10 +15,10 @@ nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
         nux_vsnprintf(
             ctx->error_message, sizeof(ctx->error_message), fmt, args);
         va_end(args);
-        #ifdef NUX_BUILD_DEBUG
-                NUX_ERROR("%s", nux_error_get_message(ctx));
-                NUX_ASSERT(NUX_FALSE);
-        #endif
+#ifdef NUX_BUILD_DEBUG
+        NUX_ERROR("%s", nux_error_get_message(ctx));
+        NUX_ASSERT(NUX_FALSE);
+#endif
         ctx->error_status = NUX_FAILURE;
     }
 }
@@ -55,6 +60,8 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
 
     // Initialize mandatory modules
     NUX_CHECK(nux_base_init(ctx), goto cleanup);
+    NUX_CHECK(nux_io_init(ctx), goto cleanup);
+    NUX_CHECK(nux_lua_init(ctx), goto cleanup);
 
     // Detect entry point type
     NUX_ASSERT(entry);
@@ -85,6 +92,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     ctx->config.graphics.batches_buffer_size    = 8192;
     ctx->config.graphics.vertices_buffer_size   = 1 << 18;
     ctx->config.graphics.encoder_size           = 8192;
+    ctx->config.graphics.immediate_encoder_size = 8192;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
 
     // Register entry script
@@ -98,8 +106,8 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     }
 
     // Initialize optional modules
-    NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
     NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
+    NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
     NUX_CHECK(nux_physics_init(ctx), goto cleanup);
 
     // Initialize program
@@ -125,6 +133,8 @@ nux_instance_free (nux_ctx_t *ctx)
     nux_physics_free(ctx);
     nux_graphics_free(ctx);
     nux_ecs_free(ctx);
+    nux_lua_free(ctx);
+    nux_io_free(ctx);
     nux_base_free(ctx);
 
     // Free core memory
@@ -177,30 +187,4 @@ nux_instance_tick (nux_ctx_t *ctx)
     // Frame integration
     ctx->time_elapsed += nux_time_delta(ctx);
     ++ctx->frame;
-}
-
-nux_u32_t
-nux_stat (nux_ctx_t *ctx, nux_stat_t stat)
-{
-    return ctx->stats[stat];
-}
-nux_f32_t
-nux_time_elapsed (nux_ctx_t *ctx)
-{
-    return ctx->time_elapsed;
-}
-nux_f32_t
-nux_time_delta (nux_ctx_t *ctx)
-{
-    return 1. / 60;
-}
-nux_u32_t
-nux_time_frame (nux_ctx_t *ctx)
-{
-    return ctx->frame;
-}
-nux_u64_t
-nux_time_timestamp (nux_ctx_t *ctx)
-{
-    return ctx->stats[NUX_STAT_TIMESTAMP];
 }

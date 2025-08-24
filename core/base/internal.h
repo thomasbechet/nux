@@ -1,11 +1,7 @@
 #ifndef NUX_BASE_INTERNAL_H
 #define NUX_BASE_INTERNAL_H
 
-#include "nux.h"
-
-#include "externals/lua/lua.h"
-#include "externals/lua/lualib.h"
-#include "externals/lua/lauxlib.h"
+#include <nux.h>
 
 #ifdef NUX_BUILD_STDLIB
 #include <math.h>
@@ -309,11 +305,6 @@
         nux_u32_vec_pushv(&p->freelist, index);                         \
     }
 
-#define NUX_TABLE     "nux"
-#define NUX_FUNC_CONF "conf"
-#define NUX_FUNC_INIT "init"
-#define NUX_FUNC_TICK "tick"
-
 ////////////////////////////
 ///        TYPES         ///
 ////////////////////////////
@@ -568,122 +559,50 @@ typedef struct
         nux_u32_t batches_buffer_size;
         nux_u32_t vertices_buffer_size;
         nux_u32_t encoder_size;
+        nux_u32_t immediate_encoder_size;
     } graphics;
 
     nux_b32_t hotreload;
 
 } nux_config_t;
 
-typedef enum
+typedef struct nux_io_module       nux_io_module_t;
+typedef struct nux_lua_module      nux_lua_module_t;
+typedef struct nux_ecs_module      nux_ecs_module_t;
+typedef struct nux_graphics_module nux_graphics_module_t;
+typedef struct nux_physics_module  nux_physics_module_t;
+
+struct nux_context
 {
-    NUX_CART_HEADER_SIZE = 4 * 3,
-    NUX_CART_ENTRY_SIZE  = 4 * 6,
-} nux_cart_layout_t;
+    // thread data
 
-typedef enum
-{
-    NUX_DISK_OS,
-    NUX_DISK_CART,
-} nux_disk_type_t;
+    nux_c8_t     error_message[256];
+    nux_status_t error_status;
+    nux_status_t error_enable;
 
-typedef struct
-{
-    nux_disk_type_t type;
-    nux_io_mode_t   mode;
-    union
-    {
-        struct
-        {
-            nux_u32_t slot;
-            nux_u32_t offset;
-            nux_u32_t length;
-            nux_u32_t cursor;
-        } cart;
-        struct
-        {
-            nux_u32_t slot;
-        } os;
-    };
-} nux_file_t;
+    // base
 
-typedef struct
-{
-    nux_b32_t compressed;
-    nux_u32_t data_type;
-    nux_u32_t data_offset;
-    nux_u32_t data_length;
-    nux_u32_t path_hash;
-    nux_u32_t path_offset;
-    nux_u32_t path_length;
-} nux_cart_entry_t;
+    void               *userdata;
+    nux_config_t        config;
+    nux_b32_t           running;
+    nux_u64_t           frame;
+    nux_f32_t           time_elapsed;
+    nux_pcg_t           pcg;
+    nux_resource_pool_t resources;
+    nux_arena_t         core_arena;
+    nux_res_t           core_arena_res;
+    nux_res_t           frame_arena;
+    nux_resource_type_t resources_types[NUX_RES_MAX];
+    nux_u64_t           stats[NUX_STAT_MAX];
 
-typedef struct
-{
-    nux_c8_t          path[NUX_PATH_BUF_SIZE];
-    nux_u32_t         slot;
-    nux_cart_entry_t *entries;
-    nux_u32_t         entries_count;
-} nux_cart_t;
+    // modules
 
-typedef struct
-{
-    nux_b32_t started;
-    nux_u32_t slot;
-    nux_u32_t entry_count;
-    nux_u32_t entry_index;
-    nux_u32_t cursor;
-} nux_cart_writer_t;
-
-typedef struct
-{
-    nux_disk_type_t type;
-    union
-    {
-        nux_cart_t cart;
-    };
-} nux_disk_t;
-
-typedef enum
-{
-    NUX_CONTROLLER_MODE_MOTION,
-    NUX_CONTROLLER_MODE_CURSOR,
-} nux_controller_mode_t;
-
-typedef struct
-{
-    nux_controller_mode_t mode;
-
-    nux_u32_t buttons;
-    nux_u32_t buttons_prev;
-    nux_f32_t axis[NUX_AXIS_MAX];
-    nux_f32_t axis_prev[NUX_AXIS_MAX];
-
-    nux_v2_t cursor;
-    nux_v2_t cursor_prev;
-
-    nux_button_t cursor_motion_buttons[4];
-    nux_axis_t   cursor_motion_axis[2];
-    nux_f32_t    cursor_motion_speed;
-} nux_controller_t;
-
-typedef struct
-{
-    nux_u32_t dummy;
-} nux_lua_t;
-
-typedef struct
-{
-    lua_State      *L;
-    nux_b32_t       serialize;
-    const nux_c8_t *stack[8];
-    nux_u32_t       head;
-} nux_lua_serde_t;
-
-typedef struct
-{
-    const nux_c8_t *name;
-    nux_u32_t       value;
-} nux_lua_serde_enum_t;
+    nux_io_module_t       *io;
+    nux_lua_module_t      *lua;
+    nux_ecs_module_t      *ecs;
+    nux_graphics_module_t *graphics;
+    nux_physics_module_t  *physics;
+};
 
 ////////////////////////////
 ///      FUNCTIONS       ///
@@ -757,7 +676,9 @@ nux_u32_t nux_hash(const void *p, nux_u32_t s);
 
 // resource.c
 
-nux_resource_type_t *nux_res_register(nux_ctx_t *ctx, const nux_c8_t *name);
+nux_resource_type_t *nux_res_register(nux_ctx_t      *ctx,
+                                      nux_u32_t       index,
+                                      const nux_c8_t *name);
 nux_res_t            nux_res_add(nux_ctx_t *ctx,
                                  nux_res_t  arena,
                                  nux_u32_t  type,
@@ -847,69 +768,6 @@ void            nux_error_disable(nux_ctx_t *ctx);
 void            nux_error_reset(nux_ctx_t *ctx);
 const nux_c8_t *nux_error_get_message(nux_ctx_t *ctx);
 nux_status_t    nux_error_get_status(nux_ctx_t *ctx);
-
-// io.c
-
-nux_status_t nux_io_init(nux_ctx_t *ctx);
-nux_status_t nux_io_free(nux_ctx_t *ctx);
-
-nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *path);
-
-nux_b32_t    nux_io_exists(nux_ctx_t *ctx, const nux_c8_t *path);
-nux_status_t nux_io_open(nux_ctx_t      *ctx,
-                         const nux_c8_t *path,
-                         nux_io_mode_t   mode,
-                         nux_file_t     *file);
-void         nux_io_close(nux_ctx_t *ctx, nux_file_t *file);
-nux_u32_t    nux_io_read(nux_ctx_t  *ctx,
-                         nux_file_t *file,
-                         void       *data,
-                         nux_u32_t   n);
-nux_u32_t    nux_io_write(nux_ctx_t  *ctx,
-                          nux_file_t *file,
-                          const void *data,
-                          nux_u32_t   n);
-nux_status_t nux_io_seek(nux_ctx_t *ctx, nux_file_t *file, nux_u32_t cursor);
-nux_status_t nux_io_stat(nux_ctx_t       *ctx,
-                         nux_file_t      *file,
-                         nux_file_stat_t *stat);
-void        *nux_io_load(nux_ctx_t      *ctx,
-                         nux_res_t       arena,
-                         const nux_c8_t *path,
-                         nux_u32_t      *size);
-
-nux_status_t nux_io_write_cart_data(nux_ctx_t      *ctx,
-                                    const nux_c8_t *path,
-                                    nux_u32_t       type,
-                                    nux_b32_t       compress,
-                                    const void     *data,
-                                    nux_u32_t       size);
-
-// file.c
-
-void nux_file_cleanup(nux_ctx_t *ctx, nux_res_t res);
-
-// input.c
-
-void nux_input_update(nux_ctx_t *ctx);
-
-// lua.c
-
-nux_status_t nux_lua_init(nux_ctx_t *ctx);
-void         nux_lua_free(nux_ctx_t *ctx);
-nux_status_t nux_lua_configure(nux_ctx_t      *ctx,
-                               const nux_c8_t *entry_script,
-                               nux_config_t   *config);
-nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
-nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
-nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
-nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
-                            nux_res_t       res,
-                            const nux_c8_t *path);
-
-// lua_bindings*.c
-
-nux_status_t nux_lua_open_base(nux_ctx_t *ctx);
 
 // base.c
 

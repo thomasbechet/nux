@@ -96,6 +96,8 @@ def parse_header(args, header):
         typedef int nux_intptr_t;
         typedef int nux_res_t;
         typedef int nux_ent_t;
+
+        typedef int nux_status_t;
         
         typedef struct nux_context nux_ctx_t;
         
@@ -141,7 +143,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     triples = [
-        ("core/base/api.h", "core/base/lua_bindings.c", "base"),
+        ("core/base/api.h", "core/lua/lua_base_bindings.c", "base"),
+        ("core/io/api.h", "core/lua/lua_io_bindings.c", "io"),
+        ("core/lua/api.h", "core/lua/lua_bindings.c", "lua"),
         ("core/ecs/api.h", "core/ecs/lua_bindings.c", "ecs"),
         ("core/graphics/api.h", "core/graphics/lua_bindings.c", "graphics"),
         ("core/physics/api.h", "core/physics/lua_bindings.c", "physics"),

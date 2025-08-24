@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 static void *
 arena_push (nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size)

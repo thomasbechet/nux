@@ -1,6 +1,8 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 #include "fonts_data.c.inc"
+
+NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
 
 nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
@@ -11,6 +13,26 @@ nux_graphics_init (nux_ctx_t *ctx)
 
     nux_graphics_module_t *module = ctx->graphics;
     nux_arena_t           *a      = &ctx->core_arena;
+
+    // Register resources
+    nux_resource_type_t *type;
+    type          = nux_res_register(ctx, NUX_RES_TEXTURE, "texture");
+    type->cleanup = nux_texture_cleanup;
+    type          = nux_res_register(ctx, NUX_RES_MESH, "mesh");
+    type          = nux_res_register(ctx, NUX_RES_CANVAS, "canvas");
+    type->cleanup = nux_canvas_cleanup;
+    type          = nux_res_register(ctx, NUX_RES_FONT, "font");
+    type->cleanup = nux_font_cleanup;
+
+    // Register components
+    nux_ecs_register_component(
+        ctx, NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
+    nux_ecs_register_component(
+        ctx, NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
+    nux_ecs_register_component(ctx,
+                               NUX_COMPONENT_CANVASLAYER,
+                               "canvaslayer",
+                               sizeof(nux_canvaslayer_t));
 
     // Initialize gpu slots
     NUX_CHECK(
@@ -78,6 +100,11 @@ nux_graphics_init (nux_ctx_t *ctx)
     // Allocate gpu commands buffer
     NUX_CHECK(nux_gpu_encoder_init(
                   ctx, a, ctx->config.graphics.encoder_size, &module->encoder),
+              return NUX_NULL);
+    NUX_CHECK(nux_gpu_encoder_init(ctx,
+                                   a,
+                                   ctx->config.graphics.immediate_encoder_size,
+                                   &module->immediate_encoder),
               return NUX_NULL);
 
     // Allocate constants buffer
@@ -169,7 +196,7 @@ nux_graphics_pre_update (nux_ctx_t *ctx)
     nux_graphics_module_t *module = ctx->graphics;
 
     // Reset frame data
-    module->transforms_buffer_head = 0;
+    module->transforms_buffer_head = 1; // keep identity transform
     module->batches_buffer_head    = 0;
     module->vertices_buffer_head_frame
         = ctx->config.graphics.vertices_buffer_size;

@@ -164,8 +164,8 @@ function nux.tick()
             nux.rigidbody.add(e)
             local force = 10
             nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
-            nux.staticmesh.add(e)
-            nux.staticmesh.set_mesh(e, MESH_CUBE)
+            -- nux.staticmesh.add(e)
+            -- nux.staticmesh.set_mesh(e, MESH_CUBE)
         end
     end
 end

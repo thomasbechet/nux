@@ -19,6 +19,6 @@ if __name__ == "__main__":
     parser.add_argument("rootdir")
     args = parser.parse_args()
 
-    generate_files(args, "core/base/lua/*", "core/base/lua_code.c.inc")
+    generate_files(args, "core/lua/lua/*", "core/lua/lua_code.c.inc")
     generate_files(args, "core/ecs/lua/*", "core/ecs/lua_code.c.inc")
 

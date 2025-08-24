@@ -3,6 +3,8 @@
 
 #include "nux_config.h"
 #include "base/api.h"
+#include "io/api.h"
+#include "lua/api.h"
 #include "ecs/api.h"
 #include "graphics/api.h"
 #include "physics/api.h"

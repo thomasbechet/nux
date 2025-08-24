@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 #define RES_INDEX(res)   (((nux_res_t)(res) >> 0) & 0xFFFFFF)
 #define RES_VERSION(res) (((nux_res_t)(res) >> 24) & 0xFF)
@@ -6,13 +6,13 @@
     (nux_res_t)(((nux_res_t)(RES_VERSION(old) + 1) << (nux_res_t)24) | (index))
 
 nux_resource_type_t *
-nux_res_register (nux_ctx_t *ctx, const nux_c8_t *name)
+nux_res_register (nux_ctx_t *ctx, nux_u32_t index, const nux_c8_t *name)
 {
-    nux_resource_type_t *resource
-        = ctx->resources_types + ctx->resources_types_count;
+    NUX_ASSERT(index < NUX_RES_MAX);
+    NUX_ASSERT(ctx->resources_types[index].name == NUX_NULL);
+    nux_resource_type_t *resource = ctx->resources_types + index;
     nux_memset(resource, 0, sizeof(*resource));
     resource->name = name;
-    ++ctx->resources_types_count;
     return resource;
 }
 

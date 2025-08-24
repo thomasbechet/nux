@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 static void
 l_checkerror (lua_State *L, nux_ctx_t *ctx)
@@ -131,7 +131,7 @@ static const struct luaL_Reg lib_physics[]
 nux_status_t
 nux_lua_open_physics (nux_ctx_t *ctx)
 {
-    lua_State *L = ctx->L;
+    lua_State *L = ctx->lua->L;
     lua_getglobal(L, "nux");
 
     lua_newtable(L);

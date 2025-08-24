@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 nux_b32_t
 nux_intersect_ray_sphere (nux_ray_t r, nux_sphere_t s, nux_hit_t *hit)

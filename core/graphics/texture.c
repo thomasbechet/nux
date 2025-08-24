@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 nux_res_t
 nux_texture_new (nux_ctx_t         *ctx,
@@ -83,12 +83,16 @@ nux_texture_blit (nux_ctx_t *ctx, nux_res_t res)
     nux_texture_t         *tex    = nux_res_check(ctx, NUX_RES_TEXTURE, res);
     NUX_CHECK(tex, return);
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
-    nux_gpu_encoder_t *enc = &module->encoder;
-    nux_gpu_bind_framebuffer(ctx, enc, 0);
-    nux_gpu_bind_pipeline(ctx, enc, module->blit_pipeline.slot);
-    nux_gpu_bind_texture(ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
-    nux_gpu_push_u32(ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
+    nux_gpu_encoder_t enc;
+    nux_arena_t *arena = nux_res_check(ctx, NUX_RES_ARENA, ctx->frame_arena);
+    nux_gpu_encoder_init(ctx, arena, 6, &enc);
+    nux_gpu_bind_framebuffer(ctx, &enc, 0);
+    nux_gpu_bind_pipeline(ctx, &enc, module->blit_pipeline.slot);
+    nux_gpu_bind_texture(ctx, &enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
     nux_gpu_push_u32(
-        ctx, enc, NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT, tex->gpu.height);
-    nux_gpu_draw(ctx, enc, 3);
+        ctx, &enc, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
+    nux_gpu_push_u32(
+        ctx, &enc, NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT, tex->gpu.height);
+    nux_gpu_draw(ctx, &enc, 3);
+    nux_gpu_encoder_submit(ctx, &enc);
 }

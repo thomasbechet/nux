@@ -1,7 +1,7 @@
 #ifndef NUX_PHYSICS_INTERNAL_H
 #define NUX_PHYSICS_INTERNAL_H
 
-#include "ecs/internal.h"
+#include <ecs/internal.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -87,7 +87,7 @@ typedef struct
     };
 } nux_collider_t;
 
-typedef struct
+typedef struct nux_physics_module
 {
     nux_point_mass_vec_t           point_masses;
     nux_collision_constraint_vec_t collision_constraints;

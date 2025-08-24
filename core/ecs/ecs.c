@@ -2,6 +2,10 @@
 
 #include "lua_code.c.inc"
 
+NUX_VEC_IMPL(nux_ecs_bitset, nux_ecs_mask_t);
+NUX_VEC_IMPL(nux_ecs_chunk_vec, void *);
+NUX_VEC_IMPL(nux_ecs_container_vec, nux_ecs_container_t);
+
 #define ID_INDEX(id)   (id - 1)
 #define ID_MAKE(index) (index + 1)
 
@@ -111,10 +115,10 @@ ecs_bitset_capacity (const nux_ecs_bitset_t *bitset)
 static nux_ecs_t *
 ecs_active (nux_ctx_t *ctx)
 {
-    NUX_ENSURE(ctx->active_ecs,
+    NUX_ENSURE(ctx->ecs->active_ecs,
                return NUX_NULL,
                "using ecs api with no active ecs instance");
-    return ctx->active_ecs;
+    return ctx->ecs->active_ecs;
 }
 
 nux_status_t
@@ -125,20 +129,20 @@ nux_ecs_init (nux_ctx_t *ctx)
 
     nux_ecs_module_t *module = ctx->ecs;
 
-    NUX_CHECK(
-        nux_ecs_component_vec_alloc(
-            ctx, &ctx->core_arena, ECS_COMPONENT_MAX, &module->components),
-        return NUX_FAILURE);
-    ctx->active_ecs = NUX_NULL;
+    // Register types
+    nux_resource_type_t *type;
+    type          = nux_res_register(ctx, NUX_RES_ECS, "ecs");
+    type->cleanup = nux_ecs_cleanup;
+    type          = nux_res_register(ctx, NUX_RES_ECS_ITER, "ecs_iter");
 
-    // Register base component types
-    // Must be coherent with nux_component_type_base_t
-    nux_ecs_register_component(ctx, "transform", sizeof(nux_transform_t));
-    nux_ecs_register_component(ctx, "camera", sizeof(nux_camera_t));
-    nux_ecs_register_component(ctx, "staticmesh", sizeof(nux_staticmesh_t));
-    nux_ecs_register_component(ctx, "rigidbody", sizeof(nux_rigidbody_t));
-    nux_ecs_register_component(ctx, "collider", sizeof(nux_collider_t));
-    nux_ecs_register_component(ctx, "canvaslayer", sizeof(nux_canvaslayer_t));
+    // Initialize values
+    nux_memset(module->components, 0, sizeof(module->components));
+    module->components_max = 0;
+    ctx->ecs->active_ecs   = NUX_NULL;
+
+    // Register components
+    nux_ecs_register_component(
+        ctx, NUX_COMPONENT_TRANSFORM, "transform", sizeof(nux_transform_t));
 
     // Register lua api
     nux_lua_open_ecs(ctx);
@@ -150,17 +154,20 @@ void
 nux_ecs_free (nux_ctx_t *ctx)
 {
 }
-nux_u32_t
+void
 nux_ecs_register_component (nux_ctx_t      *ctx,
+                            nux_u32_t       index,
                             const nux_c8_t *name,
                             nux_u32_t       size)
 {
-    nux_ecs_module_t    *module = ctx->ecs;
-    nux_ecs_component_t *comp = nux_ecs_component_vec_push(&module->components);
-    NUX_ENSURE(comp, return NUX_NULL, "max ecs component count reached");
+    nux_ecs_module_t *module = ctx->ecs;
+    NUX_ASSERT(index != 0);
+    NUX_ASSERT(index < NUX_COMPONENT_MAX);
+    NUX_ASSERT(module->components[index].size == 0);
+    nux_ecs_component_t *comp = &module->components[index];
     nux_strncpy(comp->name, name, ECS_COMPONENT_NAME_LEN);
-    comp->size = size;
-    return ID_MAKE(module->components.size - 1);
+    comp->size             = size;
+    module->components_max = NUX_MAX(module->components_max, index + 1);
 }
 
 nux_res_t
@@ -221,14 +228,14 @@ ecs_iter_next (const nux_ecs_t *ins, nux_ecs_iter_t *it)
         for (nux_u32_t i = 0; i < it->includes.size; ++i)
         {
             nux_ecs_container_t *container
-                = ins->containers.data + ID_INDEX(it->includes.data[i]);
+                = ins->containers.data + it->includes.data[i];
             it->mask &= ecs_bitset_mask(&container->bitset, it->mask_index);
         }
         // must be processed after includes
         for (nux_u32_t i = 0; i < it->excludes.size; ++i)
         {
             nux_ecs_container_t *container
-                = ins->containers.data + ID_INDEX(it->excludes.data[i]);
+                = ins->containers.data + it->excludes.data[i];
             it->mask &= ~ecs_bitset_mask(&container->bitset, it->mask_index);
         }
 
@@ -274,7 +281,7 @@ nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
     ins->arena = a;
     ins->self  = res;
     NUX_CHECK(nux_ecs_container_vec_alloc(
-                  ctx, a, module->components.size, &ins->containers),
+                  ctx, a, module->components_max, &ins->containers),
               return NUX_NULL);
     NUX_CHECK(nux_ecs_bitset_alloc(
                   ctx, a, (capa / ECS_ENTITY_PER_MASK) + 1, &ins->bitset),
@@ -284,20 +291,21 @@ nux_ecs_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
 nux_res_t
 nux_ecs_get_active (nux_ctx_t *ctx)
 {
-    return ctx->active_ecs ? ctx->active_ecs->self : NUX_NULL;
+    return ctx->ecs->active_ecs ? ctx->ecs->active_ecs->self : NUX_NULL;
 }
 void
 nux_ecs_set_active (nux_ctx_t *ctx, nux_res_t ecs)
 {
+    nux_ecs_module_t *module = ctx->ecs;
     if (ecs)
     {
         nux_ecs_t *e = nux_res_check(ctx, NUX_RES_ECS, ecs);
         NUX_CHECK(e, return);
-        ctx->active_ecs = e;
+        module->active_ecs = e;
     }
     else
     {
-        ctx->active_ecs = NUX_NULL;
+        module->active_ecs = NUX_NULL;
     }
 }
 nux_u32_t
@@ -386,22 +394,20 @@ nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
                e);
     nux_u32_t index = ID_INDEX(e);
 
-    nux_u32_t                  c_index   = ID_INDEX(c);
-    const nux_ecs_component_t *component = module->components.data + c_index;
+    const nux_ecs_component_t *component = module->components + c;
 
-    NUX_ENSURE(c_index < ins->containers.capa,
-               return NUX_NULL,
-               "invalid ecs component id");
+    NUX_ENSURE(
+        c < ins->containers.capa, return NUX_NULL, "invalid ecs component id");
 
     // initialize pool if component missing
-    if (c_index >= ins->containers.size)
+    if (c >= ins->containers.size)
     {
         nux_u32_t prev_size  = ins->containers.size;
-        ins->containers.size = c_index + 1;
+        ins->containers.size = c + 1;
         for (nux_u32_t i = prev_size; i < ins->containers.size; ++i)
         {
             nux_ecs_container_t *container = ins->containers.data + i;
-            container->component_size      = module->components.data[i].size;
+            container->component_size      = module->components[i].size;
             NUX_CHECK(
                 nux_ecs_chunk_vec_alloc(
                     ctx, ins->arena, ins->bitset.capa, &container->chunks),
@@ -418,7 +424,7 @@ nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
         }
     }
 
-    nux_ecs_container_t *container = ins->containers.data + c_index;
+    nux_ecs_container_t *container = ins->containers.data + c;
 
     // check existing component
     if (!ecs_bitset_isset(&container->bitset, index))
@@ -450,7 +456,7 @@ nux_ecs_unset (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
     nux_u32_t            index     = ID_INDEX(e);
-    nux_ecs_container_t *container = ins->containers.data + ID_INDEX(c);
+    nux_ecs_container_t *container = ins->containers.data + c;
     ecs_bitset_unset(&container->bitset, index);
 }
 nux_b32_t
@@ -461,7 +467,7 @@ nux_ecs_has (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_FALSE);
     nux_u32_t            index     = ID_INDEX(e);
-    nux_ecs_container_t *container = ins->containers.data + ID_INDEX(c);
+    nux_ecs_container_t *container = ins->containers.data + c;
     return ecs_bitset_isset(&container->bitset, index);
 }
 void *
@@ -478,7 +484,7 @@ nux_ecs_get (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     nux_u32_t            index     = ID_INDEX(e);
     nux_u32_t            mask      = index / ECS_ENTITY_PER_MASK;
     nux_u32_t            offset    = index % ECS_ENTITY_PER_MASK;
-    nux_ecs_container_t *container = ins->containers.data + ID_INDEX(c);
+    nux_ecs_container_t *container = ins->containers.data + c;
     return (void *)((nux_intptr_t)container->chunks.data[mask]
                     + container->component_size * offset);
 }
@@ -486,9 +492,10 @@ nux_ecs_get (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 void
 nux_ecs_cleanup (nux_ctx_t *ctx, nux_res_t res)
 {
-    nux_ecs_t *ecs = nux_res_check(ctx, NUX_RES_ECS, res);
-    if (ctx->active_ecs == ecs)
+    nux_ecs_module_t *module = ctx->ecs;
+    nux_ecs_t        *ecs    = nux_res_check(ctx, NUX_RES_ECS, res);
+    if (module->active_ecs == ecs)
     {
-        ctx->active_ecs = NUX_NULL;
+        module->active_ecs = NUX_NULL;
     }
 }

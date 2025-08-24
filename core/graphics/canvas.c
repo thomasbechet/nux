@@ -1,4 +1,4 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 #define QUADS_DEFAULT_SIZE   4096 * 2
 #define BATCHES_DEFAULT_SIZE 512

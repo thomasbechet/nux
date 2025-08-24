@@ -1,7 +1,7 @@
 #ifndef NUX_ECS_INTERNAL_H
 #define NUX_ECS_INTERNAL_H
 
-#include <base/internal.h>
+#include <lua/internal.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -9,7 +9,6 @@
 
 #define ECS_ENTITY_PER_MASK    32
 #define ECS_COMPONENT_NAME_LEN 64
-#define ECS_COMPONENT_MAX      64
 
 typedef nux_u32_t nux_ecs_mask_t;
 NUX_VEC_DEFINE(nux_ecs_bitset, nux_ecs_mask_t);
@@ -48,8 +47,6 @@ typedef struct
     nux_ecs_bitset_t        bitset;
     nux_ecs_container_vec_t containers;
 } nux_ecs_t;
-
-NUX_VEC_DEFINE(nux_ecs_component_vec, nux_ecs_component_t);
 
 typedef struct
 {
@@ -93,9 +90,11 @@ typedef enum
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_base_t;
 
-typedef struct
+typedef struct nux_ecs_module
 {
-    nux_ecs_component_vec_t components;
+    nux_ecs_t          *active_ecs;
+    nux_ecs_component_t components[NUX_COMPONENT_MAX];
+    nux_u32_t           components_max;
 } nux_ecs_module_t;
 
 ////////////////////////////
@@ -106,7 +105,8 @@ typedef struct
 
 nux_status_t nux_ecs_init(nux_ctx_t *ctx);
 void         nux_ecs_free(nux_ctx_t *ctx);
-nux_u32_t    nux_ecs_register_component(nux_ctx_t      *ctx,
+void         nux_ecs_register_component(nux_ctx_t      *ctx,
+                                        nux_u32_t       index,
                                         const nux_c8_t *name,
                                         nux_u32_t       size);
 

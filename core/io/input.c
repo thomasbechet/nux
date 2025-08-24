@@ -1,12 +1,14 @@
-#include "nux_internal.h"
+#include "internal.h"
 
 void
 nux_input_update (nux_ctx_t *ctx)
 {
+    nux_io_module_t *module = ctx->io;
+
     for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
     {
         // Keep previous state
-        nux_controller_t *controller = ctx->controllers + i;
+        nux_controller_t *controller = module->controllers + i;
         controller->buttons_prev     = controller->buttons;
         nux_memcpy(
             controller->axis_prev, controller->axis, sizeof(controller->axis));
@@ -52,8 +54,9 @@ nux_input_update (nux_ctx_t *ctx)
 nux_u32_t
 nux_button_state (nux_ctx_t *ctx, nux_u32_t controller)
 {
-    NUX_CHECK(controller < NUX_ARRAY_SIZE(ctx->controllers), return 0);
-    return ctx->controllers[controller].buttons;
+    nux_io_module_t *module = ctx->io;
+    NUX_CHECK(controller < NUX_ARRAY_SIZE(module->controllers), return 0);
+    return module->controllers[controller].buttons;
 }
 nux_b32_t
 nux_button_pressed (nux_ctx_t *ctx, nux_u32_t controller, nux_button_t button)
@@ -70,9 +73,10 @@ nux_button_just_pressed (nux_ctx_t   *ctx,
                          nux_u32_t    controller,
                          nux_button_t button)
 {
-    NUX_CHECK(controller < NUX_ARRAY_SIZE(ctx->controllers), return 0);
-    nux_u32_t state = ctx->controllers[controller].buttons;
-    nux_u32_t prev  = ctx->controllers[controller].buttons_prev;
+    nux_io_module_t *module = ctx->io;
+    NUX_CHECK(controller < NUX_ARRAY_SIZE(module->controllers), return 0);
+    nux_u32_t state = module->controllers[controller].buttons;
+    nux_u32_t prev  = module->controllers[controller].buttons_prev;
     return (state ^ prev) & button
            && nux_button_pressed(ctx, controller, button);
 }
@@ -81,9 +85,10 @@ nux_button_just_released (nux_ctx_t   *ctx,
                           nux_u32_t    controller,
                           nux_button_t button)
 {
-    NUX_CHECK(controller < NUX_ARRAY_SIZE(ctx->controllers), return 0);
-    nux_u32_t stat = ctx->controllers[controller].buttons;
-    nux_u32_t prev = ctx->controllers[controller].buttons_prev;
+    nux_io_module_t *module = ctx->io;
+    NUX_CHECK(controller < NUX_ARRAY_SIZE(module->controllers), return 0);
+    nux_u32_t stat = module->controllers[controller].buttons;
+    nux_u32_t prev = module->controllers[controller].buttons_prev;
     return (stat ^ prev) & button
            && nux_button_released(ctx, controller, button);
 }
@@ -91,20 +96,20 @@ nux_f32_t
 nux_axis (nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis)
 {
     NUX_CHECK(controller < NUX_AXIS_MAX, return 0);
-    return ctx->controllers[controller].axis[axis];
+    return ctx->io->controllers[controller].axis[axis];
 }
 nux_f32_t
 nux_cursor_x (nux_ctx_t *ctx, nux_u32_t controller)
 {
-    return ctx->controllers[controller].cursor.x;
+    return ctx->io->controllers[controller].cursor.x;
 }
 nux_f32_t
 nux_cursor_y (nux_ctx_t *ctx, nux_u32_t controller)
 {
-    return ctx->controllers[controller].cursor.y;
+    return ctx->io->controllers[controller].cursor.y;
 }
 void
 nux_cursor_set (nux_ctx_t *ctx, nux_u32_t controller, nux_f32_t x, nux_f32_t y)
 {
-    ctx->controllers[controller].cursor = nux_v2(x, y);
+    ctx->io->controllers[controller].cursor = nux_v2(x, y);
 }
