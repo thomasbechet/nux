@@ -105,6 +105,7 @@ typedef struct nux_physics_module
 nux_status_t nux_physics_init(nux_ctx_t *ctx);
 void         nux_physics_free(nux_ctx_t *ctx);
 void         nux_physics_update(nux_ctx_t *ctx);
+void         nux_physics_add_rigidbody(nux_ctx_t *ctx, nux_ent_t e);
 nux_u32_t    nux_physics_add_pm(nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t vel);
 void         nux_physics_add_distance_constraint(nux_ctx_t *ctx,
                                                  nux_u32_t  a,

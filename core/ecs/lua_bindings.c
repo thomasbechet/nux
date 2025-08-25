@@ -197,6 +197,30 @@ l_transform_set_scale (lua_State *L)
     return 0;
 }
 static int
+l_transform_set_ortho (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_ent_t  e   = luaL_checkinteger(L, 1);
+
+    nux_v3_t a;
+    a.x = luaL_checknumber(L, 2);
+    a.y = luaL_checknumber(L, 3);
+    a.z = luaL_checknumber(L, 4);
+
+    nux_v3_t b;
+    b.x = luaL_checknumber(L, 5);
+    b.y = luaL_checknumber(L, 6);
+    b.z = luaL_checknumber(L, 7);
+
+    nux_v3_t c;
+    c.x = luaL_checknumber(L, 8);
+    c.y = luaL_checknumber(L, 9);
+    c.z = luaL_checknumber(L, 10);
+    nux_transform_set_ortho(ctx, e, a, b, c);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
 l_transform_forward (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
@@ -684,6 +708,7 @@ static const struct luaL_Reg lib_transform[]
         { "set_rotation", l_transform_set_rotation },
         { "set_rotation_euler", l_transform_set_rotation_euler },
         { "set_scale", l_transform_set_scale },
+        { "set_ortho", l_transform_set_ortho },
         { "forward", l_transform_forward },
         { "backward", l_transform_backward },
         { "left", l_transform_left },

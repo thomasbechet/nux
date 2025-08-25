@@ -20,6 +20,21 @@ nux_m3_identity (void)
     return m;
 }
 nux_m3_t
+nux_m3_axis (nux_v3_t x, nux_v3_t y, nux_v3_t z)
+{
+    nux_m3_t m;
+    m.x1 = x.x;
+    m.y1 = x.y;
+    m.z1 = x.z;
+    m.x2 = y.x;
+    m.y2 = y.y;
+    m.z2 = y.z;
+    m.x3 = z.x;
+    m.y3 = z.y;
+    m.z3 = z.z;
+    return m;
+}
+nux_m3_t
 nux_m3_translate (nux_v2_t v)
 {
     nux_m3_t m = nux_m3_identity();

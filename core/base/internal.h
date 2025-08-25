@@ -729,6 +729,7 @@ nux_f32_t nux_v4_norm(nux_v4_t a);
 
 nux_m3_t nux_m3_zero(void);
 nux_m3_t nux_m3_identity(void);
+nux_m3_t nux_m3_axis(nux_v3_t x, nux_v3_t y, nux_v3_t z);
 nux_m3_t nux_m3_translate(nux_v2_t v);
 nux_m3_t nux_m3_scale(nux_v2_t v);
 nux_m3_t nux_m3_mul(nux_m3_t a, nux_m3_t b);
@@ -748,6 +749,7 @@ void nux_m4_trs_decompose(nux_m4_t m, nux_v3_t *t, nux_q4_t *r, nux_v3_t *s);
 // quaternion.c
 
 nux_q4_t  nux_q4(nux_f32_t x, nux_f32_t y, nux_f32_t z, nux_f32_t w);
+nux_q4_t  nux_q4_from_m3(nux_m3_t rot);
 nux_q4_t  nux_q4_euler(nux_v3_t euler);
 nux_v3_t  nux_q4_to_euler(nux_q4_t q);
 nux_q4_t  nux_q4_identity(void);

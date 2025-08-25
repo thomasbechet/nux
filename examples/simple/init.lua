@@ -51,6 +51,7 @@ end
 
 function nux.conf(config)
     config.hotreload = true
+    -- config.log.level = 'debug'
     print(inspect(config.graphics))
 end
 
@@ -158,14 +159,30 @@ function nux.tick()
         if hit then
             print("hit " .. hit)
         else
+            local r = {
+                { 0x100001C, 0x1000069 },
+                { 0x1000021, 0x100006C },
+                { 0x100001F, 0x100006B }
+            }
+            local m, t = table.unpack(r[(nux.random() % 3) + 1])
             local e = nux.ecs.add()
             nux.transform.add(e)
             nux.transform.set_translation(e, x, y, z)
+            local minx, miny, minz = nux.mesh.bounds_min(m)
+            local maxx, maxy, maxz = nux.mesh.bounds_max(m)
+            nux.collider.add_aabb(e, minx, miny, minz, maxx, maxy, maxz)
             nux.rigidbody.add(e)
-            local force = 10
+            local force = 15
             nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
-            -- nux.staticmesh.add(e)
-            -- nux.staticmesh.set_mesh(e, MESH_CUBE)
+
+            -- add mesh
+            local child = nux.ecs.add()
+            nux.transform.add(child)
+            nux.transform.set_parent(child, e)
+            nux.transform.set_translation(child, -minx, -miny, -minz)
+            nux.staticmesh.add(child)
+            nux.staticmesh.set_mesh(child, m)
+            nux.staticmesh.set_texture(child, t)
         end
     end
 end

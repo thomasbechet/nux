@@ -172,7 +172,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
     typedef struct
     {
         void     *cgltf_ptr;
-        nux_res_t id;
+        nux_res_t res;
     } resource_t;
 
     cgltf_options options;
@@ -213,12 +213,13 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
         cgltf_mesh *mesh = data->meshes + i;
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
-            NUX_DEBUG("loading mesh %s primitive %d", mesh->name, p);
-            nux_res_t id
+            nux_res_t res
                 = load_primitive_mesh(ctx, arena, mesh->primitives + p);
-            NUX_CHECK(id, goto error);
+            NUX_CHECK(res, goto error);
+            NUX_DEBUG(
+                "loading mesh %s primitive %d res 0x%08X", mesh->name, p, res);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
-            resources[resources_count].id        = id;
+            resources[resources_count].res       = res;
             ++resources_count;
         }
     }
@@ -244,10 +245,10 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
         }
         if (texture)
         {
-            nux_res_t id = load_texture(ctx, arena, texture);
-            NUX_CHECK(id, goto error);
+            nux_res_t res = load_texture(ctx, arena, texture);
+            NUX_CHECK(res, goto error);
             resources[resources_count].cgltf_ptr = texture;
-            resources[resources_count].id        = id;
+            resources[resources_count].res       = res;
             ++resources_count;
         }
     }
@@ -322,7 +323,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].id;
+                            mesh = resources[i].res;
                             break;
                         }
                     }
@@ -345,7 +346,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].id;
+                                texture = resources[i].res;
                                 break;
                             }
                         }

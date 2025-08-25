@@ -88,3 +88,17 @@ nux_mesh_update_bounds (nux_ctx_t *ctx, nux_res_t mesh)
 
     m->bounds = nux_b3(min, max);
 }
+nux_v3_t
+nux_mesh_bounds_min (nux_ctx_t *ctx, nux_res_t mesh)
+{
+    nux_mesh_t *m = nux_res_check(ctx, NUX_RES_MESH, mesh);
+    NUX_CHECK(m, return NUX_V3_ZEROS);
+    return m->bounds.min;
+}
+nux_v3_t
+nux_mesh_bounds_max (nux_ctx_t *ctx, nux_res_t mesh)
+{
+    nux_mesh_t *m = nux_res_check(ctx, NUX_RES_MESH, mesh);
+    NUX_CHECK(m, return NUX_V3_ZEROS);
+    return m->bounds.max;
+}

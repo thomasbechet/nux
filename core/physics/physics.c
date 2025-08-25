@@ -55,73 +55,6 @@ integrate (nux_ctx_t *ctx)
                 c->n = NUX_V3_UP;
                 c->a = i;
             }
-
-            // // box collision
-            // for (nux_u32_t b = 0; b < NUX_ARRAY_SIZE(g_boxes); ++b)
-            // {
-            //     nu_b3_t box = g_boxes[b];
-            //     if (nu_b3_contains(box, pm->x))
-            //     {
-            //         nux_v3_t rel = pm->x;
-            //
-            //         // Left
-            //         nux_f32_t d, maxd = NU_FLT_MAX;
-            //         nux_v3_t  q, n;
-            //         q = n = NU_V3_ZEROS;
-            //
-            //         d = box.max.x - rel.x;
-            //         if (d < maxd)
-            //         {
-            //             maxd = d;
-            //             q    = nux_v3(box.max.x, rel.y, rel.z);
-            //             n    = NU_V3_RIGHT;
-            //         }
-            //         d = rel.x - box.min.x;
-            //         if (d < maxd)
-            //         {
-            //             maxd = d;
-            //             q    = nux_v3(box.min.x, rel.y, rel.z);
-            //             n    = NU_V3_LEFT;
-            //         }
-            //
-            //         d = box.max.y - rel.y;
-            //         if (d < maxd)
-            //         {
-            //             maxd = d;
-            //             q    = nux_v3(rel.x, box.max.y, rel.z);
-            //             n    = NU_V3_UP;
-            //         }
-            //         d = rel.y - box.min.y;
-            //         if (d < maxd)
-            //         {
-            //             maxd = d;
-            //             q    = nux_v3(rel.x, box.min.y, rel.z);
-            //             n    = NU_V3_DOWN;
-            //         }
-            //
-            //         d = box.max.z - rel.z;
-            //         if (d < maxd)
-            //         {
-            //             maxd = d;
-            //             q    = nux_v3(rel.x, rel.y, box.max.z);
-            //             n    = NU_V3_BACKWARD;
-            //         }
-            //         d = rel.z - box.min.z;
-            //         if (d < maxd)
-            //         {
-            //             maxd = d;
-            //             q    = nux_v3(rel.x, rel.y, box.min.z);
-            //             n    = NU_V3_FORWARD;
-            //         }
-            //
-            //         collision_constraint_t *c
-            //             = NU_VEC_PUSH(&g_ctx.collision_constraints);
-            //         NU_ASSERT(c);
-            //         c->q = q;
-            //         c->n = n;
-            //         c->a = i;
-            //     }
-            // }
         }
 
         // (9) solve constraints
@@ -168,8 +101,8 @@ integrate (nux_ctx_t *ctx)
         for (nux_u32_t i = 0; i < module->collision_constraints.size; ++i)
         {
             const nux_f32_t elasticity = 0.1;
-            // const nux_f32_t elasticity = 3;
-            const nux_f32_t friction = 30;
+            // const nux_f32_t elasticity = 2;
+            const nux_f32_t friction = 60;
 
             nux_collision_constraint_t *c
                 = module->collision_constraints.data + i;
@@ -183,27 +116,27 @@ integrate (nux_ctx_t *ctx)
         }
     }
 }
-void
-pm_to_transforms (nux_ctx_t *ctx)
+static void
+compute_transforms (nux_ctx_t *ctx)
 {
     nux_physics_module_t *module = ctx->physics;
     nux_ent_t             it     = NUX_NULL;
     while ((it = nux_ecs_next(ctx, module->rigidbody_transform_iter, it)))
     {
-        nux_transform_t *transform
-            = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
         nux_rigidbody_t  *body = nux_ecs_get(ctx, it, NUX_COMPONENT_RIGIDBODY);
         nux_point_mass_t *pm   = &module->point_masses.data[body->first];
-        nux_v3_t          v    = pm->v;
-        transform->local_translation = pm->x;
-        transform->dirty             = NUX_TRUE;
 
-        nux_v3_t positions[8];
-        for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(positions); ++i)
-        {
-            positions[i] = module->point_masses.data[body->first + i].x;
-        }
-        nux_renderer_draw_rect(ctx, positions);
+        nux_v3_t a = module->point_masses.data[body->first + 0].x;
+        nux_v3_t b = module->point_masses.data[body->first + 4].x;
+        nux_v3_t c = module->point_masses.data[body->first + 1].x;
+        nux_transform_set_ortho(ctx, it, a, b, c);
+
+        // nux_v3_t positions[8];
+        // for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(positions); ++i)
+        // {
+        //     positions[i] = module->point_masses.data[body->first + i].x;
+        // }
+        // nux_renderer_draw_rect(ctx, positions);
     }
 }
 
@@ -265,7 +198,94 @@ nux_physics_update (nux_ctx_t *ctx)
     if (nux_ecs_get_active(ctx))
     {
         integrate(ctx);
-        pm_to_transforms(ctx);
+        compute_transforms(ctx);
+    }
+}
+void
+nux_physics_add_rigidbody (nux_ctx_t *ctx, nux_ent_t e)
+{
+    nux_physics_module_t *module = ctx->physics;
+    nux_rigidbody_t *rigidbody   = nux_ecs_get(ctx, e, NUX_COMPONENT_RIGIDBODY);
+    nux_collider_t  *collider    = nux_ecs_get(ctx, e, NUX_COMPONENT_COLLIDER);
+    if (collider)
+    {
+        switch (collider->type)
+        {
+            case NUX_COLLIDER_SPHERE: {
+            }
+            break;
+            case NUX_COLLIDER_AABB: {
+                nux_v3_t pos = nux_transform_get_translation(ctx, e);
+                nux_v3_t vel = NUX_V3_ZEROS;
+
+                nux_v3_t min = nux_v3_add(pos, collider->aabb.box.min);
+                nux_v3_t max = nux_v3_add(pos, collider->aabb.box.max);
+
+                nux_u32_t p0
+                    = nux_physics_add_pm(ctx, nux_v3(min.x, min.y, min.z), vel);
+                nux_u32_t p1
+                    = nux_physics_add_pm(ctx, nux_v3(max.x, min.y, min.z), vel);
+                nux_u32_t p2
+                    = nux_physics_add_pm(ctx, nux_v3(max.x, min.y, max.z), vel);
+                nux_u32_t p3
+                    = nux_physics_add_pm(ctx, nux_v3(min.x, min.y, max.z), vel);
+
+                nux_u32_t p4
+                    = nux_physics_add_pm(ctx, nux_v3(min.x, max.y, min.z), vel);
+                nux_u32_t p5
+                    = nux_physics_add_pm(ctx, nux_v3(max.x, max.y, min.z), vel);
+                nux_u32_t p6
+                    = nux_physics_add_pm(ctx, nux_v3(max.x, max.y, max.z), vel);
+                nux_u32_t p7
+                    = nux_physics_add_pm(ctx, nux_v3(min.x, max.y, max.z), vel);
+
+                const float s  = 1;
+                const float s2 = nux_sqrt(s + s);
+                const float s3 = nux_sqrt(s + s + s);
+
+                nux_physics_add_distance_constraint(ctx, p0, p1, s);
+                nux_physics_add_distance_constraint(ctx, p1, p2, s);
+                nux_physics_add_distance_constraint(ctx, p2, p3, s);
+                nux_physics_add_distance_constraint(ctx, p3, p0, s);
+
+                nux_physics_add_distance_constraint(ctx, p4, p5, s);
+                nux_physics_add_distance_constraint(ctx, p5, p6, s);
+                nux_physics_add_distance_constraint(ctx, p6, p7, s);
+                nux_physics_add_distance_constraint(ctx, p7, p4, s);
+
+                nux_physics_add_distance_constraint(ctx, p0, p4, s);
+                nux_physics_add_distance_constraint(ctx, p1, p5, s);
+                nux_physics_add_distance_constraint(ctx, p2, p6, s);
+                nux_physics_add_distance_constraint(ctx, p3, p7, s);
+
+                nux_physics_add_distance_constraint(ctx, p0, p2, s2);
+                // nux_physics_add_distance_constraictx, nt(p1, p3, s2);
+
+                nux_physics_add_distance_constraint(ctx, p4, p6, s2);
+                // nux_physics_add_distance_constraictx, nt(p5, p7, s2);
+
+                nux_physics_add_distance_constraint(ctx, p0, p7, s2);
+                // nux_physics_add_distance_constraictx, nt(p4, p3, s2);
+
+                nux_physics_add_distance_constraint(ctx, p5, p2, s2);
+                // nux_physics_add_distance_constraictx, nt(p1, p6, s2);
+
+                nux_physics_add_distance_constraint(ctx, p4, p1, s2);
+                // nux_physics_add_distance_constraictx, nt(p0, p5, s2);
+
+                nux_physics_add_distance_constraint(ctx, p3, p6, s2);
+                // nux_physics_add_distance_constraictx, nt(p7, p2, s2);
+
+                nux_physics_add_distance_constraint(ctx, p4, p2, s3);
+                nux_physics_add_distance_constraint(ctx, p0, p6, s3);
+                nux_physics_add_distance_constraint(ctx, p7, p1, s3);
+                nux_physics_add_distance_constraint(ctx, p3, p5, s3);
+
+                rigidbody->first = p0;
+                rigidbody->count = 8;
+            }
+            break;
+        }
     }
 }
 nux_u32_t
@@ -292,9 +312,12 @@ nux_physics_add_distance_constraint (nux_ctx_t *ctx,
     nux_distance_constraint_t *c
         = nux_distance_constraint_vec_push(&module->distance_constraints);
     NUX_ASSERT(c);
-    c->a = a;
-    c->b = b;
-    c->d = distance;
+    c->a        = a;
+    c->b        = b;
+    nux_v3_t pa = module->point_masses.data[a].x;
+    nux_v3_t pb = module->point_masses.data[b].x;
+    nux_v3_t ab = nux_v3_sub(pb, pa);
+    c->d        = nux_sqrt(nux_v3_dot(ab, ab));
 }
 
 nux_ent_t
@@ -305,7 +328,6 @@ nux_physics_query (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
     nux_ent_t             it     = NUX_NULL;
     while ((it = nux_ecs_next(ctx, module->collider_transform_iter, it)))
     {
-        nux_transform_update_matrix(ctx, it);
         nux_transform_t *transform
             = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
         nux_collider_t *collider = nux_ecs_get(ctx, it, NUX_COMPONENT_COLLIDER);

@@ -11,6 +11,50 @@ nux_q4 (nux_f32_t x, nux_f32_t y, nux_f32_t z, nux_f32_t w)
     return q;
 }
 nux_q4_t
+nux_q4_from_m3 (nux_m3_t rot)
+{
+    // https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+    nux_q4_t  q;
+    nux_f32_t trace = rot.x1 + rot.y2 + rot.z3;
+    if (trace > 0)
+    {
+        nux_f32_t s = 0.5f / nux_sqrt(trace + 1.0f);
+        q.w         = 0.25f / s;
+        q.x         = (rot.z2 - rot.y3) * s;
+        q.y         = (rot.x3 - rot.z1) * s;
+        q.z         = (rot.y1 - rot.x2) * s;
+    }
+    else
+    {
+        if (rot.x1 > rot.y2 && rot.x1 > rot.z3)
+        {
+            nux_f32_t s = 2.0f * nux_sqrt(1.0f + rot.x1 - rot.y2 - rot.z3);
+            q.w         = (rot.z2 - rot.y3) / s;
+            q.x         = 0.25f * s;
+            q.y         = (rot.x2 + rot.y1) / s;
+            q.z         = (rot.x3 + rot.z1) / s;
+        }
+        else if (rot.y2 > rot.z3)
+        {
+            nux_f32_t s = 2.0f * nux_sqrt(1.0f + rot.y2 - rot.x1 - rot.z3);
+            q.w         = (rot.x3 - rot.z1) / s;
+            q.x         = (rot.x2 + rot.y1) / s;
+            q.y         = 0.25f * s;
+            q.z         = (rot.y3 + rot.z2) / s;
+        }
+        else
+        {
+            nux_f32_t s = 2.0f * nux_sqrt(1.0f + rot.z3 - rot.x1 - rot.y2);
+            q.w         = (rot.y1 - rot.x2) / s;
+            q.x         = (rot.x3 + rot.z1) / s;
+            q.y         = (rot.y3 + rot.z2) / s;
+            q.z         = 0.25f * s;
+        }
+    }
+
+    return q;
+}
+nux_q4_t
 nux_q4_euler (nux_v3_t euler)
 {
     nux_f32_t c_pitch = nux_cos(euler.x * 0.5);

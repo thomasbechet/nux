@@ -21,6 +21,8 @@ void nux_transform_set_rotation_euler(nux_ctx_t *ctx,
                                       nux_ent_t  e,
                                       nux_v3_t   euler);
 void nux_transform_set_scale(nux_ctx_t *ctx, nux_ent_t e, nux_v3_t scale);
+void nux_transform_set_ortho(
+    nux_ctx_t *ctx, nux_ent_t e, nux_v3_t a, nux_v3_t b, nux_v3_t c);
 nux_v3_t nux_transform_forward(nux_ctx_t *ctx, nux_ent_t e);
 nux_v3_t nux_transform_backward(nux_ctx_t *ctx, nux_ent_t e);
 nux_v3_t nux_transform_left(nux_ctx_t *ctx, nux_ent_t e);

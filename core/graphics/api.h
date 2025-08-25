@@ -96,7 +96,9 @@ void      nux_texture_blit(nux_ctx_t *ctx, nux_res_t res);
 nux_res_t nux_mesh_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
 nux_res_t nux_mesh_new_cube(
     nux_ctx_t *ctx, nux_res_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz);
-void nux_mesh_update_bounds(nux_ctx_t *ctx, nux_res_t mesh);
+void     nux_mesh_update_bounds(nux_ctx_t *ctx, nux_res_t mesh);
+nux_v3_t nux_mesh_bounds_min(nux_ctx_t *ctx, nux_res_t mesh);
+nux_v3_t nux_mesh_bounds_max(nux_ctx_t *ctx, nux_res_t mesh);
 
 void nux_canvaslayer_add(nux_ctx_t *ctx, nux_ent_t e);
 void nux_canvaslayer_remove(nux_ctx_t *ctx, nux_ent_t e);

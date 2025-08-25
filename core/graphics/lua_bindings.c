@@ -96,6 +96,32 @@ l_mesh_update_bounds (lua_State *L)
     l_checkerror(L, ctx);
     return 0;
 }
+static int
+l_mesh_bounds_min (lua_State *L)
+{
+    nux_ctx_t *ctx  = lua_getuserdata(L);
+    nux_res_t  mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_v3_t ret = nux_mesh_bounds_min(ctx, mesh);
+    l_checkerror(L, ctx);
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
+static int
+l_mesh_bounds_max (lua_State *L)
+{
+    nux_ctx_t *ctx  = lua_getuserdata(L);
+    nux_res_t  mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_v3_t ret = nux_mesh_bounds_max(ctx, mesh);
+    l_checkerror(L, ctx);
+    lua_pushnumber(L, ret.x);
+    lua_pushnumber(L, ret.y);
+    lua_pushnumber(L, ret.z);
+    return 3;
+}
 
 static int
 l_canvaslayer_add (lua_State *L)
@@ -233,6 +259,8 @@ static const struct luaL_Reg lib_mesh[]
     = { { "new", l_mesh_new },
         { "new_cube", l_mesh_new_cube },
         { "update_bounds", l_mesh_update_bounds },
+        { "bounds_min", l_mesh_bounds_min },
+        { "bounds_max", l_mesh_bounds_max },
         { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_canvaslayer[]

@@ -15,6 +15,10 @@ nux_collider_add_aabb (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t min, nux_v3_t max)
     NUX_CHECK(collider, return);
     collider->type     = NUX_COLLIDER_AABB;
     collider->aabb.box = nux_b3(min, max);
+    if (nux_ecs_has(ctx, e, NUX_COMPONENT_RIGIDBODY))
+    {
+        nux_physics_add_rigidbody(ctx, e);
+    }
 }
 void
 nux_collider_remove (nux_ctx_t *ctx, nux_ent_t e)

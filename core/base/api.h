@@ -75,14 +75,6 @@ nux_f32_t nux_time_elapsed(nux_ctx_t *ctx);
 nux_f32_t nux_time_delta(nux_ctx_t *ctx);
 nux_u32_t nux_time_frame(nux_ctx_t *ctx);
 nux_u64_t nux_time_timestamp(nux_ctx_t *ctx);
-// nux_u32_t nux_time_years(nux_ctx_t *ctx);
-// nux_u32_t nux_time_months(nux_ctx_t *ctx);
-// nux_u32_t nux_time_days(nux_ctx_t *ctx);
-// nux_u32_t nux_time_hour(nux_ctx_t *ctx);
-// nux_u32_t nux_time_minutes(nux_ctx_t *ctx);
-// nux_u32_t nux_time_seconds(nux_ctx_t *ctx);
-
-// Random
 
 nux_u32_t nux_random(nux_ctx_t *ctx);
 
