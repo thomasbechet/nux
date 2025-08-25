@@ -2,7 +2,7 @@ local inspect = require("inspect")
 local nux = nux
 
 local function controller(e)
-    local speed = 20
+    local speed = 10
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
@@ -44,15 +44,14 @@ local function controller(e)
     end
     PITCH = math.clamp(PITCH, -90, 90)
     nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
-    nux.camera.set_fov(e, 60)
+    nux.camera.set_fov(e, 90)
     nux.camera.set_far(e, 1000)
     nux.camera.set_near(e, 1)
 end
 
 function nux.conf(config)
     config.hotreload = true
-    -- config.log.level = 'debug'
-    print(inspect(config.graphics))
+    config.log.level = 'debug'
 end
 
 function nux.init()
@@ -145,7 +144,7 @@ function nux.tick()
     nux.canvas.text(canvas, 50, 50, "hello Julia")
 
     local x, y, z = nux.transform.get_translation(CAMERA)
-    local canvas = GUI_CANVAS
+    canvas = GUI_CANVAS
     nux.canvas.text(canvas, 10, 10, nux.time.date())
     nux.canvas.text(canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(canvas, 10, 30, string.format("x:%.2f", x))
@@ -156,15 +155,21 @@ function nux.tick()
     local fx, fy, fz = nux.transform.forward(CAMERA)
     if nux.button.just_pressed(0, nux.BUTTON_RB) then
         local hit = nux.physics.query(x, y, z, fx, fy, fz)
-        if hit then
+        if false then
             print("hit " .. hit)
         else
             local r = {
                 { 0x100001C, 0x1000069 },
                 { 0x1000021, 0x100006C },
-                { 0x100001F, 0x100006B }
+                { 0x100001F, 0x100006B },
+                { 0x1000051, 0x100007E },
+                { 0x1000052, 0x100007E },
+                { 0x1000053, 0x100007E },
+                { 0x1000048, 0x100007C },
+                { 0x1000022, 0x100006D },
+                { 0x1000023, 0x100006E },
             }
-            local m, t = table.unpack(r[(nux.random() % 3) + 1])
+            local m, t = table.unpack(r[(nux.random() % #r) + 1])
             local e = nux.ecs.add()
             nux.transform.add(e)
             nux.transform.set_translation(e, x, y, z)

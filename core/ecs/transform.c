@@ -169,19 +169,13 @@ nux_transform_set_ortho (
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
-    nux_v3_t x = nux_v3_normalize(nux_v3_sub(c, a));
-    nux_v3_t y = nux_v3_normalize(nux_v3_sub(b, a));
-    nux_v3_t z = nux_v3_normalize(nux_v3_cross(x, y));
-    // NUX_INFO("x %lf %lf %lf", x.x, x.y, x.z);
-    // NUX_INFO("y %lf %lf %lf", y.x, y.y, y.z);
-    // NUX_INFO("z %lf %lf %lf", z.x, z.y, z.z);
+    nux_v3_t x           = nux_v3_normalize(nux_v3_sub(c, a));
+    nux_v3_t y           = nux_v3_normalize(nux_v3_sub(b, a));
+    nux_v3_t z           = nux_v3_normalize(nux_v3_cross(x, y));
     t->local_translation = a;
-    nux_m3_t  rot        = nux_m3_axis(x, y, z);
-    nux_f32_t w          = nux_sqrt(1 + rot.x1 + rot.y2 + rot.z3) / 2;
-    nux_f32_t w4         = (4 * w);
-    NUX_INFO("w4 %lf", w4);
-    t->local_rotation = nux_q4_from_m3(rot);
-    t->dirty          = NUX_TRUE;
+    nux_m3_t rot         = nux_m3_axis(x, y, z);
+    t->local_rotation    = nux_q4_from_m3(rot);
+    t->dirty             = NUX_TRUE;
 }
 static nux_v3_t
 rotate_v3 (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t v)
