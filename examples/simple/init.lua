@@ -46,12 +46,12 @@ local function controller(e)
     nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
     nux.camera.set_fov(e, 90)
     nux.camera.set_far(e, 1000)
-    nux.camera.set_near(e, 1)
+    nux.camera.set_near(e, 0.1)
 end
 
 function nux.conf(config)
     config.hotreload = true
-    config.log.level = 'debug'
+    -- config.log.level = 'debug'
 end
 
 function nux.init()
@@ -166,8 +166,6 @@ function nux.tick()
                 { 0x1000052, 0x100007E },
                 { 0x1000053, 0x100007E },
                 { 0x1000048, 0x100007C },
-                { 0x1000022, 0x100006D },
-                { 0x1000023, 0x100006E },
             }
             local m, t = table.unpack(r[(nux.random() % #r) + 1])
             local e = nux.ecs.add()

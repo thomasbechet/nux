@@ -1,5 +1,7 @@
 #include "internal.h"
 
+#include "gamecontrollerdb.c.inc"
+
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
 #include <nuklear/nuklear.h>
@@ -160,26 +162,47 @@ gamepad_button_to_button (int button)
         case GLFW_GAMEPAD_BUTTON_A:
             return NUX_BUTTON_A;
         case GLFW_GAMEPAD_BUTTON_X:
-            return NUX_BUTTON_Y;
+            return NUX_BUTTON_X;
         case GLFW_GAMEPAD_BUTTON_Y:
-            return NUX_BUTTON_B;
+            return NUX_BUTTON_Y;
         case GLFW_GAMEPAD_BUTTON_B:
-            return NUX_BUTTON_UP;
+            return NUX_BUTTON_B;
         case GLFW_GAMEPAD_BUTTON_DPAD_UP:
-            return NUX_BUTTON_DOWN;
+            return NUX_BUTTON_UP;
         case GLFW_GAMEPAD_BUTTON_DPAD_DOWN:
-            return NUX_BUTTON_LEFT;
+            return NUX_BUTTON_DOWN;
         case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT:
             return NUX_BUTTON_RIGHT;
+        case GLFW_GAMEPAD_BUTTON_DPAD_LEFT:
+            return NUX_BUTTON_LEFT;
         case GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER:
-            return NUX_BUTTON_LB;
-        case GLFW_GAMEPAD_BUTTON_LEFT_BUMPER:
             return NUX_BUTTON_RB;
+        case GLFW_GAMEPAD_BUTTON_LEFT_BUMPER:
+            return NUX_BUTTON_LB;
         default:
             return -1;
     }
 }
-
+static nux_axis_t
+gamepad_axis_to_axis (int axis)
+{
+    switch (axis)
+    {
+        case GLFW_GAMEPAD_AXIS_LEFT_X:
+            return NUX_AXIS_LEFTX;
+        case GLFW_GAMEPAD_AXIS_LEFT_Y:
+            return NUX_AXIS_LEFTY;
+        case GLFW_GAMEPAD_AXIS_RIGHT_X:
+            return NUX_AXIS_RIGHTX;
+        case GLFW_GAMEPAD_AXIS_RIGHT_Y:
+            return NUX_AXIS_RIGHTY;
+        case GLFW_GAMEPAD_AXIS_LEFT_TRIGGER:
+            return NUX_AXIS_LT;
+        case GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER:
+            return NUX_AXIS_RT;
+    }
+    return NUX_AXIS_LEFTX;
+}
 static void
 resize_callback (GLFWwindow *win, int w, int h)
 {
@@ -189,11 +212,11 @@ resize_callback (GLFWwindow *win, int w, int h)
 static void
 key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
 {
+    nux_button_t button = key_to_button(key);
+    float        axvalue;
+    nux_axis_t   axis = key_to_axis(key, &axvalue);
     if (action == GLFW_PRESS)
     {
-        nux_button_t button = key_to_button(key);
-        float        axvalue;
-        nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
             runtime.buttons |= button;
@@ -209,17 +232,18 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
         {
             runtime.running = false;
         }
-        if (key == GLFW_KEY_P)
+        if (mods == GLFW_MOD_CONTROL)
         {
-            runtime.switch_fullscreen = true;
+            switch (key)
+            {
+                case GLFW_KEY_P:
+                    runtime.switch_fullscreen = true;
+                    break;
+                case GLFW_KEY_R:
+                    runtime.reload = true;
+                    break;
+            }
         }
-        if (key == GLFW_KEY_R && mods == GLFW_MOD_CONTROL)
-        {
-            runtime.reload = true;
-        }
-        nux_button_t button = key_to_button(key);
-        float        axvalue;
-        nux_axis_t   axis = key_to_axis(key, &axvalue);
         if (button != (nux_button_t)-1)
         {
             runtime.buttons &= ~button;
@@ -275,6 +299,9 @@ window_init (void)
     glfwSetFramebufferSizeCallback(runtime.win, resize_callback);
     glfwSetKeyCallback(runtime.win, key_callback);
 
+    // Load gamecontroller database
+    glfwUpdateGamepadMappings(gamecontrollerdb_txt);
+
     // Configure vsync
     // glfwSwapInterval(0);
 
@@ -328,26 +355,6 @@ window_begin_frame (void)
             runtime.running = false;
         }
 
-        // Process events
-        // case RGFW_gamepadButtonPressed: {
-        //     nux_button_t button
-        //         = gamepad_button_to_button(runtime.win->event.button);
-        //     if (button != (nux_button_t)-1)
-        //     {
-        //         runtime.buttons[1] |= button;
-        //     }
-        // }
-        // break;
-        // case RGFW_gamepadButtonReleased: {
-        //     nux_button_t button
-        //         = gamepad_button_to_button(runtime.win->event.button);
-        //     if (button != (nux_button_t)-1)
-        //     {
-        //         runtime.buttons[1] &= ~button;
-        //     }
-        // }
-        // break;
-
         // Check fullscreen button
         if (runtime.switch_fullscreen)
         {
@@ -380,6 +387,48 @@ window_begin_frame (void)
             }
             runtime.switch_fullscreen = false;
             runtime.fullscreen        = !runtime.fullscreen;
+        }
+
+        for (int jid = GLFW_JOYSTICK_1; jid < GLFW_JOYSTICK_LAST; ++jid)
+        {
+            if (glfwJoystickPresent(jid) && glfwJoystickIsGamepad(jid))
+            {
+                GLFWgamepadstate state;
+                if (glfwGetGamepadState(jid, &state))
+                {
+                    for (int button = 0; button < GLFW_GAMEPAD_BUTTON_LAST;
+                         ++button)
+                    {
+                        nux_button_t mask = gamepad_button_to_button(button);
+                        if (mask != (nux_button_t)-1)
+                        {
+                            if (state.buttons[button])
+                            {
+                                runtime.buttons |= mask;
+                            }
+                            else
+                            {
+                                runtime.buttons &= ~mask;
+                            }
+                        }
+                    }
+
+                    for (int axis = 0; axis < GLFW_GAMEPAD_AXIS_LAST; ++axis)
+                    {
+                        float value = state.axes[axis];
+                        if (fabsf(value) <= 0.3)
+                        {
+                            value = 0;
+                        }
+                        if (axis == GLFW_GAMEPAD_AXIS_RIGHT_Y
+                            || axis == GLFW_GAMEPAD_AXIS_LEFT_Y)
+                        {
+                            value = -value;
+                        }
+                        runtime.axis[gamepad_axis_to_axis(axis)] = value;
+                    }
+                }
+            }
         }
 
         // Update gamepad related axis
