@@ -3,13 +3,18 @@ local nux = nux
 
 local function controller(e)
     local speed = 10
+    local fast = speed * 2
+
+    if nux.button.pressed(0, nux.BUTTON_LB) then
+        speed = fast
+    end
 
     local mx = nux.axis(0, nux.AXIS_LEFTX)
     local mz = nux.axis(0, nux.AXIS_LEFTY)
     local my = 0
-    if nux.button.pressed(0, nux.BUTTON_Y) then
+    if nux.button.pressed(0, nux.BUTTON_A) then
         my = 1
-    elseif nux.button.pressed(0, nux.BUTTON_X) then
+    elseif nux.button.pressed(0, nux.BUTTON_B) then
         my = -1
     end
     local rx = nux.axis(0, nux.AXIS_RIGHTX)
