@@ -55,7 +55,7 @@ nux_transform_update_matrix (nux_ctx_t *ctx, nux_ent_t e)
 void
 nux_transform_add (nux_ctx_t *ctx, nux_ent_t e)
 {
-    nux_transform_t *t = nux_ecs_set(ctx, e, NUX_COMPONENT_TRANSFORM);
+    nux_transform_t *t = nux_ecs_add(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
     t->local_translation = NUX_V3_ZEROS;
     t->local_rotation    = nux_q4_identity();
@@ -65,7 +65,7 @@ nux_transform_add (nux_ctx_t *ctx, nux_ent_t e)
 void
 nux_transform_remove (nux_ctx_t *ctx, nux_ent_t e)
 {
-    nux_ecs_unset(ctx, e, NUX_COMPONENT_TRANSFORM);
+    nux_ecs_remove(ctx, e, NUX_COMPONENT_TRANSFORM);
 }
 void
 nux_transform_set_parent (nux_ctx_t *ctx, nux_ent_t e, nux_ent_t parent)

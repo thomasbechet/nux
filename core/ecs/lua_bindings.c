@@ -602,31 +602,31 @@ l_ecs_set_active (lua_State *L)
     return 0;
 }
 static int
-l_ecs_add (lua_State *L)
+l_ecs_create (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_u32_t  ret = nux_ecs_add(ctx);
+    nux_u32_t  ret = nux_ecs_create(ctx);
     l_checkerror(L, ctx);
     lua_pushinteger(L, ret);
     return 1;
 }
 static int
-l_ecs_add_at (lua_State *L)
+l_ecs_create_at (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_u32_t  e   = luaL_checknumber(L, 1);
 
-    nux_ecs_add_at(ctx, e);
+    nux_ecs_create_at(ctx, e);
     l_checkerror(L, ctx);
     return 0;
 }
 static int
-l_ecs_remove (lua_State *L)
+l_ecs_delete (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_u32_t  e   = luaL_checknumber(L, 1);
 
-    nux_ecs_remove(ctx, e);
+    nux_ecs_delete(ctx, e);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -668,14 +668,14 @@ l_ecs_clear (lua_State *L)
     return 0;
 }
 static int
-l_ecs_unset (lua_State *L)
+l_ecs_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_u32_t  e   = luaL_checknumber(L, 1);
 
     nux_u32_t c = luaL_checknumber(L, 2);
 
-    nux_ecs_unset(ctx, e, c);
+    nux_ecs_remove(ctx, e, c);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -743,14 +743,14 @@ static const struct luaL_Reg lib_ecs[] = { { "new_iter", l_ecs_new_iter },
                                            { "load_gltf", l_ecs_load_gltf },
                                            { "get_active", l_ecs_get_active },
                                            { "set_active", l_ecs_set_active },
-                                           { "add", l_ecs_add },
-                                           { "add_at", l_ecs_add_at },
-                                           { "remove", l_ecs_remove },
+                                           { "create", l_ecs_create },
+                                           { "create_at", l_ecs_create_at },
+                                           { "delete", l_ecs_delete },
                                            { "valid", l_ecs_valid },
                                            { "count", l_ecs_count },
                                            { "capacity", l_ecs_capacity },
                                            { "clear", l_ecs_clear },
-                                           { "unset", l_ecs_unset },
+                                           { "remove", l_ecs_remove },
                                            { "has", l_ecs_has },
                                            { NUX_NULL, NUX_NULL } };
 

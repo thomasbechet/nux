@@ -108,7 +108,7 @@ nux_lookat (nux_v3_t eye, nux_v3_t center, nux_v3_t up)
 void
 nux_camera_add (nux_ctx_t *ctx, nux_ent_t e)
 {
-    nux_camera_t *c = nux_ecs_set(ctx, e, NUX_COMPONENT_CAMERA);
+    nux_camera_t *c = nux_ecs_add(ctx, e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
     c->fov      = 60;
     c->near     = 0.1;
@@ -118,7 +118,7 @@ nux_camera_add (nux_ctx_t *ctx, nux_ent_t e)
 void
 nux_camera_remove (nux_ctx_t *ctx, nux_ent_t e)
 {
-    nux_ecs_unset(ctx, e, NUX_COMPONENT_CAMERA);
+    nux_ecs_remove(ctx, e, NUX_COMPONENT_CAMERA);
 }
 void
 nux_camera_set_fov (nux_ctx_t *ctx, nux_ent_t e, nux_f32_t fov)

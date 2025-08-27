@@ -309,7 +309,7 @@ nux_ecs_set_active (nux_ctx_t *ctx, nux_res_t ecs)
     }
 }
 nux_u32_t
-nux_ecs_add (nux_ctx_t *ctx)
+nux_ecs_create (nux_ctx_t *ctx)
 {
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_NULL);
@@ -321,7 +321,7 @@ nux_ecs_add (nux_ctx_t *ctx)
     return ID_MAKE(index);
 }
 void
-nux_ecs_add_at (nux_ctx_t *ctx, nux_u32_t e)
+nux_ecs_create_at (nux_ctx_t *ctx, nux_u32_t e)
 {
     NUX_CHECK(e, return);
     nux_ecs_t *ins = ecs_active(ctx);
@@ -333,7 +333,7 @@ nux_ecs_add_at (nux_ctx_t *ctx, nux_u32_t e)
     ecs_bitset_set(&ins->bitset, ID_INDEX(e));
 }
 void
-nux_ecs_remove (nux_ctx_t *ctx, nux_u32_t e)
+nux_ecs_delete (nux_ctx_t *ctx, nux_u32_t e)
 {
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
@@ -342,7 +342,7 @@ nux_ecs_remove (nux_ctx_t *ctx, nux_u32_t e)
     // remove from components
     for (nux_u32_t i = 0; i < ins->containers.size; ++i)
     {
-        nux_ecs_unset(ctx, e, ID_MAKE(i));
+        nux_ecs_remove(ctx, e, ID_MAKE(i));
     }
 
     // mask entity as invalid
@@ -383,13 +383,13 @@ nux_ecs_clear (nux_ctx_t *ctx)
     nux_ecs_bitset_clear(&ins->bitset);
 }
 void *
-nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
+nux_ecs_add (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
     nux_ecs_module_t *module = ctx->ecs;
     nux_ecs_t        *ins    = ecs_active(ctx);
     NUX_ENSURE(ins,
                return NUX_NULL,
-               "trying to set component %d on entity %e but no ecs is active",
+               "trying to add component %d on entity %e but no ecs is active",
                c,
                e);
     nux_u32_t index = ID_INDEX(e);
@@ -451,7 +451,7 @@ nux_ecs_set (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     return nux_ecs_get(ctx, e, c);
 }
 void
-nux_ecs_unset (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
+nux_ecs_remove (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
 {
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);

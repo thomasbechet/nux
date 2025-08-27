@@ -42,7 +42,7 @@ function nux.ecs.instantiate(tab, parent)
         end,
     }
 
-    local e = nux.ecs.add()
+    local e = nux.ecs.create()
     load_entity(e, tab)
     if parent then
         nux.transform.set_parent(e, parent)

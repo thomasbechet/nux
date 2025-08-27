@@ -280,7 +280,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
         {
             cgltf_node *node = scene->nodes[n];
 
-            nux_ent_t e = nux_ecs_add(ctx);
+            nux_ent_t e = nux_ecs_create(ctx);
             NUX_CHECK(e, goto error);
 
             nux_v3_t translation = NUX_V3_ZEROS;

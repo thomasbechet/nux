@@ -3,14 +3,14 @@
 void
 nux_staticmesh_add (nux_ctx_t *ctx, nux_ent_t e)
 {
-    nux_staticmesh_t *sm = nux_ecs_set(ctx, e, NUX_COMPONENT_STATICMESH);
+    nux_staticmesh_t *sm = nux_ecs_add(ctx, e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->mesh = NUX_NULL;
 }
 void
 nux_staticmesh_remove (nux_ctx_t *ctx, nux_ent_t e)
 {
-    nux_ecs_unset(ctx, e, NUX_COMPONENT_STATICMESH);
+    nux_ecs_remove(ctx, e, NUX_COMPONENT_STATICMESH);
 }
 void
 nux_staticmesh_set_mesh (nux_ctx_t *ctx, nux_ent_t e, nux_res_t mesh)
