@@ -98,13 +98,13 @@ key_to_button (int code)
             return NUX_BUTTON_LB;
 
         // Action buttons
-        case GLFW_KEY_F:
-            return NUX_BUTTON_A;
-        case GLFW_KEY_R:
-            return NUX_BUTTON_B;
         case GLFW_KEY_X:
-            return NUX_BUTTON_Y;
+            return NUX_BUTTON_A;
         case GLFW_KEY_Z:
+            return NUX_BUTTON_B;
+        case GLFW_KEY_C:
+            return NUX_BUTTON_Y;
+        case GLFW_KEY_V:
             return NUX_BUTTON_X;
     }
     return -1;
