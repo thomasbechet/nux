@@ -68,16 +68,10 @@ typedef enum
 
 typedef enum
 {
-    NUX_V3F         = 0,
-    NUX_V3F_T2F     = 1,
-    NUX_V3F_T2F_N3F = 2,
+    NUX_VERTEX_V3F         = 0,
+    NUX_VERTEX_V3F_T2F     = 1,
+    NUX_VERTEX_V3F_T2F_N3F = 2,
 } nux_vertex_format_t;
-
-typedef enum
-{
-    NUX_TRIANGLES = 0,
-    NUX_LINES     = 1,
-} nux_vertex_primitive_t;
 
 typedef enum
 {

@@ -1,7 +1,7 @@
 #ifndef NUX_BASE_API_H
 #define NUX_BASE_API_H
 
-#include "nux_config.h"
+#include <nux_config.h>
 
 #include <stdint.h>
 

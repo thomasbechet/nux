@@ -8,17 +8,24 @@ import os
 import json
 from template import apply_template
 
-def parse_function(node, modules):
-    parts = node.type.declname.split("_", 2)
+def get_name_and_module(modules, fullname):
+    parts = fullname.split("_", 2)
     if len(parts) < 3: # In core module
-        module = "core"
+        module_name = "core"
     else:
-        module = parts[1]
-    if module not in modules.keys():
-        modules[module] = []
+        module_name = parts[1].lower()
+    if module_name not in modules.keys():
+        module = {}
+        module["functions"] = []
+        module["constants"] = []
+        modules[module_name] = module
+    return modules[module_name], parts[-1]
+
+def parse_function(node, modules):
+    module, name = get_name_and_module(modules, node.type.declname)
     func = {}
     # print(node.type)
-    func["name"] = parts[-1]
+    func["name"] = name
     func["returntype"] = node.type.type.names[0]
     func["args"] = []
     for param in node.args.params[1:]:
@@ -36,18 +43,15 @@ def parse_function(node, modules):
             arg["typename"] = param.type.type.names[0]
             arg["isptr"] = False
         func["args"].append(arg)
-    modules[module].append(func)
+    module["functions"].append(func)
 
-def parse_enum(node, constants):
-    constant = {}
-    constant["name"] = node.name.replace("nux_", "")
-    constant["values"] = []
+def parse_enum(node, modules):
     for e in node.type.type.values.enumerators:
-        val = {}
-        val["name"] = e.name.replace("NUX_", "")
-        val["value"] = c_generator.CGenerator().visit(e.value)
-        constant["values"].append(val)
-    constants.append(constant)
+        module, name = get_name_and_module(modules, e.name)
+        constant = {}
+        constant["name"] = name
+        constant["value"] = c_generator.CGenerator().visit(e.value)
+        module["constants"].append(constant)
 
 class FuncDefVisitor(c_ast.NodeVisitor):
     def __init__(self, modules):
@@ -69,7 +73,6 @@ def parse_header(args, header):
     with open(api_header, 'r') as file:
         src = file.read()
 
-    constants = []
     modules = {}
 
     prelude = """
@@ -129,12 +132,12 @@ def parse_header(args, header):
     ast = c_parser.CParser().parse(prelude + fixed)
     v = FuncDefVisitor(modules)
     v.visit(ast)
-    v = TypeDefVisitor(constants)
+    v = TypeDefVisitor(modules)
     v.visit(ast)
-    return modules, constants
+    return modules
 
-def generate_files(args, source, api_name, modules, constants):
-    apply_template(args.rootdir, "lua_bindings.c.jinja", source, modules=modules, constants=constants, api_name=api_name)
+def generate_files(args, source, api_name, modules):
+    apply_template(args.rootdir, "lua_bindings.c.jinja", source, modules=modules, api_name=api_name)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -151,5 +154,5 @@ if __name__ == "__main__":
         ("core/physics/api.h", "core/physics/lua_bindings.c", "physics"),
     ]
     for header, target, name in triples:
-        m, c = parse_header(args, header)
-        generate_files(args, target, name, m, c)
+        m = parse_header(args, header)
+        generate_files(args, target, name, m)

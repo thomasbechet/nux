@@ -26,9 +26,9 @@ static void l_checkerror(lua_State *L, nux_ctx_t *ctx)
     }
 }
 
-{% for module, functions in modules.items() %}
-{% for function in functions %}
-static int l_{{ module }}_{{ function.name }}(lua_State *L)
+{% for module_name, module in modules.items() %}
+{% for function in module.functions %}
+static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
 {
     {%- set ns = namespace(stack = 1) %}
     nux_ctx_t *ctx = lua_getuserdata(L);
@@ -59,7 +59,7 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
     {%- endfor -%}
     {%- if function.returntype != "void" %}
         {{ function.returntype }} ret =
-    {% endif %}{{ "nux_" + module if module != "core" else "nux" }}_{{ function.name }}(ctx
+    {% endif %}{{ "nux_" + module_name if module_name != "core" else "nux" }}_{{ function.name }}(ctx
     {%- for arg in function.args -%}
         , {{ arg.name }}
     {%- endfor -%}
@@ -98,11 +98,11 @@ static int l_{{ module }}_{{ function.name }}(lua_State *L)
 {%- endfor %}
 {% endfor %}
 
-{% for module, functions in modules.items() %}
-static const struct luaL_Reg lib_{{ module }}[] = {
-{% for function in functions -%}
+{% for module_name, module in modules.items() %}
+static const struct luaL_Reg lib_{{ module_name }}[] = {
+{% for function in module.functions -%}
 {% if not function.hasptr -%}
-    { "{{ function.name }}", l_{{ module }}_{{ function.name }} },
+    { "{{ function.name }}", l_{{ module_name }}_{{ function.name }} },
 {%- endif -%}
 {%- endfor -%}
     { NUX_NULL, NUX_NULL }
@@ -113,20 +113,18 @@ nux_status_t nux_lua_open_{{ api_name }}(nux_ctx_t *ctx)
 {
     lua_State *L = ctx->lua->L;
     lua_getglobal(L, "nux");
-{% for module in modules.keys() %}
-{% if module == "core" %}
-    luaL_setfuncs(L, lib_{{ module }}, 0);
-{% else %}
+{% for module_name, module in modules.items() %}
+{% if module_name != "core" %}
     lua_newtable(L);
-    luaL_setfuncs(L, lib_{{ module }}, 0);
-    lua_setfield(L, -2, "{{ module }}");
 {% endif %}
+    luaL_setfuncs(L, lib_{{ module_name }}, 0);
+{% for constant in module.constants %}
+    lua_pushinteger(L, {{ constant.value }}); 
+    lua_setfield(L, -2, "{{ constant.name }}");
 {% endfor %}
-{% for constant in constants %}
-{% for value in constant["values"] %}
-    lua_pushinteger(L, {{ value.value }});
-    lua_setfield(L, -2, "{{ value.name }}");
-{% endfor %}
+{% if module_name != "core" %}
+    lua_setfield(L, -2, "{{ module_name }}"); // Set module to nux table
+{% endif %}
 {% endfor %}
     lua_pop(L, 1);
     return NUX_SUCCESS;

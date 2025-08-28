@@ -145,6 +145,10 @@ static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
                                              { "frame", l_arena_frame },
                                              { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_stat[] = { { NUX_NULL, NUX_NULL } };
+
 nux_status_t
 nux_lua_open_base (nux_ctx_t *ctx)
 {
@@ -153,52 +157,68 @@ nux_lua_open_base (nux_ctx_t *ctx)
 
     luaL_setfuncs(L, lib_core, 0);
 
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_time, 0);
-    lua_setfield(L, -2, "time");
-
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_arena, 0);
-    lua_setfield(L, -2, "arena");
-
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "ERROR_NONE");
-
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "ERROR_OUT_OF_MEMORY");
-
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "ERROR_INVALID_TEXTURE_SIZE");
-
-    lua_pushinteger(L, 8);
-    lua_setfield(L, -2, "ERROR_WASM_RUNTIME");
-
-    lua_pushinteger(L, 10);
-    lua_setfield(L, -2, "ERROR_CART_EOF");
-
-    lua_pushinteger(L, 11);
-    lua_setfield(L, -2, "ERROR_CART_MOUNT");
-
     lua_pushinteger(L, 1);
     lua_setfield(L, -2, "SUCCESS");
 
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "FAILURE");
 
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_time, 0);
+
+    lua_setfield(L, -2, "time"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_arena, 0);
+
+    lua_setfield(L, -2, "arena"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_error, 0);
+
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "STAT_FPS");
+    lua_setfield(L, -2, "NONE");
 
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "STAT_SCREEN_WIDTH");
-
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "STAT_SCREEN_HEIGHT");
-
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "STAT_TIMESTAMP");
+    lua_setfield(L, -2, "OUT_OF_MEMORY");
 
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "STAT_MAX");
+    lua_setfield(L, -2, "INVALID_TEXTURE_SIZE");
+
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "WASM_RUNTIME");
+
+    lua_pushinteger(L, 10);
+    lua_setfield(L, -2, "CART_EOF");
+
+    lua_pushinteger(L, 11);
+    lua_setfield(L, -2, "CART_MOUNT");
+
+    lua_setfield(L, -2, "error"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_stat, 0);
+
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "FPS");
+
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "SCREEN_WIDTH");
+
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "SCREEN_HEIGHT");
+
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "TIMESTAMP");
+
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "MAX");
+
+    lua_setfield(L, -2, "stat"); // Set module to nux table
 
     lua_pop(L, 1);
     return NUX_SUCCESS;

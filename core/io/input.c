@@ -93,7 +93,7 @@ nux_button_just_released (nux_ctx_t   *ctx,
            && nux_button_released(ctx, controller, button);
 }
 nux_f32_t
-nux_axis (nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis)
+nux_axis_value (nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis)
 {
     NUX_CHECK(controller < NUX_AXIS_MAX, return 0);
     return ctx->io->controllers[controller].axis[axis];

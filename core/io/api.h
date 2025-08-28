@@ -1,7 +1,7 @@
 #ifndef NUX_IO_API_H
 #define NUX_IO_API_H
 
-#include "base/api.h"
+#include <base/api.h>
 
 typedef enum
 {
@@ -59,7 +59,7 @@ nux_b32_t nux_button_just_pressed(nux_ctx_t   *ctx,
 nux_b32_t nux_button_just_released(nux_ctx_t   *ctx,
                                    nux_u32_t    controller,
                                    nux_button_t button);
-nux_f32_t nux_axis(nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis);
+nux_f32_t nux_axis_value(nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis);
 nux_f32_t nux_cursor_x(nux_ctx_t *ctx, nux_u32_t controller);
 nux_f32_t nux_cursor_y(nux_ctx_t *ctx, nux_u32_t controller);
 void      nux_cursor_set(nux_ctx_t *ctx,

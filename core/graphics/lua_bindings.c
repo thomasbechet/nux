@@ -277,6 +277,14 @@ static const struct luaL_Reg lib_canvas[]
         { "rectangle", l_canvas_rectangle },
         { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_palette[] = { { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_colormap[] = { { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_primitive[] = { { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_vertex[] = { { NUX_NULL, NUX_NULL } };
+
 nux_status_t
 nux_lua_open_graphics (nux_ctx_t *ctx)
 {
@@ -284,62 +292,101 @@ nux_lua_open_graphics (nux_ctx_t *ctx)
     lua_getglobal(L, "nux");
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_texture, 0);
-    lua_setfield(L, -2, "texture");
+
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "IMAGE_RGBA");
+
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "IMAGE_INDEX");
+
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "RENDER_TARGET");
+
+    lua_setfield(L, -2, "texture"); // Set module to nux table
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_mesh, 0);
-    lua_setfield(L, -2, "mesh");
+
+    lua_setfield(L, -2, "mesh"); // Set module to nux table
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_canvaslayer, 0);
-    lua_setfield(L, -2, "canvaslayer");
+
+    lua_setfield(L, -2, "canvaslayer"); // Set module to nux table
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_canvas, 0);
-    lua_setfield(L, -2, "canvas");
 
     lua_pushinteger(L, 512);
-    lua_setfield(L, -2, "CANVAS_WIDTH");
+    lua_setfield(L, -2, "WIDTH");
 
     lua_pushinteger(L, 320);
-    lua_setfield(L, -2, "CANVAS_HEIGHT");
+    lua_setfield(L, -2, "HEIGHT");
+
+    lua_setfield(L, -2, "canvas"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_palette, 0);
 
     lua_pushinteger(L, 256);
-    lua_setfield(L, -2, "PALETTE_SIZE");
+    lua_setfield(L, -2, "SIZE");
+
+    lua_setfield(L, -2, "palette"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_colormap, 0);
 
     lua_pushinteger(L, 256);
-    lua_setfield(L, -2, "COLORMAP_SIZE");
+    lua_setfield(L, -2, "SIZE");
+
+    lua_setfield(L, -2, "colormap"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_primitive, 0);
 
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "PRIMITIVE_TRIANGLES");
+    lua_setfield(L, -2, "TRIANGLES");
 
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "PRIMITIVE_LINES");
+    lua_setfield(L, -2, "LINES");
 
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "PRIMITIVE_POINTS");
+    lua_setfield(L, -2, "POINTS");
+
+    lua_setfield(L, -2, "primitive"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_vertex, 0);
 
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "VERTEX_TRIANGLES");
+    lua_setfield(L, -2, "TRIANGLES");
 
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "VERTEX_LINES");
+    lua_setfield(L, -2, "LINES");
 
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "VERTEX_POINTS");
+    lua_setfield(L, -2, "POINTS");
 
     lua_pushinteger(L, 1 << 0);
-    lua_setfield(L, -2, "VERTEX_POSITION");
+    lua_setfield(L, -2, "POSITION");
 
     lua_pushinteger(L, 1 << 1);
-    lua_setfield(L, -2, "VERTEX_UV");
+    lua_setfield(L, -2, "UV");
 
     lua_pushinteger(L, 1 << 2);
-    lua_setfield(L, -2, "VERTEX_COLOR");
+    lua_setfield(L, -2, "COLOR");
 
     lua_pushinteger(L, 1 << 3);
-    lua_setfield(L, -2, "VERTEX_INDICES");
+    lua_setfield(L, -2, "INDICES");
 
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "V3F");
@@ -350,20 +397,7 @@ nux_lua_open_graphics (nux_ctx_t *ctx)
     lua_pushinteger(L, 2);
     lua_setfield(L, -2, "V3F_T2F_N3F");
 
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "TRIANGLES");
-
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LINES");
-
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "TEXTURE_IMAGE_RGBA");
-
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "TEXTURE_IMAGE_INDEX");
-
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "TEXTURE_RENDER_TARGET");
+    lua_setfield(L, -2, "vertex"); // Set module to nux table
 
     lua_pop(L, 1);
     return NUX_SUCCESS;

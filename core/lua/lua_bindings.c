@@ -40,8 +40,10 @@ nux_lua_open_lua (nux_ctx_t *ctx)
     lua_getglobal(L, "nux");
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_lua, 0);
-    lua_setfield(L, -2, "lua");
+
+    lua_setfield(L, -2, "lua"); // Set module to nux table
 
     lua_pop(L, 1);
     return NUX_SUCCESS;

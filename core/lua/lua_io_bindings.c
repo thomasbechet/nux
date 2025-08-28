@@ -85,14 +85,14 @@ l_button_just_released (lua_State *L)
 }
 
 static int
-l_core_axis (lua_State *L)
+l_axis_value (lua_State *L)
 {
     nux_ctx_t *ctx        = lua_getuserdata(L);
     nux_u32_t  controller = luaL_checknumber(L, 1);
 
     nux_axis_t axis = luaL_checkinteger(L, 2);
 
-    nux_f32_t ret = nux_axis(ctx, controller, axis);
+    nux_f32_t ret = nux_axis_value(ctx, controller, axis);
     l_checkerror(L, ctx);
     lua_pushnumber(L, ret);
     return 1;
@@ -180,8 +180,8 @@ static const struct luaL_Reg lib_button[]
         { "just_released", l_button_just_released },
         { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_core[]
-    = { { "axis", l_core_axis }, { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_axis[]
+    = { { "value", l_axis_value }, { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_cursor[] = { { "x", l_cursor_x },
                                               { "y", l_cursor_y },
@@ -194,6 +194,12 @@ static const struct luaL_Reg lib_io[]
         { "write_cart_file", l_io_write_cart_file },
         { NUX_NULL, NUX_NULL } };
 
+static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_name[] = { { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_disk[] = { { NUX_NULL, NUX_NULL } };
+
 nux_status_t
 nux_lua_open_io (nux_ctx_t *ctx)
 {
@@ -201,97 +207,127 @@ nux_lua_open_io (nux_ctx_t *ctx)
     lua_getglobal(L, "nux");
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_log, 0);
-    lua_setfield(L, -2, "log");
-
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_button, 0);
-    lua_setfield(L, -2, "button");
-
-    luaL_setfuncs(L, lib_core, 0);
-
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_cursor, 0);
-    lua_setfield(L, -2, "cursor");
-
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_io, 0);
-    lua_setfield(L, -2, "io");
 
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "CONTROLLER_MAX");
+    lua_setfield(L, -2, "DEBUG");
+
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "INFO");
+
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "WARNING");
+
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "ERROR");
+
+    lua_setfield(L, -2, "log"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_button, 0);
 
     lua_pushinteger(L, 10);
-    lua_setfield(L, -2, "BUTTON_MAX");
-
-    lua_pushinteger(L, 6);
-    lua_setfield(L, -2, "AXIS_MAX");
-
-    lua_pushinteger(L, 64);
-    lua_setfield(L, -2, "NAME_MAX");
-
-    lua_pushinteger(L, 8);
-    lua_setfield(L, -2, "DISK_MAX");
+    lua_setfield(L, -2, "MAX");
 
     lua_pushinteger(L, 1 << 0);
-    lua_setfield(L, -2, "BUTTON_A");
+    lua_setfield(L, -2, "A");
 
     lua_pushinteger(L, 1 << 1);
-    lua_setfield(L, -2, "BUTTON_X");
+    lua_setfield(L, -2, "X");
 
     lua_pushinteger(L, 1 << 2);
-    lua_setfield(L, -2, "BUTTON_Y");
+    lua_setfield(L, -2, "Y");
 
     lua_pushinteger(L, 1 << 3);
-    lua_setfield(L, -2, "BUTTON_B");
+    lua_setfield(L, -2, "B");
 
     lua_pushinteger(L, 1 << 4);
-    lua_setfield(L, -2, "BUTTON_UP");
+    lua_setfield(L, -2, "UP");
 
     lua_pushinteger(L, 1 << 5);
-    lua_setfield(L, -2, "BUTTON_DOWN");
+    lua_setfield(L, -2, "DOWN");
 
     lua_pushinteger(L, 1 << 6);
-    lua_setfield(L, -2, "BUTTON_LEFT");
+    lua_setfield(L, -2, "LEFT");
 
     lua_pushinteger(L, 1 << 7);
-    lua_setfield(L, -2, "BUTTON_RIGHT");
+    lua_setfield(L, -2, "RIGHT");
 
     lua_pushinteger(L, 1 << 8);
-    lua_setfield(L, -2, "BUTTON_LB");
+    lua_setfield(L, -2, "LB");
 
     lua_pushinteger(L, 1 << 9);
-    lua_setfield(L, -2, "BUTTON_RB");
+    lua_setfield(L, -2, "RB");
+
+    lua_setfield(L, -2, "button"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_axis, 0);
+
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "MAX");
 
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "AXIS_LEFTX");
+    lua_setfield(L, -2, "LEFTX");
 
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "AXIS_LEFTY");
+    lua_setfield(L, -2, "LEFTY");
 
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "AXIS_RIGHTX");
+    lua_setfield(L, -2, "RIGHTX");
 
     lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "AXIS_RIGHTY");
+    lua_setfield(L, -2, "RIGHTY");
 
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "AXIS_RT");
+    lua_setfield(L, -2, "RT");
 
     lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "AXIS_LT");
+    lua_setfield(L, -2, "LT");
+
+    lua_setfield(L, -2, "axis"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_cursor, 0);
+
+    lua_setfield(L, -2, "cursor"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_io, 0);
+
+    lua_setfield(L, -2, "io"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_controller, 0);
 
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "LOG_DEBUG");
+    lua_setfield(L, -2, "MAX");
 
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "LOG_INFO");
+    lua_setfield(L, -2, "controller"); // Set module to nux table
 
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "LOG_WARNING");
+    lua_newtable(L);
 
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LOG_ERROR");
+    luaL_setfuncs(L, lib_name, 0);
+
+    lua_pushinteger(L, 64);
+    lua_setfield(L, -2, "MAX");
+
+    lua_setfield(L, -2, "name"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_disk, 0);
+
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "MAX");
+
+    lua_setfield(L, -2, "disk"); // Set module to nux table
 
     lua_pop(L, 1);
     return NUX_SUCCESS;

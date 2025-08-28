@@ -761,20 +761,28 @@ nux_lua_open_ecs (nux_ctx_t *ctx)
     lua_getglobal(L, "nux");
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_transform, 0);
-    lua_setfield(L, -2, "transform");
+
+    lua_setfield(L, -2, "transform"); // Set module to nux table
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_camera, 0);
-    lua_setfield(L, -2, "camera");
+
+    lua_setfield(L, -2, "camera"); // Set module to nux table
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_staticmesh, 0);
-    lua_setfield(L, -2, "staticmesh");
+
+    lua_setfield(L, -2, "staticmesh"); // Set module to nux table
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_ecs, 0);
-    lua_setfield(L, -2, "ecs");
+
+    lua_setfield(L, -2, "ecs"); // Set module to nux table
 
     lua_pop(L, 1);
     return NUX_SUCCESS;

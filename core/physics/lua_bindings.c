@@ -135,22 +135,28 @@ nux_lua_open_physics (nux_ctx_t *ctx)
     lua_getglobal(L, "nux");
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_rigidbody, 0);
-    lua_setfield(L, -2, "rigidbody");
+
+    lua_setfield(L, -2, "rigidbody"); // Set module to nux table
 
     lua_newtable(L);
+
     luaL_setfuncs(L, lib_collider, 0);
-    lua_setfield(L, -2, "collider");
-
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_physics, 0);
-    lua_setfield(L, -2, "physics");
 
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "COLLIDER_SPHERE");
+    lua_setfield(L, -2, "SPHERE");
 
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "COLLIDER_AABB");
+    lua_setfield(L, -2, "AABB");
+
+    lua_setfield(L, -2, "collider"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_physics, 0);
+
+    lua_setfield(L, -2, "physics"); // Set module to nux table
 
     lua_pop(L, 1);
     return NUX_SUCCESS;
