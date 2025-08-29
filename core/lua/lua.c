@@ -217,6 +217,7 @@ nux_lua_init (nux_ctx_t *ctx)
 
     // Register lua API
     nux_lua_open_base(ctx);
+    nux_lua_open_math(ctx);
     nux_lua_open_lua(ctx);
     nux_lua_open_io(ctx);
     nux_lua_dostring(ctx, lua_data_code);

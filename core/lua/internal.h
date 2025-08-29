@@ -62,9 +62,6 @@ nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
                             nux_res_t       res,
                             const nux_c8_t *path);
 
-// lua_bindings*.c
-
-nux_status_t nux_lua_open_lua(nux_ctx_t *ctx);
 // lua.c
 
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
@@ -83,5 +80,12 @@ nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
 
 nux_status_t nux_lua_open_base(nux_ctx_t *ctx);
 nux_status_t nux_lua_open_io(nux_ctx_t *ctx);
+nux_status_t nux_lua_open_lua(nux_ctx_t *ctx);
+
+// lua_math.c
+
+nux_status_t nux_lua_open_math(nux_ctx_t *ctx);
+void         nux_lua_push_vec3(lua_State *L, nux_v3_t v);
+nux_v3_t     nux_lua_check_vec3(lua_State *L, int index);
 
 #endif

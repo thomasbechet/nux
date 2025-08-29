@@ -135,6 +135,8 @@ function nux.init()
     nux.staticmesh.set_texture(CUBE, nux.canvas.get_texture(MONOLITH_CANVAS))
     nux.collider.add_aabb(CUBE, 0, 0, 0, x / 50, y / 50, 1)
 
+    print(nux.vec3(1, 2, 3) * 3)
+
     API = inspect(nux)
 end
 

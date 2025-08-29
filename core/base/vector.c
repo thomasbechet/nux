@@ -51,6 +51,10 @@
     nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b)   \
     {                                                                     \
         return nux_##name(opmax(a.x, b.x), opmax(a.y, b.y));              \
+    }                                                                     \
+    type nux_##name##_dot(nux_##name##_t a, nux_##name##_t b)             \
+    {                                                                     \
+        return a.x * b.x + a.y * b.y;                                     \
     }
 
 #define NUX_V3_IMPL(name, type, opadd, opsub, opmul, opdiv, opmin, opmax)     \
@@ -245,6 +249,11 @@ NUX_V4_IMPL(v4i, nux_i32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
 NUX_V4_IMPL(v4u, nux_u32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
 NUX_V4_IMPL(v4, nux_f32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
 
+nux_f32_t
+nux_v2_norm (nux_v2_t a)
+{
+    return nux_sqrt(nux_v2_dot(a, a));
+}
 nux_f32_t
 nux_v3_norm (nux_v3_t a)
 {
