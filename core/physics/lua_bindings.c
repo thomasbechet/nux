@@ -35,10 +35,7 @@ l_rigidbody_set_velocity (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t velocity;
-    velocity.x = luaL_checknumber(L, 2);
-    velocity.y = luaL_checknumber(L, 3);
-    velocity.z = luaL_checknumber(L, 4);
+    nux_v3_t velocity = nux_lua_check_vec3(L, 2);
     nux_rigidbody_set_velocity(ctx, e, velocity);
     l_checkerror(L, ctx);
     return 0;
@@ -62,15 +59,9 @@ l_collider_add_aabb (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t min;
-    min.x = luaL_checknumber(L, 2);
-    min.y = luaL_checknumber(L, 3);
-    min.z = luaL_checknumber(L, 4);
+    nux_v3_t min = nux_lua_check_vec3(L, 2);
 
-    nux_v3_t max;
-    max.x = luaL_checknumber(L, 5);
-    max.y = luaL_checknumber(L, 6);
-    max.z = luaL_checknumber(L, 7);
+    nux_v3_t max = nux_lua_check_vec3(L, 3);
     nux_collider_add_aabb(ctx, e, min, max);
     l_checkerror(L, ctx);
     return 0;
@@ -90,15 +81,9 @@ static int
 l_physics_query (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_v3_t   pos;
-    pos.x = luaL_checknumber(L, 1);
-    pos.y = luaL_checknumber(L, 2);
-    pos.z = luaL_checknumber(L, 3);
+    nux_v3_t   pos = nux_lua_check_vec3(L, 1);
 
-    nux_v3_t dir;
-    dir.x = luaL_checknumber(L, 4);
-    dir.y = luaL_checknumber(L, 5);
-    dir.z = luaL_checknumber(L, 6);
+    nux_v3_t dir = nux_lua_check_vec3(L, 2);
 
     nux_ent_t ret = nux_physics_query(ctx, pos, dir);
     l_checkerror(L, ctx);

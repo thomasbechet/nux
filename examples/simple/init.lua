@@ -21,24 +21,17 @@ local function controller(e)
     local ry = nux.axis.value(0, nux.axis.RIGHTY)
 
     -- Translation
-    local fx, fy, fz = nux.transform.forward(e)
-    local lx, ly, lz = nux.transform.left(e)
-    local dx = 0
-    local dy = 0
-    local dz = 0
+    local forward = nux.transform.forward(e)
+    local left = nux.transform.left(e)
     local dt = nux.time.delta()
     -- Forward
-    dx = dx + fx * mz * dt * speed
-    dy = dy + fy * mz * dt * speed
-    dz = dz + fz * mz * dt * speed
+    local dir = forward * mz * dt * speed
     -- Left
-    dx = dx - lx * mx * dt * speed
-    dy = dy - ly * mx * dt * speed
-    dz = dz - lz * mx * dt * speed
+    dir = dir - left * mx * dt * speed
     -- Up
-    dy = dy + my * dt * speed
-    local x, y, z = nux.transform.get_translation(e)
-    nux.transform.set_translation(e, x + dx, y + dy, z + dz)
+    dir.y = dir.y + my * dt * speed
+    local position = nux.transform.get_translation(e)
+    nux.transform.set_translation(e, position + dir)
 
     -- Rotation
     if rx ~= 0 then
@@ -48,7 +41,7 @@ local function controller(e)
         PITCH = PITCH - ry * nux.time.delta() * 100
     end
     PITCH = math.clamp(PITCH, -90, 90)
-    nux.transform.set_rotation_euler(e, -math.rad(PITCH), -math.rad(YAW), 0)
+    nux.transform.set_rotation_euler(e, nux.vec3(-math.rad(PITCH), -math.rad(YAW), 0))
     nux.camera.set_fov(e, 90)
     nux.camera.set_far(e, 1000)
     nux.camera.set_near(e, 0.1)
@@ -114,7 +107,7 @@ function nux.init()
     nux.camera.add(cam)
     nux.transform.add(cam)
     nux.camera.set_fov(cam, 70)
-    nux.transform.set_translation(cam, 13, 15, 10)
+    nux.transform.set_translation(cam, nux.vec3(13, 15, 10))
     CAMERA = cam
 
     -- Create canvas
@@ -128,12 +121,12 @@ function nux.init()
     MONOLITH_CANVAS = nux.canvas.new(ARENA, x, y, 1000)
     CUBE = nux.ecs.create()
     nux.transform.add(CUBE)
-    nux.transform.set_translation(CUBE, 10, 0, 0)
-    nux.transform.set_scale(CUBE, x / 50, y / 50, 1)
+    nux.transform.set_translation(CUBE, nux.vec3(10, 0, 0))
+    nux.transform.set_scale(CUBE, nux.vec3(x / 50, y / 50, 1))
     nux.staticmesh.add(CUBE)
     nux.staticmesh.set_mesh(CUBE, mesh_cube)
     nux.staticmesh.set_texture(CUBE, nux.canvas.get_texture(MONOLITH_CANVAS))
-    nux.collider.add_aabb(CUBE, 0, 0, 0, x / 50, y / 50, 1)
+    nux.collider.add_aabb(CUBE, nux.vec3(0, 0, 0), nux.vec3(x / 50, y / 50, 1))
 
     print(nux.vec3(1, 2, 3) * 3)
 
@@ -143,25 +136,25 @@ end
 function nux.tick()
     controller(CAMERA)
     nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
-    nux.transform.set_scale(ROTATING, 1, 5, 10)
+    nux.transform.set_scale(ROTATING, nux.vec3(1, 5, 10))
 
     local canvas = MONOLITH_CANVAS
     nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(canvas, 10, 20, API)
     nux.canvas.text(canvas, 150, 50, "hello Julia")
 
-    local x, y, z = nux.transform.get_translation(CAMERA)
+    local position = nux.transform.get_translation(CAMERA)
     canvas = GUI_CANVAS
     nux.canvas.text(canvas, 10, 10, nux.time.date())
     nux.canvas.text(canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(canvas, 10, 30, string.format("x:%.2f", x))
-    nux.canvas.text(canvas, 10, 40, string.format("y:%.2f", y))
-    nux.canvas.text(canvas, 10, 50, string.format("z:%.2f", z))
+    nux.canvas.text(canvas, 10, 30, string.format("x:%.2f", position.x))
+    nux.canvas.text(canvas, 10, 40, string.format("y:%.2f", position.y))
+    nux.canvas.text(canvas, 10, 50, string.format("z:%.2f", position.z))
     nux.canvas.text(canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
 
-    local fx, fy, fz = nux.transform.forward(CAMERA)
+    local forward = nux.transform.forward(CAMERA)
     if nux.button.just_pressed(0, nux.button.RB) then
-        local hit = nux.physics.query(x, y, z, fx, fy, fz)
+        local hit = nux.physics.query(position, forward)
         if false then
             print("hit " .. hit)
         else
@@ -178,20 +171,20 @@ function nux.tick()
 
             local e = nux.ecs.create()
             nux.transform.add(e)
-            nux.transform.set_translation(e, x, y, z)
-            local minx, miny, minz = nux.mesh.bounds_min(m)
-            local maxx, maxy, maxz = nux.mesh.bounds_max(m)
-            nux.collider.add_aabb(e, minx, miny, minz, maxx, maxy, maxz)
+            nux.transform.set_translation(e, position)
+            local min = nux.mesh.bounds_min(m)
+            local max = nux.mesh.bounds_max(m)
+            nux.collider.add_aabb(e, min, max)
             local force = 15
             nux.rigidbody.add(e)
-            nux.rigidbody.set_velocity(e, fx * force, fy * force, fz * force)
+            nux.rigidbody.set_velocity(e, forward * force)
 
             -- add mesh
             local child = nux.ecs.create()
             nux.transform.add(child)
             nux.staticmesh.add(child)
             nux.transform.set_parent(child, e)
-            nux.transform.set_translation(child, -minx, -miny, -minz)
+            nux.transform.set_translation(child, -min)
             nux.staticmesh.set_mesh(child, m)
             nux.staticmesh.set_texture(child, t)
         end

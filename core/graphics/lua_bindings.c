@@ -104,10 +104,8 @@ l_mesh_bounds_min (lua_State *L)
 
     nux_v3_t ret = nux_mesh_bounds_min(ctx, mesh);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_mesh_bounds_max (lua_State *L)
@@ -117,10 +115,8 @@ l_mesh_bounds_max (lua_State *L)
 
     nux_v3_t ret = nux_mesh_bounds_max(ctx, mesh);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 
 static int

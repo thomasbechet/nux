@@ -67,10 +67,8 @@ l_transform_get_local_translation (lua_State *L)
 
     nux_v3_t ret = nux_transform_get_local_translation(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_get_local_rotation (lua_State *L)
@@ -94,10 +92,8 @@ l_transform_get_local_scale (lua_State *L)
 
     nux_v3_t ret = nux_transform_get_local_scale(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_get_translation (lua_State *L)
@@ -107,10 +103,8 @@ l_transform_get_translation (lua_State *L)
 
     nux_v3_t ret = nux_transform_get_translation(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_get_rotation (lua_State *L)
@@ -134,10 +128,8 @@ l_transform_get_scale (lua_State *L)
 
     nux_v3_t ret = nux_transform_get_scale(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_set_translation (lua_State *L)
@@ -145,10 +137,7 @@ l_transform_set_translation (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t position;
-    position.x = luaL_checknumber(L, 2);
-    position.y = luaL_checknumber(L, 3);
-    position.z = luaL_checknumber(L, 4);
+    nux_v3_t position = nux_lua_check_vec3(L, 2);
     nux_transform_set_translation(ctx, e, position);
     l_checkerror(L, ctx);
     return 0;
@@ -174,10 +163,7 @@ l_transform_set_rotation_euler (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t euler;
-    euler.x = luaL_checknumber(L, 2);
-    euler.y = luaL_checknumber(L, 3);
-    euler.z = luaL_checknumber(L, 4);
+    nux_v3_t euler = nux_lua_check_vec3(L, 2);
     nux_transform_set_rotation_euler(ctx, e, euler);
     l_checkerror(L, ctx);
     return 0;
@@ -188,10 +174,7 @@ l_transform_set_scale (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t scale;
-    scale.x = luaL_checknumber(L, 2);
-    scale.y = luaL_checknumber(L, 3);
-    scale.z = luaL_checknumber(L, 4);
+    nux_v3_t scale = nux_lua_check_vec3(L, 2);
     nux_transform_set_scale(ctx, e, scale);
     l_checkerror(L, ctx);
     return 0;
@@ -202,20 +185,11 @@ l_transform_set_ortho (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t a;
-    a.x = luaL_checknumber(L, 2);
-    a.y = luaL_checknumber(L, 3);
-    a.z = luaL_checknumber(L, 4);
+    nux_v3_t a = nux_lua_check_vec3(L, 2);
 
-    nux_v3_t b;
-    b.x = luaL_checknumber(L, 5);
-    b.y = luaL_checknumber(L, 6);
-    b.z = luaL_checknumber(L, 7);
+    nux_v3_t b = nux_lua_check_vec3(L, 3);
 
-    nux_v3_t c;
-    c.x = luaL_checknumber(L, 8);
-    c.y = luaL_checknumber(L, 9);
-    c.z = luaL_checknumber(L, 10);
+    nux_v3_t c = nux_lua_check_vec3(L, 4);
     nux_transform_set_ortho(ctx, e, a, b, c);
     l_checkerror(L, ctx);
     return 0;
@@ -228,10 +202,8 @@ l_transform_forward (lua_State *L)
 
     nux_v3_t ret = nux_transform_forward(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_backward (lua_State *L)
@@ -241,10 +213,8 @@ l_transform_backward (lua_State *L)
 
     nux_v3_t ret = nux_transform_backward(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_left (lua_State *L)
@@ -254,10 +224,8 @@ l_transform_left (lua_State *L)
 
     nux_v3_t ret = nux_transform_left(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_right (lua_State *L)
@@ -267,10 +235,8 @@ l_transform_right (lua_State *L)
 
     nux_v3_t ret = nux_transform_right(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_up (lua_State *L)
@@ -280,10 +246,8 @@ l_transform_up (lua_State *L)
 
     nux_v3_t ret = nux_transform_up(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_down (lua_State *L)
@@ -293,10 +257,8 @@ l_transform_down (lua_State *L)
 
     nux_v3_t ret = nux_transform_down(ctx, e);
     l_checkerror(L, ctx);
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    return 3;
+    nux_lua_push_vec3(L, ret);
+    return 1;
 }
 static int
 l_transform_rotate (lua_State *L)
@@ -304,12 +266,9 @@ l_transform_rotate (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t axis;
-    axis.x = luaL_checknumber(L, 2);
-    axis.y = luaL_checknumber(L, 3);
-    axis.z = luaL_checknumber(L, 4);
+    nux_v3_t axis = nux_lua_check_vec3(L, 2);
 
-    nux_f32_t angle = luaL_checknumber(L, 5);
+    nux_f32_t angle = luaL_checknumber(L, 3);
 
     nux_transform_rotate(ctx, e, axis, angle);
     l_checkerror(L, ctx);
@@ -357,10 +316,7 @@ l_transform_look_at (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_v3_t center;
-    center.x = luaL_checknumber(L, 2);
-    center.y = luaL_checknumber(L, 3);
-    center.z = luaL_checknumber(L, 4);
+    nux_v3_t center = nux_lua_check_vec3(L, 2);
     nux_transform_look_at(ctx, e, center);
     l_checkerror(L, ctx);
     return 0;

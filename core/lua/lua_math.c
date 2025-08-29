@@ -88,13 +88,25 @@ vec3_new (lua_State *L)
     }
     else if (lua_gettop(L) == 1)
     {
-        v = nux_v3s(luaL_checknumber(L, 1));
+        if (lua_istable(L, 1))
+        {
+            lua_geti(L, 1, 1);
+            v.x = lua_tonumber(L, -1);
+            lua_geti(L, 1, 2);
+            v.y = lua_tonumber(L, -1);
+            lua_geti(L, 1, 3);
+            v.z = lua_tonumber(L, -1);
+        }
+        else
+        {
+            v = nux_v3s(luaL_checknumber(L, 1));
+        }
     }
     else
     {
-        v = nux_v3(luaL_checknumber(L, 1),
-                   luaL_checknumber(L, 2),
-                   luaL_checknumber(L, 3));
+        v.x = luaL_checknumber(L, 1);
+        v.y = luaL_checknumber(L, 2);
+        v.z = luaL_checknumber(L, 3);
     }
     nux_lua_push_vec3(L, v);
     return 1;
@@ -328,15 +340,40 @@ meta_div (lua_State *L)
     }
     return 0;
 }
+static int
+meta_unm (lua_State *L)
+{
+    nux_lua_userdata_t *a = check_anyuserdata(L, 1);
+    switch (a->type)
+    {
+        case NUX_LUA_TYPE_VEC2: {
+        }
+        break;
+        case NUX_LUA_TYPE_VEC3: {
+            nux_lua_push_vec3(L, nux_v3_muls(*a->vec3, -1));
+            return 1;
+        }
+        break;
+        case NUX_LUA_TYPE_VEC4: {
+        }
+        break;
+    }
+    return 0;
+}
 
 static int
 register_metatable (lua_State *L)
 {
     luaL_Reg reg[] = {
-        { "__index", meta_index },       { "__newindex", meta_newindex },
-        { "__tostring", meta_tostring }, { "__add", meta_add },
-        { "__sub", meta_sub },           { "__mul", meta_mul },
-        { "__div", meta_div },           { NULL, NULL },
+        { "__index", meta_index },
+        { "__newindex", meta_newindex },
+        { "__tostring", meta_tostring },
+        { "__add", meta_add },
+        { "__sub", meta_sub },
+        { "__mul", meta_mul },
+        { "__div", meta_div },
+        { "__unm", meta_unm },
+        { NULL, NULL },
     };
 
     luaL_newmetatable(L, "userdata");
