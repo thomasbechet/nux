@@ -46,28 +46,28 @@ void nux_camera_set_far(nux_ctx_t *ctx, nux_ent_t e, nux_f32_t far);
 
 void nux_staticmesh_add(nux_ctx_t *ctx, nux_ent_t e);
 void nux_staticmesh_remove(nux_ctx_t *ctx, nux_ent_t e);
-void nux_staticmesh_set_mesh(nux_ctx_t *ctx, nux_ent_t e, nux_res_t mesh);
-void nux_staticmesh_set_texture(nux_ctx_t *ctx, nux_ent_t e, nux_res_t texture);
+void nux_staticmesh_set_mesh(nux_ctx_t *ctx, nux_ent_t e, nux_rid_t mesh);
+void nux_staticmesh_set_texture(nux_ctx_t *ctx, nux_ent_t e, nux_rid_t texture);
 void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
                                  nux_ent_t  e,
-                                 nux_res_t  colormap);
+                                 nux_rid_t  colormap);
 
 // ECS
 
-nux_res_t nux_ecs_new_iter(nux_ctx_t *ctx,
-                           nux_res_t  arena,
+nux_rid_t nux_ecs_new_iter(nux_ctx_t *ctx,
+                           nux_rid_t  arena,
                            nux_u32_t  include_count,
                            nux_u32_t  exclude_count);
-void      nux_ecs_includes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
-void      nux_ecs_excludes(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t c);
-nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_res_t iter, nux_u32_t e);
+void      nux_ecs_includes(nux_ctx_t *ctx, nux_rid_t iter, nux_u32_t c);
+void      nux_ecs_excludes(nux_ctx_t *ctx, nux_rid_t iter, nux_u32_t c);
+nux_u32_t nux_ecs_next(nux_ctx_t *ctx, nux_rid_t iter, nux_u32_t e);
 
-nux_res_t nux_ecs_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
-nux_res_t nux_ecs_load_gltf(nux_ctx_t      *ctx,
-                            nux_res_t       arena,
+nux_rid_t nux_ecs_new(nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa);
+nux_rid_t nux_ecs_load_gltf(nux_ctx_t      *ctx,
+                            nux_rid_t       arena,
                             const nux_c8_t *path);
-nux_res_t nux_ecs_get_active(nux_ctx_t *ctx);
-void      nux_ecs_set_active(nux_ctx_t *ctx, nux_res_t ecs);
+nux_rid_t nux_ecs_get_active(nux_ctx_t *ctx);
+void      nux_ecs_set_active(nux_ctx_t *ctx, nux_rid_t ecs);
 nux_u32_t nux_ecs_create(nux_ctx_t *ctx);
 void      nux_ecs_create_at(nux_ctx_t *ctx, nux_u32_t e);
 void      nux_ecs_delete(nux_ctx_t *ctx, nux_u32_t e);

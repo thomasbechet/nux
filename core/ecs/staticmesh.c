@@ -13,28 +13,28 @@ nux_staticmesh_remove (nux_ctx_t *ctx, nux_ent_t e)
     nux_ecs_remove(ctx, e, NUX_COMPONENT_STATICMESH);
 }
 void
-nux_staticmesh_set_mesh (nux_ctx_t *ctx, nux_ent_t e, nux_res_t mesh)
+nux_staticmesh_set_mesh (nux_ctx_t *ctx, nux_ent_t e, nux_rid_t mesh)
 {
     if (mesh)
     {
-        NUX_CHECK(nux_res_check(ctx, NUX_RES_MESH, mesh), return);
+        NUX_CHECK(nux_resource_check(ctx, NUX_RESOURCE_MESH, mesh), return);
     }
     nux_staticmesh_t *sm = nux_ecs_get(ctx, e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->mesh = mesh;
 }
 void
-nux_staticmesh_set_texture (nux_ctx_t *ctx, nux_ent_t e, nux_res_t texture)
+nux_staticmesh_set_texture (nux_ctx_t *ctx, nux_ent_t e, nux_rid_t texture)
 {
     if (texture)
     {
-        NUX_CHECK(nux_res_check(ctx, NUX_RES_TEXTURE, texture), return);
+        NUX_CHECK(nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, texture), return);
     }
     nux_staticmesh_t *sm = nux_ecs_get(ctx, e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->texture = texture;
 }
 void
-nux_staticmesh_set_colormap (nux_ctx_t *ctx, nux_ent_t e, nux_res_t colormap)
+nux_staticmesh_set_colormap (nux_ctx_t *ctx, nux_ent_t e, nux_rid_t colormap)
 {
 }

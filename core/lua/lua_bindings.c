@@ -13,11 +13,11 @@ static int
 l_lua_load (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     const nux_c8_t *path = luaL_checkstring(L, 2);
 
-    nux_res_t ret = nux_lua_load(ctx, arena, path);
+    nux_rid_t ret = nux_lua_load(ctx, arena, path);
     l_checkerror(L, ctx);
     if (ret)
     {

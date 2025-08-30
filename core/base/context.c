@@ -96,13 +96,13 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
 
     // Register entry script
-    nux_res_t  res;
-    nux_lua_t *lua = nux_res_new(
-        ctx, ctx->core_arena_res, NUX_RES_LUA, sizeof(*lua), &res);
+    nux_rid_t  rid;
+    nux_lua_t *lua = nux_resource_new(
+        ctx, ctx->core_arena_rid, NUX_RESOURCE_LUA, sizeof(*lua), &rid);
     NUX_CHECK(lua, goto cleanup);
     if (ctx->config.hotreload)
     {
-        nux_res_watch(ctx, res, entry_script);
+        nux_resource_watch(ctx, rid, entry_script);
     }
 
     // Initialize optional modules
@@ -127,7 +127,7 @@ void
 nux_instance_free (nux_ctx_t *ctx)
 {
     // Cleanup all resources
-    nux_arena_reset(ctx, ctx->core_arena_res);
+    nux_arena_reset(ctx, ctx->core_arena_rid);
 
     // Reset runtime
     nux_physics_free(ctx);
@@ -173,11 +173,11 @@ nux_instance_tick (nux_ctx_t *ctx)
     if (ctx->config.hotreload)
     {
         nux_u32_t count;
-        nux_res_t handles[256];
+        nux_rid_t handles[256];
         nux_os_hotreload_pull(ctx->userdata, handles, &count);
         for (nux_u32_t i = 0; i < count; ++i)
         {
-            if (nux_res_reload(ctx, handles[i]))
+            if (nux_resource_reload(ctx, handles[i]))
             {
                 NUX_INFO("Resource 0x%08X successfully reloaded", handles[i]);
             }

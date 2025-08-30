@@ -193,14 +193,14 @@ nux_lua_call (nux_ctx_t *ctx, nux_u32_t nargs, nux_u32_t nreturns)
 nux_status_t
 nux_lua_init (nux_ctx_t *ctx)
 {
-    ctx->lua = nux_arena_alloc(ctx, ctx->core_arena_res, sizeof(*ctx->lua));
+    ctx->lua = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->lua));
     NUX_CHECK(ctx->lua, return NUX_FAILURE);
 
     nux_lua_module_t *module = ctx->lua;
 
     // Register types
     nux_resource_type_t *type;
-    type         = nux_res_register(ctx, NUX_RES_LUA, "lua");
+    type         = nux_resource_register(ctx, NUX_RESOURCE_LUA, "lua");
     type->reload = nux_lua_reload;
 
     // Initialize Lua VM
@@ -348,24 +348,25 @@ nux_lua_dostring (nux_ctx_t *ctx, const nux_c8_t *string)
     return NUX_SUCCESS;
 }
 
-nux_res_t
-nux_lua_load (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
+nux_rid_t
+nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
 {
     if (luaL_dofile(ctx->lua->L, path) != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(ctx->lua->L, -1));
         return NUX_NULL;
     }
-    nux_res_t  res;
-    nux_lua_t *lua = nux_res_new(ctx, arena, NUX_RES_LUA, sizeof(*lua), &res);
+    nux_rid_t  rid;
+    nux_lua_t *lua
+        = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA, sizeof(*lua), &rid);
     NUX_CHECK(lua, return NUX_NULL);
-    nux_res_watch(ctx, res, path);
-    return res;
+    nux_resource_watch(ctx, rid, path);
+    return rid;
 }
 nux_status_t
-nux_lua_reload (nux_ctx_t *ctx, nux_res_t res, const nux_c8_t *path)
+nux_lua_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
-    nux_lua_t *lua = nux_res_check(ctx, NUX_RES_LUA, res);
+    nux_lua_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA, rid);
     if (luaL_dofile(ctx->lua->L, path) != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(ctx->lua->L, -1));

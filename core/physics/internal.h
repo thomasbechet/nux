@@ -92,8 +92,8 @@ typedef struct nux_physics_module
     nux_point_mass_vec_t           point_masses;
     nux_collision_constraint_vec_t collision_constraints;
     nux_distance_constraint_vec_t  distance_constraints;
-    nux_res_t                      rigidbody_transform_iter;
-    nux_res_t                      collider_transform_iter;
+    nux_rid_t                      rigidbody_transform_iter;
+    nux_rid_t                      collider_transform_iter;
 } nux_physics_module_t;
 
 ////////////////////////////

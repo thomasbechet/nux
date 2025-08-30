@@ -318,18 +318,18 @@
 
 typedef enum
 {
-    NUX_RES_NULL     = 0,
-    NUX_RES_ARENA    = 1,
-    NUX_RES_LUA      = 2,
-    NUX_RES_TEXTURE  = 3,
-    NUX_RES_MESH     = 4,
-    NUX_RES_CANVAS   = 5,
-    NUX_RES_FONT     = 6,
-    NUX_RES_FILE     = 7,
-    NUX_RES_ECS      = 8,
-    NUX_RES_ECS_ITER = 9,
+    NUX_RESOURCE_NULL     = 0,
+    NUX_RESOURCE_ARENA    = 1,
+    NUX_RESOURCE_LUA      = 2,
+    NUX_RESOURCE_TEXTURE  = 3,
+    NUX_RESOURCE_MESH     = 4,
+    NUX_RESOURCE_CANVAS   = 5,
+    NUX_RESOURCE_FONT     = 6,
+    NUX_RESOURCE_FILE     = 7,
+    NUX_RESOURCE_ECS      = 8,
+    NUX_RESOURCE_ECS_ITER = 9,
 
-    NUX_RES_MAX = 256,
+    NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
 
 typedef union
@@ -487,7 +487,7 @@ typedef struct
 
 typedef struct nux_resource_finalizer
 {
-    nux_res_t                      res;
+    nux_rid_t                      res;
     struct nux_resource_finalizer *prev;
     struct nux_resource_finalizer *next;
 } nux_resource_finalizer_t;
@@ -514,9 +514,9 @@ typedef struct
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 
-typedef void (*nux_resource_cleanup_t)(nux_ctx_t *ctx, nux_res_t res);
+typedef void (*nux_resource_cleanup_t)(nux_ctx_t *ctx, nux_rid_t rid);
 typedef nux_status_t (*nux_resource_reload_t)(nux_ctx_t      *ctx,
-                                              nux_res_t       res,
+                                              nux_rid_t       rid,
                                               const nux_c8_t *path);
 typedef struct
 {
@@ -527,8 +527,8 @@ typedef struct
 
 typedef struct
 {
-    nux_res_t       self; // for validity check
-    nux_res_t       arena;
+    nux_rid_t       self; // for validity check
+    nux_rid_t       arena;
     nux_u32_t       type;
     void           *data;
     const nux_c8_t *path;
@@ -597,9 +597,9 @@ struct nux_context
     nux_pcg_t           pcg;
     nux_resource_pool_t resources;
     nux_arena_t         core_arena;
-    nux_res_t           core_arena_res;
-    nux_res_t           frame_arena;
-    nux_resource_type_t resources_types[NUX_RES_MAX];
+    nux_rid_t           core_arena_rid;
+    nux_rid_t           frame_arena;
+    nux_resource_type_t resources_types[NUX_RESOURCE_MAX];
     nux_u64_t           stats[NUX_STAT_MAX];
 
     // modules
@@ -683,34 +683,34 @@ nux_u32_t nux_hash(const void *p, nux_u32_t s);
 
 // resource.c
 
-nux_resource_type_t *nux_res_register(nux_ctx_t      *ctx,
-                                      nux_u32_t       index,
-                                      const nux_c8_t *name);
-nux_res_t            nux_res_add(nux_ctx_t *ctx,
-                                 nux_res_t  arena,
-                                 nux_u32_t  type,
-                                 void      *data);
-void                *nux_res_new(nux_ctx_t *ctx,
-                                 nux_res_t  arena,
-                                 nux_u32_t  type,
-                                 nux_u32_t  size,
-                                 nux_res_t *res);
-void                 nux_res_delete(nux_ctx_t *ctx, nux_res_t res);
-void        *nux_res_check(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
-void         nux_res_watch(nux_ctx_t *ctx, nux_res_t res, const nux_c8_t *path);
-nux_status_t nux_res_reload(nux_ctx_t *ctx, nux_res_t res);
-nux_res_t    nux_res_next(nux_ctx_t *ctx, nux_u32_t type, nux_res_t res);
+nux_resource_type_t *nux_resource_register(nux_ctx_t      *ctx,
+                                           nux_u32_t       index,
+                                           const nux_c8_t *name);
+nux_rid_t            nux_resource_add(nux_ctx_t *ctx,
+                                      nux_rid_t  arena,
+                                      nux_u32_t  type,
+                                      void      *data);
+void                *nux_resource_new(nux_ctx_t *ctx,
+                                      nux_rid_t  arena,
+                                      nux_u32_t  type,
+                                      nux_u32_t  size,
+                                      nux_rid_t *rid);
+void                 nux_resource_delete(nux_ctx_t *ctx, nux_rid_t rid);
+void *nux_resource_check(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
+void  nux_resource_watch(nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path);
+nux_status_t nux_resource_reload(nux_ctx_t *ctx, nux_rid_t rid);
+nux_rid_t    nux_resource_next(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
 
 // arena.c
 
 void  nux_arena_init(nux_arena_t *arena, const nux_c8_t *name);
 void  nux_arena_free(nux_ctx_t *ctx, nux_arena_t *arena);
 void *nux_arena_alloc_raw(nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size);
-void *nux_arena_alloc(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t size);
+void *nux_arena_alloc(nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t size);
 nux_c8_t *nux_arena_alloc_path(nux_ctx_t      *ctx,
-                               nux_res_t       arena,
+                               nux_rid_t       arena,
                                const nux_c8_t *path);
-void      nux_arena_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void      nux_arena_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
 
 // random.c
 

@@ -88,7 +88,7 @@ typedef struct nux_canvas
     nux_u32_t              batches_buffer_head;
     nux_gpu_canvas_batch_t active_batch;
     nux_u32_t              active_texture;
-    nux_res_t              target;
+    nux_rid_t              target;
     struct nux_canvas     *prev;
     struct nux_canvas     *next;
 } nux_canvas_t;
@@ -136,10 +136,10 @@ typedef struct nux_graphics_module
     nux_u32_t         batches_buffer_head;
     nux_gpu_buffer_t  transforms_buffer;
     nux_u32_t         transforms_buffer_head;
-    nux_res_t         transform_iter;
-    nux_res_t         transform_staticmesh_iter;
-    nux_res_t         transform_camera_iter;
-    nux_res_t         canvaslayer_iter;
+    nux_rid_t         transform_iter;
+    nux_rid_t         transform_staticmesh_iter;
+    nux_rid_t         transform_camera_iter;
+    nux_rid_t         canvaslayer_iter;
 
     const nux_texture_t *active_texture;
 } nux_graphics_module_t;
@@ -177,11 +177,11 @@ void nux_renderer_draw_rect(nux_ctx_t *ctx, const nux_v3_t *positions);
 
 nux_status_t nux_font_init_default(nux_ctx_t *ctx, nux_font_t *font);
 void         nux_font_free(nux_ctx_t *ctx, nux_font_t *font);
-void         nux_font_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void         nux_font_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
 
 // canvas.c
 
-void nux_canvas_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void nux_canvas_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
 void nux_canvas_render(nux_ctx_t *ctx, nux_canvas_t *c);
 
 // gpu.c
@@ -234,9 +234,9 @@ nux_status_t nux_lua_open_graphics(nux_ctx_t *ctx);
 
 // texture.c
 
-void nux_texture_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void nux_texture_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
 void nux_texture_write(nux_ctx_t  *ctx,
-                       nux_res_t   res,
+                       nux_rid_t   rid,
                        nux_u32_t   x,
                        nux_u32_t   y,
                        nux_u32_t   w,

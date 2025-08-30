@@ -138,7 +138,7 @@ nux_status_t nux_io_stat(nux_ctx_t       *ctx,
                          nux_file_t      *file,
                          nux_file_stat_t *stat);
 void        *nux_io_load(nux_ctx_t      *ctx,
-                         nux_res_t       arena,
+                         nux_rid_t       arena,
                          const nux_c8_t *path,
                          nux_u32_t      *size);
 
@@ -151,7 +151,7 @@ nux_status_t nux_io_write_cart_data(nux_ctx_t      *ctx,
 
 // file.c
 
-void nux_file_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void nux_file_cleanup(nux_ctx_t *ctx, nux_rid_t res);
 
 // input.c
 

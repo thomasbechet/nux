@@ -59,7 +59,7 @@ nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
 nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
 nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
-                            nux_res_t       res,
+                            nux_rid_t       rid,
                             const nux_c8_t *path);
 
 // lua.c
@@ -73,7 +73,7 @@ nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
 nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
 nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
-                            nux_res_t       res,
+                            nux_rid_t       rid,
                             const nux_c8_t *path);
 
 // lua_bindings*.c

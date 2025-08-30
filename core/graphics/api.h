@@ -80,40 +80,40 @@ typedef enum
     NUX_TEXTURE_RENDER_TARGET = 2,
 } nux_texture_type_t;
 
-nux_res_t nux_texture_new(nux_ctx_t         *ctx,
-                          nux_res_t          arena,
+nux_rid_t nux_texture_new(nux_ctx_t         *ctx,
+                          nux_rid_t          arena,
                           nux_texture_type_t format,
                           nux_u32_t          w,
                           nux_u32_t          h);
-void      nux_texture_blit(nux_ctx_t *ctx, nux_res_t res);
+void      nux_texture_blit(nux_ctx_t *ctx, nux_rid_t rid);
 
-nux_res_t nux_mesh_new(nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa);
-nux_res_t nux_mesh_new_cube(
-    nux_ctx_t *ctx, nux_res_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz);
-void     nux_mesh_update_bounds(nux_ctx_t *ctx, nux_res_t mesh);
-nux_v3_t nux_mesh_bounds_min(nux_ctx_t *ctx, nux_res_t mesh);
-nux_v3_t nux_mesh_bounds_max(nux_ctx_t *ctx, nux_res_t mesh);
+nux_rid_t nux_mesh_new(nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa);
+nux_rid_t nux_mesh_new_cube(
+    nux_ctx_t *ctx, nux_rid_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz);
+void     nux_mesh_update_bounds(nux_ctx_t *ctx, nux_rid_t mesh);
+nux_v3_t nux_mesh_bounds_min(nux_ctx_t *ctx, nux_rid_t mesh);
+nux_v3_t nux_mesh_bounds_max(nux_ctx_t *ctx, nux_rid_t mesh);
 
 void nux_canvaslayer_add(nux_ctx_t *ctx, nux_ent_t e);
 void nux_canvaslayer_remove(nux_ctx_t *ctx, nux_ent_t e);
-void nux_canvaslayer_set_canvas(nux_ctx_t *ctx, nux_ent_t e, nux_res_t canvas);
-nux_res_t nux_canvaslayer_get_canvas(nux_ctx_t *ctx,
+void nux_canvaslayer_set_canvas(nux_ctx_t *ctx, nux_ent_t e, nux_rid_t canvas);
+nux_rid_t nux_canvaslayer_get_canvas(nux_ctx_t *ctx,
                                      nux_ent_t  e,
-                                     nux_res_t  canvas);
+                                     nux_rid_t  canvas);
 
-nux_res_t nux_canvas_new(nux_ctx_t *ctx,
-                         nux_res_t  arena,
+nux_rid_t nux_canvas_new(nux_ctx_t *ctx,
+                         nux_rid_t  arena,
                          nux_u32_t  width,
                          nux_u32_t  height,
                          nux_u32_t  capa);
-nux_res_t nux_canvas_get_texture(nux_ctx_t *ctx, nux_res_t res);
+nux_rid_t nux_canvas_get_texture(nux_ctx_t *ctx, nux_rid_t rid);
 void      nux_canvas_text(nux_ctx_t      *ctx,
-                          nux_res_t       res,
+                          nux_rid_t       rid,
                           nux_u32_t       x,
                           nux_u32_t       y,
                           const nux_c8_t *text);
 void      nux_canvas_rectangle(nux_ctx_t *ctx,
-                               nux_res_t  res,
+                               nux_rid_t  rid,
                                nux_u32_t  x,
                                nux_u32_t  y,
                                nux_u32_t  w,

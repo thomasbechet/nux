@@ -1,11 +1,11 @@
 #include "internal.h"
 
-nux_res_t
-nux_mesh_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
+nux_rid_t
+nux_mesh_new (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa)
 {
-    nux_res_t   res;
+    nux_rid_t   res;
     nux_mesh_t *mesh
-        = nux_res_new(ctx, arena, NUX_RES_MESH, sizeof(*mesh), &res);
+        = nux_resource_new(ctx, arena, NUX_RESOURCE_MESH, sizeof(*mesh), &res);
     NUX_CHECK(mesh, return NUX_NULL);
     mesh->count = capa;
     mesh->data
@@ -14,9 +14,9 @@ nux_mesh_new (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t capa)
     mesh->bounds = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
     return res;
 }
-nux_res_t
+nux_rid_t
 nux_mesh_new_cube (
-    nux_ctx_t *ctx, nux_res_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
+    nux_ctx_t *ctx, nux_rid_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
     const nux_b3_t box = nux_b3(NUX_V3_ZEROS, nux_v3(sx, sy, sz));
 
@@ -46,9 +46,9 @@ nux_mesh_new_cube (
         { { 0, 0 } },
     };
 
-    nux_res_t id = nux_mesh_new(ctx, arena, NUX_ARRAY_SIZE(positions));
+    nux_rid_t id = nux_mesh_new(ctx, arena, NUX_ARRAY_SIZE(positions));
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_res_check(ctx, NUX_RES_MESH, id);
+    nux_mesh_t *mesh = nux_resource_check(ctx, NUX_RESOURCE_MESH, id);
     mesh->bounds     = box;
 
     for (nux_u32_t i = 0; i < mesh->count; ++i)
@@ -67,9 +67,9 @@ nux_mesh_new_cube (
     return id;
 }
 void
-nux_mesh_update_bounds (nux_ctx_t *ctx, nux_res_t mesh)
+nux_mesh_update_bounds (nux_ctx_t *ctx, nux_rid_t mesh)
 {
-    nux_mesh_t *m = nux_res_check(ctx, NUX_RES_MESH, mesh);
+    nux_mesh_t *m = nux_resource_check(ctx, NUX_RESOURCE_MESH, mesh);
     NUX_CHECK(m, return);
     if (m->count == 0)
     {
@@ -89,16 +89,16 @@ nux_mesh_update_bounds (nux_ctx_t *ctx, nux_res_t mesh)
     m->bounds = nux_b3(min, max);
 }
 nux_v3_t
-nux_mesh_bounds_min (nux_ctx_t *ctx, nux_res_t mesh)
+nux_mesh_bounds_min (nux_ctx_t *ctx, nux_rid_t mesh)
 {
-    nux_mesh_t *m = nux_res_check(ctx, NUX_RES_MESH, mesh);
+    nux_mesh_t *m = nux_resource_check(ctx, NUX_RESOURCE_MESH, mesh);
     NUX_CHECK(m, return NUX_V3_ZEROS);
     return m->bounds.min;
 }
 nux_v3_t
-nux_mesh_bounds_max (nux_ctx_t *ctx, nux_res_t mesh)
+nux_mesh_bounds_max (nux_ctx_t *ctx, nux_rid_t mesh)
 {
-    nux_mesh_t *m = nux_res_check(ctx, NUX_RES_MESH, mesh);
+    nux_mesh_t *m = nux_resource_check(ctx, NUX_RESOURCE_MESH, mesh);
     NUX_CHECK(m, return NUX_V3_ZEROS);
     return m->bounds.max;
 }

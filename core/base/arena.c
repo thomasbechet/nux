@@ -88,7 +88,7 @@ arena_reset (nux_ctx_t *ctx, nux_arena_t *arena, nux_resource_finalizer_t *to)
     nux_resource_finalizer_t *finalizer = arena->last_finalizer;
     while (finalizer != to)
     {
-        nux_res_delete(ctx, finalizer->res);
+        nux_resource_delete(ctx, finalizer->res);
         finalizer = finalizer->prev;
     }
     arena->last_finalizer  = NUX_NULL;
@@ -106,14 +106,14 @@ nux_arena_alloc_raw (nux_ctx_t *ctx, nux_arena_t *arena, nux_u32_t size)
     return p;
 }
 void *
-nux_arena_alloc (nux_ctx_t *ctx, nux_res_t arena, nux_u32_t size)
+nux_arena_alloc (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t size)
 {
-    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
     return nux_arena_alloc_raw(ctx, a, size);
 }
 nux_c8_t *
-nux_arena_alloc_path (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
+nux_arena_alloc_path (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
 {
     if (!path)
     {
@@ -130,9 +130,9 @@ nux_arena_alloc_path (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
     return p;
 }
 void
-nux_arena_cleanup (nux_ctx_t *ctx, nux_res_t res)
+nux_arena_cleanup (nux_ctx_t *ctx, nux_rid_t res)
 {
-    nux_arena_t *arena = nux_res_check(ctx, NUX_RES_ARENA, res);
+    nux_arena_t *arena = nux_resource_check(ctx, NUX_RESOURCE_ARENA, res);
     nux_arena_free(ctx, arena);
 }
 
@@ -162,28 +162,28 @@ nux_arena_free (nux_ctx_t *ctx, nux_arena_t *arena)
         nux_os_alloc(ctx->userdata, p, 0, 0);
     }
 }
-nux_res_t
-nux_arena_new (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *name)
+nux_rid_t
+nux_arena_new (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name)
 {
-    nux_res_t    res;
-    nux_arena_t *a = nux_res_new(ctx, arena, NUX_RES_ARENA, sizeof(*a), &res);
+    nux_rid_t    res;
+    nux_arena_t *a = nux_resource_new(ctx, arena, NUX_RESOURCE_ARENA, sizeof(*a), &res);
     NUX_CHECK(a, return NUX_NULL);
     nux_arena_init(a, name);
     return res;
 }
 void
-nux_arena_reset (nux_ctx_t *ctx, nux_res_t arena)
+nux_arena_reset (nux_ctx_t *ctx, nux_rid_t arena)
 {
-    nux_arena_t *a = nux_res_check(ctx, NUX_RES_ARENA, arena);
+    nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return);
     arena_reset(ctx, a, NUX_NULL);
 }
-nux_res_t
+nux_rid_t
 nux_arena_core (nux_ctx_t *ctx)
 {
-    return ctx->core_arena_res;
+    return ctx->core_arena_rid;
 }
-nux_res_t
+nux_rid_t
 nux_arena_frame (nux_ctx_t *ctx)
 {
     return ctx->frame_arena;

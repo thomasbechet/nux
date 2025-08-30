@@ -34,7 +34,7 @@ typedef struct
 {
     nux_u32_vec_t  includes;
     nux_u32_vec_t  excludes;
-    nux_res_t      ecs; // current ecs
+    nux_rid_t      ecs; // current ecs
     nux_ecs_mask_t mask;
     nux_u32_t      mask_index;
     nux_u32_t      mask_offset;
@@ -42,7 +42,7 @@ typedef struct
 
 typedef struct
 {
-    nux_res_t               self;
+    nux_rid_t               self;
     nux_arena_t            *arena;
     nux_ecs_bitset_t        bitset;
     nux_ecs_container_vec_t containers;
@@ -68,14 +68,14 @@ typedef struct
 
 typedef struct
 {
-    nux_res_t mesh;
-    nux_res_t texture;
+    nux_rid_t mesh;
+    nux_rid_t texture;
     nux_u32_t transform;
 } nux_staticmesh_t;
 
 typedef struct
 {
-    nux_res_t canvas;
+    nux_rid_t canvas;
 } nux_canvaslayer_t;
 
 typedef enum
@@ -113,7 +113,7 @@ void         nux_ecs_register_component(nux_ctx_t      *ctx,
 void *nux_ecs_add(nux_ctx_t *ctx, nux_ent_t e, nux_u32_t c);
 void *nux_ecs_get(nux_ctx_t *ctx, nux_ent_t e, nux_u32_t c);
 
-void nux_ecs_cleanup(nux_ctx_t *ctx, nux_res_t res);
+void nux_ecs_cleanup(nux_ctx_t *ctx, nux_rid_t res);
 
 // lua_bindings.c
 

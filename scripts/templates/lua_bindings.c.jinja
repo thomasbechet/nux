@@ -46,8 +46,8 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
         {%- elif arg.typename == "nux_c8_t" and arg.isptr %}
             const nux_c8_t *{{ arg.name }} = luaL_checkstring(L, {{ ns.stack }});
             {% set ns.stack = ns.stack + 1 %}
-        {%- elif arg.typename == "nux_res_t" %}
-            nux_res_t {{ arg.name }} = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, {{ ns.stack }});
+        {%- elif arg.typename == "nux_rid_t" %}
+            nux_rid_t {{ arg.name }} = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, {{ ns.stack }});
             {% set ns.stack = ns.stack + 1 %}
         {%- else %}
             {{ arg.typename }} {{ arg.name }} = {{ checkmap.get(arg.typename, "luaL_checkinteger") }}(L, {{ ns.stack }});
@@ -71,7 +71,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
         lua_pushnumber(L, ret.z);
         lua_pushnumber(L, ret.w);
         return 4;
-    {%- elif function.returntype == "nux_res_t" %}
+    {%- elif function.returntype == "nux_rid_t" %}
         if (ret)
             lua_pushinteger(L, (nux_intptr_t)ret);
         else

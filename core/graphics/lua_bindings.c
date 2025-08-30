@@ -13,7 +13,7 @@ static int
 l_texture_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_texture_type_t format = luaL_checkinteger(L, 2);
 
@@ -21,7 +21,7 @@ l_texture_new (lua_State *L)
 
     nux_u32_t h = luaL_checknumber(L, 4);
 
-    nux_res_t ret = nux_texture_new(ctx, arena, format, w, h);
+    nux_rid_t ret = nux_texture_new(ctx, arena, format, w, h);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -37,8 +37,8 @@ static int
 l_texture_blit (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_texture_blit(ctx, res);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_texture_blit(ctx, rid);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -47,11 +47,11 @@ static int
 l_mesh_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t capa = luaL_checknumber(L, 2);
 
-    nux_res_t ret = nux_mesh_new(ctx, arena, capa);
+    nux_rid_t ret = nux_mesh_new(ctx, arena, capa);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -67,7 +67,7 @@ static int
 l_mesh_new_cube (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_f32_t sx = luaL_checknumber(L, 2);
 
@@ -75,7 +75,7 @@ l_mesh_new_cube (lua_State *L)
 
     nux_f32_t sz = luaL_checknumber(L, 4);
 
-    nux_res_t ret = nux_mesh_new_cube(ctx, arena, sx, sy, sz);
+    nux_rid_t ret = nux_mesh_new_cube(ctx, arena, sx, sy, sz);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -91,7 +91,7 @@ static int
 l_mesh_update_bounds (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t  mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  mesh = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
     nux_mesh_update_bounds(ctx, mesh);
     l_checkerror(L, ctx);
     return 0;
@@ -100,7 +100,7 @@ static int
 l_mesh_bounds_min (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t  mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  mesh = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_v3_t ret = nux_mesh_bounds_min(ctx, mesh);
     l_checkerror(L, ctx);
@@ -111,7 +111,7 @@ static int
 l_mesh_bounds_max (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t  mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  mesh = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_v3_t ret = nux_mesh_bounds_max(ctx, mesh);
     l_checkerror(L, ctx);
@@ -145,7 +145,7 @@ l_canvaslayer_set_canvas (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_res_t canvas = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+    nux_rid_t canvas = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_canvaslayer_set_canvas(ctx, e, canvas);
     l_checkerror(L, ctx);
     return 0;
@@ -156,9 +156,9 @@ l_canvaslayer_get_canvas (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_res_t canvas = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+    nux_rid_t canvas = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 2);
 
-    nux_res_t ret = nux_canvaslayer_get_canvas(ctx, e, canvas);
+    nux_rid_t ret = nux_canvaslayer_get_canvas(ctx, e, canvas);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -175,7 +175,7 @@ static int
 l_canvas_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t width = luaL_checknumber(L, 2);
 
@@ -183,7 +183,7 @@ l_canvas_new (lua_State *L)
 
     nux_u32_t capa = luaL_checknumber(L, 4);
 
-    nux_res_t ret = nux_canvas_new(ctx, arena, width, height, capa);
+    nux_rid_t ret = nux_canvas_new(ctx, arena, width, height, capa);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -199,9 +199,9 @@ static int
 l_canvas_get_texture (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_res_t ret = nux_canvas_get_texture(ctx, res);
+    nux_rid_t ret = nux_canvas_get_texture(ctx, rid);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -217,14 +217,14 @@ static int
 l_canvas_text (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t x = luaL_checknumber(L, 2);
 
     nux_u32_t y = luaL_checknumber(L, 3);
 
     const nux_c8_t *text = luaL_checkstring(L, 4);
-    nux_canvas_text(ctx, res, x, y, text);
+    nux_canvas_text(ctx, rid, x, y, text);
     l_checkerror(L, ctx);
     return 0;
 }
@@ -232,7 +232,7 @@ static int
 l_canvas_rectangle (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  res = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t x = luaL_checknumber(L, 2);
 
@@ -242,7 +242,7 @@ l_canvas_rectangle (lua_State *L)
 
     nux_u32_t h = luaL_checknumber(L, 5);
 
-    nux_canvas_rectangle(ctx, res, x, y, w, h);
+    nux_canvas_rectangle(ctx, rid, x, y, w, h);
     l_checkerror(L, ctx);
     return 0;
 }

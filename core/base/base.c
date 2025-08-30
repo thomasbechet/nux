@@ -11,8 +11,8 @@ nux_base_init (nux_ctx_t *ctx)
 
     // Register base types
     nux_resource_type_t *type;
-    type          = nux_res_register(ctx, NUX_RES_NULL, "null");
-    type          = nux_res_register(ctx, NUX_RES_ARENA, "arena");
+    type          = nux_resource_register(ctx, NUX_RESOURCE_NULL, "null");
+    type          = nux_resource_register(ctx, NUX_RESOURCE_ARENA, "arena");
     type->cleanup = nux_arena_cleanup;
 
     // Create resource pool
@@ -23,11 +23,11 @@ nux_base_init (nux_ctx_t *ctx)
     NUX_ASSERT(nux_resource_pool_add(&ctx->resources));
 
     // Register core arena
-    ctx->core_arena_res
-        = nux_res_add(ctx, NUX_NULL, NUX_RES_ARENA, &ctx->core_arena);
+    ctx->core_arena_rid
+        = nux_resource_add(ctx, NUX_NULL, NUX_RESOURCE_ARENA, &ctx->core_arena);
 
     // Create frame arena
-    ctx->frame_arena = nux_arena_new(ctx, ctx->core_arena_res, "frame_arena");
+    ctx->frame_arena = nux_arena_new(ctx, ctx->core_arena_rid, "frame_arena");
     NUX_ASSERT(ctx->frame_arena);
 
     // Initialize system state

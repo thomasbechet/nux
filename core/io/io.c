@@ -36,7 +36,7 @@ close_os_file (nux_ctx_t *ctx, nux_u32_t slot)
 nux_status_t
 nux_io_init (nux_ctx_t *ctx)
 {
-    ctx->io = nux_arena_alloc(ctx, ctx->core_arena_res, sizeof(*ctx->io));
+    ctx->io = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->io));
     NUX_CHECK(ctx->io, return NUX_FAILURE);
 
     nux_io_module_t *module = ctx->io;
@@ -48,7 +48,7 @@ nux_io_init (nux_ctx_t *ctx)
 
     // Register types
     nux_resource_type_t *type;
-    type          = nux_res_register(ctx, NUX_RES_FILE, "file");
+    type          = nux_resource_register(ctx, NUX_RESOURCE_FILE, "file");
     type->cleanup = nux_file_cleanup;
 
     // Initialize values
@@ -339,7 +339,7 @@ nux_io_stat (nux_ctx_t *ctx, nux_file_t *file, nux_file_stat_t *stat)
 }
 void *
 nux_io_load (nux_ctx_t      *ctx,
-             nux_res_t       arena,
+             nux_rid_t       arena,
              const nux_c8_t *path,
              nux_u32_t      *size)
 {

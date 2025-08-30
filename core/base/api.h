@@ -17,7 +17,7 @@ typedef uint64_t  nux_u64_t;
 typedef float     nux_f32_t;
 typedef double    nux_f64_t;
 typedef intptr_t  nux_intptr_t;
-typedef nux_u32_t nux_res_t;
+typedef nux_u32_t nux_rid_t;
 typedef nux_u32_t nux_ent_t;
 
 typedef struct nux_context nux_ctx_t;
@@ -89,9 +89,9 @@ void nux_printfmt(nux_ctx_t *ctx, nux_u8_t c, const nux_c8_t *fmt, ...);
 void nux_tracefmt(nux_ctx_t *ctx, const nux_c8_t *fmt, ...);
 #endif
 
-nux_res_t nux_arena_new(nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *name);
-void      nux_arena_reset(nux_ctx_t *ctx, nux_res_t arena);
-nux_res_t nux_arena_core(nux_ctx_t *ctx);
-nux_res_t nux_arena_frame(nux_ctx_t *ctx);
+nux_rid_t nux_arena_new(nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name);
+void      nux_arena_reset(nux_ctx_t *ctx, nux_rid_t arena);
+nux_rid_t nux_arena_core(nux_ctx_t *ctx);
+nux_rid_t nux_arena_frame(nux_ctx_t *ctx);
 
 #endif

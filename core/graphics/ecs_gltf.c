@@ -45,9 +45,9 @@ buffer_index (cgltf_accessor *accessor, nux_u32_t i)
     NUX_ASSERT(index != (nux_u32_t)-1);
     return index;
 }
-static nux_res_t
+static nux_rid_t
 load_primitive_mesh (nux_ctx_t             *ctx,
-                     nux_res_t              arena,
+                     nux_rid_t              arena,
                      const cgltf_primitive *primitive)
 {
     // Access attributes
@@ -101,9 +101,9 @@ load_primitive_mesh (nux_ctx_t             *ctx,
     nux_u32_t       indice_count = accessor->count;
 
     // Create mesh
-    nux_res_t id = nux_mesh_new(ctx, arena, indice_count);
+    nux_rid_t id = nux_mesh_new(ctx, arena, indice_count);
     NUX_CHECK(id, return NUX_NULL);
-    nux_mesh_t *mesh = nux_res_check(ctx, NUX_RES_MESH, id);
+    nux_mesh_t *mesh = nux_resource_check(ctx, NUX_RESOURCE_MESH, id);
 
     // Write vertices
     if (attributes & NUX_VERTEX_POSITION)
@@ -141,8 +141,8 @@ load_primitive_mesh (nux_ctx_t             *ctx,
 
     return id;
 }
-static nux_res_t
-load_texture (nux_ctx_t *ctx, nux_res_t arena, const cgltf_texture *texture)
+static nux_rid_t
+load_texture (nux_ctx_t *ctx, nux_rid_t arena, const cgltf_texture *texture)
 {
     nux_status_t status = NUX_FAILURE;
 
@@ -159,20 +159,20 @@ load_texture (nux_ctx_t *ctx, nux_res_t arena, const cgltf_texture *texture)
 
     NUX_DEBUG("loading texture %s w %d h %d", texture->name, w, h);
 
-    nux_res_t id = nux_texture_new(ctx, arena, NUX_TEXTURE_IMAGE_RGBA, w, h);
+    nux_rid_t id = nux_texture_new(ctx, arena, NUX_TEXTURE_IMAGE_RGBA, w, h);
     NUX_CHECK(id, return NUX_NULL);
     nux_texture_write(ctx, id, 0, 0, w, h, img);
 
     stbi_image_free(img);
     return id;
 }
-nux_res_t
-nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
+nux_rid_t
+nux_ecs_load_gltf (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
 {
     typedef struct
     {
         void     *cgltf_ptr;
-        nux_res_t res;
+        nux_rid_t rid;
     } resource_t;
 
     cgltf_options options;
@@ -184,8 +184,8 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_res_t prev_ecs = nux_ecs_get_active(ctx);
-    nux_res_t ecs      = NUX_NULL;
+    nux_rid_t prev_ecs = nux_ecs_get_active(ctx);
+    nux_rid_t ecs      = NUX_NULL;
 
     // Load file
     nux_u32_t buf_size;
@@ -213,13 +213,13 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
         cgltf_mesh *mesh = data->meshes + i;
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nux_res_t res
+            nux_rid_t rid
                 = load_primitive_mesh(ctx, arena, mesh->primitives + p);
-            NUX_CHECK(res, goto error);
+            NUX_CHECK(rid, goto error);
             NUX_DEBUG(
-                "loading mesh %s primitive %d res 0x%08X", mesh->name, p, res);
+                "loading mesh %s primitive %d res 0x%08X", mesh->name, p, rid);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
-            resources[resources_count].res       = res;
+            resources[resources_count].rid       = rid;
             ++resources_count;
         }
     }
@@ -245,10 +245,10 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
         }
         if (texture)
         {
-            nux_res_t res = load_texture(ctx, arena, texture);
-            NUX_CHECK(res, goto error);
+            nux_rid_t rid = load_texture(ctx, arena, texture);
+            NUX_CHECK(rid, goto error);
             resources[resources_count].cgltf_ptr = texture;
-            resources[resources_count].res       = res;
+            resources[resources_count].rid       = rid;
             ++resources_count;
         }
     }
@@ -318,12 +318,12 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
                     cgltf_primitive *primitive = node->mesh->primitives + p;
 
                     // Find mesh
-                    nux_res_t mesh = NUX_NULL;
+                    nux_rid_t mesh = NUX_NULL;
                     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(resources); ++i)
                     {
                         if (resources[i].cgltf_ptr == primitive)
                         {
-                            mesh = resources[i].res;
+                            mesh = resources[i].rid;
                             break;
                         }
                     }
@@ -333,7 +333,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
                                node->name);
 
                     // Find texture
-                    nux_res_t texture = NUX_NULL;
+                    nux_rid_t texture = NUX_NULL;
                     if (primitive->material
                         && primitive->material->has_pbr_metallic_roughness
                         && primitive->material->pbr_metallic_roughness
@@ -346,7 +346,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_res_t arena, const nux_c8_t *path)
                                 == primitive->material->pbr_metallic_roughness
                                        .base_color_texture.texture)
                             {
-                                texture = resources[i].res;
+                                texture = resources[i].rid;
                                 break;
                             }
                         }

@@ -16,7 +16,7 @@ static struct
     {
         int             wd;
         const nux_c8_t *path;
-        nux_res_t       handle;
+        nux_rid_t       handle;
     } entries[256];
     nux_u32_t entries_count;
 } hotreload;
@@ -37,7 +37,7 @@ hotreload_free (void)
 }
 
 void
-nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_res_t handle)
+nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
 {
     const nux_c8_t *dir = dirname((char *)path);
     int             wd  = inotify_add_watch(
@@ -53,7 +53,7 @@ nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_res_t handle)
     ++hotreload.entries_count;
 }
 void
-nux_os_hotreload_remove (void *userdata, nux_res_t handle)
+nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
 {
     for (nux_u32_t i = 0; i < hotreload.entries_count; ++i)
     {
@@ -68,7 +68,7 @@ nux_os_hotreload_remove (void *userdata, nux_res_t handle)
     }
 }
 void
-nux_os_hotreload_pull (void *userdata, nux_res_t *handles, nux_u32_t *count)
+nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
 {
     char                        buf[BUF_LEN];
     const struct inotify_event *event;

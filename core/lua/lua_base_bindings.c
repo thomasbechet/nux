@@ -71,11 +71,11 @@ static int
 l_arena_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     const nux_c8_t *name = luaL_checkstring(L, 2);
 
-    nux_res_t ret = nux_arena_new(ctx, arena, name);
+    nux_rid_t ret = nux_arena_new(ctx, arena, name);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -91,7 +91,7 @@ static int
 l_arena_reset (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
     nux_arena_reset(ctx, arena);
     l_checkerror(L, ctx);
     return 0;
@@ -100,7 +100,7 @@ static int
 l_arena_core (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_arena_core(ctx);
+    nux_rid_t  ret = nux_arena_core(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -116,7 +116,7 @@ static int
 l_arena_frame (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_arena_frame(ctx);
+    nux_rid_t  ret = nux_arena_frame(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {

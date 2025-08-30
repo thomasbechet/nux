@@ -8,7 +8,7 @@ nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
 {
     ctx->graphics
-        = nux_arena_alloc(ctx, ctx->core_arena_res, sizeof(*ctx->graphics));
+        = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->graphics));
     NUX_CHECK(ctx->graphics, return NUX_FAILURE);
 
     nux_graphics_module_t *module = ctx->graphics;
@@ -16,12 +16,12 @@ nux_graphics_init (nux_ctx_t *ctx)
 
     // Register resources
     nux_resource_type_t *type;
-    type          = nux_res_register(ctx, NUX_RES_TEXTURE, "texture");
+    type          = nux_resource_register(ctx, NUX_RESOURCE_TEXTURE, "texture");
     type->cleanup = nux_texture_cleanup;
-    type          = nux_res_register(ctx, NUX_RES_MESH, "mesh");
-    type          = nux_res_register(ctx, NUX_RES_CANVAS, "canvas");
+    type          = nux_resource_register(ctx, NUX_RESOURCE_MESH, "mesh");
+    type          = nux_resource_register(ctx, NUX_RESOURCE_CANVAS, "canvas");
     type->cleanup = nux_canvas_cleanup;
-    type          = nux_res_register(ctx, NUX_RES_FONT, "font");
+    type          = nux_resource_register(ctx, NUX_RESOURCE_FONT, "font");
     type->cleanup = nux_font_cleanup;
 
     // Register components
@@ -131,26 +131,26 @@ nux_graphics_init (nux_ctx_t *ctx)
               return NUX_FAILURE);
 
     // Create iterators
-    module->transform_iter = nux_ecs_new_iter(ctx, ctx->core_arena_res, 1, 0);
+    module->transform_iter = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 1, 0);
     NUX_CHECK(module->transform_iter, return NUX_FAILURE);
     nux_ecs_includes(ctx, module->transform_iter, NUX_COMPONENT_TRANSFORM);
 
     module->transform_camera_iter
-        = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
+        = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 2, 0);
     NUX_CHECK(module->transform_camera_iter, return NUX_FAILURE);
     nux_ecs_includes(
         ctx, module->transform_camera_iter, NUX_COMPONENT_TRANSFORM);
     nux_ecs_includes(ctx, module->transform_camera_iter, NUX_COMPONENT_CAMERA);
 
     module->transform_staticmesh_iter
-        = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
+        = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 2, 0);
     NUX_CHECK(module->transform_staticmesh_iter, return NUX_FAILURE);
     nux_ecs_includes(
         ctx, module->transform_staticmesh_iter, NUX_COMPONENT_TRANSFORM);
     nux_ecs_includes(
         ctx, module->transform_staticmesh_iter, NUX_COMPONENT_STATICMESH);
 
-    module->canvaslayer_iter = nux_ecs_new_iter(ctx, ctx->core_arena_res, 1, 0);
+    module->canvaslayer_iter = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 1, 0);
     NUX_CHECK(module->canvaslayer_iter, return NUX_FAILURE);
     nux_ecs_includes(ctx, module->canvaslayer_iter, NUX_COMPONENT_CANVASLAYER);
 
@@ -207,10 +207,10 @@ nux_graphics_pre_update (nux_ctx_t *ctx)
 nux_status_t
 nux_graphics_update (nux_ctx_t *ctx)
 {
-    nux_res_t res = nux_ecs_get_active(ctx);
+    nux_rid_t res = nux_ecs_get_active(ctx);
     if (res)
     {
-        nux_ecs_t *ecs = nux_res_check(ctx, NUX_RES_ECS, res);
+        nux_ecs_t *ecs = nux_resource_check(ctx, NUX_RESOURCE_ECS, res);
         nux_renderer_render(ctx, ecs);
     }
 

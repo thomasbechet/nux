@@ -405,7 +405,7 @@ l_staticmesh_set_mesh (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_res_t mesh = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+    nux_rid_t mesh = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_staticmesh_set_mesh(ctx, e, mesh);
     l_checkerror(L, ctx);
     return 0;
@@ -416,7 +416,7 @@ l_staticmesh_set_texture (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_res_t texture = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+    nux_rid_t texture = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_staticmesh_set_texture(ctx, e, texture);
     l_checkerror(L, ctx);
     return 0;
@@ -427,7 +427,7 @@ l_staticmesh_set_colormap (lua_State *L)
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_ent_t  e   = luaL_checkinteger(L, 1);
 
-    nux_res_t colormap = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 2);
+    nux_rid_t colormap = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_staticmesh_set_colormap(ctx, e, colormap);
     l_checkerror(L, ctx);
     return 0;
@@ -437,13 +437,13 @@ static int
 l_ecs_new_iter (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t include_count = luaL_checknumber(L, 2);
 
     nux_u32_t exclude_count = luaL_checknumber(L, 3);
 
-    nux_res_t ret = nux_ecs_new_iter(ctx, arena, include_count, exclude_count);
+    nux_rid_t ret = nux_ecs_new_iter(ctx, arena, include_count, exclude_count);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -459,7 +459,7 @@ static int
 l_ecs_includes (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  iter = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t c = luaL_checknumber(L, 2);
 
@@ -471,7 +471,7 @@ static int
 l_ecs_excludes (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  iter = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t c = luaL_checknumber(L, 2);
 
@@ -483,7 +483,7 @@ static int
 l_ecs_next (lua_State *L)
 {
     nux_ctx_t *ctx  = lua_getuserdata(L);
-    nux_res_t  iter = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  iter = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t e = luaL_checknumber(L, 2);
 
@@ -496,11 +496,11 @@ static int
 l_ecs_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     nux_u32_t capa = luaL_checknumber(L, 2);
 
-    nux_res_t ret = nux_ecs_new(ctx, arena, capa);
+    nux_rid_t ret = nux_ecs_new(ctx, arena, capa);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -516,11 +516,11 @@ static int
 l_ecs_load_gltf (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
-    nux_res_t  arena = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
     const nux_c8_t *path = luaL_checkstring(L, 2);
 
-    nux_res_t ret = nux_ecs_load_gltf(ctx, arena, path);
+    nux_rid_t ret = nux_ecs_load_gltf(ctx, arena, path);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -536,7 +536,7 @@ static int
 l_ecs_get_active (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ret = nux_ecs_get_active(ctx);
+    nux_rid_t  ret = nux_ecs_get_active(ctx);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -552,7 +552,7 @@ static int
 l_ecs_set_active (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_res_t  ecs = (nux_res_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  ecs = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
     nux_ecs_set_active(ctx, ecs);
     l_checkerror(L, ctx);
     return 0;

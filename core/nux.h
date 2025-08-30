@@ -223,10 +223,10 @@ NUX_API void         nux_os_input_update(void      *user,
 NUX_API void         nux_os_stats_update(void *userdata, nux_u64_t *stats);
 NUX_API void         nux_os_hotreload_add(void           *userdata,
                                           const nux_c8_t *path,
-                                          nux_res_t       handle);
-NUX_API void         nux_os_hotreload_remove(void *userdata, nux_res_t handle);
+                                          nux_rid_t       handle);
+NUX_API void         nux_os_hotreload_remove(void *userdata, nux_rid_t handle);
 NUX_API void         nux_os_hotreload_pull(void      *userdata,
-                                           nux_res_t *handles,
+                                           nux_rid_t *handles,
                                            nux_u32_t *count);
 
 //////////////////////////////////////////////////////////////////////////

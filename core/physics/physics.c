@@ -144,7 +144,7 @@ nux_status_t
 nux_physics_init (nux_ctx_t *ctx)
 {
     ctx->physics
-        = nux_arena_alloc(ctx, ctx->core_arena_res, sizeof(*ctx->physics));
+        = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->physics));
     NUX_CHECK(ctx->physics, return NUX_FAILURE);
 
     nux_physics_module_t *module = ctx->physics;
@@ -171,7 +171,7 @@ nux_physics_init (nux_ctx_t *ctx)
     nux_lua_open_physics(ctx);
 
     module->rigidbody_transform_iter
-        = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
+        = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 2, 0);
     NUX_CHECK(module->rigidbody_transform_iter, return NUX_FAILURE);
     nux_ecs_includes(
         ctx, module->rigidbody_transform_iter, NUX_COMPONENT_RIGIDBODY);
@@ -179,7 +179,7 @@ nux_physics_init (nux_ctx_t *ctx)
         ctx, module->rigidbody_transform_iter, NUX_COMPONENT_TRANSFORM);
 
     module->collider_transform_iter
-        = nux_ecs_new_iter(ctx, ctx->core_arena_res, 2, 0);
+        = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 2, 0);
     NUX_CHECK(module->collider_transform_iter, return NUX_FAILURE);
     nux_ecs_includes(
         ctx, module->collider_transform_iter, NUX_COMPONENT_COLLIDER);

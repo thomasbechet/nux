@@ -156,10 +156,10 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
     }
 
     // Render canvas
-    nux_res_t canvas = NUX_NULL;
-    while ((canvas = nux_res_next(ctx, NUX_RES_CANVAS, canvas)))
+    nux_rid_t canvas = NUX_NULL;
+    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
     {
-        nux_canvas_t *c = nux_res_check(ctx, NUX_RES_CANVAS, canvas);
+        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
         nux_canvas_render(ctx, c);
     }
 
@@ -218,12 +218,12 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
                 continue;
             }
             nux_transform_t *t = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
-            nux_mesh_t      *m = nux_res_check(ctx, NUX_RES_MESH, sm->mesh);
+            nux_mesh_t      *m = nux_resource_check(ctx, NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
             nux_texture_t *tex = NUX_NULL;
             if (sm->texture)
             {
-                tex = nux_res_check(ctx, NUX_RES_TEXTURE, sm->texture);
+                tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, sm->texture);
             }
 
             // Push transform
@@ -248,7 +248,7 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
             {
                 continue;
             }
-            nux_mesh_t *m = nux_res_check(ctx, NUX_RES_MESH, sm->mesh);
+            nux_mesh_t *m = nux_resource_check(ctx, NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
 
             // Draw
@@ -272,7 +272,7 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
         if (layer->canvas)
         {
             nux_canvas_t *canvas
-                = nux_res_check(ctx, NUX_RES_CANVAS, layer->canvas);
+                = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, layer->canvas);
             if (canvas->target)
             {
                 nux_texture_blit(ctx, canvas->target);
