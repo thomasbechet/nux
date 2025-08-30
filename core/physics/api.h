@@ -11,9 +11,9 @@ typedef enum
 
 typedef struct
 {
-    nux_eid_t entity;
-    nux_v3_t  normal;
-    nux_v3_t  position;
+    nux_eid_t e;
+    nux_v3_t  p;
+    nux_v3_t  n;
 } nux_raycast_hit_t;
 
 void nux_rigidbody_add(nux_ctx_t *ctx, nux_eid_t e);

@@ -33,12 +33,6 @@ typedef struct
 
 typedef struct
 {
-    nux_b32_t hit;
-    nux_v3_t  p;
-} nux_hit_t;
-
-typedef struct
-{
     nux_v3_t x; // position
     nux_v3_t v; // velocity
     nux_v3_t f; // force
@@ -118,10 +112,13 @@ nux_status_t nux_lua_open_physics(nux_ctx_t *ctx);
 
 // intersect.c
 
-nux_b32_t nux_intersect_ray_sphere(nux_ray_t r, nux_sphere_t s, nux_hit_t *hit);
+nux_b32_t nux_intersect_ray_sphere(nux_ray_t r, nux_sphere_t s, nux_f32_t *t0);
 nux_b32_t nux_intersect_segment_plane(nux_segment_t s,
                                       nux_plane_t   p,
-                                      nux_hit_t    *hit);
-nux_b32_t nux_intersect_ray_box(nux_ray_t r, nux_b3_t box, nux_hit_t *hit);
+                                      nux_v3_t     *i0);
+nux_b32_t nux_intersect_ray_box(nux_ray_t  r,
+                                nux_b3_t   box,
+                                nux_f32_t *t0,
+                                nux_f32_t *t1);
 
 #endif

@@ -1,17 +1,43 @@
 #include "internal.h"
 
 nux_b32_t
-nux_intersect_ray_sphere (nux_ray_t r, nux_sphere_t s, nux_hit_t *hit)
+nux_intersect_ray_sphere (nux_ray_t r, nux_sphere_t s, nux_f32_t *t0)
 {
-    nux_v3_t  oc   = nux_v3_sub(r.p, s.p);
-    nux_f32_t a    = nux_v3_dot(r.d, r.d);
-    nux_f32_t b    = 2 * nux_v3_dot(oc, r.d);
-    nux_f32_t c    = nux_v3_dot(oc, oc) - s.r * s.r;
-    nux_f32_t desc = b * b - 4 * a * c;
-    return desc > 0;
+    nux_v3_t  m = nux_v3_sub(r.p, s.p);
+    nux_f32_t b = nux_v3_dot(m, r.d);
+    nux_f32_t c = nux_v3_dot(m, m) - s.r * s.r;
+
+    // Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
+    if (c > 0.0f && b > 0.0f)
+    {
+        return NUX_FALSE;
+    }
+    nux_f32_t discr = b * b - c;
+
+    // A negative discriminant corresponds to ray missing sphere
+    if (discr < 0.0f)
+    {
+        return NUX_FALSE;
+    }
+
+    // Ray now found to intersect sphere, compute smallest t value of
+    // intersection
+    nux_f32_t t = -b - nux_sqrt(discr);
+
+    // If t is negative, ray started inside sphere so clamp t to zero
+    if (t < 0.0f)
+    {
+        t = 0.0f;
+    }
+    if (t0)
+    {
+        *t0 = t;
+    }
+
+    return NUX_TRUE;
 }
 nux_b32_t
-nux_intersect_segment_plane (nux_segment_t s, nux_plane_t p, nux_hit_t *hit)
+nux_intersect_segment_plane (nux_segment_t s, nux_plane_t p, nux_v3_t *i0)
 {
     nux_v3_t  u = nux_v3_sub(s.p1, s.p0);
     nux_v3_t  w = nux_v3_sub(s.p0, p.p);
@@ -30,14 +56,14 @@ nux_intersect_segment_plane (nux_segment_t s, nux_plane_t p, nux_hit_t *hit)
     {
         return NUX_FALSE;
     }
-    if (hit)
+    if (i0)
     {
-        hit->p = nux_v3_add(s.p0, nux_v3_muls(u, i));
+        *i0 = nux_v3_add(s.p0, nux_v3_muls(u, i));
     }
     return NUX_TRUE;
 }
 nux_b32_t
-nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_hit_t *hit)
+nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_f32_t *t0, nux_f32_t *t1)
 {
     // https://tavianator.com/cgit/dimension.git/tree/libdimension/bvh/bvh.c#n196
     nux_v3_t n_inv = nux_v3_inv(r.d);
@@ -60,5 +86,20 @@ nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_hit_t *hit)
     tmin = NUX_MAX(tmin, NUX_MIN(tz1, tz2));
     tmax = NUX_MIN(tmax, NUX_MAX(tz1, tz2));
 
-    return tmax >= NUX_MAX(0, tmin) && tmin < NUX_FLT_MAX;
+    nux_b32_t hit = tmax >= NUX_MAX(0, tmin) && tmin < NUX_FLT_MAX;
+
+    if (hit)
+    {
+        if (t0)
+        {
+            *t0 = tmin;
+        }
+        if (t1)
+        {
+            *t1 = tmax;
+        }
+        return NUX_TRUE;
+    }
+
+    return NUX_FALSE;
 }

@@ -87,7 +87,7 @@ l_physics_raycast (lua_State *L)
 
     nux_raycast_hit_t ret = nux_physics_raycast(ctx, pos, dir);
     l_checkerror(L, ctx);
-    if (ret.entity)
+    if (ret.e)
     {
         nux_lua_push_hit(L, ret);
     }

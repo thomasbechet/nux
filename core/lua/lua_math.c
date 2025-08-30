@@ -508,17 +508,17 @@ meta_index (lua_State *L)
             const char *key = luaL_checkstring(L, 2);
             if (NUX_MATCH(key, "entity"))
             {
-                lua_pushinteger(L, u->hit->entity);
+                lua_pushinteger(L, u->hit->e);
                 return 1;
             }
             else if (NUX_MATCH(key, "position"))
             {
-                nux_lua_push_vec3(L, u->hit->position);
+                nux_lua_push_vec3(L, u->hit->p);
                 return 1;
             }
             else if (NUX_MATCH(key, "normal"))
             {
-                nux_lua_push_vec3(L, u->hit->normal);
+                nux_lua_push_vec3(L, u->hit->n);
                 return 1;
             }
         }

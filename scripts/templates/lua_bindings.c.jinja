@@ -84,7 +84,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
             lua_pushnil(L);
         return 1;
     {%- elif function.returntype == "nux_raycast_hit_t" %}
-        if (ret.entity)
+        if (ret.e)
             nux_lua_push_hit(L, ret);
         else
             lua_pushnil(L);

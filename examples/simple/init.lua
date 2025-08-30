@@ -107,7 +107,7 @@ function nux.init()
     nux.camera.add(cam)
     nux.transform.add(cam)
     nux.camera.set_fov(cam, 70)
-    nux.transform.set_translation(cam, nux.vmath.vec3(13, 15, 10))
+    nux.transform.set_translation(cam, { 13, 15, 10 })
     CAMERA = cam
 
     -- Create canvas
@@ -121,12 +121,12 @@ function nux.init()
     MONOLITH_CANVAS = nux.canvas.new(ARENA, x, y, 1000)
     CUBE = nux.ecs.create()
     nux.transform.add(CUBE)
-    nux.transform.set_translation(CUBE, nux.vmath.vec3(10, 0, 0))
-    nux.transform.set_scale(CUBE, nux.vmath.vec3(x / 50, y / 50, 1))
+    nux.transform.set_translation(CUBE, { 10, 0, 0 })
+    nux.transform.set_scale(CUBE, { x / 50, y / 50, 1 })
     nux.staticmesh.add(CUBE)
     nux.staticmesh.set_mesh(CUBE, mesh_cube)
     nux.staticmesh.set_texture(CUBE, nux.canvas.get_texture(MONOLITH_CANVAS))
-    nux.collider.add_aabb(CUBE, nux.vmath.vec3(0, 0, 0), nux.vmath.vec3(x / 50, y / 50, 1))
+    nux.collider.add_aabb(CUBE, nux.vmath.vec3(0), { x / 50, y / 50, 1 })
 
     API = inspect(nux)
 end
@@ -154,10 +154,11 @@ function nux.tick()
     if nux.button.just_pressed(0, nux.button.RB) then
         local hit = nux.physics.raycast(position, forward)
         if hit then
-            print(hit.position)
-        end
-        if false then
-            print("hit " .. hit)
+            local e = nux.ecs.create()
+            nux.transform.add(e)
+            nux.transform.set_translation(e, hit.position)
+            nux.staticmesh.add(e)
+            nux.staticmesh.set_mesh(e, MESH_CUBE)
         else
             local r = {
                 { 0x100001C, 0x1000069 },

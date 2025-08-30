@@ -327,9 +327,9 @@ nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
     nux_ray_t             r      = { .p = pos, .d = nux_v3_normalize(dir) };
     nux_eid_t             it     = NUX_NULL;
     nux_raycast_hit_t     hit;
-    hit.entity   = NUX_NULL;
-    hit.position = NUX_V3_ZEROS;
-    hit.normal   = NUX_V3_ZEROS;
+    hit.e = NUX_NULL;
+    hit.p = NUX_V3_ZEROS;
+    hit.n = NUX_V3_ZEROS;
     while ((it = nux_ecs_next(ctx, module->collider_transform_iter, it)))
     {
         nux_transform_t *transform
@@ -344,9 +344,11 @@ nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
                     .p = translation,
                     .r = collider->sphere.radius,
                 };
-                if (nux_intersect_ray_sphere(r, s, NUX_NULL))
+                nux_f32_t t0;
+                if (nux_intersect_ray_sphere(r, s, &t0))
                 {
-                    hit.entity = it;
+                    hit.e = it;
+                    hit.p = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
                     return hit;
                 }
             }
@@ -355,9 +357,11 @@ nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
                 nux_b3_t box
                     = nux_b3(nux_v3_add(collider->aabb.box.min, translation),
                              nux_v3_add(collider->aabb.box.max, translation));
-                if (nux_intersect_ray_box(r, box, NUX_NULL))
+                nux_f32_t t0, t1;
+                if (nux_intersect_ray_box(r, box, &t0, &t1))
                 {
-                    hit.entity = it;
+                    hit.e = it;
+                    hit.p = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
                     return hit;
                 }
             }
