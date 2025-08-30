@@ -41,7 +41,7 @@ local function controller(e)
         PITCH = PITCH - ry * nux.time.delta() * 100
     end
     PITCH = math.clamp(PITCH, -90, 90)
-    nux.transform.set_rotation_euler(e, nux.vec3(-math.rad(PITCH), -math.rad(YAW), 0))
+    nux.transform.set_rotation_euler(e, nux.vmath.vec3(-math.rad(PITCH), -math.rad(YAW), 0))
     nux.camera.set_fov(e, 90)
     nux.camera.set_far(e, 1000)
     nux.camera.set_near(e, 0.1)
@@ -56,6 +56,11 @@ function nux.init()
     ARENA = nux.arena.core()
     PITCH = 0
     YAW = 0
+
+    -- local hit = nux.physics.raycast(pos, dir)
+    -- if hit then
+    --     print(hit.entity, hit.position, hit.normal)
+    -- end
 
     local mesh_cube = nux.mesh.new_cube(ARENA, 1, 1, 1)
     MESH_CUBE = mesh_cube
@@ -107,7 +112,7 @@ function nux.init()
     nux.camera.add(cam)
     nux.transform.add(cam)
     nux.camera.set_fov(cam, 70)
-    nux.transform.set_translation(cam, nux.vec3(13, 15, 10))
+    nux.transform.set_translation(cam, nux.vmath.vec3(13, 15, 10))
     CAMERA = cam
 
     -- Create canvas
@@ -121,14 +126,12 @@ function nux.init()
     MONOLITH_CANVAS = nux.canvas.new(ARENA, x, y, 1000)
     CUBE = nux.ecs.create()
     nux.transform.add(CUBE)
-    nux.transform.set_translation(CUBE, nux.vec3(10, 0, 0))
-    nux.transform.set_scale(CUBE, nux.vec3(x / 50, y / 50, 1))
+    nux.transform.set_translation(CUBE, nux.vmath.vec3(10, 0, 0))
+    nux.transform.set_scale(CUBE, nux.vmath.vec3(x / 50, y / 50, 1))
     nux.staticmesh.add(CUBE)
     nux.staticmesh.set_mesh(CUBE, mesh_cube)
     nux.staticmesh.set_texture(CUBE, nux.canvas.get_texture(MONOLITH_CANVAS))
-    nux.collider.add_aabb(CUBE, nux.vec3(0, 0, 0), nux.vec3(x / 50, y / 50, 1))
-
-    print(nux.vec3(1, 2, 3) * 3)
+    nux.collider.add_aabb(CUBE, nux.vmath.vec3(0, 0, 0), nux.vmath.vec3(x / 50, y / 50, 1))
 
     API = inspect(nux)
 end
@@ -136,7 +139,7 @@ end
 function nux.tick()
     controller(CAMERA)
     nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
-    nux.transform.set_scale(ROTATING, nux.vec3(1, 5, 10))
+    nux.transform.set_scale(ROTATING, nux.vmath.vec3(1, 5, 10))
 
     local canvas = MONOLITH_CANVAS
     nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
@@ -154,7 +157,7 @@ function nux.tick()
 
     local forward = nux.transform.forward(CAMERA)
     if nux.button.just_pressed(0, nux.button.RB) then
-        local hit = nux.physics.query(position, forward)
+        local hit = nux.physics.raycast(position, forward)
         if false then
             print("hit " .. hit)
         else

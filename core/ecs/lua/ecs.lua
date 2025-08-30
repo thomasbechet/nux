@@ -22,10 +22,10 @@ function nux.ecs.instantiate(tab, parent)
         transform = function(n, v)
             nux.transform.add(n)
             if v.translation then
-                nux.transform.set_translation(n, nux.vec3(v.translation))
+                nux.transform.set_translation(n, v.translation)
             end
             if v.scale then
-                nux.transform.set_scale(n, nux.vec3(v.scale))
+                nux.transform.set_scale(n, v.scale)
             end
         end,
         camera = function(n, v)

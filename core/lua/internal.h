@@ -84,8 +84,12 @@ nux_status_t nux_lua_open_lua(nux_ctx_t *ctx);
 
 // lua_math.c
 
-nux_status_t nux_lua_open_math(nux_ctx_t *ctx);
+nux_status_t nux_lua_open_vmath(nux_ctx_t *ctx);
+void         nux_lua_push_vec2(lua_State *L, nux_v2_t v);
+nux_v2_t     nux_lua_check_vec2(lua_State *L, int index);
 void         nux_lua_push_vec3(lua_State *L, nux_v3_t v);
 nux_v3_t     nux_lua_check_vec3(lua_State *L, int index);
+void         nux_lua_push_vec4(lua_State *L, nux_v4_t v);
+nux_v4_t     nux_lua_check_vec4(lua_State *L, int index);
 
 #endif

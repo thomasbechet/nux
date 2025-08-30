@@ -321,7 +321,7 @@ nux_physics_add_distance_constraint (nux_ctx_t *ctx,
 }
 
 nux_ent_t
-nux_physics_query (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
+nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
 {
     nux_physics_module_t *module = ctx->physics;
     nux_ray_t             r      = { .p = pos, .d = nux_v3_normalize(dir) };

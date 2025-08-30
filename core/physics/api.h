@@ -9,6 +9,13 @@ typedef enum
     NUX_COLLIDER_AABB   = 1,
 } nux_collider_type_t;
 
+typedef struct
+{
+    nux_ent_t entity;
+    nux_v3_t  normal;
+    nux_v3_t  position;
+} nux_raycast_hit_t;
+
 void nux_rigidbody_add(nux_ctx_t *ctx, nux_ent_t e);
 void nux_rigidbody_remove(nux_ctx_t *ctx, nux_ent_t e);
 void nux_rigidbody_set_velocity(nux_ctx_t *ctx, nux_ent_t e, nux_v3_t velocity);
@@ -20,6 +27,6 @@ void nux_collider_add_aabb(nux_ctx_t *ctx,
                            nux_v3_t   max);
 void nux_collider_remove(nux_ctx_t *ctx, nux_ent_t e);
 
-nux_ent_t nux_physics_query(nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir);
+nux_ent_t nux_physics_raycast(nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir);
 
 #endif

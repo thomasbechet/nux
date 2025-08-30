@@ -125,6 +125,9 @@
 #define NUX_M3_SIZE 9
 #define NUX_M4_SIZE 16
 
+#define NUX_V2_ONES  nux_v2s(1)
+#define NUX_V2_ZEROS nux_v2s(0)
+
 #define NUX_V3_ONES     nux_v3s(1)
 #define NUX_V3_ZEROS    nux_v3s(0)
 #define NUX_V3_UP       nux_v3(0, 1, 0)
@@ -133,6 +136,9 @@
 #define NUX_V3_BACKWARD nux_v3(0, 0, 1)
 #define NUX_V3_LEFT     nux_v3(-1, 0, 0)
 #define NUX_V3_RIGHT    nux_v3(1, 0, 0)
+
+#define NUX_V4_ONES  nux_v4s(1)
+#define NUX_V4_ZEROS nux_v4s(0)
 
 #define NUX_V2_DEFINE(name, type)                                        \
     nux_##name##_t nux_##name(type x, type y);                           \

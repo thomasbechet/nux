@@ -78,14 +78,14 @@ l_collider_remove (lua_State *L)
 }
 
 static int
-l_physics_query (lua_State *L)
+l_physics_raycast (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
     nux_v3_t   pos = nux_lua_check_vec3(L, 1);
 
     nux_v3_t dir = nux_lua_check_vec3(L, 2);
 
-    nux_ent_t ret = nux_physics_query(ctx, pos, dir);
+    nux_ent_t ret = nux_physics_raycast(ctx, pos, dir);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -111,7 +111,7 @@ static const struct luaL_Reg lib_collider[]
         { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_physics[]
-    = { { "query", l_physics_query }, { NUX_NULL, NUX_NULL } };
+    = { { "raycast", l_physics_raycast }, { NUX_NULL, NUX_NULL } };
 
 nux_status_t
 nux_lua_open_physics (nux_ctx_t *ctx)
