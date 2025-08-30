@@ -123,7 +123,7 @@ static int
 l_canvaslayer_add (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_canvaslayer_add(ctx, e);
     l_checkerror(L, ctx);
@@ -133,7 +133,7 @@ static int
 l_canvaslayer_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_canvaslayer_remove(ctx, e);
     l_checkerror(L, ctx);
@@ -143,7 +143,7 @@ static int
 l_canvaslayer_set_canvas (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_rid_t canvas = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 2);
     nux_canvaslayer_set_canvas(ctx, e, canvas);
@@ -154,7 +154,7 @@ static int
 l_canvaslayer_get_canvas (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_rid_t canvas = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 2);
 

@@ -138,14 +138,14 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
     nux_gpu_encoder_t     *enc    = &module->encoder;
 
     // Propagate transforms
-    nux_ent_t it = NUX_NULL;
+    nux_eid_t it = NUX_NULL;
     while ((it = nux_ecs_next(ctx, module->transform_iter, it)))
     {
         nux_transform_update_matrix(ctx, it);
     }
 
     // Find current camera
-    nux_ent_t camera = NUX_NULL;
+    nux_eid_t camera = NUX_NULL;
     it               = NUX_NULL;
     while ((it = nux_ecs_next(ctx, module->transform_camera_iter, it)))
     {

@@ -120,7 +120,7 @@ static void
 compute_transforms (nux_ctx_t *ctx)
 {
     nux_physics_module_t *module = ctx->physics;
-    nux_ent_t             it     = NUX_NULL;
+    nux_eid_t             it     = NUX_NULL;
     while ((it = nux_ecs_next(ctx, module->rigidbody_transform_iter, it)))
     {
         nux_rigidbody_t  *body = nux_ecs_get(ctx, it, NUX_COMPONENT_RIGIDBODY);
@@ -202,7 +202,7 @@ nux_physics_update (nux_ctx_t *ctx)
     }
 }
 void
-nux_physics_add_rigidbody (nux_ctx_t *ctx, nux_ent_t e)
+nux_physics_add_rigidbody (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_physics_module_t *module = ctx->physics;
     nux_rigidbody_t *rigidbody   = nux_ecs_get(ctx, e, NUX_COMPONENT_RIGIDBODY);
@@ -325,7 +325,7 @@ nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
 {
     nux_physics_module_t *module = ctx->physics;
     nux_ray_t             r      = { .p = pos, .d = nux_v3_normalize(dir) };
-    nux_ent_t             it     = NUX_NULL;
+    nux_eid_t             it     = NUX_NULL;
     nux_raycast_hit_t     hit;
     hit.entity   = NUX_NULL;
     hit.position = NUX_V3_ZEROS;

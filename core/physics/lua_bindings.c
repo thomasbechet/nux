@@ -13,7 +13,7 @@ static int
 l_rigidbody_add (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_rigidbody_add(ctx, e);
     l_checkerror(L, ctx);
@@ -23,7 +23,7 @@ static int
 l_rigidbody_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_rigidbody_remove(ctx, e);
     l_checkerror(L, ctx);
@@ -33,7 +33,7 @@ static int
 l_rigidbody_set_velocity (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_v3_t velocity = nux_lua_check_vec3(L, 2);
     nux_rigidbody_set_velocity(ctx, e, velocity);
@@ -45,7 +45,7 @@ static int
 l_collider_add_sphere (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_f32_t radius = luaL_checknumber(L, 2);
 
@@ -57,7 +57,7 @@ static int
 l_collider_add_aabb (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_v3_t min = nux_lua_check_vec3(L, 2);
 
@@ -70,7 +70,7 @@ static int
 l_collider_remove (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_ent_t  e   = luaL_checkinteger(L, 1);
+    nux_eid_t  e   = luaL_checkinteger(L, 1);
 
     nux_collider_remove(ctx, e);
     l_checkerror(L, ctx);

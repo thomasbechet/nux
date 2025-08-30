@@ -1,7 +1,7 @@
 #include "internal.h"
 
 static nux_m4_t
-find_parent_transform (nux_ctx_t *ctx, nux_ent_t e)
+find_parent_transform (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     if (t)
@@ -9,7 +9,7 @@ find_parent_transform (nux_ctx_t *ctx, nux_ent_t e)
         return t->global_matrix;
     }
 
-    nux_ent_t parent = t->parent;
+    nux_eid_t parent = t->parent;
     if (parent)
     {
         return find_parent_transform(ctx, parent);
@@ -19,13 +19,13 @@ find_parent_transform (nux_ctx_t *ctx, nux_ent_t e)
 }
 
 nux_b32_t
-nux_transform_update_matrix (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_update_matrix (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_ASSERT(t);
 
     // Check parent global matrix update
-    nux_ent_t parent = t->parent;
+    nux_eid_t parent = t->parent;
     if (parent)
     {
         nux_transform_update_matrix(ctx, parent);
@@ -53,7 +53,7 @@ nux_transform_update_matrix (nux_ctx_t *ctx, nux_ent_t e)
 }
 
 void
-nux_transform_add (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_add (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_add(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
@@ -63,12 +63,12 @@ nux_transform_add (nux_ctx_t *ctx, nux_ent_t e)
     t->dirty             = NUX_TRUE;
 }
 void
-nux_transform_remove (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_remove (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_ecs_remove(ctx, e, NUX_COMPONENT_TRANSFORM);
 }
 void
-nux_transform_set_parent (nux_ctx_t *ctx, nux_ent_t e, nux_ent_t parent)
+nux_transform_set_parent (nux_ctx_t *ctx, nux_eid_t e, nux_eid_t parent)
 {
     NUX_ENSURE(e != parent, return, "setting node parent to itself");
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
@@ -76,36 +76,36 @@ nux_transform_set_parent (nux_ctx_t *ctx, nux_ent_t e, nux_ent_t parent)
     t->parent = parent;
     t->dirty  = NUX_TRUE;
 }
-nux_ent_t
-nux_transform_get_parent (nux_ctx_t *ctx, nux_ent_t e)
+nux_eid_t
+nux_transform_get_parent (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_NULL);
     return t->parent;
 }
 nux_v3_t
-nux_transform_get_local_translation (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_get_local_translation (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ZEROS);
     return t->local_translation;
 }
 nux_q4_t
-nux_transform_get_local_rotation (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_get_local_rotation (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return nux_q4_identity());
     return t->local_rotation;
 }
 nux_v3_t
-nux_transform_get_local_scale (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_get_local_scale (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ZEROS);
     return t->local_scale;
 }
 nux_v3_t
-nux_transform_get_translation (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_get_translation (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ZEROS);
@@ -115,7 +115,7 @@ nux_transform_get_translation (nux_ctx_t *ctx, nux_ent_t e)
     return translation;
 }
 nux_q4_t
-nux_transform_get_rotation (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_get_rotation (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return nux_q4_identity());
@@ -125,7 +125,7 @@ nux_transform_get_rotation (nux_ctx_t *ctx, nux_ent_t e)
     return rotation;
 }
 nux_v3_t
-nux_transform_get_scale (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_get_scale (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ONES);
@@ -135,7 +135,7 @@ nux_transform_get_scale (nux_ctx_t *ctx, nux_ent_t e)
     return scale;
 }
 void
-nux_transform_set_translation (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t position)
+nux_transform_set_translation (nux_ctx_t *ctx, nux_eid_t e, nux_v3_t position)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
@@ -143,7 +143,7 @@ nux_transform_set_translation (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t position)
     t->dirty             = NUX_TRUE;
 }
 void
-nux_transform_set_rotation (nux_ctx_t *ctx, nux_ent_t e, nux_q4_t rotation)
+nux_transform_set_rotation (nux_ctx_t *ctx, nux_eid_t e, nux_q4_t rotation)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
@@ -151,12 +151,12 @@ nux_transform_set_rotation (nux_ctx_t *ctx, nux_ent_t e, nux_q4_t rotation)
     t->dirty          = NUX_TRUE;
 }
 void
-nux_transform_set_rotation_euler (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t euler)
+nux_transform_set_rotation_euler (nux_ctx_t *ctx, nux_eid_t e, nux_v3_t euler)
 {
     nux_transform_set_rotation(ctx, e, nux_q4_euler(euler));
 }
 void
-nux_transform_set_scale (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t scale)
+nux_transform_set_scale (nux_ctx_t *ctx, nux_eid_t e, nux_v3_t scale)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
@@ -165,7 +165,7 @@ nux_transform_set_scale (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t scale)
 }
 void
 nux_transform_set_ortho (
-    nux_ctx_t *ctx, nux_ent_t e, nux_v3_t a, nux_v3_t b, nux_v3_t c)
+    nux_ctx_t *ctx, nux_eid_t e, nux_v3_t a, nux_v3_t b, nux_v3_t c)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
@@ -178,7 +178,7 @@ nux_transform_set_ortho (
     t->dirty             = NUX_TRUE;
 }
 static nux_v3_t
-rotate_v3 (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t v)
+rotate_v3 (nux_ctx_t *ctx, nux_eid_t e, nux_v3_t v)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ZEROS);
@@ -186,38 +186,38 @@ rotate_v3 (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t v)
     return nux_m4_mulv3(t->global_matrix, v, 0);
 }
 nux_v3_t
-nux_transform_forward (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_forward (nux_ctx_t *ctx, nux_eid_t e)
 {
     return rotate_v3(ctx, e, NUX_V3_FORWARD);
 }
 nux_v3_t
-nux_transform_backward (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_backward (nux_ctx_t *ctx, nux_eid_t e)
 {
     return rotate_v3(ctx, e, NUX_V3_BACKWARD);
 }
 nux_v3_t
-nux_transform_left (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_left (nux_ctx_t *ctx, nux_eid_t e)
 {
     return rotate_v3(ctx, e, NUX_V3_LEFT);
 }
 nux_v3_t
-nux_transform_right (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_right (nux_ctx_t *ctx, nux_eid_t e)
 {
     return rotate_v3(ctx, e, NUX_V3_RIGHT);
 }
 nux_v3_t
-nux_transform_up (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_up (nux_ctx_t *ctx, nux_eid_t e)
 {
     return rotate_v3(ctx, e, NUX_V3_UP);
 }
 nux_v3_t
-nux_transform_down (nux_ctx_t *ctx, nux_ent_t e)
+nux_transform_down (nux_ctx_t *ctx, nux_eid_t e)
 {
     return rotate_v3(ctx, e, NUX_V3_DOWN);
 }
 void
 nux_transform_rotate (nux_ctx_t *ctx,
-                      nux_ent_t  e,
+                      nux_eid_t  e,
                       nux_v3_t   axis,
                       nux_f32_t  angle)
 {
@@ -227,22 +227,22 @@ nux_transform_rotate (nux_ctx_t *ctx,
     t->dirty          = NUX_TRUE;
 }
 void
-nux_transform_rotate_x (nux_ctx_t *ctx, nux_ent_t e, nux_f32_t angle)
+nux_transform_rotate_x (nux_ctx_t *ctx, nux_eid_t e, nux_f32_t angle)
 {
     nux_transform_rotate(ctx, e, NUX_V3_RIGHT, angle);
 }
 void
-nux_transform_rotate_y (nux_ctx_t *ctx, nux_ent_t e, nux_f32_t angle)
+nux_transform_rotate_y (nux_ctx_t *ctx, nux_eid_t e, nux_f32_t angle)
 {
     nux_transform_rotate(ctx, e, NUX_V3_UP, angle);
 }
 void
-nux_transform_rotate_z (nux_ctx_t *ctx, nux_ent_t e, nux_f32_t angle)
+nux_transform_rotate_z (nux_ctx_t *ctx, nux_eid_t e, nux_f32_t angle)
 {
     nux_transform_rotate(ctx, e, NUX_V3_BACKWARD, angle);
 }
 void
-nux_transform_look_at (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t center)
+nux_transform_look_at (nux_ctx_t *ctx, nux_eid_t e, nux_v3_t center)
 {
     nux_transform_t *t = nux_ecs_get(ctx, e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);

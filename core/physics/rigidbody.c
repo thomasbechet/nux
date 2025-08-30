@@ -1,7 +1,7 @@
 #include "internal.h"
 
 void
-nux_rigidbody_add (nux_ctx_t *ctx, nux_ent_t e)
+nux_rigidbody_add (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_rigidbody_t *body = nux_ecs_add(ctx, e, NUX_COMPONENT_RIGIDBODY);
     NUX_CHECK(body, return);
@@ -13,12 +13,12 @@ nux_rigidbody_add (nux_ctx_t *ctx, nux_ent_t e)
     }
 }
 void
-nux_rigidbody_remove (nux_ctx_t *ctx, nux_ent_t e)
+nux_rigidbody_remove (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_ecs_remove(ctx, e, NUX_COMPONENT_RIGIDBODY);
 }
 void
-nux_rigidbody_set_velocity (nux_ctx_t *ctx, nux_ent_t e, nux_v3_t velocity)
+nux_rigidbody_set_velocity (nux_ctx_t *ctx, nux_eid_t e, nux_v3_t velocity)
 {
     nux_rigidbody_t *body = nux_ecs_get(ctx, e, NUX_COMPONENT_RIGIDBODY);
     NUX_CHECK(body, return);

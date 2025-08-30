@@ -18,7 +18,7 @@ typedef float     nux_f32_t;
 typedef double    nux_f64_t;
 typedef intptr_t  nux_intptr_t;
 typedef nux_u32_t nux_rid_t;
-typedef nux_u32_t nux_ent_t;
+typedef nux_u32_t nux_eid_t;
 
 typedef struct nux_context nux_ctx_t;
 

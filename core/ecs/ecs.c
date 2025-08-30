@@ -253,7 +253,7 @@ ecs_iter_next (const nux_ecs_t *ins, nux_ecs_iter_t *it)
     return ID_MAKE(it->mask_index * ECS_ENTITY_PER_MASK + offset);
 }
 nux_u32_t
-nux_ecs_next (nux_ctx_t *ctx, nux_rid_t iter, nux_ent_t e)
+nux_ecs_next (nux_ctx_t *ctx, nux_rid_t iter, nux_eid_t e)
 {
     nux_ecs_iter_t *it = nux_resource_check(ctx, NUX_RESOURCE_ECS_ITER, iter);
     NUX_CHECK(it, return NUX_NULL);
@@ -309,7 +309,7 @@ nux_ecs_set_active (nux_ctx_t *ctx, nux_rid_t ecs)
         module->active_ecs = NUX_NULL;
     }
 }
-nux_u32_t
+nux_eid_t
 nux_ecs_create (nux_ctx_t *ctx)
 {
     nux_ecs_t *ins = ecs_active(ctx);
@@ -322,7 +322,7 @@ nux_ecs_create (nux_ctx_t *ctx)
     return ID_MAKE(index);
 }
 void
-nux_ecs_create_at (nux_ctx_t *ctx, nux_u32_t e)
+nux_ecs_create_at (nux_ctx_t *ctx, nux_eid_t e)
 {
     NUX_CHECK(e, return);
     nux_ecs_t *ins = ecs_active(ctx);
@@ -334,7 +334,7 @@ nux_ecs_create_at (nux_ctx_t *ctx, nux_u32_t e)
     ecs_bitset_set(&ins->bitset, ID_INDEX(e));
 }
 void
-nux_ecs_delete (nux_ctx_t *ctx, nux_u32_t e)
+nux_ecs_delete (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
@@ -350,7 +350,7 @@ nux_ecs_delete (nux_ctx_t *ctx, nux_u32_t e)
     ecs_bitset_unset(&ins->bitset, index);
 }
 nux_b32_t
-nux_ecs_valid (nux_ctx_t *ctx, nux_u32_t e)
+nux_ecs_valid (nux_ctx_t *ctx, nux_eid_t e)
 {
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_FALSE);
@@ -384,7 +384,7 @@ nux_ecs_clear (nux_ctx_t *ctx)
     nux_ecs_bitset_clear(&ins->bitset);
 }
 void *
-nux_ecs_add (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
+nux_ecs_add (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
 {
     nux_ecs_module_t *module = ctx->ecs;
     nux_ecs_t        *ins    = ecs_active(ctx);
@@ -452,7 +452,7 @@ nux_ecs_add (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     return nux_ecs_get(ctx, e, c);
 }
 void
-nux_ecs_remove (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
+nux_ecs_remove (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
 {
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return);
@@ -461,7 +461,7 @@ nux_ecs_remove (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     ecs_bitset_unset(&container->bitset, index);
 }
 nux_b32_t
-nux_ecs_has (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
+nux_ecs_has (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
 {
     NUX_ASSERT(e);
     NUX_ASSERT(c);
@@ -472,7 +472,7 @@ nux_ecs_has (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
     return ecs_bitset_isset(&container->bitset, index);
 }
 void *
-nux_ecs_get (nux_ctx_t *ctx, nux_u32_t e, nux_u32_t c)
+nux_ecs_get (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
 {
     NUX_ASSERT(e);
     NUX_ASSERT(c);

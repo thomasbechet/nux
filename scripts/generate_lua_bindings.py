@@ -98,7 +98,7 @@ def parse_header(args, header):
         typedef int nux_f64_t;
         typedef int nux_intptr_t;
         typedef int nux_rid_t;
-        typedef int nux_ent_t;
+        typedef int nux_eid_t;
 
         typedef int nux_status_t;
         

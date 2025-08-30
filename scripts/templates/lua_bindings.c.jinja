@@ -77,7 +77,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
         else
             lua_pushnil(L);
         return 1;
-    {%- elif function.returntype == "nux_ent_t" %}
+    {%- elif function.returntype == "nux_eid_t" %}
         if (ret)
             lua_pushinteger(L, (nux_intptr_t)ret);
         else
