@@ -83,6 +83,12 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
         else
             lua_pushnil(L);
         return 1;
+    {%- elif function.returntype == "nux_raycast_hit_t" %}
+        if (ret.entity)
+            nux_lua_push_hit(L, ret);
+        else
+            lua_pushnil(L);
+        return 1;
     {%- elif function.returntype != "void" %}
         {{ retmap.get(function.returntype, "lua_pushinteger") }}(L, ret);
         return 1;

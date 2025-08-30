@@ -27,6 +27,8 @@ void nux_collider_add_aabb(nux_ctx_t *ctx,
                            nux_v3_t   max);
 void nux_collider_remove(nux_ctx_t *ctx, nux_ent_t e);
 
-nux_ent_t nux_physics_raycast(nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir);
+nux_raycast_hit_t nux_physics_raycast(nux_ctx_t *ctx,
+                                      nux_v3_t   pos,
+                                      nux_v3_t   dir);
 
 #endif

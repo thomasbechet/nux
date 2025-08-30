@@ -57,11 +57,6 @@ function nux.init()
     PITCH = 0
     YAW = 0
 
-    -- local hit = nux.physics.raycast(pos, dir)
-    -- if hit then
-    --     print(hit.entity, hit.position, hit.normal)
-    -- end
-
     local mesh_cube = nux.mesh.new_cube(ARENA, 1, 1, 1)
     MESH_CUBE = mesh_cube
 
@@ -158,6 +153,9 @@ function nux.tick()
     local forward = nux.transform.forward(CAMERA)
     if nux.button.just_pressed(0, nux.button.RB) then
         local hit = nux.physics.raycast(position, forward)
+        if hit then
+            print(hit.position)
+        end
         if false then
             print("hit " .. hit)
         else

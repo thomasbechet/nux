@@ -320,12 +320,16 @@ nux_physics_add_distance_constraint (nux_ctx_t *ctx,
     c->d        = nux_sqrt(nux_v3_dot(ab, ab));
 }
 
-nux_ent_t
+nux_raycast_hit_t
 nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
 {
     nux_physics_module_t *module = ctx->physics;
     nux_ray_t             r      = { .p = pos, .d = nux_v3_normalize(dir) };
     nux_ent_t             it     = NUX_NULL;
+    nux_raycast_hit_t     hit;
+    hit.entity   = NUX_NULL;
+    hit.position = NUX_V3_ZEROS;
+    hit.normal   = NUX_V3_ZEROS;
     while ((it = nux_ecs_next(ctx, module->collider_transform_iter, it)))
     {
         nux_transform_t *transform
@@ -342,7 +346,8 @@ nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
                 };
                 if (nux_intersect_ray_sphere(r, s, NUX_NULL))
                 {
-                    return it;
+                    hit.entity = it;
+                    return hit;
                 }
             }
             break;
@@ -352,11 +357,12 @@ nux_physics_raycast (nux_ctx_t *ctx, nux_v3_t pos, nux_v3_t dir)
                              nux_v3_add(collider->aabb.box.max, translation));
                 if (nux_intersect_ray_box(r, box, NUX_NULL))
                 {
-                    return it;
+                    hit.entity = it;
+                    return hit;
                 }
             }
             break;
         }
     }
-    return NUX_NULL;
+    return hit;
 }

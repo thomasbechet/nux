@@ -6,6 +6,7 @@ typedef enum
     NUX_LUA_TYPE_VEC3,
     NUX_LUA_TYPE_VEC4,
     NUX_LUA_TYPE_QUAT,
+    NUX_LUA_TYPE_HIT,
 } nux_lua_userdata_type_t;
 
 typedef struct
@@ -13,11 +14,12 @@ typedef struct
     nux_lua_userdata_type_t type;
     union
     {
-        void     *data;
-        nux_v2_t *vec2;
-        nux_v3_t *vec3;
-        nux_v4_t *vec4;
-        nux_q4_t *quat;
+        void              *data;
+        nux_v2_t          *vec2;
+        nux_v3_t          *vec3;
+        nux_v4_t          *vec4;
+        nux_q4_t          *quat;
+        nux_raycast_hit_t *hit;
     };
 } nux_lua_userdata_t;
 
@@ -38,6 +40,9 @@ new_userdata (lua_State *L, nux_lua_userdata_type_t type)
             break;
         case NUX_LUA_TYPE_QUAT:
             size = sizeof(nux_q4_t);
+            break;
+        case NUX_LUA_TYPE_HIT:
+            size = sizeof(nux_raycast_hit_t);
             break;
     }
     nux_lua_userdata_t *u
@@ -141,6 +146,12 @@ nux_lua_check_vec4 (lua_State *L, int index)
         nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_VEC4);
         return *u->vec4;
     }
+}
+void
+nux_lua_push_hit (lua_State *L, nux_raycast_hit_t hit)
+{
+    nux_raycast_hit_t *h = new_userdata(L, NUX_LUA_TYPE_HIT);
+    *h                   = hit;
 }
 
 static int
@@ -491,6 +502,25 @@ meta_index (lua_State *L)
                 return 1;
             }
             return 0;
+        }
+        break;
+        case NUX_LUA_TYPE_HIT: {
+            const char *key = luaL_checkstring(L, 2);
+            if (NUX_MATCH(key, "entity"))
+            {
+                lua_pushinteger(L, u->hit->entity);
+                return 1;
+            }
+            else if (NUX_MATCH(key, "position"))
+            {
+                nux_lua_push_vec3(L, u->hit->position);
+                return 1;
+            }
+            else if (NUX_MATCH(key, "normal"))
+            {
+                nux_lua_push_vec3(L, u->hit->normal);
+                return 1;
+            }
         }
         break;
         default:

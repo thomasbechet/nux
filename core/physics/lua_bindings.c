@@ -85,11 +85,11 @@ l_physics_raycast (lua_State *L)
 
     nux_v3_t dir = nux_lua_check_vec3(L, 2);
 
-    nux_ent_t ret = nux_physics_raycast(ctx, pos, dir);
+    nux_raycast_hit_t ret = nux_physics_raycast(ctx, pos, dir);
     l_checkerror(L, ctx);
-    if (ret)
+    if (ret.entity)
     {
-        lua_pushinteger(L, (nux_intptr_t)ret);
+        nux_lua_push_hit(L, ret);
     }
     else
     {
