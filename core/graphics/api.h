@@ -101,17 +101,18 @@ nux_rid_t nux_canvas_new(nux_ctx_t *ctx,
                          nux_u32_t  capa);
 nux_rid_t nux_canvas_get_texture(nux_ctx_t *ctx, nux_rid_t rid);
 void      nux_canvas_set_layer(nux_ctx_t *ctx, nux_rid_t rid, nux_i32_t layer);
-void      nux_canvas_text(nux_ctx_t      *ctx,
-                          nux_rid_t       rid,
-                          nux_u32_t       x,
-                          nux_u32_t       y,
-                          const nux_c8_t *text);
-void      nux_canvas_rectangle(nux_ctx_t *ctx,
-                               nux_rid_t  rid,
-                               nux_u32_t  x,
-                               nux_u32_t  y,
-                               nux_u32_t  w,
-                               nux_u32_t  h);
+void nux_canvas_set_clear_color(nux_ctx_t *ctx, nux_rid_t rid, nux_u32_t color);
+void nux_canvas_text(nux_ctx_t      *ctx,
+                     nux_rid_t       rid,
+                     nux_u32_t       x,
+                     nux_u32_t       y,
+                     const nux_c8_t *text);
+void nux_canvas_rectangle(nux_ctx_t *ctx,
+                          nux_rid_t  rid,
+                          nux_u32_t  x,
+                          nux_u32_t  y,
+                          nux_u32_t  w,
+                          nux_u32_t  h);
 // void      nux_graphics_line(nux_ctx_t *ctx,
 //                             nux_i32_t  x0,
 //                             nux_i32_t  y0,

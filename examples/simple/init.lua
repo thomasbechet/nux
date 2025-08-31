@@ -1,10 +1,10 @@
 local inspect = require("inspect")
 local nux = nux
 
-local i =0
+local i = 0
 
 local function controller(e)
-    print(i)
+    -- print(i)
     i = i + 1
     local speed = 10
     local fast = speed * 2
@@ -139,6 +139,7 @@ function nux.tick()
     nux.transform.set_scale(ROTATING, nux.vmath.vec3(1, 5, 10))
 
     local canvas = MONOLITH_CANVAS
+    nux.canvas.set_clear_color(canvas, 0xFF0000)
     nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(canvas, 10, 20, API)
     nux.canvas.text(canvas, 150, 50, "hello Julia")

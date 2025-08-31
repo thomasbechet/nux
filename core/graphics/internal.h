@@ -90,6 +90,7 @@ typedef struct nux_canvas
     nux_u32_t              active_texture;
     nux_rid_t              target;
     nux_i32_t              layer;
+    nux_u32_t              clear_color;
     struct nux_canvas     *prev;
     struct nux_canvas     *next;
 } nux_canvas_t;

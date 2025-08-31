@@ -164,6 +164,13 @@ nux_canvas_set_layer (nux_ctx_t *ctx, nux_rid_t rid, nux_i32_t layer)
     c->layer = layer;
 }
 void
+nux_canvas_set_clear_color (nux_ctx_t *ctx, nux_rid_t rid, nux_u32_t color)
+{
+    nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, rid);
+    NUX_CHECK(c, return);
+    c->clear_color = color;
+}
+void
 nux_canvas_text (nux_ctx_t      *ctx,
                  nux_rid_t       id,
                  nux_u32_t       x,
@@ -282,7 +289,7 @@ nux_canvas_render (nux_ctx_t *ctx, nux_canvas_t *c)
         ctx, &enc, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
     nux_gpu_bind_buffer(
         ctx, &enc, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
-    nux_gpu_clear(ctx, &enc, 0x00);
+    nux_gpu_clear(ctx, &enc, c->clear_color);
 
     // Submit commands
     nux_gpu_encoder_submit(ctx, &enc);

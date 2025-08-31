@@ -174,6 +174,18 @@ l_canvas_set_layer (lua_State *L)
     return 0;
 }
 static int
+l_canvas_set_clear_color (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t color = luaL_checknumber(L, 2);
+
+    nux_canvas_set_clear_color(ctx, rid, color);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
 l_canvas_text (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
@@ -223,6 +235,7 @@ static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
         { "get_texture", l_canvas_get_texture },
         { "set_layer", l_canvas_set_layer },
+        { "set_clear_color", l_canvas_set_clear_color },
         { "text", l_canvas_text },
         { "rectangle", l_canvas_rectangle },
         { NUX_NULL, NUX_NULL } };
