@@ -1,51 +1,6 @@
 local inspect = require("inspect")
+local camera = require("camera")
 local nux = nux
-
-local function controller(e)
-    local speed = 10
-    local fast = speed * 2
-
-    if nux.button.pressed(0, nux.button.LB) then
-        speed = fast
-    end
-
-    local mx = nux.axis.value(0, nux.axis.LEFTX)
-    local mz = nux.axis.value(0, nux.axis.LEFTY)
-    local my = 0
-    if nux.button.pressed(0, nux.button.A) then
-        my = 1
-    elseif nux.button.pressed(0, nux.button.B) then
-        my = -1
-    end
-    local rx = nux.axis.value(0, nux.axis.RIGHTX)
-    local ry = nux.axis.value(0, nux.axis.RIGHTY)
-
-    -- Translation
-    local forward = nux.transform.forward(e)
-    local left = nux.transform.left(e)
-    local dt = nux.time.delta()
-    -- Forward
-    local dir = forward * mz * dt * speed
-    -- Left
-    dir = dir - left * mx * dt * speed
-    -- Up
-    dir.y = dir.y + my * dt * speed
-    local position = nux.transform.get_translation(e)
-    nux.transform.set_translation(e, position + dir)
-
-    -- Rotation
-    if rx ~= 0 then
-        YAW = YAW + rx * nux.time.delta() * 100
-    end
-    if ry ~= 0 then
-        PITCH = PITCH - ry * nux.time.delta() * 100
-    end
-    PITCH = math.clamp(PITCH, -90, 90)
-    nux.transform.set_rotation_euler(e, nux.vmath.vec3(-math.rad(PITCH), -math.rad(YAW), 0))
-    nux.camera.set_fov(e, 90)
-    nux.camera.set_far(e, 1000)
-    nux.camera.set_near(e, 0.1)
-end
 
 function nux.conf(config)
     config.hotreload = true
@@ -103,13 +58,6 @@ function nux.init()
         end
     end
 
-    local cam = nux.ecs.create()
-    nux.camera.add(cam)
-    nux.transform.add(cam)
-    nux.camera.set_fov(cam, 70)
-    nux.transform.set_translation(cam, { 13, 15, 10 })
-    CAMERA = cam
-
     -- Create canvas
     GUI_CANVAS = nux.canvas.new(ARENA, nux.canvas.WIDTH, nux.canvas.HEIGHT, 4096)
     nux.canvas.set_layer(GUI_CANVAS, 1)
@@ -130,7 +78,7 @@ function nux.init()
 end
 
 function nux.tick()
-    controller(CAMERA)
+    camera.update()
     nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
     nux.transform.set_scale(ROTATING, nux.vmath.vec3(1, 5, 10))
 
@@ -140,7 +88,7 @@ function nux.tick()
     nux.canvas.text(canvas, 10, 20, API)
     nux.canvas.text(canvas, 150, 50, "hello Julia")
 
-    local position = nux.transform.get_translation(CAMERA)
+    local position = nux.transform.get_translation(camera.entity)
     canvas = GUI_CANVAS
     nux.canvas.text(canvas, 10, 10, nux.time.date())
     nux.canvas.text(canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
@@ -149,7 +97,7 @@ function nux.tick()
     nux.canvas.text(canvas, 10, 50, string.format("z:%.2f", position.z))
     nux.canvas.text(canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
 
-    local forward = nux.transform.forward(CAMERA)
+    local forward = nux.transform.forward(camera.entity)
     if nux.button.just_pressed(0, nux.button.RB) then
         local hit = nux.physics.raycast(position, forward)
         if hit then
