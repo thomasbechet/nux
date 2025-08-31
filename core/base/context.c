@@ -4,6 +4,7 @@
 #include <ecs/internal.h>
 #include <graphics/internal.h>
 #include <physics/internal.h>
+#include <debug/internal.h>
 
 void
 nux_error (nux_ctx_t *ctx, const nux_c8_t *fmt, ...)
@@ -93,6 +94,8 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     ctx->config.graphics.vertices_buffer_size   = 1 << 18;
     ctx->config.graphics.encoder_size           = 8192;
     ctx->config.graphics.immediate_encoder_size = 8192;
+    ctx->config.debug.enable                    = NUX_TRUE;
+    ctx->config.debug.console                   = NUX_TRUE;
     NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
 
     // Register entry script
@@ -109,6 +112,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
     NUX_CHECK(nux_physics_init(ctx), goto cleanup);
+    NUX_CHECK(nux_debug_init(ctx), goto cleanup);
 
     // Initialize program
     NUX_CHECK(nux_lua_call_init(ctx), goto cleanup);
@@ -130,6 +134,7 @@ nux_instance_free (nux_ctx_t *ctx)
     nux_arena_reset(ctx, ctx->core_arena_rid);
 
     // Reset runtime
+    nux_debug_free(ctx);
     nux_physics_free(ctx);
     nux_graphics_free(ctx);
     nux_ecs_free(ctx);
@@ -158,6 +163,9 @@ nux_instance_tick (nux_ctx_t *ctx)
 
     // Update
     nux_lua_call_tick(ctx);
+
+    // Update debug
+    nux_debug_update(ctx);
 
     // Error handling
     if (!nux_error_get_status(ctx))

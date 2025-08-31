@@ -94,19 +94,13 @@ void     nux_mesh_update_bounds(nux_ctx_t *ctx, nux_rid_t mesh);
 nux_v3_t nux_mesh_bounds_min(nux_ctx_t *ctx, nux_rid_t mesh);
 nux_v3_t nux_mesh_bounds_max(nux_ctx_t *ctx, nux_rid_t mesh);
 
-void nux_canvaslayer_add(nux_ctx_t *ctx, nux_eid_t e);
-void nux_canvaslayer_remove(nux_ctx_t *ctx, nux_eid_t e);
-void nux_canvaslayer_set_canvas(nux_ctx_t *ctx, nux_eid_t e, nux_rid_t canvas);
-nux_rid_t nux_canvaslayer_get_canvas(nux_ctx_t *ctx,
-                                     nux_eid_t  e,
-                                     nux_rid_t  canvas);
-
 nux_rid_t nux_canvas_new(nux_ctx_t *ctx,
                          nux_rid_t  arena,
                          nux_u32_t  width,
                          nux_u32_t  height,
                          nux_u32_t  capa);
 nux_rid_t nux_canvas_get_texture(nux_ctx_t *ctx, nux_rid_t rid);
+void      nux_canvas_set_layer(nux_ctx_t *ctx, nux_rid_t rid, nux_i32_t layer);
 void      nux_canvas_text(nux_ctx_t      *ctx,
                           nux_rid_t       rid,
                           nux_u32_t       x,

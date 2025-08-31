@@ -89,6 +89,7 @@ typedef struct nux_canvas
     nux_gpu_canvas_batch_t active_batch;
     nux_u32_t              active_texture;
     nux_rid_t              target;
+    nux_i32_t              layer;
     struct nux_canvas     *prev;
     struct nux_canvas     *next;
 } nux_canvas_t;
@@ -139,7 +140,6 @@ typedef struct nux_graphics_module
     nux_rid_t         transform_iter;
     nux_rid_t         transform_staticmesh_iter;
     nux_rid_t         transform_camera_iter;
-    nux_rid_t         canvaslayer_iter;
 
     const nux_texture_t *active_texture;
 } nux_graphics_module_t;

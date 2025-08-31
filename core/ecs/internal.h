@@ -73,19 +73,13 @@ typedef struct
     nux_u32_t transform;
 } nux_staticmesh_t;
 
-typedef struct
-{
-    nux_rid_t canvas;
-} nux_canvaslayer_t;
-
 typedef enum
 {
-    NUX_COMPONENT_TRANSFORM   = 1,
-    NUX_COMPONENT_CAMERA      = 2,
-    NUX_COMPONENT_STATICMESH  = 3,
-    NUX_COMPONENT_RIGIDBODY   = 4,
-    NUX_COMPONENT_COLLIDER    = 5,
-    NUX_COMPONENT_CANVASLAYER = 6,
+    NUX_COMPONENT_TRANSFORM  = 1,
+    NUX_COMPONENT_CAMERA     = 2,
+    NUX_COMPONENT_STATICMESH = 3,
+    NUX_COMPONENT_RIGIDBODY  = 4,
+    NUX_COMPONENT_COLLIDER   = 5,
 
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_base_t;

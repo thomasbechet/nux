@@ -137,6 +137,14 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
     nux_graphics_module_t *module = ctx->graphics;
     nux_gpu_encoder_t     *enc    = &module->encoder;
 
+    // Submit canvas commands
+    nux_rid_t canvas = NUX_NULL;
+    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
+    {
+        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
+        nux_canvas_render(ctx, c);
+    }
+
     // Propagate transforms
     nux_eid_t it = NUX_NULL;
     while ((it = nux_ecs_next(ctx, module->transform_iter, it)))
@@ -153,14 +161,6 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
         // TODO: check current / active
         camera = it;
         break;
-    }
-
-    // Render canvas
-    nux_rid_t canvas = NUX_NULL;
-    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
-    {
-        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
-        nux_canvas_render(ctx, c);
     }
 
     // Render scene
@@ -218,12 +218,14 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
                 continue;
             }
             nux_transform_t *t = nux_ecs_get(ctx, it, NUX_COMPONENT_TRANSFORM);
-            nux_mesh_t      *m = nux_resource_check(ctx, NUX_RESOURCE_MESH, sm->mesh);
+            nux_mesh_t      *m
+                = nux_resource_check(ctx, NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
             nux_texture_t *tex = NUX_NULL;
             if (sm->texture)
             {
-                tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, sm->texture);
+                tex = nux_resource_check(
+                    ctx, NUX_RESOURCE_TEXTURE, sm->texture);
             }
 
             // Push transform
@@ -248,7 +250,8 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
             {
                 continue;
             }
-            nux_mesh_t *m = nux_resource_check(ctx, NUX_RESOURCE_MESH, sm->mesh);
+            nux_mesh_t *m
+                = nux_resource_check(ctx, NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
 
             // Draw
@@ -263,20 +266,14 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
         nux_gpu_encoder_submit(ctx, &module->immediate_encoder);
     }
 
-    // Render canvas layers
-    it = NUX_NULL;
-    while ((it = nux_ecs_next(ctx, module->canvaslayer_iter, it)))
+    // Blit canvas layers
+    canvas = NUX_NULL;
+    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
     {
-        nux_canvaslayer_t *layer
-            = nux_ecs_get(ctx, it, NUX_COMPONENT_CANVASLAYER);
-        if (layer->canvas)
+        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
+        if (c->target && c->layer >= 0)
         {
-            nux_canvas_t *canvas
-                = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, layer->canvas);
-            if (canvas->target)
-            {
-                nux_texture_blit(ctx, canvas->target);
-            }
+            nux_texture_blit(ctx, c->target);
         }
     }
 }

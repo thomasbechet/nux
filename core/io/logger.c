@@ -1,5 +1,7 @@
 #include "internal.h"
 
+#include <debug/internal.h>
+
 void
 nux_vlog (nux_ctx_t      *ctx,
           nux_log_level_t level,
@@ -11,6 +13,7 @@ nux_vlog (nux_ctx_t      *ctx,
         nux_c8_t  buf[256];
         nux_u32_t n = nux_vsnprintf(buf, sizeof(buf), fmt, args);
         nux_os_log(ctx->userdata, level, buf, n);
+        nux_debug_log_callback(ctx, level, buf, n);
     }
 }
 void

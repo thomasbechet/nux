@@ -101,7 +101,8 @@ nux_canvas_new (nux_ctx_t *ctx,
                 nux_u32_t  capa)
 {
     nux_rid_t     id;
-    nux_canvas_t *c = nux_resource_new(ctx, arena, NUX_RESOURCE_CANVAS, sizeof(*c), &id);
+    nux_canvas_t *c
+        = nux_resource_new(ctx, arena, NUX_RESOURCE_CANVAS, sizeof(*c), &id);
     NUX_CHECK(c, return NUX_NULL);
 
     // Allocate constants buffer
@@ -136,23 +137,31 @@ nux_canvas_new (nux_ctx_t *ctx,
     c->target
         = nux_texture_new(ctx, arena, NUX_TEXTURE_RENDER_TARGET, width, height);
     NUX_CHECK(c->target, return NUX_FAILURE);
+    c->layer = -1; // Not visible by default
 
     return id;
 }
 void
-nux_canvas_cleanup (nux_ctx_t *ctx, nux_rid_t res)
+nux_canvas_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
 {
-    nux_canvas_t *canvas = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, res);
+    nux_canvas_t *canvas = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, rid);
     nux_gpu_buffer_free(ctx, &canvas->constants_buffer);
     nux_gpu_buffer_free(ctx, &canvas->batches_buffer);
     nux_gpu_buffer_free(ctx, &canvas->quads_buffer);
 }
 nux_rid_t
-nux_canvas_get_texture (nux_ctx_t *ctx, nux_rid_t res)
+nux_canvas_get_texture (nux_ctx_t *ctx, nux_rid_t rid)
 {
-    nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, res);
+    nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, rid);
     NUX_CHECK(c, return NUX_NULL);
     return c->target;
+}
+void
+nux_canvas_set_layer (nux_ctx_t *ctx, nux_rid_t rid, nux_i32_t layer)
+{
+    nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, rid);
+    NUX_CHECK(c, return);
+    c->layer = layer;
 }
 void
 nux_canvas_text (nux_ctx_t      *ctx,
@@ -233,7 +242,8 @@ nux_canvas_render (nux_ctx_t *ctx, nux_canvas_t *c)
     nux_u32_t              height;
     if (c->target)
     {
-        nux_texture_t *rt = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, c->target);
+        nux_texture_t *rt
+            = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, c->target);
         NUX_CHECK(rt, return);
         NUX_ENSURE(rt->gpu.type == NUX_TEXTURE_RENDER_TARGET,
                    return,
@@ -261,7 +271,8 @@ nux_canvas_render (nux_ctx_t *ctx, nux_canvas_t *c)
 
     // Begin canvas render
     nux_gpu_encoder_t enc;
-    nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, nux_arena_frame(ctx));
+    nux_arena_t      *a
+        = nux_resource_check(ctx, NUX_RESOURCE_ARENA, nux_arena_frame(ctx));
     nux_gpu_encoder_init(ctx, a, 6, &enc);
     nux_gpu_bind_framebuffer(ctx, &enc, framebuffer);
     nux_gpu_bind_pipeline(ctx, &enc, module->canvas_pipeline.slot);

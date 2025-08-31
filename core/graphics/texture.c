@@ -9,8 +9,8 @@ nux_texture_new (nux_ctx_t         *ctx,
 {
     // Create object
     nux_rid_t      res;
-    nux_texture_t *tex
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_TEXTURE, sizeof(*tex), &res);
+    nux_texture_t *tex = nux_resource_new(
+        ctx, arena, NUX_RESOURCE_TEXTURE, sizeof(*tex), &res);
     NUX_CHECK(tex, return NUX_NULL);
     tex->gpu.type   = type;
     tex->gpu.width  = w;
@@ -46,7 +46,7 @@ void
 nux_texture_cleanup (nux_ctx_t *ctx, nux_rid_t res)
 {
     nux_graphics_module_t *module = ctx->graphics;
-    nux_texture_t         *tex    = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, res);
+    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, res);
     if (tex->gpu.slot)
     {
         nux_u32_vec_pushv(&module->free_texture_slots, tex->gpu.slot);
@@ -77,14 +77,15 @@ nux_texture_write (nux_ctx_t  *ctx,
         "failed to update colormap texture");
 }
 void
-nux_texture_blit (nux_ctx_t *ctx, nux_rid_t res)
+nux_texture_blit (nux_ctx_t *ctx, nux_rid_t rid)
 {
     nux_graphics_module_t *module = ctx->graphics;
-    nux_texture_t         *tex    = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, res);
+    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, rid);
     NUX_CHECK(tex, return);
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_encoder_t enc;
-    nux_arena_t *arena = nux_resource_check(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena);
+    nux_arena_t      *arena
+        = nux_resource_check(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena);
     nux_gpu_encoder_init(ctx, arena, 6, &enc);
     nux_gpu_bind_framebuffer(ctx, &enc, 0);
     nux_gpu_bind_pipeline(ctx, &enc, module->blit_pipeline.slot);

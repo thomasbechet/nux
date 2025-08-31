@@ -569,6 +569,12 @@ typedef struct
         nux_u32_t immediate_encoder_size;
     } graphics;
 
+    struct
+    {
+        nux_b32_t enable;
+        nux_b32_t console;
+    } debug;
+
     nux_b32_t hotreload;
 
 } nux_config_t;
@@ -578,6 +584,7 @@ typedef struct nux_lua_module      nux_lua_module_t;
 typedef struct nux_ecs_module      nux_ecs_module_t;
 typedef struct nux_graphics_module nux_graphics_module_t;
 typedef struct nux_physics_module  nux_physics_module_t;
+typedef struct nux_debug_module    nux_debug_module_t;
 
 struct nux_context
 {
@@ -609,6 +616,7 @@ struct nux_context
     nux_ecs_module_t      *ecs;
     nux_graphics_module_t *graphics;
     nux_physics_module_t  *physics;
+    nux_debug_module_t    *debug;
 };
 
 ////////////////////////////

@@ -29,10 +29,6 @@ nux_graphics_init (nux_ctx_t *ctx)
         ctx, NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
     nux_ecs_register_component(
         ctx, NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
-    nux_ecs_register_component(ctx,
-                               NUX_COMPONENT_CANVASLAYER,
-                               "canvaslayer",
-                               sizeof(nux_canvaslayer_t));
 
     // Initialize gpu slots
     NUX_CHECK(
@@ -149,10 +145,6 @@ nux_graphics_init (nux_ctx_t *ctx)
         ctx, module->transform_staticmesh_iter, NUX_COMPONENT_TRANSFORM);
     nux_ecs_includes(
         ctx, module->transform_staticmesh_iter, NUX_COMPONENT_STATICMESH);
-
-    module->canvaslayer_iter = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 1, 0);
-    NUX_CHECK(module->canvaslayer_iter, return NUX_FAILURE);
-    nux_ecs_includes(ctx, module->canvaslayer_iter, NUX_COMPONENT_CANVASLAYER);
 
     // Push identity transform
     nux_m4_t identity = nux_m4_identity();

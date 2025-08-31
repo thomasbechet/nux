@@ -1,7 +1,11 @@
 local inspect = require("inspect")
 local nux = nux
 
+local i =0
+
 local function controller(e)
+    print(i)
+    i = i + 1
     local speed = 10
     local fast = speed * 2
 
@@ -112,9 +116,7 @@ function nux.init()
 
     -- Create canvas
     GUI_CANVAS = nux.canvas.new(ARENA, nux.canvas.WIDTH, nux.canvas.HEIGHT, 4096)
-    local e = nux.ecs.create()
-    nux.canvaslayer.add(e)
-    nux.canvaslayer.set_canvas(e, GUI_CANVAS)
+    nux.canvas.set_layer(GUI_CANVAS, 1)
 
     -- Create the API monolith
     local x, y = 350, 2000

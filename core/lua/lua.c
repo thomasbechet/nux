@@ -283,6 +283,11 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
     nux_serde_field_u32(
         &s, "immediate_encoder_size", &config->graphics.immediate_encoder_size);
     nux_serde_end_table(&s);
+
+    // debug
+    nux_serde_begin_table(&s, "debug", &config->debug.enable);
+    nux_serde_field_b32(&s, "console", &config->debug.console);
+    nux_serde_end_table(&s);
 }
 static void
 serialize_config (nux_ctx_t *ctx, nux_config_t *config)
