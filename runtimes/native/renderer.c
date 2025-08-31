@@ -75,6 +75,40 @@ cleanup1:
 cleanup0:
     return status;
 }
+static float
+color_to_linear (float x)
+{
+    if (x > 0.04045)
+    {
+        return powf((x + 0.055) / 1.055, 2.4);
+    }
+    else
+    {
+        return x / 12.92;
+    }
+}
+static void
+rgba_to_linear (
+    nux_u8_t r, nux_u8_t g, nux_u8_t b, nux_u8_t a, nux_f32_t linear[4])
+{
+    linear[0] = r / 255.;
+    linear[1] = g / 255.;
+    linear[2] = b / 255.;
+    linear[3] = a / 255.;
+    for (int i = 0; i < 4; ++i)
+    {
+        linear[i] = color_to_linear(linear[i]);
+    }
+}
+static void
+hex_to_linear (nux_u32_t color, nux_f32_t linear[4])
+{
+    nux_u8_t r = (color & 0xFF0000) >> 16;
+    nux_u8_t g = (color & 0xFF00) >> 8;
+    nux_u8_t b = (color & 0xFF);
+    nux_u8_t a = (color & 0xFF000000) >> 24;
+    rgba_to_linear(r, g, b, a, linear);
+}
 
 nux_status_t
 nux_os_pipeline_create (void                          *userdata,
@@ -473,10 +507,9 @@ nux_os_gpu_submit (void                    *userdata,
             }
             break;
             case NUX_GPU_COMMAND_CLEAR: {
-                float r = ((cmd->clear.color & 0xFF0000) >> 16) / 255.;
-                float g = ((cmd->clear.color & 0xFF00) >> 8) / 255.;
-                float b = ((cmd->clear.color & 0xFF)) / 255.;
-                glClearColor(r, g, b, 0);
+                nux_f32_t clear[4];
+                hex_to_linear(cmd->clear.color, clear);
+                glClearColor(clear[0], clear[1], clear[2], clear[3]);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             }
             break;
@@ -502,26 +535,11 @@ renderer_free (void)
         glDeleteVertexArrays(1, &runtime.empty_vao);
     }
 }
-static float
-color_to_linear (float x)
-{
-    if (x > 0.04045)
-    {
-        return powf((x + 0.055) / 1.055, 2.4);
-    }
-    else
-    {
-        return x / 12.92;
-    }
-}
 void
 renderer_clear (void)
 {
-    float clear[] = { 25. / 255, 27. / 255, 43. / 255, 1 };
-    for (int i = 0; i < (int)ARRAY_LEN(clear); ++i)
-    {
-        clear[i] = color_to_linear(clear[i]);
-    }
+    float clear[4];
+    rgba_to_linear(25, 27, 43, 255, clear);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glClearColor(clear[0], clear[1], clear[2], clear[3]);

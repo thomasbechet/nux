@@ -25,7 +25,7 @@
 #define MAX_COMMAND   64
 #define PATH_MAX_LEN  256
 #define PATH_BUF_LEN  256
-#define ARRAY_LEN(ar) (sizeof(ar) / sizeof(ar[0]))
+#define ARRAY_LEN(ar) (nux_u32_t)(sizeof(ar) / sizeof(ar[0]))
 #define CHECK(cond, action) \
     if (!(cond))            \
     {                       \

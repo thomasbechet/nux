@@ -94,7 +94,7 @@ key_to_button (int code)
         // Triggers
         case GLFW_KEY_E:
             return NUX_BUTTON_RB;
-        case GLFW_KEY_Q:
+        case GLFW_KEY_LEFT_SHIFT:
             return NUX_BUTTON_LB;
 
         // Action buttons
