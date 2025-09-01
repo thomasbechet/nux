@@ -1,15 +1,17 @@
 local nux = nux
 
 local camera = {
+    entity = nil,
     speed = 10,
-    entity = nil
+    fast_speed = 20,
+    fov = 90,
+    fast_fov = 92,
 }
 
 local function init()
     local cam = nux.ecs.create()
     nux.camera.add(cam)
     nux.transform.add(cam)
-    nux.camera.set_fov(cam, 70)
     nux.transform.set_translation(cam, { 13, 15, 10 })
     return cam
 end
@@ -20,12 +22,14 @@ function camera.update()
     end
 
     local speed = camera.speed
-    local fast = speed * 2
+    local fov = camera.fov
     local e = camera.entity
 
     if nux.button.pressed(0, nux.button.LB) then
-        speed = fast
+        speed = camera.fast_speed
+        fov = camera.fast_fov
     end
+    nux.camera.set_fov(e, fov)
 
     local mx = nux.axis.value(0, nux.axis.LEFTX)
     local mz = nux.axis.value(0, nux.axis.LEFTY)
@@ -60,7 +64,6 @@ function camera.update()
     end
     PITCH = math.clamp(PITCH, -90, 90)
     nux.transform.set_rotation_euler(e, nux.vmath.vec3(-math.rad(PITCH), -math.rad(YAW), 0))
-    nux.camera.set_fov(e, 90)
     nux.camera.set_far(e, 1000)
     nux.camera.set_near(e, 0.1)
 end

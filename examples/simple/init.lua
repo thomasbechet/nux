@@ -4,7 +4,7 @@ local nux = nux
 
 function nux.conf(config)
     config.hotreload = true
-    -- config.log.level = 'debug'
+    config.log.level = 'debug'
 end
 
 function nux.init()
@@ -101,9 +101,11 @@ function nux.tick()
     if nux.button.just_pressed(0, nux.button.RB) then
         local hit = nux.physics.raycast(position, forward)
         if hit then
+            local pos = hit.position
+            print("hit at " .. tostring(pos))
             local e = nux.ecs.create()
             nux.transform.add(e)
-            nux.transform.set_translation(e, hit.position)
+            nux.transform.set_translation(e, pos)
             nux.staticmesh.add(e)
             nux.staticmesh.set_mesh(e, MESH_CUBE)
         else
