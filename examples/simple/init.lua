@@ -76,6 +76,12 @@ function mod:tick()
     nux.transform.rotate_y(self.rotating, nux.time.delta() * math.sin(nux.time.elapsed()))
     nux.transform.set_scale(self.rotating, nux.vmath.vec3(1, 5, 10))
 
+    -- nux.graphics.draw_line(nux.vmath.vec3(0, 0, 0), nux.vmath.vec3(10, 10, 10), 0x0)
+    local p = nux.vmath.vec3(0, 0, -10)
+    nux.graphics.draw_dir(p, nux.vmath.vec3(1, 0, 0), 1, 0x0)
+    nux.graphics.draw_dir(p, nux.vmath.vec3(0, 1, 0), 1, 0x0)
+    nux.graphics.draw_dir(p, nux.vmath.vec3(0, 0, 1), 1, 0x0)
+
     local canvas = self.monolith_canvas
     nux.canvas.set_clear_color(canvas, 0x99ccff)
     nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))

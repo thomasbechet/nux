@@ -124,6 +124,9 @@ typedef struct nux_graphics_module
     nux_gpu_buffer_t   vertices_buffer;
     nux_u32_t          vertices_buffer_head;
     nux_u32_t          vertices_buffer_head_frame;
+    nux_gpu_buffer_t   transforms_buffer;
+    nux_u32_t          transforms_buffer_head;
+    nux_u32_t          transforms_buffer_head_frame;
     nux_font_t         default_font;
     nux_u32_vec_t      free_texture_slots;
     nux_u32_vec_t      free_buffer_slots;
@@ -136,8 +139,6 @@ typedef struct nux_graphics_module
     nux_gpu_buffer_t  constants_buffer;
     nux_gpu_buffer_t  batches_buffer;
     nux_u32_t         batches_buffer_head;
-    nux_gpu_buffer_t  transforms_buffer;
-    nux_u32_t         transforms_buffer_head;
     nux_rid_t         transform_iter;
     nux_rid_t         transform_staticmesh_iter;
     nux_rid_t         transform_camera_iter;
@@ -168,11 +169,18 @@ nux_status_t nux_graphics_push_transforms(nux_ctx_t      *ctx,
                                           nux_u32_t       mcount,
                                           const nux_m4_t *data,
                                           nux_u32_t      *index);
+nux_status_t nux_graphics_push_frame_transforms(nux_ctx_t      *ctx,
+                                                nux_u32_t       mcount,
+                                                const nux_m4_t *data,
+                                                nux_u32_t      *index);
 
 // renderer.c
 
 void nux_renderer_render(nux_ctx_t *ctx, nux_ecs_t *ecs);
-void nux_renderer_draw_rect(nux_ctx_t *ctx, const nux_v3_t *positions);
+void nux_graphics_draw_line(nux_ctx_t *ctx,
+                            nux_v3_t   a,
+                            nux_v3_t   b,
+                            nux_u32_t  color);
 
 // font.c
 

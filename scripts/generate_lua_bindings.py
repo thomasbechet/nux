@@ -126,6 +126,30 @@ def parse_header(args, header):
             };
             nux_f32_t data[4];
         } nux_q4_t;
+
+        typedef union
+        {
+            struct
+            {
+                nux_f32_t x1;
+                nux_f32_t x2;
+                nux_f32_t x3;
+                nux_f32_t x4;
+                nux_f32_t y1;
+                nux_f32_t y2;
+                nux_f32_t y3;
+                nux_f32_t y4;
+                nux_f32_t z1;
+                nux_f32_t z2;
+                nux_f32_t z3;
+                nux_f32_t z4;
+                nux_f32_t w1;
+                nux_f32_t w2;
+                nux_f32_t w3;
+                nux_f32_t w4;
+            };
+            nux_f32_t data[16];
+        } nux_m4_t;
     """
 
     fixed = "\n".join([line if not re.findall("//|#include|#ifdef|#ifndef|#else|#endif|#define", line) else "" for line in src.splitlines()])

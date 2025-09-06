@@ -6,6 +6,7 @@ typedef enum
     NUX_LUA_TYPE_VEC3,
     NUX_LUA_TYPE_VEC4,
     NUX_LUA_TYPE_QUAT,
+    NUX_LUA_TYPE_MAT4,
     NUX_LUA_TYPE_HIT,
 } nux_lua_userdata_type_t;
 
@@ -19,6 +20,7 @@ typedef struct
         nux_v3_t          *vec3;
         nux_v4_t          *vec4;
         nux_q4_t          *quat;
+        nux_m4_t          *mat4;
         nux_raycast_hit_t *hit;
     };
 } nux_lua_userdata_t;
@@ -40,6 +42,9 @@ new_userdata (lua_State *L, nux_lua_userdata_type_t type)
             break;
         case NUX_LUA_TYPE_QUAT:
             size = sizeof(nux_q4_t);
+            break;
+        case NUX_LUA_TYPE_MAT4:
+            size = sizeof(nux_m4_t);
             break;
         case NUX_LUA_TYPE_HIT:
             size = sizeof(nux_raycast_hit_t);
@@ -146,6 +151,18 @@ nux_lua_check_vec4 (lua_State *L, int index)
         nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_VEC4);
         return *u->vec4;
     }
+}
+void
+nux_lua_push_mat4 (lua_State *L, nux_m4_t m)
+{
+    nux_m4_t *mat = new_userdata(L, NUX_LUA_TYPE_MAT4);
+    *mat          = m;
+}
+nux_m4_t
+nux_lua_check_mat4 (lua_State *L, int index)
+{
+    nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_MAT4);
+    return *u->mat4;
 }
 void
 nux_lua_push_hit (lua_State *L, nux_raycast_hit_t hit)
@@ -395,6 +412,13 @@ math_vec4 (lua_State *L)
     return 1;
 }
 static int
+math_mat4 (lua_State *L)
+{
+    nux_m4_t m = nux_m4_identity();
+    nux_lua_push_mat4(L, m);
+    return 1;
+}
+static int
 math_dot (lua_State *L)
 {
     nux_lua_userdata_t *u = check_anyuserdata(L, 1);
@@ -639,12 +663,12 @@ nux_status_t
 nux_lua_open_vmath (nux_ctx_t *ctx)
 {
     static const struct luaL_Reg vmath_lib[]
-        = { { "vec2", math_vec2 },   { "vec3", math_vec3 },
-            { "vec4", math_vec4 },   { "dot", math_dot },
-            { "cross", math_cross }, { "length", math_length },
-            { "add", math_add },     { "sub", math_sub },
-            { "mul", math_mul },     { "div", math_div },
-            { NULL, NULL } };
+        = { { "vec2", math_vec2 },     { "vec3", math_vec3 },
+            { "vec4", math_vec4 },     { "mat4", math_mat4 },
+            { "dot", math_dot },       { "cross", math_cross },
+            { "length", math_length }, { "add", math_add },
+            { "sub", math_sub },       { "mul", math_mul },
+            { "div", math_div },       { NULL, NULL } };
     lua_State *L = ctx->lua->L;
     register_metatable(L);
     lua_getglobal(L, "nux");

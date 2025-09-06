@@ -129,4 +129,16 @@ void nux_canvas_rectangle(nux_ctx_t *ctx,
 //                             nux_i32_t  y1,
 //                             nux_u8_t   c);
 
+void nux_graphics_draw_line_tr(
+    nux_ctx_t *ctx, nux_m4_t tr, nux_v3_t a, nux_v3_t b, nux_u32_t color);
+void nux_graphics_draw_line(nux_ctx_t *ctx,
+                            nux_v3_t   a,
+                            nux_v3_t   b,
+                            nux_u32_t  color);
+void nux_graphics_draw_dir(nux_ctx_t *ctx,
+                           nux_v3_t   origin,
+                           nux_v3_t   dir,
+                           nux_f32_t  length,
+                           nux_u32_t  color);
+
 #endif

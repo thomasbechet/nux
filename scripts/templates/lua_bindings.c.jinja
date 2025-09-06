@@ -36,6 +36,9 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
         {%- if arg.typename == "nux_v3_t" %}
             nux_v3_t {{ arg.name }} = nux_lua_check_vec3(L, {{ ns.stack + 0}});
             {% set ns.stack = ns.stack + 1 %}
+        {%- elif arg.typename == "nux_m4_t" %}
+            nux_m4_t {{ arg.name }} = nux_lua_check_mat4(L, {{ ns.stack + 0}});
+            {% set ns.stack = ns.stack + 1 %}
         {%- elif arg.typename == "nux_q4_t" %}
             nux_q4_t {{ arg.name }};
             {{ arg.name }}.x = luaL_checknumber(L, {{ ns.stack + 0 }});
@@ -64,6 +67,9 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
     l_checkerror(L, ctx);
     {%- if function.returntype == "nux_v3_t" %}
         nux_lua_push_vec3(L, ret);
+        return 1;
+    {%- elif function.returntype == "nux_m4_t" %}
+        nux_lua_push_mat4(L, ret);
         return 1;
     {%- elif function.returntype == "nux_q4_t" %}
         lua_pushnumber(L, ret.x);

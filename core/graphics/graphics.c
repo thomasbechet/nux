@@ -118,11 +118,13 @@ nux_graphics_init (nux_ctx_t *ctx)
               return NUX_FAILURE);
 
     // Allocate transforms buffer
-    module->transforms_buffer_head = 0;
     module->transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
     module->transforms_buffer.size
         = NUX_M4_SIZE * ctx->config.graphics.transforms_buffer_size
           * sizeof(nux_f32_t);
+    module->transforms_buffer_head = 0;
+    module->transforms_buffer_head_frame
+        = ctx->config.graphics.transforms_buffer_size;
     NUX_CHECK(nux_gpu_buffer_init(ctx, &module->transforms_buffer),
               return NUX_FAILURE);
 
@@ -286,18 +288,39 @@ nux_graphics_push_transforms (nux_ctx_t      *ctx,
 {
     nux_graphics_module_t *module = ctx->graphics;
     NUX_ENSURE(module->transforms_buffer_head + mcount
-                   < ctx->config.graphics.transforms_buffer_size,
+                   < module->vertices_buffer_head_frame,
                return NUX_FAILURE,
                "out of transforms");
+    *index = module->transforms_buffer_head;
     NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
                                     module->transforms_buffer.slot,
-                                    module->transforms_buffer_head * NUX_M4_SIZE
-                                        * sizeof(nux_f32_t),
+                                    *index * NUX_M4_SIZE * sizeof(nux_f32_t),
                                     mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
                                     data),
                return NUX_FAILURE,
                "failed to update transform buffer");
-    *index = module->transforms_buffer_head;
     module->transforms_buffer_head += mcount;
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_graphics_push_frame_transforms (nux_ctx_t      *ctx,
+                                    nux_u32_t       mcount,
+                                    const nux_m4_t *data,
+                                    nux_u32_t      *index)
+{
+    nux_graphics_module_t *module = ctx->graphics;
+    NUX_ENSURE(module->transforms_buffer_head_frame - mcount
+                   > module->transforms_buffer_head,
+               return NUX_FAILURE,
+               "out of frame transforms");
+    *index = module->transforms_buffer_head_frame - mcount;
+    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
+                                    module->transforms_buffer.slot,
+                                    *index * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    data),
+               return NUX_FAILURE,
+               "failed to update transform buffer");
+    module->transforms_buffer_head_frame -= mcount;
     return NUX_SUCCESS;
 }

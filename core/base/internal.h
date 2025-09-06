@@ -444,30 +444,6 @@ typedef union
     nux_f32_t data[NUX_M3_SIZE];
 } nux_m3_t;
 
-typedef union
-{
-    struct
-    {
-        nux_f32_t x1;
-        nux_f32_t x2;
-        nux_f32_t x3;
-        nux_f32_t x4;
-        nux_f32_t y1;
-        nux_f32_t y2;
-        nux_f32_t y3;
-        nux_f32_t y4;
-        nux_f32_t z1;
-        nux_f32_t z2;
-        nux_f32_t z3;
-        nux_f32_t z4;
-        nux_f32_t w1;
-        nux_f32_t w2;
-        nux_f32_t w3;
-        nux_f32_t w4;
-    };
-    nux_f32_t data[NUX_M4_SIZE];
-} nux_m4_t;
-
 typedef struct
 {
     nux_v3_t min;

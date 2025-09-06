@@ -219,6 +219,53 @@ l_canvas_rectangle (lua_State *L)
     return 0;
 }
 
+static int
+l_graphics_draw_line_tr (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_m4_t   tr  = nux_lua_check_mat4(L, 1);
+
+    nux_v3_t a = nux_lua_check_vec3(L, 2);
+
+    nux_v3_t b = nux_lua_check_vec3(L, 3);
+
+    nux_u32_t color = luaL_checknumber(L, 4);
+
+    nux_graphics_draw_line_tr(ctx, tr, a, b, color);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_graphics_draw_line (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_v3_t   a   = nux_lua_check_vec3(L, 1);
+
+    nux_v3_t b = nux_lua_check_vec3(L, 2);
+
+    nux_u32_t color = luaL_checknumber(L, 3);
+
+    nux_graphics_draw_line(ctx, a, b, color);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_graphics_draw_dir (lua_State *L)
+{
+    nux_ctx_t *ctx    = lua_getuserdata(L);
+    nux_v3_t   origin = nux_lua_check_vec3(L, 1);
+
+    nux_v3_t dir = nux_lua_check_vec3(L, 2);
+
+    nux_f32_t length = luaL_checknumber(L, 3);
+
+    nux_u32_t color = luaL_checknumber(L, 4);
+
+    nux_graphics_draw_dir(ctx, origin, dir, length, color);
+    l_checkerror(L, ctx);
+    return 0;
+}
+
 static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
                                                { NUX_NULL, NUX_NULL } };
@@ -238,6 +285,12 @@ static const struct luaL_Reg lib_canvas[]
         { "set_clear_color", l_canvas_set_clear_color },
         { "text", l_canvas_text },
         { "rectangle", l_canvas_rectangle },
+        { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_graphics[]
+    = { { "draw_line_tr", l_graphics_draw_line_tr },
+        { "draw_line", l_graphics_draw_line },
+        { "draw_dir", l_graphics_draw_dir },
         { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_palette[] = { { NUX_NULL, NUX_NULL } };
@@ -286,6 +339,12 @@ nux_lua_open_graphics (nux_ctx_t *ctx)
     lua_setfield(L, -2, "HEIGHT");
 
     lua_setfield(L, -2, "canvas"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_graphics, 0);
+
+    lua_setfield(L, -2, "graphics"); // Set module to nux table
 
     lua_newtable(L);
 

@@ -79,6 +79,8 @@ void         nux_lua_push_vec3(lua_State *L, nux_v3_t v);
 nux_v3_t     nux_lua_check_vec3(lua_State *L, int index);
 void         nux_lua_push_vec4(lua_State *L, nux_v4_t v);
 nux_v4_t     nux_lua_check_vec4(lua_State *L, int index);
+void         nux_lua_push_mat4(lua_State *L, nux_m4_t m);
+nux_m4_t     nux_lua_check_mat4(lua_State *L, int index);
 void         nux_lua_push_hit(lua_State *L, nux_raycast_hit_t hit);
 
 // lua_require.c
