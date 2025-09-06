@@ -199,11 +199,31 @@ nux_graphics_pre_update (nux_ctx_t *ctx)
 nux_status_t
 nux_graphics_update (nux_ctx_t *ctx)
 {
+    // Submit canvas commands
+    nux_rid_t canvas = NUX_NULL;
+    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
+    {
+        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
+        nux_canvas_render(ctx, c);
+    }
+
+    // Render ECS
     nux_rid_t res = nux_ecs_get_active(ctx);
     if (res)
     {
         nux_ecs_t *ecs = nux_resource_check(ctx, NUX_RESOURCE_ECS, res);
         nux_renderer_render(ctx, ecs);
+    }
+
+    // Blit canvas layers
+    canvas = NUX_NULL;
+    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
+    {
+        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
+        if (c->target && c->layer >= 0)
+        {
+            nux_texture_blit(ctx, c->target);
+        }
     }
 
     return NUX_SUCCESS;

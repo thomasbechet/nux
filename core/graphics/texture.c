@@ -8,9 +8,9 @@ nux_texture_new (nux_ctx_t         *ctx,
                  nux_u32_t          h)
 {
     // Create object
-    nux_rid_t      res;
+    nux_rid_t      rid;
     nux_texture_t *tex = nux_resource_new(
-        ctx, arena, NUX_RESOURCE_TEXTURE, sizeof(*tex), &res);
+        ctx, arena, NUX_RESOURCE_TEXTURE, sizeof(*tex), &rid);
     NUX_CHECK(tex, return NUX_NULL);
     tex->gpu.type   = type;
     tex->gpu.width  = w;
@@ -40,13 +40,13 @@ nux_texture_new (nux_ctx_t         *ctx,
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
-    return res;
+    return rid;
 }
 void
-nux_texture_cleanup (nux_ctx_t *ctx, nux_rid_t res)
+nux_texture_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
 {
     nux_graphics_module_t *module = ctx->graphics;
-    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, res);
+    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, rid);
     if (tex->gpu.slot)
     {
         nux_u32_vec_pushv(&module->free_texture_slots, tex->gpu.slot);
@@ -59,14 +59,14 @@ nux_texture_cleanup (nux_ctx_t *ctx, nux_rid_t res)
 }
 void
 nux_texture_write (nux_ctx_t  *ctx,
-                   nux_rid_t   id,
+                   nux_rid_t   rid,
                    nux_u32_t   x,
                    nux_u32_t   y,
                    nux_u32_t   w,
                    nux_u32_t   h,
                    const void *data)
 {
-    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, id);
+    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, rid);
     NUX_CHECK(tex, return);
     NUX_ENSURE(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
                return,

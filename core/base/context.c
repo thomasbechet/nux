@@ -78,7 +78,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     {
         // Expect cartridge
         NUX_CHECK(nux_io_mount(ctx, normpath), goto cleanup);
-        entry_script = "init.lua";
+        entry_script = NUX_INIT_FILE;
     }
 
     // Get program configuration
@@ -96,17 +96,11 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     ctx->config.graphics.immediate_encoder_size = 8192;
     ctx->config.debug.enable                    = NUX_TRUE;
     ctx->config.debug.console                   = NUX_TRUE;
-    NUX_CHECK(nux_lua_configure(ctx, entry_script, &ctx->config), goto cleanup);
+    NUX_CHECK(nux_lua_configure(ctx, &ctx->config), goto cleanup);
 
     // Register entry script
-    nux_rid_t  rid;
-    nux_lua_t *lua = nux_resource_new(
-        ctx, ctx->core_arena_rid, NUX_RESOURCE_LUA, sizeof(*lua), &rid);
-    NUX_CHECK(lua, goto cleanup);
-    if (ctx->config.hotreload)
-    {
-        nux_resource_watch(ctx, rid, entry_script);
-    }
+    nux_rid_t rid = nux_lua_load(ctx, ctx->core_arena_rid, entry_script);
+    NUX_CHECK(rid, goto cleanup);
 
     // Initialize optional modules
     NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
@@ -115,7 +109,11 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     NUX_CHECK(nux_debug_init(ctx), goto cleanup);
 
     // Initialize program
-    NUX_CHECK(nux_lua_call_init(ctx), goto cleanup);
+    rid = NUX_NULL;
+    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA, rid)))
+    {
+        NUX_CHECK(nux_lua_call_init(ctx, rid), goto cleanup);
+    }
 
     return ctx;
 
@@ -162,7 +160,11 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_physics_update(ctx);
 
     // Update
-    nux_lua_call_tick(ctx);
+    nux_rid_t rid = NUX_NULL;
+    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA, rid)))
+    {
+        nux_lua_call_tick(ctx, rid);
+    }
 
     // Update debug
     nux_debug_update(ctx);
@@ -185,10 +187,7 @@ nux_instance_tick (nux_ctx_t *ctx)
         nux_os_hotreload_pull(ctx->userdata, handles, &count);
         for (nux_u32_t i = 0; i < count; ++i)
         {
-            if (nux_resource_reload(ctx, handles[i]))
-            {
-                NUX_INFO("Resource 0x%08X successfully reloaded", handles[i]);
-            }
+            nux_resource_reload(ctx, handles[i]);
         }
     }
 

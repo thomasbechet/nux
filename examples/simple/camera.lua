@@ -1,14 +1,12 @@
 local nux = nux
-
-local camera = {
-    entity = nil,
-    speed = 10,
-    fast_speed = 20,
-    fov = 90,
-    fast_fov = 92,
-}
+local camera = MODULE
 
 local function init()
+    camera.entity = nil
+    camera.speed = 10
+    camera.fast_speed = 20
+    camera.fov = 90
+    camera.fast_fov = 92
     local cam = nux.ecs.create()
     nux.camera.add(cam)
     nux.transform.add(cam)
@@ -20,6 +18,7 @@ function camera.update()
     if not camera.entity then
         camera.entity = init()
     end
+
 
     local speed = camera.speed
     local fov = camera.fov

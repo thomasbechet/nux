@@ -34,7 +34,7 @@ nux_resource_new (nux_ctx_t *ctx,
                   nux_rid_t  arena,
                   nux_u32_t  type,
                   nux_u32_t  size,
-                  nux_rid_t *id)
+                  nux_rid_t *rid)
 {
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
@@ -49,16 +49,16 @@ nux_resource_new (nux_ctx_t *ctx,
     }
     a->last_finalizer = finalizer;
     void     *data    = finalizer + 1; // TODO: handle proper memory alignment
-    nux_rid_t res     = nux_resource_add(ctx, arena, type, data);
+    nux_rid_t id      = nux_resource_add(ctx, arena, type, data);
     if (!id)
     {
         // TODO: rewind arena ?
         return NUX_NULL;
     }
-    finalizer->res = res;
-    if (id)
+    finalizer->res = id;
+    if (rid)
     {
-        *id = res;
+        *rid = id;
     }
     return data;
 }
@@ -81,7 +81,7 @@ nux_resource_delete (nux_ctx_t *ctx, nux_rid_t rid)
 
     // Cleanup resource
     nux_resource_type_t *type = ctx->resources_types + entry->type;
-    NUX_DEBUG("cleanup '%s' 0x%08X", type->name, rid);
+    NUX_DEBUG("cleanup '%s' 0x%08X '%s'", type->name, rid, entry->path);
     if (type->cleanup)
     {
         type->cleanup(ctx, rid);
@@ -95,20 +95,8 @@ nux_resource_delete (nux_ctx_t *ctx, nux_rid_t rid)
     entry->path  = NUX_NULL;
     nux_resource_pool_remove(&ctx->resources, entry);
 }
-void *
-nux_resource_check (nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid)
-{
-    nux_u32_t index = RID_INDEX(rid);
-    NUX_ENSURE(index < ctx->resources.size
-                   && ctx->resources.data[index].self == rid
-                   && ctx->resources.data[index].type == type,
-               return NUX_NULL,
-               "invalid resource 0x%X",
-               rid);
-    return ctx->resources.data[index].data;
-}
 void
-nux_resource_watch (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
+nux_resource_set_path (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
     nux_u32_t             index = RID_INDEX(rid);
     nux_resource_entry_t *entry = ctx->resources.data + index;
@@ -120,6 +108,18 @@ nux_resource_watch (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     {
         nux_os_hotreload_add(ctx->userdata, entry->path, rid);
     }
+}
+void *
+nux_resource_check (nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid)
+{
+    nux_u32_t index = RID_INDEX(rid);
+    NUX_ENSURE(index < ctx->resources.size
+                   && ctx->resources.data[index].self == rid
+                   && ctx->resources.data[index].type == type,
+               return NUX_NULL,
+               "invalid resource 0x%X",
+               rid);
+    return ctx->resources.data[index].data;
 }
 nux_status_t
 nux_resource_reload (nux_ctx_t *ctx, nux_rid_t rid)
@@ -134,6 +134,7 @@ nux_resource_reload (nux_ctx_t *ctx, nux_rid_t rid)
     {
         type->reload(ctx, rid, entry->path);
     }
+    NUX_INFO("Resource 0x%08X '%s' successfully reloaded", rid, entry->path);
     return NUX_SUCCESS;
 }
 nux_rid_t
@@ -153,4 +154,13 @@ nux_resource_next (nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid)
         }
     }
     return NUX_NULL;
+}
+const nux_c8_t *
+nux_resource_path (nux_ctx_t *ctx, nux_rid_t rid)
+{
+    nux_u32_t index = RID_INDEX(rid);
+    NUX_CHECK(index < ctx->resources.size
+                  && ctx->resources.data[index].self == rid,
+              return NUX_NULL);
+    return ctx->resources.data[index].path;
 }

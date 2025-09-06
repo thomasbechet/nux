@@ -15,15 +15,12 @@
 #define NUX_FUNC_CONF "conf"
 #define NUX_FUNC_INIT "init"
 #define NUX_FUNC_TICK "tick"
+#define NUX_CONF_FILE "conf.lua"
+#define NUX_INIT_FILE "init.lua"
 
 ////////////////////////////
 ///        TYPES         ///
 ////////////////////////////
-
-typedef struct
-{
-    nux_u32_t dummy;
-} nux_lua_t;
 
 typedef struct
 {
@@ -39,6 +36,11 @@ typedef struct
     nux_u32_t       value;
 } nux_lua_serde_enum_t;
 
+typedef struct
+{
+    nux_u32_t ref;
+} nux_lua_t;
+
 typedef struct nux_lua_module
 {
     lua_State *L;
@@ -52,25 +54,9 @@ typedef struct nux_lua_module
 
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
 void         nux_lua_free(nux_ctx_t *ctx);
-nux_status_t nux_lua_configure(nux_ctx_t      *ctx,
-                               const nux_c8_t *entry_script,
-                               nux_config_t   *config);
-nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
-nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
-nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
-nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
-                            nux_rid_t       rid,
-                            const nux_c8_t *path);
-
-// lua.c
-
-nux_status_t nux_lua_init(nux_ctx_t *ctx);
-void         nux_lua_free(nux_ctx_t *ctx);
-nux_status_t nux_lua_configure(nux_ctx_t      *ctx,
-                               const nux_c8_t *entry_script,
-                               nux_config_t   *config);
-nux_status_t nux_lua_call_init(nux_ctx_t *ctx);
-nux_status_t nux_lua_call_tick(nux_ctx_t *ctx);
+nux_status_t nux_lua_configure(nux_ctx_t *ctx, nux_config_t *config);
+nux_status_t nux_lua_call_init(nux_ctx_t *ctx, nux_rid_t module);
+nux_status_t nux_lua_call_tick(nux_ctx_t *ctx, nux_rid_t module);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
 nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
                             nux_rid_t       rid,
@@ -92,5 +78,9 @@ nux_v3_t     nux_lua_check_vec3(lua_State *L, int index);
 void         nux_lua_push_vec4(lua_State *L, nux_v4_t v);
 nux_v4_t     nux_lua_check_vec4(lua_State *L, int index);
 void         nux_lua_push_hit(lua_State *L, nux_raycast_hit_t hit);
+
+// lua_require.c
+
+nux_status_t nux_lua_open_require(nux_ctx_t *ctx);
 
 #endif

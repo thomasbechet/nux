@@ -328,6 +328,7 @@ typedef enum
     NUX_RESOURCE_FILE     = 7,
     NUX_RESOURCE_ECS      = 8,
     NUX_RESOURCE_ECS_ITER = 9,
+    NUX_RESOURCE_EVENT    = 10,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
@@ -579,6 +580,24 @@ typedef struct
 
 } nux_config_t;
 
+typedef struct
+{
+
+} nux_event_data_t;
+
+typedef void (*nux_event_callback_t)(nux_ctx_t              *ctx,
+                                     const nux_event_data_t *event);
+
+typedef struct
+{
+    nux_event_callback_t callback;
+} nux_event_subscriber_t;
+
+typedef struct
+{
+    nux_event_subscriber_t *first_subscriber;
+} nux_event_t;
+
 typedef struct nux_io_module       nux_io_module_t;
 typedef struct nux_lua_module      nux_lua_module_t;
 typedef struct nux_ecs_module      nux_ecs_module_t;
@@ -677,6 +696,8 @@ nux_status_t nux_path_concat(nux_c8_t       *dst,
 nux_u32_t    nux_path_basename(nux_c8_t *dst, const nux_c8_t *path);
 nux_u32_t    nux_path_normalize(nux_c8_t *dst, const nux_c8_t *path);
 nux_b32_t    nux_path_endswith(const nux_c8_t *path, const nux_c8_t *end);
+nux_status_t nux_path_set_extension(nux_c8_t *path, const nux_c8_t *extension);
+void         nux_path_copy(nux_c8_t *dst, const nux_c8_t *src);
 
 // memory.c
 
@@ -704,10 +725,11 @@ void                *nux_resource_new(nux_ctx_t *ctx,
                                       nux_u32_t  size,
                                       nux_rid_t *rid);
 void                 nux_resource_delete(nux_ctx_t *ctx, nux_rid_t rid);
-void *nux_resource_check(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
-void  nux_resource_watch(nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path);
+void nux_resource_set_path(nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path);
+void        *nux_resource_check(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
 nux_status_t nux_resource_reload(nux_ctx_t *ctx, nux_rid_t rid);
 nux_rid_t    nux_resource_next(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
+const nux_c8_t *nux_resource_path(nux_ctx_t *ctx, nux_rid_t rid);
 
 // arena.c
 
@@ -791,5 +813,15 @@ nux_status_t    nux_error_get_status(nux_ctx_t *ctx);
 
 nux_status_t nux_base_init(nux_ctx_t *ctx);
 void         nux_base_free(nux_ctx_t *ctx);
+
+// event.c
+
+void nux_event_subscribe(nux_ctx_t           *ctx,
+                         nux_rid_t            event,
+                         nux_event_callback_t callback);
+void nux_event_unsubscribe(nux_ctx_t           *ctx,
+                           nux_rid_t            event,
+                           nux_event_callback_t callback);
+void nux_event_send(nux_ctx_t *ctx, nux_rid_t event, nux_event_data_t data);
 
 #endif

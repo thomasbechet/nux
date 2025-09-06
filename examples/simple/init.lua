@@ -1,13 +1,13 @@
-local inspect = require("inspect")
+local inspect = require("libs/inspect")
 local camera = require("camera")
+local mymod = require("mymod")
 local nux = nux
 
-function nux.conf(config)
-    config.hotreload = true
-    config.log.level = 'debug'
-end
+local mod = MODULE
 
-function nux.init()
+print(inspect)
+
+function mod:init()
     ARENA = nux.arena.core()
     PITCH = 0
     YAW = 0
@@ -77,10 +77,12 @@ function nux.init()
     API = inspect(nux)
 end
 
-function nux.tick()
+function mod:tick()
     camera.update()
     nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
     nux.transform.set_scale(ROTATING, nux.vmath.vec3(1, 5, 10))
+
+    mymod.hello()
 
     local canvas = MONOLITH_CANVAS
     nux.canvas.set_clear_color(canvas, 0x99ccff)
@@ -141,3 +143,5 @@ function nux.tick()
         end
     end
 end
+
+return mod

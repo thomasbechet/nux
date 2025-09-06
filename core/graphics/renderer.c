@@ -137,14 +137,6 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
     nux_graphics_module_t *module = ctx->graphics;
     nux_gpu_encoder_t     *enc    = &module->encoder;
 
-    // Submit canvas commands
-    nux_rid_t canvas = NUX_NULL;
-    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
-    {
-        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
-        nux_canvas_render(ctx, c);
-    }
-
     // Propagate transforms
     nux_eid_t it = NUX_NULL;
     while ((it = nux_ecs_next(ctx, module->transform_iter, it)))
@@ -264,17 +256,6 @@ nux_renderer_render (nux_ctx_t *ctx, nux_ecs_t *ecs)
 
         // Submit immediate commands
         nux_gpu_encoder_submit(ctx, &module->immediate_encoder);
-    }
-
-    // Blit canvas layers
-    canvas = NUX_NULL;
-    while ((canvas = nux_resource_next(ctx, NUX_RESOURCE_CANVAS, canvas)))
-    {
-        nux_canvas_t *c = nux_resource_check(ctx, NUX_RESOURCE_CANVAS, canvas);
-        if (c->target && c->layer >= 0)
-        {
-            nux_texture_blit(ctx, c->target);
-        }
     }
 }
 void

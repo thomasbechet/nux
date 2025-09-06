@@ -631,6 +631,7 @@ register_metatable (lua_State *L)
     };
     luaL_newmetatable(L, "userdata");
     luaL_setfuncs(L, reg, 0);
+    lua_pop(L, 1); // pop metatable
     return 1;
 }
 

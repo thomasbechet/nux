@@ -39,7 +39,9 @@ hotreload_free (void)
 void
 nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
 {
-    const nux_c8_t *dir = dirname((char *)path);
+    nux_c8_t copypath[NUX_PATH_BUF_SIZE];
+    memcpy(copypath, path, NUX_PATH_BUF_SIZE);
+    const nux_c8_t *dir = dirname((char *)copypath);
     int             wd  = inotify_add_watch(
         hotreload.fd, dir, IN_MODIFY | IN_CREATE | IN_DELETE);
     if (hotreload.entries_count >= ARRAY_LEN(hotreload.entries))
@@ -85,21 +87,19 @@ nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
         struct inotify_event *event = (struct inotify_event *)&buf[i];
         if (event->len)
         {
-            if (event->mask & IN_MODIFY)
+            if (event->mask & IN_MODIFY && !(event->mask & IN_ISDIR))
             {
-                if (!(event->mask & IN_ISDIR))
+                for (nux_u32_t j = 0; j < hotreload.entries_count; ++j)
                 {
-                    for (nux_u32_t j = 0; j < hotreload.entries_count; ++j)
+                    if (hotreload.entries[j].wd == event->wd)
                     {
-                        if (hotreload.entries[j].wd == event->wd)
+                        nux_c8_t copy[NUX_PATH_BUF_SIZE];
+                        memcpy(copy, hotreload.entries[j].path, sizeof(copy));
+                        const nux_c8_t *bn = basename(copy);
+                        if (strcmp(bn, event->name) == 0)
                         {
-                            const nux_c8_t *bn
-                                = basename((char *)hotreload.entries[j].path);
-                            if (strcmp(bn, event->name) == 0)
-                            {
-                                handles[*count] = hotreload.entries[j].handle;
-                                ++(*count);
-                            }
+                            handles[*count] = hotreload.entries[j].handle;
+                            ++(*count);
                         }
                     }
                 }

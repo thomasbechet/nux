@@ -149,3 +149,43 @@ nux_path_endswith (const nux_c8_t *path, const nux_c8_t *end)
     }
     return NUX_TRUE;
 }
+nux_status_t
+nux_path_set_extension (nux_c8_t *path, const nux_c8_t *extension)
+{
+    if (nux_path_isdir(path))
+    {
+        return NUX_FAILURE;
+    }
+    nux_u32_t path_length      = nux_strnlen(path, NUX_PATH_MAX);
+    nux_u32_t extension_length = nux_strnlen(extension, NUX_PATH_MAX);
+    for (nux_u32_t n = path_length; n; --n)
+    {
+        if (path[n] == '.')
+        {
+            if (n + extension_length + 1 > NUX_PATH_MAX)
+            {
+                return NUX_FAILURE;
+            }
+            nux_memcpy(path + n + 1, extension, extension_length);
+            path[n + extension_length + 1] = '\0';
+            return NUX_SUCCESS;
+        }
+    }
+    if (path_length) // no extension, simply concatenate extension
+    {
+        if (path_length + extension_length + 1 > NUX_PATH_MAX)
+        {
+            return NUX_FAILURE;
+        }
+        path[path_length] = '.';
+        nux_memcpy(path + path_length + 1, extension, extension_length);
+        path[path_length + extension_length + 1] = '\0';
+        return NUX_SUCCESS;
+    }
+    return NUX_FAILURE;
+}
+void
+nux_path_copy (nux_c8_t *dst, const nux_c8_t *src)
+{
+    nux_memcpy(dst, src, NUX_PATH_BUF_SIZE);
+}

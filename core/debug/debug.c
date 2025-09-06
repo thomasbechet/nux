@@ -60,7 +60,7 @@ nux_debug_log_callback (nux_ctx_t      *ctx,
                         nux_u32_t       n)
 {
     nux_debug_module_t *module = ctx->debug;
-    if (module->lines) // ignore logs before module initialization
+    if (module && module->lines) // ignore logs before module initialization
     {
         nux_strncpy(module->lines + LOG_LINE_LEN * module->lines_cursor,
                     buf,

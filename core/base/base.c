@@ -14,6 +14,7 @@ nux_base_init (nux_ctx_t *ctx)
     type          = nux_resource_register(ctx, NUX_RESOURCE_NULL, "null");
     type          = nux_resource_register(ctx, NUX_RESOURCE_ARENA, "arena");
     type->cleanup = nux_arena_cleanup;
+    type          = nux_resource_register(ctx, NUX_RESOURCE_EVENT, "event");
 
     // Create resource pool
     NUX_CHECK(
