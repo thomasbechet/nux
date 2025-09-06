@@ -1,20 +1,16 @@
+local mod = MODULE
 local inspect = require("libs/inspect")
 local camera = require("camera")
-local mymod = require("mymod")
 local nux = nux
 
-local mod = MODULE
+function mod:load()
+    self.arena = nux.arena.core()
 
-function mod:init()
-    ARENA = nux.arena.core()
-    PITCH = 0
-    YAW = 0
+    local mesh_cube = nux.mesh.new_cube(self.arena, 1, 1, 1)
+    self.cube_mesh = mesh_cube
 
-    local mesh_cube = nux.mesh.new_cube(ARENA, 1, 1, 1)
-    MESH_CUBE = mesh_cube
-
-    ECS = nux.ecs.load_gltf(ARENA, "assets/industrial.glb")
-    nux.ecs.set_active(ECS)
+    self.ecs = nux.ecs.load_gltf(self.arena, "assets/industrial.glb")
+    nux.ecs.set_active(self.ecs)
 
     local template = {
         staticmesh = { mesh = mesh_cube }
@@ -52,44 +48,42 @@ function mod:init()
         }
         , nil)
         if i == 50 then
-            ROTATING = n
+            self.rotating = n
         end
     end
 
     -- Create canvas
-    GUI_CANVAS = nux.canvas.new(ARENA, nux.canvas.WIDTH, nux.canvas.HEIGHT, 4096)
-    nux.canvas.set_layer(GUI_CANVAS, 1)
+    self.gui_canvas = nux.canvas.new(self.arena, nux.canvas.WIDTH, nux.canvas.HEIGHT, 4096)
+    nux.canvas.set_layer(self.gui_canvas, 1)
 
     -- Create the API monolith
     local x, y = 350, 2000
-    MONOLITH_CANVAS = nux.canvas.new(ARENA, x, y, 1000)
-    CUBE = nux.ecs.create()
-    nux.transform.add(CUBE)
-    nux.transform.set_translation(CUBE, { 10, 0, 0 })
-    nux.transform.set_scale(CUBE, { x / 50, y / 50, 1 })
-    nux.staticmesh.add(CUBE)
-    nux.staticmesh.set_mesh(CUBE, mesh_cube)
-    nux.staticmesh.set_texture(CUBE, nux.canvas.get_texture(MONOLITH_CANVAS))
-    nux.collider.add_aabb(CUBE, nux.vmath.vec3(0), { x / 50, y / 50, 1 })
+    self.monolith_canvas = nux.canvas.new(self.arena, x, y, 1000)
+    self.cube = nux.ecs.create()
+    nux.transform.add(self.cube)
+    nux.transform.set_translation(self.cube, { 10, 0, 0 })
+    nux.transform.set_scale(self.cube, { x / 50, y / 50, 1 })
+    nux.staticmesh.add(self.cube)
+    nux.staticmesh.set_mesh(self.cube, mesh_cube)
+    nux.staticmesh.set_texture(self.cube, nux.canvas.get_texture(self.monolith_canvas))
+    nux.collider.add_aabb(self.cube, nux.vmath.vec3(0), { x / 50, y / 50, 1 })
 
-    API = inspect(nux)
+    self.api = inspect(nux)
 end
 
 function mod:tick()
     camera.update()
-    nux.transform.rotate_y(ROTATING, nux.time.delta() * math.sin(nux.time.elapsed()))
-    nux.transform.set_scale(ROTATING, nux.vmath.vec3(1, 5, 10))
+    nux.transform.rotate_y(self.rotating, nux.time.delta() * math.sin(nux.time.elapsed()))
+    nux.transform.set_scale(self.rotating, nux.vmath.vec3(1, 5, 10))
 
-    mymod.hello()
-
-    local canvas = MONOLITH_CANVAS
+    local canvas = self.monolith_canvas
     nux.canvas.set_clear_color(canvas, 0x99ccff)
     nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(canvas, 10, 20, API)
+    nux.canvas.text(canvas, 10, 20, self.api)
     nux.canvas.text(canvas, 150, 50, "hello Julia")
 
     local position = nux.transform.get_translation(camera.entity)
-    canvas = GUI_CANVAS
+    canvas = self.gui_canvas
     nux.canvas.text(canvas, 10, 10, nux.time.date())
     nux.canvas.text(canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
     nux.canvas.text(canvas, 10, 30, string.format("x:%.2f", position.x))
@@ -107,7 +101,7 @@ function mod:tick()
             nux.transform.add(e)
             nux.transform.set_translation(e, pos)
             nux.staticmesh.add(e)
-            nux.staticmesh.set_mesh(e, MESH_CUBE)
+            nux.staticmesh.set_mesh(e, self.cube_mesh)
         else
             local r = {
                 { 0x100001C, 0x1000069 },

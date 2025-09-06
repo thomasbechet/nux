@@ -7,6 +7,8 @@ local function init()
     camera.fast_speed = 20
     camera.fov = 90
     camera.fast_fov = 92
+    camera.pitch = 0
+    camera.yaw = 0
     local cam = nux.ecs.create()
     nux.camera.add(cam)
     nux.transform.add(cam)
@@ -28,8 +30,6 @@ function camera.update()
         fov = camera.fast_fov
     end
     nux.camera.set_fov(e, fov)
-
-    speed = 500
 
     local mx = nux.axis.value(0, nux.axis.LEFTX)
     local mz = nux.axis.value(0, nux.axis.LEFTY)
@@ -57,13 +57,13 @@ function camera.update()
 
     -- Rotation
     if rx ~= 0 then
-        YAW = YAW + rx * nux.time.delta() * 100
+        camera.yaw = camera.yaw + rx * nux.time.delta() * 100
     end
     if ry ~= 0 then
-        PITCH = PITCH - ry * nux.time.delta() * 100
+        camera.pitch = camera.pitch - ry * nux.time.delta() * 100
     end
-    PITCH = math.clamp(PITCH, -90, 90)
-    nux.transform.set_rotation_euler(e, nux.vmath.vec3(-math.rad(PITCH), -math.rad(YAW), 0))
+    camera.pitch = math.clamp(camera.pitch, -90, 90)
+    nux.transform.set_rotation_euler(e, nux.vmath.vec3(-math.rad(camera.pitch), -math.rad(camera.yaw), 0))
     nux.camera.set_far(e, 1000)
     nux.camera.set_near(e, 0.1)
 end

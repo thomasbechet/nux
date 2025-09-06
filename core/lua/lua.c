@@ -327,7 +327,7 @@ nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
     NUX_CHECK(lua, return NUX_NULL);
     nux_resource_set_path(ctx, rid, path);
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_NULL);
-    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_INIT), return NUX_NULL);
+    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_LOAD), return NUX_NULL);
     return rid;
 }
 void
@@ -400,7 +400,7 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
 
     if (nux_io_exists(ctx, NUX_CONF_FILE))
     {
-        // Load init script
+        // Execute configuration script
         if (luaL_dofile(module->L, NUX_CONF_FILE) != LUA_OK)
         {
             NUX_ERROR("%s", lua_tostring(module->L, -1));
@@ -410,6 +410,7 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
         // Call nux.conf
         lua_newtable(module->L);
         serialize_config(ctx, config);
+
         if (lua_get_function(module->L, NUX_FUNC_CONF))
         {
             lua_pushvalue(module->L, -2); // push config as argument

@@ -13,9 +13,9 @@
 
 #define NUX_TABLE       "nux"
 #define NUX_FUNC_CONF   "conf"
-#define NUX_FUNC_INIT   "init"
-#define NUX_FUNC_TICK   "tick"
+#define NUX_FUNC_LOAD   "load"
 #define NUX_FUNC_RELOAD "reload"
+#define NUX_FUNC_TICK   "tick"
 #define NUX_CONF_FILE   "conf.lua"
 #define NUX_INIT_FILE   "init.lua"
 
