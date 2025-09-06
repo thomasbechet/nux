@@ -327,6 +327,7 @@ nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
     NUX_CHECK(lua, return NUX_NULL);
     nux_resource_set_path(ctx, rid, path);
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_NULL);
+    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_INIT), return NUX_NULL);
     return rid;
 }
 void
@@ -340,7 +341,10 @@ nux_lua_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
 nux_status_t
 nux_lua_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
-    return load_lua_module(ctx, rid, path);
+    NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_FAILURE);
+    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_RELOAD),
+              return NUX_FAILURE);
+    return NUX_SUCCESS;
 }
 
 nux_status_t
@@ -417,8 +421,8 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
 
     return NUX_SUCCESS;
 }
-static nux_status_t
-call_module_function (nux_ctx_t *ctx, nux_rid_t module, const nux_c8_t *name)
+nux_status_t
+nux_lua_call_module (nux_ctx_t *ctx, nux_rid_t module, const nux_c8_t *name)
 {
     nux_status_t status = NUX_SUCCESS;
     lua_State   *L      = ctx->lua->L;
@@ -437,16 +441,6 @@ call_module_function (nux_ctx_t *ctx, nux_rid_t module, const nux_c8_t *name)
     }
     lua_pop(L, 1); // pop table
     return status;
-}
-nux_status_t
-nux_lua_call_init (nux_ctx_t *ctx, nux_rid_t module)
-{
-    return call_module_function(ctx, module, NUX_FUNC_INIT);
-}
-nux_status_t
-nux_lua_call_tick (nux_ctx_t *ctx, nux_rid_t module)
-{
-    return call_module_function(ctx, module, NUX_FUNC_TICK);
 }
 nux_status_t
 nux_lua_dostring (nux_ctx_t *ctx, const nux_c8_t *string)

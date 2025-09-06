@@ -11,12 +11,13 @@
 ///        MACROS        ///
 ////////////////////////////
 
-#define NUX_TABLE     "nux"
-#define NUX_FUNC_CONF "conf"
-#define NUX_FUNC_INIT "init"
-#define NUX_FUNC_TICK "tick"
-#define NUX_CONF_FILE "conf.lua"
-#define NUX_INIT_FILE "init.lua"
+#define NUX_TABLE       "nux"
+#define NUX_FUNC_CONF   "conf"
+#define NUX_FUNC_INIT   "init"
+#define NUX_FUNC_TICK   "tick"
+#define NUX_FUNC_RELOAD "reload"
+#define NUX_CONF_FILE   "conf.lua"
+#define NUX_INIT_FILE   "init.lua"
 
 ////////////////////////////
 ///        TYPES         ///
@@ -55,8 +56,9 @@ typedef struct nux_lua_module
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
 void         nux_lua_free(nux_ctx_t *ctx);
 nux_status_t nux_lua_configure(nux_ctx_t *ctx, nux_config_t *config);
-nux_status_t nux_lua_call_init(nux_ctx_t *ctx, nux_rid_t module);
-nux_status_t nux_lua_call_tick(nux_ctx_t *ctx, nux_rid_t module);
+nux_status_t nux_lua_call_module(nux_ctx_t      *ctx,
+                                 nux_rid_t       module,
+                                 const nux_c8_t *name);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
 nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
                             nux_rid_t       rid,

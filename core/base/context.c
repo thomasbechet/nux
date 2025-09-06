@@ -98,22 +98,15 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     ctx->config.debug.console                   = NUX_TRUE;
     NUX_CHECK(nux_lua_configure(ctx, &ctx->config), goto cleanup);
 
-    // Register entry script
-    nux_rid_t rid = nux_lua_load(ctx, ctx->core_arena_rid, entry_script);
-    NUX_CHECK(rid, goto cleanup);
-
     // Initialize optional modules
     NUX_CHECK(nux_ecs_init(ctx), goto cleanup);
     NUX_CHECK(nux_graphics_init(ctx), goto cleanup);
     NUX_CHECK(nux_physics_init(ctx), goto cleanup);
     NUX_CHECK(nux_debug_init(ctx), goto cleanup);
 
-    // Initialize program
-    rid = NUX_NULL;
-    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA, rid)))
-    {
-        NUX_CHECK(nux_lua_call_init(ctx, rid), goto cleanup);
-    }
+    // Register entry script
+    nux_rid_t rid = nux_lua_load(ctx, ctx->core_arena_rid, entry_script);
+    NUX_CHECK(rid, goto cleanup);
 
     return ctx;
 
@@ -163,7 +156,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_rid_t rid = NUX_NULL;
     while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA, rid)))
     {
-        nux_lua_call_tick(ctx, rid);
+        nux_lua_call_module(ctx, rid, NUX_FUNC_TICK);
     }
 
     // Update debug

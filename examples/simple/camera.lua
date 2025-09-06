@@ -19,7 +19,6 @@ function camera.update()
         camera.entity = init()
     end
 
-
     local speed = camera.speed
     local fov = camera.fov
     local e = camera.entity
@@ -29,6 +28,8 @@ function camera.update()
         fov = camera.fast_fov
     end
     nux.camera.set_fov(e, fov)
+
+    speed = 500
 
     local mx = nux.axis.value(0, nux.axis.LEFTX)
     local mz = nux.axis.value(0, nux.axis.LEFTY)

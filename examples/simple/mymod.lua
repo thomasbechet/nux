@@ -1,13 +1,15 @@
 local mod = MODULE
 
 function mod:init()
-    print("load mod")
     mod.state = 1
 end
 
 function mod.hello()
-    print(mod.state)
     mod.state = mod.state + 0
+end
+
+function mod:reload()
+    print("reload!")
 end
 
 return mod

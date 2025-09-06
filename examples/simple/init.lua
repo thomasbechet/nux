@@ -5,8 +5,6 @@ local nux = nux
 
 local mod = MODULE
 
-print(inspect)
-
 function mod:init()
     ARENA = nux.arena.core()
     PITCH = 0
