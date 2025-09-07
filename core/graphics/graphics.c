@@ -152,6 +152,7 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_m4_t identity = nux_m4_identity();
     NUX_ASSERT(nux_graphics_push_transforms(
         ctx, 1, &identity, &module->identity_transform_index));
+    NUX_ASSERT(module->identity_transform_index == 0);
 
     return NUX_SUCCESS;
 
@@ -194,6 +195,8 @@ nux_graphics_pre_update (nux_ctx_t *ctx)
     module->batches_buffer_head    = 0;
     module->vertices_buffer_head_frame
         = ctx->config.graphics.vertices_buffer_size;
+    module->transforms_buffer_head_frame
+        = ctx->config.graphics.transforms_buffer_size;
     module->active_texture = NUX_NULL;
 
     return NUX_SUCCESS;
@@ -246,6 +249,21 @@ update_vertex_buffer (nux_ctx_t       *ctx,
                "failed to update vertex buffer");
     return NUX_SUCCESS;
 }
+static nux_status_t
+update_transform_buffer (nux_ctx_t      *ctx,
+                         nux_u32_t       first,
+                         nux_u32_t       count,
+                         const nux_m4_t *data)
+{
+    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
+                                    ctx->graphics->transforms_buffer.slot,
+                                    first * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    count * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    data),
+               return NUX_FAILURE,
+               "failed to update transform buffer");
+    return NUX_SUCCESS;
+}
 nux_status_t
 nux_graphics_push_vertices (nux_ctx_t       *ctx,
                             nux_u32_t        vcount,
@@ -288,17 +306,12 @@ nux_graphics_push_transforms (nux_ctx_t      *ctx,
 {
     nux_graphics_module_t *module = ctx->graphics;
     NUX_ENSURE(module->transforms_buffer_head + mcount
-                   < module->vertices_buffer_head_frame,
+                   < module->transforms_buffer_head_frame,
                return NUX_FAILURE,
                "out of transforms");
     *index = module->transforms_buffer_head;
-    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
-                                    module->transforms_buffer.slot,
-                                    *index * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    data),
-               return NUX_FAILURE,
-               "failed to update transform buffer");
+    NUX_CHECK(update_transform_buffer(ctx, *index, mcount, data),
+              return NUX_FAILURE);
     module->transforms_buffer_head += mcount;
     return NUX_SUCCESS;
 }
@@ -314,13 +327,9 @@ nux_graphics_push_frame_transforms (nux_ctx_t      *ctx,
                return NUX_FAILURE,
                "out of frame transforms");
     *index = module->transforms_buffer_head_frame - mcount;
-    NUX_ENSURE(nux_os_buffer_update(ctx->userdata,
-                                    module->transforms_buffer.slot,
-                                    *index * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    mcount * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    data),
-               return NUX_FAILURE,
-               "failed to update transform buffer");
+    printf("%d\n", *index);
+    NUX_CHECK(update_transform_buffer(ctx, *index, mcount, data),
+              return NUX_FAILURE);
     module->transforms_buffer_head_frame -= mcount;
     return NUX_SUCCESS;
 }
