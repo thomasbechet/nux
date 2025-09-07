@@ -138,7 +138,7 @@ nux_instance_free (nux_ctx_t *ctx)
     nux_os_alloc(ctx->userdata, ctx, 0, 0);
 }
 void
-nux_instance_tick (nux_ctx_t *ctx)
+nux_instance_update (nux_ctx_t *ctx)
 {
     // Update stats
     nux_os_stats_update(ctx->userdata, ctx->stats);
@@ -156,7 +156,7 @@ nux_instance_tick (nux_ctx_t *ctx)
     nux_rid_t rid = NUX_NULL;
     while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA, rid)))
     {
-        nux_lua_call_module(ctx, rid, NUX_FUNC_TICK);
+        nux_lua_call_module(ctx, rid, NUX_FUNC_UPDATE);
     }
 
     // Update debug

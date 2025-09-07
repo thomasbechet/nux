@@ -235,6 +235,6 @@ NUX_API void         nux_os_hotreload_pull(void      *userdata,
 
 NUX_API nux_ctx_t *nux_instance_init(void *userdata, const nux_c8_t *entry);
 NUX_API void       nux_instance_free(nux_ctx_t *ctx);
-NUX_API void       nux_instance_tick(nux_ctx_t *ctx);
+NUX_API void       nux_instance_update(nux_ctx_t *ctx);
 
 #endif

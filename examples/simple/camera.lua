@@ -1,33 +1,29 @@
 local nux = nux
 local camera = MODULE
 
-local function init()
-    camera.entity = nil
+function camera:on_load()
     camera.speed = 10
     camera.fast_speed = 20
     camera.fov = 90
-    camera.fast_fov = 92
     camera.pitch = 0
     camera.yaw = 0
-    local cam = nux.ecs.create()
-    nux.camera.add(cam)
-    nux.transform.add(cam)
-    nux.transform.set_translation(cam, { 13, 15, 10 })
-    return cam
+    camera.entity = nux.ecs.create()
+    nux.camera.add(camera.entity)
+    nux.transform.add(camera.entity)
+    nux.transform.set_translation(camera.entity, { 13, 15, 10 })
 end
 
-function camera.update()
-    if not camera.entity then
-        camera.entity = init()
-    end
+function camera:on_event(e)
 
+end
+
+function camera:on_update()
     local speed = camera.speed
     local fov = camera.fov
     local e = camera.entity
 
     if nux.button.pressed(0, nux.button.LB) then
         speed = camera.fast_speed
-        fov = camera.fast_fov
     end
     nux.camera.set_fov(e, fov)
 

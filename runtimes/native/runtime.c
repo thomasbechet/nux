@@ -136,8 +136,8 @@ runtime_run (const config_t *config)
             renderer_begin(nk_rect(0, 0, window_size.x, window_size.y),
                            window_size);
 
-            // Tick
-            nux_instance_tick(runtime.ctx);
+            // Update
+            nux_instance_update(runtime.ctx);
 
             // End renderer
             renderer_end();

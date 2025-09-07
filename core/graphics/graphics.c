@@ -327,7 +327,6 @@ nux_graphics_push_frame_transforms (nux_ctx_t      *ctx,
                return NUX_FAILURE,
                "out of frame transforms");
     *index = module->transforms_buffer_head_frame - mcount;
-    printf("%d\n", *index);
     NUX_CHECK(update_transform_buffer(ctx, *index, mcount, data),
               return NUX_FAILURE);
     module->transforms_buffer_head_frame -= mcount;

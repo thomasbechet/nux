@@ -1,9 +1,9 @@
 local mod = MODULE
 local inspect = require("libs/inspect")
-local camera = require("camera")
+local camera
 local nux = nux
 
-function mod:load()
+function mod:on_load()
     self.arena = nux.arena.core()
 
     local mesh_cube = nux.mesh.new_cube(self.arena, 1, 1, 1)
@@ -11,6 +11,7 @@ function mod:load()
 
     self.ecs = nux.ecs.load_gltf(self.arena, "assets/industrial.glb")
     nux.ecs.set_active(self.ecs)
+    camera = require("camera")
 
     local template = {
         staticmesh = { mesh = mesh_cube }
@@ -71,8 +72,7 @@ function mod:load()
     self.api = inspect(nux)
 end
 
-function mod:tick()
-    camera.update()
+function mod:on_update()
     nux.transform.rotate_y(self.rotating, nux.time.delta() * math.sin(nux.time.elapsed()))
     nux.transform.set_scale(self.rotating, nux.vmath.vec3(1, 5, 10))
 
