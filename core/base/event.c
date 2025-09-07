@@ -10,24 +10,41 @@ nux_event_new (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name)
 
     return rid;
 }
-nux_rid_t
-nux_event_on_tick (nux_ctx_t *ctx)
-{
-}
-
 void
 nux_event_subscribe (nux_ctx_t           *ctx,
                      nux_rid_t            event,
                      nux_event_callback_t callback)
 {
+    nux_event_t *e = nux_resource_check(ctx, NUX_RESOURCE_EVENT, event);
+    NUX_CHECK(e, return);
+    nux_event_subscriber_t sub;
+    sub.callback = callback;
+    sub.next     = e->first_subscriber;
 }
 void
 nux_event_unsubscribe (nux_ctx_t           *ctx,
                        nux_rid_t            event,
                        nux_event_callback_t callback)
 {
+    nux_event_t *e = nux_resource_check(ctx, NUX_RESOURCE_EVENT, event);
+    NUX_CHECK(e, return);
 }
 void
-nux_event_send (nux_ctx_t *ctx, nux_rid_t event, nux_event_data_t data)
+nux_event_post (nux_ctx_t *ctx, nux_rid_t event, nux_event_data_t data)
 {
+    nux_event_t *e = nux_resource_check(ctx, NUX_RESOURCE_EVENT, event);
+    NUX_CHECK(e, return);
+}
+
+void
+nux_event_process (nux_ctx_t *ctx, nux_rid_t event)
+{
+    nux_event_t *e = nux_resource_check(ctx, NUX_RESOURCE_EVENT, event);
+    NUX_CHECK(e, return);
+    nux_event_subscriber_t *sub = e->first_subscriber;
+    while (sub)
+    {
+        // sub->callback(ctx, event, &data);
+        sub = sub->next;
+    }
 }

@@ -119,6 +119,5 @@ nux_rid_t nux_arena_core(nux_ctx_t *ctx);
 nux_rid_t nux_arena_frame(nux_ctx_t *ctx);
 
 nux_rid_t nux_event_new(nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name);
-nux_rid_t nux_event_on_tick(nux_ctx_t *ctx);
 
 #endif

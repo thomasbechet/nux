@@ -558,15 +558,16 @@ typedef struct
 
 typedef struct
 {
-
 } nux_event_data_t;
 
 typedef void (*nux_event_callback_t)(nux_ctx_t              *ctx,
-                                     const nux_event_data_t *event);
+                                     nux_rid_t               event,
+                                     const nux_event_data_t *data);
 
-typedef struct
+typedef struct nux_event_subscriber
 {
-    nux_event_callback_t callback;
+    struct nux_event_subscriber *next;
+    nux_event_callback_t         callback;
 } nux_event_subscriber_t;
 
 typedef struct
@@ -798,6 +799,6 @@ void nux_event_subscribe(nux_ctx_t           *ctx,
 void nux_event_unsubscribe(nux_ctx_t           *ctx,
                            nux_rid_t            event,
                            nux_event_callback_t callback);
-void nux_event_send(nux_ctx_t *ctx, nux_rid_t event, nux_event_data_t data);
+void nux_event_post(nux_ctx_t *ctx, nux_rid_t event, nux_event_data_t data);
 
 #endif

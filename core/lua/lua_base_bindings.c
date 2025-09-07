@@ -149,22 +149,6 @@ l_event_new (lua_State *L)
     }
     return 1;
 }
-static int
-l_event_on_tick (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_rid_t  ret = nux_event_on_tick(ctx);
-    l_checkerror(L, ctx);
-    if (ret)
-    {
-        lua_pushinteger(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
 
 static const struct luaL_Reg lib_core[] = { { "stat", l_core_stat },
                                             { "random", l_core_random },
@@ -182,9 +166,8 @@ static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
                                              { "frame", l_arena_frame },
                                              { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_event[] = { { "new", l_event_new },
-                                             { "on_tick", l_event_on_tick },
-                                             { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_event[]
+    = { { "new", l_event_new }, { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
 
