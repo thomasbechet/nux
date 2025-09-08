@@ -184,12 +184,12 @@ nux_ecs_new_iter (nux_ctx_t *ctx,
     NUX_CHECK(a, return NUX_NULL);
     if (include_count)
     {
-        NUX_CHECK(nux_u32_vec_alloc(ctx, a, include_count, &it->includes),
+        NUX_CHECK(nux_u32_vec_alloc(a, include_count, &it->includes),
                   return NUX_NULL);
     }
     if (exclude_count)
     {
-        NUX_CHECK(nux_u32_vec_alloc(ctx, a, exclude_count, &it->excludes),
+        NUX_CHECK(nux_u32_vec_alloc(a, exclude_count, &it->excludes),
                   return NUX_NULL);
     }
     return rid;
@@ -282,11 +282,11 @@ nux_ecs_new (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa)
     ins->arena = a;
     ins->self  = res;
     NUX_CHECK(nux_ecs_container_vec_alloc(
-                  ctx, a, module->components_max, &ins->containers),
+                  a, module->components_max, &ins->containers),
               return NUX_NULL);
-    NUX_CHECK(nux_ecs_bitset_alloc(
-                  ctx, a, (capa / ECS_ENTITY_PER_MASK) + 1, &ins->bitset),
-              return NUX_NULL);
+    NUX_CHECK(
+        nux_ecs_bitset_alloc(a, (capa / ECS_ENTITY_PER_MASK) + 1, &ins->bitset),
+        return NUX_NULL);
     return res;
 }
 nux_rid_t
@@ -409,14 +409,12 @@ nux_ecs_add (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
         {
             nux_ecs_container_t *container = ins->containers.data + i;
             container->component_size      = module->components[i].size;
-            NUX_CHECK(
-                nux_ecs_chunk_vec_alloc(
-                    ctx, ins->arena, ins->bitset.capa, &container->chunks),
-                return NUX_NULL);
-            NUX_CHECK(
-                nux_ecs_bitset_alloc(
-                    ctx, ins->arena, ins->bitset.capa, &container->bitset),
-                return NUX_NULL);
+            NUX_CHECK(nux_ecs_chunk_vec_alloc(
+                          ins->arena, ins->bitset.capa, &container->chunks),
+                      return NUX_NULL);
+            NUX_CHECK(nux_ecs_bitset_alloc(
+                          ins->arena, ins->bitset.capa, &container->bitset),
+                      return NUX_NULL);
             for (nux_u32_t i = 0; i < ins->bitset.capa; ++i)
             {
                 container->chunks.data[i] = NUX_NULL;
@@ -439,9 +437,7 @@ nux_ecs_add (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
         {
             // allocate new chunk
             container->chunks.data[mask] = nux_arena_alloc_raw(
-                ctx,
-                ins->arena,
-                container->component_size * ECS_ENTITY_PER_MASK);
+                ins->arena, container->component_size * ECS_ENTITY_PER_MASK);
             // expect zero memory by default
             nux_memset(container->chunks.data[mask],
                        0,

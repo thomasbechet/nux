@@ -31,19 +31,18 @@ nux_graphics_init (nux_ctx_t *ctx)
         ctx, NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
 
     // Initialize gpu slots
+    NUX_CHECK(nux_u32_vec_alloc(
+                  a, NUX_GPU_FRAMEBUFFER_MAX, &module->free_framebuffer_slots),
+              goto error);
+    NUX_CHECK(nux_u32_vec_alloc(
+                  a, NUX_GPU_PIPELINE_MAX, &module->free_pipeline_slots),
+              goto error);
     NUX_CHECK(
-        nux_u32_vec_alloc(
-            ctx, a, NUX_GPU_FRAMEBUFFER_MAX, &module->free_framebuffer_slots),
+        nux_u32_vec_alloc(a, NUX_GPU_TEXTURE_MAX, &module->free_texture_slots),
         goto error);
-    NUX_CHECK(nux_u32_vec_alloc(
-                  ctx, a, NUX_GPU_PIPELINE_MAX, &module->free_pipeline_slots),
-              goto error);
-    NUX_CHECK(nux_u32_vec_alloc(
-                  ctx, a, NUX_GPU_TEXTURE_MAX, &module->free_texture_slots),
-              goto error);
-    NUX_CHECK(nux_u32_vec_alloc(
-                  ctx, a, NUX_GPU_BUFFER_MAX, &module->free_buffer_slots),
-              goto error);
+    NUX_CHECK(
+        nux_u32_vec_alloc(a, NUX_GPU_BUFFER_MAX, &module->free_buffer_slots),
+        goto error);
 
     nux_u32_vec_fill_reversed(&module->free_framebuffer_slots);
     nux_u32_vec_fill_reversed(&module->free_pipeline_slots);
@@ -95,10 +94,9 @@ nux_graphics_init (nux_ctx_t *ctx)
 
     // Allocate gpu commands buffer
     NUX_CHECK(nux_gpu_encoder_init(
-                  ctx, a, ctx->config.graphics.encoder_size, &module->encoder),
+                  a, ctx->config.graphics.encoder_size, &module->encoder),
               return NUX_NULL);
-    NUX_CHECK(nux_gpu_encoder_init(ctx,
-                                   a,
+    NUX_CHECK(nux_gpu_encoder_init(a,
                                    ctx->config.graphics.immediate_encoder_size,
                                    &module->immediate_encoder),
               return NUX_NULL);

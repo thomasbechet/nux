@@ -41,10 +41,9 @@ nux_io_init (nux_ctx_t *ctx)
 
     nux_io_module_t *module = ctx->io;
 
-    NUX_CHECK(
-        nux_u32_vec_alloc(
-            ctx, &ctx->core_arena, NUX_IO_FILE_MAX, &module->free_file_slots),
-        goto error);
+    NUX_CHECK(nux_u32_vec_alloc(
+                  &ctx->core_arena, NUX_IO_FILE_MAX, &module->free_file_slots),
+              goto error);
 
     // Register types
     nux_resource_type_t *type;
@@ -121,7 +120,7 @@ cart_read_entries (nux_ctx_t *ctx, nux_cart_t *cart)
     status &= cart_read_u32(ctx, cart->slot, &cart->entries_count);
     NUX_CHECK(status, return NUX_FAILURE);
     cart->entries = nux_arena_alloc_raw(
-        ctx, &ctx->core_arena, sizeof(*cart->entries) * cart->entries_count);
+        &ctx->core_arena, sizeof(*cart->entries) * cart->entries_count);
     NUX_CHECK(cart->entries, return NUX_FAILURE);
     for (nux_u32_t i = 0; i < cart->entries_count; ++i)
     {

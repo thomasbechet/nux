@@ -7,7 +7,7 @@ nux_base_init (nux_ctx_t *ctx)
     nux_error_reset(ctx);
 
     // Create core arena
-    nux_arena_init(&ctx->core_arena, "core_arena");
+    nux_arena_init(ctx, &ctx->core_arena, "core_arena");
 
     // Register base types
     nux_resource_type_t *type;
@@ -17,9 +17,8 @@ nux_base_init (nux_ctx_t *ctx)
     type          = nux_resource_register(ctx, NUX_RESOURCE_EVENT, "event");
 
     // Create resource pool
-    NUX_CHECK(
-        nux_resource_pool_alloc(ctx, &ctx->core_arena, 1024, &ctx->resources),
-        return NUX_FAILURE);
+    NUX_CHECK(nux_resource_pool_alloc(&ctx->core_arena, 1024, &ctx->resources),
+              return NUX_FAILURE);
     // Reserve index 0 for null id
     NUX_ASSERT(nux_resource_pool_add(&ctx->resources));
 

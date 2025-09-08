@@ -134,7 +134,7 @@ nux_instance_free (nux_ctx_t *ctx)
     nux_base_free(ctx);
 
     // Free core memory
-    nux_arena_free(ctx, &ctx->core_arena);
+    nux_arena_free(&ctx->core_arena);
     nux_os_alloc(ctx->userdata, ctx, 0, 0);
 }
 void

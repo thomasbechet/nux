@@ -159,13 +159,13 @@ nux_physics_init (nux_ctx_t *ctx)
 
     // Initialize values
     NUX_CHECK(nux_point_mass_vec_alloc(
-                  ctx, &ctx->core_arena, count, &module->point_masses),
+                  &ctx->core_arena, count, &module->point_masses),
               return NUX_FAILURE);
     NUX_CHECK(nux_collision_constraint_vec_alloc(
-                  ctx, &ctx->core_arena, count, &module->collision_constraints),
+                  &ctx->core_arena, count, &module->collision_constraints),
               return NUX_FAILURE);
     NUX_CHECK(nux_distance_constraint_vec_alloc(
-                  ctx, &ctx->core_arena, count, &module->distance_constraints),
+                  &ctx->core_arena, count, &module->distance_constraints),
               return NUX_FAILURE);
 
     nux_lua_open_physics(ctx);

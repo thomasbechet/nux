@@ -124,7 +124,7 @@ nux_canvas_new (nux_ctx_t *ctx,
     NUX_CHECK(nux_gpu_buffer_init(ctx, &c->batches_buffer), return NUX_FAILURE);
 
     // Allocate commands
-    NUX_CHECK(nux_gpu_encoder_init(ctx, &ctx->core_arena, capa, &c->encoder),
+    NUX_CHECK(nux_gpu_encoder_init(&ctx->core_arena, capa, &c->encoder),
               return NUX_FAILURE);
 
     // Initialize base active batch
@@ -280,7 +280,7 @@ nux_canvas_render (nux_ctx_t *ctx, nux_canvas_t *c)
     nux_gpu_encoder_t enc;
     nux_arena_t      *a
         = nux_resource_check(ctx, NUX_RESOURCE_ARENA, nux_arena_frame(ctx));
-    nux_gpu_encoder_init(ctx, a, 6, &enc);
+    nux_gpu_encoder_init(a, 6, &enc);
     nux_gpu_bind_framebuffer(ctx, &enc, framebuffer);
     nux_gpu_bind_pipeline(ctx, &enc, module->canvas_pipeline.slot);
     nux_gpu_bind_buffer(

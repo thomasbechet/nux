@@ -86,7 +86,7 @@ nux_texture_blit (nux_ctx_t *ctx, nux_rid_t rid)
     nux_gpu_encoder_t enc;
     nux_arena_t      *arena
         = nux_resource_check(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena);
-    nux_gpu_encoder_init(ctx, arena, 6, &enc);
+    nux_gpu_encoder_init(arena, 6, &enc);
     nux_gpu_bind_framebuffer(ctx, &enc, 0);
     nux_gpu_bind_pipeline(ctx, &enc, module->blit_pipeline.slot);
     nux_gpu_bind_texture(ctx, &enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);

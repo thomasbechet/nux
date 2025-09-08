@@ -39,7 +39,7 @@ nux_resource_new (nux_ctx_t *ctx,
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
     nux_resource_finalizer_t *finalizer
-        = nux_arena_alloc_raw(ctx, a, sizeof(nux_resource_finalizer_t) + size);
+        = nux_arena_alloc_raw(a, sizeof(nux_resource_finalizer_t) + size);
     NUX_CHECK(finalizer, return NUX_NULL);
     finalizer->prev = a->last_finalizer;
     finalizer->next = NUX_NULL;
