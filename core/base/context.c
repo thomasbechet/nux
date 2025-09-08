@@ -92,8 +92,6 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     ctx->config.graphics.transforms_buffer_size = 8192;
     ctx->config.graphics.batches_buffer_size    = 8192;
     ctx->config.graphics.vertices_buffer_size   = 1 << 18;
-    ctx->config.graphics.encoder_size           = 8192;
-    ctx->config.graphics.immediate_encoder_size = 8192;
     ctx->config.debug.enable                    = NUX_TRUE;
     ctx->config.debug.console                   = NUX_TRUE;
     NUX_CHECK(nux_lua_configure(ctx, &ctx->config), goto cleanup);

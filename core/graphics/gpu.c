@@ -79,13 +79,9 @@ push_cmd (nux_ctx_t *ctx, nux_gpu_encoder_t *enc)
     return cmd;
 }
 nux_status_t
-nux_gpu_encoder_init (nux_arena_t       *arena,
-                      nux_u32_t          capa,
-                      nux_gpu_encoder_t *enc)
+nux_gpu_encoder_init (nux_arena_t *arena, nux_gpu_encoder_t *enc)
 {
-    NUX_CHECK(nux_gpu_command_vec_alloc(arena, capa, &enc->cmds),
-              return NUX_FAILURE);
-    return NUX_SUCCESS;
+    return nux_gpu_command_vec_init(arena, &enc->cmds);
 }
 void
 nux_gpu_encoder_submit (nux_ctx_t *ctx, nux_gpu_encoder_t *enc)

@@ -228,9 +228,6 @@ serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
         &s, "transforms_buffer_size", &config->graphics.transforms_buffer_size);
     serde_field_u32(
         &s, "vertices_buffer_size", &config->graphics.vertices_buffer_size);
-    serde_field_u32(&s, "encoder_size", &config->graphics.encoder_size);
-    serde_field_u32(
-        &s, "immediate_encoder_size", &config->graphics.immediate_encoder_size);
     serde_end_table(&s);
 
     // debug
@@ -350,7 +347,7 @@ nux_lua_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 nux_status_t
 nux_lua_init (nux_ctx_t *ctx)
 {
-    ctx->lua = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->lua));
+    ctx->lua = nux_arena_push(&ctx->core_arena, sizeof(*ctx->lua));
     NUX_CHECK(ctx->lua, return NUX_FAILURE);
 
     nux_lua_module_t *module = ctx->lua;

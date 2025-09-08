@@ -39,7 +39,7 @@ nux_resource_new (nux_ctx_t *ctx,
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
     nux_resource_finalizer_t *finalizer
-        = nux_arena_alloc_raw(a, sizeof(nux_resource_finalizer_t) + size);
+        = nux_arena_push(a, sizeof(nux_resource_finalizer_t) + size);
     NUX_CHECK(finalizer, return NUX_NULL);
     finalizer->prev = a->last_finalizer;
     finalizer->next = NUX_NULL;
@@ -102,7 +102,10 @@ nux_resource_set_path (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     nux_resource_entry_t *entry = ctx->resources.data + index;
     nux_resource_type_t  *type  = ctx->resources_types + entry->type;
     NUX_ASSERT(type->reload);
-    entry->path = nux_arena_alloc_path(ctx, entry->arena, path);
+    nux_arena_t *arena
+        = nux_resource_check(ctx, NUX_RESOURCE_ARENA, entry->arena);
+    NUX_ASSERT(arena);
+    entry->path = nux_arena_alloc_path(arena, path);
     NUX_CHECK(entry->path, return);
     if (ctx->config.hotreload)
     {

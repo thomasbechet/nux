@@ -12,6 +12,8 @@ nux_texture_new (nux_ctx_t         *ctx,
     nux_texture_t *tex = nux_resource_new(
         ctx, arena, NUX_RESOURCE_TEXTURE, sizeof(*tex), &rid);
     NUX_CHECK(tex, return NUX_NULL);
+    nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
+    NUX_CHECK(a, return NUX_NULL;)
     tex->gpu.type   = type;
     tex->gpu.width  = w;
     tex->gpu.height = h;
@@ -35,7 +37,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     }
     if (pixel_size)
     {
-        tex->data = nux_arena_alloc(ctx, arena, pixel_size * w * h);
+        tex->data = nux_arena_push(a, pixel_size * w * h);
         NUX_CHECK(tex->data, return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
@@ -86,7 +88,7 @@ nux_texture_blit (nux_ctx_t *ctx, nux_rid_t rid)
     nux_gpu_encoder_t enc;
     nux_arena_t      *arena
         = nux_resource_check(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena);
-    nux_gpu_encoder_init(arena, 6, &enc);
+    nux_gpu_encoder_init(arena, &enc);
     nux_gpu_bind_framebuffer(ctx, &enc, 0);
     nux_gpu_bind_pipeline(ctx, &enc, module->blit_pipeline.slot);
     nux_gpu_bind_texture(ctx, &enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);

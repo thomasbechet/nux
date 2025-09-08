@@ -9,7 +9,7 @@ nux_status_t
 nux_debug_init (nux_ctx_t *ctx)
 {
     // Create module
-    ctx->debug = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->debug));
+    ctx->debug = nux_arena_push(&ctx->core_arena, sizeof(*ctx->debug));
     NUX_CHECK(ctx->debug, return NUX_FAILURE);
     nux_debug_module_t *module = ctx->debug;
 
@@ -18,14 +18,14 @@ nux_debug_init (nux_ctx_t *ctx)
     {
         // Create canvas
         module->console_canvas = nux_canvas_new(
-            ctx, ctx->core_arena_rid, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT, 256);
+            ctx, ctx->core_arena_rid, NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
         NUX_CHECK(module->console_canvas, return NUX_FAILURE);
         nux_canvas_set_layer(ctx, module->console_canvas, 9999);
     }
 
     // Create log buffer
-    module->lines = nux_arena_alloc(
-        ctx, ctx->core_arena_rid, LOG_LINE_LEN * LOG_LINE_COUNT);
+    module->lines
+        = nux_arena_push(&ctx->core_arena, LOG_LINE_LEN * LOG_LINE_COUNT);
     NUX_CHECK(module->lines, return NUX_FAILURE);
     module->lines_count  = 0;
     module->lines_cursor = 0;

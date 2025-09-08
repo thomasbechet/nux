@@ -7,8 +7,7 @@ NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
 nux_status_t
 nux_graphics_init (nux_ctx_t *ctx)
 {
-    ctx->graphics
-        = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->graphics));
+    ctx->graphics = nux_arena_push(&ctx->core_arena, sizeof(*ctx->graphics));
     NUX_CHECK(ctx->graphics, return NUX_FAILURE);
 
     nux_graphics_module_t *module = ctx->graphics;
@@ -31,18 +30,18 @@ nux_graphics_init (nux_ctx_t *ctx)
         ctx, NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
 
     // Initialize gpu slots
-    NUX_CHECK(nux_u32_vec_alloc(
+    NUX_CHECK(nux_u32_vec_init_capa(
                   a, NUX_GPU_FRAMEBUFFER_MAX, &module->free_framebuffer_slots),
               goto error);
-    NUX_CHECK(nux_u32_vec_alloc(
+    NUX_CHECK(nux_u32_vec_init_capa(
                   a, NUX_GPU_PIPELINE_MAX, &module->free_pipeline_slots),
               goto error);
-    NUX_CHECK(
-        nux_u32_vec_alloc(a, NUX_GPU_TEXTURE_MAX, &module->free_texture_slots),
-        goto error);
-    NUX_CHECK(
-        nux_u32_vec_alloc(a, NUX_GPU_BUFFER_MAX, &module->free_buffer_slots),
-        goto error);
+    NUX_CHECK(nux_u32_vec_init_capa(
+                  a, NUX_GPU_TEXTURE_MAX, &module->free_texture_slots),
+              goto error);
+    NUX_CHECK(nux_u32_vec_init_capa(
+                  a, NUX_GPU_BUFFER_MAX, &module->free_buffer_slots),
+              goto error);
 
     nux_u32_vec_fill_reversed(&module->free_framebuffer_slots);
     nux_u32_vec_fill_reversed(&module->free_pipeline_slots);
@@ -93,12 +92,8 @@ nux_graphics_init (nux_ctx_t *ctx)
     nux_lua_open_graphics(ctx);
 
     // Allocate gpu commands buffer
-    NUX_CHECK(nux_gpu_encoder_init(
-                  a, ctx->config.graphics.encoder_size, &module->encoder),
-              return NUX_NULL);
-    NUX_CHECK(nux_gpu_encoder_init(a,
-                                   ctx->config.graphics.immediate_encoder_size,
-                                   &module->immediate_encoder),
+    NUX_CHECK(nux_gpu_encoder_init(a, &module->encoder), return NUX_NULL);
+    NUX_CHECK(nux_gpu_encoder_init(a, &module->immediate_encoder),
               return NUX_NULL);
 
     // Allocate constants buffer

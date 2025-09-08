@@ -97,8 +97,7 @@ nux_v3_t nux_mesh_bounds_max(nux_ctx_t *ctx, nux_rid_t mesh);
 nux_rid_t nux_canvas_new(nux_ctx_t *ctx,
                          nux_rid_t  arena,
                          nux_u32_t  width,
-                         nux_u32_t  height,
-                         nux_u32_t  capa);
+                         nux_u32_t  height);
 nux_rid_t nux_canvas_get_texture(nux_ctx_t *ctx, nux_rid_t rid);
 void      nux_canvas_set_layer(nux_ctx_t *ctx, nux_rid_t rid, nux_i32_t layer);
 void nux_canvas_set_clear_color(nux_ctx_t *ctx, nux_rid_t rid, nux_u32_t color);

@@ -129,9 +129,7 @@ l_canvas_new (lua_State *L)
 
     nux_u32_t height = luaL_checknumber(L, 3);
 
-    nux_u32_t capa = luaL_checknumber(L, 4);
-
-    nux_rid_t ret = nux_canvas_new(ctx, arena, width, height, capa);
+    nux_rid_t ret = nux_canvas_new(ctx, arena, width, height);
     l_checkerror(L, ctx);
     if (ret)
     {

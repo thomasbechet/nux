@@ -143,13 +143,10 @@ compute_transforms (nux_ctx_t *ctx)
 nux_status_t
 nux_physics_init (nux_ctx_t *ctx)
 {
-    ctx->physics
-        = nux_arena_alloc(ctx, ctx->core_arena_rid, sizeof(*ctx->physics));
+    ctx->physics = nux_arena_push(&ctx->core_arena, sizeof(*ctx->physics));
     NUX_CHECK(ctx->physics, return NUX_FAILURE);
 
     nux_physics_module_t *module = ctx->physics;
-
-    const nux_u32_t count = 1024 * 10;
 
     // Register components
     nux_ecs_register_component(
@@ -158,14 +155,13 @@ nux_physics_init (nux_ctx_t *ctx)
         ctx, NUX_COMPONENT_COLLIDER, "collider", sizeof(nux_collider_t));
 
     // Initialize values
-    NUX_CHECK(nux_point_mass_vec_alloc(
-                  &ctx->core_arena, count, &module->point_masses),
+    NUX_CHECK(nux_point_mass_vec_init(&ctx->core_arena, &module->point_masses),
               return NUX_FAILURE);
-    NUX_CHECK(nux_collision_constraint_vec_alloc(
-                  &ctx->core_arena, count, &module->collision_constraints),
+    NUX_CHECK(nux_collision_constraint_vec_init(&ctx->core_arena,
+                                                &module->collision_constraints),
               return NUX_FAILURE);
-    NUX_CHECK(nux_distance_constraint_vec_alloc(
-                  &ctx->core_arena, count, &module->distance_constraints),
+    NUX_CHECK(nux_distance_constraint_vec_init(&ctx->core_arena,
+                                               &module->distance_constraints),
               return NUX_FAILURE);
 
     nux_lua_open_physics(ctx);
