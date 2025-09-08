@@ -726,8 +726,8 @@ void *nux_arena_alloc(nux_arena_t *arena,
                       void        *optr,
                       nux_u32_t    osize,
                       nux_u32_t    nsize);
-nux_c8_t *nux_arena_alloc_path(nux_arena_t *arena, const nux_c8_t *path);
-void     *nux_arena_push(nux_arena_t *arena, nux_u32_t size);
+void *nux_arena_push(nux_arena_t *arena, nux_u32_t size);
+nux_c8_t *nux_arena_push_string(nux_arena_t *arena, const nux_c8_t *s);
 void      nux_arena_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
 
 // random.c

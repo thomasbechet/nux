@@ -105,7 +105,7 @@ nux_resource_set_path (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     nux_arena_t *arena
         = nux_resource_check(ctx, NUX_RESOURCE_ARENA, entry->arena);
     NUX_ASSERT(arena);
-    entry->path = nux_arena_alloc_path(arena, path);
+    entry->path = nux_arena_push_string(arena, path);
     NUX_CHECK(entry->path, return);
     if (ctx->config.hotreload)
     {

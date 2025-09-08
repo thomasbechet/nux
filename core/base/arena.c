@@ -109,27 +109,27 @@ nux_arena_alloc (nux_arena_t *arena,
         return p;
     }
 }
-nux_c8_t *
-nux_arena_alloc_path (nux_arena_t *arena, const nux_c8_t *path)
+void *
+nux_arena_push (nux_arena_t *arena, nux_u32_t size)
 {
-    if (!path)
+    return nux_arena_alloc(arena, NUX_NULL, 0, size);
+}
+nux_c8_t *
+nux_arena_push_string (nux_arena_t *arena, const nux_c8_t *s)
+{
+    if (!s)
     {
         return NUX_NULL;
     }
-    nux_u32_t len = nux_strnlen(path, NUX_PATH_MAX);
+    nux_u32_t len = nux_strnlen(s, NUX_PATH_MAX);
     if (!len)
     {
         return NUX_NULL;
     }
     nux_c8_t *p = nux_arena_alloc(arena, NUX_NULL, 0, len + 1);
     NUX_CHECK(p, return NUX_NULL);
-    nux_memcpy(p, path, len + 1); // include '\0'
+    nux_memcpy(p, s, len + 1); // include '\0'
     return p;
-}
-void *
-nux_arena_push (nux_arena_t *arena, nux_u32_t size)
-{
-    return nux_arena_alloc(arena, NUX_NULL, 0, size);
 }
 void
 nux_arena_cleanup (nux_ctx_t *ctx, nux_rid_t res)

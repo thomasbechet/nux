@@ -3,6 +3,10 @@ local inspect = require("libs/inspect")
 local camera
 local nux = nux
 
+function mod:on_event(e)
+
+end
+
 function mod:on_load()
     self.arena = nux.arena.core()
 
@@ -54,12 +58,12 @@ function mod:on_load()
     end
 
     -- Create canvas
-    self.gui_canvas = nux.canvas.new(self.arena, nux.canvas.WIDTH, nux.canvas.HEIGHT, 4096)
+    self.gui_canvas = nux.canvas.new(self.arena, nux.canvas.WIDTH, nux.canvas.HEIGHT)
     nux.canvas.set_layer(self.gui_canvas, 1)
 
     -- Create the API monolith
     local x, y = 350, 2000
-    self.monolith_canvas = nux.canvas.new(self.arena, x, y, 1000)
+    self.monolith_canvas = nux.canvas.new(self.arena, x, y)
     self.cube = nux.ecs.create()
     nux.transform.add(self.cube)
     nux.transform.set_translation(self.cube, { 10, 0, 0 })
