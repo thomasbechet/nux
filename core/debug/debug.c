@@ -9,7 +9,7 @@ nux_status_t
 nux_debug_init (nux_ctx_t *ctx)
 {
     // Create module
-    ctx->debug = nux_arena_push(&ctx->core_arena, sizeof(*ctx->debug));
+    ctx->debug = nux_arena_alloc(&ctx->core_arena, sizeof(*ctx->debug));
     NUX_CHECK(ctx->debug, return NUX_FAILURE);
     nux_debug_module_t *module = ctx->debug;
 
@@ -25,7 +25,7 @@ nux_debug_init (nux_ctx_t *ctx)
 
     // Create log buffer
     module->lines
-        = nux_arena_push(&ctx->core_arena, LOG_LINE_LEN * LOG_LINE_COUNT);
+        = nux_arena_alloc(&ctx->core_arena, LOG_LINE_LEN * LOG_LINE_COUNT);
     NUX_CHECK(module->lines, return NUX_FAILURE);
     module->lines_count  = 0;
     module->lines_cursor = 0;

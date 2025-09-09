@@ -19,7 +19,7 @@ nux_base_init (nux_ctx_t *ctx)
         ctx, NUX_RESOURCE_EVENT, sizeof(nux_event_t), "event");
 
     // Create resource pool
-    NUX_CHECK(nux_resource_pool_init(&ctx->core_arena, 1024, &ctx->resources),
+    NUX_CHECK(nux_resource_pool_init(&ctx->core_arena, &ctx->resources),
               return NUX_FAILURE);
     // Reserve index 0 for null id
     NUX_ASSERT(nux_resource_pool_add(&ctx->resources));

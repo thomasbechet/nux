@@ -346,7 +346,7 @@ nux_lua_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 nux_status_t
 nux_lua_init (nux_ctx_t *ctx)
 {
-    ctx->lua = nux_arena_push(&ctx->core_arena, sizeof(*ctx->lua));
+    ctx->lua = nux_arena_alloc(&ctx->core_arena, sizeof(*ctx->lua));
     NUX_CHECK(ctx->lua, return NUX_FAILURE);
 
     nux_lua_module_t *module = ctx->lua;

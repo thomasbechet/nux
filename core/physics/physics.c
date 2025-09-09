@@ -143,7 +143,7 @@ compute_transforms (nux_ctx_t *ctx)
 nux_status_t
 nux_physics_init (nux_ctx_t *ctx)
 {
-    ctx->physics = nux_arena_push(&ctx->core_arena, sizeof(*ctx->physics));
+    ctx->physics = nux_arena_alloc(&ctx->core_arena, sizeof(*ctx->physics));
     NUX_CHECK(ctx->physics, return NUX_FAILURE);
 
     nux_physics_module_t *module = ctx->physics;

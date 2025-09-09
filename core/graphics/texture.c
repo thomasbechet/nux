@@ -37,7 +37,7 @@ nux_texture_new (nux_ctx_t         *ctx,
     }
     if (pixel_size)
     {
-        tex->data = nux_arena_push(a, pixel_size * w * h);
+        tex->data = nux_arena_alloc(a, pixel_size * w * h);
         NUX_CHECK(tex->data, return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
