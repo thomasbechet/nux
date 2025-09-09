@@ -39,21 +39,19 @@ ecs_bitset_isset (const nux_ecs_bitset_t *bitset, nux_u32_t index)
 {
     nux_u32_t mask   = index / ECS_ENTITY_PER_MASK;
     nux_u32_t offset = index % ECS_ENTITY_PER_MASK;
-    return (bitset->size > mask && ecs_mask_isset(bitset->data[mask], offset));
+    return (mask < bitset->size && ecs_mask_isset(bitset->data[mask], offset));
 }
 static nux_status_t
 ecs_bitset_set (nux_ecs_bitset_t *bitset, nux_u32_t index)
 {
     nux_u32_t mask   = index / ECS_ENTITY_PER_MASK;
     nux_u32_t offset = index % ECS_ENTITY_PER_MASK;
-    if (bitset->size <= mask)
+    while (bitset->size <= mask)
     {
-        if (mask >= bitset->capa)
+        if (!nux_ecs_bitset_pushv(bitset, 0x0))
         {
-            return NUX_FAILURE; // max mask count reached
+            return NUX_FAILURE;
         }
-        bitset->size = mask + 1;
-        // masks are already initialized to 0
     }
     ecs_mask_set(&bitset->data[mask], offset);
     return NUX_SUCCESS;
@@ -90,7 +88,7 @@ ecs_bitset_count (const nux_ecs_bitset_t *bitset)
 static nux_b32_t
 ecs_bitset_find_unset (const nux_ecs_bitset_t *bitset, nux_u32_t *found)
 {
-    for (nux_u32_t i = 0; i < bitset->capa; ++i)
+    for (nux_u32_t i = 0; i < bitset->size; ++i)
     {
         nux_ecs_mask_t mask = bitset->data[i];
         if (bitset->data[i] != 0xFFFFFFFF)
@@ -106,11 +104,6 @@ ecs_bitset_find_unset (const nux_ecs_bitset_t *bitset, nux_u32_t *found)
         }
     }
     return NUX_FALSE;
-}
-static nux_u32_t
-ecs_bitset_capacity (const nux_ecs_bitset_t *bitset)
-{
-    return bitset->capa * ECS_ENTITY_PER_MASK;
 }
 static nux_ecs_t *
 ecs_active (nux_ctx_t *ctx)
@@ -272,7 +265,7 @@ nux_ecs_next (nux_ctx_t *ctx, nux_rid_t iter, nux_eid_t e)
 }
 
 nux_rid_t
-nux_ecs_new (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa)
+nux_ecs_new (nux_ctx_t *ctx, nux_rid_t arena)
 {
     nux_ecs_module_t *module = ctx->ecs;
     nux_rid_t         res;
@@ -285,9 +278,7 @@ nux_ecs_new (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa)
     NUX_CHECK(nux_ecs_container_vec_init_capa(
                   a, module->components_max, &ins->containers),
               return NUX_NULL);
-    NUX_CHECK(nux_ecs_bitset_init_capa(
-                  a, (capa / ECS_ENTITY_PER_MASK) + 1, &ins->bitset),
-              return NUX_NULL);
+    NUX_CHECK(nux_ecs_bitset_init(a, &ins->bitset), return NUX_NULL);
     return res;
 }
 nux_rid_t
@@ -316,10 +307,11 @@ nux_ecs_create (nux_ctx_t *ctx)
     nux_ecs_t *ins = ecs_active(ctx);
     NUX_CHECK(ins, return NUX_NULL);
     nux_u32_t index;
-    NUX_ENSURE(ecs_bitset_find_unset(&ins->bitset, &index),
-               return NUX_NULL,
-               "out of entities");
-    ecs_bitset_set(&ins->bitset, index);
+    if (!ecs_bitset_find_unset(&ins->bitset, &index))
+    {
+        index = ins->bitset.size * ECS_ENTITY_PER_MASK;
+    }
+    NUX_CHECK(ecs_bitset_set(&ins->bitset, index), return NUX_NULL);
     return ID_MAKE(index);
 }
 void
@@ -365,13 +357,6 @@ nux_ecs_count (nux_ctx_t *ctx)
     NUX_CHECK(ins, return 0);
     return ecs_bitset_count(&ins->bitset);
 }
-nux_u32_t
-nux_ecs_capacity (nux_ctx_t *ctx)
-{
-    nux_ecs_t *ins = ecs_active(ctx);
-    NUX_CHECK(ins, return 0);
-    return ins->bitset.capa * ECS_ENTITY_PER_MASK;
-}
 void
 nux_ecs_clear (nux_ctx_t *ctx)
 {
@@ -416,11 +401,6 @@ nux_ecs_add (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
             NUX_CHECK(nux_ecs_bitset_init_capa(
                           ins->arena, ins->bitset.capa, &container->bitset),
                       return NUX_NULL);
-            for (nux_u32_t i = 0; i < ins->bitset.capa; ++i)
-            {
-                container->chunks.data[i] = NUX_NULL;
-                container->bitset.data[i] = 0;
-            }
         }
     }
 
@@ -432,8 +412,17 @@ nux_ecs_add (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
         // update bitset
         ecs_bitset_set(&container->bitset, index);
 
-        // check if chunk exists
+        // initialize chunks
         nux_u32_t mask = index / ECS_ENTITY_PER_MASK;
+        while (mask >= container->chunks.size)
+        {
+            if (!nux_ecs_chunk_vec_pushv(&container->chunks, NUX_NULL))
+            {
+                return NUX_NULL;
+            }
+        }
+
+        // check if chunk exists
         if (!container->chunks.data[mask])
         {
             // allocate new chunk

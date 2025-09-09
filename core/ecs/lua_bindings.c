@@ -498,9 +498,7 @@ l_ecs_new (lua_State *L)
     nux_ctx_t *ctx   = lua_getuserdata(L);
     nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    nux_u32_t capa = luaL_checknumber(L, 2);
-
-    nux_rid_t ret = nux_ecs_new(ctx, arena, capa);
+    nux_rid_t ret = nux_ecs_new(ctx, arena);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -614,15 +612,6 @@ l_ecs_count (lua_State *L)
     return 1;
 }
 static int
-l_ecs_capacity (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_u32_t  ret = nux_ecs_capacity(ctx);
-    l_checkerror(L, ctx);
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
 l_ecs_clear (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
@@ -711,7 +700,6 @@ static const struct luaL_Reg lib_ecs[] = { { "new_iter", l_ecs_new_iter },
                                            { "delete", l_ecs_delete },
                                            { "valid", l_ecs_valid },
                                            { "count", l_ecs_count },
-                                           { "capacity", l_ecs_capacity },
                                            { "clear", l_ecs_clear },
                                            { "remove", l_ecs_remove },
                                            { "has", l_ecs_has },

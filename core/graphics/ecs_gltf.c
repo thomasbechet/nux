@@ -271,7 +271,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
         }
 
         // Create ECS
-        ecs = nux_ecs_new(ctx, arena, node_count + 8192);
+        ecs = nux_ecs_new(ctx, arena);
         NUX_CHECK(ecs, goto error);
         nux_ecs_set_active(ctx, ecs);
 
