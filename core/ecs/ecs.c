@@ -131,9 +131,11 @@ nux_ecs_init (nux_ctx_t *ctx)
 
     // Register types
     nux_resource_type_t *type;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_ECS, "ecs");
+    type = nux_resource_register(
+        ctx, NUX_RESOURCE_ECS, sizeof(nux_ecs_t), "ecs");
     type->cleanup = nux_ecs_cleanup;
-    type = nux_resource_register(ctx, NUX_RESOURCE_ECS_ITER, "ecs_iter");
+    type          = nux_resource_register(
+        ctx, NUX_RESOURCE_ECS_ITER, sizeof(nux_ecs_iter_t), "ecs_iter");
 
     // Initialize values
     nux_memset(module->components, 0, sizeof(module->components));
@@ -177,8 +179,8 @@ nux_ecs_new_iter (nux_ctx_t *ctx,
                   nux_u32_t  exclude_count)
 {
     nux_rid_t       rid;
-    nux_ecs_iter_t *it = nux_resource_new(
-        ctx, arena, NUX_RESOURCE_ECS_ITER, sizeof(*it), &rid);
+    nux_ecs_iter_t *it
+        = nux_resource_new(ctx, arena, NUX_RESOURCE_ECS_ITER, &rid);
     NUX_CHECK(rid, return NUX_NULL);
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
@@ -276,8 +278,7 @@ nux_ecs_new (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa)
     nux_rid_t         res;
     nux_arena_t      *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
-    nux_ecs_t *ins
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_ECS, sizeof(*ins), &res);
+    nux_ecs_t *ins = nux_resource_new(ctx, arena, NUX_RESOURCE_ECS, &res);
     NUX_CHECK(ins, return NUX_NULL);
     ins->arena = a;
     ins->self  = res;

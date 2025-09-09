@@ -22,7 +22,7 @@ l_require (lua_State *L)
     nux_rid_t rid = NUX_NULL;
     while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA, rid)))
     {
-        if (!nux_strncmp(nux_resource_path(ctx, rid), filepath, NUX_PATH_MAX))
+        if (!nux_strncmp(nux_resource_get_path(ctx, rid), filepath, NUX_PATH_MAX))
         {
             nux_lua_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA, rid);
             NUX_ASSERT(lua);

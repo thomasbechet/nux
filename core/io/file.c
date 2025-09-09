@@ -7,8 +7,7 @@ nux_file_open (nux_ctx_t      *ctx,
                nux_io_mode_t   mode)
 {
     nux_rid_t   rid;
-    nux_file_t *file
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_FILE, sizeof(*file), &rid);
+    nux_file_t *file = nux_resource_new(ctx, arena, NUX_RESOURCE_FILE, &rid);
     NUX_CHECK(file, return NUX_NULL);
 
     if (!nux_io_open(ctx, path, mode, file))

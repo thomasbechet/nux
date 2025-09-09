@@ -15,12 +15,16 @@ nux_graphics_init (nux_ctx_t *ctx)
 
     // Register resources
     nux_resource_type_t *type;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_TEXTURE, "texture");
+    type = nux_resource_register(
+        ctx, NUX_RESOURCE_TEXTURE, sizeof(nux_texture_t), "texture");
     type->cleanup = nux_texture_cleanup;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_MESH, "mesh");
-    type          = nux_resource_register(ctx, NUX_RESOURCE_CANVAS, "canvas");
+    type          = nux_resource_register(
+        ctx, NUX_RESOURCE_MESH, sizeof(nux_mesh_t), "mesh");
+    type = nux_resource_register(
+        ctx, NUX_RESOURCE_CANVAS, sizeof(nux_canvas_t), "canvas");
     type->cleanup = nux_canvas_cleanup;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_FONT, "font");
+    type          = nux_resource_register(
+        ctx, NUX_RESOURCE_FONT, sizeof(nux_font_t), "font");
     type->cleanup = nux_font_cleanup;
 
     // Register components

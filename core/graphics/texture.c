@@ -9,8 +9,8 @@ nux_texture_new (nux_ctx_t         *ctx,
 {
     // Create object
     nux_rid_t      rid;
-    nux_texture_t *tex = nux_resource_new(
-        ctx, arena, NUX_RESOURCE_TEXTURE, sizeof(*tex), &rid);
+    nux_texture_t *tex
+        = nux_resource_new(ctx, arena, NUX_RESOURCE_TEXTURE, &rid);
     NUX_CHECK(tex, return NUX_NULL);
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL;)

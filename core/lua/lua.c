@@ -319,8 +319,7 @@ nux_rid_t
 nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
 {
     nux_rid_t  rid;
-    nux_lua_t *lua
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA, sizeof(*lua), &rid);
+    nux_lua_t *lua = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA, &rid);
     NUX_CHECK(lua, return NUX_NULL);
     nux_resource_set_path(ctx, rid, path);
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_NULL);
@@ -354,7 +353,8 @@ nux_lua_init (nux_ctx_t *ctx)
 
     // Register types
     nux_resource_type_t *type;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_LUA, "lua");
+    type = nux_resource_register(
+        ctx, NUX_RESOURCE_LUA, sizeof(nux_lua_t), "lua");
     type->cleanup = nux_lua_cleanup;
     type->reload  = nux_lua_reload;
 

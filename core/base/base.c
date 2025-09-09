@@ -11,10 +11,12 @@ nux_base_init (nux_ctx_t *ctx)
 
     // Register base types
     nux_resource_type_t *type;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_NULL, "null");
-    type          = nux_resource_register(ctx, NUX_RESOURCE_ARENA, "arena");
+    type = nux_resource_register(ctx, NUX_RESOURCE_NULL, 0, "null");
+    type = nux_resource_register(
+        ctx, NUX_RESOURCE_ARENA, sizeof(nux_arena_t), "arena");
     type->cleanup = nux_arena_cleanup;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_EVENT, "event");
+    type          = nux_resource_register(
+        ctx, NUX_RESOURCE_EVENT, sizeof(nux_event_t), "event");
 
     // Create resource pool
     NUX_CHECK(nux_resource_pool_init(&ctx->core_arena, 1024, &ctx->resources),

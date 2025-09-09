@@ -4,8 +4,7 @@ nux_rid_t
 nux_mesh_new (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa)
 {
     nux_rid_t   res;
-    nux_mesh_t *mesh
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_MESH, sizeof(*mesh), &res);
+    nux_mesh_t *mesh = nux_resource_new(ctx, arena, NUX_RESOURCE_MESH, &res);
     NUX_CHECK(mesh, return NUX_NULL);
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL;)

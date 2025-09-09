@@ -184,8 +184,7 @@ nux_rid_t
 nux_arena_new (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name)
 {
     nux_rid_t    res;
-    nux_arena_t *a
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_ARENA, sizeof(*a), &res);
+    nux_arena_t *a = nux_resource_new(ctx, arena, NUX_RESOURCE_ARENA, &res);
     NUX_CHECK(a, return NUX_NULL);
     nux_arena_init(ctx, a, name);
     return res;

@@ -6,13 +6,17 @@
     (nux_rid_t)(((nux_rid_t)(RID_VERSION(old) + 1) << (nux_rid_t)24) | (index))
 
 nux_resource_type_t *
-nux_resource_register (nux_ctx_t *ctx, nux_u32_t index, const nux_c8_t *name)
+nux_resource_register (nux_ctx_t      *ctx,
+                       nux_u32_t       index,
+                       nux_u32_t       size,
+                       const nux_c8_t *name)
 {
     NUX_ASSERT(index < NUX_RESOURCE_MAX);
     NUX_ASSERT(ctx->resources_types[index].name == NUX_NULL);
     nux_resource_type_t *resource = ctx->resources_types + index;
     nux_memset(resource, 0, sizeof(*resource));
     resource->name = name;
+    resource->size = size;
     return resource;
 }
 
@@ -33,13 +37,13 @@ void *
 nux_resource_new (nux_ctx_t *ctx,
                   nux_rid_t  arena,
                   nux_u32_t  type,
-                  nux_u32_t  size,
                   nux_rid_t *rid)
 {
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL);
+    nux_resource_type_t      *t = ctx->resources_types + type;
     nux_resource_finalizer_t *finalizer
-        = nux_arena_push(a, sizeof(nux_resource_finalizer_t) + size);
+        = nux_arena_push(a, sizeof(nux_resource_finalizer_t) + t->size);
     NUX_CHECK(finalizer, return NUX_NULL);
     finalizer->prev = a->last_finalizer;
     finalizer->next = NUX_NULL;
@@ -159,7 +163,7 @@ nux_resource_next (nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid)
     return NUX_NULL;
 }
 const nux_c8_t *
-nux_resource_path (nux_ctx_t *ctx, nux_rid_t rid)
+nux_resource_get_path (nux_ctx_t *ctx, nux_rid_t rid)
 {
     nux_u32_t index = RID_INDEX(rid);
     NUX_CHECK(index < ctx->resources.size

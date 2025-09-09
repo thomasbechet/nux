@@ -100,8 +100,7 @@ nux_canvas_new (nux_ctx_t *ctx,
                 nux_u32_t  height)
 {
     nux_rid_t     id;
-    nux_canvas_t *c
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_CANVAS, sizeof(*c), &id);
+    nux_canvas_t *c = nux_resource_new(ctx, arena, NUX_RESOURCE_CANVAS, &id);
     NUX_CHECK(c, return NUX_NULL);
 
     // Allocate constants buffer

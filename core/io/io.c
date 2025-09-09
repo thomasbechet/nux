@@ -47,7 +47,8 @@ nux_io_init (nux_ctx_t *ctx)
 
     // Register types
     nux_resource_type_t *type;
-    type          = nux_resource_register(ctx, NUX_RESOURCE_FILE, "file");
+    type = nux_resource_register(
+        ctx, NUX_RESOURCE_FILE, sizeof(nux_file_t), "file");
     type->cleanup = nux_file_cleanup;
 
     // Initialize values
