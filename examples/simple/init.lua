@@ -14,7 +14,7 @@ function mod:on_load()
     self.cube_mesh = mesh_cube
 
     self.ecs = nux.ecs.load_gltf(self.arena, "assets/industrial.glb")
-    nux.ecs.set_active(self.ecs)
+    -- nux.ecs.set_active(self.ecs)
     camera = require("camera")
 
     local template = {

@@ -32,21 +32,21 @@ NUX_VEC_DEFINE(nux_ecs_container_vec, nux_ecs_container_t);
 
 typedef struct
 {
-    nux_u32_vec_t  includes;
-    nux_u32_vec_t  excludes;
-    nux_rid_t      ecs; // current ecs
-    nux_ecs_mask_t mask;
-    nux_u32_t      mask_index;
-    nux_u32_t      mask_offset;
-} nux_ecs_iter_t;
-
-typedef struct
-{
     nux_rid_t               self;
     nux_arena_t            *arena;
     nux_ecs_bitset_t        bitset;
     nux_ecs_container_vec_t containers;
 } nux_ecs_t;
+
+typedef struct
+{
+    nux_u32_vec_t  includes;
+    nux_u32_vec_t  excludes;
+    nux_ecs_t     *ecs; // current ecs
+    nux_ecs_mask_t mask;
+    nux_u32_t      mask_index;
+    nux_u32_t      mask_offset;
+} nux_ecs_iter_t;
 
 typedef struct
 {
@@ -86,7 +86,8 @@ typedef enum
 
 typedef struct nux_ecs_module
 {
-    nux_ecs_t          *active_ecs;
+    nux_ecs_t          *active;
+    nux_ecs_t          *default_ecs;
     nux_ecs_component_t components[NUX_COMPONENT_MAX];
     nux_u32_t           components_max;
 } nux_ecs_module_t;

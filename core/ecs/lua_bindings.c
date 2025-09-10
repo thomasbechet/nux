@@ -511,6 +511,17 @@ l_ecs_new (lua_State *L)
     return 1;
 }
 static int
+l_ecs_set_active (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_rid_t  ecs = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_status_t ret = nux_ecs_set_active(ctx, ecs);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
 l_ecs_load_gltf (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
@@ -529,31 +540,6 @@ l_ecs_load_gltf (lua_State *L)
         lua_pushnil(L);
     }
     return 1;
-}
-static int
-l_ecs_get_active (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_rid_t  ret = nux_ecs_get_active(ctx);
-    l_checkerror(L, ctx);
-    if (ret)
-    {
-        lua_pushinteger(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
-l_ecs_set_active (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_rid_t  ecs = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_ecs_set_active(ctx, ecs);
-    l_checkerror(L, ctx);
-    return 0;
 }
 static int
 l_ecs_create (lua_State *L)
@@ -692,9 +678,8 @@ static const struct luaL_Reg lib_ecs[] = { { "new_iter", l_ecs_new_iter },
                                            { "excludes", l_ecs_excludes },
                                            { "next", l_ecs_next },
                                            { "new", l_ecs_new },
-                                           { "load_gltf", l_ecs_load_gltf },
-                                           { "get_active", l_ecs_get_active },
                                            { "set_active", l_ecs_set_active },
+                                           { "load_gltf", l_ecs_load_gltf },
                                            { "create", l_ecs_create },
                                            { "create_at", l_ecs_create_at },
                                            { "delete", l_ecs_delete },

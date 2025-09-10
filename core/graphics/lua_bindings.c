@@ -36,9 +36,9 @@ l_texture_new (lua_State *L)
 static int
 l_texture_blit (lua_State *L)
 {
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    nux_texture_blit(ctx, rid);
+    nux_ctx_t *ctx     = lua_getuserdata(L);
+    nux_rid_t  texture = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_texture_blit(ctx, texture);
     l_checkerror(L, ctx);
     return 0;
 }

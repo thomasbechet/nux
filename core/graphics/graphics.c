@@ -210,12 +210,7 @@ nux_graphics_update (nux_ctx_t *ctx)
     }
 
     // Render ECS
-    nux_rid_t res = nux_ecs_get_active(ctx);
-    if (res)
-    {
-        nux_ecs_t *ecs = nux_resource_check(ctx, NUX_RESOURCE_ECS, res);
-        nux_renderer_render(ctx, ecs);
-    }
+    nux_renderer_render(ctx, ctx->ecs->active);
 
     // Blit canvas layers
     canvas = NUX_NULL;

@@ -191,11 +191,8 @@ nux_physics_free (nux_ctx_t *ctx)
 void
 nux_physics_update (nux_ctx_t *ctx)
 {
-    if (nux_ecs_get_active(ctx))
-    {
-        integrate(ctx);
-        compute_transforms(ctx);
-    }
+    integrate(ctx);
+    compute_transforms(ctx);
 }
 void
 nux_physics_add_rigidbody (nux_ctx_t *ctx, nux_eid_t e)

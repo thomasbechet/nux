@@ -184,8 +184,7 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_rid_t prev_ecs = nux_ecs_get_active(ctx);
-    nux_rid_t ecs      = NUX_NULL;
+    nux_rid_t ecs = NUX_NULL;
 
     // Load file
     nux_u32_t buf_size;
@@ -375,10 +374,10 @@ nux_ecs_load_gltf (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
     }
 
     cgltf_free(data);
-    nux_ecs_set_active(ctx, prev_ecs);
+    nux_ecs_set_active(ctx, NUX_NULL);
     return ecs;
 error:
     cgltf_free(data);
-    nux_ecs_set_active(ctx, prev_ecs);
+    nux_ecs_set_active(ctx, NUX_NULL);
     return NUX_NULL;
 }
