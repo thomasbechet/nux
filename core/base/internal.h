@@ -510,6 +510,8 @@ typedef struct
     nux_u8_t                 *head;
     nux_u8_t                 *end;
     void                     *stack;
+    nux_u32_t                 total_alloc;
+    nux_u32_t                 total_waste;
 } nux_arena_t;
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
@@ -708,6 +710,7 @@ void     *nux_memalign(void *ptr, nux_u32_t align);
 nux_u32_t nux_u32_le(nux_u32_t v);
 nux_f32_t nux_f32_le(nux_f32_t v);
 nux_u32_t nux_hash(const void *p, nux_u32_t s);
+nux_c8_t *nux_mem_human(double size, nux_c8_t buf[10]);
 
 // resource.c
 

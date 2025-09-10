@@ -85,7 +85,7 @@ nux_rid_t nux_texture_new(nux_ctx_t         *ctx,
                           nux_texture_type_t format,
                           nux_u32_t          w,
                           nux_u32_t          h);
-void      nux_texture_blit(nux_ctx_t *ctx, nux_rid_t rid);
+void      nux_texture_blit(nux_ctx_t *ctx, nux_rid_t texture);
 
 nux_rid_t nux_mesh_new(nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa);
 nux_rid_t nux_mesh_new_cube(

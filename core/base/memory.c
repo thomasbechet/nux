@@ -97,3 +97,17 @@ nux_hash (const void *p, nux_u32_t s)
     }
     return hash;
 }
+nux_c8_t *
+nux_mem_human (double size, nux_c8_t buf[10])
+{
+    int         i = 0;
+    const char *units[]
+        = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+    while (size > 1024)
+    {
+        size /= 1024;
+        i++;
+    }
+    nux_snprintf(buf, 10, "%.*f %s", i, size, units[i]);
+    return buf;
+}

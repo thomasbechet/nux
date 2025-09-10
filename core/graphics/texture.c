@@ -79,10 +79,10 @@ nux_texture_write (nux_ctx_t  *ctx,
         "failed to update colormap texture");
 }
 void
-nux_texture_blit (nux_ctx_t *ctx, nux_rid_t rid)
+nux_texture_blit (nux_ctx_t *ctx, nux_rid_t texture)
 {
     nux_graphics_module_t *module = ctx->graphics;
-    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, rid);
+    nux_texture_t *tex = nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, texture);
     NUX_CHECK(tex, return);
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_encoder_t enc;
