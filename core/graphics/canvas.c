@@ -277,7 +277,7 @@ nux_canvas_render (nux_ctx_t *ctx, nux_canvas_t *c)
     // Begin canvas render
     nux_gpu_encoder_t enc;
     nux_arena_t      *a
-        = nux_resource_check(ctx, NUX_RESOURCE_ARENA, nux_arena_frame(ctx));
+        = nux_resource_check(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena_rid);
     nux_gpu_encoder_init(a, &enc);
     nux_gpu_bind_framebuffer(ctx, &enc, framebuffer);
     nux_gpu_bind_pipeline(ctx, &enc, module->canvas_pipeline.slot);

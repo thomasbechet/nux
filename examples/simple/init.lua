@@ -8,13 +8,13 @@ function mod:on_event(e)
 end
 
 function mod:on_load()
-    self.arena = nux.arena.core()
+    self.arena = nux.resource.find("core_arena")
 
     local mesh_cube = nux.mesh.new_cube(self.arena, 1, 1, 1)
     self.cube_mesh = mesh_cube
 
     self.ecs = nux.ecs.load_gltf(self.arena, "assets/industrial.glb")
-    -- nux.ecs.set_active(self.ecs)
+    nux.ecs.set_active(self.ecs)
     camera = require("camera")
 
     local template = {

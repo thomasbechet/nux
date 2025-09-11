@@ -103,9 +103,9 @@ nux_mem_human (double size, nux_c8_t buf[10])
     int         i = 0;
     const char *units[]
         = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-    while (size > 1024)
+    while (size > NUX_MEM_1K)
     {
-        size /= 1024;
+        size /= NUX_MEM_1K;
         i++;
     }
     nux_snprintf(buf, 10, "%.*f %s", i, size, units[i]);

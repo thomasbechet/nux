@@ -65,7 +65,10 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
     {%- endfor -%}
     );
     l_checkerror(L, ctx);
-    {%- if function.returntype == "nux_v3_t" %}
+    {%- if function.returntype == "const nux_c8_t*" %}
+        lua_pushstring(L, ret);
+        return 1;
+    {%- elif function.returntype == "nux_v3_t" %}
         nux_lua_push_vec3(L, ret);
         return 1;
     {%- elif function.returntype == "nux_m4_t" %}

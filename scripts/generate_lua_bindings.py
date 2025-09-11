@@ -22,13 +22,22 @@ def get_name_and_module(modules, fullname):
     return modules[module_name], parts[-1]
 
 def parse_function(node, modules):
+    if type(node.type) == c_parser.c_ast.PtrDecl:
+        params = node.args.params
+        node = node.type
+    else:
+        params = node.args.params
     module, name = get_name_and_module(modules, node.type.declname)
     func = {}
     # print(node.type)
     func["name"] = name
-    func["returntype"] = node.type.type.names[0]
+    # Return string type
+    if node.type.type.names[0] == "nux_c8_t" and node.type.quals[0] == "const":
+        func["returntype"] = "const nux_c8_t*"
+    else:
+        func["returntype"] = node.type.type.names[0]
     func["args"] = []
-    for param in node.args.params[1:]:
+    for param in params[1:]:
         if (isinstance(param, c_ast.EllipsisParam)):
             # Ignore functions with variadics
             return

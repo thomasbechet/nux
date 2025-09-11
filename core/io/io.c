@@ -519,7 +519,7 @@ nux_status_t
 nux_io_write_cart_file (nux_ctx_t *ctx, const nux_c8_t *path)
 {
     nux_u32_t size;
-    void     *data = nux_io_load(ctx, nux_arena_frame(ctx), path, &size);
+    void     *data = nux_io_load(ctx, ctx->frame_arena_rid, path, &size);
     NUX_CHECK(data, return NUX_FAILURE);
     return nux_io_write_cart_data(ctx, path, 0, NUX_FALSE, data, size);
 }

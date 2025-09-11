@@ -232,7 +232,7 @@
             }                                                                  \
             (v)->capa = new_capa;                                              \
             (v)->data = nux_arena_realloc((v)->arena,                          \
-                                          (v)->data,                           \
+                                          old_data,                            \
                                           sizeof(*(v)->data) * old_capa,       \
                                           sizeof(*(v)->data) * new_capa);      \
             NUX_CHECK((v)->data, return NUX_NULL);                             \
@@ -288,12 +288,12 @@
     }                                                                          \
     nux_status_t name##_init_capa(nux_arena_t *a, nux_u32_t capa, name##_t *p) \
     {                                                                          \
+        p->capa = capa;                                                        \
+        p->size = 0;                                                           \
+        nux_u32_vec_init_capa(a, capa, &p->freelist);                          \
         p->data = nux_arena_alloc(a, sizeof(*p->data) * capa);                 \
         if (capa && !p->data)                                                  \
             return NUX_FAILURE;                                                \
-        nux_u32_vec_init_capa(a, capa, &p->freelist);                          \
-        p->capa = capa;                                                        \
-        p->size = 0;                                                           \
         return NUX_SUCCESS;                                                    \
     }                                                                          \
     T *name##_add(name##_t *p)                                                 \
@@ -316,7 +316,7 @@
                 }                                                              \
                 (p)->capa = new_capa;                                          \
                 (p)->data = nux_arena_realloc((p)->freelist.arena,             \
-                                              (p)->data,                       \
+                                              old_data,                        \
                                               sizeof(*(p)->data) * old_capa,   \
                                               sizeof(*(p)->data) * new_capa);  \
                 NUX_CHECK((p)->data, return NUX_NULL);                         \
@@ -506,7 +506,6 @@ typedef struct
     nux_arena_block_t        *first_block;
     nux_arena_block_t        *last_block;
     nux_u32_t                 block_size;
-    nux_c8_t                  name[32];
     nux_u8_t                 *head;
     nux_u8_t                 *end;
     void                     *stack;
@@ -535,6 +534,7 @@ typedef struct
     nux_u32_t       type;
     void           *data;
     const nux_c8_t *path;
+    const nux_c8_t *name;
 } nux_resource_entry_t;
 
 NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
@@ -625,7 +625,7 @@ struct nux_context
     nux_resource_pool_t resources;
     nux_arena_t         core_arena;
     nux_rid_t           core_arena_rid;
-    nux_rid_t           frame_arena;
+    nux_rid_t           frame_arena_rid;
     nux_resource_type_t resources_types[NUX_RESOURCE_MAX];
     nux_u64_t           stats[NUX_STAT_MAX];
 
@@ -728,20 +728,19 @@ void                *nux_resource_new(nux_ctx_t *ctx,
                                       nux_rid_t *rid);
 void                 nux_resource_delete(nux_ctx_t *ctx, nux_rid_t rid);
 void nux_resource_set_path(nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path);
-const nux_c8_t *nux_resource_get_path(nux_ctx_t *ctx, nux_rid_t rid);
 void        *nux_resource_check(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
 nux_status_t nux_resource_reload(nux_ctx_t *ctx, nux_rid_t rid);
 nux_rid_t    nux_resource_next(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
 
 // arena.c
 
-void  nux_arena_init(nux_ctx_t *ctx, nux_arena_t *arena, const nux_c8_t *name);
-void  nux_arena_init_stack(nux_ctx_t   *ctx,
-                           nux_arena_t *arena,
-                           void        *data,
-                           nux_u32_t    capa);
-void  nux_arena_free(nux_arena_t *arena);
-void *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
+void      nux_arena_init(nux_ctx_t *ctx, nux_arena_t *arena);
+void      nux_arena_init_stack(nux_ctx_t   *ctx,
+                               nux_arena_t *arena,
+                               void        *data,
+                               nux_u32_t    capa);
+void      nux_arena_free(nux_arena_t *arena);
+void     *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
 nux_c8_t *nux_arena_alloc_string(nux_arena_t *arena, const nux_c8_t *s);
 void     *nux_arena_realloc(nux_arena_t *arena,
                             void        *optr,

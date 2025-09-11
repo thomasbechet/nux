@@ -113,11 +113,14 @@ void nux_printfmt(nux_ctx_t *ctx, nux_u8_t c, const nux_c8_t *fmt, ...);
 void nux_tracefmt(nux_ctx_t *ctx, const nux_c8_t *fmt, ...);
 #endif
 
-nux_rid_t nux_arena_new(nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name);
+nux_rid_t nux_arena_new(nux_ctx_t *ctx, nux_rid_t arena);
 void      nux_arena_reset(nux_ctx_t *ctx, nux_rid_t arena);
-nux_rid_t nux_arena_core(nux_ctx_t *ctx);
-nux_rid_t nux_arena_frame(nux_ctx_t *ctx);
 
 nux_rid_t nux_event_new(nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name);
+
+const nux_c8_t *nux_resource_get_path(nux_ctx_t *ctx, nux_rid_t rid);
+void nux_resource_set_name(nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *name);
+const nux_c8_t *nux_resource_get_name(nux_ctx_t *ctx, nux_rid_t rid);
+nux_rid_t       nux_resource_find(nux_ctx_t *ctx, const nux_c8_t *name);
 
 #endif

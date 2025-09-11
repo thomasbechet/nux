@@ -73,9 +73,7 @@ l_arena_new (lua_State *L)
     nux_ctx_t *ctx   = lua_getuserdata(L);
     nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
 
-    const nux_c8_t *name = luaL_checkstring(L, 2);
-
-    nux_rid_t ret = nux_arena_new(ctx, arena, name);
+    nux_rid_t ret = nux_arena_new(ctx, arena);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -96,38 +94,6 @@ l_arena_reset (lua_State *L)
     l_checkerror(L, ctx);
     return 0;
 }
-static int
-l_arena_core (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_rid_t  ret = nux_arena_core(ctx);
-    l_checkerror(L, ctx);
-    if (ret)
-    {
-        lua_pushinteger(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
-l_arena_frame (lua_State *L)
-{
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    nux_rid_t  ret = nux_arena_frame(ctx);
-    l_checkerror(L, ctx);
-    if (ret)
-    {
-        lua_pushinteger(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
 
 static int
 l_event_new (lua_State *L)
@@ -138,6 +104,58 @@ l_event_new (lua_State *L)
     const nux_c8_t *name = luaL_checkstring(L, 2);
 
     nux_rid_t ret = nux_event_new(ctx, arena, name);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int
+l_resource_get_path (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    const nux_c8_t *ret = nux_resource_get_path(ctx, rid);
+    l_checkerror(L, ctx);
+    lua_pushstring(L, ret);
+    return 1;
+}
+static int
+l_resource_set_name (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    const nux_c8_t *name = luaL_checkstring(L, 2);
+    nux_resource_set_name(ctx, rid, name);
+    l_checkerror(L, ctx);
+    return 0;
+}
+static int
+l_resource_get_name (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    const nux_c8_t *ret = nux_resource_get_name(ctx, rid);
+    l_checkerror(L, ctx);
+    lua_pushstring(L, ret);
+    return 1;
+}
+static int
+l_resource_find (lua_State *L)
+{
+    nux_ctx_t      *ctx  = lua_getuserdata(L);
+    const nux_c8_t *name = luaL_checkstring(L, 1);
+
+    nux_rid_t ret = nux_resource_find(ctx, name);
     l_checkerror(L, ctx);
     if (ret)
     {
@@ -162,12 +180,17 @@ static const struct luaL_Reg lib_time[] = { { "elapsed", l_time_elapsed },
 
 static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
                                              { "reset", l_arena_reset },
-                                             { "core", l_arena_core },
-                                             { "frame", l_arena_frame },
                                              { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_event[]
     = { { "new", l_event_new }, { NUX_NULL, NUX_NULL } };
+
+static const struct luaL_Reg lib_resource[]
+    = { { "get_path", l_resource_get_path },
+        { "set_name", l_resource_set_name },
+        { "get_name", l_resource_get_name },
+        { "find", l_resource_find },
+        { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
 
@@ -204,6 +227,12 @@ nux_lua_open_base (nux_ctx_t *ctx)
     luaL_setfuncs(L, lib_event, 0);
 
     lua_setfield(L, -2, "event"); // Set module to nux table
+
+    lua_newtable(L);
+
+    luaL_setfuncs(L, lib_resource, 0);
+
+    lua_setfield(L, -2, "resource"); // Set module to nux table
 
     lua_newtable(L);
 

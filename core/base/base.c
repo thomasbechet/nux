@@ -7,7 +7,7 @@ nux_base_init (nux_ctx_t *ctx)
     nux_error_reset(ctx);
 
     // Create core arena
-    nux_arena_init(ctx, &ctx->core_arena, "core_arena");
+    nux_arena_init(ctx, &ctx->core_arena);
 
     // Register base types
     nux_resource_type_t *type;
@@ -22,15 +22,18 @@ nux_base_init (nux_ctx_t *ctx)
     NUX_CHECK(nux_resource_pool_init(&ctx->core_arena, &ctx->resources),
               return NUX_FAILURE);
     // Reserve index 0 for null id
-    NUX_ASSERT(nux_resource_pool_add(&ctx->resources));
+    nux_resource_pool_add(&ctx->resources);
 
     // Register core arena
     ctx->core_arena_rid
         = nux_resource_add(ctx, NUX_NULL, NUX_RESOURCE_ARENA, &ctx->core_arena);
+    NUX_ASSERT(ctx->core_arena_rid);
+    nux_resource_set_name(ctx, ctx->core_arena_rid, "core_arena");
 
     // Create frame arena
-    ctx->frame_arena = nux_arena_new(ctx, ctx->core_arena_rid, "frame_arena");
-    NUX_ASSERT(ctx->frame_arena);
+    ctx->frame_arena_rid = nux_arena_new(ctx, ctx->core_arena_rid);
+    NUX_ASSERT(ctx->frame_arena_rid);
+    nux_resource_set_name(ctx, ctx->frame_arena_rid, "frame_arena");
 
     // Initialize system state
     ctx->error_enable = NUX_TRUE;
