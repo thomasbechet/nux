@@ -109,7 +109,7 @@ ecs_bitset_find_unset (const nux_ecs_bitset_t *bitset, nux_u32_t *found)
 nux_status_t
 nux_ecs_init (nux_ctx_t *ctx)
 {
-    ctx->ecs = nux_arena_alloc(&ctx->core_arena, sizeof(*ctx->ecs));
+    ctx->ecs = nux_arena_malloc(&ctx->core_arena, sizeof(*ctx->ecs));
     NUX_CHECK(ctx->ecs, return NUX_FAILURE);
 
     nux_ecs_module_t *module = ctx->ecs;
@@ -404,7 +404,7 @@ nux_ecs_add (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
         if (!container->chunks.data[mask])
         {
             // allocate new chunk
-            container->chunks.data[mask] = nux_arena_alloc(
+            container->chunks.data[mask] = nux_arena_malloc(
                 ecs->arena, container->component_size * ECS_ENTITY_PER_MASK);
             // expect zero memory by default
             nux_memset(container->chunks.data[mask],

@@ -164,15 +164,15 @@ nux_os_stats_update (void *userdata, nux_u64_t *stats)
 {
 }
 void
-nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_res_t handle)
+nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
 {
 }
 void
-nux_os_hotreload_remove (void *userdata, nux_res_t handle)
+nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
 {
 }
 void
-nux_os_hotreload_pull (void *userdata, nux_res_t *handles, nux_u32_t *count)
+nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
 {
     *count = 0;
 }
@@ -181,7 +181,7 @@ int
 main (int argc, char *argv[])
 {
     nux_ctx_t *ctx = nux_instance_init(NULL, argc > 1 ? argv[1] : "init.lua");
-    nux_instance_tick(ctx);
+    nux_instance_update(ctx);
     nux_instance_free(ctx);
     return 0;
 }

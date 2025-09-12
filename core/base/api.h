@@ -115,6 +115,9 @@ void nux_tracefmt(nux_ctx_t *ctx, const nux_c8_t *fmt, ...);
 
 nux_rid_t nux_arena_new(nux_ctx_t *ctx, nux_rid_t arena);
 void      nux_arena_reset(nux_ctx_t *ctx, nux_rid_t arena);
+nux_u32_t nux_arena_memory_usage(nux_ctx_t *ctx, nux_rid_t arena);
+nux_u32_t nux_arena_memory_capacity(nux_ctx_t *ctx, nux_rid_t arena);
+nux_u32_t nux_arena_block_count(nux_ctx_t *ctx, nux_rid_t arena);
 
 nux_rid_t nux_event_new(nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *name);
 

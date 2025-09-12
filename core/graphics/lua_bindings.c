@@ -330,10 +330,10 @@ nux_lua_open_graphics (nux_ctx_t *ctx)
 
     luaL_setfuncs(L, lib_canvas, 0);
 
-    lua_pushinteger(L, 512);
+    lua_pushinteger(L, 640);
     lua_setfield(L, -2, "WIDTH");
 
-    lua_pushinteger(L, 320);
+    lua_pushinteger(L, 400);
     lua_setfield(L, -2, "HEIGHT");
 
     lua_setfield(L, -2, "canvas"); // Set module to nux table

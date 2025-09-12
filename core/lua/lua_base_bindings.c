@@ -94,6 +94,39 @@ l_arena_reset (lua_State *L)
     l_checkerror(L, ctx);
     return 0;
 }
+static int
+l_arena_memory_usage (lua_State *L)
+{
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t ret = nux_arena_memory_usage(ctx, arena);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_arena_memory_capacity (lua_State *L)
+{
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t ret = nux_arena_memory_capacity(ctx, arena);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_arena_block_count (lua_State *L)
+{
+    nux_ctx_t *ctx   = lua_getuserdata(L);
+    nux_rid_t  arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+
+    nux_u32_t ret = nux_arena_block_count(ctx, arena);
+    l_checkerror(L, ctx);
+    lua_pushinteger(L, ret);
+    return 1;
+}
 
 static int
 l_event_new (lua_State *L)
@@ -178,9 +211,13 @@ static const struct luaL_Reg lib_time[] = { { "elapsed", l_time_elapsed },
                                             { "timestamp", l_time_timestamp },
                                             { NUX_NULL, NUX_NULL } };
 
-static const struct luaL_Reg lib_arena[] = { { "new", l_arena_new },
-                                             { "reset", l_arena_reset },
-                                             { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_arena[]
+    = { { "new", l_arena_new },
+        { "reset", l_arena_reset },
+        { "memory_usage", l_arena_memory_usage },
+        { "memory_capacity", l_arena_memory_capacity },
+        { "block_count", l_arena_block_count },
+        { NUX_NULL, NUX_NULL } };
 
 static const struct luaL_Reg lib_event[]
     = { { "new", l_event_new }, { NUX_NULL, NUX_NULL } };

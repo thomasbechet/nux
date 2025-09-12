@@ -9,8 +9,8 @@ nux_mesh_new (nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa)
     nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
     NUX_CHECK(a, return NUX_NULL;)
     mesh->count = capa;
-    mesh->data
-        = nux_arena_alloc(a, sizeof(nux_f32_t) * NUX_VERTEX_SIZE * mesh->count);
+    mesh->data  = nux_arena_malloc(
+        a, sizeof(nux_f32_t) * NUX_VERTEX_SIZE * mesh->count);
     NUX_CHECK(mesh->data, return NUX_NULL);
     mesh->bounds = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
     return res;

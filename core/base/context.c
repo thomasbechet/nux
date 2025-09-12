@@ -182,6 +182,9 @@ nux_instance_update (nux_ctx_t *ctx)
         }
     }
 
+    // Reset frame resources
+    nux_arena_reset(ctx, ctx->frame_arena_rid);
+
     // Frame integration
     ctx->time_elapsed += nux_time_delta(ctx);
     ++ctx->frame;

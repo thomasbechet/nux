@@ -76,6 +76,16 @@ function mod:on_load()
     self.api = inspect(nux)
 end
 
+local function memhu(size)
+    local i = 1
+    while size > 1024 do
+        i = i + 1
+        size = size / 1024
+    end
+    local units = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" }
+    return string.format("%.02f%s", size, units[i])
+end
+
 function mod:on_update()
     nux.transform.rotate_y(self.rotating, nux.time.delta() * math.sin(nux.time.elapsed()))
     nux.transform.set_scale(self.rotating, nux.vmath.vec3(1, 5, 10))
@@ -99,6 +109,8 @@ function mod:on_update()
     nux.canvas.text(canvas, 10, 30, string.format("x:%.2f", position.x))
     nux.canvas.text(canvas, 10, 40, string.format("y:%.2f", position.y))
     nux.canvas.text(canvas, 10, 50, string.format("z:%.2f", position.z))
+    nux.canvas.text(canvas, 10, 60, string.format("mem:%s", memhu(nux.arena.memory_usage(self.arena))))
+    nux.canvas.text(canvas, 10, 70, string.format("mem:%s", memhu(nux.arena.memory_usage(nux.resource.find("frame_arena")))))
     nux.canvas.text(canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
 
     local forward = nux.transform.forward(camera.entity)

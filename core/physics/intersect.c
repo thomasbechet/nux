@@ -66,7 +66,10 @@ nux_b32_t
 nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_f32_t *t0, nux_f32_t *t1)
 {
     // https://tavianator.com/cgit/dimension.git/tree/libdimension/bvh/bvh.c#n196
-    nux_v3_t n_inv = nux_v3_inv(r.d);
+    nux_v3_t n_inv;
+    n_inv.x = r.d.x ? 1 / r.d.x : 0;
+    n_inv.y = r.d.y ? 1 / r.d.y : 0;
+    n_inv.z = r.d.z ? 1 / r.d.z : 0;
 
     nux_f32_t tx1 = (box.min.x - r.p.x) * n_inv.x;
     nux_f32_t tx2 = (box.max.x - r.p.x) * n_inv.x;

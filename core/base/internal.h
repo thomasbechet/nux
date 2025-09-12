@@ -214,7 +214,8 @@
         (v)->arena = a;                                                        \
         (v)->capa  = capa;                                                     \
         (v)->size  = 0;                                                        \
-        (v)->data  = nux_arena_alloc(a, sizeof(*(v)->data) * capa);            \
+        (v)->data                                                              \
+            = nux_arena_alloc(a, NUX_NULL, 0, sizeof(*(v)->data) * capa);      \
         if (capa && !v->data)                                                  \
             return NUX_FAILURE;                                                \
         return NUX_SUCCESS;                                                    \
@@ -231,10 +232,10 @@
                 new_capa = 1;                                                  \
             }                                                                  \
             (v)->capa = new_capa;                                              \
-            (v)->data = nux_arena_realloc((v)->arena,                          \
-                                          old_data,                            \
-                                          sizeof(*(v)->data) * old_capa,       \
-                                          sizeof(*(v)->data) * new_capa);      \
+            (v)->data = nux_arena_alloc((v)->arena,                            \
+                                        old_data,                              \
+                                        sizeof(*(v)->data) * old_capa,         \
+                                        sizeof(*(v)->data) * new_capa);        \
             NUX_CHECK((v)->data, return NUX_NULL);                             \
         }                                                                      \
         T *ret = (v)->data + (v)->size;                                        \
@@ -290,8 +291,9 @@
     {                                                                          \
         p->capa = capa;                                                        \
         p->size = 0;                                                           \
-        nux_u32_vec_init_capa(a, capa, &p->freelist);                          \
-        p->data = nux_arena_alloc(a, sizeof(*p->data) * capa);                 \
+        NUX_CHECK(nux_u32_vec_init_capa(a, capa, &p->freelist),                \
+                  return NUX_FAILURE);                                         \
+        p->data = nux_arena_alloc(a, NUX_NULL, 0, sizeof(*p->data) * capa);    \
         if (capa && !p->data)                                                  \
             return NUX_FAILURE;                                                \
         return NUX_SUCCESS;                                                    \
@@ -315,10 +317,10 @@
                     new_capa = 1;                                              \
                 }                                                              \
                 (p)->capa = new_capa;                                          \
-                (p)->data = nux_arena_realloc((p)->freelist.arena,             \
-                                              old_data,                        \
-                                              sizeof(*(p)->data) * old_capa,   \
-                                              sizeof(*(p)->data) * new_capa);  \
+                (p)->data = nux_arena_alloc((p)->freelist.arena,               \
+                                            old_data,                          \
+                                            sizeof(*(p)->data) * old_capa,     \
+                                            sizeof(*(p)->data) * new_capa);    \
                 NUX_CHECK((p)->data, return NUX_NULL);                         \
             }                                                                  \
             T *data = p->data + p->size;                                       \
@@ -492,8 +494,6 @@ typedef struct nux_resource_finalizer
 
 typedef struct nux_arena_block
 {
-    nux_u32_t               capa;
-    nux_u32_t               size;
     struct nux_arena_block *prev;
     struct nux_arena_block *next;
 } nux_arena_block_t;
@@ -740,12 +740,12 @@ void      nux_arena_init_stack(nux_ctx_t   *ctx,
                                void        *data,
                                nux_u32_t    capa);
 void      nux_arena_free(nux_arena_t *arena);
-void     *nux_arena_alloc(nux_arena_t *arena, nux_u32_t size);
+void     *nux_arena_alloc(nux_arena_t *arena,
+                          void        *optr,
+                          nux_u32_t    osize,
+                          nux_u32_t    nsize);
 nux_c8_t *nux_arena_alloc_string(nux_arena_t *arena, const nux_c8_t *s);
-void     *nux_arena_realloc(nux_arena_t *arena,
-                            void        *optr,
-                            nux_u32_t    osize,
-                            nux_u32_t    nsize);
+void     *nux_arena_malloc(nux_arena_t *arena, nux_u32_t size);
 void      nux_arena_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
 
 // random.c

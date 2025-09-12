@@ -104,6 +104,7 @@
     }                                                                         \
     nux_##name##_t nux_##name##_inv(nux_##name##_t a)                         \
     {                                                                         \
+        NUX_ASSERT(a.x != 0 && a.y != 0 && a.z != 0);                         \
         return nux_##name##_div(nux_##name##s(1), a);                         \
     }                                                                         \
     nux_##name##_t nux_##name##_cross(nux_##name##_t a, nux_##name##_t b)     \

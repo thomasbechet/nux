@@ -79,17 +79,20 @@ integrate (nux_ctx_t *ctx)
             nux_point_mass_t *a = module->point_masses.data + c->a;
             nux_point_mass_t *b = module->point_masses.data + c->b;
 
-            nux_v3_t  delta          = nux_v3_sub(b->x, a->x);
-            nux_f32_t distance       = nux_v3_norm(delta);
-            nux_v3_t  required_delta = nux_v3_muls(delta, c->d / distance);
+            nux_v3_t  delta    = nux_v3_sub(b->x, a->x);
+            nux_f32_t distance = nux_v3_norm(delta);
+            if (distance > NUX_F32_EPSILON)
+            {
+                nux_v3_t required_delta = nux_v3_muls(delta, c->d / distance);
 
-            nux_v3_t offset = nux_v3_sub(required_delta, delta);
+                nux_v3_t offset = nux_v3_sub(required_delta, delta);
 
-            nux_v3_t ca = nux_v3_muls(offset, -0.5);
-            nux_v3_t cb = nux_v3_muls(offset, 0.5);
+                nux_v3_t ca = nux_v3_muls(offset, -0.5);
+                nux_v3_t cb = nux_v3_muls(offset, 0.5);
 
-            a->x = nux_v3_add(a->x, ca);
-            b->x = nux_v3_add(b->x, cb);
+                a->x = nux_v3_add(a->x, ca);
+                b->x = nux_v3_add(b->x, cb);
+            }
         }
         // (12) compute new velocity
         for (nux_u32_t i = 0; i < module->point_masses.size; ++i)
@@ -143,7 +146,7 @@ compute_transforms (nux_ctx_t *ctx)
 nux_status_t
 nux_physics_init (nux_ctx_t *ctx)
 {
-    ctx->physics = nux_arena_alloc(&ctx->core_arena, sizeof(*ctx->physics));
+    ctx->physics = nux_arena_malloc(&ctx->core_arena, sizeof(*ctx->physics));
     NUX_CHECK(ctx->physics, return NUX_FAILURE);
 
     nux_physics_module_t *module = ctx->physics;
