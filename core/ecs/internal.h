@@ -1,7 +1,7 @@
 #ifndef NUX_ECS_INTERNAL_H
 #define NUX_ECS_INTERNAL_H
 
-#include <lua/internal.h>
+#include <base/internal.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -109,10 +109,6 @@ void *nux_ecs_add(nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c);
 void *nux_ecs_get(nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c);
 
 void nux_ecs_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
-
-// lua_bindings.c
-
-nux_status_t nux_lua_open_ecs(nux_ctx_t *ctx);
 
 // transform.c
 

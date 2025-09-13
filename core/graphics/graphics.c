@@ -92,9 +92,6 @@ nux_graphics_init (nux_ctx_t *ctx)
     // Create default font
     NUX_CHECK(nux_font_init_default(ctx, &module->default_font), goto error);
 
-    // Register lua api
-    nux_lua_open_graphics(ctx);
-
     // Allocate gpu commands buffer
     NUX_CHECK(nux_gpu_encoder_init(a, &module->encoder), return NUX_NULL);
     NUX_CHECK(nux_gpu_encoder_init(a, &module->immediate_encoder),

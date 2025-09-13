@@ -106,10 +106,6 @@ void         nux_physics_add_distance_constraint(nux_ctx_t *ctx,
                                                  nux_u32_t  b,
                                                  float      distance);
 
-// lua_bindings.c
-
-nux_status_t nux_lua_open_physics(nux_ctx_t *ctx);
-
 // intersect.c
 
 nux_b32_t nux_intersect_ray_sphere(nux_ray_t r, nux_sphere_t s, nux_f32_t *t0);

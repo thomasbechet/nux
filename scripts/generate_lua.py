@@ -6,6 +6,7 @@ import sys
 import re
 import os
 import json
+import glob
 from template import apply_template
 
 def get_name_and_module(modules, fullname):
@@ -77,12 +78,10 @@ class TypeDefVisitor(c_ast.NodeVisitor):
         if type(node.type.type) is c_ast.Enum:
             parse_enum(node, self._constants)
 
-def parse_header(args, header):
+def parse_header(args, header, modules):
     api_header = os.path.join(args.rootdir, header)
     with open(api_header, 'r') as file:
         src = file.read()
-
-    modules = {}
 
     prelude = """
         typedef int uint8_t;
@@ -167,11 +166,17 @@ def parse_header(args, header):
     v.visit(ast)
     v = TypeDefVisitor(modules)
     v.visit(ast)
-    return modules
 
-def generate_files(args, source, api_name, modules):
-    apply_template(args.rootdir, "lua_bindings.c.jinja", source, modules=modules, api_name=api_name)
-    apply_template(args.rootdir, "lua_api.lua.jinja", f"lsp/lua/{api_name}_api.lua", modules=modules)
+def generate_lua_code(args, path):
+    code = []
+    for file in glob.glob(os.path.join(args.rootdir, path)):
+        string = open(file, "r").read()
+        def tohex(code):
+            l = ["0x{:02x}".format(x) for x in code.encode()]
+            return l
+        code += tohex(string)
+    code.append("0x00") # null terminated
+    return code
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -179,14 +184,22 @@ if __name__ == "__main__":
     parser.add_argument("--dump", dest="dump", action="store_true")
     args = parser.parse_args()
 
-    triples = [
-        ("core/base/api.h", "core/lua/lua_base_bindings.c", "base"),
-        ("core/io/api.h", "core/lua/lua_io_bindings.c", "io"),
-        ("core/lua/api.h", "core/lua/lua_bindings.c", "lua"),
-        ("core/ecs/api.h", "core/ecs/lua_bindings.c", "ecs"),
-        ("core/graphics/api.h", "core/graphics/lua_bindings.c", "graphics"),
-        ("core/physics/api.h", "core/physics/lua_bindings.c", "physics"),
+    # Parse C headers
+    headers = [
+        "core/base/api.h",
+        "core/io/api.h",
+        "core/lua/api.h",
+        "core/ecs/api.h",
+        "core/graphics/api.h",
+        "core/physics/api.h",
     ]
-    for header, target, name in triples:
-        m = parse_header(args, header)
-        generate_files(args, target, name, m)
+    modules = {}
+    for header in headers:
+        parse_header(args, header, modules)
+    # Generate lua_bindings.c
+    apply_template(args.rootdir, "lua_bindings.c.jinja", "core/lua/lua_bindings.c", clang_format=True, modules=modules)
+    # Generate lua embedded code
+    code = generate_lua_code(args, "core/lua/embedded/*")
+    apply_template(args.rootdir, "lua_code.c.inc.jinja", "core/lua/lua_code.c.inc", clang_format=True, code=code)
+    # Generate lua annotations for LSP
+    apply_template(args.rootdir, "lua_api.lua.jinja", "core/lua/lsp/api.lua", modules=modules)

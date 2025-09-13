@@ -119,7 +119,7 @@ static const struct luaL_Reg lib_{{ module_name }}[] = {
 };
 {% endfor %}
 
-nux_status_t nux_lua_open_{{ api_name }}(nux_ctx_t *ctx)
+nux_status_t nux_lua_open_api(nux_ctx_t *ctx)
 {
     lua_State *L = ctx->lua->L;
 {% for module_name, module in modules.items() %}

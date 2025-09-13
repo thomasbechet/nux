@@ -234,10 +234,6 @@ void         nux_gpu_push_v2(nux_ctx_t         *ctx,
 void nux_gpu_draw(nux_ctx_t *ctx, nux_gpu_encoder_t *enc, nux_u32_t count);
 void nux_gpu_clear(nux_ctx_t *ctx, nux_gpu_encoder_t *enc, nux_u32_t color);
 
-// lua_bindings.c
-
-nux_status_t nux_lua_open_graphics(nux_ctx_t *ctx);
-
 // texture.c
 
 void nux_texture_cleanup(nux_ctx_t *ctx, nux_rid_t rid);

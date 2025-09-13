@@ -1,7 +1,5 @@
 #include "internal.h"
 
-#include "lua_code.c.inc"
-
 NUX_VEC_IMPL(nux_ecs_bitset, nux_ecs_mask_t);
 NUX_VEC_IMPL(nux_ecs_chunk_vec, void *);
 NUX_VEC_IMPL(nux_ecs_container_vec, nux_ecs_container_t);
@@ -134,10 +132,6 @@ nux_ecs_init (nux_ctx_t *ctx)
     // Register components
     nux_ecs_register_component(
         ctx, NUX_COMPONENT_TRANSFORM, "transform", sizeof(nux_transform_t));
-
-    // Register lua api
-    nux_lua_open_ecs(ctx);
-    nux_lua_dostring(ctx, lua_data_code);
 
     return NUX_SUCCESS;
 }

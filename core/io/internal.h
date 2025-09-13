@@ -1,7 +1,7 @@
 #ifndef NUX_IO_INTERNAL_H
 #define NUX_IO_INTERNAL_H
 
-#include "base/internal.h"
+#include <base/internal.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -156,9 +156,5 @@ void nux_file_cleanup(nux_ctx_t *ctx, nux_rid_t res);
 // input.c
 
 void nux_input_update(nux_ctx_t *ctx);
-
-// lua_bindings.c
-
-nux_status_t nux_lua_open_io(nux_ctx_t *ctx);
 
 #endif

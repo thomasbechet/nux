@@ -66,11 +66,9 @@ nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
                             nux_rid_t       rid,
                             const nux_c8_t *path);
 
-// lua_bindings*.c
+// lua_bindings.c
 
-nux_status_t nux_lua_open_base(nux_ctx_t *ctx);
-nux_status_t nux_lua_open_io(nux_ctx_t *ctx);
-nux_status_t nux_lua_open_lua(nux_ctx_t *ctx);
+nux_status_t nux_lua_open_api(nux_ctx_t *ctx);
 
 // lua_math.c
 

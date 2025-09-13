@@ -167,8 +167,6 @@ nux_physics_init (nux_ctx_t *ctx)
                                                &module->distance_constraints),
               return NUX_FAILURE);
 
-    nux_lua_open_physics(ctx);
-
     module->rigidbody_transform_iter
         = nux_ecs_new_iter(ctx, ctx->core_arena_rid, 2, 0);
     NUX_CHECK(module->rigidbody_transform_iter, return NUX_FAILURE);

@@ -1,5 +1,0 @@
----@class Userdata
----@field x number
----@field y number
----@field z number
----@field position Userdata
