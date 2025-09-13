@@ -1,6 +1,4 @@
-local mod = MODULE
-
-function mod:on_load()
+function M:on_load()
     local files = {
         "conf.lua",
         "init.lua",
@@ -15,5 +13,3 @@ function mod:on_load()
     end
     assert(io.cart_end())
 end
-
-return mod

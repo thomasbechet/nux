@@ -1,4 +1,4 @@
-function MODULE:on_load()
+function M:on_load()
     self.speed = 10
     self.fast_speed = 20
     self.fov = 90
@@ -10,11 +10,11 @@ function MODULE:on_load()
     transform.set_translation(self.entity, { 13, 15, 10 })
 end
 
-function MODULE:on_event(e)
+function M:on_event(e)
 
 end
 
-function MODULE:on_update()
+function M:on_update()
     local speed = self.speed
     local fov = self.fov
     local e = self.entity

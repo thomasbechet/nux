@@ -11,7 +11,7 @@
 ///        MACROS        ///
 ////////////////////////////
 
-#define NUX_MODULE_TABLE "MODULE"
+#define NUX_MODULE_TABLE "M"
 #define NUX_FUNC_CONF    "on_conf"
 #define NUX_FUNC_LOAD    "on_load"
 #define NUX_FUNC_UNLOAD  "on_unload"

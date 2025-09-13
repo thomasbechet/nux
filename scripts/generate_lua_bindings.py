@@ -171,7 +171,7 @@ def parse_header(args, header):
 
 def generate_files(args, source, api_name, modules):
     apply_template(args.rootdir, "lua_bindings.c.jinja", source, modules=modules, api_name=api_name)
-    apply_template(args.rootdir, "lua_api.lua.jinja", f"api/{api_name}_api.lua", modules=modules)
+    apply_template(args.rootdir, "lua_api.lua.jinja", f"lsp/lua/{api_name}_api.lua", modules=modules)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

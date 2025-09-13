@@ -1,13 +1,12 @@
 local inspect = require("libs/inspect")
 
-function MODULE:on_reload()
+function M:on_reload()
 end
 
-function MODULE:on_event(e)
-
+function M:on_event(e)
 end
 
-function MODULE:on_load()
+function M:on_load()
     self.arena = resource.find("core_arena")
 
     local mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
@@ -86,7 +85,7 @@ local function memhu(size)
     return string.format("%.02f%s", size, units[i])
 end
 
-function MODULE:on_update()
+function M:on_update()
     transform.rotate_y(self.rotating, time.delta() * math.sin(time.elapsed()))
     transform.set_scale(self.rotating, vmath.vec3(1, 5, 10))
 
