@@ -29,6 +29,15 @@ l_core_random (lua_State *L)
     return 1;
 }
 static int
+l_core_random01 (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_f32_t  ret = nux_random01(ctx);
+    l_checkerror(L, ctx);
+    lua_pushnumber(L, ret);
+    return 1;
+}
+static int
 l_time_elapsed (lua_State *L)
 {
     nux_ctx_t *ctx = lua_getuserdata(L);
@@ -1179,6 +1188,7 @@ l_physics_raycast (lua_State *L)
 }
 static const struct luaL_Reg lib_core[] = { { "stat", l_core_stat },
                                             { "random", l_core_random },
+                                            { "random01", l_core_random01 },
                                             { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_time[] = { { "elapsed", l_time_elapsed },
                                             { "delta", l_time_delta },

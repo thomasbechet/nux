@@ -33,3 +33,8 @@ nux_random (nux_ctx_t *ctx)
 {
     return nux_pcg_u32(&ctx->pcg);
 }
+nux_f32_t
+nux_random01 (nux_ctx_t *ctx)
+{
+    return nux_pcg_f32(&ctx->pcg);
+}

@@ -1,4 +1,5 @@
 local inspect = require("libs/inspect")
+require("emitter")
 
 function M:on_reload()
 end

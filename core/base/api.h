@@ -101,6 +101,7 @@ nux_u32_t nux_time_frame(nux_ctx_t *ctx);
 nux_u64_t nux_time_timestamp(nux_ctx_t *ctx);
 
 nux_u32_t nux_random(nux_ctx_t *ctx);
+nux_f32_t nux_random01(nux_ctx_t *ctx);
 
 #ifdef NUX_BUILD_VARARGS
 void nux_textfmt(nux_ctx_t      *ctx,

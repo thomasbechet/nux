@@ -5,6 +5,8 @@ core.FAILURE=0
 function core.stat(...) end
 ---@return integer
 function core.random(...) end
+---@return number
+function core.random01(...) end
 time={}
 ---@return number
 function time.elapsed(...) end
