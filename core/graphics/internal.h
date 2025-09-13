@@ -153,7 +153,7 @@ typedef struct nux_graphics_module
 // graphics.c
 
 nux_status_t nux_graphics_init(nux_ctx_t *ctx);
-nux_status_t nux_graphics_free(nux_ctx_t *ctx);
+void         nux_graphics_free(nux_ctx_t *ctx);
 nux_status_t nux_graphics_pre_update(nux_ctx_t *ctx);
 nux_status_t nux_graphics_update(nux_ctx_t *ctx);
 

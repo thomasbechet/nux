@@ -115,7 +115,7 @@ typedef struct nux_io_module
 // io.c
 
 nux_status_t nux_io_init(nux_ctx_t *ctx);
-nux_status_t nux_io_free(nux_ctx_t *ctx);
+void         nux_io_free(nux_ctx_t *ctx);
 
 nux_status_t nux_io_mount(nux_ctx_t *ctx, const nux_c8_t *path);
 

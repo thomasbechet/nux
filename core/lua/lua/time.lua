@@ -1,5 +1,5 @@
-function nux.time.date_ymd()
-    local z = nux.time.timestamp() // 86400 -- days since epoch
+function time.date_ymd()
+    local z = time.timestamp() // 86400 -- days since epoch
     z = z + 719468
     local era
     if z >= 0 then
@@ -26,16 +26,16 @@ function nux.time.date_ymd()
     return y, m, d
 end
 
-function nux.time.date_hms()
-    local z = nux.time.timestamp() % 86400
+function time.date_hms()
+    local z = time.timestamp() % 86400
     local h = z // 3600
     local m = (z % 3600) // 60
     local s = z % 60
     return h, m, s
 end
 
-function nux.time.date()
-    local y, mm, d = nux.time.date_ymd()
-    local h, m, s = nux.time.date_hms()
+function time.date()
+    local y, mm, d = time.date_ymd()
+    local h, m, s = time.date_hms()
     return string.format("%02d-%02d-%02d %02d:%02d:%02d", y, mm, d, h, m, s)
 end

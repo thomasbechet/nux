@@ -1,67 +1,62 @@
-local nux = nux
-local camera = MODULE
-
-function camera:on_load()
-    camera.speed = 10
-    camera.fast_speed = 20
-    camera.fov = 90
-    camera.pitch = 0
-    camera.yaw = 0
-    camera.entity = nux.ecs.create()
-    nux.camera.add(camera.entity)
-    nux.transform.add(camera.entity)
-    nux.transform.set_translation(camera.entity, { 13, 15, 10 })
+function MODULE:on_load()
+    self.speed = 10
+    self.fast_speed = 20
+    self.fov = 90
+    self.pitch = 0
+    self.yaw = 0
+    self.entity = ecs.create()
+    camera.add(self.entity)
+    transform.add(self.entity)
+    transform.set_translation(self.entity, { 13, 15, 10 })
 end
 
-function camera:on_event(e)
+function MODULE:on_event(e)
 
 end
 
-function camera:on_update()
-    local speed = camera.speed
-    local fov = camera.fov
-    local e = camera.entity
+function MODULE:on_update()
+    local speed = self.speed
+    local fov = self.fov
+    local e = self.entity
 
-    if nux.button.pressed(0, nux.button.LB) then
-        speed = camera.fast_speed
+    if button.pressed(0, button.LB) then
+        speed = self.fast_speed
     end
-    nux.camera.set_fov(e, fov)
+    camera.set_fov(e, fov)
 
-    local mx = nux.axis.value(0, nux.axis.LEFTX)
-    local mz = nux.axis.value(0, nux.axis.LEFTY)
+    local mx = axis.value(0, axis.LEFTX)
+    local mz = axis.value(0, axis.LEFTY)
     local my = 0
-    if nux.button.pressed(0, nux.button.A) then
+    if button.pressed(0, button.A) then
         my = 1
-    elseif nux.button.pressed(0, nux.button.B) then
+    elseif button.pressed(0, button.B) then
         my = -1
     end
-    local rx = nux.axis.value(0, nux.axis.RIGHTX)
-    local ry = nux.axis.value(0, nux.axis.RIGHTY)
+    local rx = axis.value(0, axis.RIGHTX)
+    local ry = axis.value(0, axis.RIGHTY)
 
     -- Translation
-    local forward = nux.transform.forward(e)
-    local left = nux.transform.left(e)
-    local dt = nux.time.delta()
+    local forward = transform.forward(e)
+    local left = transform.left(e)
+    local dt = time.delta()
     -- Forward
     local dir = forward * mz * dt * speed
     -- Left
     dir = dir - left * mx * dt * speed
     -- Up
     dir.y = dir.y + my * dt * speed
-    local position = nux.transform.get_translation(e)
-    nux.transform.set_translation(e, position + dir)
+    local position = transform.get_translation(e)
+    transform.set_translation(e, position + dir)
 
     -- Rotation
     if rx ~= 0 then
-        camera.yaw = camera.yaw + rx * nux.time.delta() * 100
+        self.yaw = self.yaw + rx * time.delta() * 100
     end
     if ry ~= 0 then
-        camera.pitch = camera.pitch - ry * nux.time.delta() * 100
+        self.pitch = self.pitch - ry * time.delta() * 100
     end
-    camera.pitch = math.clamp(camera.pitch, -90, 90)
-    nux.transform.set_rotation_euler(e, nux.vmath.vec3(-math.rad(camera.pitch), -math.rad(camera.yaw), 0))
-    nux.camera.set_far(e, 1000)
-    nux.camera.set_near(e, 0.1)
+    self.pitch = math.clamp(self.pitch, -90, 90)
+    transform.set_rotation_euler(e, vmath.vec3(-math.rad(self.pitch), -math.rad(self.yaw), 0))
+    camera.set_far(e, 1000)
+    camera.set_near(e, 0.1)
 end
-
-return camera

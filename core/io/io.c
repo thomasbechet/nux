@@ -74,10 +74,11 @@ nux_io_init (nux_ctx_t *ctx)
 error:
     return NUX_FAILURE;
 }
-nux_status_t
+void
 nux_io_free (nux_ctx_t *ctx)
 {
     nux_io_module_t *module = ctx->io;
+    NUX_CHECK(module, return);
 
     // Unmount disks
     for (nux_u32_t i = 0; i < module->disks_count; ++i)
@@ -90,8 +91,6 @@ nux_io_free (nux_ctx_t *ctx)
     }
 
     NUX_ASSERT(module->free_file_slots.size == NUX_IO_FILE_MAX);
-
-    return NUX_SUCCESS;
 }
 
 static nux_status_t

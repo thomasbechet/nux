@@ -1,21 +1,21 @@
-local mod = MODULE
 local inspect = require("libs/inspect")
-local camera
-local nux = nux
 
-function mod:on_event(e)
+function MODULE:on_reload()
+end
+
+function MODULE:on_event(e)
 
 end
 
-function mod:on_load()
-    self.arena = nux.resource.find("core_arena")
+function MODULE:on_load()
+    self.arena = resource.find("core_arena")
 
-    local mesh_cube = nux.mesh.new_cube(self.arena, 1, 1, 1)
+    local mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
     self.cube_mesh = mesh_cube
 
-    self.ecs = nux.ecs.load_gltf(self.arena, "assets/industrial.glb")
-    nux.ecs.set_active(self.ecs)
-    camera = require("camera")
+    self.ecs = ecs.load_gltf(self.arena, "assets/industrial.glb")
+    ecs.set_active(self.ecs)
+    self.camera = require("camera")
 
     local template = {
         staticmesh = { mesh = mesh_cube }
@@ -47,7 +47,7 @@ function mod:on_load()
     for i = 0, 100 do
         local x = i // 10
         local y = i % 10
-        local n = nux.ecs.instantiate({
+        local n = ecs.instantiate({
             template = template3,
             transform = { translation = { x * 8, 0.1, y * 5 + 0.1 } }
         }
@@ -58,22 +58,22 @@ function mod:on_load()
     end
 
     -- Create canvas
-    self.gui_canvas = nux.canvas.new(self.arena, nux.canvas.WIDTH, nux.canvas.HEIGHT)
-    nux.canvas.set_layer(self.gui_canvas, 1)
+    self.gui_canvas = canvas.new(self.arena, canvas.WIDTH, canvas.HEIGHT)
+    canvas.set_layer(self.gui_canvas, 1)
 
     -- Create the API monolith
     local x, y = 350, 2000
-    self.monolith_canvas = nux.canvas.new(self.arena, x, y)
-    self.cube = nux.ecs.create()
-    nux.transform.add(self.cube)
-    nux.transform.set_translation(self.cube, { 10, 0, 0 })
-    nux.transform.set_scale(self.cube, { x / 50, y / 50, 1 })
-    nux.staticmesh.add(self.cube)
-    nux.staticmesh.set_mesh(self.cube, mesh_cube)
-    nux.staticmesh.set_texture(self.cube, nux.canvas.get_texture(self.monolith_canvas))
-    nux.collider.add_aabb(self.cube, nux.vmath.vec3(0), { x / 50, y / 50, 1 })
+    self.monolith_canvas = canvas.new(self.arena, x, y)
+    self.cube = ecs.create()
+    transform.add(self.cube)
+    transform.set_translation(self.cube, { 10, 0, 0 })
+    transform.set_scale(self.cube, { x / 50, y / 50, 1 })
+    staticmesh.add(self.cube)
+    staticmesh.set_mesh(self.cube, mesh_cube)
+    staticmesh.set_texture(self.cube, canvas.get_texture(self.monolith_canvas))
+    collider.add_aabb(self.cube, vmath.vec3(0), { x / 50, y / 50, 1 })
 
-    self.api = inspect(nux)
+    self.api = inspect(transform)
 end
 
 local function memhu(size)
@@ -86,44 +86,46 @@ local function memhu(size)
     return string.format("%.02f%s", size, units[i])
 end
 
-function mod:on_update()
-    nux.transform.rotate_y(self.rotating, nux.time.delta() * math.sin(nux.time.elapsed()))
-    nux.transform.set_scale(self.rotating, nux.vmath.vec3(1, 5, 10))
+function MODULE:on_update()
+    transform.rotate_y(self.rotating, time.delta() * math.sin(time.elapsed()))
+    transform.set_scale(self.rotating, vmath.vec3(1, 5, 10))
 
     -- nux.graphics.draw_line(nux.vmath.vec3(0, 0, 0), nux.vmath.vec3(10, 10, 10), 0x0)
-    local p = nux.vmath.vec3(0, 0, -10)
-    nux.graphics.draw_dir(p, nux.vmath.vec3(1, 0, 0), 1, 0x0)
-    nux.graphics.draw_dir(p, nux.vmath.vec3(0, 1, 0), 1, 0x0)
-    nux.graphics.draw_dir(p, nux.vmath.vec3(0, 0, 1), 1, 0x0)
+    local p = vmath.vec3(0, 0, -10)
+    graphics.draw_dir(p, vmath.vec3(1, 0, 0), 1, 0x0)
+    graphics.draw_dir(p, vmath.vec3(0, 1, 0), 1, 0x0)
+    graphics.draw_dir(p, vmath.vec3(0, 0, 1), 1, 0x0)
 
-    local canvas = self.monolith_canvas
-    nux.canvas.set_clear_color(canvas, 0x99ccff)
-    nux.canvas.text(canvas, 10, 10, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(canvas, 10, 20, self.api)
-    nux.canvas.text(canvas, 150, 50, "hello Julia")
+    local c = self.monolith_canvas
+    canvas.set_clear_color(c, 0x99ccff)
+    canvas.text(c, 10, 10, string.format("time:%.2fs", time.elapsed()))
+    canvas.text(c, 10, 20, self.api)
+    canvas.text(c, 150, 50, "hello Julia")
 
-    local position = nux.transform.get_translation(camera.entity)
-    canvas = self.gui_canvas
-    nux.canvas.text(canvas, 10, 10, nux.time.date())
-    nux.canvas.text(canvas, 10, 20, string.format("time:%.2fs", nux.time.elapsed()))
-    nux.canvas.text(canvas, 10, 30, string.format("x:%.2f", position.x))
-    nux.canvas.text(canvas, 10, 40, string.format("y:%.2f", position.y))
-    nux.canvas.text(canvas, 10, 50, string.format("z:%.2f", position.z))
-    nux.canvas.text(canvas, 10, 60, string.format("mem:%s", memhu(nux.arena.memory_usage(self.arena))))
-    nux.canvas.text(canvas, 10, 70, string.format("mem:%s", memhu(nux.arena.memory_usage(nux.resource.find("frame_arena")))))
-    nux.canvas.text(canvas, math.floor(nux.cursor.x(0)), math.floor(nux.cursor.y(0)), "X")
+    local position = transform.get_translation(self.camera.entity)
+    c = self.gui_canvas
+    canvas.text(c, 10, 10, time.date())
+    canvas.text(c, 10, 20, string.format("time:%.2fs", time.elapsed()))
+    canvas.text(c, 10, 30, string.format("x:%.2f", position.x))
+    canvas.text(c, 10, 40, string.format("y:%.2f", position.y))
+    canvas.text(c, 10, 50, string.format("z:%.2f", position.z))
+    canvas.text(c, 10, 60,
+        string.format("mem:%s bc:%d", memhu(arena.memory_usage(self.arena)), arena.block_count(self.arena)))
+    canvas.text(c, 10, 70,
+        string.format("mem:%s", memhu(arena.memory_usage(resource.find("frame_arena")))))
+    canvas.text(c, math.floor(cursor.x(0)), math.floor(cursor.y(0)), "X")
 
-    local forward = nux.transform.forward(camera.entity)
-    if nux.button.just_pressed(0, nux.button.RB) then
-        local hit = nux.physics.raycast(position, forward)
+    local forward = transform.forward(self.camera.entity)
+    if button.just_pressed(0, button.RB) then
+        local hit = physics.raycast(position, forward)
         if hit then
             local pos = hit.position
             print("hit at " .. tostring(pos))
-            local e = nux.ecs.create()
-            nux.transform.add(e)
-            nux.transform.set_translation(e, pos)
-            nux.staticmesh.add(e)
-            nux.staticmesh.set_mesh(e, self.cube_mesh)
+            local e = ecs.create()
+            transform.add(e)
+            transform.set_translation(e, pos)
+            staticmesh.add(e)
+            staticmesh.set_mesh(e, self.cube_mesh)
         else
             local r = {
                 { 0x100001C, 0x1000069 },
@@ -134,28 +136,26 @@ function mod:on_update()
                 { 0x1000053, 0x100007E },
                 { 0x1000048, 0x100007C },
             }
-            local m, t = table.unpack(r[(nux.random() % #r) + 1])
+            local m, t = table.unpack(r[(core.random() % #r) + 1])
 
-            local e = nux.ecs.create()
-            nux.transform.add(e)
-            nux.transform.set_translation(e, position)
-            local min = nux.mesh.bounds_min(m)
-            local max = nux.mesh.bounds_max(m)
-            nux.collider.add_aabb(e, min, max)
+            local e = ecs.create()
+            transform.add(e)
+            transform.set_translation(e, position)
+            local min = mesh.bounds_min(m)
+            local max = mesh.bounds_max(m)
+            collider.add_aabb(e, min, max)
             local force = 15
-            nux.rigidbody.add(e)
-            nux.rigidbody.set_velocity(e, forward * force)
+            rigidbody.add(e)
+            rigidbody.set_velocity(e, forward * force)
 
             -- add mesh
-            local child = nux.ecs.create()
-            nux.transform.add(child)
-            nux.staticmesh.add(child)
-            nux.transform.set_parent(child, e)
-            nux.transform.set_translation(child, -min)
-            nux.staticmesh.set_mesh(child, m)
-            nux.staticmesh.set_texture(child, t)
+            local child = ecs.create()
+            transform.add(child)
+            staticmesh.add(child)
+            transform.set_parent(child, e)
+            transform.set_translation(child, -min)
+            staticmesh.set_mesh(child, m)
+            staticmesh.set_texture(child, t)
         end
     end
 end
-
-return mod

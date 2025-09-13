@@ -671,10 +671,8 @@ nux_lua_open_vmath (nux_ctx_t *ctx)
             { "div", math_div },       { NULL, NULL } };
     lua_State *L = ctx->lua->L;
     register_metatable(L);
-    lua_getglobal(L, "nux");
     lua_newtable(L);
     luaL_setfuncs(L, vmath_lib, 0);
-    lua_setfield(L, -2, "vmath");
-    lua_pop(L, 1);
+    lua_setglobal(L, "vmath");
     return NUX_SUCCESS;
 }

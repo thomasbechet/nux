@@ -234,7 +234,7 @@ nux_arena_block_count (nux_ctx_t *ctx, nux_rid_t arena)
     NUX_CHECK(a, return 0);
     nux_arena_block_t *b = a->first_block;
     nux_u32_t          i = 0;
-    while (a)
+    while (b)
     {
         b = b->next;
         ++i;

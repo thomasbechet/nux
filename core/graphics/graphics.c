@@ -156,10 +156,11 @@ nux_graphics_init (nux_ctx_t *ctx)
 error:
     return NUX_FAILURE;
 }
-nux_status_t
+void
 nux_graphics_free (nux_ctx_t *ctx)
 {
     nux_graphics_module_t *module = ctx->graphics;
+    NUX_CHECK(module, return);
 
     nux_gpu_buffer_free(ctx, &module->constants_buffer);
     nux_gpu_buffer_free(ctx, &module->batches_buffer);
@@ -179,8 +180,6 @@ nux_graphics_free (nux_ctx_t *ctx)
     NUX_ASSERT(module->free_pipeline_slots.size == NUX_GPU_PIPELINE_MAX);
     NUX_ASSERT(module->free_framebuffer_slots.size
                == NUX_GPU_FRAMEBUFFER_MAX - 1); // 0 reserved for default
-
-    return NUX_SUCCESS;
 }
 nux_status_t
 nux_graphics_pre_update (nux_ctx_t *ctx)

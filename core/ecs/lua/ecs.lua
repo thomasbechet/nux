@@ -1,6 +1,4 @@
-local nux = nux
-
-function nux.ecs.instantiate(tab, parent)
+function ecs.instantiate(tab, parent)
     local loaders
 
     local function load_entity(n, t)
@@ -9,7 +7,7 @@ function nux.ecs.instantiate(tab, parent)
             if load then
                 load(n, v)
             else
-                nux.ecs.instantiate(v, n)
+                ecs.instantiate(v, n)
             end
         end
     end
@@ -20,41 +18,41 @@ function nux.ecs.instantiate(tab, parent)
             load_entity(n, v)
         end,
         transform = function(n, v)
-            nux.transform.add(n)
+            transform.add(n)
             if v.translation then
-                nux.transform.set_translation(n, v.translation)
+                transform.set_translation(n, v.translation)
             end
             if v.scale then
-                nux.transform.set_scale(n, v.scale)
+                transform.set_scale(n, v.scale)
             end
         end,
         camera = function(n, v)
-            nux.camera.add(n)
+            camera.add(n)
             if v.fov then
-                nux.camera.set_fov(n, v.fov)
+                camera.set_fov(n, v.fov)
             end
         end,
         staticmesh = function(n, v)
-            nux.staticmesh.add(n)
+            staticmesh.add(n)
             if v.mesh then
-                nux.staticmesh.set_mesh(n, v.mesh)
+                staticmesh.set_mesh(n, v.mesh)
             end
         end,
     }
 
-    local e = nux.ecs.create()
+    local e = ecs.create()
     load_entity(e, tab)
     if parent then
-        nux.transform.set_parent(e, parent)
+        transform.set_parent(e, parent)
     end
     return e
 end
 
-function nux.ecs.load(tab)
-    local ecs = nux.ecs.new(100)
-    local prev = nux.ecs.get_active()
-    nux.ecs.set_active(ecs)
-    nux.ecs.instantiate(tab, nil)
-    nux.ecs.set_active(prev)
-    return ecs
+function ecs.load(tab)
+    local e = ecs.new(100)
+    local prev = ecs.get_active()
+    ecs.set_active(e)
+    ecs.instantiate(tab, nil)
+    ecs.set_active(prev)
+    return e
 end

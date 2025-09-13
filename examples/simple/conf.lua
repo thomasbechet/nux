@@ -1,4 +1,4 @@
-function nux.conf(config)
+function on_conf(config)
     config.hotreload = true
     -- config.log.level = 'debug'
 end

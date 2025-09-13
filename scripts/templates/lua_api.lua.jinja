@@ -1,0 +1,26 @@
+{% for module_name, module in modules.items() %}
+{% set retmap = {
+    "void": "nil",
+    "nux_i8_t": "integer",
+    "nux_u8_t": "integer",
+    "nux_b32_t": "boolean",
+    "nux_i32_t": "integer",
+    "nux_u32_t": "integer",
+    "nux_f32_t": "number",
+    "nux_status_t": "integer",
+    "nux_rid_t": "integer",
+    "nux_v3_t": "Userdata",
+    "nux_m4_t": "Userdata",
+    "nux_q4_t": "Userdata",
+    "nux_raycast_hit_t": "Userdata",
+    "nux_c8_t": "string",
+} %}
+{{ module_name }}={}
+{% for constant in module.constants %}
+{{ module_name }}.{{ constant.name }}={{ constant.value }}
+{% endfor %}
+{% for function in module.functions %}
+---@return {{ retmap.get(function.returntype) }}
+function {{ module_name }}.{{ function.name }}(...) end
+{% endfor %}
+{% endfor %}

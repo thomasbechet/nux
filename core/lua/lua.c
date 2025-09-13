@@ -155,23 +155,6 @@ serde_end_table (nux_lua_serde_t *s)
         lua_pop(s->L, 1);
     }
 }
-static nux_b32_t
-lua_get_function (lua_State *L, const nux_c8_t *func)
-{
-    nux_status_t status = NUX_SUCCESS;
-    if (lua_getglobal(L, NUX_TABLE) != LUA_TTABLE)
-    {
-        lua_pop(L, 1);
-        return NUX_FALSE;
-    }
-    if (lua_getfield(L, -1, func) != LUA_TFUNCTION)
-    {
-        lua_pop(L, 2); // pop field and table
-        return NUX_FALSE;
-    }
-    lua_remove(L, -2); // remove table to let arguments on top
-    return NUX_TRUE;
-}
 static nux_status_t
 lua_call_function (nux_ctx_t *ctx, nux_u32_t nargs, nux_u32_t nreturns)
 {
@@ -276,8 +259,7 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     lua_State *L   = ctx->lua->L;
 
     // 1. keep previous module on stack
-    lua_getglobal(L, "MODULE");
-    // -1=PREVMOD
+    lua_getglobal(L, NUX_MODULE_TABLE);
 
     // 2. set global MODULE
     if (lua->ref)
@@ -289,29 +271,38 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     {
         lua_newtable(L);
     }
-    // -2=PREVMOD, -1=MOD
     NUX_ASSERT(lua_istable(L, -1));
-    lua_setglobal(L, "MODULE");
-    // -1=PREVMOD
+    lua_setglobal(L, NUX_MODULE_TABLE);
 
     // 3. execute module
+    nux_u32_t prev = lua_gettop(L);
     if (luaL_dofile(L, path) != LUA_OK)
     {
         NUX_ERROR("%s", lua_tostring(L, -1));
         return NUX_FAILURE;
     }
-    NUX_ENSURE(lua_istable(L, -1),
-               return NUX_NULL,
-               "lua module '%s' is expected to return a table",
-               path);
-    // -2=PREVMOD, -1=RETMOD
 
-    // 4. assign returned table to registry
+    // 4. assign module table to registry
+    nux_u32_t nret = lua_gettop(L) - prev;
+    if (nret)
+    {
+        NUX_ENSURE(nret == 1 && lua_istable(L, -1),
+                   return NUX_FAILURE,
+                   "lua module '%s' returned value is not a table",
+                   path);
+    }
+    else
+    {
+        lua_getglobal(L, NUX_MODULE_TABLE);
+        NUX_ENSURE(lua_istable(L, -1),
+                   return NUX_FAILURE,
+                   "lua module table '%s' removed",
+                   path);
+    }
     lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    // -1=PREVMOD
 
     // 5. reset previous MODULE global
-    lua_setglobal(L, "MODULE"); // reset previous module
+    lua_setglobal(L, NUX_MODULE_TABLE); // reset previous module
 
     return NUX_SUCCESS;
 }
@@ -363,10 +354,6 @@ nux_lua_init (nux_ctx_t *ctx)
     NUX_ASSERT(lua_getuserdata(module->L) == ctx);
     NUX_ENSURE(module->L, return NUX_FAILURE, "failed to initialize lua state");
 
-    // Create nux table
-    lua_newtable(module->L);
-    lua_setglobal(module->L, NUX_TABLE);
-
     // Register base lua API
     luaL_openlibs(module->L);
 
@@ -384,6 +371,7 @@ void
 nux_lua_free (nux_ctx_t *ctx)
 {
     nux_lua_module_t *module = ctx->lua;
+    NUX_CHECK(module, return);
 
     if (module->L)
     {
@@ -408,11 +396,14 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
         lua_newtable(module->L);
         serialize_config(ctx, config);
 
-        if (lua_get_function(module->L, NUX_FUNC_CONF))
+        if (lua_getglobal(module->L, NUX_FUNC_CONF) != LUA_TFUNCTION)
         {
-            lua_pushvalue(module->L, -2); // push config as argument
-            NUX_CHECK(lua_call_function(ctx, 1, 0), return NUX_FAILURE);
+            lua_pop(module->L, 1);
+            return NUX_FAILURE;
         }
+        lua_pushvalue(module->L, -2); // push config as argument
+        NUX_CHECK(lua_call_function(ctx, 1, 0), return NUX_FAILURE);
+
         deserialize_config(ctx, config);
         lua_pop(module->L, 1);
     }

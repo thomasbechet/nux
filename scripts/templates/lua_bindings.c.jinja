@@ -122,20 +122,14 @@ static const struct luaL_Reg lib_{{ module_name }}[] = {
 nux_status_t nux_lua_open_{{ api_name }}(nux_ctx_t *ctx)
 {
     lua_State *L = ctx->lua->L;
-    lua_getglobal(L, "nux");
 {% for module_name, module in modules.items() %}
-{% if module_name != "core" %}
     lua_newtable(L);
-{% endif %}
     luaL_setfuncs(L, lib_{{ module_name }}, 0);
 {% for constant in module.constants %}
     lua_pushinteger(L, {{ constant.value }}); 
     lua_setfield(L, -2, "{{ constant.name }}");
 {% endfor %}
-{% if module_name != "core" %}
-    lua_setfield(L, -2, "{{ module_name }}"); // Set module to nux table
-{% endif %}
+    lua_setglobal(L, "{{ module_name }}");
 {% endfor %}
-    lua_pop(L, 1);
     return NUX_SUCCESS;
 }
