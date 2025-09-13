@@ -341,17 +341,17 @@
 
 typedef enum
 {
-    NUX_RESOURCE_NULL     = 0,
-    NUX_RESOURCE_ARENA    = 1,
-    NUX_RESOURCE_LUA      = 2,
-    NUX_RESOURCE_TEXTURE  = 3,
-    NUX_RESOURCE_MESH     = 4,
-    NUX_RESOURCE_CANVAS   = 5,
-    NUX_RESOURCE_FONT     = 6,
-    NUX_RESOURCE_FILE     = 7,
-    NUX_RESOURCE_ECS      = 8,
-    NUX_RESOURCE_ECS_ITER = 9,
-    NUX_RESOURCE_EVENT    = 10,
+    NUX_RESOURCE_NULL       = 0,
+    NUX_RESOURCE_ARENA      = 1,
+    NUX_RESOURCE_LUA_SCRIPT = 2,
+    NUX_RESOURCE_TEXTURE    = 3,
+    NUX_RESOURCE_MESH       = 4,
+    NUX_RESOURCE_CANVAS     = 5,
+    NUX_RESOURCE_FONT       = 6,
+    NUX_RESOURCE_FILE       = 7,
+    NUX_RESOURCE_ECS        = 8,
+    NUX_RESOURCE_ECS_ITER   = 9,
+    NUX_RESOURCE_EVENT      = 10,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
@@ -580,23 +580,30 @@ typedef struct
 
 } nux_config_t;
 
+typedef void (*nux_event_callback_t)(nux_ctx_t  *ctx,
+                                     void       *userdata,
+                                     nux_rid_t   event,
+                                     const void *data);
+
+typedef struct nux_event_handler
+{
+    struct nux_event_handler *next;
+    struct nux_event_handler *prev;
+    nux_event_callback_t      callback;
+    void                     *userdata;
+} nux_event_handler_t;
+
+typedef struct nux_event_header
+{
+    struct nux_event_header *next;
+    void                    *data;
+} nux_event_header_t;
+
 typedef struct
 {
-} nux_event_data_t;
-
-typedef void (*nux_event_callback_t)(nux_ctx_t              *ctx,
-                                     nux_rid_t               event,
-                                     const nux_event_data_t *data);
-
-typedef struct nux_event_subscriber
-{
-    struct nux_event_subscriber *next;
-    nux_event_callback_t         callback;
-} nux_event_subscriber_t;
-
-typedef struct
-{
-    nux_event_subscriber_t *first_subscriber;
+    nux_arena_t         *arena;
+    nux_event_handler_t *first_handler;
+    nux_event_header_t  *first_event;
 } nux_event_t;
 
 typedef struct nux_io_module       nux_io_module_t;
@@ -822,12 +829,18 @@ void         nux_base_free(nux_ctx_t *ctx);
 
 // event.c
 
-void nux_event_subscribe(nux_ctx_t           *ctx,
-                         nux_rid_t            event,
-                         nux_event_callback_t callback);
-void nux_event_unsubscribe(nux_ctx_t           *ctx,
-                           nux_rid_t            event,
-                           nux_event_callback_t callback);
-void nux_event_post(nux_ctx_t *ctx, nux_rid_t event, nux_event_data_t data);
+nux_rid_t            nux_event_new(nux_ctx_t *ctx, nux_rid_t arena);
+nux_event_handler_t *nux_event_subscribe(nux_ctx_t           *ctx,
+                                         nux_rid_t            event,
+                                         void                *userdata,
+                                         nux_event_callback_t callback);
+void                 nux_event_unsubscribe(nux_ctx_t                 *ctx,
+                                           nux_rid_t                  event,
+                                           const nux_event_handler_t *subscriber);
+void                 nux_event_emit(nux_ctx_t  *ctx,
+                                    nux_rid_t   event,
+                                    nux_u32_t   size,
+                                    const void *data);
+void                 nux_event_process(nux_ctx_t *ctx, nux_rid_t event);
 
 #endif

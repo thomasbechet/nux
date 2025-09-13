@@ -41,8 +41,10 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t ref;
-} nux_lua_t;
+    nux_u32_t            ref;
+    nux_u32_vec_t        events;
+    nux_event_handler_t *event_handler;
+} nux_lua_script_t;
 
 typedef struct nux_lua_module
 {
@@ -62,9 +64,9 @@ nux_status_t nux_lua_call_module(nux_ctx_t      *ctx,
                                  nux_rid_t       module,
                                  const nux_c8_t *name);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
-nux_status_t nux_lua_reload(nux_ctx_t      *ctx,
-                            nux_rid_t       rid,
-                            const nux_c8_t *path);
+nux_status_t nux_lua_script_reload(nux_ctx_t      *ctx,
+                                   nux_rid_t       rid,
+                                   const nux_c8_t *path);
 
 // lua_bindings.c
 
@@ -73,18 +75,23 @@ nux_status_t nux_lua_open_api(nux_ctx_t *ctx);
 // lua_math.c
 
 nux_status_t nux_lua_open_vmath(nux_ctx_t *ctx);
-void         nux_lua_push_vec2(lua_State *L, nux_v2_t v);
-nux_v2_t     nux_lua_check_vec2(lua_State *L, int index);
-void         nux_lua_push_vec3(lua_State *L, nux_v3_t v);
-nux_v3_t     nux_lua_check_vec3(lua_State *L, int index);
-void         nux_lua_push_vec4(lua_State *L, nux_v4_t v);
-nux_v4_t     nux_lua_check_vec4(lua_State *L, int index);
-void         nux_lua_push_mat4(lua_State *L, nux_m4_t m);
-nux_m4_t     nux_lua_check_mat4(lua_State *L, int index);
-void         nux_lua_push_hit(lua_State *L, nux_raycast_hit_t hit);
+
+void     nux_lua_push_vec2(lua_State *L, nux_v2_t v);
+nux_v2_t nux_lua_check_vec2(lua_State *L, int index);
+void     nux_lua_push_vec3(lua_State *L, nux_v3_t v);
+nux_v3_t nux_lua_check_vec3(lua_State *L, int index);
+void     nux_lua_push_vec4(lua_State *L, nux_v4_t v);
+nux_v4_t nux_lua_check_vec4(lua_State *L, int index);
+void     nux_lua_push_mat4(lua_State *L, nux_m4_t m);
+nux_m4_t nux_lua_check_mat4(lua_State *L, int index);
+void     nux_lua_push_hit(lua_State *L, nux_raycast_hit_t hit);
 
 // lua_require.c
 
 nux_status_t nux_lua_open_require(nux_ctx_t *ctx);
+
+// lua_event.c
+
+nux_status_t nux_lua_open_event(nux_ctx_t *ctx);
 
 #endif

@@ -171,6 +171,13 @@ nux_resource_get_name (nux_ctx_t *ctx, nux_rid_t rid)
     return entry->name;
 }
 nux_rid_t
+nux_resource_get_arena (nux_ctx_t *ctx, nux_rid_t rid)
+{
+    nux_resource_entry_t *entry = check_entry(ctx, rid, NUX_NULL);
+    NUX_CHECK(entry, return NUX_NULL);
+    return entry->arena;
+}
+nux_rid_t
 nux_resource_find (nux_ctx_t *ctx, const nux_c8_t *name)
 {
     for (nux_u32_t i = 0; i < ctx->resources.size; ++i)

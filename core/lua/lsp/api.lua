@@ -27,9 +27,6 @@ function arena.memory_usage(...) end
 function arena.memory_capacity(...) end
 ---@return integer
 function arena.block_count(...) end
-event={}
----@return integer
-function event.new(...) end
 resource={}
 ---@return None
 function resource.get_path(...) end
@@ -37,6 +34,8 @@ function resource.get_path(...) end
 function resource.set_name(...) end
 ---@return None
 function resource.get_name(...) end
+---@return integer
+function resource.get_arena(...) end
 ---@return integer
 function resource.find(...) end
 error={}

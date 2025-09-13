@@ -153,7 +153,7 @@ nux_instance_update (nux_ctx_t *ctx)
 
     // Update
     nux_rid_t rid = NUX_NULL;
-    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA, rid)))
+    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA_SCRIPT, rid)))
     {
         nux_lua_call_module(ctx, rid, NUX_FUNC_UPDATE);
     }

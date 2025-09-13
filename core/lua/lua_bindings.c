@@ -130,24 +130,6 @@ l_arena_block_count (lua_State *L)
     return 1;
 }
 static int
-l_event_new (lua_State *L)
-{
-    nux_ctx_t      *ctx   = lua_getuserdata(L);
-    nux_rid_t       arena = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    const nux_c8_t *name  = luaL_checkstring(L, 2);
-    nux_rid_t       ret   = nux_event_new(ctx, arena, name);
-    l_checkerror(L, ctx);
-    if (ret)
-    {
-        lua_pushinteger(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
 l_resource_get_path (lua_State *L)
 {
     nux_ctx_t      *ctx = lua_getuserdata(L);
@@ -175,6 +157,23 @@ l_resource_get_name (lua_State *L)
     const nux_c8_t *ret = nux_resource_get_name(ctx, rid);
     l_checkerror(L, ctx);
     lua_pushstring(L, ret);
+    return 1;
+}
+static int
+l_resource_get_arena (lua_State *L)
+{
+    nux_ctx_t *ctx = lua_getuserdata(L);
+    nux_rid_t  rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
+    nux_rid_t  ret = nux_resource_get_arena(ctx, rid);
+    l_checkerror(L, ctx);
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
     return 1;
 }
 static int
@@ -1202,14 +1201,11 @@ static const struct luaL_Reg lib_arena[]
         { "memory_capacity", l_arena_memory_capacity },
         { "block_count", l_arena_block_count },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_event[]
-    = { { "new", l_event_new }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_resource[]
-    = { { "get_path", l_resource_get_path },
-        { "set_name", l_resource_set_name },
-        { "get_name", l_resource_get_name },
-        { "find", l_resource_find },
-        { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_resource[] = {
+    { "get_path", l_resource_get_path }, { "set_name", l_resource_set_name },
+    { "get_name", l_resource_get_name }, { "get_arena", l_resource_get_arena },
+    { "find", l_resource_find },         { NUX_NULL, NUX_NULL }
+};
 static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_stat[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]
@@ -1349,9 +1345,6 @@ nux_lua_open_api (nux_ctx_t *ctx)
     lua_newtable(L);
     luaL_setfuncs(L, lib_arena, 0);
     lua_setglobal(L, "arena");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_event, 0);
-    lua_setglobal(L, "event");
     lua_newtable(L);
     luaL_setfuncs(L, lib_resource, 0);
     lua_setglobal(L, "resource");

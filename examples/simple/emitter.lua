@@ -21,7 +21,6 @@ function M:on_update()
             core.random01(),
             core.random01()
         )
-        print(v)
         v = vmath.mul(v, 2)
         v = vmath.sub(v, 1)
         rigidbody.add(e)

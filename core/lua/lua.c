@@ -256,8 +256,9 @@ copy_functions (lua_State *L, int src, int dst)
 static nux_status_t
 load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
-    nux_lua_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA, rid);
-    lua_State *L   = ctx->lua->L;
+    nux_lua_script_t *lua
+        = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, rid);
+    lua_State *L = ctx->lua->L;
 
     // 1. keep previous module on stack
     lua_getglobal(L, NUX_MODULE_TABLE);
@@ -271,6 +272,8 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     else
     {
         lua_newtable(L);
+        lua_pushinteger(L, rid);
+        lua_setfield(L, -2, "rid");
     }
     NUX_ASSERT(lua_istable(L, -1));
     lua_setglobal(L, NUX_MODULE_TABLE);
@@ -310,8 +313,9 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 nux_rid_t
 nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
 {
-    nux_rid_t  rid;
-    nux_lua_t *lua = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA, &rid);
+    nux_rid_t         rid;
+    nux_lua_script_t *lua
+        = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA_SCRIPT, &rid);
     NUX_CHECK(lua, return NUX_NULL);
     nux_resource_set_path(ctx, rid, path);
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_NULL);
@@ -319,15 +323,16 @@ nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
     return rid;
 }
 void
-nux_lua_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
+nux_lua_script_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
 {
     // Remove lua module from loaded
-    nux_lua_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA, rid);
-    lua_State *L   = ctx->lua->L;
+    nux_lua_script_t *lua
+        = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, rid);
+    lua_State *L = ctx->lua->L;
     luaL_unref(L, LUA_REGISTRYINDEX, lua->ref);
 }
 nux_status_t
-nux_lua_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
+nux_lua_script_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_FAILURE);
     NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_RELOAD),
@@ -346,9 +351,9 @@ nux_lua_init (nux_ctx_t *ctx)
     // Register types
     nux_resource_type_t *type;
     type = nux_resource_register(
-        ctx, NUX_RESOURCE_LUA, sizeof(nux_lua_t), "lua");
-    type->cleanup = nux_lua_cleanup;
-    type->reload  = nux_lua_reload;
+        ctx, NUX_RESOURCE_LUA_SCRIPT, sizeof(nux_lua_script_t), "lua_script");
+    type->cleanup = nux_lua_script_cleanup;
+    type->reload  = nux_lua_script_reload;
 
     // Initialize Lua VM
     module->L = luaL_newstate(ctx);
@@ -362,6 +367,7 @@ nux_lua_init (nux_ctx_t *ctx)
     nux_lua_open_api(ctx);
     nux_lua_open_require(ctx);
     nux_lua_open_vmath(ctx);
+    nux_lua_open_event(ctx);
     nux_lua_dostring(ctx, lua_data_code);
 
     return NUX_SUCCESS;
@@ -412,9 +418,10 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
 nux_status_t
 nux_lua_call_module (nux_ctx_t *ctx, nux_rid_t module, const nux_c8_t *name)
 {
-    nux_status_t status = NUX_SUCCESS;
-    lua_State   *L      = ctx->lua->L;
-    nux_lua_t   *lua    = nux_resource_check(ctx, NUX_RESOURCE_LUA, module);
+    nux_status_t      status = NUX_SUCCESS;
+    lua_State        *L      = ctx->lua->L;
+    nux_lua_script_t *lua
+        = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, module);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
     NUX_ASSERT(lua_istable(L, -1));
     lua_getfield(L, -1, name);
