@@ -85,6 +85,7 @@ serde_field_enum (nux_lua_serde_t            *s,
             ++e;
         }
         NUX_ASSERT(NUX_FALSE);
+        return 0;
     }
     else
     {

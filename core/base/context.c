@@ -57,7 +57,8 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     nux_ctx_t *ctx = nux_os_alloc(userdata, NUX_NULL, 0, sizeof(*ctx));
     NUX_ASSERT(ctx);
     nux_memset(ctx, 0, sizeof(*ctx));
-    ctx->userdata = userdata;
+    ctx->userdata         = userdata;
+    ctx->config.log.level = NUX_LOG_DEBUG; // see errors during initialization
 
     // Initialize mandatory modules
     NUX_CHECK(nux_base_init(ctx), goto cleanup);

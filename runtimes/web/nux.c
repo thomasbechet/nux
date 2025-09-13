@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+static nux_ctx_t *ctx;
+
 void *
 nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
 {
@@ -21,22 +23,39 @@ nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
 }
 
 void
-start (void)
+nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
 {
-    nux_config_t config;
-    memset(&config, 0, sizeof(config));
-    config.max_id_count   = 4096;
-    config.memory_size    = (1 << 25);
-    config.width          = 800;
-    config.height         = 400;
-    config.tick_frequency = 60;
-    config.userdata       = NULL;
-    config.boot_device    = "cart.bin";
+}
+void
+nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
+{
+}
+void
+nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
+{
+    *count = 0;
+}
+void
+nux_os_stats_update (void *userdata, nux_u64_t *stats)
+{
+    stats[NUX_STAT_FPS]           = 100;
+    stats[NUX_STAT_SCREEN_WIDTH]  = 1600;
+    stats[NUX_STAT_SCREEN_HEIGHT] = 900;
+    stats[NUX_STAT_TIMESTAMP]     = 1;
+}
 
-    nux_ctx_t *ctx = nux_instance_init(&config);
-    for (nux_u32_t i = 0; i < 10; ++i)
-    {
-        nux_instance_tick(ctx);
-    }
+void
+instance_init (void)
+{
+    ctx = nux_instance_init(NULL, "cart.bin");
+}
+void
+instance_update (void)
+{
+    nux_instance_update(ctx);
+}
+void
+instance_free (void)
+{
     nux_instance_free(ctx);
 }

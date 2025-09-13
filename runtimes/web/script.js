@@ -1,11 +1,12 @@
-var instance
 const decoder = new TextDecoder()
 const encoder = new TextEncoder()
 const decodeString = (data, len) => decoder.decode(new Int8Array(instance.exports.memory.buffer, data, len))
-const files = []
-const file = await fetch("cart.bin");
-const cart = await file.arrayBuffer();
-console.log(cart)
+let instance
+let files = []
+let file
+let cart
+let previousTime = 0.0;
+
 const importObject = {
   env: {
     STACKTOP: 0,
@@ -30,6 +31,11 @@ const importObject = {
     nux_os_file_close: (userdata, slot) => {
       files[slot] = null;
     },
+    nux_os_file_stat: (userdata, slot, pstat) => {
+      const buf = new Int32Array(instance.exports.memory.buffer, pstat, 4)
+      buf[0] = files[slot].data.length;
+      return 1;
+    },
     nux_os_file_seek: (userdata, slot, cursor) => {
       files[slot].cursor = cursor;
       return 1;
@@ -41,21 +47,20 @@ const importObject = {
       files[slot].cursor += n
       return n;
     },
-    nux_os_file_stat: (userdata, slot, pstat) => {
-      const buf = new Int32Array(instance.exports.memory.buffer, pstat, 4)
-      buf[0] = files[slot].data.length;
-      return 1;
-    },
+    nux_os_file_write: (userdata, slot, p, n) => { return 1; },
     nux_os_pipeline_create: (userdata, slot, pinfo) => { return 1; },
+    nux_os_pipeline_delete: (userdata, slot) => { return 1; },
     nux_os_framebuffer_create: (userdata, slot, texture) => { return 1; },
+    nux_os_framebuffer_delete: (userdata, slot) => { return 1; },
     nux_os_texture_create: (userdata, slot, pinfo) => { return 1; },
+    nux_os_texture_delete: (userdata, slot) => { return 1; },
     nux_os_texture_update: (userdata, slot, x, y, w, h, pdata) => { return 1; },
     nux_os_buffer_create: (userdata, slot, type, size) => { return 1; },
+    nux_os_buffer_delete: (userdata, slot) => { return 1; },
     nux_os_buffer_update: (userdata, slot, offset, size, data) => { return 1; },
     nux_os_gpu_submit: (userdata, pcmds, count) => { return 1; },
     nux_os_input_update: (userdata, pbuttons, paxis) => { return 1; },
-    nux_os_stats_update: (userdata, pstats) => { return 1; },
-
+    // nux_os_stats_update: (userdata, pstats) => { return 1; },
   },
   wasi_snapshot_preview1: {
     fd_close: fd => { return 0; },
@@ -65,7 +70,7 @@ const importObject = {
     fd_fdstat_get: (fd, stat) => { return 0; },
   }
 }
-const run = async () => {
+const init = async () => {
   // fetch("nux.wasm")
   //   .then(bytes => bytes.arrayBuffer())
   //   .then(mod => WebAssembly.compile(mod))
@@ -73,27 +78,35 @@ const run = async () => {
   //     console.log(WebAssembly.Module.imports(module))
   //     console.log(WebAssembly.Module.exports(module))
   //   })
-  WebAssembly.instantiateStreaming(fetch("nux.wasm"), importObject).then(
-    (obj) => {
-      // Keep reference to instance
-      instance = obj.instance
-      // Initialize instance
-      instance.exports.start();
-    },
-  );
+
+  file = await fetch("cart.bin");
+  let runtime = await fetch("nux.wasm");
+  cart = await file.arrayBuffer();
+  console.log(cart)
+  let obj = await WebAssembly.instantiateStreaming(runtime, importObject);
+  instance = obj.instance
+  instance.exports.instance_init();
 
   const canvas = document.querySelector("#gl-canvas");
-
-  // Initialize the GL context
   const gl = canvas.getContext("webgl");
   if (gl === null) {
     alert("Unable to initialize WebGL. Your browser or machine may not support it.");
     return;
   }
 
-  // Set clear color to black, fully opaque
   gl.clearColor(0.2, 0.0, 0.0, 1.0);
-  // Clear the color buffer with specified clear color
   gl.clear(gl.COLOR_BUFFER_BIT);
+};;
+
+const loop = time => {
+  const dt = time - previousTime;
+  previousTime = time;
+  instance.exports.instance_update();
+  window.requestAnimationFrame(loop);
 };
-run();
+
+window.requestAnimationFrame(async time => {
+  previousTime = time;
+  await init();
+  window.requestAnimationFrame(loop);
+});

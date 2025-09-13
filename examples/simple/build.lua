@@ -3,7 +3,7 @@ function M:on_load()
         "conf.lua",
         "init.lua",
         "camera.lua",
-        "camera.lua",
+        "emitter.lua",
         "libs/inspect.lua",
         "assets/industrial.glb"
     }
