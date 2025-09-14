@@ -1,0 +1,5 @@
+---@class Userdata
+---@field position Userdata
+---@field x number
+---@field y number
+---@field z number
