@@ -604,6 +604,7 @@ typedef void (*nux_event_callback_t)(nux_ctx_t  *ctx,
                                      void       *userdata,
                                      nux_rid_t   event,
                                      const void *data);
+typedef void (*nux_event_cleanup_t)(nux_ctx_t *ctx, void *data);
 
 typedef struct nux_event_handler
 {
@@ -626,6 +627,7 @@ typedef struct
     nux_arena_t         *arena;
     nux_event_handler_t *first_handler;
     nux_event_header_t  *first_event;
+    nux_event_cleanup_t  cleanup;
 } nux_event_t;
 
 typedef struct nux_io_module       nux_io_module_t;
@@ -852,7 +854,10 @@ void         nux_base_free(nux_ctx_t *ctx);
 
 // event.c
 
-nux_rid_t nux_event_new(nux_ctx_t *ctx, nux_rid_t arena, nux_event_type_t type);
+nux_rid_t            nux_event_new(nux_ctx_t          *ctx,
+                                   nux_rid_t           arena,
+                                   nux_event_type_t    type,
+                                   nux_event_cleanup_t cleanup);
 nux_event_handler_t *nux_event_subscribe(nux_ctx_t           *ctx,
                                          nux_rid_t            arena,
                                          nux_rid_t            event,

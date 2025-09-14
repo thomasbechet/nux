@@ -33,13 +33,19 @@ event_handler (nux_ctx_t  *ctx,
         break;
     }
 }
+static void
+event_cleanup (nux_ctx_t *ctx, void *data)
+{
+    nux_u32_t ref = *(nux_u32_t *)data;
+    luaL_unref(ctx->lua->L, LUA_REGISTRYINDEX, ref);
+}
 
 static int
 event_new (lua_State *L)
 {
     nux_ctx_t *ctx   = lua_getuserdata(L);
     nux_rid_t  arena = luaL_checkinteger(L, 1);
-    nux_rid_t  event = nux_event_new(ctx, arena, NUX_EVENT_LUA);
+    nux_rid_t  event = nux_event_new(ctx, arena, NUX_EVENT_LUA, event_cleanup);
     l_checkerror(L, ctx);
     lua_pushinteger(L, event);
     return 1;

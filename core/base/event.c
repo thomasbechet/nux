@@ -1,7 +1,10 @@
 #include "internal.h"
 
 nux_rid_t
-nux_event_new (nux_ctx_t *ctx, nux_rid_t arena, nux_event_type_t type)
+nux_event_new (nux_ctx_t          *ctx,
+               nux_rid_t           arena,
+               nux_event_type_t    type,
+               nux_event_cleanup_t cleanup)
 {
     nux_rid_t    rid;
     nux_event_t *event = nux_resource_new(ctx, arena, NUX_RESOURCE_EVENT, &rid);
@@ -11,6 +14,7 @@ nux_event_new (nux_ctx_t *ctx, nux_rid_t arena, nux_event_type_t type)
     event->type          = type;
     event->first_handler = NUX_NULL;
     event->first_event   = NUX_NULL;
+    event->cleanup       = cleanup;
     return rid;
 }
 nux_event_handler_t *
@@ -105,6 +109,10 @@ nux_event_process (nux_ctx_t *ctx, nux_rid_t event)
         {
             handler->callback(ctx, handler->userdata, event, header->data);
             handler = handler->next;
+        }
+        if (e->cleanup)
+        {
+            e->cleanup(ctx, header->data);
         }
         header = header->next;
         ++count;
