@@ -20,12 +20,12 @@ l_require (lua_State *L)
 
     // check already loaded
     nux_rid_t rid = NUX_NULL;
-    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA_SCRIPT, rid)))
+    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA_MODULE, rid)))
     {
         if (!nux_strncmp(
                 nux_resource_get_path(ctx, rid), filepath, NUX_PATH_MAX))
         {
-            nux_lua_script_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, rid);
+            nux_lua_vmmodule_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA_MODULE, rid);
             NUX_ASSERT(lua);
             lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
             return 1;
@@ -35,7 +35,7 @@ l_require (lua_State *L)
     // load the module
     nux_rid_t module = nux_lua_load(ctx, ctx->core_arena_rid, filepath);
     l_checkerror(L, ctx);
-    nux_lua_script_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, module);
+    nux_lua_vmmodule_t *lua = nux_resource_check(ctx, NUX_RESOURCE_LUA_MODULE, module);
     NUX_ASSERT(lua);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
     return 1;

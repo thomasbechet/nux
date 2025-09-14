@@ -151,12 +151,11 @@ nux_instance_update (nux_ctx_t *ctx)
     // Update physics
     nux_physics_update(ctx);
 
-    // Update
-    nux_rid_t rid = NUX_NULL;
-    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA_SCRIPT, rid)))
-    {
-        nux_lua_call_module(ctx, rid, NUX_FUNC_UPDATE);
-    }
+    // Update lua
+    nux_lua_update(ctx);
+
+    // Process events
+    nux_event_process_all(ctx);
 
     // Update debug
     nux_debug_update(ctx);

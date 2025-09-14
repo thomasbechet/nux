@@ -41,10 +41,10 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t            ref;
-    nux_u32_vec_t        events;
-    nux_event_handler_t *event_handler;
-} nux_lua_script_t;
+    nux_u32_t     rid;
+    nux_u32_t     ref;
+    nux_ptr_vec_t event_handles;
+} nux_lua_vmmodule_t;
 
 typedef struct nux_lua_module
 {
@@ -59,14 +59,16 @@ typedef struct nux_lua_module
 
 nux_status_t nux_lua_init(nux_ctx_t *ctx);
 void         nux_lua_free(nux_ctx_t *ctx);
+void         nux_lua_update(nux_ctx_t *ctx);
 nux_status_t nux_lua_configure(nux_ctx_t *ctx, nux_config_t *config);
-nux_status_t nux_lua_call_module(nux_ctx_t      *ctx,
-                                 nux_rid_t       module,
-                                 const nux_c8_t *name);
 nux_status_t nux_lua_dostring(nux_ctx_t *ctx, const nux_c8_t *string);
-nux_status_t nux_lua_script_reload(nux_ctx_t      *ctx,
+nux_status_t nux_lua_module_reload(nux_ctx_t      *ctx,
                                    nux_rid_t       rid,
                                    const nux_c8_t *path);
+nux_status_t nux_lua_call_module(nux_ctx_t      *ctx,
+                                 nux_rid_t       module,
+                                 const nux_c8_t *name,
+                                 nux_u32_t       nargs);
 
 // lua_bindings.c
 

@@ -4,11 +4,18 @@ require("emitter")
 function M:on_reload()
 end
 
-function M:on_event(e)
+function M:on_event(e, d)
+    if e == self.event then
+        print(d.message)
+    end
 end
 
 function M:on_load()
     self.arena = resource.find("core_arena")
+    self.event = event.new(self.arena)
+    event.subscribe(self.rid, self.event)
+    local data = { message = "hello" }
+    event.emit(self.event, data)
 
     local mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
     self.cube_mesh = mesh_cube
@@ -73,7 +80,7 @@ function M:on_load()
     staticmesh.set_texture(self.cube, canvas.get_texture(self.monolith_canvas))
     collider.add_aabb(self.cube, vmath.vec3(0), { x / 50, y / 50, 1 })
 
-    self.api = inspect(transform)
+    self.api = inspect(event)
 end
 
 local function memhu(size)

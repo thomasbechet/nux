@@ -1,6 +1,7 @@
 #include "internal.h"
 
 NUX_VEC_IMPL(nux_u32_vec, nux_u32_t);
+NUX_VEC_IMPL(nux_ptr_vec, void *);
 NUX_POOL_IMPL(nux_resource_pool, nux_resource_entry_t)
 
 void

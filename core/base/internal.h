@@ -187,23 +187,24 @@
 
 #define NUX_B3_DEFINE(name, type) nux_##name##_t nux_##name(type min, type max);
 
-#define NUX_VEC_DEFINE(name, T)                            \
-    typedef struct                                         \
-    {                                                      \
-        nux_arena_t *arena;                                \
-        nux_u32_t    size;                                 \
-        nux_u32_t    capa;                                 \
-        T           *data;                                 \
-    } name##_t;                                            \
-    nux_status_t name##_init(nux_arena_t *a, name##_t *v); \
-    nux_status_t name##_init_capa(                         \
-        nux_arena_t *a, nux_u32_t capa, name##_t *v);      \
-    T        *name##_push(name##_t *v);                    \
-    nux_b32_t name##_pushv(name##_t *v, T val);            \
-    T        *name##_pop(name##_t *v);                     \
-    void      name##_clear(name##_t *v);                   \
-    T        *name##_get(name##_t *v, nux_u32_t i);        \
-    void      name##_fill_reverse_indices(name##_t *v);
+#define NUX_VEC_DEFINE(name, T)                                   \
+    typedef struct                                                \
+    {                                                             \
+        nux_arena_t *arena;                                       \
+        nux_u32_t    size;                                        \
+        nux_u32_t    capa;                                        \
+        T           *data;                                        \
+    } name##_t;                                                   \
+    nux_status_t name##_init(nux_arena_t *a, name##_t *v);        \
+    nux_status_t name##_init_capa(                                \
+        nux_arena_t *a, nux_u32_t capa, name##_t *v);             \
+    T        *name##_push(name##_t *v);                           \
+    nux_b32_t name##_pushv(name##_t *v, T val);                   \
+    T        *name##_pop(name##_t *v);                            \
+    void      name##_clear(name##_t *v);                          \
+    T        *name##_get(name##_t *v, nux_u32_t i);               \
+    void      name##_swap(name##_t *v, nux_u32_t a, nux_u32_t b); \
+    T        *name##_swap_pop(name##_t *v, nux_u32_t i);
 #define NUX_VEC_IMPL(name, T)                                                  \
     nux_status_t name##_init(nux_arena_t *a, name##_t *v)                      \
     {                                                                          \
@@ -267,6 +268,19 @@
     T *name##_get(name##_t *v, nux_u32_t i)                                    \
     {                                                                          \
         return i < (v)->size ? (v)->data + i : NUX_NULL;                       \
+    }                                                                          \
+    void name##_swap(name##_t *v, nux_u32_t a, nux_u32_t b)                    \
+    {                                                                          \
+        NUX_CHECK(a < v->size && b < v->size && a != b, return);               \
+        T temp     = v->data[a];                                               \
+        v->data[a] = v->data[b];                                               \
+        v->data[b] = temp;                                                     \
+    }                                                                          \
+    T *name##_swap_pop(name##_t *v, nux_u32_t i)                               \
+    {                                                                          \
+        NUX_CHECK(i < v->size, return NUX_NULL);                               \
+        name##_swap(v, i, v->size - 1);                                        \
+        return name##_pop(v);                                                  \
     }
 
 #define NUX_POOL_DEFINE(name, T)                           \
@@ -343,7 +357,7 @@ typedef enum
 {
     NUX_RESOURCE_NULL       = 0,
     NUX_RESOURCE_ARENA      = 1,
-    NUX_RESOURCE_LUA_SCRIPT = 2,
+    NUX_RESOURCE_LUA_MODULE = 2,
     NUX_RESOURCE_TEXTURE    = 3,
     NUX_RESOURCE_MESH       = 4,
     NUX_RESOURCE_CANVAS     = 5,
@@ -514,6 +528,7 @@ typedef struct
 } nux_arena_t;
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
+NUX_VEC_DEFINE(nux_ptr_vec, void *);
 
 typedef void (*nux_resource_cleanup_t)(nux_ctx_t *ctx, nux_rid_t rid);
 typedef nux_status_t (*nux_resource_reload_t)(nux_ctx_t      *ctx,
@@ -580,6 +595,11 @@ typedef struct
 
 } nux_config_t;
 
+typedef enum
+{
+    NUX_EVENT_LUA = 0,
+} nux_event_type_t;
+
 typedef void (*nux_event_callback_t)(nux_ctx_t  *ctx,
                                      void       *userdata,
                                      nux_rid_t   event,
@@ -587,6 +607,7 @@ typedef void (*nux_event_callback_t)(nux_ctx_t  *ctx,
 
 typedef struct nux_event_handler
 {
+    nux_rid_t                 event;
     struct nux_event_handler *next;
     struct nux_event_handler *prev;
     nux_event_callback_t      callback;
@@ -601,6 +622,7 @@ typedef struct nux_event_header
 
 typedef struct
 {
+    nux_event_type_t     type;
     nux_arena_t         *arena;
     nux_event_handler_t *first_handler;
     nux_event_header_t  *first_event;
@@ -735,6 +757,7 @@ void                *nux_resource_new(nux_ctx_t *ctx,
                                       nux_rid_t *rid);
 void                 nux_resource_delete(nux_ctx_t *ctx, nux_rid_t rid);
 void nux_resource_set_path(nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path);
+void        *nux_resource_get(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
 void        *nux_resource_check(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
 nux_status_t nux_resource_reload(nux_ctx_t *ctx, nux_rid_t rid);
 nux_rid_t    nux_resource_next(nux_ctx_t *ctx, nux_u32_t type, nux_rid_t rid);
@@ -829,18 +852,18 @@ void         nux_base_free(nux_ctx_t *ctx);
 
 // event.c
 
-nux_rid_t            nux_event_new(nux_ctx_t *ctx, nux_rid_t arena);
+nux_rid_t nux_event_new(nux_ctx_t *ctx, nux_rid_t arena, nux_event_type_t type);
 nux_event_handler_t *nux_event_subscribe(nux_ctx_t           *ctx,
+                                         nux_rid_t            arena,
                                          nux_rid_t            event,
                                          void                *userdata,
                                          nux_event_callback_t callback);
-void                 nux_event_unsubscribe(nux_ctx_t                 *ctx,
-                                           nux_rid_t                  event,
-                                           const nux_event_handler_t *subscriber);
-void                 nux_event_emit(nux_ctx_t  *ctx,
-                                    nux_rid_t   event,
-                                    nux_u32_t   size,
-                                    const void *data);
-void                 nux_event_process(nux_ctx_t *ctx, nux_rid_t event);
+void nux_event_unsubscribe(nux_ctx_t *ctx, const nux_event_handler_t *handler);
+void nux_event_emit(nux_ctx_t  *ctx,
+                    nux_rid_t   event,
+                    nux_u32_t   size,
+                    const void *data);
+void nux_event_process(nux_ctx_t *ctx, nux_rid_t event);
+void nux_event_process_all(nux_ctx_t *ctx);
 
 #endif

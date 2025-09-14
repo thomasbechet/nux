@@ -156,8 +156,8 @@ serde_end_table (nux_lua_serde_t *s)
         lua_pop(s->L, 1);
     }
 }
-static nux_status_t
-lua_call_function (nux_ctx_t *ctx, nux_u32_t nargs, nux_u32_t nreturns)
+nux_status_t
+nux_lua_call_function (nux_ctx_t *ctx, nux_u32_t nargs, nux_u32_t nreturns)
 {
     nux_lua_module_t *module = ctx->lua;
     if (lua_pcall(module->L, nargs, nreturns, 0) != LUA_OK) // consume field
@@ -166,6 +166,33 @@ lua_call_function (nux_ctx_t *ctx, nux_u32_t nargs, nux_u32_t nreturns)
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;
+}
+nux_status_t
+nux_lua_call_module (nux_ctx_t      *ctx,
+                     nux_rid_t       module,
+                     const nux_c8_t *name,
+                     nux_u32_t       nargs)
+{
+    nux_status_t        status = NUX_SUCCESS;
+    lua_State          *L      = ctx->lua->L;
+    nux_lua_vmmodule_t *lua
+        = nux_resource_check(ctx, NUX_RESOURCE_LUA_MODULE, module);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
+    NUX_ASSERT(lua_istable(L, -1));
+    // -1=M
+    lua_getfield(L, -1, name);
+    // -2=M -1=F
+    if (lua_isfunction(L, -1))
+    {
+        lua_insert(L, -2 - nargs); // move function before args
+        lua_insert(L, -1 - nargs); // move module before args
+        status = nux_lua_call_function(ctx, 1 + nargs, 0);
+    }
+    else
+    {
+        lua_pop(L, 2 + nargs); // remove M + F + args
+    }
+    return status;
 }
 static void
 serde_config (nux_ctx_t *ctx, nux_config_t *config, nux_b32_t serialize)
@@ -256,8 +283,8 @@ copy_functions (lua_State *L, int src, int dst)
 static nux_status_t
 load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
-    nux_lua_script_t *lua
-        = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, rid);
+    nux_lua_vmmodule_t *lua
+        = nux_resource_check(ctx, NUX_RESOURCE_LUA_MODULE, rid);
     lua_State *L = ctx->lua->L;
 
     // 1. keep previous module on stack
@@ -313,29 +340,41 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 nux_rid_t
 nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
 {
-    nux_rid_t         rid;
-    nux_lua_script_t *lua
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA_SCRIPT, &rid);
+    nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
+    NUX_CHECK(a, return NUX_NULL);
+    nux_rid_t           rid;
+    nux_lua_vmmodule_t *lua
+        = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA_MODULE, &rid);
     NUX_CHECK(lua, return NUX_NULL);
+    lua->rid = rid;
     nux_resource_set_path(ctx, rid, path);
+    // initialize event handles
+    nux_ptr_vec_init(a, &lua->event_handles);
+    // dofile and call load function
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_NULL);
-    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_LOAD), return NUX_NULL);
+    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_LOAD, 0), return NUX_NULL);
     return rid;
 }
 void
-nux_lua_script_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
+nux_lua_module_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
 {
-    // Remove lua module from loaded
-    nux_lua_script_t *lua
-        = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, rid);
+    nux_lua_vmmodule_t *lua
+        = nux_resource_check(ctx, NUX_RESOURCE_LUA_MODULE, rid);
+    // unregister lua module
     lua_State *L = ctx->lua->L;
     luaL_unref(L, LUA_REGISTRYINDEX, lua->ref);
+    // unsubscribe events
+    for (nux_u32_t i = 0; i < lua->event_handles.size; ++i)
+    {
+        const nux_event_handler_t *handler = lua->event_handles.data[i];
+        nux_event_unsubscribe(ctx, handler);
+    }
 }
 nux_status_t
-nux_lua_script_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
+nux_lua_module_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_FAILURE);
-    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_RELOAD),
+    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_RELOAD, 0),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
@@ -351,9 +390,9 @@ nux_lua_init (nux_ctx_t *ctx)
     // Register types
     nux_resource_type_t *type;
     type = nux_resource_register(
-        ctx, NUX_RESOURCE_LUA_SCRIPT, sizeof(nux_lua_script_t), "lua_script");
-    type->cleanup = nux_lua_script_cleanup;
-    type->reload  = nux_lua_script_reload;
+        ctx, NUX_RESOURCE_LUA_MODULE, sizeof(nux_lua_vmmodule_t), "lua_module");
+    type->cleanup = nux_lua_module_cleanup;
+    type->reload  = nux_lua_module_reload;
 
     // Initialize Lua VM
     module->L = luaL_newstate(ctx);
@@ -383,6 +422,15 @@ nux_lua_free (nux_ctx_t *ctx)
         lua_close(module->L);
     }
 }
+void
+nux_lua_update (nux_ctx_t *ctx)
+{
+    nux_rid_t rid = NUX_NULL;
+    while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA_MODULE, rid)))
+    {
+        nux_lua_call_module(ctx, rid, NUX_FUNC_UPDATE, 0);
+    }
+}
 nux_status_t
 nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
 {
@@ -407,35 +455,13 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
             return NUX_FAILURE;
         }
         lua_pushvalue(module->L, -2); // push config as argument
-        NUX_CHECK(lua_call_function(ctx, 1, 0), return NUX_FAILURE);
+        NUX_CHECK(nux_lua_call_function(ctx, 1, 0), return NUX_FAILURE);
 
         deserialize_config(ctx, config);
         lua_pop(module->L, 1);
     }
 
     return NUX_SUCCESS;
-}
-nux_status_t
-nux_lua_call_module (nux_ctx_t *ctx, nux_rid_t module, const nux_c8_t *name)
-{
-    nux_status_t      status = NUX_SUCCESS;
-    lua_State        *L      = ctx->lua->L;
-    nux_lua_script_t *lua
-        = nux_resource_check(ctx, NUX_RESOURCE_LUA_SCRIPT, module);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
-    NUX_ASSERT(lua_istable(L, -1));
-    lua_getfield(L, -1, name);
-    if (lua_isfunction(L, -1))
-    {
-        lua_pushvalue(L, -2); // push self
-        status = lua_call_function(ctx, 1, 0);
-    }
-    else
-    {
-        lua_pop(L, 1);
-    }
-    lua_pop(L, 1); // pop table
-    return status;
 }
 nux_status_t
 nux_lua_dostring (nux_ctx_t *ctx, const nux_c8_t *string)
