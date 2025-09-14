@@ -28,7 +28,7 @@ event_handler (nux_ctx_t  *ctx,
             nux_u32_t ref = *(nux_u32_t *)data;
             lua_rawgeti(L, LUA_REGISTRYINDEX, ref);
             // call on_event
-            nux_lua_call_module(ctx, m->rid, NUX_FUNC_EVENT, 2);
+            nux_lua_call_module(ctx, m->rid, NUX_LUA_ON_EVENT, 2);
         }
         break;
     }

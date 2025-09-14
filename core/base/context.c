@@ -79,7 +79,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     {
         // Expect cartridge
         NUX_CHECK(nux_io_mount(ctx, normpath), goto cleanup);
-        entry_script = NUX_INIT_FILE;
+        entry_script = NUX_LUA_CONF_FILE;
     }
 
     // Get program configuration

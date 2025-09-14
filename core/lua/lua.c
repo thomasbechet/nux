@@ -288,7 +288,7 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     lua_State *L = ctx->lua->L;
 
     // 1. keep previous module on stack
-    lua_getglobal(L, NUX_MODULE_TABLE);
+    lua_getglobal(L, NUX_LUA_MODULE_TABLE);
 
     // 2. set global MODULE
     if (lua->ref)
@@ -300,10 +300,10 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     {
         lua_newtable(L);
         lua_pushinteger(L, rid);
-        lua_setfield(L, -2, "rid");
+        lua_setfield(L, -2, NUX_LUA_MODULE_RID);
     }
     NUX_ASSERT(lua_istable(L, -1));
-    lua_setglobal(L, NUX_MODULE_TABLE);
+    lua_setglobal(L, NUX_LUA_MODULE_TABLE);
 
     // 3. execute module
     nux_u32_t prev = lua_gettop(L);
@@ -324,7 +324,7 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     }
     else
     {
-        lua_getglobal(L, NUX_MODULE_TABLE);
+        lua_getglobal(L, NUX_LUA_MODULE_TABLE);
         NUX_ENSURE(lua_istable(L, -1),
                    return NUX_FAILURE,
                    "lua module table '%s' removed",
@@ -333,7 +333,7 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
     lua->ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
     // 5. reset previous MODULE global
-    lua_setglobal(L, NUX_MODULE_TABLE); // reset previous module
+    lua_setglobal(L, NUX_LUA_MODULE_TABLE); // reset previous module
 
     return NUX_SUCCESS;
 }
@@ -352,7 +352,8 @@ nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
     nux_ptr_vec_init(a, &lua->event_handles);
     // dofile and call load function
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_NULL);
-    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_LOAD, 0), return NUX_NULL);
+    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_LUA_ON_LOAD, 0),
+              return NUX_NULL);
     return rid;
 }
 void
@@ -374,7 +375,7 @@ nux_status_t
 nux_lua_module_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 {
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_FAILURE);
-    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_FUNC_RELOAD, 0),
+    NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_LUA_ON_RELOAD, 0),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
@@ -428,7 +429,7 @@ nux_lua_update (nux_ctx_t *ctx)
     nux_rid_t rid = NUX_NULL;
     while ((rid = nux_resource_next(ctx, NUX_RESOURCE_LUA_MODULE, rid)))
     {
-        nux_lua_call_module(ctx, rid, NUX_FUNC_UPDATE, 0);
+        nux_lua_call_module(ctx, rid, NUX_LUA_ON_UPDATE, 0);
     }
 }
 nux_status_t
@@ -436,10 +437,10 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
 {
     nux_lua_module_t *module = ctx->lua;
 
-    if (nux_io_exists(ctx, NUX_CONF_FILE))
+    if (nux_io_exists(ctx, NUX_LUA_CONF_FILE))
     {
         // Execute configuration script
-        if (luaL_dofile(module->L, NUX_CONF_FILE) != LUA_OK)
+        if (luaL_dofile(module->L, NUX_LUA_CONF_FILE) != LUA_OK)
         {
             NUX_ERROR("%s", lua_tostring(module->L, -1));
             return NUX_FAILURE;
@@ -449,7 +450,7 @@ nux_lua_configure (nux_ctx_t *ctx, nux_config_t *config)
         lua_newtable(module->L);
         serialize_config(ctx, config);
 
-        if (lua_getglobal(module->L, NUX_FUNC_CONF) != LUA_TFUNCTION)
+        if (lua_getglobal(module->L, NUX_LUA_ON_CONF) != LUA_TFUNCTION)
         {
             lua_pop(module->L, 1);
             return NUX_FAILURE;

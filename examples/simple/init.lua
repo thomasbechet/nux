@@ -1,21 +1,17 @@
 local inspect = require("libs/inspect")
 require("emitter")
+local ticker = require("ticker")
 
 function M:on_reload()
 end
 
 function M:on_event(e, d)
-    if e == self.event then
-        print(d.message)
-    end
+    print(d)
 end
 
 function M:on_load()
     self.arena = resource.find("core_arena")
-    self.event = event.new(self.arena)
-    event.subscribe(self.rid, self.event)
-    local data = { message = "hello" }
-    event.emit(self.event, data)
+    event.subscribe(self.rid, ticker.event)
 
     local mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
     self.cube_mesh = mesh_cube
@@ -107,7 +103,6 @@ function M:on_update()
     canvas.set_clear_color(c, 0x99ccff)
     canvas.text(c, 10, 10, string.format("time:%.2fs", time.elapsed()))
     canvas.text(c, 10, 20, self.api)
-    canvas.text(c, 150, 50, "hello Julia")
 
     local position = transform.get_translation(self.camera.entity)
     c = self.gui_canvas

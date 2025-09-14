@@ -11,15 +11,16 @@
 ///        MACROS        ///
 ////////////////////////////
 
-#define NUX_MODULE_TABLE "M"
-#define NUX_FUNC_CONF    "on_conf"
-#define NUX_FUNC_LOAD    "on_load"
-#define NUX_FUNC_UNLOAD  "on_unload"
-#define NUX_FUNC_RELOAD  "on_reload"
-#define NUX_FUNC_UPDATE  "on_update"
-#define NUX_FUNC_EVENT   "on_event"
-#define NUX_CONF_FILE    "conf.lua"
-#define NUX_INIT_FILE    "init.lua"
+#define NUX_LUA_MODULE_TABLE "M"
+#define NUX_LUA_MODULE_RID   "rid"
+#define NUX_LUA_ON_CONF      "on_conf"
+#define NUX_LUA_ON_LOAD      "on_load"
+#define NUX_LUA_ON_UNLOAD    "on_unload"
+#define NUX_LUA_ON_RELOAD    "on_reload"
+#define NUX_LUA_ON_UPDATE    "on_update"
+#define NUX_LUA_ON_EVENT     "on_event"
+#define NUX_LUA_CONF_FILE    "conf.lua"
+#define NUX_LUA_INIT_FILE    "init.lua"
 
 ////////////////////////////
 ///        TYPES         ///
