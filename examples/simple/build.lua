@@ -4,6 +4,7 @@ function M:on_load()
         "init.lua",
         "camera.lua",
         "emitter.lua",
+        "ticker.lua",
         "libs/inspect.lua",
         "assets/industrial.glb"
     }
