@@ -269,6 +269,17 @@ nux_ecs_new (nux_ctx_t *ctx, nux_rid_t arena)
     NUX_CHECK(nux_ecs_bitset_init(a, &ins->bitset), return NUX_NULL);
     return res;
 }
+void
+nux_ecs_cleanup (nux_ctx_t *ctx, nux_rid_t res)
+{
+    nux_ecs_module_t *module = ctx->ecs;
+    nux_ecs_t        *ecs    = nux_resource_check(ctx, NUX_RESOURCE_ECS, res);
+    if (ctx->ecs->active == ecs && ecs != ctx->ecs->default_ecs)
+    {
+        NUX_WARNING("cleanup active ecs, default ecs has been set");
+        nux_ecs_set_active(ctx, NUX_NULL);
+    }
+}
 nux_status_t
 nux_ecs_set_active (nux_ctx_t *ctx, nux_rid_t rid)
 {
@@ -443,16 +454,4 @@ nux_ecs_get (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
     nux_ecs_container_t *container = ecs->containers.data + c;
     return (void *)((nux_intptr_t)container->chunks.data[mask]
                     + container->component_size * offset);
-}
-
-void
-nux_ecs_cleanup (nux_ctx_t *ctx, nux_rid_t res)
-{
-    nux_ecs_module_t *module = ctx->ecs;
-    nux_ecs_t        *ecs    = nux_resource_check(ctx, NUX_RESOURCE_ECS, res);
-    if (ctx->ecs->active == ecs && ecs != ctx->ecs->default_ecs)
-    {
-        NUX_WARNING("cleanup active ecs, default ecs has been set");
-        nux_ecs_set_active(ctx, NUX_NULL);
-    }
 }

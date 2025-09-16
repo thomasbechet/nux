@@ -14,6 +14,8 @@ typedef nux_u32_t nux_ecs_mask_t;
 NUX_VEC_DEFINE(nux_ecs_bitset, nux_ecs_mask_t);
 NUX_VEC_DEFINE(nux_ecs_chunk_vec, void *);
 
+typedef nux_status_t (*nux_ecs_component_reflect_t)(const void *data);
+
 typedef struct
 {
     nux_c8_t  name[ECS_COMPONENT_NAME_LEN + 1];

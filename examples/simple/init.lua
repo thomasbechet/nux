@@ -17,7 +17,6 @@ function M:on_load()
     self.cube_mesh = mesh_cube
 
     self.ecs = ecs.load_gltf(self.arena, "assets/industrial.glb")
-    print("ok2")
     ecs.set_active(self.ecs)
     self.camera = require("camera")
 

@@ -26,33 +26,13 @@ TODO
 - Each resources are referenced by an handle (using index + version) in a global table
 - The resource's state must be contained only in a single arena
 
-## Program
-
-1) nux.conf(config)
-
-Define program configuration with access to the config table. The API is
-not available.
-
-2) nux.init()
-
-Call once the program is initialized.
-
-3) nux.tick()
-
-Call each frame.
-
-## Gui rendering
-
-2D api -> canvas -> render to texture
-3D api -> ecs    -> render to texture
-
 ## Inputs
 
-Platform inputs :
+Controller inputs :
 - axis
-- text
-- cursor
 - buttons
+- virtual cursor
+- text
 
 Virtual Cursor :
 - from joystick
@@ -63,3 +43,7 @@ Virtual Cursor :
 - Axis
 
 - Cursor
+
+## Scene Format
+
+- 
