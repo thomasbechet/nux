@@ -10,61 +10,64 @@
     }
 
 static nux_status_t
-dumper (const nux_serde_t *s)
+json_reader (const nux_serde_t *s)
 {
-    nux_ctx_t *ctx = s->userdata;
-    switch (s->type)
-    {
-        case NUX_SERDE_OBJECT:
-            if (s->value.begin)
-            {
-                NUX_INFO("%s : {", s->name);
-            }
-            else
-            {
-                NUX_INFO("}");
-            }
-            break;
-        case NUX_SERDE_ARRAY:
-            if (s->value.begin)
-            {
-                NUX_INFO("%s : [", s->name);
-            }
-            else
-            {
-                NUX_INFO("]");
-            }
-            break;
-        case NUX_SERDE_U32:
-            NUX_INFO("%s : %d", s->name, *s->value.u32);
-            break;
-    }
     return NUX_SUCCESS;
 }
-
-static nux_status_t
-json_dumper (const nux_serde_t *s)
+static void
+json_append (nux_serde_json_t *j, const nux_c8_t *s, nux_u32_t n)
 {
-    nux_serde_json_t *j   = s->userdata;
-    nux_ctx_t        *ctx = j->ctx;
+    nux_ctx_t *ctx = j->ctx;
+    nux_io_write(ctx, &j->file, s, n);
+}
+static nux_status_t
+json_writer (const nux_serde_t *s)
+{
+    nux_serde_json_t *j = s->userdata;
     nux_c8_t          buf[256];
     nux_u32_t         n;
+    if (j->has_previous_value && s->type != NUX_SERDE_END_ARRAY
+        && s->type != NUX_SERDE_END_OBJECT)
+    {
+        json_append(j, ",", 1);
+    }
     if (s->name)
     {
         n = nux_snprintf(buf, sizeof(buf), "\"%s\":", s->name);
-        nux_io_write(ctx, &j->file, buf, n);
+        json_append(j, buf, n);
     }
     switch (s->type)
     {
-        case NUX_SERDE_OBJECT:
-            nux_io_write(ctx, &j->file, s->value.begin ? "{" : "}", 1);
+        case NUX_SERDE_BEGIN_OBJECT:
+            json_append(j, "{", 1);
+            j->has_previous_value = NUX_FALSE;
             break;
-        case NUX_SERDE_ARRAY:
-            nux_io_write(ctx, &j->file, s->value.begin ? "[" : "]", 1);
+        case NUX_SERDE_END_OBJECT:
+            json_append(j, "}", 1);
+            j->has_previous_value = NUX_FALSE;
+            break;
+        case NUX_SERDE_BEGIN_ARRAY:
+            json_append(j, "[", 1);
+            j->has_previous_value = NUX_FALSE;
+            break;
+        case NUX_SERDE_END_ARRAY:
+            json_append(j, "]", 1);
+            j->has_previous_value = NUX_FALSE;
             break;
         case NUX_SERDE_U32:
-            n = nux_snprintf(buf, sizeof(buf), "%d,", *s->value.u32);
-            nux_io_write(ctx, &j->file, buf, n);
+            n = nux_snprintf(buf, sizeof(buf), "%d", *s->value.u32);
+            json_append(j, buf, n);
+            j->has_previous_value = NUX_TRUE;
+            break;
+        case NUX_SERDE_V3:
+            n = nux_snprintf(buf,
+                             sizeof(buf),
+                             "[%lf,%lf,%lf]",
+                             s->value.v3->x,
+                             s->value.v3->y,
+                             s->value.v3->z);
+            json_append(j, buf, n);
+            j->has_previous_value = NUX_TRUE;
             break;
     }
     return NUX_SUCCESS;
@@ -79,19 +82,15 @@ nux_serde_init (nux_serde_t *s, nux_serde_callback_t callback, void *userdata)
     s->error    = NUX_FALSE;
     s->depth    = 0;
 }
-void
-nux_serde_init_dump (nux_serde_t *s, nux_ctx_t *ctx)
-{
-    nux_serde_init(s, dumper, ctx);
-}
 nux_serde_t *
 nux_serde_json_init_write (nux_serde_json_t *j,
                            nux_ctx_t        *ctx,
                            const nux_c8_t   *path)
 {
-    j->ctx = ctx;
-    nux_serde_init(&j->s, json_dumper, j);
-    NUX_CHECK(nux_io_open(ctx, "test.json", NUX_IO_READ_WRITE, &j->file),
+    j->ctx                = ctx;
+    j->has_previous_value = NUX_FALSE;
+    nux_serde_init(&j->s, json_writer, j);
+    NUX_CHECK(nux_io_open(ctx, path, NUX_IO_READ_WRITE, &j->file),
               return NUX_NULL);
     return &j->s;
 }
@@ -101,33 +100,6 @@ nux_serde_json_close (nux_serde_json_t *j)
     nux_io_close(j->ctx, &j->file);
 }
 
-static nux_b32_t
-push_stack (nux_serde_t *s, nux_serde_type_t type)
-{
-    if (s->depth >= NUX_ARRAY_SIZE(s->stack))
-    {
-        s->error = NUX_TRUE;
-        return NUX_FALSE;
-    }
-    s->stack[s->depth] = type;
-    s->type            = type;
-    s->value.begin     = NUX_TRUE;
-    ++s->depth;
-    return NUX_TRUE;
-}
-static nux_b32_t
-pop_stack (nux_serde_t *s)
-{
-    if (s->depth == 0)
-    {
-        s->error = NUX_TRUE;
-        return NUX_FALSE;
-    }
-    --s->depth;
-    s->type        = s->stack[s->depth];
-    s->value.begin = NUX_FALSE;
-    return NUX_TRUE;
-}
 static void
 callback (nux_serde_t *s)
 {
@@ -141,9 +113,10 @@ void
 nux_serde_begin_object (nux_serde_t *s, const nux_c8_t *name)
 {
     CHECK();
-    CHECK(push_stack(s, NUX_SERDE_OBJECT));
+    s->type = NUX_SERDE_BEGIN_OBJECT;
     s->name = NUX_NULL;
     CHECK(callback(s));
+    ++s->depth;
 error:
     return;
 }
@@ -151,18 +124,33 @@ void
 nux_serde_begin_array (nux_serde_t *s, const nux_c8_t *name, nux_u32_t *size)
 {
     CHECK();
-    CHECK(push_stack(s, NUX_SERDE_ARRAY));
+    s->type = NUX_SERDE_BEGIN_ARRAY;
     s->name = NUX_NULL;
+    CHECK(callback(s));
+    ++s->depth;
+error:
+    return;
+}
+void
+nux_serde_end_object (nux_serde_t *s)
+{
+    CHECK();
+    s->type = NUX_SERDE_END_OBJECT;
+    s->name = NUX_NULL;
+    NUX_ASSERT(s->depth);
+    --s->depth;
     CHECK(callback(s));
 error:
     return;
 }
 void
-nux_serde_end (nux_serde_t *s)
+nux_serde_end_array (nux_serde_t *s)
 {
     CHECK();
-    CHECK(pop_stack(s));
+    s->type = NUX_SERDE_END_ARRAY;
     s->name = NUX_NULL;
+    NUX_ASSERT(s->depth);
+    --s->depth;
     CHECK(callback(s));
 error:
     return;
@@ -174,6 +162,17 @@ nux_serde_u32 (nux_serde_t *s, const nux_c8_t *name, nux_u32_t *v)
     s->type      = NUX_SERDE_U32;
     s->name      = name;
     s->value.u32 = v;
+    CHECK(callback(s));
+error:
+    return;
+}
+void
+nux_serde_v3 (nux_serde_t *s, const nux_c8_t *name, nux_v3_t *v)
+{
+    CHECK();
+    s->type     = NUX_SERDE_V3;
+    s->name     = name;
+    s->value.v3 = v;
     CHECK(callback(s));
 error:
     return;

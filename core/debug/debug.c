@@ -18,10 +18,12 @@ nux_debug_init (nux_ctx_t *ctx)
     nux_serde_begin_array(s, "values", &size);
     for (nux_u32_t i = 0; i < 4; ++i)
     {
-        nux_serde_u32(s, "i", &i);
+        nux_serde_u32(s, NUX_NULL, &i);
     }
-    nux_serde_end(s);
-    nux_serde_end(s);
+    nux_v3_t v = nux_v3(1, 2, 3);
+    nux_serde_v3(s, "myvec", &v);
+    nux_serde_end_array(s);
+    nux_serde_end_object(s);
     nux_serde_json_close(&j);
     // NUX_INFO("%*s%s:", space, "", r->name);
 
