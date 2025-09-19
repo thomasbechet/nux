@@ -1,6 +1,6 @@
 #include "internal.h"
 
-#include <base/internal.h>
+#include <io/internal.h>
 
 #define LOG_LINE_LEN   64
 #define LOG_LINE_COUNT 25
@@ -8,6 +8,23 @@
 nux_status_t
 nux_debug_init (nux_ctx_t *ctx)
 {
+    nux_serde_json_t j;
+    nux_serde_t     *s = nux_serde_json_init_write(&j, ctx, "test.json");
+    NUX_ASSERT(s);
+    nux_u32_t value = 3;
+    nux_serde_begin_object(s, "myobject");
+    nux_serde_u32(s, "value", &value);
+    nux_u32_t size = 4;
+    nux_serde_begin_array(s, "values", &size);
+    for (nux_u32_t i = 0; i < 4; ++i)
+    {
+        nux_serde_u32(s, "i", &i);
+    }
+    nux_serde_end(s);
+    nux_serde_end(s);
+    nux_serde_json_close(&j);
+    // NUX_INFO("%*s%s:", space, "", r->name);
+
     // Create module
     ctx->debug = nux_arena_malloc(&ctx->core_arena, sizeof(*ctx->debug));
     NUX_CHECK(ctx->debug, return NUX_FAILURE);
