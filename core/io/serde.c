@@ -1,6 +1,8 @@
 #include "internal.h"
 
-#include <externals/cgltf/cgltf.h>
+#define JSMN_STRICT
+#define JSMN_PARENT_LINKS
+#include <externals/jsmn/jsmn.h>
 
 #define CHECK(step) \
     step;           \

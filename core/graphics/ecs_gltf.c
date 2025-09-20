@@ -2,13 +2,17 @@
 
 #ifdef NUX_BUILD_IMPORTER
 #define CGLTF_IMPLEMENTATION
-#include "externals/cgltf/cgltf.h"
+#define JSMN_HEADER
+#define JSMN_STRICT
+#define JSMN_PARENT_LINKS
+#include <externals/jsmn/jsmn.h>
+#include <externals/cgltf/cgltf.h>
 #define STBIR_DEBUG
 #define STB_IMAGE_STATIC
 #define STBI_NO_STDIO
 #define STBI_ASSERT(x) NUX_ASSERT(x)
 #define STB_IMAGE_IMPLEMENTATION
-#include "externals/stb/stb_image.h"
+#include <externals/stb/stb_image.h>
 // #define STB_IMAGE_RESIZE_IMPLEMENTATION
 // #include <stb_image_resize.h>
 // #include <stb_image_resize2.h>

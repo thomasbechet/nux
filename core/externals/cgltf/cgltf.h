@@ -1,7 +1,7 @@
 /**
  * cgltf - a single-file glTF 2.0 parser written in C99.
  *
- * Version: 1.14
+ * Version: 1.15
  *
  * Website: https://github.com/jkuhlmann/cgltf
  *
@@ -141,7 +141,7 @@ typedef struct cgltf_memory_options
 typedef struct cgltf_file_options
 {
 	cgltf_result(*read)(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const char* path, cgltf_size* size, void** data);
-	void (*release)(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, void* data);
+	void (*release)(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, void* data, cgltf_size size);
 	void* user_data;
 } cgltf_file_options;
 
@@ -376,13 +376,29 @@ typedef struct cgltf_image
 	cgltf_extension* extensions;
 } cgltf_image;
 
+typedef enum cgltf_filter_type {
+    cgltf_filter_type_undefined = 0,
+    cgltf_filter_type_nearest = 9728,
+    cgltf_filter_type_linear = 9729,
+    cgltf_filter_type_nearest_mipmap_nearest = 9984,
+    cgltf_filter_type_linear_mipmap_nearest = 9985,
+    cgltf_filter_type_nearest_mipmap_linear = 9986,
+    cgltf_filter_type_linear_mipmap_linear = 9987
+} cgltf_filter_type;
+
+typedef enum cgltf_wrap_mode {
+    cgltf_wrap_mode_clamp_to_edge = 33071,
+    cgltf_wrap_mode_mirrored_repeat = 33648,
+    cgltf_wrap_mode_repeat = 10497
+} cgltf_wrap_mode;
+
 typedef struct cgltf_sampler
 {
 	char* name;
-	cgltf_int mag_filter;
-	cgltf_int min_filter;
-	cgltf_int wrap_s;
-	cgltf_int wrap_t;
+	cgltf_filter_type mag_filter;
+	cgltf_filter_type min_filter;
+	cgltf_wrap_mode wrap_s;
+	cgltf_wrap_mode wrap_t;
 	cgltf_extras extras;
 	cgltf_size extensions_count;
 	cgltf_extension* extensions;
@@ -753,6 +769,7 @@ typedef struct cgltf_data
 {
 	cgltf_file_type file_type;
 	void* file_data;
+	cgltf_size file_size;
 
 	cgltf_asset asset;
 
@@ -830,6 +847,11 @@ cgltf_result cgltf_parse(
 		cgltf_size size,
 		cgltf_data** out_data);
 
+cgltf_result cgltf_parse_file(
+		const cgltf_options* options,
+		const char* path,
+		cgltf_data** out_data);
+
 cgltf_result cgltf_load_buffers(
 		const cgltf_options* options,
 		cgltf_data* data,
@@ -902,65 +924,14 @@ cgltf_size cgltf_animation_channel_index(const cgltf_animation* animation, const
 
 #ifdef CGLTF_IMPLEMENTATION
 
-// #include <assert.h> /* For assert */
-#ifndef assert
-#define assert(x) (void)(x)
-#endif
+#include <assert.h> /* For assert */
 #include <string.h> /* For strncpy */
-// #include <stdio.h>  /* For fopen */
 #include <limits.h> /* For UINT_MAX etc */
 #include <float.h>  /* For FLT_MAX */
 
 #if !defined(CGLTF_MALLOC) || !defined(CGLTF_FREE) || !defined(CGLTF_ATOI) || !defined(CGLTF_ATOF) || !defined(CGLTF_ATOLL)
 #include <stdlib.h> /* For malloc, free, atoi, atof */
 #endif
-
-/* JSMN_PARENT_LINKS is necessary to make parsing large structures linear in input size */
-#define JSMN_PARENT_LINKS
-
-/* JSMN_STRICT is necessary to reject invalid JSON documents */
-#define JSMN_STRICT
-
-/*
- * -- jsmn.h start --
- * Source: https://github.com/zserge/jsmn
- * License: MIT
- */
-typedef enum {
-	JSMN_UNDEFINED = 0,
-	JSMN_OBJECT = 1,
-	JSMN_ARRAY = 2,
-	JSMN_STRING = 3,
-	JSMN_PRIMITIVE = 4
-} jsmntype_t;
-enum jsmnerr {
-	/* Not enough tokens were provided */
-	JSMN_ERROR_NOMEM = -1,
-	/* Invalid character inside JSON string */
-	JSMN_ERROR_INVAL = -2,
-	/* The string is not a full JSON packet, more bytes expected */
-	JSMN_ERROR_PART = -3
-};
-typedef struct {
-	jsmntype_t type;
-	ptrdiff_t start;
-	ptrdiff_t end;
-	int size;
-#ifdef JSMN_PARENT_LINKS
-	int parent;
-#endif
-} jsmntok_t;
-typedef struct {
-	size_t pos; /* offset in the JSON string */
-	unsigned int toknext; /* next token to allocate */
-	int toksuper; /* superior token node, e.g parent object or array */
-} jsmn_parser;
-static void jsmn_init(jsmn_parser *parser);
-static int jsmn_parse(jsmn_parser *parser, const char *js, size_t len, jsmntok_t *tokens, size_t num_tokens);
-/*
- * -- jsmn.h end --
- */
-
 
 #ifndef CGLTF_CONSTS
 #define GlbHeaderSize 12
@@ -1018,75 +989,13 @@ static void* cgltf_calloc(cgltf_options* options, size_t element_size, cgltf_siz
 	return result;
 }
 
-// static cgltf_result cgltf_default_file_read(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, const char* path, cgltf_size* size, void** data)
-// {
-// 	(void)file_options;
-// 	void* (*memory_alloc)(void*, cgltf_size) = memory_options->alloc_func ? memory_options->alloc_func : &cgltf_default_alloc;
-// 	void (*memory_free)(void*, void*) = memory_options->free_func ? memory_options->free_func : &cgltf_default_free;
-//
-// 	FILE* file = fopen(path, "rb");
-// 	if (!file)
-// 	{
-// 		return cgltf_result_file_not_found;
-// 	}
-//
-// 	cgltf_size file_size = size ? *size : 0;
-//
-// 	if (file_size == 0)
-// 	{
-// 		fseek(file, 0, SEEK_END);
-//
-// #ifdef _MSC_VER
-// 		__int64 length = _ftelli64(file);
-// #else
-// 		long length = ftell(file);
-// #endif
-//
-// 		if (length < 0)
-// 		{
-// 			fclose(file);
-// 			return cgltf_result_io_error;
-// 		}
-//
-// 		fseek(file, 0, SEEK_SET);
-// 		file_size = (cgltf_size)length;
-// 	}
-//
-// 	char* file_data = (char*)memory_alloc(memory_options->user_data, file_size);
-// 	if (!file_data)
-// 	{
-// 		fclose(file);
-// 		return cgltf_result_out_of_memory;
-// 	}
-//
-// 	cgltf_size read_size = fread(file_data, 1, file_size, file);
-//
-// 	fclose(file);
-//
-// 	if (read_size != file_size)
-// 	{
-// 		memory_free(memory_options->user_data, file_data);
-// 		return cgltf_result_io_error;
-// 	}
-//
-// 	if (size)
-// 	{
-// 		*size = file_size;
-// 	}
-// 	if (data)
-// 	{
-// 		*data = file_data;
-// 	}
-//
-// 	return cgltf_result_success;
-// }
-
-// static void cgltf_default_file_release(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, void* data)
-// {
-// 	(void)file_options;
-// 	void (*memfree)(void*, void*) = memory_options->free_func ? memory_options->free_func : &cgltf_default_free;
-// 	memfree(memory_options->user_data, data);
-// }
+static void cgltf_default_file_release(const struct cgltf_memory_options* memory_options, const struct cgltf_file_options* file_options, void* data, cgltf_size size)
+{
+	(void)file_options;
+	(void)size;
+	void (*memfree)(void*, void*) = memory_options->free_func ? memory_options->free_func : &cgltf_default_free;
+	memfree(memory_options->user_data, data);
+}
 
 static cgltf_result cgltf_parse_json(cgltf_options* options, const uint8_t* json_chunk, cgltf_size size, cgltf_data** out_data);
 
@@ -1764,6 +1673,8 @@ void cgltf_free(cgltf_data* data)
 		return;
 	}
 
+	void (*file_release)(const struct cgltf_memory_options*, const struct cgltf_file_options*, void* data, cgltf_size size) = data->file.release ? data->file.release : cgltf_default_file_release;
+
 	data->memory.free_func(data->memory.user_data, data->asset.copyright);
 	data->memory.free_func(data->memory.user_data, data->asset.generator);
 	data->memory.free_func(data->memory.user_data, data->asset.version);
@@ -1795,7 +1706,11 @@ void cgltf_free(cgltf_data* data)
 	{
 		data->memory.free_func(data->memory.user_data, data->buffers[i].name);
 
-		if (data->buffers[i].data_free_method == cgltf_data_free_method_memory_free)
+		if (data->buffers[i].data_free_method == cgltf_data_free_method_file_release)
+		{
+			file_release(&data->memory, &data->file, data->buffers[i].data, data->buffers[i].size);
+		}
+		else if (data->buffers[i].data_free_method == cgltf_data_free_method_memory_free)
 		{
 			data->memory.free_func(data->memory.user_data, data->buffers[i].data);
 		}
@@ -2032,6 +1947,8 @@ void cgltf_free(cgltf_data* data)
 
 	data->memory.free_func(data->memory.user_data, data->extensions_required);
 
+	file_release(&data->memory, &data->file, data->file_data, data->file_size);
+
 	data->memory.free_func(data->memory.user_data, data);
 }
 
@@ -2258,11 +2175,46 @@ const cgltf_accessor* cgltf_find_accessor(const cgltf_primitive* prim, cgltf_att
 	return NULL;
 }
 
+static const uint8_t* cgltf_find_sparse_index(const cgltf_accessor* accessor, cgltf_size needle)
+{
+	const cgltf_accessor_sparse* sparse = &accessor->sparse;
+	const uint8_t* index_data = cgltf_buffer_view_data(sparse->indices_buffer_view);
+	const uint8_t* value_data = cgltf_buffer_view_data(sparse->values_buffer_view);
+
+	if (index_data == NULL || value_data == NULL)
+		return NULL;
+
+	index_data += sparse->indices_byte_offset;
+	value_data += sparse->values_byte_offset;
+
+	cgltf_size index_stride = cgltf_component_size(sparse->indices_component_type);
+
+	cgltf_size offset = 0;
+	cgltf_size length = sparse->count;
+
+	while (length)
+	{
+		cgltf_size rem = length % 2;
+		length /= 2;
+
+		cgltf_size index = cgltf_component_read_index(index_data + (offset + length) * index_stride, sparse->indices_component_type);
+		offset += index < needle ? length + rem : 0;
+	}
+
+	if (offset == sparse->count)
+		return NULL;
+
+	cgltf_size index = cgltf_component_read_index(index_data + offset * index_stride, sparse->indices_component_type);
+	return index == needle ? value_data + offset * accessor->stride : NULL;
+}
+
 cgltf_bool cgltf_accessor_read_float(const cgltf_accessor* accessor, cgltf_size index, cgltf_float* out, cgltf_size element_size)
 {
 	if (accessor->is_sparse)
 	{
-		return 0;
+		const uint8_t* element = cgltf_find_sparse_index(accessor, index);
+		if (element)
+			return cgltf_element_read_float(element, accessor->type, accessor->component_type, accessor->normalized, out, element_size);
 	}
 	if (accessor->buffer_view == NULL)
 	{
@@ -2406,11 +2358,13 @@ cgltf_bool cgltf_accessor_read_uint(const cgltf_accessor* accessor, cgltf_size i
 {
 	if (accessor->is_sparse)
 	{
-		return 0;
+		const uint8_t* element = cgltf_find_sparse_index(accessor, index);
+		if (element)
+			return cgltf_element_read_uint(element, accessor->type, accessor->component_type, out, element_size);
 	}
 	if (accessor->buffer_view == NULL)
 	{
-		memset(out, 0, element_size * sizeof( cgltf_uint ));
+		memset(out, 0, element_size * sizeof(cgltf_uint));
 		return 1;
 	}
 	const uint8_t* element = cgltf_buffer_view_data(accessor->buffer_view);
@@ -2426,7 +2380,9 @@ cgltf_size cgltf_accessor_read_index(const cgltf_accessor* accessor, cgltf_size 
 {
 	if (accessor->is_sparse)
 	{
-		return 0; // This is an error case, but we can't communicate the error with existing interface.
+		const uint8_t* element = cgltf_find_sparse_index(accessor, index);
+		if (element)
+			return cgltf_component_read_index(element, accessor->component_type);
 	}
 	if (accessor->buffer_view == NULL)
 	{
@@ -2544,7 +2500,10 @@ cgltf_size cgltf_accessor_unpack_indices(const cgltf_accessor* accessor, void* o
 		return accessor->count;
 	}
 
-	index_count = accessor->count < index_count ? accessor->count : index_count;
+	cgltf_size numbers_per_element = cgltf_num_components(accessor->type);
+	cgltf_size available_numbers = accessor->count * numbers_per_element;
+
+	index_count = available_numbers < index_count ? available_numbers : index_count;
 	cgltf_size index_component_size = cgltf_component_size(accessor->component_type);
 
 	if (accessor->is_sparse)
@@ -2566,15 +2525,23 @@ cgltf_size cgltf_accessor_unpack_indices(const cgltf_accessor* accessor, void* o
 	}
 	element += accessor->offset;
 
-	if (index_component_size == out_component_size && accessor->stride == out_component_size)
+	if (index_component_size == out_component_size && accessor->stride == out_component_size * numbers_per_element)
 	{
 		memcpy(out, element, index_count * index_component_size);
 		return index_count;
 	}
 
+	// Data couldn't be copied with memcpy due to stride being larger than the component size.
+	// OR
 	// The component size of the output array is larger than the component size of the index data, so index data will be padded.
 	switch (out_component_size)
 	{
+	case 1:
+		for (cgltf_size index = 0; index < index_count; index++, element += accessor->stride)
+		{
+			((uint8_t*)out)[index] = (uint8_t)cgltf_component_read_index(element, accessor->component_type);
+		}
+		break;
 	case 2:
 		for (cgltf_size index = 0; index < index_count; index++, element += accessor->stride)
 		{
@@ -2588,7 +2555,7 @@ cgltf_size cgltf_accessor_unpack_indices(const cgltf_accessor* accessor, void* o
 		}
 		break;
 	default:
-		break;
+		return 0;
 	}
 
 	return index_count;
@@ -4398,8 +4365,8 @@ static int cgltf_parse_json_sampler(cgltf_options* options, jsmntok_t const* tok
 	(void)options;
 	CGLTF_CHECK_TOKTYPE(tokens[i], JSMN_OBJECT);
 
-	out_sampler->wrap_s = 10497;
-	out_sampler->wrap_t = 10497;
+	out_sampler->wrap_s = cgltf_wrap_mode_repeat;
+	out_sampler->wrap_t = cgltf_wrap_mode_repeat;
 
 	int size = tokens[i].size;
 	++i;
@@ -4416,28 +4383,28 @@ static int cgltf_parse_json_sampler(cgltf_options* options, jsmntok_t const* tok
 		{
 			++i;
 			out_sampler->mag_filter
-				= cgltf_json_to_int(tokens + i, json_chunk);
+				= (cgltf_filter_type)cgltf_json_to_int(tokens + i, json_chunk);
 			++i;
 		}
 		else if (cgltf_json_strcmp(tokens + i, json_chunk, "minFilter") == 0)
 		{
 			++i;
 			out_sampler->min_filter
-				= cgltf_json_to_int(tokens + i, json_chunk);
+				= (cgltf_filter_type)cgltf_json_to_int(tokens + i, json_chunk);
 			++i;
 		}
 		else if (cgltf_json_strcmp(tokens + i, json_chunk, "wrapS") == 0)
 		{
 			++i;
 			out_sampler->wrap_s
-				= cgltf_json_to_int(tokens + i, json_chunk);
+				= (cgltf_wrap_mode)cgltf_json_to_int(tokens + i, json_chunk);
 			++i;
 		}
 		else if (cgltf_json_strcmp(tokens + i, json_chunk, "wrapT") == 0)
 		{
 			++i;
 			out_sampler->wrap_t
-				= cgltf_json_to_int(tokens + i, json_chunk);
+				= (cgltf_wrap_mode)cgltf_json_to_int(tokens + i, json_chunk);
 			++i;
 		}
 		else if (cgltf_json_strcmp(tokens + i, json_chunk, "extras") == 0)
@@ -6689,7 +6656,7 @@ static int cgltf_fixup_pointers(cgltf_data* data)
 
 			if (data->scenes[i].nodes[j]->parent)
 			{
-				// return CGLTF_ERROR_JSON;
+				return CGLTF_ERROR_JSON;
 			}
 		}
 	}
@@ -6713,347 +6680,6 @@ static int cgltf_fixup_pointers(cgltf_data* data)
 
 	return 0;
 }
-
-/*
- * -- jsmn.c start --
- * Source: https://github.com/zserge/jsmn
- * License: MIT
- *
- * Copyright (c) 2010 Serge A. Zaitsev
-
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
-
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
-
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
-
-/**
- * Allocates a fresh unused token from the token pull.
- */
-static jsmntok_t *jsmn_alloc_token(jsmn_parser *parser,
-				   jsmntok_t *tokens, size_t num_tokens) {
-	jsmntok_t *tok;
-	if (parser->toknext >= num_tokens) {
-		return NULL;
-	}
-	tok = &tokens[parser->toknext++];
-	tok->start = tok->end = -1;
-	tok->size = 0;
-#ifdef JSMN_PARENT_LINKS
-	tok->parent = -1;
-#endif
-	return tok;
-}
-
-/**
- * Fills token type and boundaries.
- */
-static void jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
-				ptrdiff_t start, ptrdiff_t end) {
-	token->type = type;
-	token->start = start;
-	token->end = end;
-	token->size = 0;
-}
-
-/**
- * Fills next available token with JSON primitive.
- */
-static int jsmn_parse_primitive(jsmn_parser *parser, const char *js,
-				size_t len, jsmntok_t *tokens, size_t num_tokens) {
-	jsmntok_t *token;
-	ptrdiff_t start;
-
-	start = parser->pos;
-
-	for (; parser->pos < len && js[parser->pos] != '\0'; parser->pos++) {
-		switch (js[parser->pos]) {
-#ifndef JSMN_STRICT
-		/* In strict mode primitive must be followed by "," or "}" or "]" */
-		case ':':
-#endif
-		case '\t' : case '\r' : case '\n' : case ' ' :
-		case ','  : case ']'  : case '}' :
-			goto found;
-		}
-		if (js[parser->pos] < 32 || js[parser->pos] >= 127) {
-			parser->pos = start;
-			return JSMN_ERROR_INVAL;
-		}
-	}
-#ifdef JSMN_STRICT
-	/* In strict mode primitive must be followed by a comma/object/array */
-	parser->pos = start;
-	return JSMN_ERROR_PART;
-#endif
-
-found:
-	if (tokens == NULL) {
-		parser->pos--;
-		return 0;
-	}
-	token = jsmn_alloc_token(parser, tokens, num_tokens);
-	if (token == NULL) {
-		parser->pos = start;
-		return JSMN_ERROR_NOMEM;
-	}
-	jsmn_fill_token(token, JSMN_PRIMITIVE, start, parser->pos);
-#ifdef JSMN_PARENT_LINKS
-	token->parent = parser->toksuper;
-#endif
-	parser->pos--;
-	return 0;
-}
-
-/**
- * Fills next token with JSON string.
- */
-static int jsmn_parse_string(jsmn_parser *parser, const char *js,
-				 size_t len, jsmntok_t *tokens, size_t num_tokens) {
-	jsmntok_t *token;
-
-	ptrdiff_t start = parser->pos;
-
-	parser->pos++;
-
-	/* Skip starting quote */
-	for (; parser->pos < len && js[parser->pos] != '\0'; parser->pos++) {
-		char c = js[parser->pos];
-
-		/* Quote: end of string */
-		if (c == '\"') {
-			if (tokens == NULL) {
-				return 0;
-			}
-			token = jsmn_alloc_token(parser, tokens, num_tokens);
-			if (token == NULL) {
-				parser->pos = start;
-				return JSMN_ERROR_NOMEM;
-			}
-			jsmn_fill_token(token, JSMN_STRING, start+1, parser->pos);
-#ifdef JSMN_PARENT_LINKS
-			token->parent = parser->toksuper;
-#endif
-			return 0;
-		}
-
-		/* Backslash: Quoted symbol expected */
-		if (c == '\\' && parser->pos + 1 < len) {
-			int i;
-			parser->pos++;
-			switch (js[parser->pos]) {
-			/* Allowed escaped symbols */
-			case '\"': case '/' : case '\\' : case 'b' :
-			case 'f' : case 'r' : case 'n'  : case 't' :
-				break;
-				/* Allows escaped symbol \uXXXX */
-			case 'u':
-				parser->pos++;
-				for(i = 0; i < 4 && parser->pos < len && js[parser->pos] != '\0'; i++) {
-					/* If it isn't a hex character we have an error */
-					if(!((js[parser->pos] >= 48 && js[parser->pos] <= 57) || /* 0-9 */
-						 (js[parser->pos] >= 65 && js[parser->pos] <= 70) || /* A-F */
-						 (js[parser->pos] >= 97 && js[parser->pos] <= 102))) { /* a-f */
-						parser->pos = start;
-						return JSMN_ERROR_INVAL;
-					}
-					parser->pos++;
-				}
-				parser->pos--;
-				break;
-				/* Unexpected symbol */
-			default:
-				parser->pos = start;
-				return JSMN_ERROR_INVAL;
-			}
-		}
-	}
-	parser->pos = start;
-	return JSMN_ERROR_PART;
-}
-
-/**
- * Parse JSON string and fill tokens.
- */
-static int jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
-		   jsmntok_t *tokens, size_t num_tokens) {
-	int r;
-	int i;
-	jsmntok_t *token;
-	int count = parser->toknext;
-
-	for (; parser->pos < len && js[parser->pos] != '\0'; parser->pos++) {
-		char c;
-		jsmntype_t type;
-
-		c = js[parser->pos];
-		switch (c) {
-		case '{': case '[':
-			count++;
-			if (tokens == NULL) {
-				break;
-			}
-			token = jsmn_alloc_token(parser, tokens, num_tokens);
-			if (token == NULL)
-				return JSMN_ERROR_NOMEM;
-			if (parser->toksuper != -1) {
-				tokens[parser->toksuper].size++;
-#ifdef JSMN_PARENT_LINKS
-				token->parent = parser->toksuper;
-#endif
-			}
-			token->type = (c == '{' ? JSMN_OBJECT : JSMN_ARRAY);
-			token->start = parser->pos;
-			parser->toksuper = parser->toknext - 1;
-			break;
-		case '}': case ']':
-			if (tokens == NULL)
-				break;
-			type = (c == '}' ? JSMN_OBJECT : JSMN_ARRAY);
-#ifdef JSMN_PARENT_LINKS
-			if (parser->toknext < 1) {
-				return JSMN_ERROR_INVAL;
-			}
-			token = &tokens[parser->toknext - 1];
-			for (;;) {
-				if (token->start != -1 && token->end == -1) {
-					if (token->type != type) {
-						return JSMN_ERROR_INVAL;
-					}
-					token->end = parser->pos + 1;
-					parser->toksuper = token->parent;
-					break;
-				}
-				if (token->parent == -1) {
-					if(token->type != type || parser->toksuper == -1) {
-						return JSMN_ERROR_INVAL;
-					}
-					break;
-				}
-				token = &tokens[token->parent];
-			}
-#else
-			for (i = parser->toknext - 1; i >= 0; i--) {
-				token = &tokens[i];
-				if (token->start != -1 && token->end == -1) {
-					if (token->type != type) {
-						return JSMN_ERROR_INVAL;
-					}
-					parser->toksuper = -1;
-					token->end = parser->pos + 1;
-					break;
-				}
-			}
-			/* Error if unmatched closing bracket */
-			if (i == -1) return JSMN_ERROR_INVAL;
-			for (; i >= 0; i--) {
-				token = &tokens[i];
-				if (token->start != -1 && token->end == -1) {
-					parser->toksuper = i;
-					break;
-				}
-			}
-#endif
-			break;
-		case '\"':
-			r = jsmn_parse_string(parser, js, len, tokens, num_tokens);
-			if (r < 0) return r;
-			count++;
-			if (parser->toksuper != -1 && tokens != NULL)
-				tokens[parser->toksuper].size++;
-			break;
-		case '\t' : case '\r' : case '\n' : case ' ':
-			break;
-		case ':':
-			parser->toksuper = parser->toknext - 1;
-			break;
-		case ',':
-			if (tokens != NULL && parser->toksuper != -1 &&
-					tokens[parser->toksuper].type != JSMN_ARRAY &&
-					tokens[parser->toksuper].type != JSMN_OBJECT) {
-#ifdef JSMN_PARENT_LINKS
-				parser->toksuper = tokens[parser->toksuper].parent;
-#else
-				for (i = parser->toknext - 1; i >= 0; i--) {
-					if (tokens[i].type == JSMN_ARRAY || tokens[i].type == JSMN_OBJECT) {
-						if (tokens[i].start != -1 && tokens[i].end == -1) {
-							parser->toksuper = i;
-							break;
-						}
-					}
-				}
-#endif
-			}
-			break;
-#ifdef JSMN_STRICT
-			/* In strict mode primitives are: numbers and booleans */
-		case '-': case '0': case '1' : case '2': case '3' : case '4':
-		case '5': case '6': case '7' : case '8': case '9':
-		case 't': case 'f': case 'n' :
-			/* And they must not be keys of the object */
-			if (tokens != NULL && parser->toksuper != -1) {
-				jsmntok_t *t = &tokens[parser->toksuper];
-				if (t->type == JSMN_OBJECT ||
-						(t->type == JSMN_STRING && t->size != 0)) {
-					return JSMN_ERROR_INVAL;
-				}
-			}
-#else
-			/* In non-strict mode every unquoted value is a primitive */
-		default:
-#endif
-			r = jsmn_parse_primitive(parser, js, len, tokens, num_tokens);
-			if (r < 0) return r;
-			count++;
-			if (parser->toksuper != -1 && tokens != NULL)
-				tokens[parser->toksuper].size++;
-			break;
-
-#ifdef JSMN_STRICT
-			/* Unexpected char in strict mode */
-		default:
-			return JSMN_ERROR_INVAL;
-#endif
-		}
-	}
-
-	if (tokens != NULL) {
-		for (i = parser->toknext - 1; i >= 0; i--) {
-			/* Unmatched opened object or array */
-			if (tokens[i].start != -1 && tokens[i].end == -1) {
-				return JSMN_ERROR_PART;
-			}
-		}
-	}
-
-	return count;
-}
-
-/**
- * Creates a new parser based over a given  buffer with an array of tokens
- * available.
- */
-static void jsmn_init(jsmn_parser *parser) {
-	parser->pos = 0;
-	parser->toknext = 0;
-	parser->toksuper = -1;
-}
-/*
- * -- jsmn.c end --
- */
 
 #endif /* #ifdef CGLTF_IMPLEMENTATION */
 
@@ -7079,4 +6705,3 @@ static void jsmn_init(jsmn_parser *parser) {
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-
