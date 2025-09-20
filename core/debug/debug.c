@@ -8,23 +8,11 @@
 nux_status_t
 nux_debug_init (nux_ctx_t *ctx)
 {
-    nux_serde_json_t j;
-    nux_serde_t     *s = nux_serde_json_init_write(&j, ctx, "test.json");
-    NUX_ASSERT(s);
-    nux_u32_t value = 3;
-    nux_serde_begin_object(s, "myobject");
-    nux_serde_u32(s, "value", &value);
-    nux_u32_t size = 4;
-    nux_serde_begin_array(s, "values", &size);
-    for (nux_u32_t i = 0; i < 4; ++i)
-    {
-        nux_serde_u32(s, NUX_NULL, &i);
-    }
-    nux_v3_t v = nux_v3(1, 2, 3);
-    nux_serde_v3(s, "myvec", &v);
-    nux_serde_end_array(s);
-    nux_serde_end_object(s);
-    nux_serde_json_close(&j);
+    nux_serde_json_writer_t j;
+    NUX_ASSERT(nux_serde_json_writer_init(&j, ctx, "test.json"));
+    nux_serde_writer_t *s = &j.writer;
+    nux_serde_write_v3(s, "position", nux_v3s(3));
+    nux_serde_json_writer_close(&j);
     // NUX_INFO("%*s%s:", space, "", r->name);
 
     // Create module
