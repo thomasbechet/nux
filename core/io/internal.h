@@ -105,14 +105,20 @@ typedef enum
     NUX_SERDE_ARRAY,
     NUX_SERDE_END,
     NUX_SERDE_U32,
+    NUX_SERDE_STR,
     NUX_SERDE_V3,
 } nux_serde_type_t;
 
 typedef union
 {
     nux_u32_t *u32;
-    nux_v3_t  *v3;
-    nux_u32_t  size;
+    struct
+    {
+        const nux_c8_t **s;
+        nux_u32_t       *n;
+    } str;
+    nux_v3_t *v3;
+    nux_u32_t size;
 } nux_serde_value_t;
 
 struct nux_serde_writer;
@@ -140,6 +146,8 @@ typedef struct nux_serde_reader
     void                       *userdata;
     const nux_c8_t             *key;
     nux_serde_type_t            type;
+    nux_serde_value_t           value;
+    nux_b32_t                   error;
 } nux_serde_reader_t;
 
 typedef struct
@@ -154,6 +162,12 @@ typedef struct
 typedef struct
 {
     nux_serde_reader_t reader;
+    const nux_c8_t    *json;
+    nux_u32_t          json_size;
+    void              *tokens;
+    nux_u32_t          tokens_capa;
+    nux_u32_t          tokens_count;
+    nux_u32_t          it;
 } nux_serde_json_reader_t;
 
 typedef struct nux_io_module
@@ -230,7 +244,6 @@ void         nux_serde_json_writer_close(nux_serde_json_writer_t *j);
 nux_status_t nux_serde_json_reader_init(nux_serde_json_reader_t *j,
                                         nux_ctx_t               *ctx,
                                         const nux_c8_t          *path);
-void         nux_serde_json_reader_close(nux_serde_json_reader_t *j);
 
 void nux_serde_write_object(nux_serde_writer_t *s, const nux_c8_t *key);
 void nux_serde_write_array(nux_serde_writer_t *s,
@@ -240,13 +253,19 @@ void nux_serde_write_end(nux_serde_writer_t *s);
 void nux_serde_write_u32(nux_serde_writer_t *s,
                          const nux_c8_t     *key,
                          nux_u32_t           v);
+void nux_serde_write_str(nux_serde_writer_t *s,
+                            const nux_c8_t     *key,
+                            const nux_c8_t     *v);
 void nux_serde_write_v3(nux_serde_writer_t *s, const nux_c8_t *key, nux_v3_t v);
 
 void      nux_serde_read_object(nux_serde_reader_t *s, const nux_c8_t *key);
 nux_u32_t nux_serde_read_array(nux_serde_reader_t *s, const nux_c8_t *key);
 void      nux_serde_read_end(nux_serde_reader_t *s);
 nux_u32_t nux_serde_read_u32(nux_serde_reader_t *s, const nux_c8_t *key);
-nux_v3_t  nux_serde_read_v3(nux_serde_reader_t *s, const nux_c8_t *key);
+const nux_c8_t *nux_serde_read_str(nux_serde_reader_t *s,
+                                      const nux_c8_t     *key,
+                                      nux_u32_t          *n);
+nux_v3_t        nux_serde_read_v3(nux_serde_reader_t *s, const nux_c8_t *key);
 const nux_c8_t *nux_serde_next_key(nux_serde_reader_t *s);
 
 #endif

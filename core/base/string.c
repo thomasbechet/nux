@@ -33,6 +33,13 @@ nux_strncmp (const nux_c8_t *a, const nux_c8_t *b, nux_u32_t n)
         return (*(unsigned char *)a - *(unsigned char *)b);
     }
 }
+nux_f32_t
+nux_strtof (const nux_c8_t *s, nux_c8_t **end)
+{
+#ifdef NUX_BUILD_STDLIB
+    return strtof(s, end);
+#endif
+}
 nux_u32_t
 nux_snprintf (nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...)
 {

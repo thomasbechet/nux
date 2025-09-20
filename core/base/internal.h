@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #ifdef NUX_BUILD_DEBUG
 #include <assert.h>
 #endif
@@ -716,6 +717,7 @@ nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 nux_u32_t nux_strnlen(const nux_c8_t *s, nux_u32_t n);
 void      nux_strncpy(nux_c8_t *dst, const nux_c8_t *src, nux_u32_t n);
 nux_i32_t nux_strncmp(const nux_c8_t *a, const nux_c8_t *b, nux_u32_t n);
+nux_f32_t nux_strtof(const nux_c8_t *s, nux_c8_t **end);
 nux_u32_t nux_snprintf(nux_c8_t *buf, nux_u32_t n, const nux_c8_t *format, ...);
 nux_u32_t nux_vsnprintf(nux_c8_t       *buf,
                         nux_u32_t       n,
