@@ -14,3 +14,5 @@ Version 0.0.1
 - cgltf v1.14
   - license : core/externals/cgltf/LICENSE.md
   - modified
+- jsmn v1.1.0
+  - license : core/externals/jsmn/LICENSE.md
