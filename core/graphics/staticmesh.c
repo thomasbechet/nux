@@ -28,7 +28,8 @@ nux_staticmesh_set_texture (nux_ctx_t *ctx, nux_eid_t e, nux_rid_t texture)
 {
     if (texture)
     {
-        NUX_CHECK(nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, texture), return);
+        NUX_CHECK(nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, texture),
+                  return);
     }
     nux_staticmesh_t *sm = nux_ecs_get(ctx, e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
@@ -37,4 +38,28 @@ nux_staticmesh_set_texture (nux_ctx_t *ctx, nux_eid_t e, nux_rid_t texture)
 void
 nux_staticmesh_set_colormap (nux_ctx_t *ctx, nux_eid_t e, nux_rid_t colormap)
 {
+}
+
+nux_status_t
+nux_staticmesh_write (nux_serde_writer_t *s,
+                      const nux_c8_t     *key,
+                      const void         *data)
+{
+    const nux_staticmesh_t *staticmesh = data;
+    nux_serde_write_object(s, key);
+    nux_serde_write_u32(s, "mesh", staticmesh->mesh);
+    nux_serde_write_u32(s, "texture", staticmesh->texture);
+    nux_serde_write_end(s);
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_staticmesh_read (nux_serde_reader_t *s, const nux_c8_t *key, void *data)
+{
+    nux_staticmesh_t *staticmesh = data;
+    nux_serde_read_object(s, key);
+    staticmesh->mesh      = nux_serde_read_u32(s, "mesh");
+    staticmesh->texture   = nux_serde_read_u32(s, "texture");
+    staticmesh->transform = 0;
+    nux_serde_read_end(s);
+    return NUX_SUCCESS;
 }

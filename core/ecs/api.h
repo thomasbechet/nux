@@ -38,22 +38,6 @@ void     nux_transform_rotate_y(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t angle);
 void     nux_transform_rotate_z(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t angle);
 void     nux_transform_look_at(nux_ctx_t *ctx, nux_eid_t e, nux_v3_t center);
 
-void nux_camera_add(nux_ctx_t *ctx, nux_eid_t e);
-void nux_camera_remove(nux_ctx_t *ctx, nux_eid_t e);
-void nux_camera_set_fov(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t fov);
-void nux_camera_set_near(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t near);
-void nux_camera_set_far(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t far);
-
-void nux_staticmesh_add(nux_ctx_t *ctx, nux_eid_t e);
-void nux_staticmesh_remove(nux_ctx_t *ctx, nux_eid_t e);
-void nux_staticmesh_set_mesh(nux_ctx_t *ctx, nux_eid_t e, nux_rid_t mesh);
-void nux_staticmesh_set_texture(nux_ctx_t *ctx, nux_eid_t e, nux_rid_t texture);
-void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
-                                 nux_eid_t  e,
-                                 nux_rid_t  colormap);
-
-// ECS
-
 nux_rid_t nux_ecs_new_iter(nux_ctx_t *ctx,
                            nux_rid_t  arena,
                            nux_u32_t  include_count,

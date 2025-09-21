@@ -28,10 +28,15 @@ nux_graphics_init (nux_ctx_t *ctx)
     type->cleanup = nux_font_cleanup;
 
     // Register components
-    nux_ecs_register_component(
+    nux_ecs_component_t *comp;
+    comp = nux_ecs_register_component(
         ctx, NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
-    nux_ecs_register_component(
+    comp->read  = nux_camera_read;
+    comp->write = nux_camera_write;
+    comp        = nux_ecs_register_component(
         ctx, NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
+    comp->read  = nux_staticmesh_read;
+    comp->write = nux_staticmesh_write;
 
     // Initialize gpu slots
     NUX_CHECK(nux_u32_vec_init_capa(

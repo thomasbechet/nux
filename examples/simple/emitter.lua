@@ -3,8 +3,9 @@ function M:on_load()
     self.time = 0
     self.pos = vmath.vec3(0, 10, 0)
     self.mesh = mesh.new_cube(self.arena, 1, 1, 1)
-    self.force = 15
+    self.force = 50 
     self.interval = 0.5
+    self.count = 0
 end
 
 function M:on_update()
@@ -27,6 +28,8 @@ function M:on_update()
         rigidbody.set_velocity(e, v * self.force)
         staticmesh.add(e)
         staticmesh.set_mesh(e, self.mesh)
+        self.count = self.count + 1
+        print("emit count : " .. self.count)
         self.time = 0
     end
 end

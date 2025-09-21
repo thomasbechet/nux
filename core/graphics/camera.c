@@ -104,6 +104,28 @@ nux_lookat (nux_v3_t eye, nux_v3_t center, nux_v3_t up)
     m.data[15] = 1;
     return m;
 }
+nux_status_t
+nux_camera_write (nux_serde_writer_t *s, const nux_c8_t *key, const void *data)
+{
+    const nux_camera_t *camera = data;
+    nux_serde_write_object(s, key);
+    nux_serde_write_f32(s, "far", camera->far);
+    nux_serde_write_f32(s, "near", camera->near);
+    nux_serde_write_f32(s, "fov", camera->fov);
+    nux_serde_write_end(s);
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_camera_read (nux_serde_reader_t *s, const nux_c8_t *key, void *data)
+{
+    nux_camera_t *camera = data;
+    nux_serde_read_object(s, key);
+    camera->far  = nux_serde_read_f32(s, "far");
+    camera->near = nux_serde_read_f32(s, "near");
+    camera->fov  = nux_serde_read_f32(s, "fov");
+    nux_serde_read_end(s);
+    return NUX_SUCCESS;
+}
 
 void
 nux_camera_add (nux_ctx_t *ctx, nux_eid_t e)

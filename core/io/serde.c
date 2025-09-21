@@ -9,9 +9,11 @@
 
 void
 nux_serde_writer_init (nux_serde_writer_t         *s,
+                       nux_ctx_t                  *ctx,
                        nux_serde_writer_callback_t callback,
                        void                       *userdata)
 {
+    s->ctx      = ctx;
     s->callback = callback;
     s->userdata = userdata;
     s->key      = NUX_NULL;
@@ -20,9 +22,11 @@ nux_serde_writer_init (nux_serde_writer_t         *s,
 }
 void
 nux_serde_reader_init (nux_serde_reader_t         *s,
+                       nux_ctx_t                  *ctx,
                        nux_serde_reader_callback_t callback,
                        void                       *userdata)
 {
+    s->ctx      = ctx;
     s->callback = callback;
     s->userdata = userdata;
     s->key      = NUX_NULL;
@@ -86,6 +90,17 @@ error:
     return;
 }
 void
+nux_serde_write_f32 (nux_serde_writer_t *s, const nux_c8_t *key, nux_f32_t v)
+{
+    CHECK();
+    s->type      = NUX_SERDE_F32;
+    s->key       = key;
+    s->value.f32 = &v;
+    CHECK(writer_callback(s));
+error:
+    return;
+}
+void
 nux_serde_write_str (nux_serde_writer_t *s,
                      const nux_c8_t     *key,
                      const nux_c8_t     *v)
@@ -119,6 +134,25 @@ nux_serde_write_q4 (nux_serde_writer_t *s, const nux_c8_t *key, nux_q4_t v)
     CHECK(writer_callback(s));
 error:
     return;
+}
+void
+nux_serde_write_bytes (nux_serde_writer_t *s,
+                       const nux_c8_t     *key,
+                       const nux_u8_t     *bytes,
+                       nux_u32_t           size)
+{
+    CHECK();
+    s->type             = NUX_SERDE_BYTES;
+    s->key              = key;
+    s->value.bytes.data = &bytes;
+    s->value.bytes.n    = size;
+    CHECK(writer_callback(s));
+error:
+    return;
+}
+void
+nux_serde_write_rid (nux_serde_writer_t *s, const nux_c8_t *key, nux_rid_t rid)
+{
 }
 
 static void
@@ -173,6 +207,19 @@ nux_serde_read_u32 (nux_serde_reader_t *s, const nux_c8_t *key)
 error:
     return 0;
 }
+nux_f32_t
+nux_serde_read_f32 (nux_serde_reader_t *s, const nux_c8_t *key)
+{
+    CHECK();
+    s->type = NUX_SERDE_U32;
+    s->key  = key;
+    nux_f32_t v;
+    s->value.f32 = &v;
+    CHECK(reader_callback(s));
+    return v;
+error:
+    return 0;
+}
 const nux_c8_t *
 nux_serde_read_str (nux_serde_reader_t *s, const nux_c8_t *key, nux_u32_t *n)
 {
@@ -200,10 +247,20 @@ nux_serde_read_v3 (nux_serde_reader_t *s, const nux_c8_t *key)
 error:
     return NUX_V3_ZEROS;
 }
-const nux_c8_t *
-nux_serde_next_key (nux_serde_reader_t *s)
+nux_q4_t
+nux_serde_read_q4 (nux_serde_reader_t *s, const nux_c8_t *key)
 {
     CHECK();
+    s->type = NUX_SERDE_Q4;
+    s->key  = key;
+    nux_q4_t v;
+    s->value.q4 = &v;
+    CHECK(reader_callback(s));
+    return v;
 error:
-    return NUX_NULL;
+    return nux_q4_identity();
+}
+nux_rid_t
+nux_serde_read_rid (nux_serde_reader_t *s, const nux_c8_t *key)
+{
 }
