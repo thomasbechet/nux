@@ -185,19 +185,6 @@ nux_serde_read_f32 (nux_serde_reader_t *s, const nux_c8_t *key, nux_f32_t *v)
     serde_read(s, &value);
 }
 void
-nux_serde_read_string (nux_serde_reader_t *s,
-                       const nux_c8_t     *key,
-                       const nux_c8_t    **v,
-                       nux_u32_t          *n)
-{
-    nux_serde_value_t value;
-    value.key   = key;
-    value.type  = NUX_SERDE_STRING;
-    value.str.s = v;
-    value.str.n = n;
-    serde_read(s, &value);
-}
-void
 nux_serde_read_v3 (nux_serde_reader_t *s, const nux_c8_t *key, nux_v3_t *v)
 {
     nux_serde_value_t value;
@@ -213,6 +200,19 @@ nux_serde_read_q4 (nux_serde_reader_t *s, const nux_c8_t *key, nux_q4_t *v)
     value.key  = key;
     value.type = NUX_SERDE_Q4;
     value.q4   = v;
+    serde_read(s, &value);
+}
+void
+nux_serde_read_string (nux_serde_reader_t *s,
+                       const nux_c8_t     *key,
+                       const nux_c8_t    **v,
+                       nux_u32_t          *n)
+{
+    nux_serde_value_t value;
+    value.key   = key;
+    value.type  = NUX_SERDE_STRING;
+    value.str.s = v;
+    value.str.n = n;
     serde_read(s, &value);
 }
 void

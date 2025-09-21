@@ -104,12 +104,12 @@ typedef enum
     NUX_SERDE_OBJECT,
     NUX_SERDE_ARRAY,
     NUX_SERDE_END,
-    NUX_SERDE_STRING,
-    NUX_SERDE_BYTES,
     NUX_SERDE_U32,
     NUX_SERDE_F32,
     NUX_SERDE_V3,
     NUX_SERDE_Q4,
+    NUX_SERDE_BYTES,
+    NUX_SERDE_STRING,
 } nux_serde_type_t;
 
 typedef struct
@@ -291,6 +291,8 @@ void nux_serde_read_u32(nux_serde_reader_t *s,
 void nux_serde_read_f32(nux_serde_reader_t *s,
                         const nux_c8_t     *key,
                         nux_f32_t          *v);
+void nux_serde_read_v3(nux_serde_reader_t *s, const nux_c8_t *key, nux_v3_t *v);
+void nux_serde_read_q4(nux_serde_reader_t *s, const nux_c8_t *key, nux_q4_t *v);
 void nux_serde_read_bytes(nux_serde_reader_t *s,
                           const nux_c8_t     *key,
                           const nux_u8_t    **v,
@@ -299,8 +301,6 @@ void nux_serde_read_string(nux_serde_reader_t *s,
                            const nux_c8_t     *key,
                            const nux_c8_t    **v,
                            nux_u32_t          *n);
-void nux_serde_read_v3(nux_serde_reader_t *s, const nux_c8_t *key, nux_v3_t *v);
-void nux_serde_read_q4(nux_serde_reader_t *s, const nux_c8_t *key, nux_q4_t *v);
 void nux_serde_read_rid(nux_serde_reader_t *s,
                         const nux_c8_t     *key,
                         nux_rid_t          *v);
