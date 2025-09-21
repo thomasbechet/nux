@@ -1,25 +1,28 @@
 #ifndef NUX_ECS_INTERNAL_H
 #define NUX_ECS_INTERNAL_H
 
-#include <base/internal.h>
+#include <io/internal.h>
 
 ////////////////////////////
 ///        TYPES         ///
 ////////////////////////////
 
-#define ECS_ENTITY_PER_MASK    32
-#define ECS_COMPONENT_NAME_LEN 64
+#define ECS_ENTITY_PER_MASK 32
 
 typedef nux_u32_t nux_ecs_mask_t;
 NUX_VEC_DEFINE(nux_ecs_bitset, nux_ecs_mask_t);
 NUX_VEC_DEFINE(nux_ecs_chunk_vec, void *);
 
-typedef nux_status_t (*nux_ecs_component_reflect_t)(const void *data);
-
 typedef struct
 {
-    nux_c8_t  name[ECS_COMPONENT_NAME_LEN + 1];
-    nux_u32_t size;
+    const nux_c8_t *name;
+    nux_u32_t       size;
+    nux_status_t (*read)(nux_serde_reader_t *s,
+                         const nux_c8_t     *key,
+                         void               *data);
+    nux_status_t (*write)(nux_serde_writer_t *s,
+                          const nux_c8_t     *key,
+                          const void         *data);
 } nux_ecs_component_t;
 
 typedef struct
@@ -100,12 +103,12 @@ typedef struct nux_ecs_module
 
 // ecs.c
 
-nux_status_t nux_ecs_init(nux_ctx_t *ctx);
-void         nux_ecs_free(nux_ctx_t *ctx);
-void         nux_ecs_register_component(nux_ctx_t      *ctx,
-                                        nux_u32_t       index,
-                                        const nux_c8_t *name,
-                                        nux_u32_t       size);
+nux_status_t         nux_ecs_init(nux_ctx_t *ctx);
+void                 nux_ecs_free(nux_ctx_t *ctx);
+nux_ecs_component_t *nux_ecs_register_component(nux_ctx_t      *ctx,
+                                                nux_u32_t       index,
+                                                const nux_c8_t *name,
+                                                nux_u32_t       size);
 
 void *nux_ecs_add(nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c);
 void *nux_ecs_get(nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c);
@@ -114,6 +117,18 @@ void nux_ecs_cleanup(nux_ctx_t *ctx, nux_rid_t rid);
 
 // transform.c
 
-nux_b32_t nux_transform_update_matrix(nux_ctx_t *ctx, nux_eid_t e);
+nux_b32_t    nux_transform_update_matrix(nux_ctx_t *ctx, nux_eid_t e);
+nux_status_t nux_transform_write(nux_serde_writer_t *s,
+                                 const nux_c8_t     *key,
+                                 const void         *data);
+
+// serde.c
+
+nux_status_t nux_ecs_write(nux_serde_writer_t *s,
+                           const nux_c8_t     *key,
+                           nux_ecs_t          *ecs);
+nux_status_t nux_ecs_read(nux_serde_reader_t *s,
+                          const nux_c8_t     *key,
+                          nux_ecs_t          *ecs);
 
 #endif

@@ -99,12 +99,23 @@ error:
     return;
 }
 void
-nux_serde_write_v3 (nux_serde_writer_t *s, const nux_c8_t *name, nux_v3_t v)
+nux_serde_write_v3 (nux_serde_writer_t *s, const nux_c8_t *key, nux_v3_t v)
 {
     CHECK();
     s->type     = NUX_SERDE_V3;
-    s->key      = name;
+    s->key      = key;
     s->value.v3 = &v;
+    CHECK(writer_callback(s));
+error:
+    return;
+}
+void
+nux_serde_write_q4 (nux_serde_writer_t *s, const nux_c8_t *key, nux_q4_t v)
+{
+    CHECK();
+    s->type     = NUX_SERDE_Q4;
+    s->key      = key;
+    s->value.q4 = &v;
     CHECK(writer_callback(s));
 error:
     return;

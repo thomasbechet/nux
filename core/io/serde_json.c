@@ -20,9 +20,17 @@ json_writer (const nux_serde_writer_t *s)
     {
         json_append(j, ",", 1);
     }
+    if (s->depth != 0) // skip first line
+    {
+        json_append(j, "\n", 1);
+        for (nux_u32_t i = 0; i < s->depth; ++i)
+        {
+            json_append(j, "    ", 4);
+        }
+    }
     if (s->key && j->stack[s->depth] == NUX_SERDE_OBJECT)
     {
-        n = nux_snprintf(buf, sizeof(buf), "\"%s\":", s->key);
+        n = nux_snprintf(buf, sizeof(buf), "\"%s\": ", s->key);
         json_append(j, buf, n);
     }
     switch (s->type)
@@ -61,10 +69,21 @@ json_writer (const nux_serde_writer_t *s)
         case NUX_SERDE_V3:
             n = nux_snprintf(buf,
                              sizeof(buf),
-                             "[%lf,%lf,%lf]",
+                             "[%lf, %lf, %lf]",
                              s->value.v3->x,
                              s->value.v3->y,
                              s->value.v3->z);
+            json_append(j, buf, n);
+            j->has_previous_value = NUX_TRUE;
+            break;
+        case NUX_SERDE_Q4:
+            n = nux_snprintf(buf,
+                             sizeof(buf),
+                             "[%lf, %lf, %lf, %lf]",
+                             s->value.q4->x,
+                             s->value.q4->y,
+                             s->value.q4->z,
+                             s->value.q4->w);
             json_append(j, buf, n);
             j->has_previous_value = NUX_TRUE;
             break;
@@ -162,6 +181,16 @@ json_reader (const nux_serde_reader_t *s)
                 s->value.v3->data[i] = nux_strtof(j->json + p->start, NUX_NULL);
             }
             break;
+        case NUX_SERDE_Q4:
+            tok = json_find(j, tok, JSMN_ARRAY, s->key);
+            NUX_CHECK(tok && tok->size == NUX_Q4_SIZE, return NUX_FAILURE);
+            for (nux_u32_t i = 0; i < NUX_Q4_SIZE; ++i)
+            {
+                jsmntok_t *p = tok + i + 1;
+                NUX_CHECK(p->type == JSMN_PRIMITIVE, return NUX_FAILURE);
+                s->value.q4->data[i] = nux_strtof(j->json + p->start, NUX_NULL);
+            }
+            break;
     }
     return NUX_SUCCESS;
 }
@@ -183,6 +212,7 @@ nux_serde_json_writer_init (nux_serde_json_writer_t *j,
 void
 nux_serde_json_writer_close (nux_serde_json_writer_t *j)
 {
+    json_append(j, "\n", 1);
     nux_serde_write_end(&j->writer);
     nux_io_close(j->ctx, &j->file);
 }

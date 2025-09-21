@@ -8,33 +8,6 @@
 nux_status_t
 nux_debug_init (nux_ctx_t *ctx)
 {
-    {
-        nux_serde_json_writer_t j;
-        NUX_ASSERT(nux_serde_json_writer_init(&j, ctx, "test.json"));
-        nux_serde_writer_t *s = &j.writer;
-        nux_serde_write_u32(s, "value", 123);
-        nux_serde_write_object(s, "test");
-        nux_serde_write_str(s, "mystring", "hello world");
-        nux_serde_write_end(s);
-        nux_serde_write_v3(s, "vector", nux_v3(1, 2, 3));
-        nux_serde_json_writer_close(&j);
-    }
-
-    {
-        nux_serde_json_reader_t j;
-        NUX_ASSERT(nux_serde_json_reader_init(&j, ctx, "test.json"));
-        nux_serde_reader_t *s     = &j.reader;
-        nux_u32_t           value = nux_serde_read_u32(s, "value");
-        nux_v3_t            v3    = nux_serde_read_v3(s, "vector");
-        NUX_INFO("%d", value);
-        NUX_INFO("%lf %lf %lf", v3.x, v3.y, v3.z);
-        nux_serde_read_object(s, "test");
-        nux_u32_t       n;
-        const nux_c8_t *str = nux_serde_read_str(s, "mystring", &n);
-        NUX_INFO("%.*s", n, str);
-        nux_serde_read_end(s);
-    }
-
     // Create module
     ctx->debug = nux_arena_malloc(&ctx->core_arena, sizeof(*ctx->debug));
     NUX_CHECK(ctx->debug, return NUX_FAILURE);

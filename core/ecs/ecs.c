@@ -130,8 +130,10 @@ nux_ecs_init (nux_ctx_t *ctx)
     module->active = module->default_ecs;
 
     // Register components
-    nux_ecs_register_component(
+    nux_ecs_component_t *comp;
+    comp = nux_ecs_register_component(
         ctx, NUX_COMPONENT_TRANSFORM, "transform", sizeof(nux_transform_t));
+    comp->write = nux_transform_write;
 
     return NUX_SUCCESS;
 }
@@ -139,7 +141,7 @@ void
 nux_ecs_free (nux_ctx_t *ctx)
 {
 }
-void
+nux_ecs_component_t *
 nux_ecs_register_component (nux_ctx_t      *ctx,
                             nux_u32_t       index,
                             const nux_c8_t *name,
@@ -150,9 +152,12 @@ nux_ecs_register_component (nux_ctx_t      *ctx,
     NUX_ASSERT(index < NUX_COMPONENT_MAX);
     NUX_ASSERT(module->components[index].size == 0);
     nux_ecs_component_t *comp = &module->components[index];
-    nux_strncpy(comp->name, name, ECS_COMPONENT_NAME_LEN);
-    comp->size             = size;
-    module->components_max = NUX_MAX(module->components_max, index + 1);
+    comp->name                = nux_arena_alloc_string(&ctx->core_arena, name);
+    comp->size                = size;
+    comp->read                = NUX_NULL;
+    comp->write               = NUX_NULL;
+    module->components_max    = NUX_MAX(module->components_max, index + 1);
+    return comp;
 }
 
 nux_rid_t
@@ -179,6 +184,11 @@ nux_ecs_new_iter (nux_ctx_t *ctx,
     }
     return rid;
 }
+nux_rid_t
+nux_ecs_new_iter_any (nux_ctx_t *ctx, nux_rid_t arena)
+{
+    return nux_ecs_new_iter(ctx, arena, 0, 0);
+}
 void
 nux_ecs_includes (nux_ctx_t *ctx, nux_rid_t iter, nux_u32_t c)
 {
@@ -193,7 +203,7 @@ nux_ecs_excludes (nux_ctx_t *ctx, nux_rid_t iter, nux_u32_t c)
     NUX_CHECK(it, return);
     nux_u32_vec_pushv(&it->excludes, c);
 }
-static nux_u32_t
+static nux_eid_t
 ecs_iter_next (const nux_ecs_t *ins, nux_ecs_iter_t *it)
 {
     // find next non empty mask

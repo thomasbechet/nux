@@ -170,6 +170,16 @@ nux_instance_update (nux_ctx_t *ctx)
     // Render
     nux_graphics_update(ctx);
 
+    static nux_b32_t test = 0;
+    if (!test)
+    {
+        nux_serde_json_writer_t j;
+        nux_serde_json_writer_init(&j, ctx, "ecs.json");
+        nux_ecs_write(&j.writer, "ecs", ctx->ecs->active);
+        nux_serde_json_writer_close(&j);
+        test = 1;
+    }
+
     // Hotreload
     if (ctx->config.hotreload)
     {
