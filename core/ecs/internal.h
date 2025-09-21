@@ -63,7 +63,7 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t parent;
+    nux_eid_t parent;
     nux_v3_t  local_translation;
     nux_q4_t  local_rotation;
     nux_v3_t  local_scale;

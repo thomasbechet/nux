@@ -57,6 +57,7 @@ nux_u32_t    nux_ecs_count(nux_ctx_t *ctx);
 void         nux_ecs_clear(nux_ctx_t *ctx);
 void         nux_ecs_remove(nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c);
 nux_b32_t    nux_ecs_has(nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c);
+nux_status_t nux_ecs_instantiate(nux_ctx_t *ctx, nux_rid_t ecs);
 
 nux_rid_t nux_ecs_load_gltf(nux_ctx_t      *ctx,
                             nux_rid_t       arena,

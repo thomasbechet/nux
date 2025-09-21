@@ -465,3 +465,12 @@ nux_ecs_get (nux_ctx_t *ctx, nux_eid_t e, nux_u32_t c)
     return (void *)((nux_intptr_t)container->chunks.data[mask]
                     + container->component_size * offset);
 }
+nux_status_t
+nux_ecs_instantiate (nux_ctx_t *ctx, nux_rid_t ecs)
+{
+    nux_ecs_t *src = nux_resource_check(ctx, NUX_RESOURCE_ECS, ecs);
+    NUX_CHECK(src, return NUX_FAILURE);
+    nux_ecs_t *dst = ctx->ecs->active;
+
+    return NUX_SUCCESS;
+}
