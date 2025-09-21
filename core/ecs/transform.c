@@ -69,10 +69,10 @@ nux_transform_read (nux_serde_reader_t *s, const nux_c8_t *key, void *data)
 {
     nux_transform_t *transform = data;
     nux_serde_read_object(s, key);
-    transform->local_translation = nux_serde_read_v3(s, "translation");
-    transform->local_rotation    = nux_serde_read_q4(s, "rotation");
-    transform->local_scale       = nux_serde_read_v3(s, "scale");
-    transform->dirty             = NUX_TRUE;
+    nux_serde_read_v3(s, "translation", &transform->local_translation);
+    nux_serde_read_q4(s, "rotation", &transform->local_rotation);
+    nux_serde_read_v3(s, "scale", &transform->local_scale);
+    transform->dirty = NUX_TRUE;
     nux_serde_read_end(s);
     return NUX_SUCCESS;
 }

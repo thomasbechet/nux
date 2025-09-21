@@ -57,8 +57,8 @@ nux_staticmesh_read (nux_serde_reader_t *s, const nux_c8_t *key, void *data)
 {
     nux_staticmesh_t *staticmesh = data;
     nux_serde_read_object(s, key);
-    staticmesh->mesh      = nux_serde_read_u32(s, "mesh");
-    staticmesh->texture   = nux_serde_read_u32(s, "texture");
+    nux_serde_read_u32(s, "mesh", &staticmesh->mesh);
+    nux_serde_read_u32(s, "texture", &staticmesh->texture);
     staticmesh->transform = 0;
     nux_serde_read_end(s);
     return NUX_SUCCESS;
