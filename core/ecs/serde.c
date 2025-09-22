@@ -1,10 +1,58 @@
 #include "internal.h"
 
+static nux_status_t
+ecs_serializer_callback (void *userdata, const nux_serde_value_t *v)
+{
+    nux_ecs_serializer_t *s = userdata;
+    if (v->type == NUX_SERDE_EID)
+    {
+    }
+    nux_serde_write(&s->serializer.writer, v);
+    return NUX_SUCCESS;
+}
+static nux_status_t
+ecs_deserializer_callback (void *userdata, nux_serde_value_t *v)
+{
+    nux_ecs_deserializer_t *s = userdata;
+    nux_serde_read(&s->deserializer.reader, v);
+    if (v->type == NUX_SERDE_EID)
+    {
+    }
+    return NUX_SUCCESS;
+}
+
+nux_status_t
+nux_ecs_serializer_init (nux_ecs_serializer_t *s,
+                         nux_ctx_t            *ctx,
+                         nux_ecs_t            *ecs,
+                         const nux_c8_t       *path)
+{
+    s->ctx = ctx;
+    s->ecs = ecs;
+    NUX_CHECK(nux_json_serializer_init(&s->serializer, ctx, path),
+              return NUX_FAILURE);
+    nux_serde_writer_init(&s->writer, s, ecs_serializer_callback);
+    return NUX_SUCCESS;
+}
+nux_status_t
+nux_ecs_deserializer_init (nux_ecs_deserializer_t *s,
+                           nux_ctx_t              *ctx,
+                           nux_ecs_t              *ecs,
+                           const nux_c8_t         *path)
+{
+    s->ctx = ctx;
+    s->ecs = ecs;
+    NUX_CHECK(nux_json_deserializer_init(&s->deserializer, ctx, path),
+              return NUX_FAILURE);
+    nux_serde_reader_init(&s->reader, s, ecs_deserializer_callback);
+    return NUX_SUCCESS;
+}
+
 void
 nux_serde_write_eid (nux_serde_writer_t *s, const nux_c8_t *key, nux_eid_t v)
 {
     nux_serde_value_t value;
-    value.type = NUX_SERDE_U32;
+    value.type = NUX_SERDE_EID;
     value.key  = key;
     value.u32  = &v;
     nux_serde_write(s, &value);
@@ -13,7 +61,7 @@ void
 nux_serde_read_eid (nux_serde_reader_t *s, const nux_c8_t *key, nux_eid_t *v)
 {
     nux_serde_value_t value;
-    value.type = NUX_SERDE_U32;
+    value.type = NUX_SERDE_EID;
     value.key  = key;
     value.u32  = v;
     nux_serde_read(s, &value);

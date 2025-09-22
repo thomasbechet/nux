@@ -89,6 +89,22 @@ typedef enum
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_base_t;
 
+typedef struct
+{
+    nux_ctx_t            *ctx;
+    nux_ecs_t            *ecs;
+    nux_json_serializer_t serializer;
+    nux_serde_writer_t    writer;
+} nux_ecs_serializer_t;
+
+typedef struct
+{
+    nux_ctx_t              *ctx;
+    nux_ecs_t              *ecs;
+    nux_json_deserializer_t deserializer;
+    nux_serde_reader_t      reader;
+} nux_ecs_deserializer_t;
+
 typedef struct nux_ecs_module
 {
     nux_ecs_t          *active;
@@ -123,6 +139,15 @@ nux_status_t nux_transform_write(nux_serde_writer_t *s,
                                  const void         *data);
 
 // serde.c
+
+nux_status_t nux_ecs_serializer_init(nux_ecs_serializer_t *s,
+                                     nux_ctx_t            *ctx,
+                                     nux_ecs_t            *ecs,
+                                     const nux_c8_t       *path);
+nux_status_t nux_ecs_deserializer_init(nux_ecs_deserializer_t *s,
+                                       nux_ctx_t              *ctx,
+                                       nux_ecs_t              *ecs,
+                                       const nux_c8_t         *path);
 
 void nux_serde_write_eid(nux_serde_writer_t *s,
                          const nux_c8_t     *key,

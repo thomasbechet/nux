@@ -5,29 +5,29 @@
 #include <externals/jsmn/jsmn.h>
 
 static void
-json_append (nux_serde_json_writer_t *j, const nux_c8_t *s, nux_u32_t n)
+json_append (nux_json_serializer_t *j, const nux_c8_t *s, nux_u32_t n)
 {
-    nux_io_write(j->writer.ctx, &j->file, s, n);
+    nux_io_write(j->ctx, &j->file, s, n);
 }
 static nux_status_t
-json_writer (const nux_serde_writer_t *s, const nux_serde_value_t *v)
+json_writer (void *userdata, const nux_serde_value_t *v)
 {
-    nux_serde_json_writer_t *j = s->userdata;
-    nux_c8_t                 buf[256];
-    nux_u32_t                n;
+    nux_json_serializer_t *j = userdata;
+    nux_c8_t               buf[256];
+    nux_u32_t              n;
     if (j->has_previous_value && v->type != NUX_SERDE_END)
     {
         json_append(j, ",", 1);
     }
-    if (s->depth != 0) // skip first line
+    if (j->depth != 0) // skip first line
     {
         json_append(j, "\n", 1);
-        for (nux_u32_t i = 0; i < s->depth; ++i)
+        for (nux_u32_t i = 0; i < j->depth; ++i)
         {
             json_append(j, "    ", 4);
         }
     }
-    if (v->key && j->stack[s->depth] == NUX_SERDE_OBJECT)
+    if (v->key && j->stack[j->depth] == NUX_SERDE_OBJECT)
     {
         n = nux_snprintf(buf, sizeof(buf), "\"%s\": ", v->key);
         json_append(j, buf, n);
@@ -37,24 +37,29 @@ json_writer (const nux_serde_writer_t *s, const nux_serde_value_t *v)
         case NUX_SERDE_OBJECT:
             json_append(j, "{", 1);
             j->has_previous_value  = NUX_FALSE;
-            j->stack[s->depth + 1] = v->type;
+            j->stack[j->depth + 1] = v->type;
+            ++j->depth;
             break;
         case NUX_SERDE_ARRAY:
             json_append(j, "[", 1);
             j->has_previous_value  = NUX_FALSE;
-            j->stack[s->depth + 1] = v->type;
+            j->stack[j->depth + 1] = v->type;
+            ++j->depth;
             break;
         case NUX_SERDE_END:
-            if (j->stack[s->depth + 1] == NUX_SERDE_OBJECT)
+            --j->depth;
+            if (j->stack[j->depth + 1] == NUX_SERDE_OBJECT)
             {
                 json_append(j, "}", 1);
             }
-            else if (j->stack[s->depth + 1] == NUX_SERDE_ARRAY)
+            else if (j->stack[j->depth + 1] == NUX_SERDE_ARRAY)
             {
                 json_append(j, "]", 1);
             }
             j->has_previous_value = NUX_TRUE;
             break;
+        case NUX_SERDE_RID:
+        case NUX_SERDE_EID:
         case NUX_SERDE_U32:
             n = nux_snprintf(buf, sizeof(buf), "%d", *v->u32);
             json_append(j, buf, n);
@@ -91,6 +96,8 @@ json_writer (const nux_serde_writer_t *s, const nux_serde_value_t *v)
             json_append(j, buf, n);
             j->has_previous_value = NUX_TRUE;
             break;
+        case NUX_SERDE_BYTES:
+            break;
     }
     return NUX_SUCCESS;
 }
@@ -114,7 +121,7 @@ json_nested_skip (const jsmntok_t *toks, nux_i32_t num_tokens, nux_i32_t *i)
         ;
 }
 static jsmntok_t *
-json_find (const nux_serde_json_reader_t *j,
+json_find (const nux_json_deserializer_t *j,
            const jsmntok_t               *obj,
            jsmntype_t                     type,
            const nux_c8_t                *key)
@@ -138,9 +145,9 @@ json_find (const nux_serde_json_reader_t *j,
     return NUX_NULL;
 }
 static nux_status_t
-json_reader (const nux_serde_reader_t *s, nux_serde_value_t *v)
+json_reader (void *userdata, nux_serde_value_t *v)
 {
-    nux_serde_json_reader_t *j    = s->userdata;
+    nux_json_deserializer_t *j    = userdata;
     jsmntok_t               *toks = j->tokens;
     jsmntok_t               *tok  = toks + j->it;
 
@@ -164,6 +171,8 @@ json_reader (const nux_serde_reader_t *s, nux_serde_value_t *v)
         case NUX_SERDE_END:
             j->it = toks[j->it].parent;
             break;
+        case NUX_SERDE_RID:
+        case NUX_SERDE_EID:
         case NUX_SERDE_U32:
             tok = json_find(j, tok, JSMN_PRIMITIVE, v->key);
             NUX_CHECK(tok, return NUX_FAILURE);
@@ -200,17 +209,21 @@ json_reader (const nux_serde_reader_t *s, nux_serde_value_t *v)
                 v->q4->data[i] = nux_strtof(j->json + p->start, NUX_NULL);
             }
             break;
+        case NUX_SERDE_BYTES:
+            break;
     }
     return NUX_SUCCESS;
 }
 
 nux_status_t
-nux_serde_json_writer_init (nux_serde_json_writer_t *j,
-                            nux_ctx_t               *ctx,
-                            const nux_c8_t          *path)
+nux_json_serializer_init (nux_json_serializer_t *j,
+                          nux_ctx_t             *ctx,
+                          const nux_c8_t        *path)
 {
+    j->ctx                = ctx;
+    j->depth              = 0;
     j->has_previous_value = NUX_FALSE;
-    nux_serde_writer_init(&j->writer, ctx, json_writer, j);
+    nux_serde_writer_init(&j->writer, j, json_writer);
     NUX_CHECK(nux_io_open(ctx, path, NUX_IO_READ_WRITE, &j->file),
               return NUX_FAILURE);
     j->stack[0] = NUX_SERDE_OBJECT;
@@ -218,18 +231,19 @@ nux_serde_json_writer_init (nux_serde_json_writer_t *j,
     return NUX_SUCCESS;
 }
 void
-nux_serde_json_writer_close (nux_serde_json_writer_t *j)
+nux_json_serializer_close (nux_json_serializer_t *j)
 {
     json_append(j, "\n", 1);
     nux_serde_write_end(&j->writer);
-    nux_io_close(j->writer.ctx, &j->file);
+    nux_io_close(j->ctx, &j->file);
 }
 nux_status_t
-nux_serde_json_reader_init (nux_serde_json_reader_t *j,
+nux_json_deserializer_init (nux_json_deserializer_t *j,
                             nux_ctx_t               *ctx,
                             const nux_c8_t          *path)
 {
-    nux_serde_reader_init(&j->reader, ctx, json_reader, j);
+    j->ctx = ctx;
+    nux_serde_reader_init(&j->reader, j, json_reader);
     nux_arena_t *a
         = nux_resource_get(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena_rid);
     NUX_ASSERT(a);

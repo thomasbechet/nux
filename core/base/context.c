@@ -173,10 +173,10 @@ nux_instance_update (nux_ctx_t *ctx)
     static nux_b32_t test = 0;
     if (!test)
     {
-        nux_serde_json_writer_t j;
-        nux_serde_json_writer_init(&j, ctx, "ecs.json");
+        nux_json_serializer_t j;
+        nux_json_serializer_init(&j, ctx, "ecs.json");
         nux_ecs_write(&j.writer, "ecs", ctx->ecs->active);
-        nux_serde_json_writer_close(&j);
+        nux_json_serializer_close(&j);
         test = 1;
     }
 

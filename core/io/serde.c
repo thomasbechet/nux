@@ -1,26 +1,21 @@
 #include "internal.h"
 
 void
-nux_serde_writer_init (nux_serde_writer_t         *s,
-                       nux_ctx_t                  *ctx,
-                       nux_serde_writer_callback_t callback,
-                       void                       *userdata)
+nux_serde_writer_init (nux_serde_writer_t             *s,
+                       void                           *userdata,
+                       nux_serde_serializer_callback_t callback)
 {
-    s->ctx      = ctx;
-    s->callback = callback;
     s->userdata = userdata;
+    s->callback = callback;
     s->status   = NUX_SUCCESS;
-    s->depth    = 0;
 }
 void
-nux_serde_reader_init (nux_serde_reader_t         *s,
-                       nux_ctx_t                  *ctx,
-                       nux_serde_reader_callback_t callback,
-                       void                       *userdata)
+nux_serde_reader_init (nux_serde_reader_t               *s,
+                       void                             *userdata,
+                       nux_serde_deserializer_callback_t callback)
 {
-    s->ctx      = ctx;
-    s->callback = callback;
     s->userdata = userdata;
+    s->callback = callback;
     s->status   = NUX_SUCCESS;
 }
 
@@ -29,7 +24,7 @@ nux_serde_write (nux_serde_writer_t *s, const nux_serde_value_t *value)
 {
     if (s->status)
     {
-        s->status = s->callback(s, value);
+        s->status = s->callback(s->userdata, value);
     }
 }
 void
@@ -39,7 +34,6 @@ nux_serde_write_object (nux_serde_writer_t *s, const nux_c8_t *key)
     value.key  = key;
     value.type = NUX_SERDE_OBJECT;
     nux_serde_write(s, &value);
-    ++s->depth;
 }
 void
 nux_serde_write_array (nux_serde_writer_t *s,
@@ -51,13 +45,10 @@ nux_serde_write_array (nux_serde_writer_t *s,
     value.type = NUX_SERDE_ARRAY;
     value.size = &size;
     nux_serde_write(s, &value);
-    ++s->depth;
 }
 void
 nux_serde_write_end (nux_serde_writer_t *s)
 {
-    NUX_ASSERT(s->depth);
-    --s->depth;
     nux_serde_value_t value;
     value.key  = NUX_NULL;
     value.type = NUX_SERDE_END;
@@ -126,8 +117,11 @@ nux_serde_write_string (nux_serde_writer_t *s,
 void
 nux_serde_write_rid (nux_serde_writer_t *s, const nux_c8_t *key, nux_rid_t rid)
 {
-    const nux_c8_t *name = nux_resource_get_name(s->ctx, rid);
-    NUX_CHECK(name, return);
+    nux_serde_value_t value;
+    value.key  = key;
+    value.type = NUX_SERDE_RID;
+    value.u32  = &rid;
+    nux_serde_write(s, &value);
 }
 
 void
@@ -135,7 +129,7 @@ nux_serde_read (nux_serde_reader_t *s, nux_serde_value_t *value)
 {
     if (s->status)
     {
-        s->status = s->callback(s, value);
+        s->status = s->callback(s->userdata, value);
     }
 }
 void
@@ -217,4 +211,9 @@ nux_serde_read_string (nux_serde_reader_t *s,
 void
 nux_serde_read_rid (nux_serde_reader_t *s, const nux_c8_t *key, nux_rid_t *rid)
 {
+    nux_serde_value_t value;
+    value.key  = key;
+    value.type = NUX_SERDE_RID;
+    value.u32  = rid;
+    nux_serde_read(s, &value);
 }
