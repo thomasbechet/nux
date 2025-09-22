@@ -256,6 +256,7 @@ nux_status_t nux_serde_json_reader_init(nux_serde_json_reader_t *j,
                                         nux_ctx_t               *ctx,
                                         const nux_c8_t          *path);
 
+void nux_serde_write(nux_serde_writer_t *s, const nux_serde_value_t *value);
 void nux_serde_write_object(nux_serde_writer_t *s, const nux_c8_t *key);
 void nux_serde_write_array(nux_serde_writer_t *s,
                            const nux_c8_t     *key,
@@ -280,6 +281,7 @@ void nux_serde_write_rid(nux_serde_writer_t *s,
                          const nux_c8_t     *key,
                          nux_rid_t           rid);
 
+void nux_serde_read(nux_serde_reader_t *s, nux_serde_value_t *value);
 void nux_serde_read_object(nux_serde_reader_t *s, const nux_c8_t *key);
 void nux_serde_read_array(nux_serde_reader_t *s,
                           const nux_c8_t     *key,

@@ -124,6 +124,13 @@ nux_status_t nux_transform_write(nux_serde_writer_t *s,
 
 // serde.c
 
+void nux_serde_write_eid(nux_serde_writer_t *s,
+                         const nux_c8_t     *key,
+                         nux_eid_t           v);
+void nux_serde_read_eid(nux_serde_reader_t *s,
+                        const nux_c8_t     *key,
+                        nux_eid_t          *v);
+
 nux_status_t nux_ecs_write(nux_serde_writer_t *s,
                            const nux_c8_t     *key,
                            nux_ecs_t          *ecs);

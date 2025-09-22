@@ -1,5 +1,24 @@
 #include "internal.h"
 
+void
+nux_serde_write_eid (nux_serde_writer_t *s, const nux_c8_t *key, nux_eid_t v)
+{
+    nux_serde_value_t value;
+    value.type = NUX_SERDE_U32;
+    value.key  = key;
+    value.u32  = &v;
+    nux_serde_write(s, &value);
+}
+void
+nux_serde_read_eid (nux_serde_reader_t *s, const nux_c8_t *key, nux_eid_t *v)
+{
+    nux_serde_value_t value;
+    value.type = NUX_SERDE_U32;
+    value.key  = key;
+    value.u32  = v;
+    nux_serde_read(s, &value);
+}
+
 nux_status_t
 nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
 {
