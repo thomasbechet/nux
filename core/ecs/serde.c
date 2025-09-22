@@ -1,20 +1,17 @@
 #include "internal.h"
 
 static nux_status_t
-ecs_serializer_callback (void *userdata, const nux_serde_value_t *v)
+ecs_writer_callback (void *userdata, const nux_serde_value_t *v)
 {
     nux_ecs_writer_t *s = userdata;
     if (v->type == NUX_SERDE_EID)
     {
-        // remap entity
-        nux_ctx_t *ctx = s->ecs->arena->ctx;
-        NUX_INFO("eid:%d", *v->u32);
     }
     nux_serde_write(s->output, v);
     return NUX_SUCCESS;
 }
 static nux_status_t
-ecs_deserializer_callback (void *userdata, nux_serde_value_t *v)
+ecs_reader_callback (void *userdata, nux_serde_value_t *v)
 {
     nux_ecs_reader_t *s = userdata;
     nux_serde_read(s->input, v);
@@ -30,9 +27,12 @@ nux_ecs_writer_init (nux_ecs_writer_t   *s,
                      nux_serde_writer_t *output,
                      nux_ecs_t          *ecs)
 {
+    nux_ctx_t   *ctx = ecs->arena->ctx;
+    nux_arena_t *a
+        = nux_resource_get(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena_rid);
     s->ecs    = ecs;
     s->output = output;
-    nux_serde_writer_init(&s->writer, s, ecs_serializer_callback);
+    nux_serde_writer_init(&s->writer, s, ecs_writer_callback);
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -42,7 +42,7 @@ nux_ecs_reader_init (nux_ecs_reader_t   *s,
 {
     s->ecs   = ecs;
     s->input = input;
-    nux_serde_reader_init(&s->reader, s, ecs_deserializer_callback);
+    nux_serde_reader_init(&s->reader, s, ecs_reader_callback);
     return NUX_SUCCESS;
 }
 
