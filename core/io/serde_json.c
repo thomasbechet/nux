@@ -5,16 +5,16 @@
 #include <externals/jsmn/jsmn.h>
 
 static void
-json_append (nux_json_serializer_t *j, const nux_c8_t *s, nux_u32_t n)
+json_append (nux_json_writer_t *j, const nux_c8_t *s, nux_u32_t n)
 {
     nux_io_write(j->ctx, &j->file, s, n);
 }
 static nux_status_t
 json_writer (void *userdata, const nux_serde_value_t *v)
 {
-    nux_json_serializer_t *j = userdata;
-    nux_c8_t               buf[256];
-    nux_u32_t              n;
+    nux_json_writer_t *j = userdata;
+    nux_c8_t           buf[256];
+    nux_u32_t          n;
     if (j->has_previous_value && v->type != NUX_SERDE_END)
     {
         json_append(j, ",", 1);
@@ -121,10 +121,10 @@ json_nested_skip (const jsmntok_t *toks, nux_i32_t num_tokens, nux_i32_t *i)
         ;
 }
 static jsmntok_t *
-json_find (const nux_json_deserializer_t *j,
-           const jsmntok_t               *obj,
-           jsmntype_t                     type,
-           const nux_c8_t                *key)
+json_find (const nux_json_reader_t *j,
+           const jsmntok_t         *obj,
+           jsmntype_t               type,
+           const nux_c8_t          *key)
 {
     jsmntok_t *toks = j->tokens;
     nux_i32_t  it   = j->it + 1;
@@ -147,9 +147,9 @@ json_find (const nux_json_deserializer_t *j,
 static nux_status_t
 json_reader (void *userdata, nux_serde_value_t *v)
 {
-    nux_json_deserializer_t *j    = userdata;
-    jsmntok_t               *toks = j->tokens;
-    jsmntok_t               *tok  = toks + j->it;
+    nux_json_reader_t *j    = userdata;
+    jsmntok_t         *toks = j->tokens;
+    jsmntok_t         *tok  = toks + j->it;
 
     if (v->key && tok->type != JSMN_OBJECT)
     {
@@ -216,9 +216,9 @@ json_reader (void *userdata, nux_serde_value_t *v)
 }
 
 nux_status_t
-nux_json_serializer_init (nux_json_serializer_t *j,
-                          nux_ctx_t             *ctx,
-                          const nux_c8_t        *path)
+nux_json_writer_init (nux_json_writer_t *j,
+                      nux_ctx_t         *ctx,
+                      const nux_c8_t    *path)
 {
     j->ctx                = ctx;
     j->depth              = 0;
@@ -231,16 +231,16 @@ nux_json_serializer_init (nux_json_serializer_t *j,
     return NUX_SUCCESS;
 }
 void
-nux_json_serializer_close (nux_json_serializer_t *j)
+nux_json_writer_close (nux_json_writer_t *j)
 {
     json_append(j, "\n", 1);
     nux_serde_write_end(&j->writer);
     nux_io_close(j->ctx, &j->file);
 }
 nux_status_t
-nux_json_deserializer_init (nux_json_deserializer_t *j,
-                            nux_ctx_t               *ctx,
-                            const nux_c8_t          *path)
+nux_json_reader_init (nux_json_reader_t *j,
+                      nux_ctx_t         *ctx,
+                      const nux_c8_t    *path)
 {
     j->ctx = ctx;
     nux_serde_reader_init(&j->reader, j, json_reader);

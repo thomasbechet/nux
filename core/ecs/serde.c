@@ -3,47 +3,45 @@
 static nux_status_t
 ecs_serializer_callback (void *userdata, const nux_serde_value_t *v)
 {
-    nux_ecs_serializer_t *s = userdata;
+    nux_ecs_writer_t *s = userdata;
     if (v->type == NUX_SERDE_EID)
     {
+        // remap entity
+        nux_ctx_t *ctx = s->ecs->arena->ctx;
+        NUX_INFO("eid:%d", *v->u32);
     }
-    nux_serde_write(&s->serializer.writer, v);
+    nux_serde_write(s->output, v);
     return NUX_SUCCESS;
 }
 static nux_status_t
 ecs_deserializer_callback (void *userdata, nux_serde_value_t *v)
 {
-    nux_ecs_deserializer_t *s = userdata;
-    nux_serde_read(&s->deserializer.reader, v);
+    nux_ecs_reader_t *s = userdata;
+    nux_serde_read(s->input, v);
     if (v->type == NUX_SERDE_EID)
     {
+        // remap entity
     }
     return NUX_SUCCESS;
 }
 
 nux_status_t
-nux_ecs_serializer_init (nux_ecs_serializer_t *s,
-                         nux_ctx_t            *ctx,
-                         nux_ecs_t            *ecs,
-                         const nux_c8_t       *path)
+nux_ecs_writer_init (nux_ecs_writer_t   *s,
+                     nux_serde_writer_t *output,
+                     nux_ecs_t          *ecs)
 {
-    s->ctx = ctx;
-    s->ecs = ecs;
-    NUX_CHECK(nux_json_serializer_init(&s->serializer, ctx, path),
-              return NUX_FAILURE);
+    s->ecs    = ecs;
+    s->output = output;
     nux_serde_writer_init(&s->writer, s, ecs_serializer_callback);
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_ecs_deserializer_init (nux_ecs_deserializer_t *s,
-                           nux_ctx_t              *ctx,
-                           nux_ecs_t              *ecs,
-                           const nux_c8_t         *path)
+nux_ecs_reader_init (nux_ecs_reader_t   *s,
+                     nux_serde_reader_t *input,
+                     nux_ecs_t          *ecs)
 {
-    s->ctx = ctx;
-    s->ecs = ecs;
-    NUX_CHECK(nux_json_deserializer_init(&s->deserializer, ctx, path),
-              return NUX_FAILURE);
+    s->ecs   = ecs;
+    s->input = input;
     nux_serde_reader_init(&s->reader, s, ecs_deserializer_callback);
     return NUX_SUCCESS;
 }
@@ -70,6 +68,10 @@ nux_serde_read_eid (nux_serde_reader_t *s, const nux_c8_t *key, nux_eid_t *v)
 nux_status_t
 nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
 {
+    nux_ecs_writer_t writer;
+    nux_ecs_writer_init(&writer, s, ecs);
+    s = &writer.writer;
+
     nux_ctx_t *ctx  = ecs->arena->ctx;
     nux_rid_t  iter = nux_ecs_new_iter_any(ctx, ctx->frame_arena_rid);
     nux_ecs_set_active(ctx, ecs->self);

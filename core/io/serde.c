@@ -3,7 +3,7 @@
 void
 nux_serde_writer_init (nux_serde_writer_t             *s,
                        void                           *userdata,
-                       nux_serde_serializer_callback_t callback)
+                       nux_serde_writer_callback_t callback)
 {
     s->userdata = userdata;
     s->callback = callback;
@@ -12,7 +12,7 @@ nux_serde_writer_init (nux_serde_writer_t             *s,
 void
 nux_serde_reader_init (nux_serde_reader_t               *s,
                        void                             *userdata,
-                       nux_serde_deserializer_callback_t callback)
+                       nux_serde_reader_callback_t callback)
 {
     s->userdata = userdata;
     s->callback = callback;

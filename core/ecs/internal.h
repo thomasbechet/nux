@@ -91,19 +91,18 @@ typedef enum
 
 typedef struct
 {
-    nux_ctx_t            *ctx;
-    nux_ecs_t            *ecs;
-    nux_json_serializer_t serializer;
-    nux_serde_writer_t    writer;
-} nux_ecs_serializer_t;
+    nux_ecs_t          *ecs;
+    nux_serde_writer_t *output;
+    nux_serde_writer_t  writer;
+} nux_ecs_writer_t;
 
 typedef struct
 {
-    nux_ctx_t              *ctx;
-    nux_ecs_t              *ecs;
-    nux_json_deserializer_t deserializer;
-    nux_serde_reader_t      reader;
-} nux_ecs_deserializer_t;
+    nux_ecs_t          *ecs;
+    nux_serde_reader_t *input;
+    nux_serde_reader_t  reader;
+    nux_u32_vec_t       entity_map;
+} nux_ecs_reader_t;
 
 typedef struct nux_ecs_module
 {
@@ -140,14 +139,12 @@ nux_status_t nux_transform_write(nux_serde_writer_t *s,
 
 // serde.c
 
-nux_status_t nux_ecs_serializer_init(nux_ecs_serializer_t *s,
-                                     nux_ctx_t            *ctx,
-                                     nux_ecs_t            *ecs,
-                                     const nux_c8_t       *path);
-nux_status_t nux_ecs_deserializer_init(nux_ecs_deserializer_t *s,
-                                       nux_ctx_t              *ctx,
-                                       nux_ecs_t              *ecs,
-                                       const nux_c8_t         *path);
+nux_status_t nux_ecs_writer_init(nux_ecs_writer_t   *s,
+                                 nux_serde_writer_t *output,
+                                 nux_ecs_t          *ecs);
+nux_status_t nux_ecs_reader_init(nux_ecs_reader_t   *s,
+                                 nux_serde_reader_t *input,
+                                 nux_ecs_t          *ecs);
 
 void nux_serde_write_eid(nux_serde_writer_t *s,
                          const nux_c8_t     *key,
