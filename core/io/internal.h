@@ -281,6 +281,9 @@ void nux_serde_write_string(nux_serde_writer_t *s,
 void nux_serde_write_rid(nux_serde_writer_t *s,
                          const nux_c8_t     *key,
                          nux_rid_t           rid);
+void nux_serde_write_eid(nux_serde_writer_t *s,
+                         const nux_c8_t     *key,
+                         nux_eid_t           v);
 
 void nux_serde_read(nux_serde_reader_t *s, nux_serde_value_t *value);
 void nux_serde_read_object(nux_serde_reader_t *s, const nux_c8_t *key);
@@ -307,5 +310,8 @@ void nux_serde_read_string(nux_serde_reader_t *s,
 void nux_serde_read_rid(nux_serde_reader_t *s,
                         const nux_c8_t     *key,
                         nux_rid_t          *rid);
+void nux_serde_read_eid(nux_serde_reader_t *s,
+                        const nux_c8_t     *key,
+                        nux_eid_t          *v);
 
 #endif

@@ -17,7 +17,6 @@ ecs_reader_callback (void *userdata, nux_serde_value_t *v)
     nux_serde_read(s->input, v);
     if (v->type == NUX_SERDE_EID)
     {
-        // remap entity
     }
     return NUX_SUCCESS;
 }
@@ -30,9 +29,12 @@ nux_ecs_writer_init (nux_ecs_writer_t   *s,
     nux_ctx_t   *ctx = ecs->arena->ctx;
     nux_arena_t *a
         = nux_resource_get(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena_rid);
-    s->ecs    = ecs;
-    s->output = output;
+    s->ecs                 = ecs;
+    s->output              = output;
+    nux_u32_t entity_count = nux_ecs_count(ctx);
     nux_serde_writer_init(&s->writer, s, ecs_writer_callback);
+    s->entity_map = nux_arena_malloc(a, sizeof(*s->entity_map) * entity_count);
+    NUX_CHECK(s->entity_map, return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -44,25 +46,6 @@ nux_ecs_reader_init (nux_ecs_reader_t   *s,
     s->input = input;
     nux_serde_reader_init(&s->reader, s, ecs_reader_callback);
     return NUX_SUCCESS;
-}
-
-void
-nux_serde_write_eid (nux_serde_writer_t *s, const nux_c8_t *key, nux_eid_t v)
-{
-    nux_serde_value_t value;
-    value.type = NUX_SERDE_EID;
-    value.key  = key;
-    value.u32  = &v;
-    nux_serde_write(s, &value);
-}
-void
-nux_serde_read_eid (nux_serde_reader_t *s, const nux_c8_t *key, nux_eid_t *v)
-{
-    nux_serde_value_t value;
-    value.type = NUX_SERDE_EID;
-    value.key  = key;
-    value.u32  = v;
-    nux_serde_read(s, &value);
 }
 
 nux_status_t

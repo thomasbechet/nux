@@ -258,6 +258,7 @@
                                         sizeof(*(v)->data) * capa);    \
             NUX_CHECK((v)->data, return NUX_NULL);                              \
         }                                                                       \
+        return NUX_SUCCESS;                                                     \
     }                                                                           \
     nux_status_t name##_resize(name##_t *v, nux_u32_t size)                     \
     {                                                                           \

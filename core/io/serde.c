@@ -1,8 +1,8 @@
 #include "internal.h"
 
 void
-nux_serde_writer_init (nux_serde_writer_t             *s,
-                       void                           *userdata,
+nux_serde_writer_init (nux_serde_writer_t         *s,
+                       void                       *userdata,
                        nux_serde_writer_callback_t callback)
 {
     s->userdata = userdata;
@@ -10,8 +10,8 @@ nux_serde_writer_init (nux_serde_writer_t             *s,
     s->status   = NUX_SUCCESS;
 }
 void
-nux_serde_reader_init (nux_serde_reader_t               *s,
-                       void                             *userdata,
+nux_serde_reader_init (nux_serde_reader_t         *s,
+                       void                       *userdata,
                        nux_serde_reader_callback_t callback)
 {
     s->userdata = userdata;
@@ -123,6 +123,15 @@ nux_serde_write_rid (nux_serde_writer_t *s, const nux_c8_t *key, nux_rid_t rid)
     value.u32  = &rid;
     nux_serde_write(s, &value);
 }
+void
+nux_serde_write_eid (nux_serde_writer_t *s, const nux_c8_t *key, nux_eid_t v)
+{
+    nux_serde_value_t value;
+    value.type = NUX_SERDE_EID;
+    value.key  = key;
+    value.u32  = &v;
+    nux_serde_write(s, &value);
+}
 
 void
 nux_serde_read (nux_serde_reader_t *s, nux_serde_value_t *value)
@@ -215,5 +224,14 @@ nux_serde_read_rid (nux_serde_reader_t *s, const nux_c8_t *key, nux_rid_t *rid)
     value.key  = key;
     value.type = NUX_SERDE_RID;
     value.u32  = rid;
+    nux_serde_read(s, &value);
+}
+void
+nux_serde_read_eid (nux_serde_reader_t *s, const nux_c8_t *key, nux_eid_t *v)
+{
+    nux_serde_value_t value;
+    value.type = NUX_SERDE_EID;
+    value.key  = key;
+    value.u32  = v;
     nux_serde_read(s, &value);
 }

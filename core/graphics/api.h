@@ -1,7 +1,7 @@
 #ifndef NUX_GRAPHICS_API_H
 #define NUX_GRAPHICS_API_H
 
-#include "base/api.h"
+#include <base/api.h>
 
 typedef enum
 {

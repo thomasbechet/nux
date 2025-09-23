@@ -94,7 +94,7 @@ typedef struct
     nux_ecs_t          *ecs;
     nux_serde_writer_t *output;
     nux_serde_writer_t  writer;
-    nux_u32_vec_t       entity_map;
+    nux_u32_t          *entity_map;
 } nux_ecs_writer_t;
 
 typedef struct
@@ -102,7 +102,7 @@ typedef struct
     nux_ecs_t          *ecs;
     nux_serde_reader_t *input;
     nux_serde_reader_t  reader;
-    nux_u32_vec_t       entity_map;
+    nux_u32_t          *entity_map;
 } nux_ecs_reader_t;
 
 typedef struct nux_ecs_module
@@ -146,13 +146,6 @@ nux_status_t nux_ecs_writer_init(nux_ecs_writer_t   *s,
 nux_status_t nux_ecs_reader_init(nux_ecs_reader_t   *s,
                                  nux_serde_reader_t *input,
                                  nux_ecs_t          *ecs);
-
-void nux_serde_write_eid(nux_serde_writer_t *s,
-                         const nux_c8_t     *key,
-                         nux_eid_t           v);
-void nux_serde_read_eid(nux_serde_reader_t *s,
-                        const nux_c8_t     *key,
-                        nux_eid_t          *v);
 
 nux_status_t nux_ecs_write(nux_serde_writer_t *s,
                            const nux_c8_t     *key,
