@@ -337,24 +337,19 @@ load_lua_module (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 
     return NUX_SUCCESS;
 }
-nux_rid_t
-nux_lua_load (nux_ctx_t *ctx, nux_rid_t arena, const nux_c8_t *path)
+nux_lua_t *
+nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
-    nux_arena_t *a = nux_resource_check(ctx, NUX_RESOURCE_ARENA, arena);
-    NUX_CHECK(a, return NUX_NULL);
-    nux_rid_t           rid;
-    nux_lua_vmmodule_t *lua
-        = nux_resource_new(ctx, arena, NUX_RESOURCE_LUA_MODULE, &rid);
+    nux_lua_t *lua = nux_resource_new(arena, NUX_RESOURCE_LUA_MODULE);
     NUX_CHECK(lua, return NUX_NULL);
-    lua->rid = rid;
-    nux_resource_set_path(ctx, rid, path);
+    nux_resource_set_path(arena->ctx, nux_resource_get_rid(lua), path);
     // initialize event handles
-    nux_ptr_vec_init(a, &lua->event_handles);
+    nux_ptr_vec_init(arena, &lua->event_handles);
     // dofile and call load function
     NUX_CHECK(load_lua_module(ctx, rid, path), return NUX_NULL);
     NUX_CHECK(nux_lua_call_module(ctx, rid, NUX_LUA_ON_LOAD, 0),
               return NUX_NULL);
-    return rid;
+    return lua;
 }
 void
 nux_lua_module_cleanup (nux_ctx_t *ctx, nux_rid_t rid)
@@ -381,7 +376,7 @@ nux_lua_module_reload (nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *path)
 }
 
 nux_status_t
-nux_lua_init (nux_ctx_t *ctx)
+nux_lua_init (void)
 {
     ctx->lua = nux_arena_malloc(&ctx->core_arena, sizeof(*ctx->lua));
     NUX_CHECK(ctx->lua, return NUX_FAILURE);
@@ -397,7 +392,6 @@ nux_lua_init (nux_ctx_t *ctx)
 
     // Initialize Lua VM
     module->L = luaL_newstate(ctx);
-    NUX_ASSERT(lua_getuserdata(module->L) == ctx);
     NUX_ENSURE(module->L, return NUX_FAILURE, "failed to initialize lua state");
 
     // Register base lua API

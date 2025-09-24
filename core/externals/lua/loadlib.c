@@ -257,8 +257,8 @@ static void setpath (lua_State *L, const char *fieldname,
 */
 
 
-static int readable (nux_ctx_t *ctx, const char *filename) {
-  return nux_io_exists(ctx, filename);
+static int readable (const char *filename) {
+  return nux_io_exists(filename);
 }
 
 
@@ -319,7 +319,7 @@ static const char *searchpath (lua_State *L, const char *name,
   pathname = luaL_buffaddr(&buff);  /* writable list of file names */
   endpathname = pathname + luaL_bufflen(&buff) - 1;
   while ((filename = getnextfilename(&pathname, endpathname)) != NULL) {
-    if (readable(lua_getuserdata(L), filename))  /* does file exist and is readable? */
+    if (readable(filename))  /* does file exist and is readable? */
       return lua_pushstring(L, filename);  /* save and return name */
   }
   luaL_pushresult(&buff);  /* push path to create error message */

@@ -20,7 +20,7 @@ typedef intptr_t  nux_intptr_t;
 typedef nux_u32_t nux_rid_t;
 typedef nux_u32_t nux_eid_t;
 
-typedef struct nux_context nux_ctx_t;
+typedef struct nux_arena_t nux_arena_t;
 
 typedef union
 {
@@ -94,36 +94,34 @@ typedef enum
     NUX_STAT_MAX           = 4
 } nux_stat_t;
 
-nux_u32_t nux_stat(nux_ctx_t *ctx, nux_stat_t info);
-nux_f32_t nux_time_elapsed(nux_ctx_t *ctx);
-nux_f32_t nux_time_delta(nux_ctx_t *ctx);
-nux_u32_t nux_time_frame(nux_ctx_t *ctx);
-nux_u64_t nux_time_timestamp(nux_ctx_t *ctx);
+nux_u32_t nux_stat(nux_stat_t info);
+nux_f32_t nux_time_elapsed();
+nux_f32_t nux_time_delta();
+nux_u32_t nux_time_frame();
+nux_u64_t nux_time_timestamp();
 
-nux_u32_t nux_random(nux_ctx_t *ctx);
-nux_f32_t nux_random01(nux_ctx_t *ctx);
+nux_u32_t nux_random();
+nux_f32_t nux_random01();
 
 #ifdef NUX_BUILD_VARARGS
-void nux_textfmt(nux_ctx_t      *ctx,
-                 nux_i32_t       x,
-                 nux_i32_t       y,
-                 nux_u8_t        c,
-                 const nux_c8_t *fmt,
-                 ...);
-void nux_printfmt(nux_ctx_t *ctx, nux_u8_t c, const nux_c8_t *fmt, ...);
-void nux_tracefmt(nux_ctx_t *ctx, const nux_c8_t *fmt, ...);
+void nux_textfmt(
+    nux_i32_t x, nux_i32_t y, nux_u8_t c, const nux_c8_t *fmt, ...);
+void nux_printfmt(nux_u8_t c, const nux_c8_t *fmt, ...);
+void nux_tracefmt(const nux_c8_t *fmt, ...);
 #endif
 
-nux_rid_t nux_arena_new(nux_ctx_t *ctx, nux_rid_t arena);
-void      nux_arena_reset(nux_ctx_t *ctx, nux_rid_t arena);
-nux_u32_t nux_arena_memory_usage(nux_ctx_t *ctx, nux_rid_t arena);
-nux_u32_t nux_arena_memory_capacity(nux_ctx_t *ctx, nux_rid_t arena);
-nux_u32_t nux_arena_block_count(nux_ctx_t *ctx, nux_rid_t arena);
+nux_arena_t *nux_arena_new(nux_arena_t *arena);
+void         nux_arena_reset(nux_arena_t *arena);
+nux_u32_t    nux_arena_memory_usage(const nux_arena_t *arena);
+nux_u32_t    nux_arena_memory_capacity(const nux_arena_t *arena);
+nux_u32_t    nux_arena_block_count(const nux_arena_t *arena);
+nux_arena_t *nux_arena_core(void);
+nux_arena_t *nux_arena_frame(void);
 
-const nux_c8_t *nux_resource_get_path(nux_ctx_t *ctx, nux_rid_t rid);
-void nux_resource_set_name(nux_ctx_t *ctx, nux_rid_t rid, const nux_c8_t *name);
-const nux_c8_t *nux_resource_get_name(nux_ctx_t *ctx, nux_rid_t rid);
-nux_rid_t       nux_resource_get_arena(nux_ctx_t *ctx, nux_rid_t rid);
-nux_rid_t       nux_resource_find(nux_ctx_t *ctx, const nux_c8_t *name);
+const nux_c8_t *nux_resource_get_path(nux_rid_t rid);
+void            nux_resource_set_name(nux_rid_t rid, const nux_c8_t *name);
+const nux_c8_t *nux_resource_get_name(nux_rid_t rid);
+nux_arena_t    *nux_resource_get_arena(nux_rid_t rid);
+nux_rid_t       nux_resource_find(const nux_c8_t *name);
 
 #endif

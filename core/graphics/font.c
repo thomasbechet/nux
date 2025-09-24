@@ -3,7 +3,7 @@
 #include "fonts_data.c.inc"
 
 nux_status_t
-nux_font_init_default (nux_ctx_t *ctx, nux_font_t *font)
+nux_font_init_default (nux_font_t *font)
 {
     const nux_u32_t pixel_per_glyph
         = DEFAULT_FONT_DATA_WIDTH * DEFAULT_FONT_DATA_HEIGHT;
@@ -16,7 +16,7 @@ nux_font_init_default (nux_ctx_t *ctx, nux_font_t *font)
     font->glyph_height        = DEFAULT_FONT_DATA_HEIGHT;
     font->glyph_width         = DEFAULT_FONT_DATA_WIDTH;
     font->char_to_glyph_index = default_font_data_chars;
-    NUX_CHECK(nux_gpu_texture_init(ctx, &font->texture), return NUX_FAILURE);
+    NUX_CHECK(nux_gpu_texture_init(&font->texture), return NUX_FAILURE);
 
     // Rasterize glyphs
     for (nux_u32_t g = 0; g < glyph_count; ++g)
@@ -40,7 +40,7 @@ nux_font_init_default (nux_ctx_t *ctx, nux_font_t *font)
             }
 
             // Write glyph to texture
-            NUX_CHECK(nux_os_texture_update(ctx->userdata,
+            NUX_CHECK(nux_os_texture_update(nux_userdata(),
                                             font->texture.slot,
                                             g * font->glyph_width,
                                             0,
@@ -54,13 +54,13 @@ nux_font_init_default (nux_ctx_t *ctx, nux_font_t *font)
     return NUX_SUCCESS;
 }
 void
-nux_font_free (nux_ctx_t *ctx, nux_font_t *font)
+nux_font_free (nux_font_t *font)
 {
-    nux_gpu_texture_free(ctx, &font->texture);
+    nux_gpu_texture_free(&font->texture);
 }
 void
-nux_font_cleanup (nux_ctx_t *ctx, nux_rid_t res)
+nux_font_cleanup (nux_rid_t res)
 {
-    nux_font_t *font = nux_resource_check(ctx, NUX_RESOURCE_FONT, res);
-    nux_font_free(ctx, font);
+    nux_font_t *font = nux_resource_check(NUX_RESOURCE_FONT, res);
+    nux_font_free(font);
 }

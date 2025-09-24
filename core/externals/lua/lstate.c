@@ -68,7 +68,7 @@ typedef struct LG {
 
 static unsigned int luai_makeseed (lua_State *L) {
   char buff[3 * sizeof(size_t)];
-  unsigned int h = cast_uint(nux_random(lua_getuserdata(L)));
+  unsigned int h = cast_uint(nux_random());
   int p = 0;
   addbuff(buff, p, L);  /* heap variable */
   addbuff(buff, p, &h);  /* local variable */
@@ -412,11 +412,6 @@ LUA_API lua_State *lua_newstate (lua_Alloc f, void *ud) {
   }
   return L;
 }
-
-LUA_API void *(lua_getuserdata) (lua_State *L) {
-    return L->l_G->ud;
-}
-
 
 LUA_API void lua_close (lua_State *L) {
   lua_lock(L);

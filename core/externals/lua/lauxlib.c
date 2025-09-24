@@ -728,8 +728,7 @@ static const char *getF (lua_State *L, void *ud, size_t *size) {
        'getF' called 'fread', it might still wait for user input.
        The next check avoids this problem. */
     // if (feof(lf->f)) return NULL;
-    nux_ctx_t *ctx = lua_getuserdata(L);
-    *size = nux_io_read(ctx, &lf->file, lf->buff, sizeof(lf->buff));
+    *size = nux_io_read(&lf->file, lf->buff, sizeof(lf->buff));
   }
   return lf->buff;
 }
@@ -752,18 +751,17 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
   int status;
   nux_status_t readstatus;
   int fnameindex = lua_gettop(L) + 1;  /* index of filename on the stack */
-  nux_ctx_t *ctx = lua_getuserdata(L);
   nux_status_t fstatus = NUX_FAILURE;
   if (filename != NULL) {
     lua_pushfstring(L, "@%s", filename);
     errno = 0;
-    fstatus = nux_io_open(ctx, filename, NUX_IO_READ, &lf.file);
+    fstatus = nux_io_open(filename, NUX_IO_READ, &lf.file);
   }
   if (fstatus == NUX_FAILURE) return errfile(L, "open", fnameindex);
   lf.n = 0;
   errno = 0;
   status = lua_load(L, getF, &lf, lua_tostring(L, -1), mode);
-  if (filename) nux_io_close(ctx, &lf.file);  /* close file (even in case of errors) */
+  if (filename) nux_io_close(&lf.file);  /* close file (even in case of errors) */
   lua_remove(L, fnameindex);
   return status;
 }

@@ -13,6 +13,8 @@
 //////                               Types                          //////
 //////////////////////////////////////////////////////////////////////////
 
+typedef struct nux_instance_t nux_instance_t;
+
 typedef enum
 {
     NUX_GPU_PIPELINE_MAX    = 128,
@@ -233,8 +235,9 @@ NUX_API void         nux_os_hotreload_pull(void      *userdata,
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_ctx_t *nux_instance_init(void *userdata, const nux_c8_t *entry);
-NUX_API void       nux_instance_free(nux_ctx_t *ctx);
-NUX_API void       nux_instance_update(nux_ctx_t *ctx);
+NUX_API nux_instance_t *nux_instance_init(void           *userdata,
+                                          const nux_c8_t *entry);
+NUX_API void            nux_instance_free(nux_instance_t *instance);
+NUX_API void            nux_instance_update(nux_instance_t *instance);
 
 #endif

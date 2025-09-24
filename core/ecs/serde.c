@@ -26,14 +26,12 @@ nux_ecs_writer_init (nux_ecs_writer_t   *s,
                      nux_serde_writer_t *output,
                      nux_ecs_t          *ecs)
 {
-    nux_ctx_t   *ctx = ecs->arena->ctx;
-    nux_arena_t *a
-        = nux_resource_get(ctx, NUX_RESOURCE_ARENA, ctx->frame_arena_rid);
     s->ecs                 = ecs;
     s->output              = output;
-    nux_u32_t entity_count = nux_ecs_count(ctx);
+    nux_u32_t entity_count = nux_ecs_count();
     nux_serde_writer_init(&s->writer, s, ecs_writer_callback);
-    s->entity_map = nux_arena_malloc(a, sizeof(*s->entity_map) * entity_count);
+    s->entity_map = nux_arena_malloc(nux_arena_frame(),
+                                     sizeof(*s->entity_map) * entity_count);
     NUX_CHECK(s->entity_map, return NUX_FAILURE);
     return NUX_SUCCESS;
 }
@@ -51,29 +49,30 @@ nux_ecs_reader_init (nux_ecs_reader_t   *s,
 nux_status_t
 nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
 {
+    nux_ecs_module_t *module = nux_ecs_module();
+
     nux_ecs_writer_t writer;
     nux_ecs_writer_init(&writer, s, ecs);
     s = &writer.writer;
 
-    nux_ctx_t *ctx  = ecs->arena->ctx;
-    nux_rid_t  iter = nux_ecs_new_iter_any(ctx, ctx->frame_arena_rid);
-    nux_ecs_set_active(ctx, ecs->self);
+    nux_ecs_iter_t *iter = nux_ecs_new_iter_any(nux_arena_frame());
+    nux_ecs_set_active(ecs);
     NUX_CHECK(iter, goto error);
     nux_serde_write_object(s, key);
-    nux_serde_write_array(s, "entities", nux_ecs_count(ctx));
+    nux_serde_write_array(s, "entities", nux_ecs_count());
     nux_eid_t e = NUX_NULL;
-    while ((e = nux_ecs_next(ctx, iter, e)))
+    while ((e = nux_ecs_next(iter, e)))
     {
         nux_serde_write_object(s, NUX_NULL);
         nux_serde_write_u32(s, "id", e);
-        for (nux_u32_t c = 0; c < ctx->ecs->components_max; ++c)
+        for (nux_u32_t c = 0; c < module->components_max; ++c)
         {
-            nux_ecs_component_t *comp = ctx->ecs->components + c;
+            nux_ecs_component_t *comp = module->components + c;
             if (!comp->name)
             {
                 continue;
             }
-            const void *data = nux_ecs_get(ctx, e, c);
+            const void *data = nux_ecs_get(e, c);
             if (data)
             {
                 if (comp->write)
@@ -93,7 +92,7 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
     nux_serde_write_end(s);
     return NUX_SUCCESS;
 error:
-    nux_ecs_set_active(ctx, NUX_NULL);
+    nux_ecs_set_active(NUX_NULL);
     return NUX_FAILURE;
 }
 nux_status_t

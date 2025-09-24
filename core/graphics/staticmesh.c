@@ -1,42 +1,33 @@
 #include "internal.h"
 
 void
-nux_staticmesh_add (nux_ctx_t *ctx, nux_eid_t e)
+nux_staticmesh_add (nux_eid_t e)
 {
-    nux_staticmesh_t *sm = nux_ecs_add(ctx, e, NUX_COMPONENT_STATICMESH);
+    nux_staticmesh_t *sm = nux_ecs_add(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->mesh = NUX_NULL;
 }
 void
-nux_staticmesh_remove (nux_ctx_t *ctx, nux_eid_t e)
+nux_staticmesh_remove (nux_eid_t e)
 {
-    nux_ecs_remove(ctx, e, NUX_COMPONENT_STATICMESH);
+    nux_ecs_remove(e, NUX_COMPONENT_STATICMESH);
 }
 void
-nux_staticmesh_set_mesh (nux_ctx_t *ctx, nux_eid_t e, nux_rid_t mesh)
+nux_staticmesh_set_mesh (nux_eid_t e, nux_mesh_t *mesh)
 {
-    if (mesh)
-    {
-        NUX_CHECK(nux_resource_check(ctx, NUX_RESOURCE_MESH, mesh), return);
-    }
-    nux_staticmesh_t *sm = nux_ecs_get(ctx, e, NUX_COMPONENT_STATICMESH);
+    nux_staticmesh_t *sm = nux_ecs_get(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
-    sm->mesh = mesh;
+    sm->mesh = nux_resource_get_rid(mesh);
 }
 void
-nux_staticmesh_set_texture (nux_ctx_t *ctx, nux_eid_t e, nux_rid_t texture)
+nux_staticmesh_set_texture (nux_eid_t e, nux_texture_t *texture)
 {
-    if (texture)
-    {
-        NUX_CHECK(nux_resource_check(ctx, NUX_RESOURCE_TEXTURE, texture),
-                  return);
-    }
-    nux_staticmesh_t *sm = nux_ecs_get(ctx, e, NUX_COMPONENT_STATICMESH);
+    nux_staticmesh_t *sm = nux_ecs_get(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
-    sm->texture = texture;
+    sm->texture = nux_resource_get_rid(texture);
 }
 void
-nux_staticmesh_set_colormap (nux_ctx_t *ctx, nux_eid_t e, nux_rid_t colormap)
+nux_staticmesh_set_colormap (nux_eid_t e, nux_texture_t *colormap)
 {
 }
 

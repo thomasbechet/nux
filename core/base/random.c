@@ -29,12 +29,12 @@ nux_pcg_f32 (nux_pcg_t *pcg)
 }
 
 nux_u32_t
-nux_random (nux_ctx_t *ctx)
+nux_random (void)
 {
-    return nux_pcg_u32(&ctx->pcg);
+    return nux_pcg_u32(&nux_base_module()->pcg);
 }
 nux_f32_t
-nux_random01 (nux_ctx_t *ctx)
+nux_random01 (void)
 {
-    return nux_pcg_f32(&ctx->pcg);
+    return nux_pcg_f32(&nux_base_module()->pcg);
 }

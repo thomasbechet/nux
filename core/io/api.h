@@ -44,33 +44,20 @@ typedef enum
     NUX_LOG_ERROR   = 1,
 } nux_log_level_t;
 
-void nux_log_set_level(nux_ctx_t *ctx, nux_log_level_t level);
+void nux_log_set_level(nux_log_level_t level);
 
-nux_u32_t nux_button_state(nux_ctx_t *ctx, nux_u32_t controller);
-nux_b32_t nux_button_pressed(nux_ctx_t   *ctx,
-                             nux_u32_t    controller,
-                             nux_button_t button);
-nux_b32_t nux_button_released(nux_ctx_t   *ctx,
-                              nux_u32_t    controller,
-                              nux_button_t button);
-nux_b32_t nux_button_just_pressed(nux_ctx_t   *ctx,
-                                  nux_u32_t    controller,
-                                  nux_button_t button);
-nux_b32_t nux_button_just_released(nux_ctx_t   *ctx,
-                                   nux_u32_t    controller,
-                                   nux_button_t button);
-nux_f32_t nux_axis_value(nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis);
-nux_f32_t nux_cursor_x(nux_ctx_t *ctx, nux_u32_t controller);
-nux_f32_t nux_cursor_y(nux_ctx_t *ctx, nux_u32_t controller);
-void      nux_cursor_set(nux_ctx_t *ctx,
-                         nux_u32_t  controller,
-                         nux_f32_t  x,
-                         nux_f32_t  y);
+nux_u32_t nux_button_state(nux_u32_t controller);
+nux_b32_t nux_button_pressed(nux_u32_t controller, nux_button_t button);
+nux_b32_t nux_button_released(nux_u32_t controller, nux_button_t button);
+nux_b32_t nux_button_just_pressed(nux_u32_t controller, nux_button_t button);
+nux_b32_t nux_button_just_released(nux_u32_t controller, nux_button_t button);
+nux_f32_t nux_axis_value(nux_u32_t controller, nux_axis_t axis);
+nux_f32_t nux_cursor_x(nux_u32_t controller);
+nux_f32_t nux_cursor_y(nux_u32_t controller);
+void      nux_cursor_set(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
 
-nux_status_t nux_io_cart_begin(nux_ctx_t      *ctx,
-                               const nux_c8_t *path,
-                               nux_u32_t       entry_count);
-nux_status_t nux_io_cart_end(nux_ctx_t *ctx);
-nux_status_t nux_io_write_cart_file(nux_ctx_t *ctx, const nux_c8_t *path);
+nux_status_t nux_io_cart_begin(const nux_c8_t *path, nux_u32_t entry_count);
+nux_status_t nux_io_cart_end(void);
+nux_status_t nux_io_write_cart_file(const nux_c8_t *path);
 
 #endif

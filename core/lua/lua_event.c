@@ -84,7 +84,7 @@ event_unsubscribe (lua_State *L)
     nux_ctx_t          *ctx    = lua_getuserdata(L);
     nux_rid_t           module = luaL_checkinteger(L, 1);
     nux_rid_t           event  = luaL_checkinteger(L, 2);
-    nux_lua_vmmodule_t *m
+    nux_lua_t *m
         = nux_resource_check(ctx, NUX_RESOURCE_LUA_MODULE, module);
     l_checkerror(L, ctx);
     for (nux_u32_t i = 0; i < m->event_handles.size; ++i)

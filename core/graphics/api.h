@@ -3,6 +3,10 @@
 
 #include <base/api.h>
 
+typedef struct nux_canvas_t  nux_canvas_t;
+typedef struct nux_mesh_t    nux_mesh_t;
+typedef struct nux_texture_t nux_texture_t;
+
 typedef enum
 {
     // 16:9
@@ -80,78 +84,69 @@ typedef enum
     NUX_TEXTURE_RENDER_TARGET = 2,
 } nux_texture_type_t;
 
-nux_rid_t nux_texture_new(nux_ctx_t         *ctx,
-                          nux_rid_t          arena,
-                          nux_texture_type_t format,
-                          nux_u32_t          w,
-                          nux_u32_t          h);
-void      nux_texture_blit(nux_ctx_t *ctx, nux_rid_t texture);
+nux_texture_t *nux_texture_new(nux_arena_t       *arena,
+                               nux_texture_type_t format,
+                               nux_u32_t          w,
+                               nux_u32_t          h);
+void           nux_texture_blit(nux_texture_t *texture);
 
-nux_rid_t nux_mesh_new(nux_ctx_t *ctx, nux_rid_t arena, nux_u32_t capa);
-nux_rid_t nux_mesh_new_cube(
-    nux_ctx_t *ctx, nux_rid_t arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz);
-void     nux_mesh_update_bounds(nux_ctx_t *ctx, nux_rid_t mesh);
-nux_v3_t nux_mesh_bounds_min(nux_ctx_t *ctx, nux_rid_t mesh);
-nux_v3_t nux_mesh_bounds_max(nux_ctx_t *ctx, nux_rid_t mesh);
+nux_mesh_t *nux_mesh_new(nux_arena_t *arena, nux_u32_t capa);
+nux_mesh_t *nux_mesh_new_cube(nux_arena_t *arena,
+                              nux_f32_t    sx,
+                              nux_f32_t    sy,
+                              nux_f32_t    sz);
+void        nux_mesh_update_bounds(nux_mesh_t *mesh);
+nux_v3_t    nux_mesh_bounds_min(nux_mesh_t *mesh);
+nux_v3_t    nux_mesh_bounds_max(nux_mesh_t *mesh);
 
-nux_rid_t nux_canvas_new(nux_ctx_t *ctx,
-                         nux_rid_t  arena,
-                         nux_u32_t  width,
-                         nux_u32_t  height);
-nux_rid_t nux_canvas_get_texture(nux_ctx_t *ctx, nux_rid_t rid);
-void      nux_canvas_set_layer(nux_ctx_t *ctx, nux_rid_t rid, nux_i32_t layer);
-void nux_canvas_set_clear_color(nux_ctx_t *ctx, nux_rid_t rid, nux_u32_t color);
-void nux_canvas_text(nux_ctx_t      *ctx,
-                     nux_rid_t       rid,
+nux_canvas_t  *nux_canvas_new(nux_arena_t *arena,
+                              nux_u32_t    width,
+                              nux_u32_t    height);
+nux_texture_t *nux_canvas_get_texture(nux_canvas_t *canvas);
+void           nux_canvas_set_layer(nux_canvas_t *canvas, nux_i32_t layer);
+void nux_canvas_set_clear_color(nux_canvas_t *canvas, nux_u32_t color);
+void nux_canvas_text(nux_canvas_t   *canvas,
                      nux_u32_t       x,
                      nux_u32_t       y,
                      const nux_c8_t *text);
-void nux_canvas_rectangle(nux_ctx_t *ctx,
-                          nux_rid_t  rid,
-                          nux_u32_t  x,
-                          nux_u32_t  y,
-                          nux_u32_t  w,
-                          nux_u32_t  h);
-// void      nux_graphics_line(nux_ctx_t *ctx,
+void nux_canvas_rectangle(
+    nux_canvas_t *canvas, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h);
+// void      nux_graphics_line(
 //                             nux_i32_t  x0,
 //                             nux_i32_t  y0,
 //                             nux_i32_t  x1,
 //                             nux_i32_t  y1,
 //                             nux_u8_t   color);
 // void      nux_graphics_circle(
-//          nux_ctx_t *ctx, nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t
+//           nux_i32_t xm, nux_i32_t ym, nux_i32_t r, nux_u8_t
 //          c);
-// void nux_graphics_rectangle(nux_ctx_t *ctx,
+// void nux_graphics_rectangle(
 //                             nux_i32_t  x0,
 //                             nux_i32_t  y0,
 //                             nux_i32_t  x1,
 //                             nux_i32_t  y1,
 //                             nux_u8_t   c);
 
-void nux_graphics_draw_line_tr(
-    nux_ctx_t *ctx, nux_m4_t tr, nux_v3_t a, nux_v3_t b, nux_u32_t color);
-void nux_graphics_draw_line(nux_ctx_t *ctx,
-                            nux_v3_t   a,
-                            nux_v3_t   b,
-                            nux_u32_t  color);
-void nux_graphics_draw_dir(nux_ctx_t *ctx,
-                           nux_v3_t   origin,
-                           nux_v3_t   dir,
-                           nux_f32_t  length,
-                           nux_u32_t  color);
+void nux_graphics_draw_line_tr(nux_m4_t  tr,
+                               nux_v3_t  a,
+                               nux_v3_t  b,
+                               nux_u32_t color);
+void nux_graphics_draw_line(nux_v3_t a, nux_v3_t b, nux_u32_t color);
+void nux_graphics_draw_dir(nux_v3_t  origin,
+                           nux_v3_t  dir,
+                           nux_f32_t length,
+                           nux_u32_t color);
 
-void nux_camera_add(nux_ctx_t *ctx, nux_eid_t e);
-void nux_camera_remove(nux_ctx_t *ctx, nux_eid_t e);
-void nux_camera_set_fov(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t fov);
-void nux_camera_set_near(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t near);
-void nux_camera_set_far(nux_ctx_t *ctx, nux_eid_t e, nux_f32_t far);
+void nux_camera_add(nux_eid_t e);
+void nux_camera_remove(nux_eid_t e);
+void nux_camera_set_fov(nux_eid_t e, nux_f32_t fov);
+void nux_camera_set_near(nux_eid_t e, nux_f32_t near);
+void nux_camera_set_far(nux_eid_t e, nux_f32_t far);
 
-void nux_staticmesh_add(nux_ctx_t *ctx, nux_eid_t e);
-void nux_staticmesh_remove(nux_ctx_t *ctx, nux_eid_t e);
-void nux_staticmesh_set_mesh(nux_ctx_t *ctx, nux_eid_t e, nux_rid_t mesh);
-void nux_staticmesh_set_texture(nux_ctx_t *ctx, nux_eid_t e, nux_rid_t texture);
-void nux_staticmesh_set_colormap(nux_ctx_t *ctx,
-                                 nux_eid_t  e,
-                                 nux_rid_t  colormap);
+void nux_staticmesh_add(nux_eid_t e);
+void nux_staticmesh_remove(nux_eid_t e);
+void nux_staticmesh_set_mesh(nux_eid_t e, nux_mesh_t *mesh);
+void nux_staticmesh_set_texture(nux_eid_t e, nux_texture_t *texture);
+void nux_staticmesh_set_colormap(nux_eid_t e, nux_texture_t *colormap);
 
 #endif
