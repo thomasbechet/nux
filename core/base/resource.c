@@ -99,7 +99,7 @@ nux_resource_delete (nux_rid_t rid)
               entry->path ? entry->path : "null");
     if (type->cleanup)
     {
-        type->cleanup(rid);
+        type->cleanup(entry->data);
     }
 
     // Remove entry
@@ -200,7 +200,7 @@ nux_resource_reload (nux_rid_t rid)
     nux_resource_type_t *type = module->resources_types + entry->type;
     if (type->reload)
     {
-        type->reload(rid, entry->path);
+        type->reload(entry->data, entry->path);
     }
     NUX_INFO("resource 0x%08X '%s' successfully reloaded", rid, entry->path);
     return NUX_SUCCESS;

@@ -118,7 +118,7 @@ nux_ecs_component_t *nux_ecs_register_component(nux_u32_t       index,
 void *nux_ecs_add(nux_eid_t e, nux_u32_t c);
 void *nux_ecs_get(nux_eid_t e, nux_u32_t c);
 
-void nux_ecs_cleanup(nux_rid_t rid);
+void nux_ecs_cleanup(void *data);
 
 // transform.c
 

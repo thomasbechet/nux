@@ -10,6 +10,7 @@ typedef struct
     nux_u32_vec_t     free_file_slots;
     nux_cart_writer_t cart_writer;
     nux_controller_t  controllers[NUX_CONTROLLER_MAX];
+    nux_log_level_t   log_level;
 } nux_io_module_t;
 
 nux_io_module_t *nux_io_module(void);

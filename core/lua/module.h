@@ -54,8 +54,7 @@ struct nux_lua_t
 
 nux_status_t nux_lua_configure(nux_config_t *config);
 nux_status_t nux_lua_dostring(const nux_c8_t *string);
-nux_status_t nux_lua_module_reload(nux_rid_t rid, const nux_c8_t *path);
-nux_status_t nux_lua_call_module(nux_rid_t       module,
+nux_status_t nux_lua_call_module(nux_lua_t      *lua,
                                  const nux_c8_t *name,
                                  nux_u32_t       nargs);
 

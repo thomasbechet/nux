@@ -1,9 +1,9 @@
 #include "internal.h"
 
 void
-nux_input_update (nux_ctx_t *ctx)
+nux_input_update (void)
 {
-    nux_io_module_t *module = ctx->io;
+    nux_io_module_t *module = nux_io_module();
 
     for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
     {
@@ -15,7 +15,7 @@ nux_input_update (nux_ctx_t *ctx)
         controller->cursor_prev = controller->cursor;
 
         // Aquire inputs from os
-        nux_os_input_update(ctx->userdata,
+        nux_os_input_update(nux_userdata(),
                             i,
                             &controller->buttons,
                             controller->axis,
@@ -25,7 +25,7 @@ nux_input_update (nux_ctx_t *ctx)
         if (controller->mode == NUX_CONTROLLER_MODE_CURSOR)
         {
             nux_f32_t speed
-                = nux_time_delta(ctx) * controller->cursor_motion_speed;
+                = nux_time_delta() * controller->cursor_motion_speed;
             const nux_v2_t motion[] = {
                 nux_v2(1, 0),
                 nux_v2(-1, 0),
@@ -52,64 +52,58 @@ nux_input_update (nux_ctx_t *ctx)
 }
 
 nux_u32_t
-nux_button_state (nux_ctx_t *ctx, nux_u32_t controller)
+nux_button_state (nux_u32_t controller)
 {
-    nux_io_module_t *module = ctx->io;
+    nux_io_module_t *module = nux_io_module();
     NUX_CHECK(controller < NUX_ARRAY_SIZE(module->controllers), return 0);
     return module->controllers[controller].buttons;
 }
 nux_b32_t
-nux_button_pressed (nux_ctx_t *ctx, nux_u32_t controller, nux_button_t button)
+nux_button_pressed (nux_u32_t controller, nux_button_t button)
 {
-    return (nux_button_state(ctx, controller) & button) ? NUX_TRUE : NUX_FALSE;
+    return (nux_button_state(controller) & button) ? NUX_TRUE : NUX_FALSE;
 }
 nux_b32_t
-nux_button_released (nux_ctx_t *ctx, nux_u32_t controller, nux_button_t button)
+nux_button_released (nux_u32_t controller, nux_button_t button)
 {
-    return !nux_button_pressed(ctx, controller, button);
+    return !nux_button_pressed(controller, button);
 }
 nux_b32_t
-nux_button_just_pressed (nux_ctx_t   *ctx,
-                         nux_u32_t    controller,
-                         nux_button_t button)
+nux_button_just_pressed (nux_u32_t controller, nux_button_t button)
 {
-    nux_io_module_t *module = ctx->io;
+    nux_io_module_t *module = nux_io_module();
     NUX_CHECK(controller < NUX_ARRAY_SIZE(module->controllers), return 0);
     nux_u32_t state = module->controllers[controller].buttons;
     nux_u32_t prev  = module->controllers[controller].buttons_prev;
-    return (state ^ prev) & button
-           && nux_button_pressed(ctx, controller, button);
+    return (state ^ prev) & button && nux_button_pressed(controller, button);
 }
 nux_b32_t
-nux_button_just_released (nux_ctx_t   *ctx,
-                          nux_u32_t    controller,
-                          nux_button_t button)
+nux_button_just_released (nux_u32_t controller, nux_button_t button)
 {
-    nux_io_module_t *module = ctx->io;
+    nux_io_module_t *module = nux_io_module();
     NUX_CHECK(controller < NUX_ARRAY_SIZE(module->controllers), return 0);
     nux_u32_t stat = module->controllers[controller].buttons;
     nux_u32_t prev = module->controllers[controller].buttons_prev;
-    return (stat ^ prev) & button
-           && nux_button_released(ctx, controller, button);
+    return (stat ^ prev) & button && nux_button_released(controller, button);
 }
 nux_f32_t
-nux_axis_value (nux_ctx_t *ctx, nux_u32_t controller, nux_axis_t axis)
+nux_axis_value (nux_u32_t controller, nux_axis_t axis)
 {
     NUX_CHECK(controller < NUX_AXIS_MAX, return 0);
-    return ctx->io->controllers[controller].axis[axis];
+    return nux_io_module()->controllers[controller].axis[axis];
 }
 nux_f32_t
-nux_cursor_x (nux_ctx_t *ctx, nux_u32_t controller)
+nux_cursor_x (nux_u32_t controller)
 {
-    return ctx->io->controllers[controller].cursor.x;
+    return nux_io_module()->controllers[controller].cursor.x;
 }
 nux_f32_t
-nux_cursor_y (nux_ctx_t *ctx, nux_u32_t controller)
+nux_cursor_y (nux_u32_t controller)
 {
-    return ctx->io->controllers[controller].cursor.y;
+    return nux_io_module()->controllers[controller].cursor.y;
 }
 void
-nux_cursor_set (nux_ctx_t *ctx, nux_u32_t controller, nux_f32_t x, nux_f32_t y)
+nux_cursor_set (nux_u32_t controller, nux_f32_t x, nux_f32_t y)
 {
-    ctx->io->controllers[controller].cursor = nux_v2(x, y);
+    nux_io_module()->controllers[controller].cursor = nux_v2(x, y);
 }

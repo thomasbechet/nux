@@ -539,9 +539,8 @@ struct nux_arena_t
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 NUX_VEC_DEFINE(nux_ptr_vec, void *);
 
-typedef void (*nux_resource_cleanup_t)(nux_rid_t rid);
-typedef nux_status_t (*nux_resource_reload_t)(nux_rid_t       rid,
-                                              const nux_c8_t *path);
+typedef void (*nux_resource_cleanup_t)(void *data);
+typedef nux_status_t (*nux_resource_reload_t)(void *data, const nux_c8_t *path);
 typedef struct
 {
     const nux_c8_t        *name;
@@ -736,7 +735,7 @@ void     *nux_arena_alloc(nux_arena_t *arena,
                           nux_u32_t    nsize);
 nux_c8_t *nux_arena_alloc_string(nux_arena_t *arena, const nux_c8_t *s);
 void     *nux_arena_malloc(nux_arena_t *arena, nux_u32_t size);
-void      nux_arena_cleanup(nux_rid_t rid);
+void      nux_arena_cleanup(void *data);
 
 // random.c
 

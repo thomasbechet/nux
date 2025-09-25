@@ -129,9 +129,9 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     return c;
 }
 void
-nux_canvas_cleanup (nux_rid_t rid)
+nux_canvas_cleanup (void *data)
 {
-    nux_canvas_t *canvas = nux_resource_check(NUX_RESOURCE_CANVAS, rid);
+    nux_canvas_t *canvas = data;
     nux_gpu_buffer_free(&canvas->constants_buffer);
     nux_gpu_buffer_free(&canvas->batches_buffer);
     nux_gpu_buffer_free(&canvas->quads_buffer);

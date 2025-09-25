@@ -143,11 +143,11 @@ void nux_graphics_draw_line(nux_v3_t a, nux_v3_t b, nux_u32_t color);
 
 nux_status_t nux_font_init_default(nux_font_t *font);
 void         nux_font_free(nux_font_t *font);
-void         nux_font_cleanup(nux_rid_t rid);
+void         nux_font_cleanup(void *data);
 
 // canvas.c
 
-void nux_canvas_cleanup(nux_rid_t rid);
+void nux_canvas_cleanup(void *data);
 void nux_canvas_render(nux_canvas_t *c);
 
 // gpu.c
@@ -177,7 +177,7 @@ void nux_gpu_clear(nux_gpu_encoder_t *enc, nux_u32_t color);
 
 // texture.c
 
-void nux_texture_cleanup(nux_rid_t rid);
+void nux_texture_cleanup(void *data);
 void nux_texture_write(nux_texture_t *tex,
                        nux_u32_t      x,
                        nux_u32_t      y,

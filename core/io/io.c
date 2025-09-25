@@ -13,8 +13,7 @@ open_os_file (const nux_c8_t *path, nux_io_mode_t mode, nux_u32_t *ret_slot)
                normpath);
     nux_u32_t *slot = nux_u32_vec_pop(&module->free_file_slots);
     NUX_ENSURE(slot, return NUX_NULL, "out of os file slots");
-    NUX_ENSURE(nux_os_file_open(
-                   nux_base_module()->userdata, *slot, normpath, len, mode),
+    NUX_ENSURE(nux_os_file_open(nux_userdata(), *slot, normpath, len, mode),
                goto cleanup,
                "failed to open os file '%s'",
                normpath);
@@ -27,7 +26,7 @@ cleanup:
 static void
 close_os_file (nux_u32_t slot)
 {
-    nux_os_file_close(nux_base_module()->userdata, slot);
+    nux_os_file_close(nux_userdata(), slot);
     nux_u32_vec_pushv(&nux_io_module()->free_file_slots, slot);
 }
 
@@ -89,7 +88,7 @@ nux_io_free (void)
 static nux_status_t
 cart_read (nux_u32_t slot, void *p, nux_u32_t n)
 {
-    NUX_ENSURE(nux_os_file_read(nux_base_module()->userdata, slot, p, n) == n,
+    NUX_ENSURE(nux_os_file_read(nux_userdata(), slot, p, n) == n,
                return NUX_FAILURE,
                "failed to read cart file");
 
@@ -132,13 +131,10 @@ cart_read_entries (nux_cart_t *cart)
         for (nux_u32_t i = 0; i < cart->entries_count; ++i)
         {
             nux_cart_entry_t *entry = cart->entries + i;
-            nux_os_file_seek(
-                nux_base_module()->userdata, cart->slot, entry->path_offset);
+            nux_os_file_seek(nux_userdata(), cart->slot, entry->path_offset);
             nux_c8_t path[NUX_PATH_BUF_SIZE];
-            nux_os_file_read(nux_base_module()->userdata,
-                             cart->slot,
-                             path,
-                             entry->path_length + 1);
+            nux_os_file_read(
+                nux_userdata(), cart->slot, path, entry->path_length + 1);
             NUX_DEBUG("[%d] 0x%08X %s", i, entry->path_hash, path);
         }
     }

@@ -147,11 +147,11 @@ nux_arena_malloc (nux_arena_t *arena, nux_u32_t size)
     return nux_arena_alloc(arena, NUX_NULL, 0, size);
 }
 void
-nux_arena_cleanup (nux_rid_t res)
+nux_arena_cleanup (void *data)
 {
-    if (res != nux_resource_get_rid(nux_base_module()->core_arena))
+    nux_arena_t *arena = data;
+    if (arena != nux_arena_core())
     {
-        nux_arena_t *arena = nux_resource_check(NUX_RESOURCE_ARENA, res);
         nux_arena_reset(arena);
         nux_arena_free(arena);
     }

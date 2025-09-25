@@ -258,10 +258,10 @@ nux_ecs_new (nux_arena_t *arena)
     return ecs;
 }
 void
-nux_ecs_cleanup (nux_rid_t res)
+nux_ecs_cleanup (void *data)
 {
     nux_ecs_module_t *module = nux_ecs_module();
-    nux_ecs_t        *ecs    = nux_resource_check(NUX_RESOURCE_ECS, res);
+    nux_ecs_t        *ecs    = data;
     if (module->active == ecs && ecs != module->default_ecs)
     {
         NUX_WARNING("cleanup active ecs, default ecs has been set");

@@ -210,7 +210,7 @@ nux_status_t nux_io_write_cart_data(const nux_c8_t *path,
 
 // file.c
 
-void nux_file_cleanup(nux_rid_t res);
+void nux_file_cleanup(void *data);
 
 // input.c
 

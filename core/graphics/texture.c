@@ -40,10 +40,10 @@ nux_texture_new (nux_arena_t       *arena,
     return tex;
 }
 void
-nux_texture_cleanup (nux_rid_t rid)
+nux_texture_cleanup (void *data)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    nux_texture_t         *tex = nux_resource_check(NUX_RESOURCE_TEXTURE, rid);
+    nux_texture_t         *tex    = data;
     if (tex->gpu.slot)
     {
         nux_u32_vec_pushv(&module->free_texture_slots, tex->gpu.slot);

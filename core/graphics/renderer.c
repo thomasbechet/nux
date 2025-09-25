@@ -187,8 +187,8 @@ nux_renderer_render (nux_ecs_t *ecs)
                               (nux_f32_t)NUX_CANVAS_WIDTH / NUX_CANVAS_HEIGHT,
                               cc->near,
                               cc->far);
-        constants.screen_size = nux_v2u(ctx->stats[NUX_STAT_SCREEN_WIDTH],
-                                        ctx->stats[NUX_STAT_SCREEN_HEIGHT]);
+        constants.screen_size = nux_v2u(nux_stat(NUX_STAT_SCREEN_WIDTH),
+                                        nux_stat(NUX_STAT_SCREEN_HEIGHT));
         constants.time        = nux_time_elapsed();
         nux_os_buffer_update(nux_userdata(),
                              module->constants_buffer.slot,

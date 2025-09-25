@@ -1049,8 +1049,8 @@ static void warnfon (void *ud, const char *message, int tocont) {
 }
 
 
-LUALIB_API lua_State *luaL_newstate (void *ud) {
-  lua_State *L = lua_newstate(l_alloc, ud);
+LUALIB_API lua_State *luaL_newstate (void) {
+  lua_State *L = lua_newstate(l_alloc, NUX_NULL);
   if (l_likely(L)) {
     lua_atpanic(L, &panic);
     lua_setwarnf(L, warnfoff, L);  /* default is warnings off */
