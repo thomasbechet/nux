@@ -180,8 +180,9 @@ nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
 int
 main (int argc, char *argv[])
 {
-    nux_ctx_t *ctx = nux_instance_init(NULL, argc > 1 ? argv[1] : "init.lua");
-    nux_instance_update(ctx);
-    nux_instance_free(ctx);
+    nux_instance_t *instance
+        = nux_instance_init(NULL, argc > 1 ? argv[1] : "init.lua");
+    nux_instance_update(instance);
+    nux_instance_free(instance);
     return 0;
 }

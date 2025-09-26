@@ -61,14 +61,14 @@ arena_alloc (nux_arena_t *arena, nux_u32_t size)
     return p;
 }
 static void
-arena_reset (nux_arena_t *arena, nux_resource_header_t *to)
+arena_reset (nux_arena_t *arena, nux_rid_t rid)
 {
     if (!arena->head)
     {
         return;
     }
     nux_resource_header_t *header = arena->last_header;
-    while (header != to)
+    while (header && header->rid != rid)
     {
         nux_resource_delete(header->rid);
         header = header->prev;
@@ -205,7 +205,15 @@ nux_arena_new (nux_arena_t *arena)
 void
 nux_arena_reset (nux_arena_t *arena)
 {
-    arena_reset(arena, NUX_NULL);
+    if (arena == nux_arena_core())
+    {
+        // Do not remove core arena
+        arena_reset(arena, nux_resource_get_rid(arena));
+    }
+    else
+    {
+        arena_reset(arena, NUX_NULL);
+    }
 }
 nux_u32_t
 nux_arena_memory_usage (const nux_arena_t *arena)
