@@ -292,7 +292,7 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
     else
     {
         lua_newtable(L);
-        lua_pushinteger(L, nux_resource_get_rid(lua));
+        lua_pushinteger(L, nux_resource_rid(lua));
         lua_setfield(L, -2, NUX_LUA_MODULE_RID);
     }
     NUX_ASSERT(lua_istable(L, -1));
@@ -335,7 +335,7 @@ nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
     nux_lua_t *lua = nux_resource_new(arena, NUX_RESOURCE_LUA_MODULE);
     NUX_CHECK(lua, return NUX_NULL);
-    nux_resource_set_path(nux_resource_get_rid(lua), path);
+    nux_resource_set_path(nux_resource_rid(lua), path);
     // initialize event handles
     nux_ptr_vec_init(arena, &lua->event_handles);
     // dofile and call load function

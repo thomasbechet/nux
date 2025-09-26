@@ -212,7 +212,7 @@ nux_ecs_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
         cgltf_mesh *mesh = data->meshes + i;
         for (nux_u32_t p = 0; p < mesh->primitives_count; ++p)
         {
-            nux_rid_t rid = nux_resource_get_rid(
+            nux_rid_t rid = nux_resource_rid(
                 load_primitive_mesh(arena, mesh->primitives + p));
             NUX_CHECK(rid, goto error);
             NUX_DEBUG(
@@ -244,7 +244,7 @@ nux_ecs_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
         }
         if (texture)
         {
-            nux_rid_t rid = nux_resource_get_rid(load_texture(arena, texture));
+            nux_rid_t rid = nux_resource_rid(load_texture(arena, texture));
             NUX_CHECK(rid, goto error);
             resources[resources_count].cgltf_ptr = texture;
             resources[resources_count].rid       = rid;

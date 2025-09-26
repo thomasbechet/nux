@@ -118,10 +118,10 @@ nux_u32_t    nux_arena_block_count(const nux_arena_t *arena);
 nux_arena_t *nux_arena_core(void);
 nux_arena_t *nux_arena_frame(void);
 
-const nux_c8_t *nux_resource_get_path(nux_rid_t rid);
+const nux_c8_t *nux_resource_path(nux_rid_t rid);
 void            nux_resource_set_name(nux_rid_t rid, const nux_c8_t *name);
-const nux_c8_t *nux_resource_get_name(nux_rid_t rid);
-nux_arena_t    *nux_resource_get_arena(nux_rid_t rid);
+const nux_c8_t *nux_resource_name(nux_rid_t rid);
+nux_arena_t    *nux_resource_arena(nux_rid_t rid);
 nux_rid_t       nux_resource_find(const nux_c8_t *name);
 
 #endif

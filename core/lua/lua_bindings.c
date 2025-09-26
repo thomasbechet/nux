@@ -81,7 +81,7 @@ l_arena_new (lua_State *L)
     const nux_arena_t *ret = nux_arena_new(arena);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -142,7 +142,7 @@ l_arena_core (lua_State *L)
     const nux_arena_t *ret = nux_arena_core();
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -159,7 +159,7 @@ l_arena_frame (lua_State *L)
     const nux_arena_t *ret = nux_arena_frame();
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -174,10 +174,10 @@ static int
 l_resource_get_path (lua_State *L)
 {
     nux_rid_t       rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    const nux_c8_t *ret = nux_resource_get_path(rid);
+    const nux_c8_t *ret = nux_resource_path(rid);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -203,10 +203,10 @@ static int
 l_resource_get_name (lua_State *L)
 {
     nux_rid_t       rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    const nux_c8_t *ret = nux_resource_get_name(rid);
+    const nux_c8_t *ret = nux_resource_name(rid);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -221,10 +221,10 @@ static int
 l_resource_get_arena (lua_State *L)
 {
     nux_rid_t          rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
-    const nux_arena_t *ret = nux_resource_get_arena(rid);
+    const nux_arena_t *ret = nux_resource_arena(rid);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -398,7 +398,7 @@ l_lua_load (lua_State *L)
     const nux_lua_t *ret  = nux_lua_load(arena, path);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -711,7 +711,7 @@ l_ecs_new_iter (lua_State *L)
         = nux_ecs_new_iter(arena, include_count, exclude_count);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -730,7 +730,7 @@ l_ecs_new_iter_any (lua_State *L)
     const nux_ecs_iter_t *ret = nux_ecs_new_iter_any(arena);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -785,7 +785,7 @@ l_ecs_new (lua_State *L)
     const nux_ecs_t *ret = nux_ecs_new(arena);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -813,7 +813,7 @@ l_ecs_get_active (lua_State *L)
     const nux_ecs_t *ret = nux_ecs_get_active();
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -930,7 +930,7 @@ l_ecs_load_gltf (lua_State *L)
     const nux_ecs_t *ret  = nux_ecs_load_gltf(arena, path);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -952,7 +952,7 @@ l_texture_new (lua_State *L)
     const nux_texture_t *ret    = nux_texture_new(arena, format, w, h);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -983,7 +983,7 @@ l_mesh_new (lua_State *L)
     const nux_mesh_t *ret  = nux_mesh_new(arena, capa);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -1005,7 +1005,7 @@ l_mesh_new_cube (lua_State *L)
     const nux_mesh_t *ret = nux_mesh_new_cube(arena, sx, sy, sz);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -1059,7 +1059,7 @@ l_canvas_new (lua_State *L)
     const nux_canvas_t *ret    = nux_canvas_new(arena, width, height);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);
@@ -1078,7 +1078,7 @@ l_canvas_get_texture (lua_State *L)
     const nux_texture_t *ret = nux_canvas_get_texture(canvas);
     l_checkerror(L);
 
-    nux_rid_t ret_rid = nux_resource_get_rid(ret);
+    nux_rid_t ret_rid = nux_resource_rid(ret);
     if (ret_rid)
     {
         lua_pushinteger(L, ret_rid);

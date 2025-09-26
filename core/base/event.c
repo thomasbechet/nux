@@ -21,7 +21,7 @@ nux_event_subscribe (nux_arena_t         *arena,
                      nux_event_callback_t callback)
 {
     nux_event_handler_t *handler = nux_arena_malloc(arena, sizeof(*handler));
-    handler->event               = nux_resource_get_rid(event);
+    handler->event               = nux_resource_rid(event);
     handler->userdata            = userdata;
     handler->callback            = callback;
     handler->next                = NUX_NULL;
@@ -91,7 +91,7 @@ nux_event_process (nux_event_t *event)
         while (handler)
         {
             handler->callback(
-                handler->userdata, nux_resource_get_rid(event), header->data);
+                handler->userdata, nux_resource_rid(event), header->data);
             handler = handler->next;
         }
         if (event->cleanup)

@@ -149,7 +149,7 @@ nux_resource_set_path (nux_rid_t rid, const nux_c8_t *path)
     }
 }
 const nux_c8_t *
-nux_resource_get_path (nux_rid_t rid)
+nux_resource_path (nux_rid_t rid)
 {
     nux_resource_entry_t *entry = check_entry(rid, NUX_NULL);
     NUX_CHECK(entry, return NUX_NULL);
@@ -168,14 +168,14 @@ nux_resource_set_name (nux_rid_t rid, const nux_c8_t *name)
     NUX_ASSERT(entry->name);
 }
 const nux_c8_t *
-nux_resource_get_name (nux_rid_t rid)
+nux_resource_name (nux_rid_t rid)
 {
     nux_resource_entry_t *entry = check_entry(rid, NUX_NULL);
     NUX_CHECK(entry, return NUX_NULL);
     return entry->name;
 }
 nux_arena_t *
-nux_resource_get_arena (nux_rid_t rid)
+nux_resource_arena (nux_rid_t rid)
 {
     nux_resource_entry_t *entry = check_entry(rid, NUX_NULL);
     NUX_CHECK(entry, return NUX_NULL);
@@ -246,7 +246,7 @@ nux_resource_next (nux_u32_t type, nux_rid_t rid)
     return NUX_NULL;
 }
 nux_rid_t
-nux_resource_get_rid (const void *data)
+nux_resource_rid (const void *data)
 {
     const nux_resource_header_t *header
         = ((const nux_resource_header_t *)data) - 1;

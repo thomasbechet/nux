@@ -17,14 +17,14 @@ nux_staticmesh_set_mesh (nux_eid_t e, nux_mesh_t *mesh)
 {
     nux_staticmesh_t *sm = nux_ecs_get(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
-    sm->mesh = nux_resource_get_rid(mesh);
+    sm->mesh = nux_resource_rid(mesh);
 }
 void
 nux_staticmesh_set_texture (nux_eid_t e, nux_texture_t *texture)
 {
     nux_staticmesh_t *sm = nux_ecs_get(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
-    sm->texture = nux_resource_get_rid(texture);
+    sm->texture = nux_resource_rid(texture);
 }
 void
 nux_staticmesh_set_colormap (nux_eid_t e, nux_texture_t *colormap)
