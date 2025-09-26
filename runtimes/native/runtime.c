@@ -80,10 +80,10 @@ apply_viewport_mode (struct nk_vec2i window_size)
 static void
 runtime_close (void)
 {
-    if (runtime.ctx)
+    if (runtime.instance)
     {
-        nux_instance_free(runtime.ctx);
-        runtime.ctx = NULL;
+        nux_instance_free(runtime.instance);
+        runtime.instance = NULL;
     }
 }
 
@@ -127,7 +127,7 @@ runtime_run (const config_t *config)
         renderer_clear();
 
         // Update instance
-        if (runtime.ctx)
+        if (runtime.instance)
         {
             // Compute viewport
             apply_viewport_mode(window_size);
@@ -137,7 +137,7 @@ runtime_run (const config_t *config)
                            window_size);
 
             // Update
-            nux_instance_update(runtime.ctx);
+            nux_instance_update(runtime.instance);
 
             // End renderer
             renderer_end();
@@ -166,12 +166,12 @@ runtime_open (const char *path)
     runtime_close();
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
-    runtime.ctx           = NULL;
+    runtime.instance      = NULL;
     runtime.viewport_ui   = nk_rect(0, 0, 10, 10);
     runtime.viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
 
-    runtime.ctx = nux_instance_init(NULL, path);
-    if (!runtime.ctx)
+    runtime.instance = nux_instance_init(NULL, path);
+    if (!runtime.instance)
     {
         fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
@@ -185,7 +185,7 @@ cleanup0:
 void
 runtime_reset (void)
 {
-    if (runtime.ctx)
+    if (runtime.instance)
     {
         char path[PATH_MAX_LEN];
         memcpy(path, runtime.path, PATH_MAX_LEN);

@@ -1,7 +1,7 @@
 function M:on_load()
     self.time = 0
     self.interval = 1
-    self.event = event.new(resource.find("core_arena"))
+    self.event = event.new(arena.core())
 end
 
 function M:on_update()

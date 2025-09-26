@@ -10,7 +10,7 @@ function M:on_event(e, d)
 end
 
 function M:on_load()
-    self.arena = resource.find("core_arena")
+    self.arena = arena.core()
     event.subscribe(self.rid, ticker.event)
 
     local mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
@@ -114,7 +114,7 @@ function M:on_update()
     canvas.text(c, 10, 60,
         string.format("mem:%s bc:%d", memhu(arena.memory_usage(self.arena)), arena.block_count(self.arena)))
     canvas.text(c, 10, 70,
-        string.format("mem:%s", memhu(arena.memory_usage(resource.find("frame_arena")))))
+        string.format("mem:%s", memhu(arena.memory_usage(arena.frame()))))
     canvas.text(c, math.floor(cursor.x(0)), math.floor(cursor.y(0)), "X")
 
     local forward = transform.forward(self.camera.entity)

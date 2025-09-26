@@ -96,6 +96,9 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     // Get program configuration
     NUX_CHECK(nux_lua_configure(&nux_base_module()->config), goto cleanup);
 
+    // Apply configuration
+    nux_log_set_level(nux_base_module()->config.log.level);
+
     // Initialize optional modules
     NUX_CHECK(nux_ecs_init(), goto cleanup);
     NUX_CHECK(nux_graphics_init(), goto cleanup);

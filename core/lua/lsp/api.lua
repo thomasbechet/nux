@@ -1,42 +1,46 @@
 core={}
 core.SUCCESS=1
 core.FAILURE=0
----@return integer
+---@return None
 function core.stat(...) end
----@return integer
+---@return None
 function core.random(...) end
----@return number
+---@return None
 function core.random01(...) end
 time={}
----@return number
+---@return None
 function time.elapsed(...) end
----@return number
+---@return None
 function time.delta(...) end
----@return integer
+---@return None
 function time.frame(...) end
 ---@return None
 function time.timestamp(...) end
 arena={}
----@return integer
+---@return None
 function arena.new(...) end
----@return nil
+---@return None
 function arena.reset(...) end
----@return integer
+---@return None
 function arena.memory_usage(...) end
----@return integer
+---@return None
 function arena.memory_capacity(...) end
----@return integer
+---@return None
 function arena.block_count(...) end
+---@return None
+function arena.core(...) end
+---@return None
+function arena.frame(...) end
 resource={}
 ---@return None
 function resource.get_path(...) end
----@return nil
+---@return None
 function resource.set_name(...) end
 ---@return None
 function resource.get_name(...) end
----@return integer
+---@return None
 function resource.get_arena(...) end
----@return integer
+---@return None
 function resource.find(...) end
 error={}
 error.NONE=0
@@ -56,7 +60,7 @@ log.DEBUG=4
 log.INFO=3
 log.WARNING=2
 log.ERROR=1
----@return nil
+---@return None
 function log.set_level(...) end
 button={}
 button.MAX=10
@@ -70,15 +74,15 @@ button.LEFT=1 << 6
 button.RIGHT=1 << 7
 button.LB=1 << 8
 button.RB=1 << 9
----@return integer
+---@return None
 function button.state(...) end
----@return boolean
+---@return None
 function button.pressed(...) end
----@return boolean
+---@return None
 function button.released(...) end
----@return boolean
+---@return None
 function button.just_pressed(...) end
----@return boolean
+---@return None
 function button.just_released(...) end
 axis={}
 axis.MAX=6
@@ -88,21 +92,21 @@ axis.RIGHTX=2
 axis.RIGHTY=3
 axis.RT=4
 axis.LT=5
----@return number
+---@return None
 function axis.value(...) end
 cursor={}
----@return number
+---@return None
 function cursor.x(...) end
----@return number
+---@return None
 function cursor.y(...) end
----@return nil
+---@return None
 function cursor.set(...) end
 io={}
----@return integer
+---@return None
 function io.cart_begin(...) end
----@return integer
+---@return None
 function io.cart_end(...) end
----@return integer
+---@return None
 function io.write_cart_file(...) end
 controller={}
 controller.MAX=4
@@ -111,155 +115,161 @@ name.MAX=64
 disk={}
 disk.MAX=8
 lua={}
----@return integer
+---@return None
 function lua.load(...) end
 transform={}
----@return nil
+---@return None
 function transform.add(...) end
----@return nil
+---@return None
 function transform.remove(...) end
----@return nil
+---@return None
 function transform.set_parent(...) end
 ---@return None
 function transform.get_parent(...) end
----@return Userdata
+---@return None
 function transform.get_local_translation(...) end
----@return Userdata
+---@return None
 function transform.get_local_rotation(...) end
----@return Userdata
+---@return None
 function transform.get_local_scale(...) end
----@return Userdata
+---@return None
 function transform.get_translation(...) end
----@return Userdata
+---@return None
 function transform.get_rotation(...) end
----@return Userdata
+---@return None
 function transform.get_scale(...) end
----@return nil
+---@return None
 function transform.set_translation(...) end
----@return nil
+---@return None
 function transform.set_rotation(...) end
----@return nil
+---@return None
 function transform.set_rotation_euler(...) end
----@return nil
+---@return None
 function transform.set_scale(...) end
----@return nil
+---@return None
 function transform.set_ortho(...) end
----@return Userdata
+---@return None
 function transform.forward(...) end
----@return Userdata
+---@return None
 function transform.backward(...) end
----@return Userdata
+---@return None
 function transform.left(...) end
----@return Userdata
+---@return None
 function transform.right(...) end
----@return Userdata
+---@return None
 function transform.up(...) end
----@return Userdata
+---@return None
 function transform.down(...) end
----@return nil
+---@return None
 function transform.rotate(...) end
----@return nil
+---@return None
 function transform.rotate_x(...) end
----@return nil
+---@return None
 function transform.rotate_y(...) end
----@return nil
+---@return None
 function transform.rotate_z(...) end
----@return nil
+---@return None
 function transform.look_at(...) end
-camera={}
----@return nil
-function camera.add(...) end
----@return nil
-function camera.remove(...) end
----@return nil
-function camera.set_fov(...) end
----@return nil
-function camera.set_near(...) end
----@return nil
-function camera.set_far(...) end
-staticmesh={}
----@return nil
-function staticmesh.add(...) end
----@return nil
-function staticmesh.remove(...) end
----@return nil
-function staticmesh.set_mesh(...) end
----@return nil
-function staticmesh.set_texture(...) end
----@return nil
-function staticmesh.set_colormap(...) end
 ecs={}
----@return integer
+---@return None
 function ecs.new_iter(...) end
----@return nil
+---@return None
+function ecs.new_iter_any(...) end
+---@return None
 function ecs.includes(...) end
----@return nil
+---@return None
 function ecs.excludes(...) end
----@return integer
+---@return None
 function ecs.next(...) end
----@return integer
+---@return None
 function ecs.new(...) end
----@return integer
+---@return None
 function ecs.set_active(...) end
----@return integer
-function ecs.load_gltf(...) end
+---@return None
+function ecs.get_active(...) end
 ---@return None
 function ecs.create(...) end
----@return nil
+---@return None
 function ecs.create_at(...) end
----@return nil
+---@return None
 function ecs.delete(...) end
----@return boolean
+---@return None
 function ecs.valid(...) end
----@return integer
+---@return None
 function ecs.count(...) end
----@return nil
+---@return None
 function ecs.clear(...) end
----@return nil
+---@return None
 function ecs.remove(...) end
----@return boolean
+---@return None
 function ecs.has(...) end
+---@return None
+function ecs.instantiate(...) end
+---@return None
+function ecs.load_gltf(...) end
 texture={}
 texture.IMAGE_RGBA=0
 texture.IMAGE_INDEX=1
 texture.RENDER_TARGET=2
----@return integer
+---@return None
 function texture.new(...) end
----@return nil
+---@return None
 function texture.blit(...) end
 mesh={}
----@return integer
+---@return None
 function mesh.new(...) end
----@return integer
+---@return None
 function mesh.new_cube(...) end
----@return nil
+---@return None
 function mesh.update_bounds(...) end
----@return Userdata
+---@return None
 function mesh.bounds_min(...) end
----@return Userdata
+---@return None
 function mesh.bounds_max(...) end
 canvas={}
 canvas.WIDTH=640
 canvas.HEIGHT=400
----@return integer
+---@return None
 function canvas.new(...) end
----@return integer
+---@return None
 function canvas.get_texture(...) end
----@return nil
+---@return None
 function canvas.set_layer(...) end
----@return nil
+---@return None
 function canvas.set_clear_color(...) end
----@return nil
+---@return None
 function canvas.text(...) end
----@return nil
+---@return None
 function canvas.rectangle(...) end
 graphics={}
----@return nil
+---@return None
 function graphics.draw_line_tr(...) end
----@return nil
+---@return None
 function graphics.draw_line(...) end
----@return nil
+---@return None
 function graphics.draw_dir(...) end
+camera={}
+---@return None
+function camera.add(...) end
+---@return None
+function camera.remove(...) end
+---@return None
+function camera.set_fov(...) end
+---@return None
+function camera.set_near(...) end
+---@return None
+function camera.set_far(...) end
+staticmesh={}
+---@return None
+function staticmesh.add(...) end
+---@return None
+function staticmesh.remove(...) end
+---@return None
+function staticmesh.set_mesh(...) end
+---@return None
+function staticmesh.set_texture(...) end
+---@return None
+function staticmesh.set_colormap(...) end
 palette={}
 palette.SIZE=256
 colormap={}
@@ -280,21 +290,21 @@ vertex.V3F=0
 vertex.V3F_T2F=1
 vertex.V3F_T2F_N3F=2
 rigidbody={}
----@return nil
+---@return None
 function rigidbody.add(...) end
----@return nil
+---@return None
 function rigidbody.remove(...) end
----@return nil
+---@return None
 function rigidbody.set_velocity(...) end
 collider={}
 collider.SPHERE=0
 collider.AABB=1
----@return nil
+---@return None
 function collider.add_sphere(...) end
----@return nil
+---@return None
 function collider.add_aabb(...) end
----@return nil
+---@return None
 function collider.remove(...) end
 physics={}
----@return Userdata
+---@return None
 function physics.raycast(...) end

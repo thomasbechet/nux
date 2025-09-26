@@ -22,5 +22,6 @@ typedef struct
 } nux_base_module_t;
 
 nux_base_module_t *nux_base_module(void);
+nux_status_t       nux_resource_init(void);
 
 #endif

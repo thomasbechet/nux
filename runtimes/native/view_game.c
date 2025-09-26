@@ -36,7 +36,7 @@ view_game (struct nk_context *ctx, struct nk_rect bounds)
     // }
     // nk_end(ctx);
 
-    if (!runtime.ctx)
+    if (!runtime.instance)
     {
         if (nk_begin(ctx,
                      "Welcome",

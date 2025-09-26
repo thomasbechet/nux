@@ -1,108 +1,124 @@
 #include "internal.h"
 
-{% set checkmap = {
-    "nux_i8_t": "luaL_checknumber",
-    "nux_u8_t": "luaL_checknumber",
-    "nux_i32_t": "luaL_checknumber",
-    "nux_u32_t": "luaL_checknumber",
-    "nux_f32_t": "luaL_checknumber",
-} %}
-
-{% set retmap = {
-    "nux_i8_t": "lua_pushinteger",
-    "nux_u8_t": "lua_pushinteger",
-    "nux_b32_t": "lua_pushboolean",
-    "nux_i32_t": "lua_pushinteger",
-    "nux_u32_t": "lua_pushinteger",
-    "nux_f32_t": "lua_pushnumber",
-    "nux_status_t": "lua_pushinteger"
-} %}
-
-static void l_checkerror(lua_State *L, nux_ctx_t *ctx)
+static void l_checkerror(lua_State *L)
 {
-    if (!nux_error_get_status(ctx))
+    if (!nux_error_get_status())
     {
-        luaL_error(L, nux_error_get_message(ctx));
+        luaL_error(L, nux_error_get_message());
     }
 }
+
+{% set resmap = {
+    "arena": "NUX_RESOURCE_ARENA",
+    "texture": "NUX_RESOURCE_TEXTURE",
+    "mesh": "NUX_RESOURCE_MESH",
+    "canvas": "NUX_RESOURCE_CANVAS",
+    "ecs": "NUX_RESOURCE_ECS",
+    "ecs_iter": "NUX_RESOURCE_ECS_ITER",
+} %}
 
 {% for module_name, module in modules.items() %}
 {% for function in module.functions %}
 static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
 {
+    {# ARGUMENTS #}
     {%- set ns = namespace(stack = 1) %}
-    nux_ctx_t *ctx = lua_getuserdata(L);
     {%- for arg in function.args -%}
-        {%- if arg.typename == "nux_v3_t" %}
-            nux_v3_t {{ arg.name }} = nux_lua_check_vec3(L, {{ ns.stack + 0}});
+        {%- if arg.typename.type == "primitive" %}
+            {%- if arg.typename.name == "v3" %}
+                nux_v3_t {{ arg.name }} = nux_lua_check_vec3(L, {{ ns.stack + 0}});
+                {% set ns.stack = ns.stack + 1 %}
+            {%- elif arg.typename.name == "m4" %}
+                nux_m4_t {{ arg.name }} = nux_lua_check_mat4(L, {{ ns.stack + 0}});
+                {% set ns.stack = ns.stack + 1 %}
+            {%- elif arg.typename.name == "q4" %}
+                nux_q4_t {{ arg.name }};
+                {{ arg.name }}.x = luaL_checknumber(L, {{ ns.stack + 0 }});
+                {{ arg.name }}.y = luaL_checknumber(L, {{ ns.stack + 1 }});
+                {{ arg.name }}.z = luaL_checknumber(L, {{ ns.stack + 2 }});
+                {{ arg.name }}.w = luaL_checknumber(L, {{ ns.stack + 3 }});
+                {% set ns.stack = ns.stack + 4 %}
+            {%- elif arg.typename.name == "c8" %}
+                const nux_c8_t *{{ arg.name }} = luaL_checkstring(L, {{ ns.stack }});
+                {% set ns.stack = ns.stack + 1 %}
+            {%- elif arg.typename.name == "rid" %}
+                nux_rid_t {{ arg.name }} = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, {{ ns.stack }});
+                {% set ns.stack = ns.stack + 1 %}
+            {%- elif arg.typename.name != "void" %}
+                nux_{{ arg.typename.name }}_t {{ arg.name }} = luaL_checknumber(L, {{ ns.stack }});
+                {% set ns.stack = ns.stack + 1 %}
+            {% endif %}
+        {%- elif arg.typename.type == "resource" %}
+            nux_{{ arg.typename.name }}_t *{{ arg.name}} = nux_resource_check({{ resmap.get(arg.typename.name) }}, luaL_checkinteger(L, {{ ns.stack }}));
             {% set ns.stack = ns.stack + 1 %}
-        {%- elif arg.typename == "nux_m4_t" %}
-            nux_m4_t {{ arg.name }} = nux_lua_check_mat4(L, {{ ns.stack + 0}});
-            {% set ns.stack = ns.stack + 1 %}
-        {%- elif arg.typename == "nux_q4_t" %}
-            nux_q4_t {{ arg.name }};
-            {{ arg.name }}.x = luaL_checknumber(L, {{ ns.stack + 0 }});
-            {{ arg.name }}.y = luaL_checknumber(L, {{ ns.stack + 1 }});
-            {{ arg.name }}.z = luaL_checknumber(L, {{ ns.stack + 2 }});
-            {{ arg.name }}.w = luaL_checknumber(L, {{ ns.stack + 3 }});
-            {% set ns.stack = ns.stack + 4 %}
-        {%- elif arg.typename == "nux_c8_t" and arg.isptr %}
-            const nux_c8_t *{{ arg.name }} = luaL_checkstring(L, {{ ns.stack }});
-            {% set ns.stack = ns.stack + 1 %}
-        {%- elif arg.typename == "nux_rid_t" %}
-            nux_rid_t {{ arg.name }} = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, {{ ns.stack }});
-            {% set ns.stack = ns.stack + 1 %}
-        {%- else %}
-            {{ arg.typename }} {{ arg.name }} = {{ checkmap.get(arg.typename, "luaL_checkinteger") }}(L, {{ ns.stack }});
-            {% set ns.stack = ns.stack + 1 %}
-        {% endif %}
+        {%- endif %}
     {%- endfor -%}
-    {%- if function.returntype != "void" %}
-        {{ function.returntype }} ret =
-    {% endif %}{{ "nux_" + module_name if module_name != "core" else "nux" }}_{{ function.name }}(ctx
-    {%- for arg in function.args -%}
-        , {{ arg.name }}
-    {%- endfor -%}
+
+    {# RETURN VALUE #}
+    {%- if function.typename.name != "void" %}
+        {%- if function.typename.type == "primitive" %}
+            nux_{{ function.typename.name }}_t ret =
+        {%- elif function.typename.type == "resource" %}
+            const nux_{{ function.typename.name }}_t *ret =
+        {%- endif %}
+    {% endif %}
+
+    {# FUNCTION CALL #}
+    {{ "nux_" + module_name if module_name != "core" else "nux" }}_{{ function.name }}(
+        {%- for arg in function.args -%}
+            {{ arg.name }}{{ "," if not loop.last }}
+        {%- endfor -%}
     );
-    l_checkerror(L, ctx);
-    {%- if function.returntype == "const nux_c8_t*" %}
-        lua_pushstring(L, ret);
-        return 1;
-    {%- elif function.returntype == "nux_v3_t" %}
-        nux_lua_push_vec3(L, ret);
-        return 1;
-    {%- elif function.returntype == "nux_m4_t" %}
-        nux_lua_push_mat4(L, ret);
-        return 1;
-    {%- elif function.returntype == "nux_q4_t" %}
-        lua_pushnumber(L, ret.x);
-        lua_pushnumber(L, ret.y);
-        lua_pushnumber(L, ret.z);
-        lua_pushnumber(L, ret.w);
-        return 4;
-    {%- elif function.returntype == "nux_rid_t" %}
-        if (ret)
-            lua_pushinteger(L, (nux_intptr_t)ret);
+    l_checkerror(L);
+
+    {# RETURN VALUE #}
+    {%- if function.typename.type == "primitive" %}
+        {%- if function.typename.name in ["i8", "u8", "i32", "u32", "u64", "status"] %}
+            lua_pushinteger(L, ret);
+            return 1;
+        {%- elif function.typename.name in ["f32"] %}
+            lua_pushnumber(L, ret);
+            return 1;
+        {%- elif function.typename.name in ["b32"] %}
+            lua_pushboolean(L, ret);
+            return 1;
+        {%- elif function.typename.name == "c8" %}
+            lua_pushstring(L, ret);
+            return 1;
+        {%- elif function.typename.name in ["rid", "eid"] %}
+            if (ret)
+                lua_pushinteger(L, (nux_intptr_t)ret);
+            else
+                lua_pushnil(L);
+            return 1;
+        {%- elif function.typename.name == "v3" %}
+            nux_lua_push_vec3(L, ret);
+            return 1;
+        {%- elif function.typename.name == "m4" %}
+            nux_lua_push_mat4(L, ret);
+            return 1;
+        {%- elif function.typename.name == "q4" %}
+            lua_pushnumber(L, ret.x);
+            lua_pushnumber(L, ret.y);
+            lua_pushnumber(L, ret.z);
+            lua_pushnumber(L, ret.w);
+            return 4;
+        {%- elif function.typename.name == "raycast_hit" %}
+            if (ret.e)
+                nux_lua_push_hit(L, ret);
+            else
+                lua_pushnil(L);
+            return 1;
+        {%- elif function.typename.name == "void" %}
+            return 0;
+        {%- endif %}
+    {%- elif function.typename.type == "resource" %}
+        nux_rid_t ret_rid = nux_resource_get_rid(ret);
+        if (ret_rid)
+            lua_pushinteger(L, ret_rid);
         else
             lua_pushnil(L);
         return 1;
-    {%- elif function.returntype == "nux_eid_t" %}
-        if (ret)
-            lua_pushinteger(L, (nux_intptr_t)ret);
-        else
-            lua_pushnil(L);
-        return 1;
-    {%- elif function.returntype == "nux_raycast_hit_t" %}
-        if (ret.e)
-            nux_lua_push_hit(L, ret);
-        else
-            lua_pushnil(L);
-        return 1;
-    {%- elif function.returntype != "void" %}
-        {{ retmap.get(function.returntype, "lua_pushinteger") }}(L, ret);
-        return 1;
-    {%- else %}
-        return 0;
     {%- endif %}
 }
 {%- endfor %}
@@ -119,9 +135,9 @@ static const struct luaL_Reg lib_{{ module_name }}[] = {
 };
 {% endfor %}
 
-nux_status_t nux_lua_open_api(nux_ctx_t *ctx)
+nux_status_t nux_lua_open_api(void)
 {
-    lua_State *L = ctx->lua->L;
+    lua_State *L = nux_lua_module()->L;
 {% for module_name, module in modules.items() %}
     lua_newtable(L);
     luaL_setfuncs(L, lib_{{ module_name }}, 0);

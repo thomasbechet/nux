@@ -56,6 +56,29 @@ nux_resource_register (nux_u32_t index, nux_u32_t size, const nux_c8_t *name)
     return resource;
 }
 
+nux_status_t
+nux_resource_init (void)
+{
+    nux_base_module_t   *module = nux_base_module();
+    nux_resource_pool_t *pool   = &module->resources;
+    // Create core arena
+    nux_arena_t core_arena;
+    nux_arena_init(&core_arena);
+    // Create resource pool
+    NUX_CHECK(nux_resource_pool_init(&core_arena, pool), return NUX_FAILURE);
+    // Reserve index 0 for null id
+    nux_resource_pool_add(pool);
+    // Reserve index 1 for core arena
+    module->core_arena = nux_resource_new(&core_arena, NUX_RESOURCE_ARENA);
+    NUX_CHECK(module->core_arena, return NUX_FAILURE);
+    *module->core_arena = core_arena;
+    // Patch core arena resource to reference itself
+    pool->data[1].arena = module->core_arena;
+    // Patch resource pool freelist to reference new core arena
+    module->resources.freelist.arena = module->core_arena;
+    return NUX_SUCCESS;
+}
+
 void *
 nux_resource_new (nux_arena_t *arena, nux_u32_t type)
 {
@@ -141,10 +164,8 @@ nux_resource_set_name (nux_rid_t rid, const nux_c8_t *name)
                name);
     nux_resource_entry_t *entry = check_entry(rid, NUX_NULL);
     NUX_CHECK(entry, return);
-    nux_arena_t *arena = entry->arena ? entry->arena : nux_arena_core();
-    NUX_ASSERT(arena);
-    entry->name = nux_arena_alloc_string(arena, name);
-    NUX_CHECK(entry->name, return);
+    entry->name = nux_arena_alloc_string(entry->arena, name);
+    NUX_ASSERT(entry->name);
 }
 const nux_c8_t *
 nux_resource_get_name (nux_rid_t rid)
@@ -225,8 +246,9 @@ nux_resource_next (nux_u32_t type, nux_rid_t rid)
     return NUX_NULL;
 }
 nux_rid_t
-nux_resource_get_rid (void *data)
+nux_resource_get_rid (const void *data)
 {
-    nux_resource_header_t *header = ((nux_resource_header_t *)data) - 1;
+    const nux_resource_header_t *header
+        = ((const nux_resource_header_t *)data) - 1;
     return header->rid;
 }

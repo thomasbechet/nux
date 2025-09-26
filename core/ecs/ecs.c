@@ -251,6 +251,7 @@ nux_ecs_new (nux_arena_t *arena)
     nux_ecs_module_t *module = nux_ecs_module();
     nux_ecs_t        *ecs    = nux_resource_new(arena, NUX_RESOURCE_ECS);
     NUX_CHECK(ecs, return NUX_NULL);
+    ecs->arena = arena;
     NUX_CHECK(nux_ecs_container_vec_init_capa(
                   arena, module->components_max, &ecs->containers),
               return NUX_NULL);

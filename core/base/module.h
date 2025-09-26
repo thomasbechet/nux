@@ -722,7 +722,7 @@ void                *nux_resource_get(nux_u32_t type, nux_rid_t rid);
 void                *nux_resource_check(nux_u32_t type, nux_rid_t rid);
 nux_status_t         nux_resource_reload(nux_rid_t rid);
 nux_rid_t            nux_resource_next(nux_u32_t type, nux_rid_t rid);
-nux_rid_t            nux_resource_get_rid(void *data);
+nux_rid_t            nux_resource_get_rid(const void *data);
 
 // arena.c
 

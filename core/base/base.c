@@ -11,10 +11,6 @@ nux_base_init (void *userdata)
     module->running = NUX_TRUE;
     nux_error_reset();
 
-    // Create core arena
-    nux_arena_t core_arena;
-    nux_arena_init(&core_arena);
-
     // Register base types
     nux_resource_type_t *type;
     type = nux_resource_register(NUX_RESOURCE_NULL, 0, "null");
@@ -24,24 +20,12 @@ nux_base_init (void *userdata)
     type          = nux_resource_register(
         NUX_RESOURCE_EVENT, sizeof(nux_event_t), "event");
 
-    // Create resource pool
-    NUX_CHECK(nux_resource_pool_init(&core_arena, &module->resources),
-              return NUX_FAILURE);
-    // Reserve index 0 for null id
-    nux_resource_pool_add(&module->resources);
-
-    // Register core arena
-    module->core_arena = nux_resource_new(&core_arena, NUX_RESOURCE_ARENA);
-    NUX_ASSERT(module->core_arena);
-    nux_memcpy(module->core_arena, &core_arena, sizeof(core_arena));
-    nux_resource_set_name(nux_resource_get_rid(module->core_arena),
-                          "core_arena");
+    // Initialize resources with core arena
+    NUX_CHECK(nux_resource_init(), return NUX_FAILURE);
 
     // Create frame arena
     module->frame_arena = nux_arena_new(module->core_arena);
     NUX_ASSERT(module->frame_arena);
-    nux_resource_set_name(nux_resource_get_rid(module->frame_arena),
-                          "frame_arena");
 
     // Initialize system state
     module->error_enable = NUX_TRUE;

@@ -22,37 +22,61 @@ def get_name_and_module(modules, fullname):
         modules[module_name] = module
     return modules[module_name], parts[-1]
 
+def normalize_typenme(typename):
+    if typename != "void":
+        typename = typename[4:-2]
+    return typename
+
 def parse_function(node, modules):
-    if type(node.type) == c_parser.c_ast.PtrDecl:
-        params = node.args.params
-        node = node.type
-    else:
-        params = node.args.params
-    module, name = get_name_and_module(modules, node.type.declname)
+    funcname = ""
+    typename = {}
+    params = []
+    if type(node.type) == c_parser.c_ast.PtrDecl: # Return pointer
+        funcname = node.type.type.declname
+        typename["name"] = normalize_typenme(node.type.type.type.names[0])
+        typename["type"] = "resource"
+        typename["const"] = True
+        if node.args:
+            params = node.args.params
+    elif type(node.type) == c_parser.c_ast.TypeDecl: # Return value
+        funcname = node.type.declname 
+        typename["name"] = normalize_typenme(node.type.type.names[0])
+        typename["type"] = "primitive"
+        typename["const"] = True
+        if node.args:
+            params = node.args.params
+        
+    # print(f"{funcname}: {typename}")
+
+    module, name = get_name_and_module(modules, funcname)
     func = {}
-    # print(node.type)
     func["name"] = name
-    # Return string type
-    if node.type.type.names[0] == "nux_c8_t" and node.type.quals[0] == "const":
-        func["returntype"] = "const nux_c8_t*"
-    else:
-        func["returntype"] = node.type.type.names[0]
+    func["typename"] = typename
     func["args"] = []
-    for param in params[1:]:
+    for param in params:
         if (isinstance(param, c_ast.EllipsisParam)):
             # Ignore functions with variadics
             return
         arg = {}
         arg["name"] = param.name
+        typename = {}
         if type(param.type) is c_ast.PtrDecl:
-            arg["isptr"] = True
+            typename["name"] = normalize_typenme(param.type.type.type.names[0])
+            typename["type"] = "resource" 
+            typename["const"] = False
+            if typename["name"] == "c8": # Special string case
+                typename["type"] = "primitive"
+                typename["const"] = True
             if param.quals:
-                arg["isconst"] = True
-            arg["typename"] = param.type.type.type.names[0]
+                typename["const"] = True
         else:
-            arg["typename"] = param.type.type.names[0]
-            arg["isptr"] = False
-        func["args"].append(arg)
+            typename["name"] = normalize_typenme(param.type.type.names[0])
+            typename["type"] = "primitive"
+            typename["const"] = True
+        arg["typename"] = typename
+        if typename["name"] != "void":
+            func["args"].append(arg)
+
     module["functions"].append(func)
 
 def parse_enum(node, modules):
@@ -110,8 +134,6 @@ def parse_header(args, header, modules):
 
         typedef int nux_status_t;
         
-        typedef struct nux_context nux_ctx_t;
-        
         typedef union
         {
             struct
@@ -160,8 +182,15 @@ def parse_header(args, header, modules):
         } nux_m4_t;
     """
 
+    # Append resource types
+    for typename in [
+        'nux_arena_t'
+        ]:
+        prelude += f"\ntypedef struct {typename} {typename};"
+
     fixed = "\n".join([line if not re.findall("//|#include|#ifdef|#ifndef|#else|#endif|#define", line) else "" for line in src.splitlines()])
-    ast = c_parser.CParser().parse(prelude + fixed)
+    final = prelude + fixed
+    ast = c_parser.CParser().parse(final)
     v = FuncDefVisitor(modules)
     v.visit(ast)
     v = TypeDefVisitor(modules)

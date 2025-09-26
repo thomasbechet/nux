@@ -662,7 +662,7 @@ register_metatable (lua_State *L)
 }
 
 nux_status_t
-nux_lua_open_vmath (nux_ctx_t *ctx)
+nux_lua_open_vmath (void)
 {
     static const struct luaL_Reg vmath_lib[]
         = { { "vec2", math_vec2 },     { "vec3", math_vec3 },
@@ -671,7 +671,7 @@ nux_lua_open_vmath (nux_ctx_t *ctx)
             { "length", math_length }, { "add", math_add },
             { "sub", math_sub },       { "mul", math_mul },
             { "div", math_div },       { NULL, NULL } };
-    lua_State *L = ctx->lua->L;
+    lua_State *L = nux_lua_module()->L;
     register_metatable(L);
     lua_newtable(L);
     luaL_setfuncs(L, vmath_lib, 0);

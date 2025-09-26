@@ -101,7 +101,7 @@ typedef struct
 
     int             fps;
     char            path[PATH_MAX_LEN];
-    nux_ctx_t      *ctx;
+    nux_instance_t *instance;
     struct nk_rect  viewport_ui;
     viewport_mode_t viewport_mode;
     struct nk_rect  viewport;

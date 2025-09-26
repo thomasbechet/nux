@@ -1,14 +1,15 @@
 function M:on_load()
-    self.arena = resource.find("core_arena")
+    self.arena = arena.core()
     self.time = 0
     self.pos = vmath.vec3(0, 10, 0)
     self.mesh = mesh.new_cube(self.arena, 1, 1, 1)
-    self.force = 50 
+    self.force = 50
     self.interval = 0.5
     self.count = 0
 end
 
 function M:on_update()
+    self.force = 10
     self.time = self.time + time.delta()
     if self.time > self.interval then
         local e = ecs.create()
