@@ -6,8 +6,18 @@ ecs_writer_callback (void *userdata, const nux_serde_value_t *v)
     nux_ecs_writer_t *s = userdata;
     if (v->type == NUX_SERDE_EID)
     {
+        nux_eid_t eid       = *v->u32;
+        nux_u32_t eid_index = NUX_EID_INDEX(eid);
+        nux_u32_t index
+            = eid_index < s->entity_count ? s->entity_map[eid_index] : NUX_NULL;
+        nux_serde_value_t value = *v;
+        value.u32               = &index;
+        nux_serde_write(s->output, v);
     }
-    nux_serde_write(s->output, v);
+    else
+    {
+        nux_serde_write(s->output, v);
+    }
     return NUX_SUCCESS;
 }
 static nux_status_t
@@ -26,13 +36,10 @@ nux_ecs_writer_init (nux_ecs_writer_t   *s,
                      nux_serde_writer_t *output,
                      nux_ecs_t          *ecs)
 {
-    s->ecs                 = ecs;
-    s->output              = output;
-    nux_u32_t entity_count = nux_ecs_count();
+    s->ecs        = ecs;
+    s->output     = output;
+    s->entity_map = NUX_NULL;
     nux_serde_writer_init(&s->writer, s, ecs_writer_callback);
-    s->entity_map = nux_arena_malloc(nux_arena_frame(),
-                                     sizeof(*s->entity_map) * entity_count);
-    NUX_CHECK(s->entity_map, return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -50,21 +57,41 @@ nux_status_t
 nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
 {
     nux_ecs_module_t *module = nux_ecs_module();
+    nux_ecs_set_active(ecs);
+
+    nux_ecs_iter_t *iter = nux_ecs_new_iter_any(nux_arena_frame());
+    NUX_CHECK(iter, return NUX_FAILURE);
+
+    nux_u32_t entity_count = nux_ecs_count();
+    // TODO: no entities case ?
+    nux_u32_t *entity_map = nux_arena_malloc(
+        nux_arena_frame(), sizeof(*entity_map) * entity_count);
+    NUX_CHECK(entity_map, return NUX_FAILURE);
 
     nux_ecs_writer_t writer;
     nux_ecs_writer_init(&writer, s, ecs);
-    s = &writer.writer;
+    writer.entity_map   = entity_map;
+    writer.entity_count = entity_count;
+    s                   = &writer.writer;
 
-    nux_ecs_iter_t *iter = nux_ecs_new_iter_any(nux_arena_frame());
-    nux_ecs_set_active(ecs);
-    NUX_CHECK(iter, goto error);
+    // 1. Fill entity map (global index to local index)
+    nux_eid_t it    = NUX_NULL;
+    nux_u32_t index = 0;
+    while ((it = nux_ecs_next(iter, it)))
+    {
+        writer.entity_map[NUX_EID_INDEX(it)] = index;
+        ++index;
+    }
+
+    // 2. Iterate over entities and write components
     nux_serde_write_object(s, key);
     nux_serde_write_array(s, "entities", nux_ecs_count());
-    nux_eid_t e = NUX_NULL;
+    nux_eid_t e            = NUX_NULL;
+    nux_u32_t entity_index = 0;
     while ((e = nux_ecs_next(iter, e)))
     {
         nux_serde_write_object(s, NUX_NULL);
-        nux_serde_write_u32(s, "id", e);
+        nux_serde_write_u32(s, "id", writer.entity_map[NUX_EID_INDEX(e)]);
         for (nux_u32_t c = 0; c < module->components_max; ++c)
         {
             nux_ecs_component_t *comp = module->components + c;
@@ -77,10 +104,12 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
             {
                 if (comp->write)
                 {
+                    // Write component
                     NUX_CHECK(comp->write(s, comp->name, data), goto error);
                 }
                 else
                 {
+                    // Write empty object
                     nux_serde_write_object(s, comp->name);
                     nux_serde_write_end(s);
                 }

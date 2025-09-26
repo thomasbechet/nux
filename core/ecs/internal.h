@@ -3,6 +3,9 @@
 
 #include "module.h"
 
+#define NUX_EID_INDEX(id)   (id - 1)
+#define NUX_EID_MAKE(index) (index + 1)
+
 typedef struct
 {
     nux_ecs_t          *active;

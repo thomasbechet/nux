@@ -4,9 +4,6 @@ NUX_VEC_IMPL(nux_ecs_bitset, nux_ecs_mask_t);
 NUX_VEC_IMPL(nux_ecs_chunk_vec, void *);
 NUX_VEC_IMPL(nux_ecs_container_vec, nux_ecs_container_t);
 
-#define ID_INDEX(id)   (id - 1)
-#define ID_MAKE(index) (index + 1)
-
 static void
 ecs_mask_set (nux_ecs_mask_t *mask, nux_u32_t n)
 {
@@ -230,7 +227,7 @@ ecs_iter_next (const nux_ecs_t *ins, nux_ecs_iter_t *it)
     }
     it->mask >>= 1;
     nux_u32_t offset = it->mask_offset++;
-    return ID_MAKE(it->mask_index * ECS_ENTITY_PER_MASK + offset);
+    return NUX_EID_MAKE(it->mask_index * ECS_ENTITY_PER_MASK + offset);
 }
 nux_u32_t
 nux_ecs_next (nux_ecs_iter_t *it, nux_eid_t e)
@@ -300,7 +297,7 @@ nux_ecs_create (void)
         index = ecs->bitset.size * ECS_ENTITY_PER_MASK;
     }
     NUX_CHECK(ecs_bitset_set(&ecs->bitset, index), return NUX_NULL);
-    return ID_MAKE(index);
+    return NUX_EID_MAKE(index);
 }
 void
 nux_ecs_create_at (nux_eid_t e)
@@ -311,18 +308,18 @@ nux_ecs_create_at (nux_eid_t e)
     {
         return;
     }
-    ecs_bitset_set(&ecs->bitset, ID_INDEX(e));
+    ecs_bitset_set(&ecs->bitset, NUX_EID_INDEX(e));
 }
 void
 nux_ecs_delete (nux_eid_t e)
 {
     nux_ecs_t *ecs   = nux_ecs_get_active();
-    nux_u32_t  index = ID_INDEX(e);
+    nux_u32_t  index = NUX_EID_INDEX(e);
 
     // remove from components
     for (nux_u32_t i = 0; i < ecs->containers.size; ++i)
     {
-        nux_ecs_remove(e, ID_MAKE(i));
+        nux_ecs_remove(e, NUX_EID_MAKE(i));
     }
 
     // mask entity as invalid
@@ -332,7 +329,7 @@ nux_b32_t
 nux_ecs_valid (nux_eid_t e)
 {
     nux_ecs_t *ecs   = nux_ecs_get_active();
-    nux_u32_t  index = ID_INDEX(e);
+    nux_u32_t  index = NUX_EID_INDEX(e);
     return ecs_bitset_isset(&ecs->bitset, index);
 }
 nux_u32_t
@@ -357,7 +354,7 @@ nux_ecs_add (nux_eid_t e, nux_u32_t c)
 {
     nux_ecs_module_t *module = nux_ecs_module();
     nux_ecs_t        *ecs    = module->active;
-    nux_u32_t         index  = ID_INDEX(e);
+    nux_u32_t         index  = NUX_EID_INDEX(e);
 
     const nux_ecs_component_t *component = module->components + c;
 
@@ -418,7 +415,7 @@ void
 nux_ecs_remove (nux_eid_t e, nux_u32_t c)
 {
     nux_ecs_t           *ecs       = nux_ecs_get_active();
-    nux_u32_t            index     = ID_INDEX(e);
+    nux_u32_t            index     = NUX_EID_INDEX(e);
     nux_ecs_container_t *container = ecs->containers.data + c;
     ecs_bitset_unset(&container->bitset, index);
 }
@@ -428,7 +425,7 @@ nux_ecs_has (nux_eid_t e, nux_u32_t c)
     NUX_ASSERT(e);
     NUX_ASSERT(c);
     nux_ecs_t           *ecs       = nux_ecs_get_active();
-    nux_u32_t            index     = ID_INDEX(e);
+    nux_u32_t            index     = NUX_EID_INDEX(e);
     nux_ecs_container_t *container = ecs->containers.data + c;
     return ecs_bitset_isset(&container->bitset, index);
 }
@@ -442,7 +439,7 @@ nux_ecs_get (nux_eid_t e, nux_u32_t c)
         return NUX_NULL;
     }
     nux_ecs_t           *ecs       = nux_ecs_get_active();
-    nux_u32_t            index     = ID_INDEX(e);
+    nux_u32_t            index     = NUX_EID_INDEX(e);
     nux_u32_t            mask      = index / ECS_ENTITY_PER_MASK;
     nux_u32_t            offset    = index % ECS_ENTITY_PER_MASK;
     nux_ecs_container_t *container = ecs->containers.data + c;

@@ -95,6 +95,7 @@ typedef struct
     nux_serde_writer_t *output;
     nux_serde_writer_t  writer;
     nux_u32_t          *entity_map;
+    nux_u32_t           entity_count;
 } nux_ecs_writer_t;
 
 typedef struct
