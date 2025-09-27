@@ -201,7 +201,7 @@ nux_graphics_update (void)
     }
 
     // Render ECS
-    nux_renderer_render(nux_ecs_get_active());
+    nux_renderer_render(nux_ecs_active());
 
     // Blit canvas layers
     canvas = NUX_NULL;

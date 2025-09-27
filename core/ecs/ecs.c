@@ -281,7 +281,7 @@ nux_ecs_set_active (nux_ecs_t *ecs)
     return NUX_SUCCESS;
 }
 nux_ecs_t *
-nux_ecs_get_active (void)
+nux_ecs_active (void)
 {
     return nux_ecs_module()->active;
 }
@@ -303,7 +303,7 @@ void
 nux_ecs_create_at (nux_eid_t e)
 {
     NUX_CHECK(e, return);
-    nux_ecs_t *ecs = nux_ecs_get_active();
+    nux_ecs_t *ecs = nux_ecs_active();
     if (nux_ecs_valid(e))
     {
         return;
@@ -313,7 +313,7 @@ nux_ecs_create_at (nux_eid_t e)
 void
 nux_ecs_delete (nux_eid_t e)
 {
-    nux_ecs_t *ecs   = nux_ecs_get_active();
+    nux_ecs_t *ecs   = nux_ecs_active();
     nux_u32_t  index = NUX_EID_INDEX(e);
 
     // remove from components
@@ -328,20 +328,20 @@ nux_ecs_delete (nux_eid_t e)
 nux_b32_t
 nux_ecs_valid (nux_eid_t e)
 {
-    nux_ecs_t *ecs   = nux_ecs_get_active();
+    nux_ecs_t *ecs   = nux_ecs_active();
     nux_u32_t  index = NUX_EID_INDEX(e);
     return ecs_bitset_isset(&ecs->bitset, index);
 }
 nux_u32_t
 nux_ecs_count (void)
 {
-    nux_ecs_t *ecs = nux_ecs_get_active();
+    nux_ecs_t *ecs = nux_ecs_active();
     return ecs_bitset_count(&ecs->bitset);
 }
 void
 nux_ecs_clear (void)
 {
-    nux_ecs_t *ecs = nux_ecs_get_active();
+    nux_ecs_t *ecs = nux_ecs_active();
     for (nux_u32_t i = 0; i < ecs->containers.size; ++i)
     {
         nux_ecs_container_t *container = ecs->containers.data + i;
@@ -414,7 +414,7 @@ nux_ecs_add (nux_eid_t e, nux_u32_t c)
 void
 nux_ecs_remove (nux_eid_t e, nux_u32_t c)
 {
-    nux_ecs_t           *ecs       = nux_ecs_get_active();
+    nux_ecs_t           *ecs       = nux_ecs_active();
     nux_u32_t            index     = NUX_EID_INDEX(e);
     nux_ecs_container_t *container = ecs->containers.data + c;
     ecs_bitset_unset(&container->bitset, index);
@@ -424,7 +424,7 @@ nux_ecs_has (nux_eid_t e, nux_u32_t c)
 {
     NUX_ASSERT(e);
     NUX_ASSERT(c);
-    nux_ecs_t           *ecs       = nux_ecs_get_active();
+    nux_ecs_t           *ecs       = nux_ecs_active();
     nux_u32_t            index     = NUX_EID_INDEX(e);
     nux_ecs_container_t *container = ecs->containers.data + c;
     return ecs_bitset_isset(&container->bitset, index);
@@ -438,7 +438,7 @@ nux_ecs_get (nux_eid_t e, nux_u32_t c)
     {
         return NUX_NULL;
     }
-    nux_ecs_t           *ecs       = nux_ecs_get_active();
+    nux_ecs_t           *ecs       = nux_ecs_active();
     nux_u32_t            index     = NUX_EID_INDEX(e);
     nux_u32_t            mask      = index / ECS_ENTITY_PER_MASK;
     nux_u32_t            offset    = index % ECS_ENTITY_PER_MASK;
@@ -449,7 +449,7 @@ nux_ecs_get (nux_eid_t e, nux_u32_t c)
 nux_status_t
 nux_ecs_instantiate (nux_ecs_t *src)
 {
-    nux_ecs_t *dst = nux_ecs_get_active();
+    nux_ecs_t *dst = nux_ecs_active();
 
     return NUX_SUCCESS;
 }

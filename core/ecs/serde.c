@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "io/internal.h"
 
 static nux_status_t
 ecs_writer_callback (void *userdata, const nux_serde_value_t *v)
@@ -56,7 +57,8 @@ nux_ecs_reader_init (nux_ecs_reader_t   *s,
 nux_status_t
 nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
 {
-    nux_ecs_module_t *module = nux_ecs_module();
+    nux_ecs_module_t *module   = nux_ecs_module();
+    nux_ecs_t        *prev_ecs = nux_ecs_active();
     nux_ecs_set_active(ecs);
 
     nux_ecs_iter_t *iter = nux_ecs_new_iter_any(nux_arena_frame());
@@ -67,6 +69,8 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
     nux_u32_t *entity_map = nux_arena_malloc(
         nux_arena_frame(), sizeof(*entity_map) * entity_count);
     NUX_CHECK(entity_map, return NUX_FAILURE);
+
+    NUX_INFO("write %d entities", entity_count);
 
     nux_ecs_writer_t writer;
     nux_ecs_writer_init(&writer, s, ecs);
@@ -117,17 +121,27 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
         }
         nux_serde_write_end(s);
     }
-    nux_serde_write_end(s);
-    nux_serde_write_end(s);
+    nux_serde_write_end(s); // entities
+    nux_serde_write_end(s); // ecs
+
     return NUX_SUCCESS;
 error:
-    nux_ecs_set_active(NUX_NULL);
+    nux_ecs_set_active(prev_ecs);
     return NUX_FAILURE;
 }
 nux_status_t
 nux_ecs_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
 {
     nux_serde_read_object(s, key);
+    nux_u32_t entity_count;
+    nux_serde_read_array(s, "entities", &entity_count);
+    NUX_INFO("entity count %d", entity_count);
+    for (nux_u32_t i = 0; i < entity_count; ++i)
+    {
+        nux_serde_read_object(s, NUX_NULL);
+        nux_serde_read_end(s);
+    }
+    nux_serde_read_end(s); // entities
     nux_serde_read_end(s);
     return NUX_SUCCESS;
 }

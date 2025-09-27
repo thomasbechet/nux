@@ -43,7 +43,7 @@ nux_u32_t       nux_ecs_next(nux_ecs_iter_t *it, nux_eid_t e);
 
 nux_ecs_t   *nux_ecs_new(nux_arena_t *arena);
 nux_status_t nux_ecs_set_active(nux_ecs_t *ecs);
-nux_ecs_t   *nux_ecs_get_active(void);
+nux_ecs_t   *nux_ecs_active(void);
 nux_eid_t    nux_ecs_create(void);
 void         nux_ecs_create_at(nux_eid_t e);
 void         nux_ecs_delete(nux_eid_t e);

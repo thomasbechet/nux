@@ -31,11 +31,12 @@ arena_alloc (nux_arena_t *arena, nux_u32_t size)
             {
                 // allocate new block
                 NUX_ASSERT(arena->block_size);
+                nux_u32_t          block_count = (size / arena->block_size) + 1;
                 nux_arena_block_t *new_block
                     = nux_os_alloc(nux_base_module()->userdata,
                                    NUX_NULL,
                                    0,
-                                   arena->block_size);
+                                   arena->block_size * block_count);
                 NUX_ENSURE(new_block,
                            return NUX_NULL,
                            "failed to allocate new arena block");
@@ -51,7 +52,7 @@ arena_alloc (nux_arena_t *arena, nux_u32_t size)
                 new_block->next   = NUX_NULL;
                 arena->last_block = new_block;
                 arena->head       = (nux_u8_t *)(new_block + 1);
-                arena->end        = arena->head + arena->block_size;
+                arena->end = arena->head + arena->block_size * block_count;
             }
             NUX_ASSERT(arena->head < arena->end);
         }

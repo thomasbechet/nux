@@ -810,7 +810,7 @@ l_ecs_set_active (lua_State *L)
 static int
 l_ecs_get_active (lua_State *L)
 {
-    const nux_ecs_t *ret = nux_ecs_get_active();
+    const nux_ecs_t *ret = nux_ecs_active();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);

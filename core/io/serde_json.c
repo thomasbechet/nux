@@ -166,7 +166,8 @@ json_reader (void *userdata, nux_serde_value_t *v)
         case NUX_SERDE_ARRAY:
             tok = json_find(j, tok, JSMN_ARRAY, v->key);
             NUX_CHECK(tok, return NUX_FAILURE);
-            j->it = tok - (jsmntok_t *)j->tokens;
+            j->it    = tok - (jsmntok_t *)j->tokens;
+            *v->size = tok->size;
             break;
         case NUX_SERDE_END:
             j->it = toks[j->it].parent;
@@ -262,6 +263,8 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
                                     sizeof(jsmntok_t) * old_capa,
                                     sizeof(jsmntok_t) * j->tokens_capa);
         NUX_CHECK(j->tokens, return NUX_FAILURE);
+        r = jsmn_parse(
+            &parser, j->json, j->json_size, j->tokens, j->tokens_capa);
     }
     if (r < 0)
     {
