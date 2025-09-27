@@ -104,6 +104,7 @@ typedef struct
     nux_serde_reader_t *input;
     nux_serde_reader_t  reader;
     nux_u32_t          *entity_map;
+    nux_u32_t           entity_count;
 } nux_ecs_reader_t;
 
 ////////////////////////////

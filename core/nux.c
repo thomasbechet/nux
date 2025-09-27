@@ -183,15 +183,16 @@ nux_instance_update (nux_instance_t *instance)
         nux_json_writer_init(&j, "ecs.json");
         nux_ecs_write(&j.writer, "ecs", nux_ecs_active());
         nux_json_writer_close(&j);
-    }
-    if (!test)
-    {
-        nux_ecs_t        *ecs = nux_ecs_new(nux_arena_core());
-        nux_json_reader_t j;
-        nux_json_reader_init(&j, "ecs.json");
-        NUX_ASSERT(nux_ecs_read(&j.reader, "ecs", nux_ecs_active()));
         test = 1;
     }
+    // if (!test)
+    // {
+    //     nux_ecs_t        *ecs = nux_ecs_new(nux_arena_core());
+    //     nux_json_reader_t j;
+    //     nux_json_reader_init(&j, "ecs.json");
+    //     NUX_ASSERT(nux_ecs_read(&j.reader, "ecs", nux_ecs_active()));
+    //     test = 1;
+    // }
 
     // Hotreload
     if (nux_base_module()->config.hotreload)

@@ -104,13 +104,9 @@ json_writer (void *userdata, const nux_serde_value_t *v)
 static nux_b32_t
 json_equals (const nux_c8_t *json, jsmntok_t *tok, const nux_c8_t *s)
 {
-    if (tok->type == JSMN_STRING
-        && (nux_i32_t)nux_strnlen(s, 256) == tok->end - tok->start
-        && nux_strncmp(json + tok->start, s, tok->end - tok->start) == 0)
-    {
-        return NUX_TRUE;
-    }
-    return NUX_FALSE;
+    return tok->type == JSMN_STRING
+           && ((nux_i32_t)nux_strnlen(s, 256) == tok->end - tok->start)
+           && (nux_strncmp(json + tok->start, s, tok->end - tok->start) == 0);
 }
 static void
 json_nested_skip (const jsmntok_t *toks, nux_i32_t num_tokens, nux_i32_t *i)
@@ -143,6 +139,12 @@ json_find (const nux_json_reader_t *j,
         json_nested_skip(toks, j->tokens_count, &it);
     }
     return NUX_NULL;
+}
+static jsmntok_t *
+json_find_next (const nux_json_reader_t *j,
+                const jsmntok_t         *arr,
+                jsmntype_t               type)
+{
 }
 static nux_status_t
 json_reader (void *userdata, nux_serde_value_t *v)

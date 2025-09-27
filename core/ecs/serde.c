@@ -1,5 +1,4 @@
 #include "internal.h"
-#include "io/internal.h"
 
 static nux_status_t
 ecs_writer_callback (void *userdata, const nux_serde_value_t *v)
@@ -28,6 +27,8 @@ ecs_reader_callback (void *userdata, nux_serde_value_t *v)
     nux_serde_read(s->input, v);
     if (v->type == NUX_SERDE_EID)
     {
+        nux_u32_t index = *v->u32;
+        *v->u32 = index < s->entity_count ? s->entity_map[index] : NUX_NULL;
     }
     return NUX_SUCCESS;
 }
@@ -69,8 +70,6 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
     nux_u32_t *entity_map = nux_arena_malloc(
         nux_arena_frame(), sizeof(*entity_map) * entity_count);
     NUX_CHECK(entity_map, return NUX_FAILURE);
-
-    NUX_INFO("write %d entities", entity_count);
 
     nux_ecs_writer_t writer;
     nux_ecs_writer_init(&writer, s, ecs);
@@ -124,6 +123,7 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
     nux_serde_write_end(s); // entities
     nux_serde_write_end(s); // ecs
 
+    nux_ecs_set_active(prev_ecs);
     return NUX_SUCCESS;
 error:
     nux_ecs_set_active(prev_ecs);
@@ -132,16 +132,51 @@ error:
 nux_status_t
 nux_ecs_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
 {
+    nux_ecs_module_t *module   = nux_ecs_module();
+    nux_ecs_t        *prev_ecs = nux_ecs_active();
+    nux_ecs_set_active(ecs);
+
     nux_serde_read_object(s, key);
     nux_u32_t entity_count;
     nux_serde_read_array(s, "entities", &entity_count);
-    NUX_INFO("entity count %d", entity_count);
+
+    nux_u32_t *entity_map = nux_arena_malloc(
+        nux_arena_frame(), sizeof(*entity_map) * entity_count);
+    NUX_CHECK(entity_map, goto error);
+
+    nux_ecs_reader_t reader;
+    nux_ecs_reader_init(&reader, s, ecs);
+    reader.entity_map   = entity_map;
+    reader.entity_count = entity_count;
+    s                   = &reader.reader;
+
+    // 1. Create entities
+    for (nux_u32_t i = 0; i < entity_count; ++i)
+    {
+        entity_map[i] = nux_ecs_create();
+        NUX_CHECK(entity_map[i], goto error);
+    }
+
+    // 2. Read entities components
     for (nux_u32_t i = 0; i < entity_count; ++i)
     {
         nux_serde_read_object(s, NUX_NULL);
+        nux_u32_t index;
+        nux_serde_read_u32(s, "id", &index);
+        NUX_CHECK(index < entity_count, goto error);
+        nux_eid_t e = entity_map[index];
+        while (1)
+        {
+        }
         nux_serde_read_end(s);
     }
     nux_serde_read_end(s); // entities
-    nux_serde_read_end(s);
+    nux_serde_read_end(s); // ecs
+
+    nux_ecs_set_active(prev_ecs);
     return NUX_SUCCESS;
+
+error:
+    nux_ecs_set_active(prev_ecs);
+    return NUX_FAILURE;
 }
