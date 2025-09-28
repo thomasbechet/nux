@@ -187,12 +187,8 @@ void nux_texture_write(nux_texture_t *tex,
 
 // staticmesh.c
 
-nux_status_t nux_staticmesh_write(nux_serde_writer_t *s,
-                                  const nux_c8_t     *key,
-                                  const void         *data);
-nux_status_t nux_staticmesh_read(nux_serde_reader_t *s,
-                                 const nux_c8_t     *key,
-                                 void               *data);
+nux_status_t nux_staticmesh_write(nux_serde_writer_t *s, const void *data);
+nux_status_t nux_staticmesh_read(nux_serde_reader_t *s, void *data);
 
 // camera.c
 
@@ -207,11 +203,7 @@ nux_m4_t     nux_ortho(nux_f32_t left,
                        nux_f32_t near,
                        nux_f32_t far);
 nux_m4_t     nux_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
-nux_status_t nux_camera_write(nux_serde_writer_t *s,
-                              const nux_c8_t     *key,
-                              const void         *data);
-nux_status_t nux_camera_read(nux_serde_reader_t *s,
-                             const nux_c8_t     *key,
-                             void               *data);
+nux_status_t nux_camera_write(nux_serde_writer_t *s, const void *data);
+nux_status_t nux_camera_read(nux_serde_reader_t *s, void *data);
 
 #endif

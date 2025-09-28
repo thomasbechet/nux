@@ -126,6 +126,7 @@ nux_ecs_init (void)
     comp = nux_ecs_register_component(
         NUX_COMPONENT_TRANSFORM, "transform", sizeof(nux_transform_t));
     comp->write = nux_transform_write;
+    comp->read  = nux_transform_read;
 
     return NUX_SUCCESS;
 }

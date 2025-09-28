@@ -126,7 +126,9 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
                 if (comp->write)
                 {
                     // Write component
-                    NUX_CHECK(comp->write(s, NUX_NULL, data), goto error);
+                    nux_serde_write_object(s, NUX_NULL);
+                    NUX_CHECK(comp->write(s, data), goto error);
+                    nux_serde_write_end(s);
                 }
                 else
                 {

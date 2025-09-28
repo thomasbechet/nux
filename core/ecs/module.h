@@ -17,12 +17,8 @@ typedef struct
 {
     const nux_c8_t *name;
     nux_u32_t       size;
-    nux_status_t (*read)(nux_serde_reader_t *s,
-                         const nux_c8_t     *key,
-                         void               *data);
-    nux_status_t (*write)(nux_serde_writer_t *s,
-                          const nux_c8_t     *key,
-                          const void         *data);
+    nux_status_t (*read)(nux_serde_reader_t *s, void *data);
+    nux_status_t (*write)(nux_serde_writer_t *s, const void *data);
 } nux_ecs_component_t;
 
 typedef struct
@@ -125,9 +121,8 @@ void nux_ecs_cleanup(void *data);
 // transform.c
 
 nux_b32_t    nux_transform_update_matrix(nux_eid_t e);
-nux_status_t nux_transform_write(nux_serde_writer_t *s,
-                                 const nux_c8_t     *key,
-                                 const void         *data);
+nux_status_t nux_transform_write(nux_serde_writer_t *s, const void *data);
+nux_status_t nux_transform_read(nux_serde_reader_t *s, void *data);
 
 // serde.c
 
