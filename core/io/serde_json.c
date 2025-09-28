@@ -117,34 +117,36 @@ json_nested_skip (const jsmntok_t *toks, nux_i32_t num_tokens, nux_i32_t *i)
         ;
 }
 static jsmntok_t *
-json_find (const nux_json_reader_t *j,
-           const jsmntok_t         *obj,
-           jsmntype_t               type,
-           const nux_c8_t          *key)
+json_next (const nux_json_reader_t *j, const jsmntok_t *current)
 {
-    jsmntok_t *toks = j->tokens;
-    nux_i32_t  it   = j->it + 1;
-    for (nux_i32_t i = 0; i < obj->size; ++i)
+    jsmntok_t *toks   = j->tokens;
+    nux_i32_t  it     = current - toks;
+    nux_i32_t  parent = toks[it].parent;
+    json_nested_skip(j->tokens, j->tokens_count, &it);
+    if (toks[it].parent == parent)
     {
-        if (json_equals(j->json, &toks[it], key))
-        {
-            if (toks[it + 1].type != type)
-            {
-                return NUX_NULL;
-            }
-            return &toks[it + 1];
-        }
-        // skip value
-        ++it;
-        json_nested_skip(toks, j->tokens_count, &it);
+        return toks + it;
     }
     return NUX_NULL;
 }
 static jsmntok_t *
-json_find_next (const nux_json_reader_t *j,
-                const jsmntok_t         *arr,
-                jsmntype_t               type)
+json_find (const nux_json_reader_t *j,
+           const jsmntok_t         *obj,
+           const nux_c8_t          *key)
 {
+    jsmntok_t *toks = j->tokens;
+    NUX_ASSERT(key);
+    nux_i32_t it = (obj - toks) + 1; // first key
+    for (nux_i32_t i = 0; i < obj->size; ++i)
+    {
+        if (json_equals(j->json, &toks[it], key))
+        {
+            return &toks[it + 1]; // return value
+        }
+        ++it;                                         // skip key
+        json_nested_skip(toks, j->tokens_count, &it); // skip value
+    }
+    return NUX_NULL;
 }
 static nux_status_t
 json_reader (void *userdata, nux_serde_value_t *v)
@@ -153,48 +155,54 @@ json_reader (void *userdata, nux_serde_value_t *v)
     jsmntok_t         *toks = j->tokens;
     jsmntok_t         *tok  = toks + j->it;
 
-    if (v->key && tok->type != JSMN_OBJECT)
+    if (v->key) // find field in object
     {
-        return NUX_FAILURE;
+        NUX_ASSERT(tok->type == JSMN_OBJECT);
+        tok = json_find(j, tok, v->key);
+        NUX_CHECK(tok, return NUX_FAILURE);
+    }
+    else
+    {
+        ++j->it;
+        tok = toks + j->it;
+        // NUX_ASSERT(toks[tok->parent].type == JSMN_ARRAY);
+        // tok = json_next(j, tok); // next item
+        // NUX_CHECK(tok, return NUX_FAILURE);
     }
 
     switch (v->type)
     {
         case NUX_SERDE_OBJECT:
-            tok = json_find(j, tok, JSMN_OBJECT, v->key);
-            NUX_CHECK(tok, return NUX_FAILURE);
-            j->it = tok - (jsmntok_t *)j->tokens;
+            NUX_CHECK(tok->type == JSMN_OBJECT, return NUX_FAILURE);
+            j->it = tok - toks;
             break;
         case NUX_SERDE_ARRAY:
-            tok = json_find(j, tok, JSMN_ARRAY, v->key);
-            NUX_CHECK(tok, return NUX_FAILURE);
-            j->it    = tok - (jsmntok_t *)j->tokens;
+            NUX_CHECK(tok->type == JSMN_ARRAY, return NUX_FAILURE);
             *v->size = tok->size;
+            j->it    = tok - toks;
+            // ++j->it; // first item
             break;
         case NUX_SERDE_END:
-            j->it = toks[j->it].parent;
+            j->it = tok->parent;
             break;
         case NUX_SERDE_RID:
         case NUX_SERDE_EID:
         case NUX_SERDE_U32:
-            tok = json_find(j, tok, JSMN_PRIMITIVE, v->key);
-            NUX_CHECK(tok, return NUX_FAILURE);
+            NUX_CHECK(tok->type == JSMN_PRIMITIVE, return NUX_FAILURE);
             *v->u32 = nux_strtof(j->json + tok->start, NUX_NULL);
             break;
         case NUX_SERDE_F32:
-            tok = json_find(j, tok, JSMN_PRIMITIVE, v->key);
-            NUX_CHECK(tok, return NUX_FAILURE);
+            NUX_CHECK(tok->type == JSMN_PRIMITIVE, return NUX_FAILURE);
             *v->f32 = nux_strtof(j->json + tok->start, NUX_NULL);
             break;
         case NUX_SERDE_STRING:
-            tok = json_find(j, tok, JSMN_STRING, v->key);
-            NUX_CHECK(tok, return NUX_FAILURE);
+            NUX_CHECK(tok->type == JSMN_STRING, return NUX_FAILURE);
             *v->str.s = j->json + tok->start;
             *v->str.n = tok->end - tok->start;
             break;
         case NUX_SERDE_V3:
-            tok = json_find(j, tok, JSMN_ARRAY, v->key);
-            NUX_CHECK(tok && tok->size == NUX_V3_SIZE, return NUX_FAILURE);
+            NUX_CHECK(tok->type == JSMN_ARRAY && tok->size == NUX_V3_SIZE,
+                      return NUX_FAILURE);
             for (nux_u32_t i = 0; i < NUX_V3_SIZE; ++i)
             {
                 jsmntok_t *p = tok + i + 1;
@@ -203,8 +211,8 @@ json_reader (void *userdata, nux_serde_value_t *v)
             }
             break;
         case NUX_SERDE_Q4:
-            tok = json_find(j, tok, JSMN_ARRAY, v->key);
-            NUX_CHECK(tok && tok->size == NUX_Q4_SIZE, return NUX_FAILURE);
+            NUX_CHECK(tok->type == JSMN_ARRAY && tok->size == NUX_Q4_SIZE,
+                      return NUX_FAILURE);
             for (nux_u32_t i = 0; i < NUX_Q4_SIZE; ++i)
             {
                 jsmntok_t *p = tok + i + 1;
@@ -215,6 +223,7 @@ json_reader (void *userdata, nux_serde_value_t *v)
         case NUX_SERDE_BYTES:
             break;
     }
+
     return NUX_SUCCESS;
 }
 
@@ -274,6 +283,8 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
     }
     j->tokens_count = r;
     j->it           = 0;
+
+    NUX_ASSERT(((const jsmntok_t *)j->tokens)[j->it].type == JSMN_OBJECT);
 
     return NUX_SUCCESS;
 }

@@ -177,14 +177,13 @@ nux_instance_update (nux_instance_t *instance)
     nux_graphics_update();
 
     static nux_b32_t test = 0;
-    if (!test)
-    {
-        nux_json_writer_t j;
-        nux_json_writer_init(&j, "ecs.json");
-        nux_ecs_write(&j.writer, "ecs", nux_ecs_active());
-        nux_json_writer_close(&j);
-        test = 1;
-    }
+    // if (!test)
+    // {
+    //     nux_json_writer_t j;
+    //     nux_json_writer_init(&j, "ecs.json");
+    //     nux_ecs_write(&j.writer, "ecs", nux_ecs_active());
+    //     nux_json_writer_close(&j);
+    // }
     // if (!test)
     // {
     //     nux_ecs_t        *ecs = nux_ecs_new(nux_arena_core());
@@ -193,6 +192,24 @@ nux_instance_update (nux_instance_t *instance)
     //     NUX_ASSERT(nux_ecs_read(&j.reader, "ecs", nux_ecs_active()));
     //     test = 1;
     // }
+    if (!test)
+    {
+        nux_json_reader_t j;
+        nux_json_reader_init(&j, "test.json");
+        nux_serde_reader_t *s = &j.reader;
+        const nux_c8_t     *str;
+        nux_u32_t           n;
+        nux_u32_t           size;
+        nux_serde_read_array(s, "array", &size);
+        NUX_INFO("array size %d", size);
+        for (nux_u32_t i = 0; i < size; ++i)
+        {
+            nux_serde_read_string(s, NUX_NULL, &str, &n);
+            NUX_INFO("value %.*s", n, str);
+        }
+        nux_serde_read_end(s);
+        test = 1;
+    }
 
     // Hotreload
     if (nux_base_module()->config.hotreload)

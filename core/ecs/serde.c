@@ -1,4 +1,5 @@
 #include "internal.h"
+#include "io/module.h"
 
 static nux_status_t
 ecs_writer_callback (void *userdata, const nux_serde_value_t *v)
@@ -93,8 +94,22 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
     nux_u32_t entity_index = 0;
     while ((e = nux_ecs_next(iter, e)))
     {
-        nux_serde_write_object(s, NUX_NULL);
-        nux_serde_write_u32(s, "id", writer.entity_map[NUX_EID_INDEX(e)]);
+        // Compute component count
+        nux_u32_t component_count = 0;
+        for (nux_u32_t c = 0; c < module->components_max; ++c)
+        {
+            nux_ecs_component_t *comp = module->components + c;
+            if (!comp->name)
+            {
+                continue;
+            }
+            if (nux_ecs_has(e, c))
+            {
+                ++component_count;
+            }
+        }
+        // Write components
+        nux_serde_write_array(s, NUX_NULL, component_count * 2); // begin entity
         for (nux_u32_t c = 0; c < module->components_max; ++c)
         {
             nux_ecs_component_t *comp = module->components + c;
@@ -105,20 +120,23 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
             const void *data = nux_ecs_get(e, c);
             if (data)
             {
+                // Write component name
+                nux_serde_write_string(s, NUX_NULL, comp->name);
+                // Write component data
                 if (comp->write)
                 {
                     // Write component
-                    NUX_CHECK(comp->write(s, comp->name, data), goto error);
+                    NUX_CHECK(comp->write(s, NUX_NULL, data), goto error);
                 }
                 else
                 {
                     // Write empty object
-                    nux_serde_write_object(s, comp->name);
+                    nux_serde_write_object(s, NUX_NULL);
                     nux_serde_write_end(s);
                 }
             }
         }
-        nux_serde_write_end(s);
+        nux_serde_write_end(s); // end entity
     }
     nux_serde_write_end(s); // entities
     nux_serde_write_end(s); // ecs
@@ -160,15 +178,16 @@ nux_ecs_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
     // 2. Read entities components
     for (nux_u32_t i = 0; i < entity_count; ++i)
     {
-        nux_serde_read_object(s, NUX_NULL);
-        nux_u32_t index;
-        nux_serde_read_u32(s, "id", &index);
-        NUX_CHECK(index < entity_count, goto error);
-        nux_eid_t e = entity_map[index];
-        while (1)
+        nux_eid_t e = entity_map[i];
+        nux_u32_t component_count;
+        nux_serde_read_array(s, NUX_NULL, &component_count); // entity
+        for (nux_u32_t j = 0; j < component_count; ++i)
         {
+            const nux_c8_t *name;
+            nux_serde_read_string(s, NUX_NULL, &name, NUX_NULL);
+            NUX_INFO("%s", name);
         }
-        nux_serde_read_end(s);
+        nux_serde_read_end(s); // entity
     }
     nux_serde_read_end(s); // entities
     nux_serde_read_end(s); // ecs
