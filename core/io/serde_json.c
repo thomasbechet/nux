@@ -9,6 +9,53 @@ json_append (nux_json_writer_t *j, const nux_c8_t *s, nux_u32_t n)
 {
     nux_io_write(&j->file, s, n);
 }
+static nux_b32_t
+json_equals (const nux_c8_t *json, jsmntok_t *tok, const nux_c8_t *s)
+{
+    return tok->type == JSMN_STRING
+           && ((nux_i32_t)nux_strnlen(s, 256) == tok->end - tok->start)
+           && (nux_strncmp(json + tok->start, s, tok->end - tok->start) == 0);
+}
+static void
+json_nested_skip (const jsmntok_t *toks, nux_i32_t num_tokens, nux_i32_t *i)
+{
+    for (nux_i32_t char_end = toks[*i].end;
+         *i < num_tokens && toks[*i].start < char_end;
+         (*i)++)
+        ;
+}
+static jsmntok_t *
+json_next (const nux_json_reader_t *j, const jsmntok_t *current)
+{
+    jsmntok_t *toks   = j->tokens;
+    nux_i32_t  it     = current - toks;
+    nux_i32_t  parent = toks[it].parent;
+    json_nested_skip(j->tokens, j->tokens_count, &it);
+    if (toks[it].parent == parent)
+    {
+        return toks + it;
+    }
+    return NUX_NULL;
+}
+static jsmntok_t *
+json_find (const nux_json_reader_t *j,
+           const jsmntok_t         *obj,
+           const nux_c8_t          *key)
+{
+    jsmntok_t *toks = j->tokens;
+    NUX_ASSERT(key);
+    nux_i32_t it = (obj - toks) + 1; // first key
+    for (nux_i32_t i = 0; i < obj->size; ++i)
+    {
+        if (json_equals(j->json, &toks[it], key))
+        {
+            return &toks[it + 1]; // return value
+        }
+        ++it;                                         // skip key
+        json_nested_skip(toks, j->tokens_count, &it); // skip value
+    }
+    return NUX_NULL;
+}
 static nux_status_t
 json_writer (void *userdata, const nux_serde_value_t *v)
 {
@@ -101,89 +148,57 @@ json_writer (void *userdata, const nux_serde_value_t *v)
     }
     return NUX_SUCCESS;
 }
-static nux_b32_t
-json_equals (const nux_c8_t *json, jsmntok_t *tok, const nux_c8_t *s)
-{
-    return tok->type == JSMN_STRING
-           && ((nux_i32_t)nux_strnlen(s, 256) == tok->end - tok->start)
-           && (nux_strncmp(json + tok->start, s, tok->end - tok->start) == 0);
-}
-static void
-json_nested_skip (const jsmntok_t *toks, nux_i32_t num_tokens, nux_i32_t *i)
-{
-    for (nux_i32_t char_end = toks[*i].end;
-         *i < num_tokens && toks[*i].start < char_end;
-         (*i)++)
-        ;
-}
-static jsmntok_t *
-json_next (const nux_json_reader_t *j, const jsmntok_t *current)
-{
-    jsmntok_t *toks   = j->tokens;
-    nux_i32_t  it     = current - toks;
-    nux_i32_t  parent = toks[it].parent;
-    json_nested_skip(j->tokens, j->tokens_count, &it);
-    if (toks[it].parent == parent)
-    {
-        return toks + it;
-    }
-    return NUX_NULL;
-}
-static jsmntok_t *
-json_find (const nux_json_reader_t *j,
-           const jsmntok_t         *obj,
-           const nux_c8_t          *key)
-{
-    jsmntok_t *toks = j->tokens;
-    NUX_ASSERT(key);
-    nux_i32_t it = (obj - toks) + 1; // first key
-    for (nux_i32_t i = 0; i < obj->size; ++i)
-    {
-        if (json_equals(j->json, &toks[it], key))
-        {
-            return &toks[it + 1]; // return value
-        }
-        ++it;                                         // skip key
-        json_nested_skip(toks, j->tokens_count, &it); // skip value
-    }
-    return NUX_NULL;
-}
 static nux_status_t
 json_reader (void *userdata, nux_serde_value_t *v)
 {
     nux_json_reader_t *j    = userdata;
     jsmntok_t         *toks = j->tokens;
-    jsmntok_t         *tok  = toks + j->it;
 
+    if (v->type == NUX_SERDE_END)
+    {
+        --j->depth;
+        j->it = toks + j->it->parent;
+        return NUX_SUCCESS;
+    }
+
+    jsmntok_t *tok = NUX_NULL;
     if (v->key) // find field in object
     {
-        NUX_ASSERT(tok->type == JSMN_OBJECT);
-        tok = json_find(j, tok, v->key);
-        NUX_CHECK(tok, return NUX_FAILURE);
+        NUX_ASSERT(j->it->type == JSMN_OBJECT);
+        tok = json_find(j, j->it, v->key);
     }
-    else
+    else if (j->iters[j->depth]) // in iterator
     {
-        ++j->it;
-        tok = toks + j->it;
-        // NUX_ASSERT(toks[tok->parent].type == JSMN_ARRAY);
-        // tok = json_next(j, tok); // next item
-        // NUX_CHECK(tok, return NUX_FAILURE);
+        tok                = j->iters[j->depth];
+        j->iters[j->depth] = json_next(j, tok);
     }
+    NUX_ASSERT(tok);
+    NUX_CHECK(tok, return NUX_FAILURE);
 
     switch (v->type)
     {
         case NUX_SERDE_OBJECT:
             NUX_CHECK(tok->type == JSMN_OBJECT, return NUX_FAILURE);
-            j->it = tok - toks;
+            ++j->depth;
+            j->it = tok;
             break;
         case NUX_SERDE_ARRAY:
             NUX_CHECK(tok->type == JSMN_ARRAY, return NUX_FAILURE);
             *v->size = tok->size;
-            j->it    = tok - toks;
-            // ++j->it; // first item
+            j->it    = tok;
+            ++j->depth;
+            if (tok->size)
+            {
+                j->iters[j->depth] = tok + 1; // first item
+            }
+            else
+            {
+                j->iters[j->depth] = NUX_NULL;
+            }
             break;
         case NUX_SERDE_END:
-            j->it = tok->parent;
+            --j->depth;
+            j->it = toks + j->it->parent;
             break;
         case NUX_SERDE_RID:
         case NUX_SERDE_EID:
@@ -282,9 +297,11 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
         return NUX_FAILURE;
     }
     j->tokens_count = r;
-    j->it           = 0;
+    j->it           = j->tokens;
+    j->depth        = 0;
+    nux_memset(j->iters, 0, sizeof(j->iters));
 
-    NUX_ASSERT(((const jsmntok_t *)j->tokens)[j->it].type == JSMN_OBJECT);
+    NUX_ASSERT(j->it->type == JSMN_OBJECT);
 
     return NUX_SUCCESS;
 }

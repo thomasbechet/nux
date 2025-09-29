@@ -169,6 +169,8 @@ typedef struct
     nux_u32_t          depth;
 } nux_json_writer_t;
 
+struct jsmntok;
+
 typedef struct
 {
     nux_serde_reader_t reader;
@@ -177,7 +179,9 @@ typedef struct
     void              *tokens;
     nux_u32_t          tokens_capa;
     nux_u32_t          tokens_count;
-    nux_u32_t          it;
+    struct jsmntok    *it;
+    nux_u32_t          depth;
+    struct jsmntok    *iters[256];
 } nux_json_reader_t;
 
 ////////////////////////////
