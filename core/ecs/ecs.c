@@ -452,5 +452,8 @@ nux_ecs_instantiate (nux_ecs_t *src)
 {
     nux_ecs_t *dst = nux_ecs_active();
 
+    nux_ecs_iter_t *iter = nux_ecs_new_iter_any(nux_arena_frame());
+    NUX_CHECK(iter, return NUX_FAILURE);
+
     return NUX_SUCCESS;
 }

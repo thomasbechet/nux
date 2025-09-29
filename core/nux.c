@@ -177,13 +177,13 @@ nux_instance_update (nux_instance_t *instance)
     nux_graphics_update();
 
     static nux_b32_t test = 0;
-    // if (!test)
-    // {
-    //     nux_json_writer_t j;
-    //     nux_json_writer_init(&j, "ecs.json");
-    //     nux_ecs_write(&j.writer, "ecs", nux_ecs_active());
-    //     nux_json_writer_close(&j);
-    // }
+    if (!test)
+    {
+        nux_json_writer_t j;
+        nux_json_writer_init(&j, "ecs.json");
+        nux_ecs_write(&j.writer, "ecs", nux_ecs_active());
+        nux_json_writer_close(&j);
+    }
     if (!test)
     {
         nux_ecs_t        *ecs = nux_ecs_new(nux_arena_core());
