@@ -171,7 +171,7 @@ l_arena_frame (lua_State *L)
     return 1;
 }
 static int
-l_resource_get_path (lua_State *L)
+l_resource_path (lua_State *L)
 {
     nux_rid_t       rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
     const nux_c8_t *ret = nux_resource_path(rid);
@@ -200,7 +200,7 @@ l_resource_set_name (lua_State *L)
     return 0;
 }
 static int
-l_resource_get_name (lua_State *L)
+l_resource_name (lua_State *L)
 {
     nux_rid_t       rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
     const nux_c8_t *ret = nux_resource_name(rid);
@@ -218,7 +218,7 @@ l_resource_get_name (lua_State *L)
     return 1;
 }
 static int
-l_resource_get_arena (lua_State *L)
+l_resource_arena (lua_State *L)
 {
     nux_rid_t          rid = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, 1);
     const nux_arena_t *ret = nux_resource_arena(rid);
@@ -428,34 +428,6 @@ l_transform_remove (lua_State *L)
     l_checkerror(L);
 
     return 0;
-}
-static int
-l_transform_set_parent (lua_State *L)
-{
-    nux_eid_t e      = luaL_checknumber(L, 1);
-    nux_eid_t parent = luaL_checknumber(L, 2);
-
-    nux_transform_set_parent(e, parent);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_transform_get_parent (lua_State *L)
-{
-    nux_eid_t e   = luaL_checknumber(L, 1);
-    nux_eid_t ret = nux_transform_get_parent(e);
-    l_checkerror(L);
-
-    if (ret)
-    {
-        lua_pushinteger(L, (nux_intptr_t)ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
 }
 static int
 l_transform_get_local_translation (lua_State *L)
@@ -808,7 +780,7 @@ l_ecs_set_active (lua_State *L)
     return 1;
 }
 static int
-l_ecs_get_active (lua_State *L)
+l_ecs_active (lua_State *L)
 {
     const nux_ecs_t *ret = nux_ecs_active();
     l_checkerror(L);
@@ -827,7 +799,8 @@ l_ecs_get_active (lua_State *L)
 static int
 l_ecs_create (lua_State *L)
 {
-    nux_eid_t ret = nux_ecs_create();
+    nux_eid_t parent = luaL_checknumber(L, 1);
+    nux_eid_t ret    = nux_ecs_create(parent);
     l_checkerror(L);
 
     if (ret)
@@ -839,16 +812,6 @@ l_ecs_create (lua_State *L)
         lua_pushnil(L);
     }
     return 1;
-}
-static int
-l_ecs_create_at (lua_State *L)
-{
-    nux_eid_t e = luaL_checknumber(L, 1);
-
-    nux_ecs_create_at(e);
-    l_checkerror(L);
-
-    return 0;
 }
 static int
 l_ecs_delete (lua_State *L)
@@ -868,6 +831,84 @@ l_ecs_valid (lua_State *L)
     l_checkerror(L);
 
     lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_ecs_root (lua_State *L)
+{
+    nux_eid_t ret = nux_ecs_root();
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_ecs_parent (lua_State *L)
+{
+    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_eid_t ret = nux_ecs_parent(e);
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_ecs_set_parent (lua_State *L)
+{
+    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_eid_t p = luaL_checknumber(L, 2);
+
+    nux_ecs_set_parent(e, p);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_ecs_sibling (lua_State *L)
+{
+    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_eid_t ret = nux_ecs_sibling(e);
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_ecs_child (lua_State *L)
+{
+    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_eid_t ret = nux_ecs_child(e);
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, (nux_intptr_t)ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
     return 1;
 }
 static int
@@ -1389,11 +1430,10 @@ static const struct luaL_Reg lib_arena[]
         { "core", l_arena_core },
         { "frame", l_arena_frame },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_resource[] = {
-    { "get_path", l_resource_get_path }, { "set_name", l_resource_set_name },
-    { "get_name", l_resource_get_name }, { "get_arena", l_resource_get_arena },
-    { "find", l_resource_find },         { NUX_NULL, NUX_NULL }
-};
+static const struct luaL_Reg lib_resource[]
+    = { { "path", l_resource_path }, { "set_name", l_resource_set_name },
+        { "name", l_resource_name }, { "arena", l_resource_arena },
+        { "find", l_resource_find }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_stat[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]
@@ -1424,8 +1464,6 @@ static const struct luaL_Reg lib_lua[]
 static const struct luaL_Reg lib_transform[]
     = { { "add", l_transform_add },
         { "remove", l_transform_remove },
-        { "set_parent", l_transform_set_parent },
-        { "get_parent", l_transform_get_parent },
         { "get_local_translation", l_transform_get_local_translation },
         { "get_local_rotation", l_transform_get_local_rotation },
         { "get_local_scale", l_transform_get_local_scale },
@@ -1457,11 +1495,15 @@ static const struct luaL_Reg lib_ecs[]
         { "next", l_ecs_next },
         { "new", l_ecs_new },
         { "set_active", l_ecs_set_active },
-        { "get_active", l_ecs_get_active },
+        { "active", l_ecs_active },
         { "create", l_ecs_create },
-        { "create_at", l_ecs_create_at },
         { "delete", l_ecs_delete },
         { "valid", l_ecs_valid },
+        { "root", l_ecs_root },
+        { "parent", l_ecs_parent },
+        { "set_parent", l_ecs_set_parent },
+        { "sibling", l_ecs_sibling },
+        { "child", l_ecs_child },
         { "count", l_ecs_count },
         { "clear", l_ecs_clear },
         { "remove", l_ecs_remove },

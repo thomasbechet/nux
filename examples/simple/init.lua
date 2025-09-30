@@ -67,7 +67,7 @@ function M:on_load()
     -- Create the API monolith
     local x, y = 350, 2000
     self.monolith_canvas = canvas.new(self.arena, x, y)
-    self.cube = ecs.create()
+    self.cube = ecs.create(ecs.root())
     transform.add(self.cube)
     transform.set_translation(self.cube, { 10, 0, 0 })
     transform.set_scale(self.cube, { x / 50, y / 50, 1 })
@@ -123,7 +123,7 @@ function M:on_update()
         if hit then
             local pos = hit.position
             print("hit at " .. tostring(pos))
-            local e = ecs.create()
+            local e = ecs.create(ecs.root())
             transform.add(e)
             transform.set_translation(e, pos)
             staticmesh.add(e)
@@ -140,7 +140,7 @@ function M:on_update()
             }
             local m, t = table.unpack(r[(core.random() % #r) + 1])
 
-            local e = ecs.create()
+            local e = ecs.create(ecs.root())
             transform.add(e)
             transform.set_translation(e, position)
             local min = mesh.bounds_min(m)
@@ -151,10 +151,9 @@ function M:on_update()
             rigidbody.set_velocity(e, forward * force)
 
             -- add mesh
-            local child = ecs.create()
+            local child = ecs.create(e)
             transform.add(child)
             staticmesh.add(child)
-            transform.set_parent(child, e)
             transform.set_translation(child, -min)
             staticmesh.set_mesh(child, m)
             staticmesh.set_texture(child, t)

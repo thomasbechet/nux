@@ -40,11 +40,13 @@ function ecs.instantiate(tab, parent)
         end,
     }
 
-    local e = ecs.create()
-    load_entity(e, tab)
+    local e = ecs.create(ecs.root())
     if parent then
-        transform.set_parent(e, parent)
+        e = ecs.create(parent)
+    else
+        e = ecs.create(ecs.root())
     end
+    load_entity(e, tab)
     return e
 end
 

@@ -15,6 +15,16 @@ NUX_VEC_DEFINE(nux_ecs_chunk_vec, void *);
 
 typedef struct
 {
+    nux_eid_t parent;
+    nux_eid_t next;
+    nux_eid_t prev;
+    nux_eid_t child;
+} nux_ecs_entity_t;
+
+NUX_VEC_DEFINE(nux_ecs_entity_vec, nux_ecs_entity_t);
+
+typedef struct
+{
     const nux_c8_t *name;
     nux_u32_t       size;
     nux_status_t (*read)(nux_serde_reader_t *s, void *data);
@@ -33,10 +43,11 @@ NUX_VEC_DEFINE(nux_ecs_container_vec, nux_ecs_container_t);
 
 struct nux_ecs_t
 {
-    nux_rid_t               self;
     nux_arena_t            *arena;
     nux_ecs_bitset_t        bitset;
+    nux_ecs_entity_vec_t    entities;
     nux_ecs_container_vec_t containers;
+    nux_eid_t               root;
 };
 
 struct nux_ecs_iter_t
@@ -59,10 +70,9 @@ typedef struct
 
 typedef struct
 {
-    nux_eid_t parent;
-    nux_v3_t  local_translation;
-    nux_q4_t  local_rotation;
-    nux_v3_t  local_scale;
+    nux_v3_t  translation;
+    nux_q4_t  rotation;
+    nux_v3_t  scale;
     nux_m4_t  global_matrix;
     nux_b32_t dirty;
 } nux_transform_t;

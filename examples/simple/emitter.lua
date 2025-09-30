@@ -12,7 +12,7 @@ function M:on_update()
     self.force = 10
     self.time = self.time + time.delta()
     if self.time > self.interval then
-        local e = ecs.create()
+        local e = ecs.create(ecs.root())
         transform.add(e)
         transform.set_translation(e, self.pos)
         local min = mesh.bounds_min(self.mesh)

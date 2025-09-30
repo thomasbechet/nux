@@ -120,7 +120,7 @@ nux_ecs_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
             if (data)
             {
                 nux_serde_write_object(s, NUX_NULL);
-                nux_serde_write_string(s, "type", comp->name);
+                nux_serde_write_string(s, "component", comp->name);
                 if (comp->write)
                 {
                     NUX_CHECK(comp->write(s, data), goto error);
@@ -163,7 +163,7 @@ nux_ecs_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
     // 1. Create entities
     for (nux_u32_t i = 0; i < entity_count; ++i)
     {
-        entity_map[i] = nux_ecs_create();
+        entity_map[i] = nux_ecs_create(nux_ecs_root());
         NUX_CHECK(entity_map[i], goto error);
     }
 
@@ -178,7 +178,7 @@ nux_ecs_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_ecs_t *ecs)
             nux_serde_read_object(s, NUX_NULL); // component
             const nux_c8_t *name;
             nux_u32_t       n;
-            nux_serde_read_string(s, "type", &name, &n);
+            nux_serde_read_string(s, "component", &name, &n);
             for (nux_u32_t c = 0; c < module->components_max; ++c)
             {
                 nux_ecs_component_t *comp = module->components + c;

@@ -3,6 +3,7 @@
 NUX_VEC_IMPL(nux_ecs_bitset, nux_ecs_mask_t);
 NUX_VEC_IMPL(nux_ecs_chunk_vec, void *);
 NUX_VEC_IMPL(nux_ecs_container_vec, nux_ecs_container_t);
+NUX_VEC_IMPL(nux_ecs_entity_vec, nux_ecs_entity_t);
 
 static void
 ecs_mask_set (nux_ecs_mask_t *mask, nux_u32_t n)
@@ -51,7 +52,7 @@ ecs_bitset_set (nux_ecs_bitset_t *bitset, nux_u32_t index)
     ecs_mask_set(&bitset->data[mask], offset);
     return NUX_SUCCESS;
 }
-static void
+static nux_b32_t
 ecs_bitset_unset (nux_ecs_bitset_t *bitset, nux_u32_t index)
 {
     nux_u32_t mask   = index / ECS_ENTITY_PER_MASK;
@@ -59,7 +60,9 @@ ecs_bitset_unset (nux_ecs_bitset_t *bitset, nux_u32_t index)
     if (bitset->size > mask)
     {
         ecs_mask_unset(&bitset->data[mask], offset);
+        return NUX_TRUE;
     }
+    return NUX_FALSE;
 }
 static nux_ecs_mask_t
 ecs_bitset_mask (const nux_ecs_bitset_t *bitset, nux_u32_t mask_index)
@@ -99,6 +102,62 @@ ecs_bitset_find_unset (const nux_ecs_bitset_t *bitset, nux_u32_t *found)
         }
     }
     return NUX_FALSE;
+}
+static nux_b32_t
+ecs_valid (const nux_ecs_t *ecs, nux_eid_t e)
+{
+    nux_u32_t index = NUX_EID_INDEX(e);
+    return ecs_bitset_isset(&ecs->bitset, index);
+}
+static nux_ecs_entity_t *
+ecs_check (const nux_ecs_t *ecs, nux_eid_t e)
+{
+    NUX_ENSURE(e, return NUX_NULL, "invalid null eid", e);
+    nux_u32_t index = NUX_EID_INDEX(e);
+    NUX_ENSURE(ecs_bitset_isset(&ecs->bitset, index),
+               return NUX_NULL,
+               "invalid eid 0x%X",
+               e);
+    return ecs->entities.data + index;
+}
+static void
+ecs_detach (nux_ecs_entity_t *entities, nux_eid_t e)
+{
+    nux_u32_t ei = NUX_EID_INDEX(e);
+    if (entities[ei].parent)
+    {
+        if (entities[ei].prev)
+        {
+            entities[NUX_EID_INDEX(entities[ei].prev)].next = entities[ei].next;
+        }
+        if (entities[ei].next)
+        {
+            entities[NUX_EID_INDEX(entities[ei].next)].prev = entities[ei].prev;
+        }
+        nux_ecs_entity_t *parent = entities + entities[ei].parent;
+        if (parent->child == e)
+        {
+            parent->child = entities[ei].next;
+        }
+    }
+}
+static void
+ecs_attach (nux_ecs_entity_t *entities, nux_eid_t e, nux_eid_t p)
+{
+    NUX_CHECK(e != p, return);
+    ecs_detach(entities, e);
+    nux_ecs_entity_t *entity = entities + NUX_EID_INDEX(e);
+    nux_ecs_entity_t *parent = entities + NUX_EID_INDEX(p);
+    entity->parent           = p;
+    entity->next             = entity->child;
+    if (parent->child)
+    {
+        nux_ecs_entity_t *child = entities + NUX_EID_INDEX(parent->child);
+        child->prev             = e;
+        entity->next            = parent->child;
+    }
+    parent->child = e;
+    parent->prev  = NUX_NULL;
 }
 
 nux_status_t
@@ -254,6 +313,13 @@ nux_ecs_new (nux_arena_t *arena)
                   arena, module->components_max, &ecs->containers),
               return NUX_NULL);
     NUX_CHECK(nux_ecs_bitset_init(arena, &ecs->bitset), return NUX_NULL);
+    NUX_CHECK(nux_ecs_entity_vec_init(arena, &ecs->entities), return NUX_NULL);
+    // create root node
+    nux_ecs_entity_t *root = nux_ecs_entity_vec_push(&ecs->entities);
+    NUX_CHECK(root, return NUX_NULL);
+    nux_memset(root, 0, sizeof(*root));
+    NUX_CHECK(ecs_bitset_set(&ecs->bitset, 0), return NUX_NULL);
+    ecs->root = NUX_EID_MAKE(0);
     return ecs;
 }
 void
@@ -287,35 +353,36 @@ nux_ecs_active (void)
     return nux_ecs_module()->active;
 }
 nux_eid_t
-nux_ecs_create (void)
+nux_ecs_create (nux_eid_t parent)
 {
     nux_ecs_module_t *module = nux_ecs_module();
     nux_ecs_t        *ecs    = module->active;
     NUX_CHECK(ecs, return NUX_NULL);
+    NUX_CHECK(ecs_check(ecs, parent), return NUX_NULL);
     nux_u32_t index;
     if (!ecs_bitset_find_unset(&ecs->bitset, &index))
     {
         index = ecs->bitset.size * ECS_ENTITY_PER_MASK;
     }
     NUX_CHECK(ecs_bitset_set(&ecs->bitset, index), return NUX_NULL);
-    return NUX_EID_MAKE(index);
-}
-void
-nux_ecs_create_at (nux_eid_t e)
-{
-    NUX_CHECK(e, return);
-    nux_ecs_t *ecs = nux_ecs_active();
-    if (nux_ecs_valid(e))
+    while (index >= ecs->entities.size)
     {
-        return;
+        // ensure growth factor with resize
+        NUX_CHECK(nux_ecs_entity_vec_push(&ecs->entities), return NUX_NULL);
     }
-    ecs_bitset_set(&ecs->bitset, NUX_EID_INDEX(e));
+    nux_eid_t eid = NUX_EID_MAKE(index);
+    nux_memset(&ecs->entities.data[index], 0, sizeof(nux_ecs_entity_t));
+    ecs_attach(ecs->entities.data, eid, parent);
+    return eid;
 }
 void
 nux_ecs_delete (nux_eid_t e)
 {
     nux_ecs_t *ecs   = nux_ecs_active();
     nux_u32_t  index = NUX_EID_INDEX(e);
+
+    // cannot remove root entity
+    NUX_CHECK(e != ecs->root, return);
 
     // remove from components
     for (nux_u32_t i = 0; i < ecs->containers.size; ++i)
@@ -324,14 +391,49 @@ nux_ecs_delete (nux_eid_t e)
     }
 
     // mask entity as invalid
-    ecs_bitset_unset(&ecs->bitset, index);
+    if (ecs_bitset_unset(&ecs->bitset, index))
+    {
+        ecs_detach(ecs->entities.data, e);
+    }
 }
 nux_b32_t
 nux_ecs_valid (nux_eid_t e)
 {
-    nux_ecs_t *ecs   = nux_ecs_active();
-    nux_u32_t  index = NUX_EID_INDEX(e);
-    return ecs_bitset_isset(&ecs->bitset, index);
+    nux_ecs_t *ecs = nux_ecs_active();
+    return ecs_valid(ecs, e);
+}
+nux_eid_t
+nux_ecs_root (void)
+{
+    return NUX_EID_MAKE(0);
+}
+nux_eid_t
+nux_ecs_parent (nux_eid_t e)
+{
+    nux_ecs_t *ecs = nux_ecs_active();
+    NUX_CHECK(ecs_check(ecs, e), return NUX_NULL);
+    return ecs->entities.data[NUX_EID_INDEX(e)].parent;
+}
+void
+nux_ecs_set_parent (nux_eid_t e, nux_eid_t p)
+{
+    nux_ecs_t *ecs = nux_ecs_active();
+    NUX_CHECK(ecs_check(ecs, e) && ecs_check(ecs, p), return);
+    ecs_attach(ecs->entities.data, e, p);
+}
+nux_eid_t
+nux_ecs_sibling (nux_eid_t e)
+{
+    nux_ecs_t *ecs = nux_ecs_active();
+    NUX_CHECK(ecs_check(ecs, e), return NUX_NULL);
+    return ecs->entities.data[NUX_EID_INDEX(e)].next;
+}
+nux_eid_t
+nux_ecs_child (nux_eid_t e)
+{
+    nux_ecs_t *ecs = nux_ecs_active();
+    NUX_CHECK(ecs_check(ecs, e), return NUX_NULL);
+    return ecs->entities.data[NUX_EID_INDEX(e)].child;
 }
 nux_u32_t
 nux_ecs_count (void)
@@ -357,11 +459,11 @@ nux_ecs_add (nux_eid_t e, nux_u32_t c)
     nux_ecs_t        *ecs    = module->active;
     nux_u32_t         index  = NUX_EID_INDEX(e);
 
-    const nux_ecs_component_t *component = module->components + c;
-
+    NUX_CHECK(ecs_check(ecs, e), return NUX_NULL);
     NUX_ENSURE(c < module->components_max,
                return NUX_NULL,
                "invalid ecs component id");
+    const nux_ecs_component_t *component = module->components + c;
 
     // initialize pool if component missing
     while (c >= ecs->containers.size)
@@ -419,6 +521,7 @@ nux_ecs_remove (nux_eid_t e, nux_u32_t c)
     nux_u32_t            index     = NUX_EID_INDEX(e);
     nux_ecs_container_t *container = ecs->containers.data + c;
     ecs_bitset_unset(&container->bitset, index);
+    ecs_detach(ecs->entities.data, e);
 }
 nux_b32_t
 nux_ecs_has (nux_eid_t e, nux_u32_t c)

@@ -4,7 +4,7 @@ function M:on_load()
     self.fov = 90
     self.pitch = 0
     self.yaw = 0
-    self.entity = ecs.create()
+    self.entity = ecs.create(ecs.root())
     camera.add(self.entity)
     transform.add(self.entity)
     transform.set_translation(self.entity, { 13, 15, 10 })

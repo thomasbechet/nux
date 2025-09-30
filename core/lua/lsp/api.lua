@@ -33,13 +33,13 @@ function arena.core(...) end
 function arena.frame(...) end
 resource={}
 ---@return None
-function resource.get_path(...) end
+function resource.path(...) end
 ---@return None
 function resource.set_name(...) end
 ---@return None
-function resource.get_name(...) end
+function resource.name(...) end
 ---@return None
-function resource.get_arena(...) end
+function resource.arena(...) end
 ---@return None
 function resource.find(...) end
 error={}
@@ -123,10 +123,6 @@ function transform.add(...) end
 ---@return None
 function transform.remove(...) end
 ---@return None
-function transform.set_parent(...) end
----@return None
-function transform.get_parent(...) end
----@return None
 function transform.get_local_translation(...) end
 ---@return None
 function transform.get_local_rotation(...) end
@@ -186,15 +182,23 @@ function ecs.new(...) end
 ---@return None
 function ecs.set_active(...) end
 ---@return None
-function ecs.get_active(...) end
+function ecs.active(...) end
 ---@return None
 function ecs.create(...) end
----@return None
-function ecs.create_at(...) end
 ---@return None
 function ecs.delete(...) end
 ---@return None
 function ecs.valid(...) end
+---@return None
+function ecs.root(...) end
+---@return None
+function ecs.parent(...) end
+---@return None
+function ecs.set_parent(...) end
+---@return None
+function ecs.sibling(...) end
+---@return None
+function ecs.child(...) end
 ---@return None
 function ecs.count(...) end
 ---@return None

@@ -113,7 +113,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
             return 0;
         {%- endif %}
     {%- elif function.typename.type == "resource" %}
-        nux_rid_t ret_rid = nux_resource_get_rid(ret);
+        nux_rid_t ret_rid = nux_resource_rid(ret);
         if (ret_rid)
             lua_pushinteger(L, ret_rid);
         else
