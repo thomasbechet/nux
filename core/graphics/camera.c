@@ -124,9 +124,9 @@ nux_camera_read (nux_serde_reader_t *s, void *data)
 }
 
 void
-nux_camera_add (nux_eid_t e)
+nux_camera_add (nux_nid_t e)
 {
-    nux_camera_t *c = nux_ecs_add(e, NUX_COMPONENT_CAMERA);
+    nux_camera_t *c = nux_component_add(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
     c->fov      = 60;
     c->near     = 0.1;
@@ -134,28 +134,28 @@ nux_camera_add (nux_eid_t e)
     c->viewport = nux_b2i_xywh(0, 0, 100, 100);
 }
 void
-nux_camera_remove (nux_eid_t e)
+nux_camera_remove (nux_nid_t e)
 {
-    nux_ecs_remove(e, NUX_COMPONENT_CAMERA);
+    nux_node_remove(e, NUX_COMPONENT_CAMERA);
 }
 void
-nux_camera_set_fov (nux_eid_t e, nux_f32_t fov)
+nux_camera_set_fov (nux_nid_t e, nux_f32_t fov)
 {
-    nux_camera_t *c = nux_ecs_get(e, NUX_COMPONENT_CAMERA);
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
     c->fov = fov;
 }
 void
-nux_camera_set_near (nux_eid_t e, nux_f32_t near)
+nux_camera_set_near (nux_nid_t e, nux_f32_t near)
 {
-    nux_camera_t *c = nux_ecs_get(e, NUX_COMPONENT_CAMERA);
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
     c->near = near;
 }
 void
-nux_camera_set_far (nux_eid_t e, nux_f32_t far)
+nux_camera_set_far (nux_nid_t e, nux_f32_t far)
 {
-    nux_camera_t *c = nux_ecs_get(e, NUX_COMPONENT_CAMERA);
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
     c->far = far;
 }

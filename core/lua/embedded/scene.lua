@@ -1,4 +1,4 @@
-function ecs.instantiate(tab, parent)
+function node.instantiate(tab, parent)
     local loaders
 
     local function load_entity(n, t)
@@ -7,7 +7,7 @@ function ecs.instantiate(tab, parent)
             if load then
                 load(n, v)
             else
-                ecs.instantiate(v, n)
+                node.instantiate(v, n)
             end
         end
     end
@@ -40,21 +40,21 @@ function ecs.instantiate(tab, parent)
         end,
     }
 
-    local e = ecs.create(ecs.root())
+    local e = node.create(node.root())
     if parent then
-        e = ecs.create(parent)
+        e = node.create(parent)
     else
-        e = ecs.create(ecs.root())
+        e = node.create(node.root())
     end
     load_entity(e, tab)
     return e
 end
 
-function ecs.load(tab)
-    local e = ecs.new(100)
-    local prev = ecs.get_active()
-    ecs.set_active(e)
-    ecs.instantiate(tab, nil)
-    ecs.set_active(prev)
-    return e
+function scene.load(tab)
+    local n = scene.new(100)
+    local prev = scene.get_active()
+    scene.set_active(n)
+    node.instantiate(tab, nil)
+    scene.set_active(prev)
+    return n
 end

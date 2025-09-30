@@ -12,12 +12,12 @@ function M:on_update()
     self.force = 10
     self.time = self.time + time.delta()
     if self.time > self.interval then
-        local e = ecs.create(ecs.root())
-        transform.add(e)
-        transform.set_translation(e, self.pos)
+        local n = node.create(node.root())
+        transform.add(n)
+        transform.set_translation(n, self.pos)
         local min = mesh.bounds_min(self.mesh)
         local max = mesh.bounds_max(self.mesh)
-        collider.add_aabb(e, min, max)
+        collider.add_aabb(n, min, max)
         local v = vmath.vec3(
             core.random01(),
             core.random01(),
@@ -25,10 +25,10 @@ function M:on_update()
         )
         v = vmath.mul(v, 2)
         v = vmath.sub(v, 1)
-        rigidbody.add(e)
-        rigidbody.set_velocity(e, v * self.force)
-        staticmesh.add(e)
-        staticmesh.set_mesh(e, self.mesh)
+        rigidbody.add(n)
+        rigidbody.set_velocity(n, v * self.force)
+        staticmesh.add(n)
+        staticmesh.set_mesh(n, self.mesh)
         self.count = self.count + 1
         print("emit count : " .. self.count)
         self.time = 0

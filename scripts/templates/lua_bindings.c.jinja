@@ -13,8 +13,8 @@ static void l_checkerror(lua_State *L)
     "texture": "NUX_RESOURCE_TEXTURE",
     "mesh": "NUX_RESOURCE_MESH",
     "canvas": "NUX_RESOURCE_CANVAS",
-    "ecs": "NUX_RESOURCE_ECS",
-    "ecs_iter": "NUX_RESOURCE_ECS_ITER",
+    "scene": "NUX_RESOURCE_SCENE",
+    "query": "NUX_RESOURCE_QUERY",
 } %}
 
 {% for module_name, module in modules.items() %}
@@ -85,7 +85,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
         {%- elif function.typename.name == "c8" %}
             lua_pushstring(L, ret);
             return 1;
-        {%- elif function.typename.name in ["rid", "eid"] %}
+        {%- elif function.typename.name in ["rid", "nid"] %}
             if (ret)
                 lua_pushinteger(L, (nux_intptr_t)ret);
             else

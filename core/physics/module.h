@@ -1,7 +1,7 @@
 #ifndef NUX_PHYSICS_MODULE_H
 #define NUX_PHYSICS_MODULE_H
 
-#include <ecs/module.h>
+#include <scene/module.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -87,7 +87,7 @@ typedef struct
 
 // physics,c
 
-void      nux_physics_add_rigidbody(nux_eid_t e);
+void      nux_physics_add_rigidbody(nux_nid_t e);
 nux_u32_t nux_physics_add_pm(nux_v3_t pos, nux_v3_t vel);
 void      nux_physics_add_distance_constraint(nux_u32_t a,
                                               nux_u32_t b,

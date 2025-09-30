@@ -146,24 +146,24 @@ draw_line (nux_gpu_encoder_t *enc, nux_u32_t transform, nux_v3_t a, nux_v3_t b)
     draw(enc, first, vertex_count, transform);
 }
 void
-nux_renderer_render (nux_ecs_t *ecs)
+nux_renderer_render (nux_scene_t *scene)
 {
     nux_graphics_module_t *module = nux_graphics_module();
     nux_gpu_encoder_t     *enc    = &module->encoder;
 
     // Propagate transforms
-    nux_eid_t it = NUX_NULL;
-    while ((it = nux_ecs_next(module->transform_iter, it)))
+    nux_nid_t it = NUX_NULL;
+    while ((it = nux_query_next(module->transform_iter, it)))
     {
         nux_transform_update_matrix(it);
     }
 
     // Find current camera
-    nux_eid_t camera = NUX_NULL;
+    nux_nid_t camera = NUX_NULL;
     it               = NUX_NULL;
-    while ((it = nux_ecs_next(module->transform_camera_iter, it)))
+    while ((it = nux_query_next(module->transform_camera_iter, it)))
     {
-        nux_camera_t *c = nux_ecs_get(it, NUX_COMPONENT_CAMERA);
+        nux_camera_t *c = nux_component_get(it, NUX_COMPONENT_CAMERA);
         // TODO: check current / active
         camera = it;
         break;
@@ -173,8 +173,9 @@ nux_renderer_render (nux_ecs_t *ecs)
     if (camera)
     {
         // Update constants
-        nux_transform_t *ct = nux_ecs_get(camera, NUX_COMPONENT_TRANSFORM);
-        nux_camera_t    *cc = nux_ecs_get(camera, NUX_COMPONENT_CAMERA);
+        nux_transform_t *ct
+            = nux_component_get(camera, NUX_COMPONENT_TRANSFORM);
+        nux_camera_t *cc = nux_component_get(camera, NUX_COMPONENT_CAMERA);
 
         nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROS, 1);
         nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
@@ -211,14 +212,15 @@ nux_renderer_render (nux_ecs_t *ecs)
         nux_gpu_bind_buffer(
             enc, NUX_GPU_DESC_UBER_VERTICES, module->vertices_buffer.slot);
         it = NUX_NULL;
-        while ((it = nux_ecs_next(module->transform_staticmesh_iter, it)))
+        while ((it = nux_query_next(module->transform_staticmesh_iter, it)))
         {
-            nux_staticmesh_t *sm = nux_ecs_get(it, NUX_COMPONENT_STATICMESH);
+            nux_staticmesh_t *sm
+                = nux_component_get(it, NUX_COMPONENT_STATICMESH);
             if (!sm->mesh)
             {
                 continue;
             }
-            nux_transform_t *t = nux_ecs_get(it, NUX_COMPONENT_TRANSFORM);
+            nux_transform_t *t = nux_component_get(it, NUX_COMPONENT_TRANSFORM);
             nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
             nux_texture_t *tex = NUX_NULL;
@@ -240,9 +242,10 @@ nux_renderer_render (nux_ecs_t *ecs)
         // Draw debug lines
         nux_gpu_bind_pipeline(enc, module->uber_pipeline_line.slot);
         it = NUX_NULL;
-        while ((it = nux_ecs_next(module->transform_staticmesh_iter, it)))
+        while ((it = nux_query_next(module->transform_staticmesh_iter, it)))
         {
-            nux_staticmesh_t *sm = nux_ecs_get(it, NUX_COMPONENT_STATICMESH);
+            nux_staticmesh_t *sm
+                = nux_component_get(it, NUX_COMPONENT_STATICMESH);
             if (!sm->mesh)
             {
                 continue;

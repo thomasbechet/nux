@@ -203,8 +203,8 @@ serde_config (nux_config_t *config, nux_b32_t serialize)
     serde_field_u32(&s, "height", &config->window.height);
     serde_end_table(&s);
 
-    // ecs
-    serde_begin_table(&s, "ecs", &config->ecs.enable);
+    // scene
+    serde_begin_table(&s, "scene", &config->scene.enable);
     serde_end_table(&s);
 
     // physics

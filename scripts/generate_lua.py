@@ -130,7 +130,7 @@ def parse_header(args, header, modules):
         typedef int nux_f64_t;
         typedef int nux_intptr_t;
         typedef int nux_rid_t;
-        typedef int nux_eid_t;
+        typedef int nux_nid_t;
 
         typedef int nux_status_t;
         
@@ -218,7 +218,7 @@ if __name__ == "__main__":
         "core/base/api.h",
         "core/io/api.h",
         "core/lua/api.h",
-        "core/ecs/api.h",
+        "core/scene/api.h",
         "core/graphics/api.h",
         "core/physics/api.h",
     ]

@@ -37,7 +37,7 @@ nux_base_init (void *userdata)
     module->config.window.enable                   = NUX_TRUE;
     module->config.window.width                    = 900;
     module->config.window.height                   = 400;
-    module->config.ecs.enable                      = NUX_TRUE;
+    module->config.scene.enable                    = NUX_TRUE;
     module->config.physics.enable                  = NUX_TRUE;
     module->config.graphics.transforms_buffer_size = 8192;
     module->config.graphics.batches_buffer_size    = 8192;

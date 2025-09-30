@@ -1,7 +1,7 @@
 #include <base/internal.h>
 #include <io/internal.h>
 #include <lua/internal.h>
-#include <ecs/internal.h>
+#include <scene/internal.h>
 #include <graphics/internal.h>
 #include <physics/internal.h>
 #include <debug/internal.h>
@@ -13,7 +13,7 @@ struct nux_instance_t
     nux_base_module_t     base;
     nux_io_module_t       io;
     nux_lua_module_t      lua;
-    nux_ecs_module_t      ecs;
+    nux_scene_module_t    scene;
     nux_graphics_module_t graphics;
     nux_physics_module_t  physics;
     nux_debug_module_t    debug;
@@ -40,10 +40,10 @@ nux_lua_module (void)
 {
     return &_instance->lua;
 }
-nux_ecs_module_t *
-nux_ecs_module (void)
+nux_scene_module_t *
+nux_scene_module (void)
 {
-    return &_instance->ecs;
+    return &_instance->scene;
 }
 nux_graphics_module_t *
 nux_graphics_module (void)
@@ -100,7 +100,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     nux_log_set_level(nux_base_module()->config.log.level);
 
     // Initialize optional modules
-    NUX_CHECK(nux_ecs_init(), goto cleanup);
+    NUX_CHECK(nux_scene_init(), goto cleanup);
     NUX_CHECK(nux_graphics_init(), goto cleanup);
     NUX_CHECK(nux_physics_init(), goto cleanup);
     NUX_CHECK(nux_debug_init(), goto cleanup);
@@ -131,7 +131,7 @@ nux_instance_free (nux_instance_t *instance)
     nux_debug_free();
     nux_physics_free();
     nux_graphics_free();
-    nux_ecs_free();
+    nux_scene_free();
     nux_lua_free();
     nux_io_free();
     nux_base_free();
@@ -180,16 +180,16 @@ nux_instance_update (nux_instance_t *instance)
     if (!test)
     {
         nux_json_writer_t j;
-        nux_json_writer_init(&j, "ecs.json");
-        nux_ecs_write(&j.writer, "ecs", nux_ecs_active());
+        nux_json_writer_init(&j, "scene.json");
+        nux_scene_write(&j.writer, "scene", nux_scene_active());
         nux_json_writer_close(&j);
     }
     if (!test)
     {
-        nux_ecs_t        *ecs = nux_ecs_new(nux_arena_core());
+        nux_scene_t      *scene = nux_scene_new(nux_arena_core());
         nux_json_reader_t j;
-        nux_json_reader_init(&j, "ecs.json");
-        NUX_ASSERT(nux_ecs_read(&j.reader, "ecs", ecs));
+        nux_json_reader_init(&j, "scene.json");
+        NUX_ASSERT(nux_scene_read(&j.reader, "scene", scene));
         test = 1;
     }
     // if (!test)

@@ -1,8 +1,7 @@
 #ifndef NUX_GRAPHICS_MODULE_H
 #define NUX_GRAPHICS_MODULE_H
 
-#include <ecs/module.h>
-#include <io/module.h>
+#include <scene/module.h>
 
 ////////////////////////////
 ///        TYPES         ///
@@ -136,7 +135,7 @@ nux_status_t nux_graphics_push_frame_transforms(nux_u32_t       mcount,
 
 // renderer.c
 
-void nux_renderer_render(nux_ecs_t *ecs);
+void nux_renderer_render(nux_scene_t *scene);
 void nux_graphics_draw_line(nux_v3_t a, nux_v3_t b, nux_u32_t color);
 
 // font.c

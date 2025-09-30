@@ -1,8 +1,7 @@
 #ifndef NUX_DEBUG_MODULE_H
 #define NUX_DEBUG_MODULE_H
 
-#include <io/module.h>
-#include <ecs/module.h>
+#include <scene/module.h>
 
 ////////////////////////////
 ///        TYPES         ///

@@ -16,8 +16,8 @@ function M:on_load()
     local mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
     self.cube_mesh = mesh_cube
 
-    self.ecs = ecs.load_gltf(self.arena, "assets/industrial.glb")
-    ecs.set_active(self.ecs)
+    self.scene = scene.load_gltf(self.arena, "assets/industrial.glb")
+    scene.set_active(self.scene)
     self.camera = require("camera")
 
     local template = {
@@ -50,7 +50,7 @@ function M:on_load()
     for i = 0, 100 do
         local x = i // 10
         local y = i % 10
-        local n = ecs.instantiate({
+        local n = node.instantiate({
             template = template3,
             transform = { translation = { x * 8, 0.1, y * 5 + 0.1 } }
         }
@@ -67,7 +67,7 @@ function M:on_load()
     -- Create the API monolith
     local x, y = 350, 2000
     self.monolith_canvas = canvas.new(self.arena, x, y)
-    self.cube = ecs.create(ecs.root())
+    self.cube = node.create(node.root())
     transform.add(self.cube)
     transform.set_translation(self.cube, { 10, 0, 0 })
     transform.set_scale(self.cube, { x / 50, y / 50, 1 })
@@ -116,6 +116,7 @@ function M:on_update()
     canvas.text(c, 10, 70,
         string.format("mem:%s", memhu(arena.memory_usage(arena.frame()))))
     canvas.text(c, math.floor(cursor.x(0)), math.floor(cursor.y(0)), "X")
+    canvas.text(c, 10, 80, string.format("nodes:%d", scene.count()))
 
     local forward = transform.forward(self.camera.entity)
     if button.just_pressed(0, button.RB) then
@@ -123,7 +124,7 @@ function M:on_update()
         if hit then
             local pos = hit.position
             print("hit at " .. tostring(pos))
-            local e = ecs.create(ecs.root())
+            local e = node.create(node.root())
             transform.add(e)
             transform.set_translation(e, pos)
             staticmesh.add(e)
@@ -140,7 +141,7 @@ function M:on_update()
             }
             local m, t = table.unpack(r[(core.random() % #r) + 1])
 
-            local e = ecs.create(ecs.root())
+            local e = node.create(node.root())
             transform.add(e)
             transform.set_translation(e, position)
             local min = mesh.bounds_min(m)
@@ -151,7 +152,7 @@ function M:on_update()
             rigidbody.set_velocity(e, forward * force)
 
             -- add mesh
-            local child = ecs.create(e)
+            local child = node.create(e)
             transform.add(child)
             staticmesh.add(child)
             transform.set_translation(child, -min)

@@ -11,18 +11,18 @@ typedef enum
 
 typedef struct
 {
-    nux_eid_t e;
+    nux_nid_t e;
     nux_v3_t  p;
     nux_v3_t  n;
 } nux_raycast_hit_t;
 
-void nux_rigidbody_add(nux_eid_t e);
-void nux_rigidbody_remove(nux_eid_t e);
-void nux_rigidbody_set_velocity(nux_eid_t e, nux_v3_t velocity);
+void nux_rigidbody_add(nux_nid_t e);
+void nux_rigidbody_remove(nux_nid_t e);
+void nux_rigidbody_set_velocity(nux_nid_t e, nux_v3_t velocity);
 
-void nux_collider_add_sphere(nux_eid_t e, nux_f32_t radius);
-void nux_collider_add_aabb(nux_eid_t e, nux_v3_t min, nux_v3_t max);
-void nux_collider_remove(nux_eid_t e);
+void nux_collider_add_sphere(nux_nid_t e, nux_f32_t radius);
+void nux_collider_add_aabb(nux_nid_t e, nux_v3_t min, nux_v3_t max);
+void nux_collider_remove(nux_nid_t e);
 
 nux_raycast_hit_t nux_physics_raycast(nux_v3_t pos, nux_v3_t dir);
 

@@ -5,7 +5,7 @@
 #include "base/api.h"
 #include "io/api.h"
 #include "lua/api.h"
-#include "ecs/api.h"
+#include "scene/api.h"
 #include "graphics/api.h"
 #include "physics/api.h"
 

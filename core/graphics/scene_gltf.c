@@ -166,8 +166,8 @@ load_texture (nux_arena_t *arena, const cgltf_texture *texture)
     stbi_image_free(img);
     return tex;
 }
-nux_ecs_t *
-nux_ecs_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
+nux_scene_t *
+nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
 {
     typedef struct
     {
@@ -184,7 +184,7 @@ nux_ecs_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_ecs_t *ecs = NUX_NULL;
+    nux_scene_t *scene = NUX_NULL;
 
     // Load file
     nux_u32_t buf_size;
@@ -255,31 +255,31 @@ nux_ecs_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     // Load scenes and nodes
     for (nux_u32_t s = 0; s < data->scenes_count; ++s)
     {
-        cgltf_scene *scene = data->scenes + s;
+        cgltf_scene *gltf_scene = data->scenes + s;
 
         // Compute required node
         nux_u32_t node_count = 0;
         NUX_UNUSED1(node_count);
-        for (nux_u32_t n = 0; n < scene->nodes_count; ++n)
+        for (nux_u32_t n = 0; n < gltf_scene->nodes_count; ++n)
         {
-            cgltf_node *node = scene->nodes[n];
+            cgltf_node *node = gltf_scene->nodes[n];
             if (node->mesh)
             {
                 node_count += node->mesh->primitives_count;
             }
         }
 
-        // Create ECS
-        ecs = nux_ecs_new(arena);
-        NUX_CHECK(ecs, goto error);
-        nux_ecs_set_active(ecs);
+        // Create scene
+        scene = nux_scene_new(arena);
+        NUX_CHECK(scene, goto error);
+        nux_scene_set_active(scene);
 
         // Create nodes
-        for (nux_u32_t n = 0; n < scene->nodes_count; ++n)
+        for (nux_u32_t n = 0; n < gltf_scene->nodes_count; ++n)
         {
-            cgltf_node *node = scene->nodes[n];
+            cgltf_node *node = gltf_scene->nodes[n];
 
-            nux_eid_t e = nux_ecs_create(nux_ecs_root());
+            nux_nid_t e = nux_node_create(nux_node_root());
             NUX_CHECK(e, goto error);
 
             nux_v3_t translation = NUX_V3_ZEROS;
@@ -376,10 +376,10 @@ nux_ecs_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     }
 
     cgltf_free(data);
-    nux_ecs_set_active(NUX_NULL);
-    return ecs;
+    nux_scene_set_active(NUX_NULL);
+    return scene;
 error:
     cgltf_free(data);
-    nux_ecs_set_active(NUX_NULL);
+    nux_scene_set_active(NUX_NULL);
     return NUX_NULL;
 }

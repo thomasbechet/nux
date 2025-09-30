@@ -23,12 +23,12 @@ nux_graphics_init (void)
     type->cleanup = nux_font_cleanup;
 
     // Register components
-    nux_ecs_component_t *comp;
-    comp = nux_ecs_register_component(
+    nux_component_t *comp;
+    comp = nux_component_register(
         NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
     comp->read  = nux_camera_read;
     comp->write = nux_camera_write;
-    comp        = nux_ecs_register_component(
+    comp        = nux_component_register(
         NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
     comp->read  = nux_staticmesh_read;
     comp->write = nux_staticmesh_write;
@@ -120,22 +120,21 @@ nux_graphics_init (void)
               return NUX_FAILURE);
 
     // Create iterators
-    module->transform_iter = nux_ecs_new_iter(nux_arena_core(), 1, 0);
+    module->transform_iter = nux_query_new(nux_arena_core(), 1, 0);
     NUX_CHECK(module->transform_iter, return NUX_FAILURE);
-    nux_ecs_includes(module->transform_iter, NUX_COMPONENT_TRANSFORM);
+    nux_query_includes(module->transform_iter, NUX_COMPONENT_TRANSFORM);
 
-    module->transform_camera_iter = nux_ecs_new_iter(nux_arena_core(), 2, 0);
+    module->transform_camera_iter = nux_query_new(nux_arena_core(), 2, 0);
     NUX_CHECK(module->transform_camera_iter, return NUX_FAILURE);
-    nux_ecs_includes(module->transform_camera_iter, NUX_COMPONENT_TRANSFORM);
-    nux_ecs_includes(module->transform_camera_iter, NUX_COMPONENT_CAMERA);
+    nux_query_includes(module->transform_camera_iter, NUX_COMPONENT_TRANSFORM);
+    nux_query_includes(module->transform_camera_iter, NUX_COMPONENT_CAMERA);
 
-    module->transform_staticmesh_iter
-        = nux_ecs_new_iter(nux_arena_core(), 2, 0);
+    module->transform_staticmesh_iter = nux_query_new(nux_arena_core(), 2, 0);
     NUX_CHECK(module->transform_staticmesh_iter, return NUX_FAILURE);
-    nux_ecs_includes(module->transform_staticmesh_iter,
-                     NUX_COMPONENT_TRANSFORM);
-    nux_ecs_includes(module->transform_staticmesh_iter,
-                     NUX_COMPONENT_STATICMESH);
+    nux_query_includes(module->transform_staticmesh_iter,
+                       NUX_COMPONENT_TRANSFORM);
+    nux_query_includes(module->transform_staticmesh_iter,
+                       NUX_COMPONENT_STATICMESH);
 
     // Push identity transform
     nux_m4_t identity = nux_m4_identity();
@@ -200,8 +199,8 @@ nux_graphics_update (void)
         nux_canvas_render(c);
     }
 
-    // Render ECS
-    nux_renderer_render(nux_ecs_active());
+    // Render scene
+    nux_renderer_render(nux_scene_active());
 
     // Blit canvas layers
     canvas = NUX_NULL;

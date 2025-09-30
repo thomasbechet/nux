@@ -412,7 +412,7 @@ l_lua_load (lua_State *L)
 static int
 l_transform_add (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_transform_add(e);
     l_checkerror(L);
@@ -422,7 +422,7 @@ l_transform_add (lua_State *L)
 static int
 l_transform_remove (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_transform_remove(e);
     l_checkerror(L);
@@ -432,7 +432,7 @@ l_transform_remove (lua_State *L)
 static int
 l_transform_get_local_translation (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_get_local_translation(e);
     l_checkerror(L);
 
@@ -442,7 +442,7 @@ l_transform_get_local_translation (lua_State *L)
 static int
 l_transform_get_local_rotation (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_q4_t  ret = nux_transform_get_local_rotation(e);
     l_checkerror(L);
 
@@ -455,7 +455,7 @@ l_transform_get_local_rotation (lua_State *L)
 static int
 l_transform_get_local_scale (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_get_local_scale(e);
     l_checkerror(L);
 
@@ -465,7 +465,7 @@ l_transform_get_local_scale (lua_State *L)
 static int
 l_transform_get_translation (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_get_translation(e);
     l_checkerror(L);
 
@@ -475,7 +475,7 @@ l_transform_get_translation (lua_State *L)
 static int
 l_transform_get_rotation (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_q4_t  ret = nux_transform_get_rotation(e);
     l_checkerror(L);
 
@@ -488,7 +488,7 @@ l_transform_get_rotation (lua_State *L)
 static int
 l_transform_get_scale (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_get_scale(e);
     l_checkerror(L);
 
@@ -498,7 +498,7 @@ l_transform_get_scale (lua_State *L)
 static int
 l_transform_set_translation (lua_State *L)
 {
-    nux_eid_t e        = luaL_checknumber(L, 1);
+    nux_nid_t e        = luaL_checknumber(L, 1);
     nux_v3_t  position = nux_lua_check_vec3(L, 2);
 
     nux_transform_set_translation(e, position);
@@ -509,7 +509,7 @@ l_transform_set_translation (lua_State *L)
 static int
 l_transform_set_rotation (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
     nux_q4_t  rotation;
     rotation.x = luaL_checknumber(L, 2);
     rotation.y = luaL_checknumber(L, 3);
@@ -524,7 +524,7 @@ l_transform_set_rotation (lua_State *L)
 static int
 l_transform_set_rotation_euler (lua_State *L)
 {
-    nux_eid_t e     = luaL_checknumber(L, 1);
+    nux_nid_t e     = luaL_checknumber(L, 1);
     nux_v3_t  euler = nux_lua_check_vec3(L, 2);
 
     nux_transform_set_rotation_euler(e, euler);
@@ -535,7 +535,7 @@ l_transform_set_rotation_euler (lua_State *L)
 static int
 l_transform_set_scale (lua_State *L)
 {
-    nux_eid_t e     = luaL_checknumber(L, 1);
+    nux_nid_t e     = luaL_checknumber(L, 1);
     nux_v3_t  scale = nux_lua_check_vec3(L, 2);
 
     nux_transform_set_scale(e, scale);
@@ -546,7 +546,7 @@ l_transform_set_scale (lua_State *L)
 static int
 l_transform_set_ortho (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
     nux_v3_t  a = nux_lua_check_vec3(L, 2);
     nux_v3_t  b = nux_lua_check_vec3(L, 3);
     nux_v3_t  c = nux_lua_check_vec3(L, 4);
@@ -559,7 +559,7 @@ l_transform_set_ortho (lua_State *L)
 static int
 l_transform_forward (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_forward(e);
     l_checkerror(L);
 
@@ -569,7 +569,7 @@ l_transform_forward (lua_State *L)
 static int
 l_transform_backward (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_backward(e);
     l_checkerror(L);
 
@@ -579,7 +579,7 @@ l_transform_backward (lua_State *L)
 static int
 l_transform_left (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_left(e);
     l_checkerror(L);
 
@@ -589,7 +589,7 @@ l_transform_left (lua_State *L)
 static int
 l_transform_right (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_right(e);
     l_checkerror(L);
 
@@ -599,7 +599,7 @@ l_transform_right (lua_State *L)
 static int
 l_transform_up (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_up(e);
     l_checkerror(L);
 
@@ -609,7 +609,7 @@ l_transform_up (lua_State *L)
 static int
 l_transform_down (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  ret = nux_transform_down(e);
     l_checkerror(L);
 
@@ -619,7 +619,7 @@ l_transform_down (lua_State *L)
 static int
 l_transform_rotate (lua_State *L)
 {
-    nux_eid_t e     = luaL_checknumber(L, 1);
+    nux_nid_t e     = luaL_checknumber(L, 1);
     nux_v3_t  axis  = nux_lua_check_vec3(L, 2);
     nux_f32_t angle = luaL_checknumber(L, 3);
 
@@ -631,7 +631,7 @@ l_transform_rotate (lua_State *L)
 static int
 l_transform_rotate_x (lua_State *L)
 {
-    nux_eid_t e     = luaL_checknumber(L, 1);
+    nux_nid_t e     = luaL_checknumber(L, 1);
     nux_f32_t angle = luaL_checknumber(L, 2);
 
     nux_transform_rotate_x(e, angle);
@@ -642,7 +642,7 @@ l_transform_rotate_x (lua_State *L)
 static int
 l_transform_rotate_y (lua_State *L)
 {
-    nux_eid_t e     = luaL_checknumber(L, 1);
+    nux_nid_t e     = luaL_checknumber(L, 1);
     nux_f32_t angle = luaL_checknumber(L, 2);
 
     nux_transform_rotate_y(e, angle);
@@ -653,7 +653,7 @@ l_transform_rotate_y (lua_State *L)
 static int
 l_transform_rotate_z (lua_State *L)
 {
-    nux_eid_t e     = luaL_checknumber(L, 1);
+    nux_nid_t e     = luaL_checknumber(L, 1);
     nux_f32_t angle = luaL_checknumber(L, 2);
 
     nux_transform_rotate_z(e, angle);
@@ -664,7 +664,7 @@ l_transform_rotate_z (lua_State *L)
 static int
 l_transform_look_at (lua_State *L)
 {
-    nux_eid_t e      = luaL_checknumber(L, 1);
+    nux_nid_t e      = luaL_checknumber(L, 1);
     nux_v3_t  center = nux_lua_check_vec3(L, 2);
 
     nux_transform_look_at(e, center);
@@ -673,14 +673,13 @@ l_transform_look_at (lua_State *L)
     return 0;
 }
 static int
-l_ecs_new_iter (lua_State *L)
+l_query_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t             include_count = luaL_checknumber(L, 2);
-    nux_u32_t             exclude_count = luaL_checknumber(L, 3);
-    const nux_ecs_iter_t *ret
-        = nux_ecs_new_iter(arena, include_count, exclude_count);
+    nux_u32_t          include_count = luaL_checknumber(L, 2);
+    nux_u32_t          exclude_count = luaL_checknumber(L, 3);
+    const nux_query_t *ret = nux_query_new(arena, include_count, exclude_count);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -695,11 +694,11 @@ l_ecs_new_iter (lua_State *L)
     return 1;
 }
 static int
-l_ecs_new_iter_any (lua_State *L)
+l_query_new_any (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_ecs_iter_t *ret = nux_ecs_new_iter_any(arena);
+    const nux_query_t *ret = nux_query_new_any(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -714,47 +713,47 @@ l_ecs_new_iter_any (lua_State *L)
     return 1;
 }
 static int
-l_ecs_includes (lua_State *L)
+l_query_includes (lua_State *L)
 {
-    nux_ecs_iter_t *it
-        = nux_resource_check(NUX_RESOURCE_ECS_ITER, luaL_checkinteger(L, 1));
+    nux_query_t *it
+        = nux_resource_check(NUX_RESOURCE_QUERY, luaL_checkinteger(L, 1));
     nux_u32_t c = luaL_checknumber(L, 2);
 
-    nux_ecs_includes(it, c);
+    nux_query_includes(it, c);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_ecs_excludes (lua_State *L)
+l_query_excludes (lua_State *L)
 {
-    nux_ecs_iter_t *it
-        = nux_resource_check(NUX_RESOURCE_ECS_ITER, luaL_checkinteger(L, 1));
+    nux_query_t *it
+        = nux_resource_check(NUX_RESOURCE_QUERY, luaL_checkinteger(L, 1));
     nux_u32_t c = luaL_checknumber(L, 2);
 
-    nux_ecs_excludes(it, c);
+    nux_query_excludes(it, c);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_ecs_next (lua_State *L)
+l_query_next (lua_State *L)
 {
-    nux_ecs_iter_t *it
-        = nux_resource_check(NUX_RESOURCE_ECS_ITER, luaL_checkinteger(L, 1));
-    nux_eid_t e   = luaL_checknumber(L, 2);
-    nux_u32_t ret = nux_ecs_next(it, e);
+    nux_query_t *it
+        = nux_resource_check(NUX_RESOURCE_QUERY, luaL_checkinteger(L, 1));
+    nux_nid_t e   = luaL_checknumber(L, 2);
+    nux_u32_t ret = nux_query_next(it, e);
     l_checkerror(L);
 
     lua_pushinteger(L, ret);
     return 1;
 }
 static int
-l_ecs_new (lua_State *L)
+l_scene_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_ecs_t *ret = nux_ecs_new(arena);
+    const nux_scene_t *ret = nux_scene_new(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -769,20 +768,20 @@ l_ecs_new (lua_State *L)
     return 1;
 }
 static int
-l_ecs_set_active (lua_State *L)
+l_scene_set_active (lua_State *L)
 {
-    nux_ecs_t *ecs
-        = nux_resource_check(NUX_RESOURCE_ECS, luaL_checkinteger(L, 1));
-    nux_status_t ret = nux_ecs_set_active(ecs);
+    nux_scene_t *scene
+        = nux_resource_check(NUX_RESOURCE_SCENE, luaL_checkinteger(L, 1));
+    nux_status_t ret = nux_scene_set_active(scene);
     l_checkerror(L);
 
     lua_pushinteger(L, ret);
     return 1;
 }
 static int
-l_ecs_active (lua_State *L)
+l_scene_active (lua_State *L)
 {
-    const nux_ecs_t *ret = nux_ecs_active();
+    const nux_scene_t *ret = nux_scene_active();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -797,10 +796,48 @@ l_ecs_active (lua_State *L)
     return 1;
 }
 static int
-l_ecs_create (lua_State *L)
+l_scene_count (lua_State *L)
 {
-    nux_eid_t parent = luaL_checknumber(L, 1);
-    nux_eid_t ret    = nux_ecs_create(parent);
+    nux_u32_t ret = nux_scene_count();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_scene_clear (lua_State *L)
+{
+
+    nux_scene_clear();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_scene_load_gltf (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    const nux_c8_t    *path = luaL_checkstring(L, 2);
+    const nux_scene_t *ret  = nux_scene_load_gltf(arena, path);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_node_create (lua_State *L)
+{
+    nux_nid_t parent = luaL_checknumber(L, 1);
+    nux_nid_t ret    = nux_node_create(parent);
     l_checkerror(L);
 
     if (ret)
@@ -814,29 +851,29 @@ l_ecs_create (lua_State *L)
     return 1;
 }
 static int
-l_ecs_delete (lua_State *L)
+l_node_delete (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
-    nux_ecs_delete(e);
+    nux_node_delete(e);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_ecs_valid (lua_State *L)
+l_node_valid (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
-    nux_b32_t ret = nux_ecs_valid(e);
+    nux_nid_t e   = luaL_checknumber(L, 1);
+    nux_b32_t ret = nux_node_valid(e);
     l_checkerror(L);
 
     lua_pushboolean(L, ret);
     return 1;
 }
 static int
-l_ecs_root (lua_State *L)
+l_node_root (lua_State *L)
 {
-    nux_eid_t ret = nux_ecs_root();
+    nux_nid_t ret = nux_node_root();
     l_checkerror(L);
 
     if (ret)
@@ -850,10 +887,10 @@ l_ecs_root (lua_State *L)
     return 1;
 }
 static int
-l_ecs_parent (lua_State *L)
+l_node_parent (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
-    nux_eid_t ret = nux_ecs_parent(e);
+    nux_nid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t ret = nux_node_parent(e);
     l_checkerror(L);
 
     if (ret)
@@ -867,21 +904,21 @@ l_ecs_parent (lua_State *L)
     return 1;
 }
 static int
-l_ecs_set_parent (lua_State *L)
+l_node_set_parent (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
-    nux_eid_t p = luaL_checknumber(L, 2);
+    nux_nid_t e = luaL_checknumber(L, 1);
+    nux_nid_t p = luaL_checknumber(L, 2);
 
-    nux_ecs_set_parent(e, p);
+    nux_node_set_parent(e, p);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_ecs_sibling (lua_State *L)
+l_node_sibling (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
-    nux_eid_t ret = nux_ecs_sibling(e);
+    nux_nid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t ret = nux_node_sibling(e);
     l_checkerror(L);
 
     if (ret)
@@ -895,10 +932,10 @@ l_ecs_sibling (lua_State *L)
     return 1;
 }
 static int
-l_ecs_child (lua_State *L)
+l_node_child (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
-    nux_eid_t ret = nux_ecs_child(e);
+    nux_nid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t ret = nux_node_child(e);
     l_checkerror(L);
 
     if (ret)
@@ -912,74 +949,36 @@ l_ecs_child (lua_State *L)
     return 1;
 }
 static int
-l_ecs_count (lua_State *L)
+l_node_remove (lua_State *L)
 {
-    nux_u32_t ret = nux_ecs_count();
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_ecs_clear (lua_State *L)
-{
-
-    nux_ecs_clear();
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_ecs_remove (lua_State *L)
-{
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
     nux_u32_t c = luaL_checknumber(L, 2);
 
-    nux_ecs_remove(e, c);
+    nux_node_remove(e, c);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_ecs_has (lua_State *L)
+l_node_has (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_u32_t c   = luaL_checknumber(L, 2);
-    nux_b32_t ret = nux_ecs_has(e, c);
+    nux_b32_t ret = nux_node_has(e, c);
     l_checkerror(L);
 
     lua_pushboolean(L, ret);
     return 1;
 }
 static int
-l_ecs_instantiate (lua_State *L)
+l_node_instantiate (lua_State *L)
 {
-    nux_ecs_t *ecs
-        = nux_resource_check(NUX_RESOURCE_ECS, luaL_checkinteger(L, 1));
-    nux_status_t ret = nux_ecs_instantiate(ecs);
+    nux_scene_t *scene
+        = nux_resource_check(NUX_RESOURCE_SCENE, luaL_checkinteger(L, 1));
+    nux_status_t ret = nux_node_instantiate(scene);
     l_checkerror(L);
 
     lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_ecs_load_gltf (lua_State *L)
-{
-    nux_arena_t *arena
-        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_c8_t  *path = luaL_checkstring(L, 2);
-    const nux_ecs_t *ret  = nux_ecs_load_gltf(arena, path);
-    l_checkerror(L);
-
-    nux_rid_t ret_rid = nux_resource_rid(ret);
-    if (ret_rid)
-    {
-        lua_pushinteger(L, ret_rid);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
     return 1;
 }
 static int
@@ -1224,7 +1223,7 @@ l_graphics_draw_dir (lua_State *L)
 static int
 l_camera_add (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_camera_add(e);
     l_checkerror(L);
@@ -1234,7 +1233,7 @@ l_camera_add (lua_State *L)
 static int
 l_camera_remove (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_camera_remove(e);
     l_checkerror(L);
@@ -1244,7 +1243,7 @@ l_camera_remove (lua_State *L)
 static int
 l_camera_set_fov (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_f32_t fov = luaL_checknumber(L, 2);
 
     nux_camera_set_fov(e, fov);
@@ -1255,7 +1254,7 @@ l_camera_set_fov (lua_State *L)
 static int
 l_camera_set_near (lua_State *L)
 {
-    nux_eid_t e    = luaL_checknumber(L, 1);
+    nux_nid_t e    = luaL_checknumber(L, 1);
     nux_f32_t near = luaL_checknumber(L, 2);
 
     nux_camera_set_near(e, near);
@@ -1266,7 +1265,7 @@ l_camera_set_near (lua_State *L)
 static int
 l_camera_set_far (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_f32_t far = luaL_checknumber(L, 2);
 
     nux_camera_set_far(e, far);
@@ -1277,7 +1276,7 @@ l_camera_set_far (lua_State *L)
 static int
 l_staticmesh_add (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_staticmesh_add(e);
     l_checkerror(L);
@@ -1287,7 +1286,7 @@ l_staticmesh_add (lua_State *L)
 static int
 l_staticmesh_remove (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_staticmesh_remove(e);
     l_checkerror(L);
@@ -1297,7 +1296,7 @@ l_staticmesh_remove (lua_State *L)
 static int
 l_staticmesh_set_mesh (lua_State *L)
 {
-    nux_eid_t   e = luaL_checknumber(L, 1);
+    nux_nid_t   e = luaL_checknumber(L, 1);
     nux_mesh_t *mesh
         = nux_resource_check(NUX_RESOURCE_MESH, luaL_checkinteger(L, 2));
 
@@ -1309,7 +1308,7 @@ l_staticmesh_set_mesh (lua_State *L)
 static int
 l_staticmesh_set_texture (lua_State *L)
 {
-    nux_eid_t      e = luaL_checknumber(L, 1);
+    nux_nid_t      e = luaL_checknumber(L, 1);
     nux_texture_t *texture
         = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
 
@@ -1321,7 +1320,7 @@ l_staticmesh_set_texture (lua_State *L)
 static int
 l_staticmesh_set_colormap (lua_State *L)
 {
-    nux_eid_t      e = luaL_checknumber(L, 1);
+    nux_nid_t      e = luaL_checknumber(L, 1);
     nux_texture_t *colormap
         = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
 
@@ -1333,7 +1332,7 @@ l_staticmesh_set_colormap (lua_State *L)
 static int
 l_rigidbody_add (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_rigidbody_add(e);
     l_checkerror(L);
@@ -1343,7 +1342,7 @@ l_rigidbody_add (lua_State *L)
 static int
 l_rigidbody_remove (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_rigidbody_remove(e);
     l_checkerror(L);
@@ -1353,7 +1352,7 @@ l_rigidbody_remove (lua_State *L)
 static int
 l_rigidbody_set_velocity (lua_State *L)
 {
-    nux_eid_t e        = luaL_checknumber(L, 1);
+    nux_nid_t e        = luaL_checknumber(L, 1);
     nux_v3_t  velocity = nux_lua_check_vec3(L, 2);
 
     nux_rigidbody_set_velocity(e, velocity);
@@ -1364,7 +1363,7 @@ l_rigidbody_set_velocity (lua_State *L)
 static int
 l_collider_add_sphere (lua_State *L)
 {
-    nux_eid_t e      = luaL_checknumber(L, 1);
+    nux_nid_t e      = luaL_checknumber(L, 1);
     nux_f32_t radius = luaL_checknumber(L, 2);
 
     nux_collider_add_sphere(e, radius);
@@ -1375,7 +1374,7 @@ l_collider_add_sphere (lua_State *L)
 static int
 l_collider_add_aabb (lua_State *L)
 {
-    nux_eid_t e   = luaL_checknumber(L, 1);
+    nux_nid_t e   = luaL_checknumber(L, 1);
     nux_v3_t  min = nux_lua_check_vec3(L, 2);
     nux_v3_t  max = nux_lua_check_vec3(L, 3);
 
@@ -1387,7 +1386,7 @@ l_collider_add_aabb (lua_State *L)
 static int
 l_collider_remove (lua_State *L)
 {
-    nux_eid_t e = luaL_checknumber(L, 1);
+    nux_nid_t e = luaL_checknumber(L, 1);
 
     nux_collider_remove(e);
     l_checkerror(L);
@@ -1487,29 +1486,27 @@ static const struct luaL_Reg lib_transform[]
         { "rotate_z", l_transform_rotate_z },
         { "look_at", l_transform_look_at },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_ecs[]
-    = { { "new_iter", l_ecs_new_iter },
-        { "new_iter_any", l_ecs_new_iter_any },
-        { "includes", l_ecs_includes },
-        { "excludes", l_ecs_excludes },
-        { "next", l_ecs_next },
-        { "new", l_ecs_new },
-        { "set_active", l_ecs_set_active },
-        { "active", l_ecs_active },
-        { "create", l_ecs_create },
-        { "delete", l_ecs_delete },
-        { "valid", l_ecs_valid },
-        { "root", l_ecs_root },
-        { "parent", l_ecs_parent },
-        { "set_parent", l_ecs_set_parent },
-        { "sibling", l_ecs_sibling },
-        { "child", l_ecs_child },
-        { "count", l_ecs_count },
-        { "clear", l_ecs_clear },
-        { "remove", l_ecs_remove },
-        { "has", l_ecs_has },
-        { "instantiate", l_ecs_instantiate },
-        { "load_gltf", l_ecs_load_gltf },
+static const struct luaL_Reg lib_query[]
+    = { { "new", l_query_new },           { "new_any", l_query_new_any },
+        { "includes", l_query_includes }, { "excludes", l_query_excludes },
+        { "next", l_query_next },         { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_scene[]
+    = { { "new", l_scene_new },       { "set_active", l_scene_set_active },
+        { "active", l_scene_active }, { "count", l_scene_count },
+        { "clear", l_scene_clear },   { "load_gltf", l_scene_load_gltf },
+        { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_node[]
+    = { { "create", l_node_create },
+        { "delete", l_node_delete },
+        { "valid", l_node_valid },
+        { "root", l_node_root },
+        { "parent", l_node_parent },
+        { "set_parent", l_node_set_parent },
+        { "sibling", l_node_sibling },
+        { "child", l_node_child },
+        { "remove", l_node_remove },
+        { "has", l_node_has },
+        { "instantiate", l_node_instantiate },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
@@ -1691,8 +1688,14 @@ nux_lua_open_api (void)
     luaL_setfuncs(L, lib_transform, 0);
     lua_setglobal(L, "transform");
     lua_newtable(L);
-    luaL_setfuncs(L, lib_ecs, 0);
-    lua_setglobal(L, "ecs");
+    luaL_setfuncs(L, lib_query, 0);
+    lua_setglobal(L, "query");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_scene, 0);
+    lua_setglobal(L, "scene");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_node, 0);
+    lua_setglobal(L, "node");
     lua_newtable(L);
     luaL_setfuncs(L, lib_texture, 0);
     lua_pushinteger(L, 0);

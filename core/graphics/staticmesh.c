@@ -1,33 +1,33 @@
 #include "internal.h"
 
 void
-nux_staticmesh_add (nux_eid_t e)
+nux_staticmesh_add (nux_nid_t e)
 {
-    nux_staticmesh_t *sm = nux_ecs_add(e, NUX_COMPONENT_STATICMESH);
+    nux_staticmesh_t *sm = nux_component_add(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->mesh = NUX_NULL;
 }
 void
-nux_staticmesh_remove (nux_eid_t e)
+nux_staticmesh_remove (nux_nid_t e)
 {
-    nux_ecs_remove(e, NUX_COMPONENT_STATICMESH);
+    nux_node_remove(e, NUX_COMPONENT_STATICMESH);
 }
 void
-nux_staticmesh_set_mesh (nux_eid_t e, nux_mesh_t *mesh)
+nux_staticmesh_set_mesh (nux_nid_t e, nux_mesh_t *mesh)
 {
-    nux_staticmesh_t *sm = nux_ecs_get(e, NUX_COMPONENT_STATICMESH);
+    nux_staticmesh_t *sm = nux_component_get(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->mesh = nux_resource_rid(mesh);
 }
 void
-nux_staticmesh_set_texture (nux_eid_t e, nux_texture_t *texture)
+nux_staticmesh_set_texture (nux_nid_t e, nux_texture_t *texture)
 {
-    nux_staticmesh_t *sm = nux_ecs_get(e, NUX_COMPONENT_STATICMESH);
+    nux_staticmesh_t *sm = nux_component_get(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->texture = nux_resource_rid(texture);
 }
 void
-nux_staticmesh_set_colormap (nux_eid_t e, nux_texture_t *colormap)
+nux_staticmesh_set_colormap (nux_nid_t e, nux_texture_t *colormap)
 {
 }
 

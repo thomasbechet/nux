@@ -166,51 +166,53 @@ function transform.rotate_y(...) end
 function transform.rotate_z(...) end
 ---@return None
 function transform.look_at(...) end
-ecs={}
+query={}
 ---@return None
-function ecs.new_iter(...) end
+function query.new(...) end
 ---@return None
-function ecs.new_iter_any(...) end
+function query.new_any(...) end
 ---@return None
-function ecs.includes(...) end
+function query.includes(...) end
 ---@return None
-function ecs.excludes(...) end
+function query.excludes(...) end
 ---@return None
-function ecs.next(...) end
+function query.next(...) end
+scene={}
 ---@return None
-function ecs.new(...) end
+function scene.new(...) end
 ---@return None
-function ecs.set_active(...) end
+function scene.set_active(...) end
 ---@return None
-function ecs.active(...) end
+function scene.active(...) end
 ---@return None
-function ecs.create(...) end
+function scene.count(...) end
 ---@return None
-function ecs.delete(...) end
+function scene.clear(...) end
 ---@return None
-function ecs.valid(...) end
+function scene.load_gltf(...) end
+node={}
 ---@return None
-function ecs.root(...) end
+function node.create(...) end
 ---@return None
-function ecs.parent(...) end
+function node.delete(...) end
 ---@return None
-function ecs.set_parent(...) end
+function node.valid(...) end
 ---@return None
-function ecs.sibling(...) end
+function node.root(...) end
 ---@return None
-function ecs.child(...) end
+function node.parent(...) end
 ---@return None
-function ecs.count(...) end
+function node.set_parent(...) end
 ---@return None
-function ecs.clear(...) end
+function node.sibling(...) end
 ---@return None
-function ecs.remove(...) end
+function node.child(...) end
 ---@return None
-function ecs.has(...) end
+function node.remove(...) end
 ---@return None
-function ecs.instantiate(...) end
+function node.has(...) end
 ---@return None
-function ecs.load_gltf(...) end
+function node.instantiate(...) end
 texture={}
 texture.IMAGE_RGBA=0
 texture.IMAGE_INDEX=1

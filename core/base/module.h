@@ -373,8 +373,8 @@ typedef enum
     NUX_RESOURCE_CANVAS     = 5,
     NUX_RESOURCE_FONT       = 6,
     NUX_RESOURCE_FILE       = 7,
-    NUX_RESOURCE_ECS        = 8,
-    NUX_RESOURCE_ECS_ITER   = 9,
+    NUX_RESOURCE_SCENE      = 8,
+    NUX_RESOURCE_QUERY      = 9,
     NUX_RESOURCE_EVENT      = 10,
 
     NUX_RESOURCE_MAX = 256,
@@ -573,7 +573,7 @@ typedef struct
     struct
     {
         nux_b32_t enable;
-    } ecs;
+    } scene;
 
     struct
     {

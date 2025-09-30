@@ -106,7 +106,7 @@ json_writer (void *userdata, const nux_serde_value_t *v)
             j->has_previous_value = NUX_TRUE;
             break;
         case NUX_SERDE_RID:
-        case NUX_SERDE_EID:
+        case NUX_SERDE_NID:
         case NUX_SERDE_U32:
             n = nux_snprintf(buf, sizeof(buf), "%d", *v->u32);
             json_append(j, buf, n);
@@ -201,7 +201,7 @@ json_reader (void *userdata, nux_serde_value_t *v)
             j->it = toks + j->it->parent;
             break;
         case NUX_SERDE_RID:
-        case NUX_SERDE_EID:
+        case NUX_SERDE_NID:
         case NUX_SERDE_U32:
             NUX_CHECK(tok->type == JSMN_PRIMITIVE, return NUX_FAILURE);
             *v->u32 = nux_strtof(j->json + tok->start, NUX_NULL);

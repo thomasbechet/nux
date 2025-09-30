@@ -27,9 +27,9 @@ typedef struct
     nux_gpu_buffer_t  constants_buffer;
     nux_gpu_buffer_t  batches_buffer;
     nux_u32_t         batches_buffer_head;
-    nux_ecs_iter_t   *transform_iter;
-    nux_ecs_iter_t   *transform_staticmesh_iter;
-    nux_ecs_iter_t   *transform_camera_iter;
+    nux_query_t   *transform_iter;
+    nux_query_t   *transform_staticmesh_iter;
+    nux_query_t   *transform_camera_iter;
 
     const nux_texture_t *active_texture;
 } nux_graphics_module_t;
