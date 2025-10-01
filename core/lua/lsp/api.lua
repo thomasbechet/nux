@@ -42,19 +42,6 @@ function resource.name(...) end
 function resource.arena(...) end
 ---@return None
 function resource.find(...) end
-error={}
-error.NONE=0
-error.OUT_OF_MEMORY=1
-error.INVALID_TEXTURE_SIZE=4
-error.WASM_RUNTIME=8
-error.CART_EOF=10
-error.CART_MOUNT=11
-stat={}
-stat.FPS=0
-stat.SCREEN_WIDTH=1
-stat.SCREEN_HEIGHT=2
-stat.TIMESTAMP=3
-stat.MAX=4
 log={}
 log.DEBUG=4
 log.INFO=3
@@ -108,6 +95,19 @@ function io.cart_begin(...) end
 function io.cart_end(...) end
 ---@return None
 function io.write_cart_file(...) end
+error={}
+error.NONE=0
+error.OUT_OF_MEMORY=1
+error.INVALID_TEXTURE_SIZE=4
+error.WASM_RUNTIME=8
+error.CART_EOF=10
+error.CART_MOUNT=11
+stat={}
+stat.FPS=0
+stat.SCREEN_WIDTH=1
+stat.SCREEN_HEIGHT=2
+stat.TIMESTAMP=3
+stat.MAX=4
 controller={}
 controller.MAX=4
 name={}

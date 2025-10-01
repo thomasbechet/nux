@@ -5,7 +5,7 @@
 void
 nux_vlog (nux_log_level_t level, const nux_c8_t *fmt, va_list args)
 {
-    nux_io_module_t *module = nux_io_module();
+    nux_base_module_t *module = nux_base_module();
     if (level <= module->log_level)
     {
         nux_c8_t  buf[256];
@@ -26,5 +26,5 @@ nux_log (nux_log_level_t level, const nux_c8_t *fmt, ...)
 void
 nux_log_set_level (nux_log_level_t level)
 {
-    nux_io_module()->log_level = level;
+    nux_base_module()->log_level = level;
 }

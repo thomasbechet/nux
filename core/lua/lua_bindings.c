@@ -1433,8 +1433,6 @@ static const struct luaL_Reg lib_resource[]
     = { { "path", l_resource_path }, { "set_name", l_resource_set_name },
         { "name", l_resource_name }, { "arena", l_resource_arena },
         { "find", l_resource_find }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_stat[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]
     = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_button[]
@@ -1455,6 +1453,8 @@ static const struct luaL_Reg lib_io[]
         { "cart_end", l_io_cart_end },
         { "write_cart_file", l_io_write_cart_file },
         { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_error[]      = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_stat[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_name[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_disk[]       = { { NUX_NULL, NUX_NULL } };
@@ -1580,34 +1580,6 @@ nux_lua_open_api (void)
     luaL_setfuncs(L, lib_resource, 0);
     lua_setglobal(L, "resource");
     lua_newtable(L);
-    luaL_setfuncs(L, lib_error, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "NONE");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "OUT_OF_MEMORY");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "INVALID_TEXTURE_SIZE");
-    lua_pushinteger(L, 8);
-    lua_setfield(L, -2, "WASM_RUNTIME");
-    lua_pushinteger(L, 10);
-    lua_setfield(L, -2, "CART_EOF");
-    lua_pushinteger(L, 11);
-    lua_setfield(L, -2, "CART_MOUNT");
-    lua_setglobal(L, "error");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_stat, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "FPS");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "SCREEN_WIDTH");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "SCREEN_HEIGHT");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "TIMESTAMP");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "MAX");
-    lua_setglobal(L, "stat");
-    lua_newtable(L);
     luaL_setfuncs(L, lib_log, 0);
     lua_pushinteger(L, 4);
     lua_setfield(L, -2, "DEBUG");
@@ -1666,6 +1638,34 @@ nux_lua_open_api (void)
     lua_newtable(L);
     luaL_setfuncs(L, lib_io, 0);
     lua_setglobal(L, "io");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_error, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "NONE");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "OUT_OF_MEMORY");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "INVALID_TEXTURE_SIZE");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "WASM_RUNTIME");
+    lua_pushinteger(L, 10);
+    lua_setfield(L, -2, "CART_EOF");
+    lua_pushinteger(L, 11);
+    lua_setfield(L, -2, "CART_MOUNT");
+    lua_setglobal(L, "error");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_stat, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "FPS");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "SCREEN_WIDTH");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "SCREEN_HEIGHT");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "TIMESTAMP");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "MAX");
+    lua_setglobal(L, "stat");
     lua_newtable(L);
     luaL_setfuncs(L, lib_controller, 0);
     lua_pushinteger(L, 4);

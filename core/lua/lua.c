@@ -2,7 +2,7 @@
 
 #include "lua_code.c.inc"
 
-#include <io/internal.h>
+#include <base/internal.h>
 
 static void
 serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)

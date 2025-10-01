@@ -1,5 +1,4 @@
 #include <base/internal.h>
-#include <io/internal.h>
 #include <lua/internal.h>
 #include <scene/internal.h>
 #include <graphics/internal.h>
@@ -11,7 +10,6 @@ static nux_instance_t __thread *_instance;
 struct nux_instance_t
 {
     nux_base_module_t     base;
-    nux_io_module_t       io;
     nux_lua_module_t      lua;
     nux_scene_module_t    scene;
     nux_graphics_module_t graphics;
@@ -29,11 +27,6 @@ nux_base_module_t *
 nux_base_module (void)
 {
     return &_instance->base;
-}
-nux_io_module_t *
-nux_io_module (void)
-{
-    return &_instance->io;
 }
 nux_lua_module_t *
 nux_lua_module (void)
@@ -73,7 +66,6 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
 
     // Initialize mandatory modules
     NUX_CHECK(nux_base_init(userdata), goto cleanup);
-    NUX_CHECK(nux_io_init(), goto cleanup);
     NUX_CHECK(nux_lua_init(), goto cleanup);
 
     // Detect entry point type
@@ -133,7 +125,6 @@ nux_instance_free (nux_instance_t *instance)
     nux_graphics_free();
     nux_scene_free();
     nux_lua_free();
-    nux_io_free();
     nux_base_free();
 
     // Free core memory

@@ -3,7 +3,7 @@
 static nux_status_t
 open_os_file (const nux_c8_t *path, nux_io_mode_t mode, nux_u32_t *ret_slot)
 {
-    nux_io_module_t *module = nux_io_module();
+    nux_base_module_t *module = nux_base_module();
 
     nux_c8_t  normpath[NUX_PATH_BUF_SIZE];
     nux_u32_t len = nux_path_normalize(normpath, path);
@@ -27,64 +27,8 @@ static void
 close_os_file (nux_u32_t slot)
 {
     nux_os_file_close(nux_userdata(), slot);
-    nux_u32_vec_pushv(&nux_io_module()->free_file_slots, slot);
+    nux_u32_vec_pushv(&nux_base_module()->free_file_slots, slot);
 }
-
-nux_status_t
-nux_io_init (void)
-{
-    nux_io_module_t *module = nux_io_module();
-
-    NUX_CHECK(nux_u32_vec_init_capa(
-                  nux_arena_core(), NUX_IO_FILE_MAX, &module->free_file_slots),
-              goto error);
-
-    // Register types
-    nux_resource_type_t *type;
-    type = nux_resource_register(NUX_RESOURCE_FILE, sizeof(nux_file_t), "file");
-    type->cleanup = nux_file_cleanup;
-
-    // Initialize values
-    nux_u32_vec_fill_reversed(&module->free_file_slots);
-    module->disks_count = 0;
-
-    // Add OS disk
-    nux_disk_t *disk = module->disks + module->disks_count;
-    disk->type       = NUX_DISK_OS;
-    ++module->disks_count;
-
-    // Initialize controllers
-    for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
-    {
-        nux_controller_t *controller      = module->controllers + i;
-        controller->mode                  = NUX_CONTROLLER_MODE_MOTION;
-        controller->cursor_motion_axis[0] = NUX_AXIS_LEFTX;
-        controller->cursor_motion_axis[1] = NUX_AXIS_LEFTY;
-        controller->cursor_motion_speed   = 100;
-    }
-
-    return NUX_SUCCESS;
-error:
-    return NUX_FAILURE;
-}
-void
-nux_io_free (void)
-{
-    nux_io_module_t *module = nux_io_module();
-
-    // Unmount disks
-    for (nux_u32_t i = 0; i < module->disks_count; ++i)
-    {
-        nux_disk_t *disk = module->disks + i;
-        if (disk->type == NUX_DISK_CART)
-        {
-            close_os_file(disk->cart.slot);
-        }
-    }
-
-    NUX_ASSERT(module->free_file_slots.size == NUX_IO_FILE_MAX);
-}
-
 static nux_status_t
 cart_read (nux_u32_t slot, void *p, nux_u32_t n)
 {
@@ -144,7 +88,7 @@ cart_read_entries (nux_cart_t *cart)
 nux_status_t
 nux_io_mount (const nux_c8_t *path)
 {
-    nux_io_module_t *module = nux_io_module();
+    nux_base_module_t *module = nux_base_module();
 
     NUX_DEBUG("mounting '%s", path);
     NUX_ENSURE(module->disks_count < NUX_ARRAY_SIZE(module->disks),
@@ -184,7 +128,7 @@ nux_io_exists (const nux_c8_t *path)
 nux_status_t
 nux_io_open (const nux_c8_t *path, nux_io_mode_t mode, nux_file_t *file)
 {
-    nux_io_module_t *module = nux_io_module();
+    nux_base_module_t *module = nux_base_module();
 
     for (nux_u32_t d = 0; d < module->disks_count; ++d)
     {
@@ -391,7 +335,7 @@ cart_write_u32 (nux_u32_t slot, nux_u32_t v)
 nux_status_t
 nux_io_cart_begin (const nux_c8_t *path, nux_u32_t entry_count)
 {
-    nux_io_module_t *module = nux_io_module();
+    nux_base_module_t *module = nux_base_module();
 
     if (module->cart_writer.started)
     {
@@ -424,7 +368,7 @@ cleanup:
 nux_status_t
 nux_io_cart_end (void)
 {
-    nux_io_module_t *module = nux_io_module();
+    nux_base_module_t *module = nux_base_module();
 
     if (module->cart_writer.started)
     {
@@ -447,7 +391,7 @@ nux_io_write_cart_data (const nux_c8_t *path,
                         const void     *data,
                         nux_u32_t       size)
 {
-    nux_io_module_t *module = nux_io_module();
+    nux_base_module_t *module = nux_base_module();
 
     NUX_ENSURE(module->cart_writer.started,
                return NUX_FAILURE,

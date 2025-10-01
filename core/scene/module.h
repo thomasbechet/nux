@@ -1,7 +1,7 @@
 #ifndef NUX_SCENE_MODULE_H
 #define NUX_SCENE_MODULE_H
 
-#include <io/module.h>
+#include <base/module.h>
 
 ////////////////////////////
 ///        TYPES         ///
