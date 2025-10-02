@@ -19,12 +19,11 @@ typedef struct
     nux_c8_t            error_message[256];
     nux_status_t        error_status;
     nux_status_t        error_enable;
-    nux_disk_t          disks[NUX_DISK_MAX];
-    nux_u32_t           disks_count;
     nux_u32_vec_t       free_file_slots;
     nux_cart_writer_t   cart_writer;
     nux_controller_t    controllers[NUX_CONTROLLER_MAX];
     nux_log_level_t     log_level;
+    nux_disk_t         *first_disk;
 } nux_base_module_t;
 
 nux_base_module_t *nux_base_module(void);

@@ -21,6 +21,8 @@ nux_base_init (void *userdata)
         NUX_RESOURCE_EVENT, sizeof(nux_event_t), "event");
     type = nux_resource_register(NUX_RESOURCE_FILE, sizeof(nux_file_t), "file");
     type->cleanup = nux_file_cleanup;
+    type = nux_resource_register(NUX_RESOURCE_DISK, sizeof(nux_disk_t), "disk");
+    type->cleanup = nux_disk_cleanup;
 
     // Initialize resources with core arena
     NUX_CHECK(nux_resource_init(), return NUX_FAILURE);
@@ -54,12 +56,10 @@ nux_base_init (void *userdata)
 
     // Initialize values
     nux_u32_vec_fill_reversed(&module->free_file_slots);
-    module->disks_count = 0;
 
     // Add OS disk
-    nux_disk_t *disk = module->disks + module->disks_count;
-    disk->type       = NUX_DISK_OS;
-    ++module->disks_count;
+    module->first_disk = nux_resource_new(nux_arena_core(), NUX_RESOURCE_DISK);
+    module->first_disk->type = NUX_DISK_OS;
 
     // Initialize controllers
     for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
@@ -77,17 +77,6 @@ void
 nux_base_free (void)
 {
     nux_base_module_t *module = nux_base_module();
-
-    // Unmount disks
-    for (nux_u32_t i = 0; i < module->disks_count; ++i)
-    {
-        nux_disk_t *disk = module->disks + i;
-        if (disk->type == NUX_DISK_CART)
-        {
-            // close_os_file(disk->cart.slot);
-        }
-    }
-
     NUX_ASSERT(module->free_file_slots.size == NUX_IO_FILE_MAX);
 }
 const nux_config_t *

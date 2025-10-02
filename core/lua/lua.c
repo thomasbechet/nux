@@ -420,7 +420,7 @@ nux_lua_configure (nux_config_t *config)
 {
     nux_lua_module_t *module = nux_lua_module();
 
-    if (nux_io_exists(NUX_LUA_CONF_FILE))
+    if (nux_file_exists(NUX_LUA_CONF_FILE))
     {
         // Execute configuration script
         if (luaL_dofile(module->L, NUX_LUA_CONF_FILE) != LUA_OK)

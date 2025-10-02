@@ -258,7 +258,7 @@ static void setpath (lua_State *L, const char *fieldname,
 
 
 static int readable (const char *filename) {
-  return nux_io_exists(filename);
+  return nux_file_exists(filename);
 }
 
 

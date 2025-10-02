@@ -373,9 +373,10 @@ typedef enum
     NUX_RESOURCE_CANVAS     = 5,
     NUX_RESOURCE_FONT       = 6,
     NUX_RESOURCE_FILE       = 7,
-    NUX_RESOURCE_SCENE      = 8,
-    NUX_RESOURCE_QUERY      = 9,
-    NUX_RESOURCE_EVENT      = 10,
+    NUX_RESOURCE_DISK       = 8,
+    NUX_RESOURCE_SCENE      = 9,
+    NUX_RESOURCE_QUERY      = 10,
+    NUX_RESOURCE_EVENT      = 11,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
@@ -652,6 +653,7 @@ typedef struct
 {
     nux_disk_type_t type;
     nux_io_mode_t   mode;
+    nux_b32_t       is_open;
     union
     {
         struct
@@ -681,8 +683,8 @@ typedef struct
 
 typedef struct
 {
-    nux_c8_t          path[NUX_PATH_BUF_SIZE];
-    nux_u32_t         slot;
+    const nux_c8_t   *path;
+    nux_file_t       *file;
     nux_cart_entry_t *entries;
     nux_u32_t         entries_count;
 } nux_cart_t;
@@ -690,15 +692,17 @@ typedef struct
 typedef struct
 {
     nux_b32_t started;
-    nux_u32_t slot;
+    nux_rid_t file;
     nux_u32_t entry_count;
     nux_u32_t entry_index;
     nux_u32_t cursor;
 } nux_cart_writer_t;
 
-typedef struct
+typedef struct nux_disk
 {
-    nux_disk_type_t type;
+    nux_disk_type_t  type;
+    struct nux_disk *prev;
+    struct nux_disk *next;
     union
     {
         nux_cart_t cart;
@@ -791,7 +795,7 @@ typedef struct nux_serde_reader
 
 typedef struct
 {
-    nux_file_t         file;
+    nux_file_t        *file;
     nux_b32_t          has_previous_value;
     nux_serde_writer_t writer;
     nux_serde_type_t   stack[256];
@@ -1004,18 +1008,18 @@ void nux_event_process_all(void);
 nux_status_t nux_io_init(void);
 void         nux_io_free(void);
 
-nux_status_t nux_io_mount(const nux_c8_t *path);
+nux_status_t nux_disk_mount(const nux_c8_t *path);
 
-nux_b32_t    nux_io_exists(const nux_c8_t *path);
-nux_status_t nux_io_open(const nux_c8_t *path,
-                         nux_io_mode_t   mode,
-                         nux_file_t     *file);
-void         nux_io_close(nux_file_t *file);
-nux_u32_t    nux_io_read(nux_file_t *file, void *data, nux_u32_t n);
-nux_u32_t    nux_io_write(nux_file_t *file, const void *data, nux_u32_t n);
-nux_status_t nux_io_seek(nux_file_t *file, nux_u32_t cursor);
-nux_status_t nux_io_stat(nux_file_t *file, nux_file_stat_t *stat);
-void *nux_io_load(nux_arena_t *arena, const nux_c8_t *path, nux_u32_t *size);
+nux_b32_t    nux_file_exists(const nux_c8_t *path);
+nux_file_t  *nux_file_open(nux_arena_t    *arena,
+                           const nux_c8_t *path,
+                           nux_io_mode_t   mode);
+void         nux_file_close(nux_file_t *file);
+nux_u32_t    nux_file_read(nux_file_t *file, void *data, nux_u32_t n);
+nux_u32_t    nux_file_write(nux_file_t *file, const void *data, nux_u32_t n);
+nux_status_t nux_file_seek(nux_file_t *file, nux_u32_t cursor);
+nux_status_t nux_file_stat(nux_file_t *file, nux_file_stat_t *stat);
+void *nux_file_load(nux_arena_t *arena, const nux_c8_t *path, nux_u32_t *size);
 
 nux_status_t nux_io_write_cart_data(const nux_c8_t *path,
                                     nux_u32_t       type,
@@ -1026,6 +1030,10 @@ nux_status_t nux_io_write_cart_data(const nux_c8_t *path,
 // file.c
 
 void nux_file_cleanup(void *data);
+
+// disk.c
+
+void nux_disk_cleanup(void *data);
 
 // input.c
 
