@@ -5,10 +5,6 @@ local ticker = require("ticker")
 function M:on_reload()
 end
 
-function M:on_event(e, d)
-    -- print(d)
-end
-
 local function draw_hierarchy(nid, parent_position)
     local pos = transform.get_translation(nid)
     graphics.draw_line(pos, parent_position, 0xFFFFFF)
@@ -27,54 +23,13 @@ function M:on_load()
     self.cube_mesh = mesh_cube
 
     self.scene = scene.load_gltf(self.arena, "assets/industrial.glb")
-
+    scene.set_active(self.scene)
     local nid = node.instantiate(self.scene, node.root())
     transform.add(nid)
-    nid = node.instantiate(self.scene, node.root())
-    transform.add(nid)
     transform.set_rotation_euler(nid, { 0, 90, 0 })
+    transform.set_scale(nid, vmath.vec3(10))
 
     self.camera = require("camera")
-
-    local template = {
-        staticmesh = { mesh = mesh_cube }
-    }
-    local template2 = {
-        {
-            transform = { translation = { 2, 0, 0 } },
-            template = template
-        },
-        {
-            transform = { translation = { -2, 0, 0 } },
-            template = template
-        },
-        {
-            transform = { translation = { 0, 1, 0 } },
-            template = template
-        }
-    }
-    local template3 = {
-        {
-            transform = { translation = { 1, 0, 0 } },
-            template = template2,
-        },
-        {
-            transform = { translation = { -2, 0, 0 } },
-            template = template2,
-        }
-    }
-    -- for i = 0, 100 do
-    --     local x = i // 10
-    --     local y = i % 10
-    --     local n = node.instantiate({
-    --         template = template3,
-    --         transform = { translation = { x * 8, 0.1, y * 5 + 0.1 } }
-    --     }
-    --     , nil)
-    --     if i == 50 then
-    --         self.rotating = n
-    --     end
-    -- end
 
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, canvas.WIDTH, canvas.HEIGHT)

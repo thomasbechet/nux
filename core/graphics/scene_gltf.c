@@ -270,7 +270,7 @@ load_node (nux_arena_t *arena,
     for (nux_u32_t i = 0; i < node->children_count; ++i)
     {
         cgltf_node *child = node->children[i];
-        load_node(arena, resources, resources_count, scene, node, e);
+        load_node(arena, resources, resources_count, scene, child, e);
     }
     return NUX_SUCCESS;
 }
@@ -365,14 +365,20 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
         NUX_CHECK(scene, goto error);
         nux_scene_set_active(scene);
 
-        // Load nodes
-        NUX_CHECK(load_node(arena,
-                            resources,
-                            NUX_ARRAY_SIZE(resources),
-                            gltf_scene,
-                            gltf_scene->nodes[0],
-                            nux_node_root()),
-                  goto error);
+        for (nux_u32_t c = 0; c < gltf_scene->nodes_count; ++c)
+        {
+            cgltf_node *node = gltf_scene->nodes[c];
+            if (!node->parent) // root only nodes
+            {
+                NUX_CHECK(load_node(arena,
+                                    resources,
+                                    NUX_ARRAY_SIZE(resources),
+                                    gltf_scene,
+                                    node,
+                                    nux_node_root()),
+                          goto error);
+            }
+        }
 
         // TODO: support multiple scene
         break;

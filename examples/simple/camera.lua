@@ -23,6 +23,7 @@ function M:on_update()
         speed = self.fast_speed
     end
     camera.set_fov(e, fov)
+    speed = 200
 
     local mx = axis.value(0, axis.LEFTX)
     local mz = axis.value(0, axis.LEFTY)
