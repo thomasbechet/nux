@@ -30,7 +30,6 @@ function M:on_update()
         staticmesh.add(n)
         staticmesh.set_mesh(n, self.mesh)
         self.count = self.count + 1
-        print("emit count : " .. self.count)
         self.time = 0
     end
 end

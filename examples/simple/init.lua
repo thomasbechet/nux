@@ -6,7 +6,17 @@ function M:on_reload()
 end
 
 function M:on_event(e, d)
-    print(d)
+    -- print(d)
+end
+
+local function draw_hierarchy(nid, parent_position)
+    local pos = transform.get_translation(nid)
+    graphics.draw_line(pos, parent_position, 0xFFFFFF)
+    local child = node.child(nid)
+    while child do
+        draw_hierarchy(child, pos)
+        child = node.sibling(child)
+    end
 end
 
 function M:on_load()
@@ -17,7 +27,13 @@ function M:on_load()
     self.cube_mesh = mesh_cube
 
     self.scene = scene.load_gltf(self.arena, "assets/industrial.glb")
-    scene.set_active(self.scene)
+
+    local nid = node.instantiate(self.scene, node.root())
+    transform.add(nid)
+    nid = node.instantiate(self.scene, node.root())
+    transform.add(nid)
+    transform.set_rotation_euler(nid, { 0, 90, 0 })
+
     self.camera = require("camera")
 
     local template = {
@@ -47,18 +63,18 @@ function M:on_load()
             template = template2,
         }
     }
-    for i = 0, 100 do
-        local x = i // 10
-        local y = i % 10
-        local n = node.instantiate({
-            template = template3,
-            transform = { translation = { x * 8, 0.1, y * 5 + 0.1 } }
-        }
-        , nil)
-        if i == 50 then
-            self.rotating = n
-        end
-    end
+    -- for i = 0, 100 do
+    --     local x = i // 10
+    --     local y = i % 10
+    --     local n = node.instantiate({
+    --         template = template3,
+    --         transform = { translation = { x * 8, 0.1, y * 5 + 0.1 } }
+    --     }
+    --     , nil)
+    --     if i == 50 then
+    --         self.rotating = n
+    --     end
+    -- end
 
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, canvas.WIDTH, canvas.HEIGHT)
@@ -90,10 +106,8 @@ local function memhu(size)
 end
 
 function M:on_update()
-    transform.rotate_y(self.rotating, time.delta() * math.sin(time.elapsed()))
-    transform.set_scale(self.rotating, vmath.vec3(1, 5, 10))
+    draw_hierarchy(node.root(), vmath.vec3(0))
 
-    -- nux.graphics.draw_line(nux.vmath.vec3(0, 0, 0), nux.vmath.vec3(10, 10, 10), 0x0)
     local p = vmath.vec3(0, 0, -10)
     graphics.draw_dir(p, vmath.vec3(1, 0, 0), 1, 0x0)
     graphics.draw_dir(p, vmath.vec3(0, 1, 0), 1, 0x0)

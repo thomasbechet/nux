@@ -54,7 +54,7 @@ nux_u32_t    nux_scene_count(void);
 void         nux_scene_clear(void);
 void         nux_node_remove(nux_nid_t e, nux_u32_t c);
 nux_b32_t    nux_node_has(nux_nid_t e, nux_u32_t c);
-nux_status_t nux_node_instantiate(nux_scene_t *scene);
+nux_nid_t    nux_node_instantiate(nux_scene_t *scene, nux_nid_t parent);
 
 nux_scene_t *nux_scene_load_gltf(nux_arena_t *arena, const nux_c8_t *path);
 

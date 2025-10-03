@@ -20,6 +20,12 @@
 // #include <stb_image_write.h>
 #endif
 
+typedef struct
+{
+    void     *cgltf_ptr;
+    nux_rid_t rid;
+} resource_t;
+
 static nux_u32_t
 buffer_index (cgltf_accessor *accessor, nux_u32_t i)
 {
@@ -166,14 +172,111 @@ load_texture (nux_arena_t *arena, const cgltf_texture *texture)
     stbi_image_free(img);
     return tex;
 }
+static nux_status_t
+load_node (nux_arena_t *arena,
+           resource_t  *resources,
+           nux_u32_t    resources_count,
+           cgltf_scene *scene,
+           cgltf_node  *node,
+           nux_nid_t    parent)
+{
+    nux_nid_t e = nux_node_create(parent);
+    NUX_CHECK(e, return NUX_FAILURE);
+
+    nux_v3_t translation = NUX_V3_ZEROS;
+    nux_q4_t rotation    = nux_q4_identity();
+    nux_v3_t scale       = NUX_V3_ONES;
+    if (node->has_scale)
+    {
+        scale = nux_v3(node->scale[0], node->scale[1], node->scale[2]);
+    }
+    if (node->has_rotation)
+    {
+        rotation = nux_q4(node->rotation[0],
+                          node->rotation[1],
+                          node->rotation[2],
+                          node->rotation[3]);
+    }
+    if (node->has_translation)
+    {
+        translation = nux_v3(
+            node->translation[0], node->translation[1], node->translation[2]);
+    }
+
+    // Set transform
+    nux_transform_add(e);
+    nux_transform_set_translation(e, translation);
+    nux_transform_set_rotation(e, rotation);
+    nux_transform_set_scale(e, scale);
+
+    if (node->mesh)
+    {
+        for (nux_u32_t p = 0; p < node->mesh->primitives_count; ++p)
+        {
+            cgltf_primitive *primitive = node->mesh->primitives + p;
+
+            // Find mesh
+            nux_rid_t mesh = NUX_NULL;
+            for (nux_u32_t i = 0; i < resources_count; ++i)
+            {
+                if (resources[i].cgltf_ptr == primitive)
+                {
+                    mesh = resources[i].rid;
+                    break;
+                }
+            }
+            NUX_ENSURE(mesh,
+                       return NUX_FAILURE,
+                       "mesh primitive not found for model %s",
+                       node->name);
+
+            // Find texture
+            nux_rid_t texture = NUX_NULL;
+            if (primitive->material
+                && primitive->material->has_pbr_metallic_roughness
+                && primitive->material->pbr_metallic_roughness
+                       .base_color_texture.texture)
+            {
+                for (nux_u32_t i = 0; i < resources_count; ++i)
+                {
+                    if (resources[i].cgltf_ptr
+                        == primitive->material->pbr_metallic_roughness
+                               .base_color_texture.texture)
+                    {
+                        texture = resources[i].rid;
+                        break;
+                    }
+                }
+            }
+            if (!texture)
+            {
+                NUX_WARNING("texture not found for model %s, using default",
+                            node->name);
+            }
+
+            NUX_DEBUG("loading node %s mesh 0x%08X texture 0x%08X",
+                      node->name,
+                      mesh,
+                      texture);
+
+            // Write staticmesh
+            nux_staticmesh_add(e);
+            nux_staticmesh_set_mesh(e,
+                                    nux_resource_get(NUX_RESOURCE_MESH, mesh));
+            nux_staticmesh_set_texture(
+                e, nux_resource_get(NUX_RESOURCE_TEXTURE, texture));
+        }
+    }
+    for (nux_u32_t i = 0; i < node->children_count; ++i)
+    {
+        cgltf_node *child = node->children[i];
+        load_node(arena, resources, resources_count, scene, node, e);
+    }
+    return NUX_SUCCESS;
+}
 nux_scene_t *
 nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
 {
-    typedef struct
-    {
-        void     *cgltf_ptr;
-        nux_rid_t rid;
-    } resource_t;
 
     cgltf_options options;
     cgltf_result  result;
@@ -257,122 +360,22 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     {
         cgltf_scene *gltf_scene = data->scenes + s;
 
-        // Compute required node
-        nux_u32_t node_count = 0;
-        NUX_UNUSED1(node_count);
-        for (nux_u32_t n = 0; n < gltf_scene->nodes_count; ++n)
-        {
-            cgltf_node *node = gltf_scene->nodes[n];
-            if (node->mesh)
-            {
-                node_count += node->mesh->primitives_count;
-            }
-        }
-
         // Create scene
         scene = nux_scene_new(arena);
         NUX_CHECK(scene, goto error);
         nux_scene_set_active(scene);
 
-        // Create nodes
-        for (nux_u32_t n = 0; n < gltf_scene->nodes_count; ++n)
-        {
-            cgltf_node *node = gltf_scene->nodes[n];
+        // Load nodes
+        NUX_CHECK(load_node(arena,
+                            resources,
+                            NUX_ARRAY_SIZE(resources),
+                            gltf_scene,
+                            gltf_scene->nodes[0],
+                            nux_node_root()),
+                  goto error);
 
-            nux_nid_t e = nux_node_create(nux_node_root());
-            NUX_CHECK(e, goto error);
-
-            nux_v3_t translation = NUX_V3_ZEROS;
-            nux_q4_t rotation    = nux_q4_identity();
-            NUX_UNUSED1(rotation);
-            nux_v3_t scale = NUX_V3_ONES;
-            if (node->has_scale)
-            {
-                scale = nux_v3(node->scale[0], node->scale[1], node->scale[2]);
-            }
-            if (node->has_rotation)
-            {
-                rotation = nux_q4(node->rotation[0],
-                                  node->rotation[1],
-                                  node->rotation[2],
-                                  node->rotation[3]);
-            }
-            if (node->has_translation)
-            {
-                translation = nux_v3(node->translation[0],
-                                     node->translation[1],
-                                     node->translation[2]);
-            }
-
-            // Set transform
-            nux_transform_add(e);
-            nux_transform_set_translation(e, translation);
-            nux_transform_set_rotation(e, rotation);
-            nux_transform_set_scale(e, scale);
-
-            if (node->mesh)
-            {
-                for (nux_u32_t p = 0; p < node->mesh->primitives_count; ++p)
-                {
-                    cgltf_primitive *primitive = node->mesh->primitives + p;
-
-                    // Find mesh
-                    nux_rid_t mesh = NUX_NULL;
-                    for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(resources); ++i)
-                    {
-                        if (resources[i].cgltf_ptr == primitive)
-                        {
-                            mesh = resources[i].rid;
-                            break;
-                        }
-                    }
-                    NUX_ENSURE(mesh,
-                               goto error,
-                               "mesh primitive not found for model %s",
-                               node->name);
-
-                    // Find texture
-                    nux_rid_t texture = NUX_NULL;
-                    if (primitive->material
-                        && primitive->material->has_pbr_metallic_roughness
-                        && primitive->material->pbr_metallic_roughness
-                               .base_color_texture.texture)
-                    {
-                        for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(resources);
-                             ++i)
-                        {
-                            if (resources[i].cgltf_ptr
-                                == primitive->material->pbr_metallic_roughness
-                                       .base_color_texture.texture)
-                            {
-                                texture = resources[i].rid;
-                                break;
-                            }
-                        }
-                    }
-                    if (!texture)
-                    {
-                        NUX_WARNING(
-                            "texture not found for model %s, using default",
-                            node->name);
-                    }
-
-                    NUX_DEBUG("loading node %s mesh 0x%08X texture 0x%08X",
-                              node->name,
-                              mesh,
-                              texture);
-
-                    // Write staticmesh
-                    nux_staticmesh_add(e);
-                    nux_staticmesh_set_mesh(
-                        e, nux_resource_get(NUX_RESOURCE_MESH, mesh));
-                    nux_staticmesh_set_texture(
-                        e, nux_resource_get(NUX_RESOURCE_TEXTURE, texture));
-                }
-            }
-        }
-
-        break; // TODO: support multiple scene
+        // TODO: support multiple scene
+        break;
     }
 
     cgltf_free(data);

@@ -451,11 +451,31 @@ nux_scene_clear (void)
     }
     nux_scene_bitset_clear(&scene->bitset);
 }
+static void *
+component_get (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
+{
+    nux_u32_t              index     = NUX_NID_INDEX(e);
+    nux_u32_t              mask      = index / NODE_PER_MASK;
+    nux_u32_t              offset    = index % NODE_PER_MASK;
+    nux_scene_container_t *container = scene->containers.data + c;
+    return (void *)((nux_intptr_t)container->chunks.data[mask]
+                    + container->component_size * offset);
+}
 void *
-nux_component_add (nux_nid_t e, nux_u32_t c)
+nux_component_get (nux_nid_t e, nux_u32_t c)
+{
+    NUX_ASSERT(e);
+    NUX_ASSERT(c);
+    if (!nux_node_has(e, c))
+    {
+        return NUX_NULL;
+    }
+    return component_get(nux_scene_active(), e, c);
+}
+static void *
+component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
 {
     nux_scene_module_t *module = nux_scene_module();
-    nux_scene_t        *scene  = module->active;
     nux_u32_t           index  = NUX_NID_INDEX(e);
 
     NUX_CHECK(node_check(scene, e), return NUX_NULL);
@@ -511,7 +531,14 @@ nux_component_add (nux_nid_t e, nux_u32_t c)
         }
     }
 
-    return nux_component_get(e, c);
+    return component_get(scene, e, c);
+}
+void *
+nux_component_add (nux_nid_t e, nux_u32_t c)
+{
+    nux_scene_module_t *module = nux_scene_module();
+    nux_scene_t        *scene  = module->active;
+    return component_add(scene, e, c);
 }
 void
 nux_node_remove (nux_nid_t e, nux_u32_t c)
@@ -532,30 +559,49 @@ nux_node_has (nux_nid_t e, nux_u32_t c)
     nux_scene_container_t *container = scene->containers.data + c;
     return bitset_isset(&container->bitset, index);
 }
-void *
-nux_component_get (nux_nid_t e, nux_u32_t c)
+static nux_nid_t
+node_clone (nux_scene_t *scene, nux_nid_t toclone, nux_nid_t parent)
 {
-    NUX_ASSERT(e);
-    NUX_ASSERT(c);
-    if (!nux_node_has(e, c))
+    nux_scene_module_t *module = nux_scene_module();
+    nux_u32_t           index  = NUX_NID_INDEX(toclone);
+
+    // Create node
+    nux_nid_t nid = nux_node_create(parent);
+    NUX_CHECK(nid, return NUX_NULL);
+
+    // Duplicate components
+    for (nux_u32_t c = 0; c < scene->containers.size; ++c)
     {
-        return NUX_NULL;
+        nux_component_t *comp = module->components + c;
+        if (scene->containers.data[c].component_size
+            && bitset_isset(&scene->containers.data[c].bitset, index))
+        {
+            void *src = component_get(scene, toclone, c);
+            NUX_ASSERT(src);
+            void *dst = nux_component_add(nid, c);
+            NUX_CHECK(dst, return NUX_NULL);
+            nux_memcpy(dst, src, comp->size);
+
+            // TODO: remap entity references
+        }
     }
-    nux_scene_t           *scene     = nux_scene_active();
-    nux_u32_t              index     = NUX_NID_INDEX(e);
-    nux_u32_t              mask      = index / NODE_PER_MASK;
-    nux_u32_t              offset    = index % NODE_PER_MASK;
-    nux_scene_container_t *container = scene->containers.data + c;
-    return (void *)((nux_intptr_t)container->chunks.data[mask]
-                    + container->component_size * offset);
+
+    // Duplicate children
+    nux_node_t *node  = &scene->nodes.data[index];
+    nux_nid_t   child = node->child;
+    while (child)
+    {
+        NUX_CHECK(node_clone(scene, child, nid), return NUX_NULL);
+        child = scene->nodes.data[NUX_NID_INDEX(child)].next;
+    }
+
+    return nid;
 }
-nux_status_t
-nux_node_instantiate (nux_scene_t *src)
+nux_nid_t
+nux_node_instantiate (nux_scene_t *scene, nux_nid_t parent)
 {
-    nux_scene_t *dst = nux_scene_active();
-
-    nux_query_t *iter = nux_query_new_any(nux_arena_frame());
-    NUX_CHECK(iter, return NUX_FAILURE);
-
-    return NUX_SUCCESS;
+    NUX_ENSURE(scene != nux_scene_module()->active,
+               return NUX_NULL,
+               "cannot instantiate active scene");
+    return node_clone(scene, scene->root, parent);
 }

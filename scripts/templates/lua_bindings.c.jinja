@@ -44,6 +44,9 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
             {%- elif arg.typename.name == "rid" %}
                 nux_rid_t {{ arg.name }} = (nux_rid_t)(nux_intptr_t)luaL_checknumber(L, {{ ns.stack }});
                 {% set ns.stack = ns.stack + 1 %}
+            {%- elif arg.typename.name == "nid" %}
+                nux_nid_t {{ arg.name }} = (nux_nid_t)(nux_intptr_t)luaL_checknumber(L, {{ ns.stack }});
+                {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name != "void" %}
                 nux_{{ arg.typename.name }}_t {{ arg.name }} = luaL_checknumber(L, {{ ns.stack }});
                 {% set ns.stack = ns.stack + 1 %}
