@@ -55,6 +55,19 @@
     type nux_##name##_dot(nux_##name##_t a, nux_##name##_t b)             \
     {                                                                     \
         return a.x * b.x + a.y * b.y;                                     \
+    }                                                                     \
+    nux_f32_t nux_##name##_norm(nux_##name##_t a)                         \
+    {                                                                     \
+        return nux_sqrt(nux_##name##_dot(a, a));                          \
+    }                                                                     \
+    nux_f32_t nux_##name##_dist(nux_##name##_t a, nux_##name##_t b)       \
+    {                                                                     \
+        return nux_##name##_norm(nux_##name##_sub(a, b));                 \
+    }                                                                     \
+    type nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b)           \
+    {                                                                     \
+        nux_##name##_t sub = nux_##name##_sub(a, b);                      \
+        return nux_##name##_dot(sub, sub);                                \
     }
 
 #define NUX_V3_IMPL(name, type, opadd, opsub, opmul, opdiv, opmin, opmax)     \
@@ -126,6 +139,19 @@
     nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b)       \
     {                                                                         \
         return nux_##name(opmax(a.x, b.x), opmax(a.y, b.y), opmax(a.z, b.z)); \
+    }                                                                         \
+    nux_f32_t nux_##name##_norm(nux_##name##_t a)                             \
+    {                                                                         \
+        return nux_sqrt(nux_##name##_dot(a, a));                              \
+    }                                                                         \
+    nux_f32_t nux_##name##_dist(nux_##name##_t a, nux_##name##_t b)           \
+    {                                                                         \
+        return nux_##name##_norm(nux_##name##_sub(a, b));                     \
+    }                                                                         \
+    type nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b)               \
+    {                                                                         \
+        nux_##name##_t sub = nux_##name##_sub(a, b);                          \
+        return nux_##name##_dot(sub, sub);                                    \
     }
 
 #define NUX_V4_IMPL(name, type, opadd, opsub, opmul, opdiv)             \
@@ -189,6 +215,19 @@
     type nux_##name##_dot(nux_##name##_t a, nux_##name##_t b)           \
     {                                                                   \
         return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;           \
+    }                                                                   \
+    nux_f32_t nux_##name##_norm(nux_##name##_t a)                       \
+    {                                                                   \
+        return nux_sqrt(nux_##name##_dot(a, a));                        \
+    }                                                                   \
+    nux_f32_t nux_##name##_dist(nux_##name##_t a, nux_##name##_t b)     \
+    {                                                                   \
+        return nux_##name##_norm(nux_##name##_sub(a, b));               \
+    }                                                                   \
+    type nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b)         \
+    {                                                                   \
+        nux_##name##_t sub = nux_##name##_sub(a, b);                    \
+        return nux_##name##_dot(sub, sub);                              \
     }
 
 #define NATIVE_ADD(a, b) (a + b)
@@ -250,16 +289,6 @@ NUX_V4_IMPL(v4i, nux_i32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
 NUX_V4_IMPL(v4u, nux_u32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
 NUX_V4_IMPL(v4, nux_f32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
 
-nux_f32_t
-nux_v2_norm (nux_v2_t a)
-{
-    return nux_sqrt(nux_v2_dot(a, a));
-}
-nux_f32_t
-nux_v3_norm (nux_v3_t a)
-{
-    return nux_sqrt(nux_v3_dot(a, a));
-}
 nux_v3_t
 nux_v3_normalize (nux_v3_t a)
 {
@@ -273,9 +302,4 @@ nux_v3_normalize (nux_v3_t a)
     ret.y = a.y / norm;
     ret.z = a.z / norm;
     return ret;
-}
-nux_f32_t
-nux_v4_norm (nux_v4_t a)
-{
-    return nux_sqrt(nux_v4_dot(a, a));
 }

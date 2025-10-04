@@ -1,5 +1,10 @@
 #include "internal.h"
 
+nux_b32_t
+nux_staticmesh_has (nux_nid_t n)
+{
+    return nux_component_get(n, NUX_COMPONENT_STATICMESH);
+}
 void
 nux_staticmesh_add (nux_nid_t e)
 {
@@ -19,12 +24,26 @@ nux_staticmesh_set_mesh (nux_nid_t e, nux_mesh_t *mesh)
     NUX_CHECK(sm, return);
     sm->mesh = nux_resource_rid(mesh);
 }
+nux_mesh_t *
+nux_staticmesh_get_mesh (nux_nid_t n)
+{
+    nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
+    NUX_CHECK(sm, return NUX_NULL);
+    return nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
+}
 void
 nux_staticmesh_set_texture (nux_nid_t e, nux_texture_t *texture)
 {
     nux_staticmesh_t *sm = nux_component_get(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
     sm->texture = nux_resource_rid(texture);
+}
+nux_texture_t *
+nux_staticmesh_get_texture (nux_nid_t n)
+{
+    nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
+    NUX_CHECK(sm, return NUX_NULL);
+    return nux_resource_check(NUX_RESOURCE_TEXTURE, sm->texture);
 }
 void
 nux_staticmesh_set_colormap (nux_nid_t e, nux_texture_t *colormap)

@@ -488,6 +488,48 @@ math_length (lua_State *L)
     }
     return 1;
 }
+static int
+math_dist (lua_State *L)
+{
+    nux_lua_userdata_t *u = check_anyuserdata(L, 1);
+    switch (u->type)
+    {
+        case NUX_LUA_TYPE_VEC2:
+            lua_pushnumber(L, nux_v2_dist(*u->vec2, nux_lua_check_vec2(L, 2)));
+            break;
+        case NUX_LUA_TYPE_VEC3:
+            lua_pushnumber(L, nux_v3_dist(*u->vec3, nux_lua_check_vec3(L, 2)));
+            break;
+        case NUX_LUA_TYPE_VEC4:
+            lua_pushnumber(L, nux_v4_dist(*u->vec4, nux_lua_check_vec4(L, 2)));
+            break;
+        default:
+            luaL_error(L, "unsupported type");
+            break;
+    }
+    return 1;
+}
+static int
+math_dist2 (lua_State *L)
+{
+    nux_lua_userdata_t *u = check_anyuserdata(L, 1);
+    switch (u->type)
+    {
+        case NUX_LUA_TYPE_VEC2:
+            lua_pushnumber(L, nux_v2_dist2(*u->vec2, nux_lua_check_vec2(L, 2)));
+            break;
+        case NUX_LUA_TYPE_VEC3:
+            lua_pushnumber(L, nux_v3_dist2(*u->vec3, nux_lua_check_vec3(L, 2)));
+            break;
+        case NUX_LUA_TYPE_VEC4:
+            lua_pushnumber(L, nux_v4_dist2(*u->vec4, nux_lua_check_vec4(L, 2)));
+            break;
+        default:
+            luaL_error(L, "unsupported type");
+            break;
+    }
+    return 1;
+}
 
 static int
 meta_index (lua_State *L)
@@ -668,7 +710,8 @@ nux_lua_open_vmath (void)
         = { { "vec2", math_vec2 },     { "vec3", math_vec3 },
             { "vec4", math_vec4 },     { "mat4", math_mat4 },
             { "dot", math_dot },       { "cross", math_cross },
-            { "length", math_length }, { "add", math_add },
+            { "length", math_length }, { "dist", math_dist },
+            { "dist2", math_dist2 },   { "add", math_add },
             { "sub", math_sub },       { "mul", math_mul },
             { "div", math_div },       { NULL, NULL } };
     lua_State *L = nux_lua_module()->L;

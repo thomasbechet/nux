@@ -267,13 +267,19 @@ function camera.set_near(...) end
 function camera.set_far(...) end
 staticmesh={}
 ---@return None
+function staticmesh.has(...) end
+---@return None
 function staticmesh.add(...) end
 ---@return None
 function staticmesh.remove(...) end
 ---@return None
 function staticmesh.set_mesh(...) end
 ---@return None
+function staticmesh.get_mesh(...) end
+---@return None
 function staticmesh.set_texture(...) end
+---@return None
+function staticmesh.get_texture(...) end
 ---@return None
 function staticmesh.set_colormap(...) end
 palette={}

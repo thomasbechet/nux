@@ -138,20 +138,23 @@
 #define NUX_V4_ONES  nux_v4s(1)
 #define NUX_V4_ZEROS nux_v4s(0)
 
-#define NUX_V2_DEFINE(name, type)                                        \
-    nux_##name##_t nux_##name(type x, type y);                           \
-    nux_##name##_t nux_##name##s(type x);                                \
-    nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_div(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_adds(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_subs(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_muls(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_min(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b); \
-    type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
+#define NUX_V2_DEFINE(name, type)                                         \
+    nux_##name##_t nux_##name(type x, type y);                            \
+    nux_##name##_t nux_##name##s(type x);                                 \
+    nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_div(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_adds(nux_##name##_t a, type b);           \
+    nux_##name##_t nux_##name##_subs(nux_##name##_t a, type b);           \
+    nux_##name##_t nux_##name##_muls(nux_##name##_t a, type b);           \
+    nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);           \
+    nux_##name##_t nux_##name##_min(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b);  \
+    type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);  \
+    nux_f32_t      nux_##name##_norm(nux_##name##_t a);                   \
+    nux_f32_t      nux_##name##_dist(nux_##name##_t a, nux_##name##_t b); \
+    type           nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b);
 
 #define NUX_V3_DEFINE(name, type)                                          \
     nux_##name##_t nux_##name(type x, type y, type z);                     \
@@ -168,20 +171,26 @@
     nux_##name##_t nux_##name##_cross(nux_##name##_t a, nux_##name##_t b); \
     type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);   \
     nux_##name##_t nux_##name##_min(nux_##name##_t a, nux_##name##_t b);   \
-    nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b);
+    nux_##name##_t nux_##name##_max(nux_##name##_t a, nux_##name##_t b);   \
+    nux_f32_t      nux_##name##_norm(nux_##name##_t a);                    \
+    nux_f32_t      nux_##name##_dist(nux_##name##_t a, nux_##name##_t b);  \
+    type           nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b);
 
-#define NUX_V4_DEFINE(name, type)                                        \
-    nux_##name##_t nux_##name(type x, type y, type z, type w);           \
-    nux_##name##_t nux_##name##s(type x);                                \
-    nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_div(nux_##name##_t a, nux_##name##_t b); \
-    nux_##name##_t nux_##name##_adds(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_subs(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_muls(nux_##name##_t a, type b);          \
-    nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);          \
-    type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);
+#define NUX_V4_DEFINE(name, type)                                         \
+    nux_##name##_t nux_##name(type x, type y, type z, type w);            \
+    nux_##name##_t nux_##name##s(type x);                                 \
+    nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_div(nux_##name##_t a, nux_##name##_t b);  \
+    nux_##name##_t nux_##name##_adds(nux_##name##_t a, type b);           \
+    nux_##name##_t nux_##name##_subs(nux_##name##_t a, type b);           \
+    nux_##name##_t nux_##name##_muls(nux_##name##_t a, type b);           \
+    nux_##name##_t nux_##name##_divs(nux_##name##_t a, type b);           \
+    type           nux_##name##_dot(nux_##name##_t a, nux_##name##_t b);  \
+    nux_f32_t      nux_##name##_norm(nux_##name##_t a);                   \
+    nux_f32_t      nux_##name##_dist(nux_##name##_t a, nux_##name##_t b); \
+    type           nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b);
 
 #define NUX_B3_DEFINE(name, type) nux_##name##_t nux_##name(type min, type max);
 
@@ -931,10 +940,7 @@ void nux_log(nux_log_level_t level, const nux_c8_t *fmt, ...);
 
 // vector.c
 
-nux_f32_t nux_v2_norm(nux_v2_t a);
-nux_f32_t nux_v3_norm(nux_v3_t a);
-nux_v3_t  nux_v3_normalize(nux_v3_t a);
-nux_f32_t nux_v4_norm(nux_v4_t a);
+nux_v3_t nux_v3_normalize(nux_v3_t a);
 
 // matrix.c
 

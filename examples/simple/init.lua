@@ -15,12 +15,27 @@ local function draw_hierarchy(nid, parent_position)
     end
 end
 
+local function add_colliders(root)
+    if staticmesh.has(root) then
+        local m = staticmesh.get_mesh(root)
+        local min = mesh.bounds_min(m)
+        local max = mesh.bounds_max(m)
+        collider.add_aabb(root, min, max)
+    end
+    local child = node.child(root)
+    while child do
+        add_colliders(child)
+        child = node.sibling(child)
+    end
+end
+
 function M:on_load()
     self.arena = arena.core()
     event.subscribe(self.rid, ticker.event)
 
-    local mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
-    self.cube_mesh = mesh_cube
+    self.mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
+    self.active_texture = nil
+    self.active_mesh = nil
 
     self.scene = scene.load_gltf(self.arena, "assets/industrial.glb")
     scene.set_active(self.scene)
@@ -28,6 +43,8 @@ function M:on_load()
     transform.add(nid)
     transform.set_rotation_euler(nid, { 0, 90, 0 })
     transform.set_scale(nid, vmath.vec3(10))
+    -- add all colliders before camera creation
+    add_colliders(node.root())
 
     self.camera = require("camera")
 
@@ -43,7 +60,7 @@ function M:on_load()
     transform.set_translation(self.cube, { 10, 0, 0 })
     transform.set_scale(self.cube, { x / 50, y / 50, 1 })
     staticmesh.add(self.cube)
-    staticmesh.set_mesh(self.cube, mesh_cube)
+    staticmesh.set_mesh(self.cube, self.mesh_cube)
     staticmesh.set_texture(self.cube, canvas.get_texture(self.monolith_canvas))
     collider.add_aabb(self.cube, vmath.vec3(0), { x / 50, y / 50, 1 })
 
@@ -90,43 +107,30 @@ function M:on_update()
     local forward = transform.forward(self.camera.entity)
     if button.just_pressed(0, button.RB) then
         local hit = physics.raycast(position, forward)
-        if hit then
-            local pos = hit.position
-            print("hit at " .. tostring(pos))
-            local e = node.create(node.root())
-            transform.add(e)
-            transform.set_translation(e, pos)
-            staticmesh.add(e)
-            staticmesh.set_mesh(e, self.cube_mesh)
+        if hit and vmath.dist(hit.position, transform.get_translation(self.camera.entity)) < 10 then
+            if staticmesh.has(hit.entity) then
+                self.active_mesh = staticmesh.get_mesh(hit.entity)
+                self.active_texture = staticmesh.get_texture(hit.entity)
+                print("hit " .. hit.entity .. " mesh " .. self.active_mesh .. " texture " .. self.active_texture)
+            end
         else
-            local r = {
-                { 0x100001C, 0x1000069 },
-                { 0x1000021, 0x100006C },
-                { 0x100001F, 0x100006B },
-                { 0x1000051, 0x100007E },
-                { 0x1000052, 0x100007E },
-                { 0x1000053, 0x100007E },
-                { 0x1000048, 0x100007C },
-            }
-            local m, t = table.unpack(r[(core.random() % #r) + 1])
-
-            local e = node.create(node.root())
-            transform.add(e)
-            transform.set_translation(e, position)
-            local min = mesh.bounds_min(m)
-            local max = mesh.bounds_max(m)
-            collider.add_aabb(e, min, max)
-            local force = 15
-            rigidbody.add(e)
-            rigidbody.set_velocity(e, forward * force)
-
-            -- add mesh
-            local child = node.create(e)
-            transform.add(child)
-            staticmesh.add(child)
-            transform.set_translation(child, -min)
-            staticmesh.set_mesh(child, m)
-            staticmesh.set_texture(child, t)
+            if self.active_mesh and self.active_texture then
+                local e = node.create(node.root())
+                transform.add(e)
+                transform.set_translation(e, position)
+                local min = mesh.bounds_min(self.active_mesh)
+                local max = mesh.bounds_max(self.active_mesh)
+                collider.add_aabb(e, min, max)
+                local force = 15
+                rigidbody.add(e)
+                rigidbody.set_velocity(e, forward * force)
+                local child = node.create(e)
+                transform.add(child)
+                staticmesh.add(child)
+                transform.set_translation(child, -min)
+                staticmesh.set_mesh(child, self.active_mesh)
+                staticmesh.set_texture(child, self.active_texture)
+            end
         end
     end
 end
