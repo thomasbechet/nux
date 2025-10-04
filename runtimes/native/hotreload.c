@@ -1,5 +1,6 @@
 #include "internal.h"
 
+#if defined(NUX_PLATFORM_UNIX)
 #include <sys/inotify.h>
 #include <unistd.h>
 #include <errno.h>
@@ -8,6 +9,7 @@
 #define WATCH_MASK IN_MODIFY | IN_DONT_FOLLOW | IN_ATTRIB
 #define EVENT_SIZE sizeof(struct inotify_event)
 #define BUF_LEN    (1024 * (EVENT_SIZE + 16))
+#endif
 
 static struct
 {
@@ -24,21 +26,26 @@ static struct
 nux_status_t
 hotreload_init (void)
 {
+#if defined(NUX_PLATFORM_UNIX)
     hotreload.fd = inotify_init1(IN_NONBLOCK);
     CHECK(hotreload.fd >= 0, return NUX_FAILURE);
     inotify_add_watch(hotreload.fd, ".", IN_MODIFY | IN_CREATE | IN_DELETE);
     hotreload.entries_count = 0;
+#endif
     return NUX_SUCCESS;
 }
 void
 hotreload_free (void)
 {
+#if defined(NUX_PLATFORM_UNIX)
     close(hotreload.fd);
+#endif
 }
 
 void
 nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
 {
+#if defined(NUX_PLATFORM_UNIX)
     nux_c8_t copypath[NUX_PATH_BUF_SIZE];
     memcpy(copypath, path, NUX_PATH_BUF_SIZE);
     const nux_c8_t *dir = dirname((char *)copypath);
@@ -53,10 +60,12 @@ nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
     hotreload.entries[hotreload.entries_count].wd     = wd;
     hotreload.entries[hotreload.entries_count].handle = handle;
     ++hotreload.entries_count;
+#endif
 }
 void
 nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
 {
+#if defined(NUX_PLATFORM_UNIX)
     for (nux_u32_t i = 0; i < hotreload.entries_count; ++i)
     {
         if (hotreload.entries[i].handle == handle)
@@ -68,10 +77,12 @@ nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
             return;
         }
     }
+#endif
 }
 void
 nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
 {
+#if defined(NUX_PLATFORM_UNIX)
     char                        buf[BUF_LEN];
     const struct inotify_event *event;
     *count  = 0;
@@ -107,4 +118,6 @@ nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
         }
         i += EVENT_SIZE + event->len;
     }
+#endif
+    *count = 0;
 }
