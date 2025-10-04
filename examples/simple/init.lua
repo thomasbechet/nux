@@ -78,7 +78,7 @@ local function memhu(size)
 end
 
 function M:on_update()
-    draw_hierarchy(node.root(), vmath.vec3(0))
+    -- draw_hierarchy(node.root(), vmath.vec3(0))
 
     local p = vmath.vec3(0, 0, -10)
     graphics.draw_dir(p, vmath.vec3(1, 0, 0), 1, 0x0)
@@ -94,20 +94,21 @@ function M:on_update()
     c = self.gui_canvas
     canvas.text(c, 10, 10, time.date())
     canvas.text(c, 10, 20, string.format("time:%.2fs", time.elapsed()))
-    canvas.text(c, 10, 30, string.format("x:%.2f", position.x))
-    canvas.text(c, 10, 40, string.format("y:%.2f", position.y))
-    canvas.text(c, 10, 50, string.format("z:%.2f", position.z))
-    canvas.text(c, 10, 60,
-        string.format("mem:%s bc:%d", memhu(arena.memory_usage(self.arena)), arena.block_count(self.arena)))
-    canvas.text(c, 10, 70,
-        string.format("mem:%s", memhu(arena.memory_usage(arena.frame()))))
-    canvas.text(c, math.floor(cursor.x(0)), math.floor(cursor.y(0)), "X")
-    canvas.text(c, 10, 80, string.format("nodes:%d", scene.count()))
+    canvas.text(c, 10, 30, string.format("xyz: %.2f %.2f %.2f", position.x, position.y, position.z))
+    canvas.text(c, 10, 40,
+        string.format("core mem:%s bc:%d",
+        memhu(arena.memory_usage(arena.core())), 
+        arena.block_count(arena.core())))
+    canvas.text(c, 10, 50,
+        string.format("frame mem:%s bc:%d", 
+        memhu(arena.memory_usage(arena.frame())),
+        arena.block_count(arena.frame())))
+    canvas.text(c, 10, 60, string.format("nodes:%d", scene.count()))
 
     local forward = transform.forward(self.camera.entity)
     if button.just_pressed(0, button.RB) then
         local hit = physics.raycast(position, forward)
-        if hit and vmath.dist(hit.position, transform.get_translation(self.camera.entity)) < 10 then
+        if hit and vmath.dist(hit.position, transform.get_translation(self.camera.entity)) < 5 then
             if staticmesh.has(hit.entity) then
                 self.active_mesh = staticmesh.get_mesh(hit.entity)
                 self.active_texture = staticmesh.get_texture(hit.entity)
