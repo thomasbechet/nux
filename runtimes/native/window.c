@@ -230,7 +230,19 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE)
         {
-            runtime.running = false;
+            if (runtime.fullscreen)
+            {
+                runtime.switch_fullscreen = true;
+            }
+            else if (runtime.focused)
+            {
+                glfwSetInputMode(runtime.win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                runtime.focused = false;
+            }
+            else
+            {
+                runtime.running = false;
+            }
         }
         if (mods == GLFW_MOD_CONTROL)
         {
@@ -256,6 +268,11 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
 
     nk_glfw3_key_callback(win, key, scancode, action, mods);
 }
+static void
+mouse_button_callback (GLFWwindow *win, int button, int action, int mods)
+{
+    nk_glfw3_mouse_button_callback(win, button, action, mods);
+}
 
 nux_status_t
 window_init (void)
@@ -266,6 +283,7 @@ window_init (void)
 
     // Initialize values
     runtime.fullscreen        = false;
+    runtime.focused           = false;
     runtime.switch_fullscreen = false;
     runtime.reload            = false;
 
@@ -294,11 +312,6 @@ window_init (void)
     }
     runtime.prev_time = glfwGetTime();
 
-    // Bind callbacks
-    glfwMakeContextCurrent(runtime.win);
-    glfwSetFramebufferSizeCallback(runtime.win, resize_callback);
-    glfwSetKeyCallback(runtime.win, key_callback);
-
     // Load gamecontroller database
     glfwUpdateGamepadMappings(gamecontrollerdb_txt);
 
@@ -306,11 +319,15 @@ window_init (void)
     // glfwSwapInterval(0);
 
     // Initialize GL functions
+    glfwMakeContextCurrent(runtime.win);
     if (!gladLoadGL(glfwGetProcAddress))
     {
         fprintf(stderr, "failed to load GL functions");
         return NUX_FAILURE;
     }
+
+    // Show cursor by default
+    glfwSetInputMode(runtime.win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
     // Setup debug callbacks
     // During init, enable debug output
@@ -324,10 +341,14 @@ window_init (void)
     runtime.size.y = h;
 
     // Initialize nuklear context
+    nk_glfw3_init(&runtime.nk_glfw, runtime.win, NK_GLFW3_DEFAULT);
+
+    // Bind callbacks
+    glfwSetFramebufferSizeCallback(runtime.win, resize_callback);
+    glfwSetKeyCallback(runtime.win, key_callback);
+    glfwSetMouseButtonCallback(runtime.win, mouse_button_callback);
     glfwSetScrollCallback(runtime.win, nk_gflw3_scroll_callback);
     glfwSetCharCallback(runtime.win, nk_glfw3_char_callback);
-    glfwSetMouseButtonCallback(runtime.win, nk_glfw3_mouse_button_callback);
-    nk_glfw3_init(&runtime.nk_glfw, runtime.win, NK_GLFW3_DEFAULT);
 
     struct nk_font_atlas *atlas;
     nk_glfw3_font_stash_begin(&runtime.nk_glfw, &atlas);
@@ -353,6 +374,14 @@ window_begin_frame (void)
         if (glfwWindowShouldClose(runtime.win))
         {
             runtime.running = false;
+        }
+
+        // Check focus actions
+        bool focus = false;
+        if (!runtime.focused && runtime.nk_glfw.is_double_click_down
+            && runtime.active_view == VIEW_GAME)
+        {
+            focus = true;
         }
 
         // Check fullscreen button
@@ -384,11 +413,20 @@ window_begin_frame (void)
                 glfwGetWindowPos(runtime.win, &xpos, &ypos);
                 runtime.prev_position = (struct nk_vec2i) { xpos, ypos };
                 runtime.prev_size     = runtime.size;
+                focus                 = true;
             }
             runtime.switch_fullscreen = false;
             runtime.fullscreen        = !runtime.fullscreen;
         }
 
+        // Focus action
+        if (focus)
+        {
+            glfwSetInputMode(runtime.win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            runtime.focused = true;
+        }
+
+        // Acquire gamepads inputs
         for (int jid = GLFW_JOYSTICK_1; jid < GLFW_JOYSTICK_LAST; ++jid)
         {
             if (glfwJoystickPresent(jid) && glfwJoystickIsGamepad(jid))
@@ -430,31 +468,6 @@ window_begin_frame (void)
                 }
             }
         }
-
-        // Update gamepad related axis
-        {
-            // const int controller = 0;
-            // const int player     = 1;
-            // nu_v2_t        ax         = nu_v2(
-            //     RGFW_getGamepadAxis(runtime.win, controller, 0).x / 100.0,
-            //     RGFW_getGamepadAxis(runtime.win, controller, 0).y / 100.0);
-            // if (nu_v2_norm(ax) < 0.3)
-            // {
-            //     ax = NU_V2_ZEROS;
-            // }
-            // runtime.axis[player][NUX_AXIS_LEFTX] = ax.x;
-            // runtime.axis[player][NUX_AXIS_LEFTY] = -ax.y;
-            // ax = nu_v2(RGFW_getGamepadAxis(runtime.win, controller, 1).x /
-            // 100.0,
-            //            RGFW_getGamepadAxis(runtime.win, controller, 1).y
-            //                / 100.0);
-            // if (nu_v2_norm(ax) < 0.1)
-            // {
-            //     ax = NU_V2_ZEROS;
-            // }
-            // runtime.axis[player][NUX_AXIS_RIGHTX] = ax.x;
-            // runtime.axis[player][NUX_AXIS_RIGHTY] = -ax.y;
-        }
     }
 
     // Begin nuklear context
@@ -489,5 +502,14 @@ nux_os_input_update (void      *user,
     for (int a = 0; a < NUX_AXIS_MAX; ++a)
     {
         axis[a] = runtime.axis[a];
+    }
+    if (runtime.focused)
+    {
+        struct nk_rect vp = runtime.viewport;
+        double         x, y;
+        glfwGetCursorPos(runtime.win, &x, &y);
+        y         = runtime.size.y - y;
+        cursor[0] = (x - vp.x) / vp.w;
+        cursor[1] = 1 - (y - vp.y) / vp.h;
     }
 }

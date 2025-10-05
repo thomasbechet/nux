@@ -414,16 +414,6 @@ typedef union
 {
     struct
     {
-        nux_f32_t x;
-        nux_f32_t y;
-    };
-    nux_f32_t data[2];
-} nux_v2_t;
-
-typedef union
-{
-    struct
-    {
         nux_i32_t x;
         nux_i32_t y;
         nux_i32_t z;
@@ -733,7 +723,7 @@ typedef struct
     nux_f32_t axis[NUX_AXIS_MAX];
     nux_f32_t axis_prev[NUX_AXIS_MAX];
 
-    nux_v2_t cursor;
+    nux_v2_t cursor; // in [0, 1[ top-left coordinate system
     nux_v2_t cursor_prev;
 
     nux_button_t cursor_motion_buttons[4];

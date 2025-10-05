@@ -2,6 +2,40 @@
 
 #include <graphics/shaders_data.c.inc>
 
+static float
+color_to_linear (float x)
+{
+    if (x > 0.04045)
+    {
+        return powf((x + 0.055) / 1.055, 2.4);
+    }
+    else
+    {
+        return x / 12.92;
+    }
+}
+static void
+rgba_to_linear (
+    nux_u8_t r, nux_u8_t g, nux_u8_t b, nux_u8_t a, nux_f32_t linear[4])
+{
+    linear[0] = r / 255.;
+    linear[1] = g / 255.;
+    linear[2] = b / 255.;
+    linear[3] = a / 255.;
+    for (int i = 0; i < 4; ++i)
+    {
+        linear[i] = color_to_linear(linear[i]);
+    }
+}
+static void
+hex_to_linear (nux_u32_t color, nux_f32_t linear[4])
+{
+    nux_u8_t r = (color & 0xFF0000) >> 16;
+    nux_u8_t g = (color & 0xFF00) >> 8;
+    nux_u8_t b = (color & 0xFF);
+    nux_u8_t a = (color & 0xFF000000) >> 24;
+    rgba_to_linear(r, g, b, a, linear);
+}
 static nux_status_t
 compile_shader (const char *source,
                 size_t      source_len,
@@ -74,40 +108,6 @@ cleanup1:
     glDeleteShader(vertex_shader);
 cleanup0:
     return status;
-}
-static float
-color_to_linear (float x)
-{
-    if (x > 0.04045)
-    {
-        return powf((x + 0.055) / 1.055, 2.4);
-    }
-    else
-    {
-        return x / 12.92;
-    }
-}
-static void
-rgba_to_linear (
-    nux_u8_t r, nux_u8_t g, nux_u8_t b, nux_u8_t a, nux_f32_t linear[4])
-{
-    linear[0] = r / 255.;
-    linear[1] = g / 255.;
-    linear[2] = b / 255.;
-    linear[3] = a / 255.;
-    for (int i = 0; i < 4; ++i)
-    {
-        linear[i] = color_to_linear(linear[i]);
-    }
-}
-static void
-hex_to_linear (nux_u32_t color, nux_f32_t linear[4])
-{
-    nux_u8_t r = (color & 0xFF0000) >> 16;
-    nux_u8_t g = (color & 0xFF00) >> 8;
-    nux_u8_t b = (color & 0xFF);
-    nux_u8_t a = (color & 0xFF000000) >> 24;
-    rgba_to_linear(r, g, b, a, linear);
 }
 
 nux_status_t

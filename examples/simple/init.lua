@@ -80,6 +80,8 @@ end
 function M:on_update()
     -- draw_hierarchy(node.root(), vmath.vec3(0))
 
+    print(cursor.get(0))
+
     local p = vmath.vec3(0, 0, -10)
     graphics.draw_dir(p, vmath.vec3(1, 0, 0), 1, 0x0)
     graphics.draw_dir(p, vmath.vec3(0, 1, 0), 1, 0x0)
@@ -90,6 +92,7 @@ function M:on_update()
     canvas.text(c, 10, 10, string.format("time:%.2fs", time.elapsed()))
     canvas.text(c, 10, 20, self.api)
 
+
     local position = transform.get_translation(self.camera.entity)
     c = self.gui_canvas
     canvas.text(c, 10, 10, time.date())
@@ -97,13 +100,16 @@ function M:on_update()
     canvas.text(c, 10, 30, string.format("xyz: %.2f %.2f %.2f", position.x, position.y, position.z))
     canvas.text(c, 10, 40,
         string.format("core mem:%s bc:%d",
-        memhu(arena.memory_usage(arena.core())), 
-        arena.block_count(arena.core())))
+            memhu(arena.memory_usage(arena.core())),
+            arena.block_count(arena.core())))
     canvas.text(c, 10, 50,
-        string.format("frame mem:%s bc:%d", 
-        memhu(arena.memory_usage(arena.frame())),
-        arena.block_count(arena.frame())))
+        string.format("frame mem:%s bc:%d",
+            memhu(arena.memory_usage(arena.frame())),
+            arena.block_count(arena.frame())))
     canvas.text(c, 10, 60, string.format("nodes:%d", scene.count()))
+
+    local cp = cursor.get(0)
+    canvas.rectangle(c, cp.x * canvas.WIDTH - 1, cp.y * canvas.HEIGHT - 1, 3, 3)
 
     local forward = transform.forward(self.camera.entity)
     if button.just_pressed(0, button.RB) then

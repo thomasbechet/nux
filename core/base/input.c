@@ -21,6 +21,10 @@ nux_input_update (void)
                             controller->axis,
                             controller->cursor.data);
 
+        // Validate update
+        controller->cursor = nux_v2_min(
+            nux_v2_max(controller->cursor, NUX_V2_ZEROS), NUX_V2_ONES);
+
         // Integrate cursor motion
         if (controller->mode == NUX_CONTROLLER_MODE_CURSOR)
         {
@@ -92,18 +96,27 @@ nux_axis_value (nux_u32_t controller, nux_axis_t axis)
     NUX_CHECK(controller < NUX_AXIS_MAX, return 0);
     return nux_base_module()->controllers[controller].axis[axis];
 }
-nux_f32_t
-nux_cursor_x (nux_u32_t controller)
+nux_v2_t
+nux_cursor_get (nux_u32_t controller)
 {
-    return nux_base_module()->controllers[controller].cursor.x;
-}
-nux_f32_t
-nux_cursor_y (nux_u32_t controller)
-{
-    return nux_base_module()->controllers[controller].cursor.y;
+    NUX_CHECK(controller < NUX_ARRAY_SIZE(nux_base_module()->controllers),
+              return NUX_V2_ZEROS);
+    return nux_base_module()->controllers[controller].cursor;
 }
 void
 nux_cursor_set (nux_u32_t controller, nux_f32_t x, nux_f32_t y)
 {
+    NUX_CHECK(controller < NUX_ARRAY_SIZE(nux_base_module()->controllers),
+              return);
     nux_base_module()->controllers[controller].cursor = nux_v2(x, y);
+}
+nux_f32_t
+nux_cursor_x (nux_u32_t controller)
+{
+    return nux_cursor_get(controller).x;
+}
+nux_f32_t
+nux_cursor_y (nux_u32_t controller)
+{
+    return nux_cursor_get(controller).y;
 }

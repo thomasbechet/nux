@@ -127,6 +127,7 @@ typedef struct
     // window
 
     bool            fullscreen;
+    bool            focused;
     bool            switch_fullscreen;
     bool            reload;
     GLFWwindow     *win;

@@ -28,6 +28,16 @@ typedef union
     {
         nux_f32_t x;
         nux_f32_t y;
+    };
+    nux_f32_t data[2];
+} nux_v2_t;
+
+typedef union
+{
+    struct
+    {
+        nux_f32_t x;
+        nux_f32_t y;
         nux_f32_t z;
     };
     nux_f32_t data[3];
@@ -173,9 +183,10 @@ nux_b32_t nux_button_released(nux_u32_t controller, nux_button_t button);
 nux_b32_t nux_button_just_pressed(nux_u32_t controller, nux_button_t button);
 nux_b32_t nux_button_just_released(nux_u32_t controller, nux_button_t button);
 nux_f32_t nux_axis_value(nux_u32_t controller, nux_axis_t axis);
+nux_v2_t  nux_cursor_get(nux_u32_t controller);
+void      nux_cursor_set(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
 nux_f32_t nux_cursor_x(nux_u32_t controller);
 nux_f32_t nux_cursor_y(nux_u32_t controller);
-void      nux_cursor_set(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
 
 nux_status_t nux_io_cart_begin(const nux_c8_t *path, nux_u32_t entry_count);
 nux_status_t nux_io_cart_end(void);

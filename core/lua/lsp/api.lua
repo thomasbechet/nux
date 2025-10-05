@@ -83,11 +83,13 @@ axis.LT=5
 function axis.value(...) end
 cursor={}
 ---@return None
+function cursor.get(...) end
+---@return None
+function cursor.set(...) end
+---@return None
 function cursor.x(...) end
 ---@return None
 function cursor.y(...) end
----@return None
-function cursor.set(...) end
 io={}
 ---@return None
 function io.cart_begin(...) end

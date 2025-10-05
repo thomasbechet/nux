@@ -328,6 +328,28 @@ l_axis_value (lua_State *L)
     return 1;
 }
 static int
+l_cursor_get (lua_State *L)
+{
+    nux_u32_t controller = luaL_checknumber(L, 1);
+    nux_v2_t  ret        = nux_cursor_get(controller);
+    l_checkerror(L);
+
+    nux_lua_push_vec2(L, ret);
+    return 1;
+}
+static int
+l_cursor_set (lua_State *L)
+{
+    nux_u32_t controller = luaL_checknumber(L, 1);
+    nux_f32_t x          = luaL_checknumber(L, 2);
+    nux_f32_t y          = luaL_checknumber(L, 3);
+
+    nux_cursor_set(controller, x, y);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_cursor_x (lua_State *L)
 {
     nux_u32_t controller = luaL_checknumber(L, 1);
@@ -346,18 +368,6 @@ l_cursor_y (lua_State *L)
 
     lua_pushnumber(L, ret);
     return 1;
-}
-static int
-l_cursor_set (lua_State *L)
-{
-    nux_u32_t controller = luaL_checknumber(L, 1);
-    nux_f32_t x          = luaL_checknumber(L, 2);
-    nux_f32_t y          = luaL_checknumber(L, 3);
-
-    nux_cursor_set(controller, x, y);
-    l_checkerror(L);
-
-    return 0;
 }
 static int
 l_io_cart_begin (lua_State *L)
@@ -1498,9 +1508,10 @@ static const struct luaL_Reg lib_button[]
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_axis[]
     = { { "value", l_axis_value }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_cursor[] = { { "x", l_cursor_x },
-                                              { "y", l_cursor_y },
+static const struct luaL_Reg lib_cursor[] = { { "get", l_cursor_get },
                                               { "set", l_cursor_set },
+                                              { "x", l_cursor_x },
+                                              { "y", l_cursor_y },
                                               { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_io[]
     = { { "cart_begin", l_io_cart_begin },
