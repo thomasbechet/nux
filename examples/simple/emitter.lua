@@ -4,7 +4,7 @@ function M:on_load()
     self.pos = vmath.vec3(0, 10, 0)
     self.mesh = mesh.new_cube(self.arena, 1, 1, 1)
     self.force = 50
-    self.interval = 0.5
+    self.interval = 1
     self.count = 0
 end
 

@@ -267,6 +267,8 @@ function camera.set_fov(...) end
 function camera.set_near(...) end
 ---@return None
 function camera.set_far(...) end
+---@return None
+function camera.unproject(...) end
 staticmesh={}
 ---@return None
 function staticmesh.has(...) end

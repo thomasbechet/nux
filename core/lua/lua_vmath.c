@@ -220,16 +220,18 @@ math_sub (lua_State *L)
     switch (a->type)
     {
         case NUX_LUA_TYPE_VEC2: {
-            nux_lua_userdata_t *b = check_userdata(L, 2, NUX_LUA_TYPE_VEC3);
-            nux_v2_t            v = nux_v2_sub(*a->vec2, *b->vec2);
-            if (lua_gettop(L) == 3)
+            if (lua_isuserdata(L, 2))
             {
-                *check_userdata(L, 3, NUX_LUA_TYPE_VEC3)->vec2 = v;
-                return 0;
+                nux_lua_userdata_t *b = check_anyuserdata(L, 2);
+                if (b->type == NUX_LUA_TYPE_VEC2)
+                {
+                    nux_lua_push_vec2(L, nux_v2_sub(*a->vec2, *b->vec2));
+                    return 1;
+                }
             }
-            else
+            else if (lua_isnumber(L, 2))
             {
-                nux_lua_push_vec2(L, v);
+                nux_lua_push_vec2(L, nux_v2_subs(*a->vec2, lua_tonumber(L, 2)));
                 return 1;
             }
         }
@@ -262,6 +264,23 @@ math_mul (lua_State *L)
     nux_lua_userdata_t *a = check_anyuserdata(L, 1);
     switch (a->type)
     {
+        case NUX_LUA_TYPE_VEC2: {
+            if (lua_isuserdata(L, 2))
+            {
+                nux_lua_userdata_t *b = check_anyuserdata(L, 2);
+                if (b->type == NUX_LUA_TYPE_VEC2)
+                {
+                    nux_lua_push_vec2(L, nux_v2_mul(*a->vec2, *b->vec2));
+                    return 1;
+                }
+            }
+            else if (lua_isnumber(L, 2))
+            {
+                nux_lua_push_vec2(L, nux_v2_muls(*a->vec2, lua_tonumber(L, 2)));
+                return 1;
+            }
+        }
+        break;
         case NUX_LUA_TYPE_VEC3: {
             if (lua_isuserdata(L, 2))
             {

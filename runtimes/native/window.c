@@ -230,18 +230,24 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE)
         {
+            bool unfocus = false;
             if (runtime.fullscreen)
             {
                 runtime.switch_fullscreen = true;
+                unfocus                   = true;
             }
             else if (runtime.focused)
             {
-                glfwSetInputMode(runtime.win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                runtime.focused = false;
+                unfocus = true;
             }
             else
             {
                 runtime.running = false;
+            }
+            if (unfocus)
+            {
+                glfwSetInputMode(runtime.win, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                runtime.focused = false;
             }
         }
         if (mods == GLFW_MOD_CONTROL)
@@ -422,7 +428,7 @@ window_begin_frame (void)
         // Focus action
         if (focus)
         {
-            glfwSetInputMode(runtime.win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+            glfwSetInputMode(runtime.win, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             runtime.focused = true;
         }
 

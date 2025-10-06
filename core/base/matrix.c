@@ -95,6 +95,145 @@ nux_m4_identity (void)
     return m;
 }
 nux_m4_t
+nux_m4_inv (nux_m4_t m)
+{
+    nux_m4_t  inv;
+    nux_f32_t det;
+
+    inv.data2d[0][0] = m.data2d[1][1] * m.data2d[2][2] * m.data2d[3][3]
+                       - m.data2d[1][1] * m.data2d[3][2] * m.data2d[2][3]
+                       - m.data2d[1][2] * m.data2d[2][1] * m.data2d[3][3]
+                       + m.data2d[1][2] * m.data2d[3][1] * m.data2d[2][3]
+                       + m.data2d[1][3] * m.data2d[2][1] * m.data2d[3][2]
+                       - m.data2d[1][3] * m.data2d[3][1] * m.data2d[2][2];
+
+    inv.data2d[0][1] = -m.data2d[0][1] * m.data2d[2][2] * m.data2d[3][3]
+                       + m.data2d[0][1] * m.data2d[3][2] * m.data2d[2][3]
+                       + m.data2d[0][2] * m.data2d[2][1] * m.data2d[3][3]
+                       - m.data2d[0][2] * m.data2d[3][1] * m.data2d[2][3]
+                       - m.data2d[0][3] * m.data2d[2][1] * m.data2d[3][2]
+                       + m.data2d[0][3] * m.data2d[3][1] * m.data2d[2][2];
+
+    inv.data2d[0][2] = m.data2d[0][1] * m.data2d[1][2] * m.data2d[3][3]
+                       - m.data2d[0][1] * m.data2d[3][2] * m.data2d[1][3]
+                       - m.data2d[0][2] * m.data2d[1][1] * m.data2d[3][3]
+                       + m.data2d[0][2] * m.data2d[3][1] * m.data2d[1][3]
+                       + m.data2d[0][3] * m.data2d[1][1] * m.data2d[3][2]
+                       - m.data2d[0][3] * m.data2d[3][1] * m.data2d[1][2];
+
+    inv.data2d[0][3] = -m.data2d[0][1] * m.data2d[1][2] * m.data2d[2][3]
+                       + m.data2d[0][1] * m.data2d[2][2] * m.data2d[1][3]
+                       + m.data2d[0][2] * m.data2d[1][1] * m.data2d[2][3]
+                       - m.data2d[0][2] * m.data2d[2][1] * m.data2d[1][3]
+                       - m.data2d[0][3] * m.data2d[1][1] * m.data2d[2][2]
+                       + m.data2d[0][3] * m.data2d[2][1] * m.data2d[1][2];
+
+    inv.data2d[1][0] = -m.data2d[1][0] * m.data2d[2][2] * m.data2d[3][3]
+                       + m.data2d[1][0] * m.data2d[3][2] * m.data2d[2][3]
+                       + m.data2d[1][2] * m.data2d[2][0] * m.data2d[3][3]
+                       - m.data2d[1][2] * m.data2d[3][0] * m.data2d[2][3]
+                       - m.data2d[1][3] * m.data2d[2][0] * m.data2d[3][2]
+                       + m.data2d[1][3] * m.data2d[3][0] * m.data2d[2][2];
+
+    inv.data2d[1][1] = m.data2d[0][0] * m.data2d[2][2] * m.data2d[3][3]
+                       - m.data2d[0][0] * m.data2d[3][2] * m.data2d[2][3]
+                       - m.data2d[0][2] * m.data2d[2][0] * m.data2d[3][3]
+                       + m.data2d[0][2] * m.data2d[3][0] * m.data2d[2][3]
+                       + m.data2d[0][3] * m.data2d[2][0] * m.data2d[3][2]
+                       - m.data2d[0][3] * m.data2d[3][0] * m.data2d[2][2];
+
+    inv.data2d[1][2] = -m.data2d[0][0] * m.data2d[1][2] * m.data2d[3][3]
+                       + m.data2d[0][0] * m.data2d[3][2] * m.data2d[1][3]
+                       + m.data2d[0][2] * m.data2d[1][0] * m.data2d[3][3]
+                       - m.data2d[0][2] * m.data2d[3][0] * m.data2d[1][3]
+                       - m.data2d[0][3] * m.data2d[1][0] * m.data2d[3][2]
+                       + m.data2d[0][3] * m.data2d[3][0] * m.data2d[1][2];
+
+    inv.data2d[1][3] = m.data2d[0][0] * m.data2d[1][2] * m.data2d[2][3]
+                       - m.data2d[0][0] * m.data2d[2][2] * m.data2d[1][3]
+                       - m.data2d[0][2] * m.data2d[1][0] * m.data2d[2][3]
+                       + m.data2d[0][2] * m.data2d[2][0] * m.data2d[1][3]
+                       + m.data2d[0][3] * m.data2d[1][0] * m.data2d[2][2]
+                       - m.data2d[0][3] * m.data2d[2][0] * m.data2d[1][2];
+
+    inv.data2d[2][0] = m.data2d[1][0] * m.data2d[2][1] * m.data2d[3][3]
+                       - m.data2d[1][0] * m.data2d[3][1] * m.data2d[2][3]
+                       - m.data2d[1][1] * m.data2d[2][0] * m.data2d[3][3]
+                       + m.data2d[1][1] * m.data2d[3][0] * m.data2d[2][3]
+                       + m.data2d[1][3] * m.data2d[2][0] * m.data2d[3][1]
+                       - m.data2d[1][3] * m.data2d[3][0] * m.data2d[2][1];
+
+    inv.data2d[2][1] = -m.data2d[0][0] * m.data2d[2][1] * m.data2d[3][3]
+                       + m.data2d[0][0] * m.data2d[3][1] * m.data2d[2][3]
+                       + m.data2d[0][1] * m.data2d[2][0] * m.data2d[3][3]
+                       - m.data2d[0][1] * m.data2d[3][0] * m.data2d[2][3]
+                       - m.data2d[0][3] * m.data2d[2][0] * m.data2d[3][1]
+                       + m.data2d[0][3] * m.data2d[3][0] * m.data2d[2][1];
+
+    inv.data2d[2][2] = m.data2d[0][0] * m.data2d[1][1] * m.data2d[3][3]
+                       - m.data2d[0][0] * m.data2d[3][1] * m.data2d[1][3]
+                       - m.data2d[0][1] * m.data2d[1][0] * m.data2d[3][3]
+                       + m.data2d[0][1] * m.data2d[3][0] * m.data2d[1][3]
+                       + m.data2d[0][3] * m.data2d[1][0] * m.data2d[3][1]
+                       - m.data2d[0][3] * m.data2d[3][0] * m.data2d[1][1];
+
+    inv.data2d[2][3] = -m.data2d[0][0] * m.data2d[1][1] * m.data2d[2][3]
+                       + m.data2d[0][0] * m.data2d[2][1] * m.data2d[1][3]
+                       + m.data2d[0][1] * m.data2d[1][0] * m.data2d[2][3]
+                       - m.data2d[0][1] * m.data2d[2][0] * m.data2d[1][3]
+                       - m.data2d[0][3] * m.data2d[1][0] * m.data2d[2][1]
+                       + m.data2d[0][3] * m.data2d[2][0] * m.data2d[1][1];
+
+    inv.data2d[3][0] = -m.data2d[1][0] * m.data2d[2][1] * m.data2d[3][2]
+                       + m.data2d[1][0] * m.data2d[3][1] * m.data2d[2][2]
+                       + m.data2d[1][1] * m.data2d[2][0] * m.data2d[3][2]
+                       - m.data2d[1][1] * m.data2d[3][0] * m.data2d[2][2]
+                       - m.data2d[1][2] * m.data2d[2][0] * m.data2d[3][1]
+                       + m.data2d[1][2] * m.data2d[3][0] * m.data2d[2][1];
+
+    inv.data2d[3][1] = m.data2d[0][0] * m.data2d[2][1] * m.data2d[3][2]
+                       - m.data2d[0][0] * m.data2d[3][1] * m.data2d[2][2]
+                       - m.data2d[0][1] * m.data2d[2][0] * m.data2d[3][2]
+                       + m.data2d[0][1] * m.data2d[3][0] * m.data2d[2][2]
+                       + m.data2d[0][2] * m.data2d[2][0] * m.data2d[3][1]
+                       - m.data2d[0][2] * m.data2d[3][0] * m.data2d[2][1];
+
+    inv.data2d[3][2] = -m.data2d[0][0] * m.data2d[1][1] * m.data2d[3][2]
+                       + m.data2d[0][0] * m.data2d[3][1] * m.data2d[1][2]
+                       + m.data2d[0][1] * m.data2d[1][0] * m.data2d[3][2]
+                       - m.data2d[0][1] * m.data2d[3][0] * m.data2d[1][2]
+                       - m.data2d[0][2] * m.data2d[1][0] * m.data2d[3][1]
+                       + m.data2d[0][2] * m.data2d[3][0] * m.data2d[1][1];
+
+    inv.data2d[3][3] = m.data2d[0][0] * m.data2d[1][1] * m.data2d[2][2]
+                       - m.data2d[0][0] * m.data2d[2][1] * m.data2d[1][2]
+                       - m.data2d[0][1] * m.data2d[1][0] * m.data2d[2][2]
+                       + m.data2d[0][1] * m.data2d[2][0] * m.data2d[1][2]
+                       + m.data2d[0][2] * m.data2d[1][0] * m.data2d[2][1]
+                       - m.data2d[0][2] * m.data2d[2][0] * m.data2d[1][1];
+
+    det = m.data2d[0][0] * inv.data2d[0][0] + m.data2d[1][0] * inv.data2d[0][1]
+          + m.data2d[2][0] * inv.data2d[0][2]
+          + m.data2d[3][0] * inv.data2d[0][3];
+
+    if (det == 0)
+    {
+        // Cannot inverse
+    }
+
+    det = 1.f / det;
+
+    for (nux_u32_t x = 0; x < 4; x++)
+    {
+        for (nux_u32_t y = 0; y < 4; y++)
+        {
+            m.data2d[x][y] = inv.data2d[x][y] * det;
+        }
+    }
+
+    return m;
+}
+nux_m4_t
 nux_m4_translate (nux_v3_t v)
 {
     nux_m4_t m = nux_m4_identity();

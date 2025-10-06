@@ -1292,6 +1292,17 @@ l_camera_set_far (lua_State *L)
     return 0;
 }
 static int
+l_camera_unproject (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_v2_t  pos = nux_lua_check_vec2(L, 2);
+    nux_v3_t  ret = nux_camera_unproject(e, pos);
+    l_checkerror(L);
+
+    nux_lua_push_vec3(L, ret);
+    return 1;
+}
+static int
 l_staticmesh_has (lua_State *L)
 {
     nux_nid_t n   = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1599,7 +1610,8 @@ static const struct luaL_Reg lib_graphics[]
 static const struct luaL_Reg lib_camera[]
     = { { "add", l_camera_add },         { "remove", l_camera_remove },
         { "set_fov", l_camera_set_fov }, { "set_near", l_camera_set_near },
-        { "set_far", l_camera_set_far }, { NUX_NULL, NUX_NULL } };
+        { "set_far", l_camera_set_far }, { "unproject", l_camera_unproject },
+        { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_staticmesh[]
     = { { "has", l_staticmesh_has },
         { "add", l_staticmesh_add },

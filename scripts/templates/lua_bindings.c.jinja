@@ -26,7 +26,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
     {%- for arg in function.args -%}
         {%- if arg.typename.type == "primitive" %}
             {%- if arg.typename.name == "v2" %}
-                nux_v3_t {{ arg.name }} = nux_lua_check_vec2(L, {{ ns.stack + 0}});
+                nux_v2_t {{ arg.name }} = nux_lua_check_vec2(L, {{ ns.stack + 0}});
                 {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name == "v3" %}
                 nux_v3_t {{ arg.name }} = nux_lua_check_vec3(L, {{ ns.stack + 0}});

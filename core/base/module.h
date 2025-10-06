@@ -944,6 +944,7 @@ nux_m3_t nux_m3_mul(nux_m3_t a, nux_m3_t b);
 nux_m4_t nux_m4(const nux_f32_t *p);
 nux_m4_t nux_m4_zero(void);
 nux_m4_t nux_m4_identity(void);
+nux_m4_t nux_m4_inv(nux_m4_t v);
 nux_m4_t nux_m4_translate(nux_v3_t v);
 nux_m4_t nux_m4_scale(nux_v3_t v);
 nux_m4_t nux_m4_rotate_y(nux_f32_t angle);

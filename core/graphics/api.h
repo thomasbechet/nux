@@ -137,11 +137,12 @@ void nux_graphics_draw_dir(nux_v3_t  origin,
                            nux_f32_t length,
                            nux_u32_t color);
 
-void nux_camera_add(nux_nid_t e);
-void nux_camera_remove(nux_nid_t e);
-void nux_camera_set_fov(nux_nid_t e, nux_f32_t fov);
-void nux_camera_set_near(nux_nid_t e, nux_f32_t near);
-void nux_camera_set_far(nux_nid_t e, nux_f32_t far);
+void     nux_camera_add(nux_nid_t e);
+void     nux_camera_remove(nux_nid_t e);
+void     nux_camera_set_fov(nux_nid_t e, nux_f32_t fov);
+void     nux_camera_set_near(nux_nid_t e, nux_f32_t near);
+void     nux_camera_set_far(nux_nid_t e, nux_f32_t far);
+nux_v3_t nux_camera_unproject(nux_nid_t e, nux_v2_t pos);
 
 nux_b32_t      nux_staticmesh_has(nux_nid_t n);
 void           nux_staticmesh_add(nux_nid_t e);

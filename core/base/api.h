@@ -65,6 +65,7 @@ typedef union
         nux_f32_t w4;
     };
     nux_f32_t data[16];
+    nux_f32_t data2d[4][4];
 } nux_m4_t;
 
 typedef union

@@ -80,8 +80,6 @@ end
 function M:on_update()
     -- draw_hierarchy(node.root(), vmath.vec3(0))
 
-    print(cursor.get(0))
-
     local p = vmath.vec3(0, 0, -10)
     graphics.draw_dir(p, vmath.vec3(1, 0, 0), 1, 0x0)
     graphics.draw_dir(p, vmath.vec3(0, 1, 0), 1, 0x0)
@@ -107,18 +105,22 @@ function M:on_update()
             memhu(arena.memory_usage(arena.frame())),
             arena.block_count(arena.frame())))
     canvas.text(c, 10, 60, string.format("nodes:%d", scene.count()))
+    local cp = cursor.get(0)
+    canvas.text(c, 10, 70, string.format("cursor: %.2f %.2f", cp.x, cp.y))
 
     local cp = cursor.get(0)
     canvas.rectangle(c, cp.x * canvas.WIDTH - 1, cp.y * canvas.HEIGHT - 1, 3, 3)
+    canvas.rectangle(c, canvas.WIDTH / 2, canvas.HEIGHT / 2, 3, 3);
 
     local forward = transform.forward(self.camera.entity)
     if button.just_pressed(0, button.RB) then
-        local hit = physics.raycast(position, forward)
-        if hit and vmath.dist(hit.position, transform.get_translation(self.camera.entity)) < 5 then
+        local dir = camera.unproject(self.camera.entity, cursor.get(0))
+        local hit = physics.raycast(position, dir)
+        -- local dist = vmath.dist(hit.position, transform.get_translation(self.camera.entity))
+        if hit then
             if staticmesh.has(hit.entity) then
                 self.active_mesh = staticmesh.get_mesh(hit.entity)
                 self.active_texture = staticmesh.get_texture(hit.entity)
-                print("hit " .. hit.entity .. " mesh " .. self.active_mesh .. " texture " .. self.active_texture)
             end
         else
             if self.active_mesh and self.active_texture then
