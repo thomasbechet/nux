@@ -164,6 +164,7 @@ nux_renderer_render (nux_scene_t *scene)
     while ((it = nux_query_next(module->transform_camera_iter, it)))
     {
         nux_camera_t *c = nux_component_get(it, NUX_COMPONENT_CAMERA);
+        NUX_ASSERT(c);
         // TODO: check current / active
         camera = it;
         break;
@@ -173,21 +174,22 @@ nux_renderer_render (nux_scene_t *scene)
     if (camera)
     {
         // Update constants
+        nux_camera_t    *cc = nux_component_get(camera, NUX_COMPONENT_CAMERA);
         nux_transform_t *ct
             = nux_component_get(camera, NUX_COMPONENT_TRANSFORM);
-        nux_camera_t *cc = nux_component_get(camera, NUX_COMPONENT_CAMERA);
+        NUX_ASSERT(ct && cc);
 
         nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROS, 1);
         nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
         nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 0);
 
         nux_gpu_constants_buffer_t constants;
-        constants.view = nux_lookat(eye, center, up);
-        constants.proj
-            = nux_perspective(nux_radian(cc->fov),
-                              (nux_f32_t)NUX_CANVAS_WIDTH / NUX_CANVAS_HEIGHT,
-                              cc->near,
-                              cc->far);
+        constants.view        = nux_m4_lookat(eye, center, up);
+        constants.proj        = nux_m4_perspective(nux_radian(cc->fov),
+                                            (nux_f32_t)NUX_CANVAS_WIDTH
+                                                / NUX_CANVAS_HEIGHT,
+                                            cc->near,
+                                            cc->far);
         constants.screen_size = nux_v2u(nux_stat(NUX_STAT_SCREEN_WIDTH),
                                         nux_stat(NUX_STAT_SCREEN_HEIGHT));
         constants.time        = nux_time_elapsed();

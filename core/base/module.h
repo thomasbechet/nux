@@ -953,6 +953,17 @@ nux_v4_t nux_m4_mulv(nux_m4_t a, nux_v4_t v);
 nux_v3_t nux_m4_mulv3(nux_m4_t a, nux_v3_t v, nux_f32_t w);
 nux_m4_t nux_m4_trs(nux_v3_t t, nux_q4_t r, nux_v3_t s);
 void nux_m4_trs_decompose(nux_m4_t m, nux_v3_t *t, nux_q4_t *r, nux_v3_t *s);
+nux_m4_t nux_m4_perspective(nux_f32_t fov,
+                            nux_f32_t aspect_ratio,
+                            nux_f32_t z_near,
+                            nux_f32_t z_far);
+nux_m4_t nux_m4_ortho(nux_f32_t left,
+                      nux_f32_t right,
+                      nux_f32_t bottom,
+                      nux_f32_t top,
+                      nux_f32_t near,
+                      nux_f32_t far);
+nux_m4_t nux_m4_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 
 // quaternion.c
 

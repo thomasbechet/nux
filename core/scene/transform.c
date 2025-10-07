@@ -26,13 +26,9 @@ nux_transform_update_matrix (nux_nid_t e)
 
     // Check parent global matrix update
     nux_nid_t parent = nux_node_parent(e);
-    if (parent)
+    if (parent && nux_transform_update_matrix(parent))
     {
-        nux_transform_update_matrix(parent);
-        if (t)
-        {
-            t->dirty = NUX_TRUE;
-        }
+        t->dirty = NUX_TRUE;
     }
 
     // Update global matrix from parent
@@ -248,7 +244,7 @@ nux_transform_look_at (nux_nid_t e, nux_v3_t center)
     nux_v3_t eye = nux_transform_get_translation(e);
 
     nux_v3_t zaxis = nux_v3_normalize(nux_v3_sub(center, eye));
-    nux_v3_t xaxis = nux_v3_normalize(nux_v3_cross(NUX_V3_UP, zaxis));
+    nux_v3_t xaxis = nux_v3_normalize(nux_v3_cross(zaxis, NUX_V3_UP));
     nux_v3_t yaxis = nux_v3_cross(xaxis, zaxis);
 
     t->global_matrix.x1 = xaxis.x;

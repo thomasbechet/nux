@@ -126,8 +126,9 @@ compute_transforms (void)
     nux_nid_t             it     = NUX_NULL;
     while ((it = nux_query_next(module->rigidbody_transform_iter, it)))
     {
-        nux_rigidbody_t  *body = nux_component_get(it, NUX_COMPONENT_RIGIDBODY);
-        nux_point_mass_t *pm   = &module->point_masses.data[body->first];
+        nux_rigidbody_t *body = nux_component_get(it, NUX_COMPONENT_RIGIDBODY);
+        NUX_CHECK(body, continue);
+        nux_point_mass_t *pm = &module->point_masses.data[body->first];
 
         nux_v3_t a = module->point_masses.data[body->first + 0].x;
         nux_v3_t b = module->point_masses.data[body->first + 4].x;
@@ -167,13 +168,16 @@ nux_physics_init (void)
 
     module->rigidbody_transform_iter = nux_query_new(a, 2, 0);
     NUX_CHECK(module->rigidbody_transform_iter, return NUX_FAILURE);
-    nux_query_includes(module->rigidbody_transform_iter, NUX_COMPONENT_RIGIDBODY);
-    nux_query_includes(module->rigidbody_transform_iter, NUX_COMPONENT_TRANSFORM);
+    nux_query_includes(module->rigidbody_transform_iter,
+                       NUX_COMPONENT_RIGIDBODY);
+    nux_query_includes(module->rigidbody_transform_iter,
+                       NUX_COMPONENT_TRANSFORM);
 
     module->collider_transform_iter = nux_query_new(a, 2, 0);
     NUX_CHECK(module->collider_transform_iter, return NUX_FAILURE);
     nux_query_includes(module->collider_transform_iter, NUX_COMPONENT_COLLIDER);
-    nux_query_includes(module->collider_transform_iter, NUX_COMPONENT_TRANSFORM);
+    nux_query_includes(module->collider_transform_iter,
+                       NUX_COMPONENT_TRANSFORM);
 
     return NUX_SUCCESS;
 }
@@ -190,9 +194,9 @@ nux_physics_update (void)
 void
 nux_physics_add_rigidbody (nux_nid_t e)
 {
-    nux_physics_module_t *module    = nux_physics_module();
-    nux_rigidbody_t      *rigidbody = nux_component_get(e, NUX_COMPONENT_RIGIDBODY);
-    nux_collider_t       *collider  = nux_component_get(e, NUX_COMPONENT_COLLIDER);
+    nux_physics_module_t *module = nux_physics_module();
+    nux_rigidbody_t *rigidbody = nux_component_get(e, NUX_COMPONENT_RIGIDBODY);
+    nux_collider_t  *collider  = nux_component_get(e, NUX_COMPONENT_COLLIDER);
     if (collider)
     {
         switch (collider->type)
@@ -315,8 +319,10 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
     hit.n = NUX_V3_ZEROS;
     while ((it = nux_query_next(module->collider_transform_iter, it)))
     {
-        nux_transform_t *transform = nux_component_get(it, NUX_COMPONENT_TRANSFORM);
-        nux_collider_t  *collider  = nux_component_get(it, NUX_COMPONENT_COLLIDER);
+        nux_transform_t *transform
+            = nux_component_get(it, NUX_COMPONENT_TRANSFORM);
+        nux_collider_t *collider
+            = nux_component_get(it, NUX_COMPONENT_COLLIDER);
 
         nux_v3_t translation = nux_transform_get_translation(it);
         switch (collider->type)

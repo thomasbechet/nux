@@ -263,22 +263,33 @@ query_next (const nux_scene_t *ins, nux_query_t *it)
         // filter on required components
         for (nux_u32_t i = 0; i < it->includes.size; ++i)
         {
-            nux_scene_container_t *container
-                = ins->containers.data + it->includes.data[i];
-            it->mask &= bitset_mask(&container->bitset, it->mask_index);
+            nux_u32_t index = it->includes.data[i];
+            if (ins->containers.data && index < ins->containers.size)
+            {
+                nux_scene_container_t *container = ins->containers.data + index;
+                it->mask &= bitset_mask(&container->bitset, it->mask_index);
+            }
+            else
+            {
+                return NUX_NULL; // missing container, no matching entities
+            }
         }
         // must be processed after includes
         for (nux_u32_t i = 0; i < it->excludes.size; ++i)
         {
-            nux_scene_container_t *container
-                = ins->containers.data + it->excludes.data[i];
-            it->mask &= ~bitset_mask(&container->bitset, it->mask_index);
+            nux_u32_t index = it->excludes.data[i];
+            if (ins->containers.data && index < ins->containers.size)
+            {
+                nux_scene_container_t *container = ins->containers.data + index;
+                it->mask &= ~bitset_mask(&container->bitset, it->mask_index);
+            }
         }
 
         it->mask_offset = 0;
     }
 
     // consume mask (at this step, the mask has at least one bit set)
+    NUX_ASSERT(it->mask);
     while (!(it->mask & 1))
     {
         it->mask >>= 1;
@@ -554,8 +565,9 @@ nux_node_has (nux_nid_t e, nux_u32_t c)
 {
     NUX_ASSERT(e);
     NUX_ASSERT(c);
-    nux_scene_t           *scene     = nux_scene_active();
-    nux_u32_t              index     = NUX_NID_INDEX(e);
+    nux_scene_t *scene = nux_scene_active();
+    nux_u32_t    index = NUX_NID_INDEX(e);
+    NUX_CHECK(c < scene->containers.size, return NUX_FALSE);
     nux_scene_container_t *container = scene->containers.data + c;
     return bitset_isset(&container->bitset, index);
 }

@@ -118,6 +118,7 @@ nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
         }
         i += EVENT_SIZE + event->len;
     }
-#endif
+#else
     *count = 0;
+#endif
 }
