@@ -121,9 +121,11 @@ function M:on_update()
             if staticmesh.has(hit.entity) then
                 self.active_mesh = staticmesh.get_mesh(hit.entity)
                 self.active_texture = staticmesh.get_texture(hit.entity)
+                print("hit: " .. self.active_mesh)
             end
         else
             if self.active_mesh and self.active_texture then
+                -- rigidbody node
                 local e = node.create(node.root())
                 transform.add(e)
                 transform.set_translation(e, position)
@@ -133,6 +135,7 @@ function M:on_update()
                 local force = 15
                 rigidbody.add(e)
                 rigidbody.set_velocity(e, forward * force)
+                -- staticmesh node
                 local child = node.create(e)
                 transform.add(child)
                 staticmesh.add(child)

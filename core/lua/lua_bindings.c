@@ -1486,6 +1486,16 @@ l_physics_raycast (lua_State *L)
     }
     return 1;
 }
+static int
+l_physics_set_ground_height (lua_State *L)
+{
+    nux_f32_t height = luaL_checknumber(L, 1);
+
+    nux_physics_set_ground_height(height);
+    l_checkerror(L);
+
+    return 0;
+}
 static const struct luaL_Reg lib_core[] = { { "stat", l_core_stat },
                                             { "random", l_core_random },
                                             { "random01", l_core_random01 },
@@ -1637,7 +1647,9 @@ static const struct luaL_Reg lib_collider[]
         { "remove", l_collider_remove },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_physics[]
-    = { { "raycast", l_physics_raycast }, { NUX_NULL, NUX_NULL } };
+    = { { "raycast", l_physics_raycast },
+        { "set_ground_height", l_physics_set_ground_height },
+        { NUX_NULL, NUX_NULL } };
 
 nux_status_t
 nux_lua_open_api (void)

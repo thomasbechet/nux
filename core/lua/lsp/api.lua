@@ -324,3 +324,5 @@ function collider.remove(...) end
 physics={}
 ---@return None
 function physics.raycast(...) end
+---@return None
+function physics.set_ground_height(...) end

@@ -74,7 +74,7 @@ typedef struct
     nux_q4_t  rotation;
     nux_v3_t  scale;
     nux_m4_t  global_matrix;
-    nux_b32_t dirty;
+    nux_u32_t dirty;
 } nux_transform_t;
 
 typedef struct

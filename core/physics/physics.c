@@ -44,14 +44,13 @@ integrate (void)
             nux_point_mass_t *pm = module->point_masses.data + i;
 
             // ground collision
-            const nux_f32_t ground = 0;
-            if (pm->x.y < ground)
+            if (pm->x.y < module->ground_height)
             {
                 nux_collision_constraint_t *c
                     = nux_collision_constraint_vec_push(
                         &module->collision_constraints);
                 NUX_ASSERT(c);
-                c->q = nux_v3(pm->x.x, ground, pm->x.z);
+                c->q = nux_v3(pm->x.x, module->ground_height, pm->x.z);
                 c->n = NUX_V3_UP;
                 c->a = i;
             }
@@ -127,7 +126,7 @@ compute_transforms (void)
     while ((it = nux_query_next(module->rigidbody_transform_iter, it)))
     {
         nux_rigidbody_t *body = nux_component_get(it, NUX_COMPONENT_RIGIDBODY);
-        NUX_CHECK(body, continue);
+        NUX_ASSERT(body);
         nux_point_mass_t *pm = &module->point_masses.data[body->first];
 
         nux_v3_t a = module->point_masses.data[body->first + 0].x;
@@ -178,6 +177,8 @@ nux_physics_init (void)
     nux_query_includes(module->collider_transform_iter, NUX_COMPONENT_COLLIDER);
     nux_query_includes(module->collider_transform_iter,
                        NUX_COMPONENT_TRANSFORM);
+
+    module->ground_height = 0;
 
     return NUX_SUCCESS;
 }
@@ -310,9 +311,10 @@ nux_physics_add_distance_constraint (nux_u32_t a, nux_u32_t b, float distance)
 nux_raycast_hit_t
 nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
 {
-    nux_physics_module_t *module = nux_physics_module();
-    nux_ray_t             r      = { .p = pos, .d = nux_v3_normalize(dir) };
-    nux_nid_t             it     = NUX_NULL;
+    nux_physics_module_t *module  = nux_physics_module();
+    nux_ray_t             r       = { .p = pos, .d = nux_v3_normalize(dir) };
+    nux_nid_t             it      = NUX_NULL;
+    nux_f32_t             nearest = NUX_FLT_MAX;
     nux_raycast_hit_t     hit;
     hit.e = NUX_NULL;
     hit.p = NUX_V3_ZEROS;
@@ -333,11 +335,11 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
                     .r = collider->sphere.radius,
                 };
                 nux_f32_t t0;
-                if (nux_intersect_ray_sphere(r, s, &t0))
+                if (nux_intersect_ray_sphere(r, s, &t0) && t0 < nearest)
                 {
-                    hit.e = it;
-                    hit.p = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
-                    return hit;
+                    nearest = t0;
+                    hit.e   = it;
+                    hit.p   = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
                 }
             }
             break;
@@ -346,15 +348,20 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
                     = nux_b3(nux_v3_add(collider->aabb.box.min, translation),
                              nux_v3_add(collider->aabb.box.max, translation));
                 nux_f32_t t0, t1;
-                if (nux_intersect_ray_box(r, box, &t0, &t1))
+                if (nux_intersect_ray_box(r, box, &t0, &t1) && t0 < nearest)
                 {
-                    hit.e = it;
-                    hit.p = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
-                    return hit;
+                    nearest = t0;
+                    hit.e   = it;
+                    hit.p   = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
                 }
             }
             break;
         }
     }
     return hit;
+}
+void
+nux_physics_set_ground_height (nux_f32_t height)
+{
+    nux_physics_module()->ground_height = height;
 }

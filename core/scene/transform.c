@@ -17,22 +17,27 @@ find_parent_transform (nux_nid_t e)
 
     return nux_m4_identity();
 }
+static void
+mark_dirty (nux_transform_t *t)
+{
+    ++t->dirty;
+}
 
 nux_b32_t
 nux_transform_update_matrix (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_NULL);
+    NUX_CHECK(t, return NUX_FALSE);
 
     // Check parent global matrix update
     nux_nid_t parent = nux_node_parent(e);
     if (parent && nux_transform_update_matrix(parent))
     {
-        t->dirty = NUX_TRUE;
+        mark_dirty(t);
     }
 
     // Update global matrix from parent
-    if (t && t->dirty)
+    if (t->dirty)
     {
         t->global_matrix = nux_m4_trs(t->translation, t->rotation, t->scale);
         if (parent)

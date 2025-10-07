@@ -25,5 +25,6 @@ void nux_collider_add_aabb(nux_nid_t e, nux_v3_t min, nux_v3_t max);
 void nux_collider_remove(nux_nid_t e);
 
 nux_raycast_hit_t nux_physics_raycast(nux_v3_t pos, nux_v3_t dir);
+void              nux_physics_set_ground_height(nux_f32_t height);
 
 #endif
