@@ -1,5 +1,11 @@
 #include "internal.h"
 
+static nux_status_t
+update_data (nux_mesh_t *mesh)
+{
+    return nux_graphics_update_vertices(mesh->first, mesh->count, mesh->data);
+}
+
 nux_mesh_t *
 nux_mesh_new (nux_arena_t *arena, nux_u32_t capa)
 {
@@ -10,6 +16,8 @@ nux_mesh_new (nux_arena_t *arena, nux_u32_t capa)
         arena, sizeof(nux_f32_t) * NUX_VERTEX_SIZE * mesh->count);
     NUX_CHECK(mesh->data, return NUX_NULL);
     mesh->bounds = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
+    NUX_CHECK(nux_graphics_push_vertices(mesh->count, mesh->data, &mesh->first),
+              return NUX_NULL);
     return mesh;
 }
 nux_mesh_t *
@@ -56,8 +64,7 @@ nux_mesh_new_cube (nux_arena_t *arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
         mesh->data[i * 5 + 4] = uvs[i].y;
     }
 
-    NUX_CHECK(nux_graphics_push_vertices(mesh->count, mesh->data, &mesh->first),
-              return NUX_NULL);
+    NUX_CHECK(update_data(mesh), return NUX_NULL);
 
     return mesh;
 }
@@ -91,4 +98,16 @@ nux_v3_t
 nux_mesh_bounds_max (nux_mesh_t *mesh)
 {
     return mesh->bounds.max;
+}
+void
+nux_mesh_set_origin (nux_mesh_t *mesh, nux_v3_t origin)
+{
+    for (nux_u32_t i = 0; i < mesh->count; ++i)
+    {
+        mesh->data[i * 5 + 0] -= origin.x;
+        mesh->data[i * 5 + 1] -= origin.y;
+        mesh->data[i * 5 + 2] -= origin.z;
+    }
+    update_data(mesh);
+    nux_mesh_update_bounds(mesh);
 }

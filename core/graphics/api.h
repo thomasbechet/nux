@@ -98,6 +98,7 @@ nux_mesh_t *nux_mesh_new_cube(nux_arena_t *arena,
 void        nux_mesh_update_bounds(nux_mesh_t *mesh);
 nux_v3_t    nux_mesh_bounds_min(nux_mesh_t *mesh);
 nux_v3_t    nux_mesh_bounds_max(nux_mesh_t *mesh);
+void        nux_mesh_set_origin(nux_mesh_t *mesh, nux_v3_t origin);
 
 nux_canvas_t  *nux_canvas_new(nux_arena_t *arena,
                               nux_u32_t    width,

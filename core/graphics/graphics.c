@@ -4,6 +4,20 @@
 
 NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
 
+static nux_status_t
+update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
+{
+    nux_graphics_module_t *module = nux_graphics_module();
+    NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
+                                    module->transforms_buffer.slot,
+                                    first * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    count * NUX_M4_SIZE * sizeof(nux_f32_t),
+                                    data),
+               return NUX_FAILURE,
+               "failed to update transform buffer");
+    return NUX_SUCCESS;
+}
+
 nux_status_t
 nux_graphics_init (void)
 {
@@ -216,8 +230,10 @@ nux_graphics_update (void)
     return NUX_SUCCESS;
 }
 
-static nux_status_t
-update_vertex_buffer (nux_u32_t first, nux_u32_t count, const nux_f32_t *data)
+nux_status_t
+nux_graphics_update_vertices (nux_u32_t        first,
+                              nux_u32_t        count,
+                              const nux_f32_t *data)
 {
     nux_graphics_module_t *module = nux_graphics_module();
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
@@ -227,19 +243,6 @@ update_vertex_buffer (nux_u32_t first, nux_u32_t count, const nux_f32_t *data)
                                     data),
                return NUX_FAILURE,
                "failed to update vertex buffer");
-    return NUX_SUCCESS;
-}
-static nux_status_t
-update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
-{
-    nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    module->transforms_buffer.slot,
-                                    first * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    count * NUX_M4_SIZE * sizeof(nux_f32_t),
-                                    data),
-               return NUX_FAILURE,
-               "failed to update transform buffer");
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -253,7 +256,8 @@ nux_graphics_push_vertices (nux_u32_t        vcount,
                return NUX_FAILURE,
                "out of vertices");
     *first = module->vertices_buffer_head;
-    NUX_CHECK(update_vertex_buffer(*first, vcount, data), return NUX_FAILURE);
+    NUX_CHECK(nux_graphics_update_vertices(*first, vcount, data),
+              return NUX_FAILURE);
     module->vertices_buffer_head += vcount;
     return NUX_SUCCESS;
 }
@@ -268,7 +272,8 @@ nux_graphics_push_frame_vertices (nux_u32_t        vcount,
                return NUX_FAILURE,
                "out of frame vertices");
     *first = module->vertices_buffer_head_frame - vcount;
-    NUX_CHECK(update_vertex_buffer(*first, vcount, data), return NUX_FAILURE);
+    NUX_CHECK(nux_graphics_update_vertices(*first, vcount, data),
+              return NUX_FAILURE);
     module->vertices_buffer_head_frame -= vcount;
     return NUX_SUCCESS;
 }

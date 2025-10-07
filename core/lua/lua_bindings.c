@@ -1108,6 +1108,18 @@ l_mesh_bounds_max (lua_State *L)
     return 1;
 }
 static int
+l_mesh_set_origin (lua_State *L)
+{
+    nux_mesh_t *mesh
+        = nux_resource_check(NUX_RESOURCE_MESH, luaL_checkinteger(L, 1));
+    nux_v3_t origin = nux_lua_check_vec3(L, 2);
+
+    nux_mesh_set_origin(mesh, origin);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_canvas_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -1603,6 +1615,7 @@ static const struct luaL_Reg lib_mesh[]
         { "update_bounds", l_mesh_update_bounds },
         { "bounds_min", l_mesh_bounds_min },
         { "bounds_max", l_mesh_bounds_max },
+        { "set_origin", l_mesh_set_origin },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },

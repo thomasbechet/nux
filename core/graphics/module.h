@@ -120,6 +120,9 @@ typedef enum
 
 // graphics.c
 
+nux_status_t nux_graphics_update_vertices(nux_u32_t        first,
+                                          nux_u32_t        count,
+                                          const nux_f32_t *data);
 nux_status_t nux_graphics_push_vertices(nux_u32_t        vcount,
                                         const nux_f32_t *data,
                                         nux_u32_t       *first);

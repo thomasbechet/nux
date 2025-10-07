@@ -11,21 +11,17 @@ function M:on_load()
     transform.add(e)
     transform.set_translation(e, vmath.vec3(2))
     -- create cube
-    e = node.create(node.root())
+    local cube = mesh.new_cube(arena.core(), 1, 1, 1)
+    mesh.set_origin(cube, vmath.vec3(0.5))
+    local e = node.create(node.root())
     self.cube = e
-    rigidbody.add(e)
-    collider.add_aabb(e, vmath.vec3(-1), vmath.vec3(1))
+    staticmesh.add(e)
+    staticmesh.set_mesh(e, cube)
     transform.add(e)
-    local child = node.create(e)
-    staticmesh.add(child)
-    staticmesh.set_mesh(child, mesh.new_cube(arena.core(), 1, 1, 1))
-    transform.add(child)
-    print(e)
-    print(child)
 end
 
 function M:on_update()
-    transform.look_at(self.camera, { 0, -5, 0 })
-    -- transform.rotate_y(self.cube, time.delta() * 0.5)
+    transform.look_at(self.camera, { 0, 0, 0 })
+    transform.rotate_y(self.cube, time.delta() * 0.5)
     print(transform.get_translation(self.cube))
 end
