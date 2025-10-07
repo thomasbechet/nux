@@ -152,13 +152,11 @@ nux_renderer_render (nux_scene_t *scene)
     nux_gpu_encoder_t     *enc    = &module->encoder;
 
     // Propagate transforms
-    printf("begin propagate\n");
     nux_nid_t it = NUX_NULL;
     while ((it = nux_query_next(module->transform_iter, it)))
     {
-        nux_transform_update_matrix(it);
+        nux_transform_get_matrix(it);
     }
-    printf("end propagate\n");
 
     // Find current camera
     nux_nid_t camera = NUX_NULL;

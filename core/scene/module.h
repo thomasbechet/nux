@@ -74,7 +74,7 @@ typedef struct
     nux_q4_t  rotation;
     nux_v3_t  scale;
     nux_m4_t  global_matrix;
-    nux_u32_t dirty;
+    nux_b32_t dirty;
 } nux_transform_t;
 
 typedef struct
@@ -130,7 +130,7 @@ void nux_scene_cleanup(void *data);
 
 // transform.c
 
-nux_b32_t    nux_transform_update_matrix(nux_nid_t e);
+nux_m4_t     nux_transform_get_matrix(nux_nid_t e);
 nux_status_t nux_transform_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_transform_read(nux_serde_reader_t *s, void *data);
 
