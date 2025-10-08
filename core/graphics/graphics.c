@@ -96,9 +96,8 @@ nux_graphics_init (void)
     module->vertices_buffer.size = NUX_VERTEX_SIZE
                                    * nux_config()->graphics.vertices_buffer_size
                                    * sizeof(nux_f32_t);
-    module->vertices_buffer_head = 0;
-    module->vertices_buffer_head_frame
-        = nux_config()->graphics.vertices_buffer_size;
+    nux_dsa_init(&module->vertices_dsa,
+                 nux_config()->graphics.vertices_buffer_size);
     NUX_CHECK(nux_gpu_buffer_init(&module->vertices_buffer), goto error);
 
     // Create default font
@@ -116,10 +115,11 @@ nux_graphics_init (void)
               return NUX_FAILURE);
 
     // Allocate batches buffer
-    module->batches_buffer_head = 0;
     module->batches_buffer.type = NUX_GPU_BUFFER_STORAGE;
     module->batches_buffer.size = sizeof(nux_gpu_scene_batch_t)
                                   * nux_config()->graphics.batches_buffer_size;
+    nux_dsa_init(&module->batches_dsa,
+                 nux_config()->graphics.batches_buffer_size);
     NUX_CHECK(nux_gpu_buffer_init(&module->batches_buffer), return NUX_FAILURE);
 
     // Allocate transforms buffer
@@ -127,9 +127,8 @@ nux_graphics_init (void)
     module->transforms_buffer.size
         = NUX_M4_SIZE * nux_config()->graphics.transforms_buffer_size
           * sizeof(nux_f32_t);
-    module->transforms_buffer_head = 0;
-    module->transforms_buffer_head_frame
-        = nux_config()->graphics.transforms_buffer_size;
+    nux_dsa_init(&module->transforms_dsa,
+                 nux_config()->graphics.transforms_buffer_size);
     NUX_CHECK(nux_gpu_buffer_init(&module->transforms_buffer),
               return NUX_FAILURE);
 
@@ -192,12 +191,12 @@ nux_graphics_pre_update (void)
     nux_graphics_module_t *module = nux_graphics_module();
 
     // Reset frame data
-    module->transforms_buffer_head = 1; // keep identity transform
-    module->batches_buffer_head    = 0;
-    module->vertices_buffer_head_frame
-        = nux_config()->graphics.vertices_buffer_size;
-    module->transforms_buffer_head_frame
-        = nux_config()->graphics.transforms_buffer_size;
+    nux_dsa_reset_bottom(&module->batches_dsa);
+    nux_dsa_reset_top(&module->vertices_dsa);
+    nux_dsa_reset_top(&module->transforms_dsa);
+    nux_dsa_reset_bottom(&module->transforms_dsa);
+    nux_dsa_push_bottom(
+        &module->transforms_dsa, 1, NUX_NULL); // keep identity transform
     module->active_texture = NUX_NULL;
 
     return NUX_SUCCESS;
@@ -251,14 +250,11 @@ nux_graphics_push_vertices (nux_u32_t        vcount,
                             nux_u32_t       *first)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(module->vertices_buffer_head + vcount
-                   < module->vertices_buffer_head_frame,
+    NUX_ENSURE(nux_dsa_push_bottom(&module->vertices_dsa, vcount, first),
                return NUX_FAILURE,
                "out of vertices");
-    *first = module->vertices_buffer_head;
     NUX_CHECK(nux_graphics_update_vertices(*first, vcount, data),
               return NUX_FAILURE);
-    module->vertices_buffer_head += vcount;
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -267,14 +263,11 @@ nux_graphics_push_frame_vertices (nux_u32_t        vcount,
                                   nux_u32_t       *first)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(module->vertices_buffer_head_frame - vcount
-                   > module->vertices_buffer_head,
+    NUX_ENSURE(nux_dsa_push_top(&module->vertices_dsa, vcount, first),
                return NUX_FAILURE,
                "out of frame vertices");
-    *first = module->vertices_buffer_head_frame - vcount;
     NUX_CHECK(nux_graphics_update_vertices(*first, vcount, data),
               return NUX_FAILURE);
-    module->vertices_buffer_head_frame -= vcount;
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -283,14 +276,11 @@ nux_graphics_push_transforms (nux_u32_t       mcount,
                               nux_u32_t      *index)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(module->transforms_buffer_head + mcount
-                   < module->transforms_buffer_head_frame,
+    NUX_ENSURE(nux_dsa_push_bottom(&module->transforms_dsa, mcount, index),
                return NUX_FAILURE,
                "out of transforms");
-    *index = module->transforms_buffer_head;
     NUX_CHECK(update_transform_buffer(*index, mcount, data),
               return NUX_FAILURE);
-    module->transforms_buffer_head += mcount;
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -299,13 +289,10 @@ nux_graphics_push_frame_transforms (nux_u32_t       mcount,
                                     nux_u32_t      *index)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(module->transforms_buffer_head_frame - mcount
-                   > module->transforms_buffer_head,
+    NUX_ENSURE(nux_dsa_push_top(&module->transforms_dsa, mcount, index),
                return NUX_FAILURE,
                "out of frame transforms");
-    *index = module->transforms_buffer_head_frame - mcount;
     NUX_CHECK(update_transform_buffer(*index, mcount, data),
               return NUX_FAILURE);
-    module->transforms_buffer_head_frame -= mcount;
     return NUX_SUCCESS;
 }

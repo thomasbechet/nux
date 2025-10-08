@@ -7,7 +7,7 @@ function M:on_load()
     local e = node.create(node.root())
     self.camera = e
     camera.add(e)
-    camera.set_fov(e, 100)
+    camera.set_fov(e, 50)
     transform.add(e)
     transform.set_translation(e, vmath.vec3(2))
     -- create cube
@@ -21,7 +21,8 @@ function M:on_load()
 end
 
 function M:on_update()
+    transform.set_translation(self.camera, { 2, 1.2, 2})
     transform.look_at(self.camera, { 0, 0, 0 })
     transform.rotate_y(self.cube, time.delta() * 0.5)
-    print(transform.get_translation(self.cube))
+    transform.set_translation(self.cube, { 0, math.sin(time.elapsed()) * 0.2, 0 })
 end

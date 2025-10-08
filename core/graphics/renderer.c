@@ -27,12 +27,10 @@ draw (nux_gpu_encoder_t *enc,
     nux_graphics_module_t *module = nux_graphics_module();
 
     // Create batch
-    NUX_ENSURE(module->batches_buffer_head
-                   < nux_config()->graphics.batches_buffer_size,
+    nux_u32_t batch_index;
+    NUX_ENSURE(nux_dsa_push_bottom(&module->batches_dsa, 1, &batch_index),
                return NUX_FAILURE,
                "out of batches");
-    nux_u32_t batch_index = module->batches_buffer_head;
-    ++module->batches_buffer_head;
     nux_gpu_scene_batch_t batch;
     batch.first_transform = transform;
     batch.first_vertex    = first;
