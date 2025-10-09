@@ -151,8 +151,8 @@ nux_graphics_init (void)
     // Push identity transform
     nux_m4_t identity = nux_m4_identity();
     NUX_ASSERT(nux_graphics_push_transforms(
-        1, &identity, &module->identity_transform_index));
-    NUX_ASSERT(module->identity_transform_index == 0);
+        1, &identity, &module->identity_transform_offset));
+    NUX_ASSERT(module->identity_transform_offset == 0);
 
     return NUX_SUCCESS;
 
@@ -229,14 +229,14 @@ nux_graphics_update (void)
 }
 
 nux_status_t
-nux_graphics_update_vertices (nux_u32_t        first,
+nux_graphics_update_vertices (nux_u32_t        offset,
                               nux_u32_t        count,
                               const nux_f32_t *data)
 {
     nux_graphics_module_t *module = nux_graphics_module();
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
                                     module->vertices_buffer.slot,
-                                    first * sizeof(nux_f32_t),
+                                    offset * sizeof(nux_f32_t),
                                     count * sizeof(nux_f32_t),
                                     data),
                return NUX_FAILURE,
@@ -246,52 +246,52 @@ nux_graphics_update_vertices (nux_u32_t        first,
 nux_status_t
 nux_graphics_push_vertices (nux_u32_t        count,
                             const nux_f32_t *data,
-                            nux_u32_t       *first)
+                            nux_u32_t       *offset)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_bottom(&module->vertices_dsa, count, first),
+    NUX_ENSURE(nux_dsa_push_bottom(&module->vertices_dsa, count, offset),
                return NUX_FAILURE,
                "out of vertices");
-    NUX_CHECK(nux_graphics_update_vertices(*first, count, data),
+    NUX_CHECK(nux_graphics_update_vertices(*offset, count, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_graphics_push_frame_vertices (nux_u32_t        vcount,
+nux_graphics_push_frame_vertices (nux_u32_t        count,
                                   const nux_f32_t *data,
-                                  nux_u32_t       *first)
+                                  nux_u32_t       *offset)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_top(&module->vertices_dsa, vcount, first),
+    NUX_ENSURE(nux_dsa_push_top(&module->vertices_dsa, count, offset),
                return NUX_FAILURE,
                "out of frame vertices");
-    NUX_CHECK(nux_graphics_update_vertices(*first, vcount, data),
+    NUX_CHECK(nux_graphics_update_vertices(*offset, count, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_graphics_push_transforms (nux_u32_t       mcount,
+nux_graphics_push_transforms (nux_u32_t       count,
                               const nux_m4_t *data,
-                              nux_u32_t      *index)
+                              nux_u32_t      *offset)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_bottom(&module->transforms_dsa, mcount, index),
+    NUX_ENSURE(nux_dsa_push_bottom(&module->transforms_dsa, count, offset),
                return NUX_FAILURE,
                "out of transforms");
-    NUX_CHECK(update_transform_buffer(*index, mcount, data),
+    NUX_CHECK(update_transform_buffer(*offset, count, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
 nux_status_t
 nux_graphics_push_frame_transforms (nux_u32_t       mcount,
                                     const nux_m4_t *data,
-                                    nux_u32_t      *index)
+                                    nux_u32_t      *offset)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_top(&module->transforms_dsa, mcount, index),
+    NUX_ENSURE(nux_dsa_push_top(&module->transforms_dsa, mcount, offset),
                return NUX_FAILURE,
                "out of frame transforms");
-    NUX_CHECK(update_transform_buffer(*index, mcount, data),
+    NUX_CHECK(update_transform_buffer(*offset, mcount, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }

@@ -21,7 +21,7 @@ bind_texture (nux_gpu_encoder_t *enc, const nux_texture_t *texture)
 static nux_status_t
 draw (nux_gpu_encoder_t *enc,
       nux_u32_t          first,
-      nux_u32_t          count,
+      nux_u32_t          vertex_count,
       nux_u32_t          transform,
       nux_u32_t          attributes)
 {
@@ -33,10 +33,10 @@ draw (nux_gpu_encoder_t *enc,
                return NUX_FAILURE,
                "out of batches");
     nux_gpu_scene_batch_t batch;
-    batch.first_transform = transform;
-    batch.first_vertex    = first;
-    batch.has_texture     = module->active_texture ? 1 : 0;
-    batch.attributes      = attributes;
+    batch.transform_offset  = transform;
+    batch.vertex_offset     = first;
+    batch.has_texture       = module->active_texture ? 1 : 0;
+    batch.vertex_attributes = attributes;
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
                                     module->batches_buffer.slot,
                                     batch_index * sizeof(batch),
@@ -47,7 +47,7 @@ draw (nux_gpu_encoder_t *enc,
 
     // Add commands
     nux_gpu_push_u32(enc, NUX_GPU_DESC_UBER_BATCH_INDEX, batch_index);
-    nux_gpu_draw(enc, count);
+    nux_gpu_draw(enc, vertex_count);
 
     return NUX_SUCCESS;
 }
@@ -57,8 +57,8 @@ draw_rect (nux_gpu_encoder_t *enc,
            nux_primitive_t    primitive,
            const nux_v3_t    *positions)
 {
-    const nux_u32_t  stride = 5;
     nux_u32_t        vertex_count;
+    const nux_u32_t  stride = 8;
     nux_f32_t        data[24 * stride]; // must constains all primitives type
     const nux_u32_t *indices;
 
@@ -103,17 +103,21 @@ draw_rect (nux_gpu_encoder_t *enc,
         data[i * stride + 2] = positions[index].z;
         data[i * stride + 3] = uvs[index].x;
         data[i * stride + 4] = uvs[index].y;
+        data[i * stride + 5] = 0;
+        data[i * stride + 6] = 1;
+        data[i * stride + 7] = 0;
     }
 
-    nux_u32_t first;
-    NUX_CHECK(nux_graphics_push_frame_vertices(vertex_count, data, &first),
-              return);
+    nux_u32_t offset;
+    NUX_CHECK(
+        nux_graphics_push_frame_vertices(vertex_count * stride, data, &offset),
+        return);
 
     draw(enc,
-         first,
+         offset,
          vertex_count,
          transform,
-         NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD);
+         NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD | NUX_VERTEX_COLOR);
 }
 static void
 draw_box (nux_gpu_encoder_t *enc,
@@ -136,24 +140,26 @@ draw_line (nux_gpu_encoder_t *enc, nux_u32_t transform, nux_v3_t a, nux_v3_t b)
 {
     const nux_v3_t  positions[]  = { a, b };
     const nux_u32_t vertex_count = NUX_ARRAY_SIZE(positions);
-    const nux_u32_t stride       = 5;
+    const nux_u32_t stride       = 6;
     nux_f32_t       data[stride * vertex_count];
     for (nux_u32_t i = 0; i < vertex_count; ++i)
     {
         data[i * stride + 0] = positions[i].x;
         data[i * stride + 1] = positions[i].y;
         data[i * stride + 2] = positions[i].z;
-        data[i * stride + 3] = 0;
+        data[i * stride + 3] = 1;
         data[i * stride + 4] = 0;
+        data[i * stride + 5] = 0;
     }
     nux_u32_t first;
-    NUX_CHECK(nux_graphics_push_frame_vertices(vertex_count, data, &first),
-              return);
+    NUX_CHECK(
+        nux_graphics_push_frame_vertices(vertex_count * stride, data, &first),
+        return);
     draw(enc,
          first,
          vertex_count,
          transform,
-         NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD);
+         NUX_VERTEX_POSITION | NUX_VERTEX_COLOR);
 }
 void
 nux_renderer_render (nux_scene_t *scene)
@@ -248,9 +254,12 @@ nux_renderer_render (nux_scene_t *scene)
 
             // Draw
             bind_texture(enc, tex);
-            NUX_CHECK(
-                draw(enc, m->first, m->count, sm->transform, m->attributes),
-                return);
+            NUX_CHECK(draw(enc,
+                           m->vertex_offset,
+                           m->vertex_count,
+                           sm->transform,
+                           m->vertex_attributes),
+                      return);
         }
 
         // Draw debug lines
@@ -296,7 +305,7 @@ nux_renderer_draw_rect (const nux_v3_t *positions)
     nux_gpu_bind_buffer(
         enc, NUX_GPU_DESC_UBER_VERTICES, module->vertices_buffer.slot);
     draw_rect(
-        enc, module->identity_transform_index, NUX_PRIMITIVE_LINES, positions);
+        enc, module->identity_transform_offset, NUX_PRIMITIVE_LINES, positions);
 }
 void
 draw_line_tr (nux_u32_t transform_index,
@@ -332,7 +341,7 @@ void
 nux_graphics_draw_line (nux_v3_t a, nux_v3_t b, nux_u32_t color)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    draw_line_tr(module->identity_transform_index, a, b, color);
+    draw_line_tr(module->identity_transform_offset, a, b, color);
 }
 void
 nux_graphics_draw_dir (nux_v3_t  origin,

@@ -25,7 +25,7 @@ typedef struct
     nux_u32_vec_t      free_buffer_slots;
     nux_u32_vec_t      free_pipeline_slots;
     nux_u32_vec_t      free_framebuffer_slots;
-    nux_u32_t          identity_transform_index;
+    nux_u32_t          identity_transform_offset;
 
     nux_gpu_encoder_t encoder;
     nux_gpu_encoder_t immediate_encoder;

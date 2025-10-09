@@ -47,10 +47,10 @@ struct nux_texture_t
 struct nux_mesh_t
 {
     nux_f32_t             *data;
-    nux_u32_t              first;
-    nux_u32_t              count; // vertex count
-    nux_vertex_layout_t    layout;
-    nux_vertex_attribute_t attributes;
+    nux_u32_t              vertex_offset;
+    nux_u32_t              vertex_count; // vertex count
+    nux_vertex_layout_t    vertex_layout;
+    nux_vertex_attribute_t vertex_attributes;
     nux_b3_t               bounds;
 };
 
@@ -106,10 +106,10 @@ typedef struct
 
 typedef struct
 {
-    nux_u32_t first_vertex;
-    nux_u32_t first_transform;
+    nux_u32_t vertex_offset;
+    nux_u32_t vertex_attributes;
+    nux_u32_t transform_offset;
     nux_u32_t has_texture;
-    nux_u32_t attributes;
 } nux_gpu_scene_batch_t;
 
 ////////////////////////////
@@ -118,21 +118,21 @@ typedef struct
 
 // graphics.c
 
-nux_status_t nux_graphics_update_vertices(nux_u32_t        first,
+nux_status_t nux_graphics_update_vertices(nux_u32_t        offset,
                                           nux_u32_t        count,
                                           const nux_f32_t *data);
 nux_status_t nux_graphics_push_vertices(nux_u32_t        count,
                                         const nux_f32_t *data,
-                                        nux_u32_t       *first);
+                                        nux_u32_t       *offset);
 nux_status_t nux_graphics_push_frame_vertices(nux_u32_t        vcount,
                                               const nux_f32_t *data,
-                                              nux_u32_t       *first);
+                                              nux_u32_t       *offset);
 nux_status_t nux_graphics_push_transforms(nux_u32_t       mcount,
                                           const nux_m4_t *data,
-                                          nux_u32_t      *index);
+                                          nux_u32_t      *offset);
 nux_status_t nux_graphics_push_frame_transforms(nux_u32_t       mcount,
                                                 const nux_m4_t *data,
-                                                nux_u32_t      *index);
+                                                nux_u32_t      *offset);
 
 // renderer.c
 

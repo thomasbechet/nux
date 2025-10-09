@@ -114,13 +114,13 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     NUX_CHECK(mesh, return NUX_NULL);
 
     // Write vertices
-    const nux_vertex_layout_t layout = mesh->layout;
+    const nux_vertex_layout_t layout = mesh->vertex_layout;
     if (attributes & NUX_VERTEX_POSITION)
     {
         for (nux_u32_t i = 0; i < indice_count; ++i)
         {
             nux_v3_t  position = positions[buffer_index(accessor, i)];
-            nux_u32_t offset   = i * mesh->layout.size;
+            nux_u32_t offset   = i * mesh->vertex_layout.stride;
             mesh->data[offset + layout.position + 0] = position.x;
             mesh->data[offset + layout.position + 1] = position.y;
             mesh->data[offset + layout.position + 2] = position.z;
@@ -128,10 +128,10 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     }
     if (attributes & NUX_VERTEX_TEXCOORD)
     {
-        for (nux_u32_t i = 0; i < indice_count * layout.size; i += layout.size)
+        for (nux_u32_t i = 0; i < indice_count; ++i)
         {
-            nux_u32_t offset = i * mesh->layout.size;
             nux_v2_t  uv     = uvs[buffer_index(accessor, i)];
+            nux_u32_t offset = i * mesh->vertex_layout.stride;
             mesh->data[offset + layout.texcoord + 0] = uv.x;
             mesh->data[offset + layout.texcoord + 1] = uv.y;
         }
@@ -143,7 +143,10 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
         }
     }
 
-    NUX_CHECK(nux_graphics_push_vertices(mesh->count, mesh->data, &mesh->first),
+    NUX_CHECK(nux_graphics_push_vertices(mesh->vertex_count
+                                             * mesh->vertex_layout.stride,
+                                         mesh->data,
+                                         &mesh->vertex_offset),
               return NUX_NULL);
 
     // Optional : Generate bounds

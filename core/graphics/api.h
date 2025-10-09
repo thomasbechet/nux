@@ -74,7 +74,7 @@ typedef enum
 
 typedef struct
 {
-    nux_u8_t size;
+    nux_u8_t stride;
     nux_u8_t position;
     nux_u8_t texcoord;
     nux_u8_t color;

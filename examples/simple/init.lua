@@ -121,7 +121,7 @@ function M:on_update()
             if staticmesh.has(hit.entity) then
                 self.active_mesh = staticmesh.get_mesh(hit.entity)
                 self.active_texture = staticmesh.get_texture(hit.entity)
-                print("hit: " .. self.active_mesh)
+                print("hit " .. self.active_mesh)
             end
         else
             if self.active_mesh and self.active_texture then

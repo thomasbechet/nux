@@ -2,10 +2,10 @@
 
 struct Batch
 {
-    uint firstVertex;
-    uint firstTransform;
+    uint vertexOffset;
+    uint vertexAttributes;
+    uint transformOffset;
     uint hasTexture;
-    uint attributes;
 };
 
 layout(binding = 3, std430) readonly buffer BatchBlock
@@ -14,6 +14,7 @@ layout(binding = 3, std430) readonly buffer BatchBlock
 };
 
 layout(location = 1) in vec2 inUV;
+layout(location = 2) in vec3 inColor;
 layout(location = 0) out vec4 outColor;
 
 uniform sampler2D texture0;
@@ -27,6 +28,6 @@ void main()
     }
     else
     {
-        outColor = vec4(inUV, 0, 1);
+        outColor = vec4(inColor, 1);
     }
 }
