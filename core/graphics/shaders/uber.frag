@@ -5,6 +5,7 @@ struct Batch
     uint firstVertex;
     uint firstTransform;
     uint hasTexture;
+    uint attributes;
 };
 
 layout(binding = 3, std430) readonly buffer BatchBlock

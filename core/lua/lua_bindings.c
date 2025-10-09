@@ -1037,8 +1037,9 @@ l_mesh_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t         capa = luaL_checknumber(L, 2);
-    const nux_mesh_t *ret  = nux_mesh_new(arena, capa);
+    nux_u32_t              capa       = luaL_checknumber(L, 2);
+    nux_vertex_attribute_t attributes = luaL_checknumber(L, 3);
+    const nux_mesh_t      *ret        = nux_mesh_new(arena, capa, attributes);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1856,20 +1857,12 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "LINES");
     lua_pushinteger(L, 2);
     lua_setfield(L, -2, "POINTS");
-    lua_pushinteger(L, 1 << 0);
-    lua_setfield(L, -2, "POSITION");
-    lua_pushinteger(L, 1 << 1);
-    lua_setfield(L, -2, "UV");
-    lua_pushinteger(L, 1 << 2);
-    lua_setfield(L, -2, "COLOR");
-    lua_pushinteger(L, 1 << 3);
-    lua_setfield(L, -2, "INDICES");
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "V3F");
+    lua_setfield(L, -2, "POSITION");
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "V3F_T2F");
+    lua_setfield(L, -2, "TEXCOORD");
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "V3F_T2F_N3F");
+    lua_setfield(L, -2, "COLOR");
     lua_setglobal(L, "vertex");
     lua_newtable(L);
     luaL_setfuncs(L, lib_rigidbody, 0);

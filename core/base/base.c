@@ -45,7 +45,7 @@ nux_base_init (void *userdata)
     module->config.physics.enable                  = NUX_TRUE;
     module->config.graphics.transforms_buffer_size = 8192;
     module->config.graphics.batches_buffer_size    = 8192;
-    module->config.graphics.vertices_buffer_size   = 1 << 18;
+    module->config.graphics.vertices_buffer_size   = (1 << 18) * 5;
     module->config.debug.enable                    = NUX_TRUE;
     module->config.debug.console                   = NUX_TRUE;
 

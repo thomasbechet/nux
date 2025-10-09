@@ -81,9 +81,10 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
         }
     }
 
+    NUX_ENSURE(positions, return NUX_NULL, "mesh without position attribute");
+
     // Build vertex attributes
-    nux_v3_t base_color = NUX_V3_ONES;
-    NUX_UNUSED1(base_color);
+    nux_v3_t               base_color = NUX_V3_ONES;
     nux_vertex_attribute_t attributes = 0;
     if (positions)
     {
@@ -91,7 +92,7 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     }
     if (uvs)
     {
-        attributes |= NUX_VERTEX_UV;
+        attributes |= NUX_VERTEX_TEXCOORD;
     }
     if (primitive->material && primitive->material->has_pbr_metallic_roughness)
     {
@@ -109,27 +110,30 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     nux_u32_t       indice_count = accessor->count;
 
     // Create mesh
-    nux_mesh_t *mesh = nux_mesh_new(arena, indice_count);
+    nux_mesh_t *mesh = nux_mesh_new(arena, indice_count, attributes);
     NUX_CHECK(mesh, return NUX_NULL);
 
     // Write vertices
+    const nux_vertex_layout_t layout = mesh->layout;
     if (attributes & NUX_VERTEX_POSITION)
     {
         for (nux_u32_t i = 0; i < indice_count; ++i)
         {
-            nux_v3_t position     = positions[buffer_index(accessor, i)];
-            mesh->data[5 * i + 0] = position.x;
-            mesh->data[5 * i + 1] = position.y;
-            mesh->data[5 * i + 2] = position.z;
+            nux_v3_t  position = positions[buffer_index(accessor, i)];
+            nux_u32_t offset   = i * mesh->layout.size;
+            mesh->data[offset + layout.position + 0] = position.x;
+            mesh->data[offset + layout.position + 1] = position.y;
+            mesh->data[offset + layout.position + 2] = position.z;
         }
     }
-    if (attributes & NUX_VERTEX_UV)
+    if (attributes & NUX_VERTEX_TEXCOORD)
     {
-        for (nux_u32_t i = 0; i < indice_count; ++i)
+        for (nux_u32_t i = 0; i < indice_count * layout.size; i += layout.size)
         {
-            nux_v2_t uv           = uvs[buffer_index(accessor, i)];
-            mesh->data[5 * i + 3] = uv.x;
-            mesh->data[5 * i + 4] = uv.y;
+            nux_u32_t offset = i * mesh->layout.size;
+            nux_v2_t  uv     = uvs[buffer_index(accessor, i)];
+            mesh->data[offset + layout.texcoord + 0] = uv.x;
+            mesh->data[offset + layout.texcoord + 1] = uv.y;
         }
     }
     if (attributes & NUX_VERTEX_COLOR)

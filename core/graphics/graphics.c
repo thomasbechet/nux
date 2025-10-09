@@ -93,9 +93,8 @@ nux_graphics_init (void)
 
     // Create vertices buffers
     module->vertices_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    module->vertices_buffer.size = NUX_VERTEX_SIZE
-                                   * nux_config()->graphics.vertices_buffer_size
-                                   * sizeof(nux_f32_t);
+    module->vertices_buffer.size
+        = nux_config()->graphics.vertices_buffer_size * sizeof(nux_f32_t);
     nux_dsa_init(&module->vertices_dsa,
                  nux_config()->graphics.vertices_buffer_size);
     NUX_CHECK(nux_gpu_buffer_init(&module->vertices_buffer), goto error);
@@ -237,23 +236,23 @@ nux_graphics_update_vertices (nux_u32_t        first,
     nux_graphics_module_t *module = nux_graphics_module();
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
                                     module->vertices_buffer.slot,
-                                    first * NUX_VERTEX_SIZE * sizeof(nux_f32_t),
-                                    count * NUX_VERTEX_SIZE * sizeof(nux_f32_t),
+                                    first * sizeof(nux_f32_t),
+                                    count * sizeof(nux_f32_t),
                                     data),
                return NUX_FAILURE,
                "failed to update vertex buffer");
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_graphics_push_vertices (nux_u32_t        vcount,
+nux_graphics_push_vertices (nux_u32_t        count,
                             const nux_f32_t *data,
                             nux_u32_t       *first)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_bottom(&module->vertices_dsa, vcount, first),
+    NUX_ENSURE(nux_dsa_push_bottom(&module->vertices_dsa, count, first),
                return NUX_FAILURE,
                "out of vertices");
-    NUX_CHECK(nux_graphics_update_vertices(*first, vcount, data),
+    NUX_CHECK(nux_graphics_update_vertices(*first, count, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }

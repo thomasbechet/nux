@@ -63,19 +63,22 @@ typedef enum
     NUX_VERTEX_TRIANGLES = 0,
     NUX_VERTEX_LINES     = 1,
     NUX_VERTEX_POINTS    = 2,
-
-    NUX_VERTEX_POSITION = 1 << 0,
-    NUX_VERTEX_UV       = 1 << 1,
-    NUX_VERTEX_COLOR    = 1 << 2,
-    NUX_VERTEX_INDICES  = 1 << 3,
-} nux_vertex_attribute_t;
+} nux_vertex_assembly_t;
 
 typedef enum
 {
-    NUX_VERTEX_V3F         = 0,
-    NUX_VERTEX_V3F_T2F     = 1,
-    NUX_VERTEX_V3F_T2F_N3F = 2,
-} nux_vertex_format_t;
+    NUX_VERTEX_POSITION = 1 << 0,
+    NUX_VERTEX_TEXCOORD = 1 << 1,
+    NUX_VERTEX_COLOR    = 1 << 2,
+} nux_vertex_attribute_t;
+
+typedef struct
+{
+    nux_u8_t size;
+    nux_u8_t position;
+    nux_u8_t texcoord;
+    nux_u8_t color;
+} nux_vertex_layout_t;
 
 typedef enum
 {
@@ -90,7 +93,9 @@ nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_u32_t          h);
 void           nux_texture_blit(nux_texture_t *texture);
 
-nux_mesh_t *nux_mesh_new(nux_arena_t *arena, nux_u32_t capa);
+nux_mesh_t *nux_mesh_new(nux_arena_t           *arena,
+                         nux_u32_t              capa,
+                         nux_vertex_attribute_t attributes);
 nux_mesh_t *nux_mesh_new_cube(nux_arena_t *arena,
                               nux_f32_t    sx,
                               nux_f32_t    sy,

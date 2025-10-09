@@ -300,13 +300,9 @@ vertex={}
 vertex.TRIANGLES=0
 vertex.LINES=1
 vertex.POINTS=2
-vertex.POSITION=1 << 0
-vertex.UV=1 << 1
-vertex.COLOR=1 << 2
-vertex.INDICES=1 << 3
-vertex.V3F=0
-vertex.V3F_T2F=1
-vertex.V3F_T2F_N3F=2
+vertex.POSITION=0
+vertex.TEXCOORD=1
+vertex.COLOR=2
 rigidbody={}
 ---@return None
 function rigidbody.add(...) end
