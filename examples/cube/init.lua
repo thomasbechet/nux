@@ -21,8 +21,8 @@ function M:on_load()
 end
 
 function M:on_update()
-    transform.set_translation(self.camera, { 2, 1.2, 2})
+    transform.set_translation(self.camera, { 2, 1.2, 2 })
     transform.look_at(self.camera, { 0, 0, 0 })
     transform.rotate_y(self.cube, time.delta() * 0.5)
-    transform.set_translation(self.cube, { 0, math.sin(time.elapsed()) * 0.2, 0 })
+    transform.set_translation(self.cube, { 0, math.abs(math.sin(time.elapsed()) * 0.2), 0 })
 end

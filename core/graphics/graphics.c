@@ -29,6 +29,8 @@ nux_graphics_init (void)
     type = nux_resource_register(
         NUX_RESOURCE_TEXTURE, sizeof(nux_texture_t), "texture");
     type->cleanup = nux_texture_cleanup;
+    type          = nux_resource_register(
+        NUX_RESOURCE_PALETTE, sizeof(nux_palette_t), "palette");
     type = nux_resource_register(NUX_RESOURCE_MESH, sizeof(nux_mesh_t), "mesh");
     type = nux_resource_register(
         NUX_RESOURCE_CANVAS, sizeof(nux_canvas_t), "canvas");
@@ -60,7 +62,6 @@ nux_graphics_init (void)
     NUX_CHECK(nux_u32_vec_init_capa(
                   a, NUX_GPU_BUFFER_MAX, &module->free_buffer_slots),
               goto error);
-
     nux_u32_vec_fill_reversed(&module->free_framebuffer_slots);
     nux_u32_vec_fill_reversed(&module->free_pipeline_slots);
     nux_u32_vec_fill_reversed(&module->free_buffer_slots);
@@ -101,6 +102,9 @@ nux_graphics_init (void)
 
     // Create default font
     NUX_CHECK(nux_font_init_default(&module->default_font), goto error);
+
+    // Create default palette
+    NUX_CHECK(nux_palette_register_default(), goto error);
 
     // Allocate gpu commands buffer
     NUX_CHECK(nux_gpu_encoder_init(a, &module->encoder), return NUX_NULL);
@@ -283,15 +287,15 @@ nux_graphics_push_transforms (nux_u32_t       count,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_graphics_push_frame_transforms (nux_u32_t       mcount,
+nux_graphics_push_frame_transforms (nux_u32_t       count,
                                     const nux_m4_t *data,
                                     nux_u32_t      *offset)
 {
     nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_top(&module->transforms_dsa, mcount, offset),
+    NUX_ENSURE(nux_dsa_push_top(&module->transforms_dsa, count, offset),
                return NUX_FAILURE,
                "out of frame transforms");
-    NUX_CHECK(update_transform_buffer(*offset, mcount, data),
+    NUX_CHECK(update_transform_buffer(*offset, count, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }

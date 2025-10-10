@@ -18,6 +18,7 @@ struct Batch
     uint vertexAttributes;
     uint transformOffset;
     uint hasTexture;
+    vec4 color;
 };
 
 struct Vertex
@@ -128,7 +129,7 @@ void main()
     }
     else
     {
-        outColor = vec3(0);
+        outColor = vec3(1);
     }
     // output.normal   = normalize(cross(
     //     v2.position - v1.position,

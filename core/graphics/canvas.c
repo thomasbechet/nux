@@ -257,7 +257,9 @@ nux_canvas_render (nux_canvas_t *c)
     nux_gpu_bind_buffer(
         &enc, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
     nux_gpu_bind_buffer(&enc, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
-    nux_gpu_clear(&enc, c->clear_color);
+    nux_u32_t clear_color = nux_color_to_hex(
+        nux_palette_get_color(module->active_palette, c->clear_color));
+    nux_gpu_clear(&enc, clear_color);
 
     // Submit commands
     nux_gpu_encoder_submit(&enc);

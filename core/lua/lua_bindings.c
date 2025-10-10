@@ -400,6 +400,49 @@ l_io_write_cart_file (lua_State *L)
     return 1;
 }
 static int
+l_color_rgba (lua_State *L)
+{
+    nux_u8_t r   = luaL_checknumber(L, 1);
+    nux_u8_t g   = luaL_checknumber(L, 2);
+    nux_u8_t b   = luaL_checknumber(L, 3);
+    nux_u8_t a   = luaL_checknumber(L, 4);
+    nux_v4_t ret = nux_color_rgba(r, g, b, a);
+    l_checkerror(L);
+
+    nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
+l_color_hex (lua_State *L)
+{
+    nux_u32_t hex = luaL_checknumber(L, 1);
+    nux_v4_t  ret = nux_color_hex(hex);
+    l_checkerror(L);
+
+    nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
+l_color_to_hex (lua_State *L)
+{
+    nux_v4_t  color = nux_lua_check_vec4(L, 1);
+    nux_u32_t ret   = nux_color_to_hex(color);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_color_to_srgb (lua_State *L)
+{
+    nux_v4_t color = nux_lua_check_vec4(L, 1);
+    nux_v4_t ret   = nux_color_to_srgb(color);
+    l_checkerror(L);
+
+    nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
 l_lua_load (lua_State *L)
 {
     nux_arena_t *arena
@@ -1033,6 +1076,79 @@ l_texture_blit (lua_State *L)
     return 0;
 }
 static int
+l_palette_new (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_u32_t            size = luaL_checknumber(L, 2);
+    const nux_palette_t *ret  = nux_palette_new(arena, size);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_palette_default (lua_State *L)
+{
+    const nux_palette_t *ret = nux_palette_default();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_palette_set_active (lua_State *L)
+{
+    nux_palette_t *palette
+        = nux_resource_check(NUX_RESOURCE_PALETTE, luaL_checkinteger(L, 1));
+
+    nux_palette_set_active(palette);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_palette_set_color (lua_State *L)
+{
+    nux_palette_t *palette
+        = nux_resource_check(NUX_RESOURCE_PALETTE, luaL_checkinteger(L, 1));
+    nux_u32_t index = luaL_checknumber(L, 2);
+    nux_v4_t  color = nux_lua_check_vec4(L, 3);
+
+    nux_palette_set_color(palette, index, color);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_palette_get_color (lua_State *L)
+{
+    nux_palette_t *palette
+        = nux_resource_check(NUX_RESOURCE_PALETTE, luaL_checkinteger(L, 1));
+    nux_u32_t index = luaL_checknumber(L, 2);
+    nux_v4_t  ret   = nux_palette_get_color(palette, index);
+    l_checkerror(L);
+
+    nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
 l_mesh_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -1552,6 +1668,11 @@ static const struct luaL_Reg lib_io[]
         { "cart_end", l_io_cart_end },
         { "write_cart_file", l_io_write_cart_file },
         { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_color[]      = { { "rgba", l_color_rgba },
+                                                  { "hex", l_color_hex },
+                                                  { "to_hex", l_color_to_hex },
+                                                  { "to_srgb", l_color_to_srgb },
+                                                  { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_error[]      = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_stat[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
@@ -1610,6 +1731,13 @@ static const struct luaL_Reg lib_node[]
 static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "blit", l_texture_blit },
                                                { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_palette[]
+    = { { "new", l_palette_new },
+        { "default", l_palette_default },
+        { "set_active", l_palette_set_active },
+        { "set_color", l_palette_set_color },
+        { "get_color", l_palette_get_color },
+        { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_mesh[]
     = { { "new", l_mesh_new },
         { "new_cube", l_mesh_new_cube },
@@ -1646,7 +1774,6 @@ static const struct luaL_Reg lib_staticmesh[]
         { "get_texture", l_staticmesh_get_texture },
         { "set_colormap", l_staticmesh_set_colormap },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_palette[]   = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_colormap[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_primitive[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_vertex[]    = { { NUX_NULL, NUX_NULL } };
@@ -1745,6 +1872,21 @@ nux_lua_open_api (void)
     luaL_setfuncs(L, lib_io, 0);
     lua_setglobal(L, "io");
     lua_newtable(L);
+    luaL_setfuncs(L, lib_color, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "TRANSPARENT");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "WHITE");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "RED");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "GREEN");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "BLUE");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "BACKGROUND");
+    lua_setglobal(L, "color");
+    lua_newtable(L);
     luaL_setfuncs(L, lib_error, 0);
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "NONE");
@@ -1812,6 +1954,11 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "RENDER_TARGET");
     lua_setglobal(L, "texture");
     lua_newtable(L);
+    luaL_setfuncs(L, lib_palette, 0);
+    lua_pushinteger(L, 256);
+    lua_setfield(L, -2, "SIZE");
+    lua_setglobal(L, "palette");
+    lua_newtable(L);
     luaL_setfuncs(L, lib_mesh, 0);
     lua_setglobal(L, "mesh");
     lua_newtable(L);
@@ -1830,11 +1977,6 @@ nux_lua_open_api (void)
     lua_newtable(L);
     luaL_setfuncs(L, lib_staticmesh, 0);
     lua_setglobal(L, "staticmesh");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_palette, 0);
-    lua_pushinteger(L, 256);
-    lua_setfield(L, -2, "SIZE");
-    lua_setglobal(L, "palette");
     lua_newtable(L);
     luaL_setfuncs(L, lib_colormap, 0);
     lua_pushinteger(L, 256);
@@ -1857,11 +1999,11 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "LINES");
     lua_pushinteger(L, 2);
     lua_setfield(L, -2, "POINTS");
-    lua_pushinteger(L, 0);
+    lua_pushinteger(L, 1 << 0);
     lua_setfield(L, -2, "POSITION");
-    lua_pushinteger(L, 1);
+    lua_pushinteger(L, 1 << 1);
     lua_setfield(L, -2, "TEXCOORD");
-    lua_pushinteger(L, 2);
+    lua_pushinteger(L, 1 << 2);
     lua_setfield(L, -2, "COLOR");
     lua_setglobal(L, "vertex");
     lua_newtable(L);

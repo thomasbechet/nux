@@ -97,6 +97,21 @@ function io.cart_begin(...) end
 function io.cart_end(...) end
 ---@return None
 function io.write_cart_file(...) end
+color={}
+color.TRANSPARENT=0
+color.WHITE=1
+color.RED=2
+color.GREEN=3
+color.BLUE=4
+color.BACKGROUND=5
+---@return None
+function color.rgba(...) end
+---@return None
+function color.hex(...) end
+---@return None
+function color.to_hex(...) end
+---@return None
+function color.to_srgb(...) end
 error={}
 error.NONE=0
 error.OUT_OF_MEMORY=1
@@ -223,6 +238,18 @@ texture.RENDER_TARGET=2
 function texture.new(...) end
 ---@return None
 function texture.blit(...) end
+palette={}
+palette.SIZE=256
+---@return None
+function palette.new(...) end
+---@return None
+function palette.default(...) end
+---@return None
+function palette.set_active(...) end
+---@return None
+function palette.set_color(...) end
+---@return None
+function palette.get_color(...) end
 mesh={}
 ---@return None
 function mesh.new(...) end
@@ -288,8 +315,6 @@ function staticmesh.set_texture(...) end
 function staticmesh.get_texture(...) end
 ---@return None
 function staticmesh.set_colormap(...) end
-palette={}
-palette.SIZE=256
 colormap={}
 colormap.SIZE=256
 primitive={}
@@ -300,9 +325,9 @@ vertex={}
 vertex.TRIANGLES=0
 vertex.LINES=1
 vertex.POINTS=2
-vertex.POSITION=0
-vertex.TEXCOORD=1
-vertex.COLOR=2
+vertex.POSITION=1 << 0
+vertex.TEXCOORD=1 << 1
+vertex.COLOR=1 << 2
 rigidbody={}
 ---@return None
 function rigidbody.add(...) end

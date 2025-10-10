@@ -47,6 +47,18 @@ typedef union
 {
     struct
     {
+        nux_f32_t x;
+        nux_f32_t y;
+        nux_f32_t z;
+        nux_f32_t w;
+    };
+    nux_f32_t data[4];
+} nux_v4_t;
+
+typedef union
+{
+    struct
+    {
         nux_f32_t x1;
         nux_f32_t x2;
         nux_f32_t x3;
@@ -192,5 +204,10 @@ nux_f32_t nux_cursor_y(nux_u32_t controller);
 nux_status_t nux_io_cart_begin(const nux_c8_t *path, nux_u32_t entry_count);
 nux_status_t nux_io_cart_end(void);
 nux_status_t nux_io_write_cart_file(const nux_c8_t *path);
+
+nux_v4_t  nux_color_rgba(nux_u8_t r, nux_u8_t g, nux_u8_t b, nux_u8_t a);
+nux_v4_t  nux_color_hex(nux_u32_t hex);
+nux_u32_t nux_color_to_hex(nux_v4_t color);
+nux_v4_t  nux_color_to_srgb(nux_v4_t color);
 
 #endif

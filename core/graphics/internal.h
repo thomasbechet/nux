@@ -21,6 +21,7 @@ typedef struct
     nux_gpu_buffer_t   transforms_buffer;
     nux_dsa_t          transforms_dsa;
     nux_font_t         default_font;
+    nux_palette_t     *default_palette;
     nux_u32_vec_t      free_texture_slots;
     nux_u32_vec_t      free_buffer_slots;
     nux_u32_vec_t      free_pipeline_slots;
@@ -37,6 +38,7 @@ typedef struct
     nux_query_t      *transform_camera_iter;
 
     const nux_texture_t *active_texture;
+    const nux_palette_t *active_palette;
 } nux_graphics_module_t;
 
 nux_graphics_module_t *nux_graphics_module(void);
@@ -57,5 +59,9 @@ nux_status_t nux_dsa_push_bottom(nux_dsa_t *a,
 nux_status_t nux_dsa_push_top(nux_dsa_t *a, nux_u32_t count, nux_u32_t *index);
 void         nux_dsa_reset_bottom(nux_dsa_t *a);
 void         nux_dsa_reset_top(nux_dsa_t *a);
+
+// palette.c
+
+nux_status_t nux_palette_register_default(void);
 
 #endif

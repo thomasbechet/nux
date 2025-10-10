@@ -68,6 +68,8 @@ typedef struct
 typedef struct
 {
     nux_collider_type_t type;
+    nux_u32_t           mask;
+    nux_u32_t           layer;
     union
     {
         struct

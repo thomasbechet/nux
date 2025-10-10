@@ -81,12 +81,12 @@ function M:on_update()
     -- draw_hierarchy(node.root(), vmath.vec3(0))
 
     local p = vmath.vec3(0, 0, -10)
-    graphics.draw_dir(p, vmath.vec3(1, 0, 0), 1, 0x0)
-    graphics.draw_dir(p, vmath.vec3(0, 1, 0), 1, 0x0)
-    graphics.draw_dir(p, vmath.vec3(0, 0, 1), 1, 0x0)
+    graphics.draw_dir(p, vmath.vec3(1, 0, 0), 2, color.RED)
+    graphics.draw_dir(p, vmath.vec3(0, 1, 0), 2, color.GREEN)
+    graphics.draw_dir(p, vmath.vec3(0, 0, 1), 2, color.BLUE)
 
     local c = self.monolith_canvas
-    canvas.set_clear_color(c, 0x99ccff)
+    canvas.set_clear_color(c, color.BACKGROUND)
     canvas.text(c, 10, 10, string.format("time:%.2fs", time.elapsed()))
     canvas.text(c, 10, 20, self.api)
 

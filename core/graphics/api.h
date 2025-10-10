@@ -6,6 +6,7 @@
 typedef struct nux_canvas_t  nux_canvas_t;
 typedef struct nux_mesh_t    nux_mesh_t;
 typedef struct nux_texture_t nux_texture_t;
+typedef struct nux_palette_t nux_palette_t;
 
 typedef enum
 {
@@ -72,14 +73,6 @@ typedef enum
     NUX_VERTEX_COLOR    = 1 << 2,
 } nux_vertex_attribute_t;
 
-typedef struct
-{
-    nux_u8_t stride;
-    nux_u8_t position;
-    nux_u8_t texcoord;
-    nux_u8_t color;
-} nux_vertex_layout_t;
-
 typedef enum
 {
     NUX_TEXTURE_IMAGE_RGBA    = 0,
@@ -87,11 +80,29 @@ typedef enum
     NUX_TEXTURE_RENDER_TARGET = 2,
 } nux_texture_type_t;
 
+typedef enum
+{
+    NUX_COLOR_TRANSPARENT = 0,
+    NUX_COLOR_WHITE       = 1,
+    NUX_COLOR_RED         = 2,
+    NUX_COLOR_GREEN       = 3,
+    NUX_COLOR_BLUE        = 4,
+    NUX_COLOR_BACKGROUND  = 5,
+} nux_color_default_t;
+
 nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_texture_type_t format,
                                nux_u32_t          w,
                                nux_u32_t          h);
 void           nux_texture_blit(nux_texture_t *texture);
+
+nux_palette_t *nux_palette_new(nux_arena_t *arena, nux_u32_t size);
+nux_palette_t *nux_palette_default(void);
+void           nux_palette_set_active(nux_palette_t *palette);
+void           nux_palette_set_color(nux_palette_t *palette,
+                                     nux_u32_t      index,
+                                     nux_v4_t       color);
+nux_v4_t nux_palette_get_color(const nux_palette_t *palette, nux_u32_t index);
 
 nux_mesh_t *nux_mesh_new(nux_arena_t           *arena,
                          nux_u32_t              capa,

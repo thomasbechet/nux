@@ -11,6 +11,7 @@ static void l_checkerror(lua_State *L)
 {% set resmap = {
     "arena": "NUX_RESOURCE_ARENA",
     "texture": "NUX_RESOURCE_TEXTURE",
+    "palette": "NUX_RESOURCE_PALETTE",
     "mesh": "NUX_RESOURCE_MESH",
     "canvas": "NUX_RESOURCE_CANVAS",
     "scene": "NUX_RESOURCE_SCENE",
@@ -30,6 +31,9 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
                 {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name == "v3" %}
                 nux_v3_t {{ arg.name }} = nux_lua_check_vec3(L, {{ ns.stack + 0}});
+                {% set ns.stack = ns.stack + 1 %}
+            {%- elif arg.typename.name == "v4" %}
+                nux_v4_t {{ arg.name }} = nux_lua_check_vec4(L, {{ ns.stack + 0}});
                 {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name == "m4" %}
                 nux_m4_t {{ arg.name }} = nux_lua_check_mat4(L, {{ ns.stack + 0}});
@@ -102,6 +106,9 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
             return 1;
         {%- elif function.typename.name == "v3" %}
             nux_lua_push_vec3(L, ret);
+            return 1;
+        {%- elif function.typename.name == "v4" %}
+            nux_lua_push_vec4(L, ret);
             return 1;
         {%- elif function.typename.name == "m4" %}
             nux_lua_push_mat4(L, ret);

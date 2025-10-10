@@ -143,6 +143,11 @@ def parse_header(args, header, modules):
         {
             int _;
         } nux_v3_t;
+
+        typedef union
+        {
+            int _;
+        } nux_v4_t;
         
         typedef union
         {

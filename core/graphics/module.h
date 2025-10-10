@@ -44,6 +44,20 @@ struct nux_texture_t
     nux_u8_t         *data;
 };
 
+struct nux_palette_t
+{
+    nux_v4_t *colors;
+    nux_u32_t size;
+};
+
+typedef struct
+{
+    nux_u8_t stride;
+    nux_u8_t position;
+    nux_u8_t texcoord;
+    nux_u8_t color;
+} nux_vertex_layout_t;
+
 struct nux_mesh_t
 {
     nux_f32_t             *data;
@@ -110,6 +124,7 @@ typedef struct
     nux_u32_t vertex_attributes;
     nux_u32_t transform_offset;
     nux_u32_t has_texture;
+    nux_v4_t  color;
 } nux_gpu_scene_batch_t;
 
 ////////////////////////////
@@ -137,7 +152,6 @@ nux_status_t nux_graphics_push_frame_transforms(nux_u32_t       mcount,
 // renderer.c
 
 void nux_renderer_render(nux_scene_t *scene);
-void nux_graphics_draw_line(nux_v3_t a, nux_v3_t b, nux_u32_t color);
 
 // font.c
 

@@ -138,6 +138,14 @@
 #define NUX_V4_ONES  nux_v4s(1)
 #define NUX_V4_ZEROS nux_v4s(0)
 
+#define NUX_COLOR_RGBA(r, g, b, a) \
+    (nux_v4_t) { r / 255., g / 255., b / 255., a / 255. }
+#define NUX_COLOR_HEX(hex)                   \
+    NUX_COLOR_RGBA(((hex & 0xFF0000) >> 16), \
+                   ((hex & 0xFF00) >> 8),    \
+                   ((hex & 0xFF) >> 0),      \
+                   ((hex & 0xFF000000) >> 24))
+
 #define NUX_V2_DEFINE(name, type)                                         \
     nux_##name##_t nux_##name(type x, type y);                            \
     nux_##name##_t nux_##name##s(type x);                                 \
@@ -386,6 +394,7 @@ typedef enum
     NUX_RESOURCE_SCENE      = 9,
     NUX_RESOURCE_QUERY      = 10,
     NUX_RESOURCE_EVENT      = 11,
+    NUX_RESOURCE_PALETTE    = 12,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
@@ -431,18 +440,6 @@ typedef union
     };
     nux_u32_t data[3];
 } nux_v3u_t;
-
-typedef union
-{
-    struct
-    {
-        nux_f32_t x;
-        nux_f32_t y;
-        nux_f32_t z;
-        nux_f32_t w;
-    };
-    nux_f32_t data[4];
-} nux_v4_t;
 
 typedef union
 {
@@ -537,6 +534,8 @@ struct nux_arena_t
 };
 
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
+NUX_VEC_DEFINE(nux_f32_vec, nux_f32_t)
+NUX_VEC_DEFINE(nux_v4_vec, nux_v4_t)
 NUX_VEC_DEFINE(nux_ptr_vec, void *);
 
 typedef void (*nux_resource_cleanup_t)(void *data);

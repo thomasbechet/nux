@@ -6,6 +6,7 @@ struct Batch
     uint vertexAttributes;
     uint transformOffset;
     uint hasTexture;
+    vec4 color;
 };
 
 layout(binding = 3, std430) readonly buffer BatchBlock
@@ -22,12 +23,13 @@ uniform uint batchIndex;
 
 void main()
 {
-    if (batches[batchIndex].hasTexture != 0)
+    Batch batch = batches[batchIndex];
+    if (batch.hasTexture != 0)
     {
-        outColor = texture(texture0, inUV);
+        outColor = texture(texture0, inUV) * batch.color;
     }
     else
     {
-        outColor = vec4(inColor, 1);
+        outColor = vec4(inColor, 1) * batch.color;
     }
 }
