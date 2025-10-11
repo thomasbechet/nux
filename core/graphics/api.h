@@ -3,10 +3,11 @@
 
 #include <base/api.h>
 
-typedef struct nux_canvas_t  nux_canvas_t;
-typedef struct nux_mesh_t    nux_mesh_t;
-typedef struct nux_texture_t nux_texture_t;
-typedef struct nux_palette_t nux_palette_t;
+typedef struct nux_canvas_t   nux_canvas_t;
+typedef struct nux_mesh_t     nux_mesh_t;
+typedef struct nux_texture_t  nux_texture_t;
+typedef struct nux_palette_t  nux_palette_t;
+typedef struct nux_viewport_t nux_viewport_t;
 
 typedef enum
 {
@@ -19,12 +20,12 @@ typedef enum
     // NUX_SCREEN_HEIGHT = 640,
 
     // 16:10, too high ?
-    NUX_CANVAS_WIDTH  = 640,
-    NUX_CANVAS_HEIGHT = 400,
+    // NUX_CANVAS_WIDTH  = 640,
+    // NUX_CANVAS_HEIGHT = 400,
 
     // 4:3
-    // NUX_SCREEN_WIDTH  = 640,
-    // NUX_SCREEN_HEIGHT = 480,
+    NUX_CANVAS_WIDTH  = 640,
+    NUX_CANVAS_HEIGHT = 480,
 
     // 16:10
     // NUX_CANVAS_WIDTH  = 512,
@@ -89,6 +90,15 @@ typedef enum
     NUX_COLOR_BLUE        = 4,
     NUX_COLOR_BACKGROUND  = 5,
 } nux_color_default_t;
+
+typedef enum
+{
+    NUX_VIEWPORT_HIDDEN,
+    NUX_VIEWPORT_FIXED,
+    NUX_VIEWPORT_FIXED_BEST_FIT,
+    NUX_VIEWPORT_STRETCH_KEEP_ASPECT,
+    NUX_VIEWPORT_STRETCH,
+} nux_viewport_mode_t;
 
 nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_texture_type_t format,

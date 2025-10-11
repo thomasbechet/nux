@@ -265,7 +265,7 @@ function mesh.bounds_max(...) end
 function mesh.set_origin(...) end
 canvas={}
 canvas.WIDTH=640
-canvas.HEIGHT=400
+canvas.HEIGHT=480
 ---@return None
 function canvas.new(...) end
 ---@return None

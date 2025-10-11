@@ -1965,7 +1965,7 @@ nux_lua_open_api (void)
     luaL_setfuncs(L, lib_canvas, 0);
     lua_pushinteger(L, 640);
     lua_setfield(L, -2, "WIDTH");
-    lua_pushinteger(L, 400);
+    lua_pushinteger(L, 480);
     lua_setfield(L, -2, "HEIGHT");
     lua_setglobal(L, "canvas");
     lua_newtable(L);

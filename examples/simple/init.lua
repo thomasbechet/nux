@@ -87,24 +87,23 @@ function M:on_update()
 
     local c = self.monolith_canvas
     canvas.set_clear_color(c, color.BACKGROUND)
-    canvas.text(c, 10, 10, string.format("time:%.2fs", time.elapsed()))
+    canvas.text(c, 10, 10, string.format("time: %.2fs", time.elapsed()))
     canvas.text(c, 10, 20, self.api)
-
 
     local position = transform.get_translation(self.camera.entity)
     c = self.gui_canvas
     canvas.text(c, 10, 10, time.date())
-    canvas.text(c, 10, 20, string.format("time:%.2fs", time.elapsed()))
+    canvas.text(c, 10, 20, string.format("time: %.2fs", time.elapsed()))
     canvas.text(c, 10, 30, string.format("xyz: %.2f %.2f %.2f", position.x, position.y, position.z))
     canvas.text(c, 10, 40,
-        string.format("core mem:%s bc:%d",
+        string.format("core mem: %s bc:%d",
             memhu(arena.memory_usage(arena.core())),
             arena.block_count(arena.core())))
     canvas.text(c, 10, 50,
-        string.format("frame mem:%s bc:%d",
+        string.format("frame mem: %s bc:%d",
             memhu(arena.memory_usage(arena.frame())),
             arena.block_count(arena.frame())))
-    canvas.text(c, 10, 60, string.format("nodes:%d", scene.count()))
+    canvas.text(c, 10, 60, string.format("nodes: %d", scene.count()))
     local cp = cursor.get(0)
     canvas.text(c, 10, 70, string.format("cursor: %.2f %.2f", cp.x, cp.y))
 

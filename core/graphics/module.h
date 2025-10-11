@@ -50,6 +50,19 @@ struct nux_palette_t
     nux_u32_t size;
 };
 
+struct nux_viewport_t
+{
+    nux_rid_t           target;
+    nux_viewport_mode_t mode;
+    nux_v4_t            extent;
+    struct
+    {
+        nux_nid_t camera;
+        nux_rid_t texture;
+    } source;
+    nux_i32_t layer;
+};
+
 typedef struct
 {
     nux_u8_t stride;
@@ -206,7 +219,6 @@ nux_status_t nux_staticmesh_read(nux_serde_reader_t *s, void *data);
 
 // camera.c
 
-nux_m4_t     nux_m4_lookat(nux_v3_t eye, nux_v3_t center, nux_v3_t up);
 nux_status_t nux_camera_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_camera_read(nux_serde_reader_t *s, void *data);
 

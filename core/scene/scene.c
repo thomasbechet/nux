@@ -362,6 +362,23 @@ nux_scene_active (void)
 {
     return nux_scene_module()->active;
 }
+nux_u32_t
+nux_scene_count (void)
+{
+    nux_scene_t *scene = nux_scene_active();
+    return bitset_count(&scene->bitset);
+}
+void
+nux_scene_clear (void)
+{
+    nux_scene_t *scene = nux_scene_active();
+    for (nux_u32_t i = 0; i < scene->containers.size; ++i)
+    {
+        nux_scene_container_t *container = scene->containers.data + i;
+        nux_scene_bitset_clear(&container->bitset);
+    }
+    nux_scene_bitset_clear(&scene->bitset);
+}
 nux_nid_t
 nux_node_create (nux_nid_t parent)
 {
@@ -444,23 +461,6 @@ nux_node_child (nux_nid_t e)
     nux_scene_t *scene = nux_scene_active();
     NUX_CHECK(node_check(scene, e), return NUX_NULL);
     return scene->nodes.data[NUX_NID_INDEX(e)].child;
-}
-nux_u32_t
-nux_scene_count (void)
-{
-    nux_scene_t *scene = nux_scene_active();
-    return bitset_count(&scene->bitset);
-}
-void
-nux_scene_clear (void)
-{
-    nux_scene_t *scene = nux_scene_active();
-    for (nux_u32_t i = 0; i < scene->containers.size; ++i)
-    {
-        nux_scene_container_t *container = scene->containers.data + i;
-        nux_scene_bitset_clear(&container->bitset);
-    }
-    nux_scene_bitset_clear(&scene->bitset);
 }
 static void *
 component_get (const nux_scene_t *scene, nux_nid_t e, nux_u32_t c)

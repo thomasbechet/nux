@@ -229,6 +229,8 @@ nux_graphics_update (void)
         }
     }
 
+    // Render viewports
+
     return NUX_SUCCESS;
 }
 

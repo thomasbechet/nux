@@ -282,7 +282,11 @@ nux_renderer_render (nux_scene_t *scene)
 
             // Draw
             bind_texture(enc, NUX_NULL);
-            draw_box(enc, sm->transform, NUX_PRIMITIVE_LINES, m->bounds, NUX_COLOR_RED);
+            draw_box(enc,
+                     sm->transform,
+                     NUX_PRIMITIVE_LINES,
+                     m->bounds,
+                     NUX_COLOR_WHITE);
         }
 
         // Submit commands
@@ -292,26 +296,6 @@ nux_renderer_render (nux_scene_t *scene)
         nux_gpu_encoder_submit(&module->immediate_encoder);
     }
 }
-// void
-// nux_renderer_draw_rect (const nux_v3_t *positions)
-// {
-//     nux_graphics_module_t *module = nux_graphics_module();
-//     nux_gpu_encoder_t     *enc    = &module->immediate_encoder;
-//
-//     nux_gpu_bind_framebuffer(enc, 0);
-//     nux_gpu_bind_pipeline(enc, module->uber_pipeline_line.slot);
-//     nux_gpu_bind_buffer(
-//         enc, NUX_GPU_DESC_UBER_CONSTANTS, module->constants_buffer.slot);
-//     nux_gpu_bind_buffer(
-//         enc, NUX_GPU_DESC_UBER_BATCHES, module->batches_buffer.slot);
-//     nux_gpu_bind_buffer(
-//         enc, NUX_GPU_DESC_UBER_TRANSFORMS, module->transforms_buffer.slot);
-//     nux_gpu_bind_buffer(
-//         enc, NUX_GPU_DESC_UBER_VERTICES, module->vertices_buffer.slot);
-//     draw_rect(
-//         enc, module->identity_transform_offset, NUX_PRIMITIVE_LINES,
-//         positions);
-// }
 void
 draw_line_tr (nux_u32_t transform_index,
               nux_v3_t  a,
