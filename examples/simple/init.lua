@@ -48,9 +48,13 @@ function M:on_load()
 
     self.camera = require("camera")
 
+    local vp = viewport.new(self.arena)
+    viewport.set_camera(vp, self.camera.entity)
+
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, canvas.WIDTH, canvas.HEIGHT)
-    canvas.set_layer(self.gui_canvas, 1)
+    local vp = viewport.new(self.arena)
+    viewport.set_texture(vp, canvas.get_texture(self.gui_canvas))
 
     -- Create the API monolith
     local x, y = 350, 2000

@@ -117,7 +117,6 @@ struct nux_canvas_t
     nux_gpu_canvas_batch_t active_batch;
     nux_u32_t              active_texture;
     nux_texture_t         *target;
-    nux_i32_t              layer;
     nux_u32_t              clear_color;
     nux_canvas_t          *prev;
     nux_canvas_t          *next;
@@ -164,7 +163,10 @@ nux_status_t nux_graphics_push_frame_transforms(nux_u32_t       mcount,
 
 // renderer.c
 
-void nux_renderer_render(nux_scene_t *scene);
+void nux_renderer_render(nux_scene_t *scene,
+                         nux_nid_t    camera,
+                         nux_u32_t    framebuffer,
+                         nux_v4_t     extent);
 
 // font.c
 
@@ -211,6 +213,7 @@ void nux_texture_write(nux_texture_t *tex,
                        nux_u32_t      w,
                        nux_u32_t      h,
                        const void    *data);
+void nux_texture_blit(nux_texture_t *texture, nux_u32_t framebuffer);
 
 // staticmesh.c
 

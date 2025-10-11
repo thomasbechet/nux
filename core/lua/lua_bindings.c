@@ -1043,6 +1043,87 @@ l_node_instantiate (lua_State *L)
     return 1;
 }
 static int
+l_viewport_new (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    const nux_viewport_t *ret = nux_viewport_new(arena);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_viewport_set_mode (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_viewport_mode_t mode = luaL_checknumber(L, 2);
+
+    nux_viewport_set_mode(vp, mode);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_viewport_set_extent (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_v4_t extent = nux_lua_check_vec4(L, 2);
+
+    nux_viewport_set_extent(vp, extent);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_viewport_set_camera (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_nid_t camera = (nux_nid_t)luaL_checknumber(L, 2);
+
+    nux_viewport_set_camera(vp, camera);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_viewport_set_texture (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_texture_t *texture
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
+
+    nux_viewport_set_texture(vp, texture);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_viewport_set_target (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_texture_t *target
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
+
+    nux_viewport_set_target(vp, target);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_texture_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -1063,17 +1144,6 @@ l_texture_new (lua_State *L)
         lua_pushnil(L);
     }
     return 1;
-}
-static int
-l_texture_blit (lua_State *L)
-{
-    nux_texture_t *texture
-        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 1));
-
-    nux_texture_blit(texture);
-    l_checkerror(L);
-
-    return 0;
 }
 static int
 l_palette_new (lua_State *L)
@@ -1275,18 +1345,6 @@ l_canvas_get_texture (lua_State *L)
         lua_pushnil(L);
     }
     return 1;
-}
-static int
-l_canvas_set_layer (lua_State *L)
-{
-    nux_canvas_t *canvas
-        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
-    nux_i32_t layer = luaL_checknumber(L, 2);
-
-    nux_canvas_set_layer(canvas, layer);
-    l_checkerror(L);
-
-    return 0;
 }
 static int
 l_canvas_set_clear_color (lua_State *L)
@@ -1728,9 +1786,16 @@ static const struct luaL_Reg lib_node[]
         { "has", l_node_has },
         { "instantiate", l_node_instantiate },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
-                                               { "blit", l_texture_blit },
-                                               { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_viewport[]
+    = { { "new", l_viewport_new },
+        { "set_mode", l_viewport_set_mode },
+        { "set_extent", l_viewport_set_extent },
+        { "set_camera", l_viewport_set_camera },
+        { "set_texture", l_viewport_set_texture },
+        { "set_target", l_viewport_set_target },
+        { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_texture[]
+    = { { "new", l_texture_new }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_palette[]
     = { { "new", l_palette_new },
         { "default", l_palette_default },
@@ -1749,7 +1814,6 @@ static const struct luaL_Reg lib_mesh[]
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
         { "get_texture", l_canvas_get_texture },
-        { "set_layer", l_canvas_set_layer },
         { "set_clear_color", l_canvas_set_clear_color },
         { "text", l_canvas_text },
         { "rectangle", l_canvas_rectangle },
@@ -1944,6 +2008,19 @@ nux_lua_open_api (void)
     lua_newtable(L);
     luaL_setfuncs(L, lib_node, 0);
     lua_setglobal(L, "node");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_viewport, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "HIDDEN");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "FIXED");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "FIXED_BEST_FIT");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "STRETCH_KEEP_ASPECT");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "STRETCH");
+    lua_setglobal(L, "viewport");
     lua_newtable(L);
     luaL_setfuncs(L, lib_texture, 0);
     lua_pushinteger(L, 0);

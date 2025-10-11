@@ -3,3 +3,4 @@
 ---@field x number
 ---@field y number
 ---@field z number
+---@field entity Userdata

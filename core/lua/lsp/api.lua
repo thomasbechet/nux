@@ -230,14 +230,30 @@ function node.remove(...) end
 function node.has(...) end
 ---@return None
 function node.instantiate(...) end
+viewport={}
+viewport.HIDDEN=0
+viewport.FIXED=1
+viewport.FIXED_BEST_FIT=2
+viewport.STRETCH_KEEP_ASPECT=3
+viewport.STRETCH=4
+---@return None
+function viewport.new(...) end
+---@return None
+function viewport.set_mode(...) end
+---@return None
+function viewport.set_extent(...) end
+---@return None
+function viewport.set_camera(...) end
+---@return None
+function viewport.set_texture(...) end
+---@return None
+function viewport.set_target(...) end
 texture={}
 texture.IMAGE_RGBA=0
 texture.IMAGE_INDEX=1
 texture.RENDER_TARGET=2
 ---@return None
 function texture.new(...) end
----@return None
-function texture.blit(...) end
 palette={}
 palette.SIZE=256
 ---@return None
@@ -270,8 +286,6 @@ canvas.HEIGHT=480
 function canvas.new(...) end
 ---@return None
 function canvas.get_texture(...) end
----@return None
-function canvas.set_layer(...) end
 ---@return None
 function canvas.set_clear_color(...) end
 ---@return None

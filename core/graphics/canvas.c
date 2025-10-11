@@ -124,7 +124,6 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     c->target
         = nux_texture_new(arena, NUX_TEXTURE_RENDER_TARGET, width, height);
     NUX_CHECK(c->target, return NUX_NULL);
-    c->layer = -1; // Not visible by default
 
     return c;
 }
@@ -140,11 +139,6 @@ nux_texture_t *
 nux_canvas_get_texture (nux_canvas_t *canvas)
 {
     return canvas->target;
-}
-void
-nux_canvas_set_layer (nux_canvas_t *canvas, nux_i32_t layer)
-{
-    canvas->layer = layer;
 }
 void
 nux_canvas_set_clear_color (nux_canvas_t *canvas, nux_u32_t color)

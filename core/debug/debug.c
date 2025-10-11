@@ -18,7 +18,6 @@ nux_debug_init (void)
         module->console_canvas = nux_canvas_new(
             nux_arena_core(), NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
         NUX_CHECK(module->console_canvas, return NUX_FAILURE);
-        nux_canvas_set_layer(module->console_canvas, 9999);
     }
 
     // Create log buffer

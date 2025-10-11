@@ -165,7 +165,10 @@ draw_line (nux_gpu_encoder_t *enc,
     draw(enc, first, vertex_count, transform, NUX_VERTEX_POSITION, c);
 }
 void
-nux_renderer_render (nux_scene_t *scene)
+nux_renderer_render (nux_scene_t *scene,
+                     nux_nid_t    camera,
+                     nux_u32_t    framebuffer,
+                     nux_v4_t     extent)
 {
     nux_graphics_module_t *module = nux_graphics_module();
     nux_gpu_encoder_t     *enc    = &module->encoder;
@@ -175,18 +178,6 @@ nux_renderer_render (nux_scene_t *scene)
     while ((it = nux_query_next(module->transform_iter, it)))
     {
         nux_transform_get_matrix(it);
-    }
-
-    // Find current camera
-    nux_nid_t camera = NUX_NULL;
-    it               = NUX_NULL;
-    while ((it = nux_query_next(module->transform_camera_iter, it)))
-    {
-        nux_camera_t *c = nux_component_get(it, NUX_COMPONENT_CAMERA);
-        NUX_ASSERT(c);
-        // TODO: check current / active
-        camera = it;
-        break;
     }
 
     // Render scene
@@ -219,7 +210,7 @@ nux_renderer_render (nux_scene_t *scene)
                              &constants);
 
         // Bind framebuffer, pipeline and constants
-        nux_gpu_bind_framebuffer(enc, 0);
+        nux_gpu_bind_framebuffer(enc, framebuffer);
         nux_gpu_clear(enc, 0x4f9bd9);
 
         // Render nodes

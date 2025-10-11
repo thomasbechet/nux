@@ -1,3 +1,4 @@
+#include "graphics/module.h"
 #include "internal.h"
 
 #include "fonts_data.c.inc"
@@ -26,6 +27,8 @@ nux_graphics_init (void)
 
     // Register resources
     nux_resource_type_t *type;
+    type = nux_resource_register(
+        NUX_RESOURCE_VIEWPORT, sizeof(nux_texture_t), "viewport");
     type = nux_resource_register(
         NUX_RESOURCE_TEXTURE, sizeof(nux_texture_t), "texture");
     type->cleanup = nux_texture_cleanup;
@@ -215,21 +218,41 @@ nux_graphics_update (void)
         nux_canvas_render(c);
     }
 
-    // Render scene
-    nux_renderer_render(nux_scene_active());
-
-    // Blit canvas layers
-    canvas = NUX_NULL;
-    while ((canvas = nux_resource_next(NUX_RESOURCE_CANVAS, canvas)))
+    // Collect viewports
+    nux_viewport_t *viewports[32];
+    nux_u32_t       viewports_count = 0;
+    nux_rid_t       it              = NUX_NULL;
+    while ((it = nux_resource_next(NUX_RESOURCE_VIEWPORT, it)))
     {
-        nux_canvas_t *c = nux_resource_check(NUX_RESOURCE_CANVAS, canvas);
-        if (c->target && c->layer >= 0)
-        {
-            nux_texture_blit(c->target);
-        }
+        viewports[viewports_count]
+            = nux_resource_get(NUX_RESOURCE_VIEWPORT, it);
+        ++viewports_count;
     }
 
+    // Sort viewports
+    // TODO
+
     // Render viewports
+    for (nux_u32_t i = 0; i < viewports_count; ++i)
+    {
+        nux_viewport_t *viewport = viewports[i];
+        nux_texture_t  *target
+            = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
+        nux_u32_t framebuffer = target ? target->gpu.framebuffer_slot : 0;
+        if (viewport->source.camera) // Render scene
+        {
+            nux_scene_t *scene = nux_scene_active();
+            nux_renderer_render(
+                scene, viewport->source.camera, framebuffer, viewport->extent);
+        }
+        else if (viewport->source.texture) // Blit texture
+        {
+            nux_texture_t *texture = nux_resource_get(NUX_RESOURCE_TEXTURE,
+                                                      viewport->source.texture);
+            NUX_ASSERT(texture);
+            nux_texture_blit(texture, framebuffer);
+        }
+    }
 
     return NUX_SUCCESS;
 }

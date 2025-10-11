@@ -93,18 +93,24 @@ typedef enum
 
 typedef enum
 {
-    NUX_VIEWPORT_HIDDEN,
-    NUX_VIEWPORT_FIXED,
-    NUX_VIEWPORT_FIXED_BEST_FIT,
-    NUX_VIEWPORT_STRETCH_KEEP_ASPECT,
-    NUX_VIEWPORT_STRETCH,
+    NUX_VIEWPORT_HIDDEN              = 0,
+    NUX_VIEWPORT_FIXED               = 1,
+    NUX_VIEWPORT_FIXED_BEST_FIT      = 2,
+    NUX_VIEWPORT_STRETCH_KEEP_ASPECT = 3,
+    NUX_VIEWPORT_STRETCH             = 4,
 } nux_viewport_mode_t;
+
+nux_viewport_t *nux_viewport_new(nux_arena_t *arena);
+void nux_viewport_set_mode(nux_viewport_t *vp, nux_viewport_mode_t mode);
+void nux_viewport_set_extent(nux_viewport_t *vp, nux_v4_t extent);
+void nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
+void nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
+void nux_viewport_set_target(nux_viewport_t *vp, nux_texture_t *target);
 
 nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_texture_type_t format,
                                nux_u32_t          w,
                                nux_u32_t          h);
-void           nux_texture_blit(nux_texture_t *texture);
 
 nux_palette_t *nux_palette_new(nux_arena_t *arena, nux_u32_t size);
 nux_palette_t *nux_palette_default(void);
@@ -130,7 +136,6 @@ nux_canvas_t  *nux_canvas_new(nux_arena_t *arena,
                               nux_u32_t    width,
                               nux_u32_t    height);
 nux_texture_t *nux_canvas_get_texture(nux_canvas_t *canvas);
-void           nux_canvas_set_layer(nux_canvas_t *canvas, nux_i32_t layer);
 void nux_canvas_set_clear_color(nux_canvas_t *canvas, nux_u32_t color);
 void nux_canvas_text(nux_canvas_t   *canvas,
                      nux_u32_t       x,
