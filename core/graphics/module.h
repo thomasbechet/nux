@@ -163,10 +163,10 @@ nux_status_t nux_graphics_push_frame_transforms(nux_u32_t       mcount,
 
 // renderer.c
 
-void nux_renderer_render(nux_scene_t *scene,
-                         nux_nid_t    camera,
-                         nux_u32_t    framebuffer,
-                         nux_v4_t     extent);
+void nux_renderer_render(nux_scene_t   *scene,
+                         nux_nid_t      camera,
+                         nux_texture_t *target,
+                         nux_v4_t       extent);
 
 // font.c
 

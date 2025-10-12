@@ -39,6 +39,7 @@ typedef struct
 
     const nux_texture_t *active_texture;
     const nux_palette_t *active_palette;
+    nux_texture_t       *screen_target;
 } nux_graphics_module_t;
 
 nux_graphics_module_t *nux_graphics_module(void);

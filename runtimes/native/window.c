@@ -511,7 +511,7 @@ nux_os_input_update (void      *user,
     }
     if (runtime.focused)
     {
-        struct nk_rect vp = runtime.viewport;
+        struct nk_rect vp = runtime.viewport_ui;
         double         x, y;
         glfwGetCursorPos(runtime.win, &x, &y);
         y         = runtime.size.y - y;

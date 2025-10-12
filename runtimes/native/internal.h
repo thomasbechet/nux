@@ -34,15 +34,6 @@
 
 typedef enum
 {
-    VIEWPORT_HIDDEN,
-    VIEWPORT_FIXED,
-    VIEWPORT_FIXED_BEST_FIT,
-    VIEWPORT_STRETCH_KEEP_ASPECT,
-    VIEWPORT_STRETCH,
-} viewport_mode_t;
-
-typedef enum
-{
     VIEW_GAME     = 0,
     VIEW_OPEN     = 1,
     VIEW_CONTROLS = 2,
@@ -51,8 +42,7 @@ typedef enum
 
 typedef struct
 {
-    viewport_mode_t viewport_mode;
-    view_t          active_view;
+    view_t active_view;
 } settings_t;
 
 typedef struct
@@ -103,8 +93,6 @@ typedef struct
     char            path[PATH_MAX_LEN];
     nux_instance_t *instance;
     struct nk_rect  viewport_ui;
-    viewport_mode_t viewport_mode;
-    struct nk_rect  viewport;
     bool            running;
 
     // renderer

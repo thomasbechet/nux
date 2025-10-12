@@ -421,7 +421,6 @@ nux_os_gpu_submit (void                    *userdata,
                 }
                 else
                 {
-                    struct nk_rect vp = runtime.viewport;
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
                 }
             }
@@ -518,8 +517,8 @@ nux_os_gpu_submit (void                    *userdata,
                 }
                 else
                 {
-                    width  = runtime.viewport.w;
-                    height = runtime.viewport.h;
+                    width  = runtime.viewport_ui.w;
+                    height = runtime.viewport_ui.h;
                 }
                 float x = cmd->viewport.extent.x * width;
                 float y = cmd->viewport.extent.y * height;
@@ -582,7 +581,7 @@ void
 renderer_end (void)
 {
     // Restore state
-    struct nk_rect vp = runtime.viewport;
+    struct nk_rect vp = runtime.viewport_ui;
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_MULTISAMPLE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

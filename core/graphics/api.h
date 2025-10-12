@@ -101,11 +101,12 @@ typedef enum
 } nux_viewport_mode_t;
 
 nux_viewport_t *nux_viewport_new(nux_arena_t *arena);
-void nux_viewport_set_mode(nux_viewport_t *vp, nux_viewport_mode_t mode);
-void nux_viewport_set_extent(nux_viewport_t *vp, nux_v4_t extent);
-void nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
-void nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
-void nux_viewport_set_target(nux_viewport_t *vp, nux_texture_t *target);
+void     nux_viewport_set_mode(nux_viewport_t *vp, nux_viewport_mode_t mode);
+void     nux_viewport_set_extent(nux_viewport_t *vp, nux_v4_t extent);
+void     nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
+void     nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
+void     nux_viewport_set_target(nux_viewport_t *vp, nux_texture_t *target);
+nux_v4_t nux_viewport_get_render_extent(nux_viewport_t *viewport);
 
 nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_texture_type_t format,

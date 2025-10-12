@@ -15,8 +15,7 @@ nux_debug_init (void)
     if (nux_config()->debug.console)
     {
         // Create canvas
-        module->console_canvas = nux_canvas_new(
-            nux_arena_core(), NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT);
+        module->console_canvas = nux_canvas_new(nux_arena_core(), 1000, 500);
         NUX_CHECK(module->console_canvas, return NUX_FAILURE);
     }
 

@@ -3,81 +3,6 @@
 runtime_t runtime;
 
 static void
-apply_viewport_mode (struct nk_vec2i window_size)
-{
-    struct nk_rect viewport = runtime.viewport_ui;
-
-    struct nk_vec2 global_pos  = { viewport.x, viewport.y };
-    struct nk_vec2 global_size = { viewport.w, viewport.h };
-
-    struct nk_vec2i screen       = { NUX_CANVAS_WIDTH, NUX_CANVAS_HEIGHT };
-    float           aspect_ratio = (float)screen.x / screen.y;
-
-    struct nk_vec2 vsize = { 0, 0 };
-    switch (runtime.viewport_mode)
-    {
-        case VIEWPORT_FIXED: {
-            vsize.x = screen.x;
-            vsize.y = screen.y;
-        };
-        break;
-        case VIEWPORT_FIXED_BEST_FIT: {
-            float w_factor = global_size.x / screen.x;
-            float h_factor = global_size.y / screen.y;
-            float min      = w_factor < h_factor ? w_factor : h_factor;
-            if (min < 1)
-            {
-                // 0.623 => 0.5
-                // 0,432 => 0.25
-                // 0.115 => 0,125
-                float n = 2;
-                while (min < (1 / n))
-                {
-                    n *= 2;
-                }
-                min = 1 / n;
-            }
-            else
-            {
-                min = floorf(min);
-            }
-            vsize.x = screen.x * min;
-            vsize.y = screen.y * min;
-        }
-        break;
-        case VIEWPORT_STRETCH_KEEP_ASPECT: {
-            if (global_size.x / global_size.y >= aspect_ratio)
-            {
-                vsize.x = floorf(global_size.y * aspect_ratio);
-                vsize.y = floorf(global_size.y);
-            }
-            else
-            {
-                vsize.x = floorf(global_size.x);
-                vsize.y = floorf(global_size.x / aspect_ratio);
-            }
-        }
-        break;
-        case VIEWPORT_STRETCH:
-            vsize = global_size;
-            break;
-        default:
-            break;
-    }
-
-    struct nk_vec2 vpos;
-    vpos.x = global_pos.x + (global_size.x - vsize.x) * 0.5;
-    vpos.y = global_pos.y + (global_size.y - vsize.y) * 0.5;
-
-    // Patch pos (bottom left in opengl)
-    vpos.y = window_size.y - (vpos.y + vsize.y);
-
-    runtime.viewport.x = vpos.x;
-    runtime.viewport.y = vpos.y;
-    runtime.viewport.w = vsize.x;
-    runtime.viewport.h = vsize.y;
-}
-static void
 runtime_close (void)
 {
     if (runtime.instance)
@@ -129,9 +54,6 @@ runtime_run (const config_t *config)
         // Update instance
         if (runtime.instance)
         {
-            // Compute viewport
-            apply_viewport_mode(window_size);
-
             // Begin renderer
             renderer_begin(nk_rect(0, 0, window_size.x, window_size.y),
                            window_size);
@@ -166,9 +88,8 @@ runtime_open (const char *path)
     runtime_close();
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
-    runtime.instance      = NULL;
-    runtime.viewport_ui   = nk_rect(0, 0, 10, 10);
-    runtime.viewport_mode = VIEWPORT_STRETCH_KEEP_ASPECT;
+    runtime.instance    = NULL;
+    runtime.viewport_ui = nk_rect(0, 0, 10, 10);
 
     runtime.instance = nux_instance_init(NULL, path);
     if (!runtime.instance)
@@ -215,7 +136,7 @@ void
 nux_os_stats_update (void *userdata, nux_u64_t *stats)
 {
     stats[NUX_STAT_FPS]           = runtime.fps;
-    stats[NUX_STAT_SCREEN_WIDTH]  = runtime.viewport.w;
-    stats[NUX_STAT_SCREEN_HEIGHT] = runtime.viewport.h;
+    stats[NUX_STAT_SCREEN_WIDTH]  = runtime.viewport_ui.w;
+    stats[NUX_STAT_SCREEN_HEIGHT] = runtime.viewport_ui.h;
     stats[NUX_STAT_TIMESTAMP]     = time(NULL);
 }

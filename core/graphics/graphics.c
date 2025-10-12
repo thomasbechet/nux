@@ -160,6 +160,8 @@ nux_graphics_init (void)
         1, &identity, &module->identity_transform_offset));
     NUX_ASSERT(module->identity_transform_offset == 0);
 
+    // Create screen rendertarget
+
     return NUX_SUCCESS;
 
 error:
@@ -235,21 +237,22 @@ nux_graphics_update (void)
     for (nux_u32_t i = 0; i < viewports_count; ++i)
     {
         nux_viewport_t *viewport = viewports[i];
-        nux_texture_t  *target
+
+        nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
-        nux_u32_t framebuffer = target ? target->gpu.framebuffer_slot : 0;
         if (viewport->source.camera) // Render scene
         {
+            nux_v4_t extent = nux_viewport_get_render_extent(viewport);
+            printf("%lf %lf %lf %lf\n", extent.x, extent.y, extent.z, extent.w);
             nux_scene_t *scene = nux_scene_active();
-            nux_renderer_render(
-                scene, viewport->source.camera, framebuffer, viewport->extent);
+            nux_renderer_render(scene, viewport->source.camera, target, extent);
         }
         else if (viewport->source.texture) // Blit texture
         {
             nux_texture_t *texture = nux_resource_get(NUX_RESOURCE_TEXTURE,
                                                       viewport->source.texture);
             NUX_ASSERT(texture);
-            nux_texture_blit(texture, framebuffer);
+            nux_texture_blit(texture, target);
         }
     }
 

@@ -165,10 +165,10 @@ draw_line (nux_gpu_encoder_t *enc,
     draw(enc, first, vertex_count, transform, NUX_VERTEX_POSITION, c);
 }
 void
-nux_renderer_render (nux_scene_t *scene,
-                     nux_nid_t    camera,
-                     nux_u32_t    framebuffer,
-                     nux_v4_t     extent)
+nux_renderer_render (nux_scene_t   *scene,
+                     nux_nid_t      camera,
+                     nux_texture_t *target,
+                     nux_v4_t       extent)
 {
     nux_graphics_module_t *module = nux_graphics_module();
     nux_gpu_encoder_t     *enc    = &module->encoder;
@@ -196,8 +196,8 @@ nux_renderer_render (nux_scene_t *scene,
         nux_gpu_constants_buffer_t constants;
         constants.view        = nux_m4_lookat(eye, center, up);
         constants.proj        = nux_m4_perspective(nux_radian(cc->fov),
-                                            (nux_f32_t)NUX_CANVAS_WIDTH
-                                                / NUX_CANVAS_HEIGHT,
+                                            (nux_f32_t)target->gpu.width
+                                                / target->gpu.height,
                                             cc->near,
                                             cc->far);
         constants.screen_size = nux_v2u(nux_stat(NUX_STAT_SCREEN_WIDTH),
@@ -210,8 +210,9 @@ nux_renderer_render (nux_scene_t *scene,
                              &constants);
 
         // Bind framebuffer, pipeline and constants
-        nux_gpu_bind_framebuffer(enc, framebuffer);
+        nux_gpu_bind_framebuffer(enc, target->gpu.framebuffer_slot);
         nux_gpu_clear(enc, 0x4f9bd9);
+        nux_gpu_viewport(enc, extent);
 
         // Render nodes
         nux_gpu_bind_pipeline(enc, module->uber_pipeline_opaque.slot);
