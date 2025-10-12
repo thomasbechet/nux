@@ -24,10 +24,10 @@ nux_camera_add (nux_nid_t e)
 {
     nux_camera_t *c = nux_component_add(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
-    c->fov      = 60;
-    c->near     = 0.1;
-    c->far      = 200;
-    c->viewport = nux_b2i_xywh(0, 0, 100, 100);
+    c->fov   = 60;
+    c->near  = 0.1;
+    c->far   = 200;
+    c->ratio = 0;
 }
 void
 nux_camera_remove (nux_nid_t e)
@@ -67,12 +67,15 @@ nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
     nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
     nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 0);
 
+    nux_f32_t aspect_ratio = c->ratio;
+    if (aspect_ratio == 0)
+    {
+        aspect_ratio = 16. / 9;
+    }
+
     nux_m4_t view = nux_m4_lookat(eye, center, up);
     nux_m4_t proj
-        = nux_m4_perspective(nux_radian(c->fov),
-                          (nux_f32_t)NUX_CANVAS_WIDTH / NUX_CANVAS_HEIGHT,
-                          c->near,
-                          c->far);
+        = nux_m4_perspective(nux_radian(c->fov), aspect_ratio, c->near, c->far);
     nux_m4_t vp  = nux_m4_mul(proj, view);
     nux_m4_t inv = nux_m4_inv(vp);
 

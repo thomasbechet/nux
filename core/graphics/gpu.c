@@ -172,3 +172,11 @@ nux_gpu_clear (nux_gpu_encoder_t *enc, nux_u32_t color)
     cmd->type        = NUX_GPU_COMMAND_CLEAR;
     cmd->clear.color = color;
 }
+void
+nux_gpu_viewport (nux_gpu_encoder_t *enc, nux_v4_t viewport)
+{
+    nux_gpu_command_t *cmd = push_cmd(enc);
+    NUX_CHECK(cmd, return);
+    cmd->type            = NUX_GPU_COMMAND_VIEWPORT;
+    cmd->viewport.extent = viewport;
+}

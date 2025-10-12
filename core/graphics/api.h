@@ -24,8 +24,8 @@ typedef enum
     // NUX_CANVAS_HEIGHT = 400,
 
     // 4:3
-    NUX_CANVAS_WIDTH  = 640,
-    NUX_CANVAS_HEIGHT = 480,
+    // NUX_CANVAS_WIDTH  = 640,
+    // NUX_CANVAS_HEIGHT = 480,
 
     // 16:10
     // NUX_CANVAS_WIDTH  = 512,

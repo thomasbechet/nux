@@ -1,4 +1,3 @@
-#include "graphics/module.h"
 #include "internal.h"
 
 #include "fonts_data.c.inc"

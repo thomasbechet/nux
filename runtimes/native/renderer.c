@@ -418,17 +418,11 @@ nux_os_gpu_submit (void                    *userdata,
                     framebuffer_t *fb
                         = runtime.framebuffers + cmd->bind_framebuffer.slot;
                     glBindFramebuffer(GL_FRAMEBUFFER, fb->handle);
-                    glViewport(0, 0, fb->width, fb->height);
-                    glEnable(GL_SCISSOR_TEST);
-                    glScissor(0, 0, fb->width, fb->height);
                 }
                 else
                 {
                     struct nk_rect vp = runtime.viewport;
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-                    glViewport(vp.x, vp.y, vp.w, vp.h);
-                    glEnable(GL_SCISSOR_TEST);
-                    glScissor(vp.x, vp.y, vp.w, vp.h);
                 }
             }
             break;
@@ -511,6 +505,29 @@ nux_os_gpu_submit (void                    *userdata,
                 hex_to_linear(cmd->clear.color, clear);
                 glClearColor(clear[0], clear[1], clear[2], clear[3]);
                 glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            }
+            break;
+            case NUX_GPU_COMMAND_VIEWPORT: {
+                nux_u32_t width, height;
+                if (cmd->bind_framebuffer.slot)
+                {
+                    framebuffer_t *fb
+                        = runtime.framebuffers + cmd->bind_framebuffer.slot;
+                    width  = fb->width;
+                    height = fb->height;
+                }
+                else
+                {
+                    width  = runtime.viewport.w;
+                    height = runtime.viewport.h;
+                }
+                float x = cmd->viewport.extent.x * width;
+                float y = cmd->viewport.extent.y * height;
+                float w = cmd->viewport.extent.z * width;
+                float h = cmd->viewport.extent.w * height;
+                glViewport(x, y, w, h);
+                glEnable(GL_SCISSOR_TEST);
+                glScissor(x, y, w, h);
             }
             break;
         }

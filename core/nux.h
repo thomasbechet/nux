@@ -99,6 +99,7 @@ typedef enum
     NUX_GPU_COMMAND_PUSH_F32         = 5,
     NUX_GPU_COMMAND_DRAW             = 6,
     NUX_GPU_COMMAND_CLEAR            = 7,
+    NUX_GPU_COMMAND_VIEWPORT         = 8,
 } nux_gpu_command_type_t;
 
 typedef struct
@@ -140,6 +141,10 @@ typedef struct
     {
         nux_u32_t color;
     } clear;
+    struct
+    {
+        nux_v4_t extent;
+    } viewport;
 } nux_gpu_command_t;
 
 typedef struct
