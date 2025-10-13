@@ -38,13 +38,13 @@ nux_debug_update (void)
     nux_debug_module_t *module = nux_debug_module();
 
     // Render logs
-    nux_u32_t y = 100;
-    for (nux_u32_t i = 0; i < module->lines_count; ++i)
-    {
-        nux_canvas_text(
-            module->console_canvas, 10, y, module->lines + LOG_LINE_LEN * i);
-        y += 10;
-    }
+    // nux_u32_t y = 100;
+    // for (nux_u32_t i = 0; i < module->lines_count; ++i)
+    // {
+    //     nux_canvas_text(
+    //         module->console_canvas, 10, y, module->lines + LOG_LINE_LEN * i);
+    //     y += 10;
+    // }
 }
 void
 nux_debug_log_callback (nux_log_level_t level, const nux_c8_t *buf, nux_u32_t n)

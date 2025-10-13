@@ -1,8 +1,11 @@
 #include "internal.h"
 
 nux_viewport_t *
-nux_viewport_new (nux_arena_t *arena)
+nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
 {
+    NUX_ENSURE(target->gpu.type == NUX_TEXTURE_RENDER_TARGET,
+               return NUX_NULL,
+               "viewport target must be a render target texture");
     nux_viewport_t *vp = nux_resource_new(arena, NUX_RESOURCE_VIEWPORT);
     NUX_CHECK(vp, return NUX_NULL);
     vp->mode           = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
@@ -10,6 +13,7 @@ nux_viewport_new (nux_arena_t *arena)
     vp->source.camera  = NUX_NULL;
     vp->source.texture = NUX_NULL;
     vp->target         = NUX_NULL;
+    vp->target         = nux_resource_rid(target);
     return vp;
 }
 void
@@ -31,20 +35,11 @@ nux_viewport_set_camera (nux_viewport_t *vp, nux_nid_t camera)
 void
 nux_viewport_set_texture (nux_viewport_t *vp, nux_texture_t *texture)
 {
-    vp->source.camera  = NUX_NULL;
-    vp->source.texture = nux_resource_rid(texture);
-}
-void
-nux_viewport_set_target (nux_viewport_t *vp, nux_texture_t *target)
-{
-    NUX_ENSURE(target->gpu.type == NUX_TEXTURE_RENDER_TARGET,
-               return,
-               "viewport target must be a render target texture");
-    nux_rid_t rid = nux_resource_rid(target);
-    NUX_ENSURE(rid != vp->source.texture,
+    NUX_ENSURE(nux_resource_rid(texture) != vp->target,
                return,
                "viewport target must be equals to the source");
-    vp->target = rid;
+    vp->source.camera  = NUX_NULL;
+    vp->source.texture = nux_resource_rid(texture);
 }
 nux_v4_t
 nux_viewport_get_render_extent (nux_viewport_t *viewport)
@@ -52,36 +47,26 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
     nux_v2_t extent_pos  = nux_v2(viewport->extent.x, viewport->extent.y);
     nux_v2_t extent_size = nux_v2(viewport->extent.z, viewport->extent.w);
 
-    // get target resolution
+    // Get target resolution
     nux_texture_t *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
     nux_v2u_t target_size;
-    if (target)
-    {
-        target_size.x = target->gpu.width * extent_size.x;
-        target_size.y = target->gpu.height * extent_size.y;
-    }
-    else // use screen
-    {
-        target_size.x = nux_stat(NUX_STAT_SCREEN_WIDTH) * extent_size.x;
-        target_size.y = nux_stat(NUX_STAT_SCREEN_HEIGHT) * extent_size.y;
-    }
+    target_size.x          = target->gpu.width * extent_size.x;
+    target_size.y          = target->gpu.height * extent_size.y;
     nux_f32_t target_ratio = (nux_f32_t)target_size.x / target_size.y;
 
-    // get source resolution
+    // Get source resolution
     nux_v2u_t source_size;
     if (viewport->source.camera)
     {
         nux_camera_t *cam
             = nux_component_get(viewport->source.camera, NUX_COMPONENT_CAMERA);
         NUX_ASSERT(cam);
-        cam->ratio     = 4. / 3;
-        viewport->mode = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
+        cam->ratio = 4. / 3;
         if (cam->ratio != 0)
         {
             source_size.x = nux_floor(target_size.y * cam->ratio);
             source_size.y = nux_floor(target_size.y);
-
             // source_size.x = nux_floor(target_size.x);
             // source_size.y = nux_floor(target_size.x / cam->ratio);
         }
@@ -99,22 +84,17 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
     }
     nux_f32_t source_ratio = (nux_f32_t)source_size.x / source_size.y;
 
-    NUX_INFO("target ratio %lf", target_ratio);
-    NUX_INFO("target %d %d", target_size.x, target_size.y);
-    NUX_INFO("source ratio %lf", source_ratio);
-    NUX_INFO("source %d %d", source_size.x, source_size.y);
-
     nux_v2u_t vsize = { 0, 0 };
     switch (viewport->mode)
     {
         case NUX_VIEWPORT_FIXED: {
-            vsize.x = target_size.x;
-            vsize.y = target_size.y;
+            vsize.x = source_size.x;
+            vsize.y = source_size.y;
         };
         break;
         case NUX_VIEWPORT_FIXED_BEST_FIT: {
-            nux_f32_t w_factor = source_size.x / target_size.x;
-            nux_f32_t h_factor = source_size.y / target_size.y;
+            nux_f32_t w_factor = (nux_f32_t)target_size.x / source_size.x;
+            nux_f32_t h_factor = (nux_f32_t)target_size.y / source_size.y;
             nux_f32_t min      = w_factor < h_factor ? w_factor : h_factor;
             if (min < 1)
             {
@@ -132,44 +112,45 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
             {
                 min = nux_floor(min);
             }
-            vsize.x = target_size.x * min;
-            vsize.y = target_size.y * min;
+            vsize.x = source_size.x * min;
+            vsize.y = source_size.y * min;
         }
         break;
         case NUX_VIEWPORT_STRETCH_KEEP_ASPECT: {
-            if (source_ratio >= target_ratio)
+            if (target_ratio >= source_ratio)
             {
-                vsize.x = nux_floor(source_size.y * target_ratio);
-                vsize.y = nux_floor(source_size.y);
+                vsize.x = nux_floor(target_size.y * source_ratio);
+                vsize.y = nux_floor(target_size.y);
             }
             else
             {
-                vsize.x = nux_floor(source_size.x);
-                vsize.y = nux_floor(source_size.x / target_ratio);
+                vsize.x = nux_floor(target_size.x);
+                vsize.y = nux_floor(target_size.x / source_ratio);
             }
         }
         break;
         case NUX_VIEWPORT_STRETCH:
-            vsize = source_size;
+            vsize = target_size;
             break;
         default:
             break;
     }
 
-    NUX_INFO("size %d %d", vsize.x, vsize.y);
-
     nux_v2u_t vpos;
-    vpos.x = (target_size.x - vsize.x) * 0.5;
-    vpos.y = (target_size.y - vsize.y) * 0.5;
+    vpos.x = target->gpu.width * extent_pos.x + (target_size.x - vsize.x) * 0.5;
+    vpos.y
+        = target->gpu.height * extent_pos.y + (target_size.y - vsize.y) * 0.5;
 
-    // Patch pos (bottom left in opengl)
-    vpos.y = target_size.y - (vpos.y + vsize.y);
+    // NUX_INFO("vsize %d %d", vsize.x, vsize.y);
+    // NUX_INFO("target %d %d", target_size.x, target_size.y);
+    // NUX_INFO("source %d %d", source_size.x, source_size.y);
+    // NUX_INFO("vpos %d %d", vpos.x, vpos.y);
 
     // Compute final extent
     nux_v4_t extent;
-    extent.x = (nux_f32_t)vpos.x / target_size.x;
-    extent.y = (nux_f32_t)vpos.y / target_size.y;
-    extent.z = (nux_f32_t)vsize.x / target_size.x;
-    extent.w = (nux_f32_t)vsize.y / target_size.y;
+    extent.x = (nux_f32_t)vpos.x / target->gpu.width;
+    extent.y = (nux_f32_t)vpos.y / target->gpu.height;
+    extent.z = (nux_f32_t)vsize.x / target->gpu.width;
+    extent.w = (nux_f32_t)vsize.y / target->gpu.height;
     return extent;
 }

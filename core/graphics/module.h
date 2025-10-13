@@ -214,7 +214,9 @@ void nux_texture_write(nux_texture_t *tex,
                        nux_u32_t      w,
                        nux_u32_t      h,
                        const void    *data);
-void nux_texture_blit(nux_texture_t *texture, nux_u32_t framebuffer);
+void nux_texture_blit(nux_texture_t *tex,
+                      nux_texture_t *target,
+                      nux_v4_t       extent);
 
 // staticmesh.c
 

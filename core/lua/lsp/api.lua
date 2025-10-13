@@ -247,7 +247,7 @@ function viewport.set_camera(...) end
 ---@return None
 function viewport.set_texture(...) end
 ---@return None
-function viewport.set_target(...) end
+function viewport.get_render_extent(...) end
 texture={}
 texture.IMAGE_RGBA=0
 texture.IMAGE_INDEX=1
@@ -280,8 +280,6 @@ function mesh.bounds_max(...) end
 ---@return None
 function mesh.set_origin(...) end
 canvas={}
-canvas.WIDTH=640
-canvas.HEIGHT=480
 ---@return None
 function canvas.new(...) end
 ---@return None
@@ -299,6 +297,8 @@ function graphics.draw_line_tr(...) end
 function graphics.draw_line(...) end
 ---@return None
 function graphics.draw_dir(...) end
+---@return None
+function graphics.screen_target(...) end
 camera={}
 ---@return None
 function camera.add(...) end

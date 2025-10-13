@@ -29,6 +29,9 @@ local function add_colliders(root)
     end
 end
 
+local WIDTH = 400
+local HEIGHT = 300
+
 function M:on_load()
     self.arena = arena.core()
     event.subscribe(self.rid, ticker.event)
@@ -48,12 +51,16 @@ function M:on_load()
 
     self.camera = require("camera")
 
-    local vp = viewport.new(self.arena)
+    local vp = viewport.new(self.arena, graphics.screen_target())
     viewport.set_camera(vp, self.camera.entity)
+    viewport.set_extent(vp, { 0, 0, 1, 0.5 })
+    local vp = viewport.new(self.arena, graphics.screen_target())
+    viewport.set_camera(vp, self.camera.entity)
+    viewport.set_extent(vp, { 0, 0.5, 1, 0.5 })
 
     -- Create canvas
-    self.gui_canvas = canvas.new(self.arena, canvas.WIDTH, canvas.HEIGHT)
-    local vp = viewport.new(self.arena)
+    self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
+    local vp = viewport.new(self.arena, graphics.screen_target())
     viewport.set_texture(vp, canvas.get_texture(self.gui_canvas))
 
     -- Create the API monolith
@@ -112,8 +119,8 @@ function M:on_update()
     canvas.text(c, 10, 70, string.format("cursor: %.2f %.2f", cp.x, cp.y))
 
     local cp = cursor.get(0)
-    canvas.rectangle(c, cp.x * canvas.WIDTH - 1, cp.y * canvas.HEIGHT - 1, 3, 3)
-    canvas.rectangle(c, canvas.WIDTH / 2, canvas.HEIGHT / 2, 3, 3);
+    canvas.rectangle(c, cp.x * WIDTH - 1, cp.y * HEIGHT - 1, 3, 3)
+    canvas.rectangle(c, WIDTH / 2, HEIGHT / 2, 3, 3);
 
     local forward = transform.forward(self.camera.entity)
     if button.just_pressed(0, button.RB) then

@@ -418,10 +418,12 @@ nux_os_gpu_submit (void                    *userdata,
                     framebuffer_t *fb
                         = runtime.framebuffers + cmd->bind_framebuffer.slot;
                     glBindFramebuffer(GL_FRAMEBUFFER, fb->handle);
+                    runtime.active_framebuffer = fb;
                 }
                 else
                 {
                     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                    runtime.active_framebuffer = NUX_NULL;
                 }
             }
             break;
@@ -508,12 +510,11 @@ nux_os_gpu_submit (void                    *userdata,
             break;
             case NUX_GPU_COMMAND_VIEWPORT: {
                 nux_u32_t width, height;
-                if (cmd->bind_framebuffer.slot)
+                if (runtime.active_framebuffer)
                 {
-                    framebuffer_t *fb
-                        = runtime.framebuffers + cmd->bind_framebuffer.slot;
-                    width  = fb->width;
-                    height = fb->height;
+                    framebuffer_t *fb = runtime.active_framebuffer;
+                    width             = fb->width;
+                    height            = fb->height;
                 }
                 else
                 {

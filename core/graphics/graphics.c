@@ -69,9 +69,6 @@ nux_graphics_init (void)
     nux_u32_vec_fill_reversed(&module->free_buffer_slots);
     nux_u32_vec_fill_reversed(&module->free_texture_slots);
 
-    // Reserve slot 0 for main framebuffer
-    nux_u32_vec_pop(&module->free_framebuffer_slots);
-
     // Create pipelines
     module->uber_pipeline_opaque.info.type         = NUX_GPU_PIPELINE_UBER;
     module->uber_pipeline_opaque.info.primitive    = NUX_PRIMITIVE_TRIANGLES;
@@ -161,6 +158,14 @@ nux_graphics_init (void)
     NUX_ASSERT(module->identity_transform_offset == 0);
 
     // Create screen rendertarget
+    module->screen_target
+        = nux_resource_new(nux_arena_core(), NUX_RESOURCE_TEXTURE);
+    NUX_CHECK(module->screen_target, return NUX_FAILURE);
+    module->screen_target->gpu.type             = NUX_TEXTURE_RENDER_TARGET;
+    module->screen_target->gpu.framebuffer_slot = 0;
+    module->screen_target->gpu.width            = 0;
+    module->screen_target->gpu.height           = 0;
+    nux_u32_vec_pop(&module->free_framebuffer_slots);
 
     return NUX_SUCCESS;
 
@@ -206,11 +211,17 @@ nux_graphics_pre_update (void)
         &module->transforms_dsa, 1, NUX_NULL); // keep identity transform
     module->active_texture = NUX_NULL;
 
+    // Update default screen size
+    module->screen_target->gpu.width  = nux_stat(NUX_STAT_SCREEN_WIDTH);
+    module->screen_target->gpu.height = nux_stat(NUX_STAT_SCREEN_HEIGHT);
+
     return NUX_SUCCESS;
 }
 nux_status_t
 nux_graphics_update (void)
 {
+    nux_graphics_module_t *module = nux_graphics_module();
+
     // Submit canvas commands
     nux_rid_t canvas = NUX_NULL;
     while ((canvas = nux_resource_next(NUX_RESOURCE_CANVAS, canvas)))
@@ -237,13 +248,18 @@ nux_graphics_update (void)
     for (nux_u32_t i = 0; i < viewports_count; ++i)
     {
         nux_viewport_t *viewport = viewports[i];
+        nux_v4_t        extent   = nux_viewport_get_render_extent(viewport);
+        NUX_INFO("%lf %lf %lf %lf", extent.x, extent.y, extent.z, extent.w);
 
         nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
+        // Empty frame
+        if (target->gpu.width * target->gpu.height <= 0)
+        {
+            continue;
+        }
         if (viewport->source.camera) // Render scene
         {
-            nux_v4_t extent = nux_viewport_get_render_extent(viewport);
-            printf("%lf %lf %lf %lf\n", extent.x, extent.y, extent.z, extent.w);
             nux_scene_t *scene = nux_scene_active();
             nux_renderer_render(scene, viewport->source.camera, target, extent);
         }
@@ -252,7 +268,7 @@ nux_graphics_update (void)
             nux_texture_t *texture = nux_resource_get(NUX_RESOURCE_TEXTURE,
                                                       viewport->source.texture);
             NUX_ASSERT(texture);
-            nux_texture_blit(texture, target);
+            nux_texture_blit(texture, target, extent);
         }
     }
 
@@ -325,4 +341,9 @@ nux_graphics_push_frame_transforms (nux_u32_t       count,
     NUX_CHECK(update_transform_buffer(*offset, count, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
+}
+nux_texture_t *
+nux_graphics_screen_target (void)
+{
+    return nux_graphics_module()->screen_target;
 }

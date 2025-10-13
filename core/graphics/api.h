@@ -11,44 +11,6 @@ typedef struct nux_viewport_t nux_viewport_t;
 
 typedef enum
 {
-    // 16:9
-    // NUX_SCREEN_WIDTH  = 1920,
-    // NUX_SCREEN_HEIGHT = 1080,
-
-    // 10:10
-    // NUX_SCREEN_WIDTH  = 1024,
-    // NUX_SCREEN_HEIGHT = 640,
-
-    // 16:10, too high ?
-    // NUX_CANVAS_WIDTH  = 640,
-    // NUX_CANVAS_HEIGHT = 400,
-
-    // 4:3
-    // NUX_CANVAS_WIDTH  = 640,
-    // NUX_CANVAS_HEIGHT = 480,
-
-    // 16:10
-    // NUX_CANVAS_WIDTH  = 512,
-    // NUX_CANVAS_HEIGHT = 320,
-
-    // 16:10
-    // NUX_CANVAS_WIDTH  = 480,
-    // NUX_CANVAS_HEIGHT = 300,
-
-    // 4:3
-    // NUX_SCREEN_WIDTH  = 480,
-    // NUX_SCREEN_HEIGHT = 360,
-
-    // 16:10
-    // NUX_SCREEN_WIDTH  = 360,
-    // NUX_SCREEN_HEIGHT = 225,
-
-    // 4:3
-    // NUX_SCREEN_WIDTH  = 320,
-    // NUX_SCREEN_HEIGHT = 240,
-    // NUX_CANVAS_WIDTH  = 320,
-    // NUX_CANVAS_HEIGHT = 200,
-
     NUX_PALETTE_SIZE  = 256,
     NUX_COLORMAP_SIZE = 256,
 } nux_graphics_constants_t;
@@ -100,12 +62,11 @@ typedef enum
     NUX_VIEWPORT_STRETCH             = 4,
 } nux_viewport_mode_t;
 
-nux_viewport_t *nux_viewport_new(nux_arena_t *arena);
+nux_viewport_t *nux_viewport_new(nux_arena_t *arena, nux_texture_t *target);
 void     nux_viewport_set_mode(nux_viewport_t *vp, nux_viewport_mode_t mode);
 void     nux_viewport_set_extent(nux_viewport_t *vp, nux_v4_t extent);
 void     nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
 void     nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
-void     nux_viewport_set_target(nux_viewport_t *vp, nux_texture_t *target);
 nux_v4_t nux_viewport_get_render_extent(nux_viewport_t *viewport);
 
 nux_texture_t *nux_texture_new(nux_arena_t       *arena,
@@ -160,15 +121,16 @@ void nux_canvas_rectangle(
 //                             nux_i32_t  y1,
 //                             nux_u8_t   c);
 
-void nux_graphics_draw_line_tr(nux_m4_t  tr,
-                               nux_v3_t  a,
-                               nux_v3_t  b,
-                               nux_u32_t color);
-void nux_graphics_draw_line(nux_v3_t a, nux_v3_t b, nux_u32_t color);
-void nux_graphics_draw_dir(nux_v3_t  origin,
-                           nux_v3_t  dir,
-                           nux_f32_t length,
-                           nux_u32_t color);
+void           nux_graphics_draw_line_tr(nux_m4_t  tr,
+                                         nux_v3_t  a,
+                                         nux_v3_t  b,
+                                         nux_u32_t color);
+void           nux_graphics_draw_line(nux_v3_t a, nux_v3_t b, nux_u32_t color);
+void           nux_graphics_draw_dir(nux_v3_t  origin,
+                                     nux_v3_t  dir,
+                                     nux_f32_t length,
+                                     nux_u32_t color);
+nux_texture_t *nux_graphics_screen_target(void);
 
 void     nux_camera_add(nux_nid_t e);
 void     nux_camera_remove(nux_nid_t e);

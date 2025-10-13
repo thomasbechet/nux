@@ -1,3 +1,4 @@
+#include "graphics/module.h"
 #include "internal.h"
 
 nux_texture_t *
@@ -71,13 +72,14 @@ nux_texture_write (nux_texture_t *tex,
         "failed to update colormap texture");
 }
 void
-nux_texture_blit (nux_texture_t *tex, nux_u32_t framebuffer)
+nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
 {
     nux_graphics_module_t *module = nux_graphics_module();
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_encoder_t enc;
     nux_gpu_encoder_init(nux_arena_frame(), &enc);
-    nux_gpu_bind_framebuffer(&enc, framebuffer);
+    nux_gpu_bind_framebuffer(&enc, target->gpu.framebuffer_slot);
+    nux_gpu_viewport(&enc, extent);
     nux_gpu_bind_pipeline(&enc, module->blit_pipeline.slot);
     nux_gpu_bind_texture(&enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
     nux_gpu_push_u32(&enc, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);

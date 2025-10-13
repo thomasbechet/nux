@@ -97,12 +97,13 @@ typedef struct
 
     // renderer
 
-    pipeline_t    pipelines[NUX_GPU_PIPELINE_MAX];
-    framebuffer_t framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
-    texture_t     textures[NUX_GPU_TEXTURE_MAX];
-    buffer_t      buffers[NUX_GPU_BUFFER_MAX];
-    GLuint        empty_vao;
-    pipeline_t   *active_pipeline;
+    pipeline_t     pipelines[NUX_GPU_PIPELINE_MAX];
+    framebuffer_t  framebuffers[NUX_GPU_FRAMEBUFFER_MAX];
+    texture_t      textures[NUX_GPU_TEXTURE_MAX];
+    buffer_t       buffers[NUX_GPU_BUFFER_MAX];
+    GLuint         empty_vao;
+    pipeline_t    *active_pipeline;
+    framebuffer_t *active_framebuffer;
 
     // io
 

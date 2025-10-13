@@ -1047,7 +1047,9 @@ l_viewport_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_viewport_t *ret = nux_viewport_new(arena);
+    nux_texture_t *target
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
+    const nux_viewport_t *ret = nux_viewport_new(arena, target);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1111,17 +1113,15 @@ l_viewport_set_texture (lua_State *L)
     return 0;
 }
 static int
-l_viewport_set_target (lua_State *L)
+l_viewport_get_render_extent (lua_State *L)
 {
-    nux_viewport_t *vp
+    nux_viewport_t *viewport
         = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_texture_t *target
-        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
-
-    nux_viewport_set_target(vp, target);
+    nux_v4_t ret = nux_viewport_get_render_extent(viewport);
     l_checkerror(L);
 
-    return 0;
+    nux_lua_push_vec4(L, ret);
+    return 1;
 }
 static int
 l_texture_new (lua_State *L)
@@ -1424,6 +1424,23 @@ l_graphics_draw_dir (lua_State *L)
     l_checkerror(L);
 
     return 0;
+}
+static int
+l_graphics_screen_target (lua_State *L)
+{
+    const nux_texture_t *ret = nux_graphics_screen_target();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
 }
 static int
 l_camera_add (lua_State *L)
@@ -1792,7 +1809,7 @@ static const struct luaL_Reg lib_viewport[]
         { "set_extent", l_viewport_set_extent },
         { "set_camera", l_viewport_set_camera },
         { "set_texture", l_viewport_set_texture },
-        { "set_target", l_viewport_set_target },
+        { "get_render_extent", l_viewport_get_render_extent },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_texture[]
     = { { "new", l_texture_new }, { NUX_NULL, NUX_NULL } };
@@ -1822,6 +1839,7 @@ static const struct luaL_Reg lib_graphics[]
     = { { "draw_line_tr", l_graphics_draw_line_tr },
         { "draw_line", l_graphics_draw_line },
         { "draw_dir", l_graphics_draw_dir },
+        { "screen_target", l_graphics_screen_target },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_camera[]
     = { { "add", l_camera_add },         { "remove", l_camera_remove },
@@ -2040,10 +2058,6 @@ nux_lua_open_api (void)
     lua_setglobal(L, "mesh");
     lua_newtable(L);
     luaL_setfuncs(L, lib_canvas, 0);
-    lua_pushinteger(L, 640);
-    lua_setfield(L, -2, "WIDTH");
-    lua_pushinteger(L, 480);
-    lua_setfield(L, -2, "HEIGHT");
     lua_setglobal(L, "canvas");
     lua_newtable(L);
     luaL_setfuncs(L, lib_graphics, 0);

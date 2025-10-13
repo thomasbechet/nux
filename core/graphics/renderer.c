@@ -194,12 +194,14 @@ nux_renderer_render (nux_scene_t   *scene,
         nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 0);
 
         nux_gpu_constants_buffer_t constants;
-        constants.view        = nux_m4_lookat(eye, center, up);
-        constants.proj        = nux_m4_perspective(nux_radian(cc->fov),
-                                            (nux_f32_t)target->gpu.width
-                                                / target->gpu.height,
-                                            cc->near,
-                                            cc->far);
+        constants.view = nux_m4_lookat(eye, center, up);
+        constants.proj
+            = nux_m4_perspective(nux_radian(cc->fov),
+                                 (cc->ratio != 0) ? cc->ratio
+                                                  : (nux_f32_t)target->gpu.width
+                                                        / target->gpu.height,
+                                 cc->near,
+                                 cc->far);
         constants.screen_size = nux_v2u(nux_stat(NUX_STAT_SCREEN_WIDTH),
                                         nux_stat(NUX_STAT_SCREEN_HEIGHT));
         constants.time        = nux_time_elapsed();
@@ -211,7 +213,7 @@ nux_renderer_render (nux_scene_t   *scene,
 
         // Bind framebuffer, pipeline and constants
         nux_gpu_bind_framebuffer(enc, target->gpu.framebuffer_slot);
-        nux_gpu_clear(enc, 0x4f9bd9);
+        // nux_gpu_clear(enc, 0x4f9bd9);
         nux_gpu_viewport(enc, extent);
 
         // Render nodes

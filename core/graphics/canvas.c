@@ -210,26 +210,10 @@ nux_canvas_render (nux_canvas_t *c)
 {
     nux_graphics_module_t *module = nux_graphics_module();
 
-    nux_u32_t framebuffer;
-    nux_u32_t width;
-    nux_u32_t height;
-    if (c->target)
-    {
-        nux_texture_t *rt = c->target;
-        NUX_CHECK(rt, return);
-        NUX_ENSURE(rt->gpu.type == NUX_TEXTURE_RENDER_TARGET,
-                   return,
-                   "canvas target is not a render target");
-        framebuffer = rt->gpu.framebuffer_slot;
-        width       = rt->gpu.width;
-        height      = rt->gpu.height;
-    }
-    else
-    {
-        framebuffer = NUX_NULL;
-        width       = 1000;
-        height      = 800;
-    }
+    NUX_ASSERT(c->target);
+    nux_u32_t framebuffer = c->target->gpu.framebuffer_slot;
+    nux_u32_t width       = c->target->gpu.width;
+    nux_u32_t height      = c->target->gpu.height;
 
     // Update constants
     nux_gpu_constants_buffer_t constants;
@@ -245,6 +229,7 @@ nux_canvas_render (nux_canvas_t *c)
     nux_gpu_encoder_t enc;
     nux_gpu_encoder_init(nux_arena_frame(), &enc);
     nux_gpu_bind_framebuffer(&enc, framebuffer);
+    nux_gpu_viewport(&enc, nux_v4(0, 0, 1, 1));
     nux_gpu_bind_pipeline(&enc, module->canvas_pipeline.slot);
     nux_gpu_bind_buffer(
         &enc, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
