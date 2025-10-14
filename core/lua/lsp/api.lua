@@ -243,6 +243,8 @@ function viewport.set_mode(...) end
 ---@return None
 function viewport.set_extent(...) end
 ---@return None
+function viewport.set_anchor(...) end
+---@return None
 function viewport.set_camera(...) end
 ---@return None
 function viewport.set_texture(...) end
@@ -342,6 +344,12 @@ vertex.POINTS=2
 vertex.POSITION=1 << 0
 vertex.TEXCOORD=1 << 1
 vertex.COLOR=1 << 2
+anchor={}
+anchor.CENTER=0
+anchor.TOP=1 << 1
+anchor.BOTTOM=1 << 2
+anchor.LEFT=1 << 3
+anchor.RIGHT=1 << 4
 rigidbody={}
 ---@return None
 function rigidbody.add(...) end

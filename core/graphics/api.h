@@ -62,9 +62,19 @@ typedef enum
     NUX_VIEWPORT_STRETCH             = 4,
 } nux_viewport_mode_t;
 
+typedef enum
+{
+    NUX_ANCHOR_CENTER = 0,
+    NUX_ANCHOR_TOP    = (1 << 1),
+    NUX_ANCHOR_BOTTOM = (1 << 2),
+    NUX_ANCHOR_LEFT   = (1 << 3),
+    NUX_ANCHOR_RIGHT  = (1 << 4),
+} nux_anchor_t;
+
 nux_viewport_t *nux_viewport_new(nux_arena_t *arena, nux_texture_t *target);
 void     nux_viewport_set_mode(nux_viewport_t *vp, nux_viewport_mode_t mode);
 void     nux_viewport_set_extent(nux_viewport_t *vp, nux_v4_t extent);
+void     nux_viewport_set_anchor(nux_viewport_t *vp, nux_u32_t anchor);
 void     nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
 void     nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
 nux_v4_t nux_viewport_get_render_extent(nux_viewport_t *viewport);

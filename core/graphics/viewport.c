@@ -10,9 +10,9 @@ nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
     NUX_CHECK(vp, return NUX_NULL);
     vp->mode           = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
     vp->extent         = nux_v4(0, 0, 1, 1);
+    vp->anchor         = NUX_ANCHOR_CENTER;
     vp->source.camera  = NUX_NULL;
     vp->source.texture = NUX_NULL;
-    vp->target         = NUX_NULL;
     vp->target         = nux_resource_rid(target);
     return vp;
 }
@@ -25,6 +25,11 @@ void
 nux_viewport_set_extent (nux_viewport_t *vp, nux_v4_t extent)
 {
     vp->extent = extent;
+}
+void
+nux_viewport_set_anchor (nux_viewport_t *vp, nux_u32_t anchor)
+{
+    vp->anchor = anchor;
 }
 void
 nux_viewport_set_camera (nux_viewport_t *vp, nux_nid_t camera)
@@ -62,7 +67,6 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
         nux_camera_t *cam
             = nux_component_get(viewport->source.camera, NUX_COMPONENT_CAMERA);
         NUX_ASSERT(cam);
-        // cam->ratio = 3. / 4;
         if (cam->ratio != 0)
         {
             source_size.x = nux_floor(target_size.y * cam->ratio);
@@ -134,15 +138,34 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
             break;
     }
 
+    // Compute final pixels coordinates
     nux_v2u_t vpos;
-    vpos.x = target->gpu.width * extent_pos.x + (target_size.x - vsize.x) * 0.5;
-    vpos.y
-        = target->gpu.height * extent_pos.y + (target_size.y - vsize.y) * 0.5;
-
-    // NUX_INFO("vsize %d %d", vsize.x, vsize.y);
-    // NUX_INFO("target %d %d", target_size.x, target_size.y);
-    // NUX_INFO("source %d %d", source_size.x, source_size.y);
-    // NUX_INFO("vpos %d %d", vpos.x, vpos.y);
+    if (viewport->anchor & NUX_ANCHOR_LEFT)
+    {
+        vpos.x = 0;
+    }
+    else if (viewport->anchor & NUX_ANCHOR_RIGHT)
+    {
+        vpos.x = target->gpu.width - vsize.x;
+    }
+    else
+    {
+        vpos.x = (target_size.x - vsize.x) * 0.5;
+    }
+    if (viewport->anchor & NUX_ANCHOR_TOP)
+    {
+        vpos.y = 0;
+    }
+    else if (viewport->anchor & NUX_ANCHOR_BOTTOM)
+    {
+        vpos.y = target->gpu.height - vsize.y;
+    }
+    else
+    {
+        vpos.y = (target_size.y - vsize.y) * 0.5;
+    }
+    vpos.x += target->gpu.width * extent_pos.x;
+    vpos.y += target->gpu.height * extent_pos.y;
 
     // Compute final extent
     nux_v4_t extent;

@@ -88,8 +88,8 @@ runtime_open (const char *path)
     runtime_close();
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
-    runtime.instance    = NULL;
-    runtime.viewport_ui = nk_rect(0, 0, 10, 10);
+    runtime.instance = NULL;
+    runtime.viewport = nk_rect(0, 0, 10, 10);
 
     runtime.instance = nux_instance_init(NULL, path);
     if (!runtime.instance)
@@ -136,7 +136,7 @@ void
 nux_os_stats_update (void *userdata, nux_u64_t *stats)
 {
     stats[NUX_STAT_FPS]           = runtime.fps;
-    stats[NUX_STAT_SCREEN_WIDTH]  = runtime.viewport_ui.w;
-    stats[NUX_STAT_SCREEN_HEIGHT] = runtime.viewport_ui.h;
+    stats[NUX_STAT_SCREEN_WIDTH]  = runtime.viewport.w;
+    stats[NUX_STAT_SCREEN_HEIGHT] = runtime.viewport.h;
     stats[NUX_STAT_TIMESTAMP]     = time(NULL);
 }

@@ -29,8 +29,8 @@ local function add_colliders(root)
     end
 end
 
-local WIDTH = 400
-local HEIGHT = 300
+local WIDTH = 200
+local HEIGHT = 100
 
 function M:on_load()
     self.arena = arena.core()
@@ -53,18 +53,23 @@ function M:on_load()
 
     local vp = viewport.new(self.arena, graphics.screen_target())
     viewport.set_camera(vp, self.camera.entity)
-    viewport.set_extent(vp, { 0, 0, 0.5, 0.5 })
-    local vp = viewport.new(self.arena, graphics.screen_target())
-    viewport.set_camera(vp, self.camera.entity)
-    viewport.set_extent(vp, { 0.5, 0, 0.5, 0.5 })
-    local vp = viewport.new(self.arena, graphics.screen_target())
-    viewport.set_camera(vp, self.camera.entity)
-    viewport.set_extent(vp, { 0, 0.5, 1, 0.5 })
+    viewport.set_extent(vp, { 0, 0, 1, 1 })
+    -- local vp = viewport.new(self.arena, graphics.screen_target())
+    -- viewport.set_camera(vp, self.camera.entity)
+    -- viewport.set_extent(vp, { 0.5, 0, 0.5, 0.5 })
+    -- local vp = viewport.new(self.arena, graphics.screen_target())
+    -- viewport.set_camera(vp, self.camera.entity)
+    -- viewport.set_extent(vp, { 0, 0.5, 1, 0.5 })
 
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
-    local vp = viewport.new(self.arena, graphics.screen_target())
-    viewport.set_texture(vp, canvas.get_texture(self.gui_canvas))
+    self.vp = viewport.new(self.arena, graphics.screen_target())
+    viewport.set_extent(self.vp, { 0, 0, 0.3, 0.3 })
+    viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
+    viewport.set_anchor(self.vp, anchor.RIGHT | anchor.BOTTOM)
+    viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
+
+    -- Create version
 
     -- Create the API monolith
     local x, y = 350, 2000

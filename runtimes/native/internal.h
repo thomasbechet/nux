@@ -92,7 +92,7 @@ typedef struct
     int             fps;
     char            path[PATH_MAX_LEN];
     nux_instance_t *instance;
-    struct nk_rect  viewport_ui;
+    struct nk_rect  viewport;
     bool            running;
 
     // renderer

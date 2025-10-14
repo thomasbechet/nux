@@ -55,6 +55,7 @@ struct nux_viewport_t
     nux_rid_t           target;
     nux_viewport_mode_t mode;
     nux_v4_t            extent;
+    nux_u32_t           anchor;
     struct
     {
         nux_nid_t camera;

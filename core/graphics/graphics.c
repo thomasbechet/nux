@@ -27,7 +27,7 @@ nux_graphics_init (void)
     // Register resources
     nux_resource_type_t *type;
     type = nux_resource_register(
-        NUX_RESOURCE_VIEWPORT, sizeof(nux_texture_t), "viewport");
+        NUX_RESOURCE_VIEWPORT, sizeof(nux_viewport_t), "viewport");
     type = nux_resource_register(
         NUX_RESOURCE_TEXTURE, sizeof(nux_texture_t), "texture");
     type->cleanup = nux_texture_cleanup;

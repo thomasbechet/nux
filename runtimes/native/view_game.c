@@ -64,5 +64,5 @@ view_game (struct nk_context *ctx, struct nk_rect bounds)
         nk_end(ctx);
     }
 
-    runtime.viewport_ui = bounds;
+    runtime.viewport = bounds;
 }

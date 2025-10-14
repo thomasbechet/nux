@@ -1088,6 +1088,18 @@ l_viewport_set_extent (lua_State *L)
     return 0;
 }
 static int
+l_viewport_set_anchor (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_u32_t anchor = luaL_checknumber(L, 2);
+
+    nux_viewport_set_anchor(vp, anchor);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_viewport_set_camera (lua_State *L)
 {
     nux_viewport_t *vp
@@ -1807,6 +1819,7 @@ static const struct luaL_Reg lib_viewport[]
     = { { "new", l_viewport_new },
         { "set_mode", l_viewport_set_mode },
         { "set_extent", l_viewport_set_extent },
+        { "set_anchor", l_viewport_set_anchor },
         { "set_camera", l_viewport_set_camera },
         { "set_texture", l_viewport_set_texture },
         { "get_render_extent", l_viewport_get_render_extent },
@@ -1859,6 +1872,7 @@ static const struct luaL_Reg lib_staticmesh[]
 static const struct luaL_Reg lib_colormap[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_primitive[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_vertex[]    = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_anchor[]    = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_rigidbody[]
     = { { "add", l_rigidbody_add },
         { "remove", l_rigidbody_remove },
@@ -2097,6 +2111,19 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 1 << 2);
     lua_setfield(L, -2, "COLOR");
     lua_setglobal(L, "vertex");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_anchor, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "CENTER");
+    lua_pushinteger(L, 1 << 1);
+    lua_setfield(L, -2, "TOP");
+    lua_pushinteger(L, 1 << 2);
+    lua_setfield(L, -2, "BOTTOM");
+    lua_pushinteger(L, 1 << 3);
+    lua_setfield(L, -2, "LEFT");
+    lua_pushinteger(L, 1 << 4);
+    lua_setfield(L, -2, "RIGHT");
+    lua_setglobal(L, "anchor");
     lua_newtable(L);
     luaL_setfuncs(L, lib_rigidbody, 0);
     lua_setglobal(L, "rigidbody");
