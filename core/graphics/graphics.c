@@ -249,7 +249,6 @@ nux_graphics_update (void)
     {
         nux_viewport_t *viewport = viewports[i];
         nux_v4_t        extent   = nux_viewport_get_render_extent(viewport);
-        NUX_INFO("%lf %lf %lf %lf", extent.x, extent.y, extent.z, extent.w);
 
         nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);

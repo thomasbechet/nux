@@ -525,6 +525,10 @@ nux_os_gpu_submit (void                    *userdata,
                 float y = cmd->viewport.extent.y * height;
                 float w = cmd->viewport.extent.z * width;
                 float h = cmd->viewport.extent.w * height;
+
+                // Patch extent (bottom left for GL)
+                y = height - (y + h);
+
                 glViewport(x, y, w, h);
                 glEnable(GL_SCISSOR_TEST);
                 glScissor(x, y, w, h);

@@ -62,13 +62,11 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
         nux_camera_t *cam
             = nux_component_get(viewport->source.camera, NUX_COMPONENT_CAMERA);
         NUX_ASSERT(cam);
-        cam->ratio = 4. / 3;
+        // cam->ratio = 3. / 4;
         if (cam->ratio != 0)
         {
             source_size.x = nux_floor(target_size.y * cam->ratio);
             source_size.y = nux_floor(target_size.y);
-            // source_size.x = nux_floor(target_size.x);
-            // source_size.y = nux_floor(target_size.x / cam->ratio);
         }
         else
         {

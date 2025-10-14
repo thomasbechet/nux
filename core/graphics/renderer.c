@@ -195,13 +195,13 @@ nux_renderer_render (nux_scene_t   *scene,
 
         nux_gpu_constants_buffer_t constants;
         constants.view = nux_m4_lookat(eye, center, up);
-        constants.proj
-            = nux_m4_perspective(nux_radian(cc->fov),
-                                 (cc->ratio != 0) ? cc->ratio
-                                                  : (nux_f32_t)target->gpu.width
-                                                        / target->gpu.height,
-                                 cc->near,
-                                 cc->far);
+        constants.proj = nux_m4_perspective(
+            nux_radian(cc->fov),
+            (cc->ratio != 0) ? cc->ratio
+                             : ((nux_f32_t)target->gpu.width * extent.z)
+                                   / (target->gpu.height * extent.w),
+            cc->near,
+            cc->far);
         constants.screen_size = nux_v2u(nux_stat(NUX_STAT_SCREEN_WIDTH),
                                         nux_stat(NUX_STAT_SCREEN_HEIGHT));
         constants.time        = nux_time_elapsed();
