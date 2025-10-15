@@ -11,7 +11,7 @@ typedef enum
 
 typedef struct
 {
-    nux_nid_t e;
+    nux_nid_t node;
     nux_v3_t  p;
     nux_v3_t  n;
 } nux_raycast_hit_t;

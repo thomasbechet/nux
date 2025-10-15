@@ -3,6 +3,7 @@
 #include "fonts_data.c.inc"
 
 NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
+NUX_VEC_IMPL(nux_graphics_command_vec, nux_graphics_command_t)
 
 static nux_status_t
 update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
@@ -107,7 +108,9 @@ nux_graphics_init (void)
 
     // Allocate gpu commands buffer
     NUX_CHECK(nux_gpu_encoder_init(a, &module->encoder), return NUX_NULL);
-    NUX_CHECK(nux_gpu_encoder_init(a, &module->immediate_encoder),
+
+    // Allocate immediate command buffer
+    NUX_CHECK(nux_graphics_command_vec_init(a, &module->immediate_commands),
               return NUX_NULL);
 
     // Allocate constants buffer
@@ -217,10 +220,26 @@ nux_graphics_pre_update (void)
 
     return NUX_SUCCESS;
 }
+static nux_i32_t
+viewport_compare (const void *a, const void *b)
+{
+    const nux_viewport_t *va = *(const nux_viewport_t **)a;
+    const nux_viewport_t *vb = *(const nux_viewport_t **)b;
+    return va->layer - vb->layer;
+}
 nux_status_t
 nux_graphics_update (void)
 {
     nux_graphics_module_t *module = nux_graphics_module();
+
+    // Propagate transforms
+    {
+        nux_nid_t it = NUX_NULL;
+        while ((it = nux_query_next(module->transform_iter, it)))
+        {
+            nux_transform_get_matrix(it);
+        }
+    }
 
     // Submit canvas commands
     nux_rid_t canvas = NUX_NULL;
@@ -242,7 +261,7 @@ nux_graphics_update (void)
     }
 
     // Sort viewports
-    // TODO
+    nux_qsort(viewports, viewports_count, sizeof(*viewports), viewport_compare);
 
     // Render viewports
     for (nux_u32_t i = 0; i < viewports_count; ++i)
@@ -260,7 +279,7 @@ nux_graphics_update (void)
         if (viewport->source.camera) // Render scene
         {
             nux_scene_t *scene = nux_scene_active();
-            nux_renderer_render(scene, viewport->source.camera, target, extent);
+            nux_renderer_render_scene(scene, viewport);
         }
         else if (viewport->source.texture) // Blit texture
         {
@@ -270,6 +289,9 @@ nux_graphics_update (void)
             nux_texture_blit(texture, target, extent);
         }
     }
+
+    // Clear frame buffers
+    nux_graphics_command_vec_clear(&module->immediate_commands);
 
     return NUX_SUCCESS;
 }

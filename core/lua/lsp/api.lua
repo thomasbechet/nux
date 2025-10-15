@@ -245,9 +245,13 @@ function viewport.set_extent(...) end
 ---@return None
 function viewport.set_anchor(...) end
 ---@return None
+function viewport.set_layer(...) end
+---@return None
 function viewport.set_camera(...) end
 ---@return None
 function viewport.set_texture(...) end
+---@return None
+function viewport.get_target_size(...) end
 ---@return None
 function viewport.get_render_extent(...) end
 texture={}
@@ -312,6 +316,16 @@ function camera.set_fov(...) end
 function camera.set_near(...) end
 ---@return None
 function camera.set_far(...) end
+---@return None
+function camera.set_aspect(...) end
+---@return None
+function camera.reset_aspect(...) end
+---@return None
+function camera.set_ortho(...) end
+---@return None
+function camera.set_ortho_size(...) end
+---@return None
+function camera.get_projection(...) end
 ---@return None
 function camera.unproject(...) end
 staticmesh={}

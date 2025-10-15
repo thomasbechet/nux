@@ -1,4 +1,5 @@
 #include "internal.h"
+#include <stdlib.h>
 
 #define NUX_B3_IMPL(name, type)                                         \
     nux_##name##_t nux_##name(type min, type max)                       \
@@ -123,6 +124,17 @@ nux_b2i_t
 nux_b2i_moveto (nux_b2i_t b, nux_v2i_t p)
 {
     return nux_b2i_translate(b, nux_v2i_sub(p, b.min));
+}
+
+void
+nux_qsort (void     *base,
+           nux_u32_t n,
+           nux_u32_t size,
+           nux_i32_t (*compare)(const void *a, const void *b))
+{
+#ifdef NUX_BUILD_STDLIB
+    return qsort(base, n, size, compare);
+#endif
 }
 
 NUX_B3_IMPL(b3, nux_v3_t);

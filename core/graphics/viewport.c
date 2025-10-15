@@ -11,6 +11,7 @@ nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
     vp->mode           = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
     vp->extent         = nux_v4(0, 0, 1, 1);
     vp->anchor         = NUX_ANCHOR_CENTER;
+    vp->layer          = 0;
     vp->source.camera  = NUX_NULL;
     vp->source.texture = NUX_NULL;
     vp->target         = nux_resource_rid(target);
@@ -32,6 +33,11 @@ nux_viewport_set_anchor (nux_viewport_t *vp, nux_u32_t anchor)
     vp->anchor = anchor;
 }
 void
+nux_viewport_set_layer (nux_viewport_t *vp, nux_i32_t layer)
+{
+    vp->layer = layer;
+}
+void
 nux_viewport_set_camera (nux_viewport_t *vp, nux_nid_t camera)
 {
     vp->source.camera  = camera;
@@ -46,6 +52,16 @@ nux_viewport_set_texture (nux_viewport_t *vp, nux_texture_t *texture)
     vp->source.camera  = NUX_NULL;
     vp->source.texture = nux_resource_rid(texture);
 }
+nux_v2_t
+nux_viewport_get_target_size (nux_viewport_t *vp)
+{
+    nux_v2_t       extent_size = nux_v2(vp->extent.z, vp->extent.w);
+    nux_texture_t *target = nux_resource_get(NUX_RESOURCE_TEXTURE, vp->target);
+    nux_v2_t       target_size;
+    target_size.x = target->gpu.width * extent_size.x;
+    target_size.y = target->gpu.height * extent_size.y;
+    return target_size;
+}
 nux_v4_t
 nux_viewport_get_render_extent (nux_viewport_t *viewport)
 {
@@ -55,21 +71,19 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
     // Get target resolution
     nux_texture_t *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
-    nux_v2u_t target_size;
-    target_size.x          = target->gpu.width * extent_size.x;
-    target_size.y          = target->gpu.height * extent_size.y;
+    nux_v2_t  target_size  = nux_viewport_get_target_size(viewport);
     nux_f32_t target_ratio = (nux_f32_t)target_size.x / target_size.y;
 
     // Get source resolution
-    nux_v2u_t source_size;
+    nux_v2_t source_size;
     if (viewport->source.camera)
     {
         nux_camera_t *cam
             = nux_component_get(viewport->source.camera, NUX_COMPONENT_CAMERA);
         NUX_ASSERT(cam);
-        if (cam->ratio != 0)
+        if (cam->aspect != 0)
         {
-            source_size.x = nux_floor(target_size.y * cam->ratio);
+            source_size.x = nux_floor(target_size.y * cam->aspect);
             source_size.y = nux_floor(target_size.y);
         }
         else
@@ -82,11 +96,11 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
         nux_texture_t *texture
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->source.texture);
         NUX_ASSERT(texture);
-        source_size = nux_v2u(texture->gpu.width, texture->gpu.height);
+        source_size = nux_v2(texture->gpu.width, texture->gpu.height);
     }
     nux_f32_t source_ratio = (nux_f32_t)source_size.x / source_size.y;
 
-    nux_v2u_t vsize = { 0, 0 };
+    nux_v2_t vsize = { 0, 0 };
     switch (viewport->mode)
     {
         case NUX_VIEWPORT_FIXED: {

@@ -62,10 +62,12 @@ struct nux_query
 
 typedef struct
 {
-    nux_f32_t fov;
     nux_f32_t near;
     nux_f32_t far;
-    nux_f32_t ratio; // 0 for no aspect ratio
+    nux_f32_t fov;
+    nux_f32_t aspect; // 0 for no aspect ratio
+    nux_b32_t ortho;
+    nux_v2_t  ortho_size;
 } nux_camera_t;
 
 typedef struct

@@ -857,6 +857,11 @@ nux_b2i_t nux_b2i_xywh(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 nux_b2i_t nux_b2i_translate(nux_b2i_t b, nux_v2i_t t);
 nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 
+void nux_qsort(void     *base,
+               nux_u32_t n,
+               nux_u32_t size,
+               nux_i32_t (*compare)(const void *a, const void *b));
+
 // string.c
 
 nux_u32_t nux_strnlen(const nux_c8_t *s, nux_u32_t n);

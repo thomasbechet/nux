@@ -104,10 +104,12 @@ nux_transform_get_rotation (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return nux_q4_identity());
-    nux_q4_t rotation;
-    nux_m4_trs_decompose(
-        nux_transform_get_matrix(e), NUX_NULL, &rotation, NUX_NULL);
-    return rotation;
+    // TODO: rotation decomposition
+    // nux_q4_t rotation;
+    // nux_m4_trs_decompose(
+    //     nux_transform_get_matrix(e), NUX_NULL, &rotation, NUX_NULL);
+    // return rotation;
+    return t->rotation;
 }
 nux_v3_t
 nux_transform_get_scale (nux_nid_t e)

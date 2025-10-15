@@ -1,6 +1,7 @@
 local inspect = require("libs/inspect")
 require("emitter")
 local ticker = require("ticker")
+local gizmos
 
 function M:on_reload()
 end
@@ -50,15 +51,18 @@ function M:on_load()
     add_colliders(node.root())
 
     self.camera = require("camera")
+    gizmos = require("gizmos")
+    gizmos.target = self.camera.node
 
     local vp = viewport.new(self.arena, graphics.screen_target())
-    viewport.set_camera(vp, self.camera.entity)
+    viewport.set_camera(vp, self.camera.node)
     viewport.set_extent(vp, { 0, 0, 1, 1 })
+    viewport.set_layer(vp, -1)
     -- local vp = viewport.new(self.arena, graphics.screen_target())
-    -- viewport.set_camera(vp, self.camera.entity)
+    -- viewport.set_camera(vp, self.camera.nid)
     -- viewport.set_extent(vp, { 0.5, 0, 0.5, 0.5 })
     -- local vp = viewport.new(self.arena, graphics.screen_target())
-    -- viewport.set_camera(vp, self.camera.entity)
+    -- viewport.set_camera(vp, self.camera.nid)
     -- viewport.set_extent(vp, { 0, 0.5, 1, 0.5 })
 
     -- Create canvas
@@ -66,8 +70,9 @@ function M:on_load()
     self.vp = viewport.new(self.arena, graphics.screen_target())
     viewport.set_extent(self.vp, { 0, 0, 0.3, 0.3 })
     viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
-    viewport.set_anchor(self.vp, anchor.RIGHT | anchor.BOTTOM)
+    viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
+    viewport.set_layer(self.vp, 3)
 
     -- Create version
 
@@ -109,7 +114,7 @@ function M:on_update()
     canvas.text(c, 10, 10, string.format("time: %.2fs", time.elapsed()))
     canvas.text(c, 10, 20, self.api)
 
-    local position = transform.get_translation(self.camera.entity)
+    local position = transform.get_translation(self.camera.node)
     c = self.gui_canvas
     canvas.text(c, 10, 10, time.date())
     canvas.text(c, 10, 20, string.format("time: %.2fs", time.elapsed()))
@@ -130,15 +135,17 @@ function M:on_update()
     canvas.rectangle(c, cp.x * WIDTH - 1, cp.y * HEIGHT - 1, 3, 3)
     canvas.rectangle(c, WIDTH / 2, HEIGHT / 2, 3, 3);
 
-    local forward = transform.forward(self.camera.entity)
+    camera.reset_aspect(self.camera.node, self.vp)
+
+    local forward = transform.forward(self.camera.node)
     if button.just_pressed(0, button.RB) then
-        local dir = camera.unproject(self.camera.entity, cursor.get(0))
+        local dir = camera.unproject(self.camera.node, cursor.get(0))
         local hit = physics.raycast(position, dir)
-        -- local dist = vmath.dist(hit.position, transform.get_translation(self.camera.entity))
+        -- local dist = vmath.dist(hit.position, transform.get_translation(self.camera.node))
         if hit then
-            if staticmesh.has(hit.entity) then
-                self.active_mesh = staticmesh.get_mesh(hit.entity)
-                self.active_texture = staticmesh.get_texture(hit.entity)
+            if staticmesh.has(hit.node) then
+                self.active_mesh = staticmesh.get_mesh(hit.node)
+                self.active_texture = staticmesh.get_texture(hit.node)
                 print("hit " .. self.active_mesh)
             end
         else

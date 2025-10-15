@@ -499,11 +499,8 @@ l_transform_get_local_rotation (lua_State *L)
     nux_q4_t  ret = nux_transform_get_local_rotation(e);
     l_checkerror(L);
 
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    lua_pushnumber(L, ret.w);
-    return 4;
+    nux_lua_push_q4(L, ret);
+    return 1;
 }
 static int
 l_transform_get_local_scale (lua_State *L)
@@ -532,11 +529,8 @@ l_transform_get_rotation (lua_State *L)
     nux_q4_t  ret = nux_transform_get_rotation(e);
     l_checkerror(L);
 
-    lua_pushnumber(L, ret.x);
-    lua_pushnumber(L, ret.y);
-    lua_pushnumber(L, ret.z);
-    lua_pushnumber(L, ret.w);
-    return 4;
+    nux_lua_push_q4(L, ret);
+    return 1;
 }
 static int
 l_transform_get_scale (lua_State *L)
@@ -562,12 +556,8 @@ l_transform_set_translation (lua_State *L)
 static int
 l_transform_set_rotation (lua_State *L)
 {
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-    nux_q4_t  rotation;
-    rotation.x = luaL_checknumber(L, 2);
-    rotation.y = luaL_checknumber(L, 3);
-    rotation.z = luaL_checknumber(L, 4);
-    rotation.w = luaL_checknumber(L, 5);
+    nux_nid_t e        = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_q4_t  rotation = nux_lua_check_q4(L, 2);
 
     nux_transform_set_rotation(e, rotation);
     l_checkerror(L);
@@ -1100,6 +1090,18 @@ l_viewport_set_anchor (lua_State *L)
     return 0;
 }
 static int
+l_viewport_set_layer (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_i32_t layer = luaL_checknumber(L, 2);
+
+    nux_viewport_set_layer(vp, layer);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_viewport_set_camera (lua_State *L)
 {
     nux_viewport_t *vp
@@ -1123,6 +1125,17 @@ l_viewport_set_texture (lua_State *L)
     l_checkerror(L);
 
     return 0;
+}
+static int
+l_viewport_get_target_size (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_v2_t ret = nux_viewport_get_target_size(vp);
+    l_checkerror(L);
+
+    nux_lua_push_vec2(L, ret);
+    return 1;
 }
 static int
 l_viewport_get_render_extent (lua_State *L)
@@ -1508,6 +1521,61 @@ l_camera_set_far (lua_State *L)
     return 0;
 }
 static int
+l_camera_set_aspect (lua_State *L)
+{
+    nux_nid_t e      = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_f32_t aspect = luaL_checknumber(L, 2);
+
+    nux_camera_set_aspect(e, aspect);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_reset_aspect (lua_State *L)
+{
+    nux_nid_t       e = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_viewport_t *viewport
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 2));
+
+    nux_camera_reset_aspect(e, viewport);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_set_ortho (lua_State *L)
+{
+    nux_nid_t e     = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b32_t ortho = lua_toboolean(L, 2);
+
+    nux_camera_set_ortho(e, ortho);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_set_ortho_size (lua_State *L)
+{
+    nux_nid_t e    = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_v2_t  size = nux_lua_check_vec2(L, 2);
+
+    nux_camera_set_ortho_size(e, size);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_get_projection (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_m4_t  ret = nux_camera_get_projection(e);
+    l_checkerror(L);
+
+    nux_lua_push_mat4(L, ret);
+    return 1;
+}
+static int
 l_camera_unproject (lua_State *L)
 {
     nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1692,7 +1760,7 @@ l_physics_raycast (lua_State *L)
     nux_raycast_hit_t ret = nux_physics_raycast(pos, dir);
     l_checkerror(L);
 
-    if (ret.e)
+    if (ret.node)
     {
         nux_lua_push_hit(L, ret);
     }
@@ -1820,8 +1888,10 @@ static const struct luaL_Reg lib_viewport[]
         { "set_mode", l_viewport_set_mode },
         { "set_extent", l_viewport_set_extent },
         { "set_anchor", l_viewport_set_anchor },
+        { "set_layer", l_viewport_set_layer },
         { "set_camera", l_viewport_set_camera },
         { "set_texture", l_viewport_set_texture },
+        { "get_target_size", l_viewport_get_target_size },
         { "get_render_extent", l_viewport_get_render_extent },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_texture[]
@@ -1855,9 +1925,17 @@ static const struct luaL_Reg lib_graphics[]
         { "screen_target", l_graphics_screen_target },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_camera[]
-    = { { "add", l_camera_add },         { "remove", l_camera_remove },
-        { "set_fov", l_camera_set_fov }, { "set_near", l_camera_set_near },
-        { "set_far", l_camera_set_far }, { "unproject", l_camera_unproject },
+    = { { "add", l_camera_add },
+        { "remove", l_camera_remove },
+        { "set_fov", l_camera_set_fov },
+        { "set_near", l_camera_set_near },
+        { "set_far", l_camera_set_far },
+        { "set_aspect", l_camera_set_aspect },
+        { "reset_aspect", l_camera_reset_aspect },
+        { "set_ortho", l_camera_set_ortho },
+        { "set_ortho_size", l_camera_set_ortho_size },
+        { "get_projection", l_camera_get_projection },
+        { "unproject", l_camera_unproject },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_staticmesh[]
     = { { "has", l_staticmesh_has },

@@ -4,10 +4,10 @@ function M:on_load()
     self.fov = 90
     self.pitch = 0
     self.yaw = 0
-    self.entity = node.create(node.root())
-    camera.add(self.entity)
-    transform.add(self.entity)
-    transform.set_translation(self.entity, { 13, 15, 10 })
+    self.node = node.create(node.root())
+    camera.add(self.node)
+    transform.add(self.node)
+    transform.set_translation(self.node, { 13, 15, 10 })
 end
 
 function M:on_event(e)
@@ -16,13 +16,11 @@ end
 
 function M:on_update()
     local speed = self.speed
-    local fov = self.fov
-    local e = self.entity
+    local e = self.node
 
     if button.pressed(0, button.LB) then
         speed = self.fast_speed
     end
-    camera.set_fov(e, fov)
 
     local mx = axis.value(0, axis.LEFTX)
     local mz = axis.value(0, axis.LEFTY)

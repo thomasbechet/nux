@@ -75,8 +75,10 @@ nux_viewport_t *nux_viewport_new(nux_arena_t *arena, nux_texture_t *target);
 void     nux_viewport_set_mode(nux_viewport_t *vp, nux_viewport_mode_t mode);
 void     nux_viewport_set_extent(nux_viewport_t *vp, nux_v4_t extent);
 void     nux_viewport_set_anchor(nux_viewport_t *vp, nux_u32_t anchor);
+void     nux_viewport_set_layer(nux_viewport_t *vp, nux_i32_t layer);
 void     nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
 void     nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
+nux_v2_t nux_viewport_get_target_size(nux_viewport_t *vp);
 nux_v4_t nux_viewport_get_render_extent(nux_viewport_t *viewport);
 
 nux_texture_t *nux_texture_new(nux_arena_t       *arena,
@@ -147,6 +149,11 @@ void     nux_camera_remove(nux_nid_t e);
 void     nux_camera_set_fov(nux_nid_t e, nux_f32_t fov);
 void     nux_camera_set_near(nux_nid_t e, nux_f32_t near);
 void     nux_camera_set_far(nux_nid_t e, nux_f32_t far);
+void     nux_camera_set_aspect(nux_nid_t e, nux_f32_t aspect);
+void     nux_camera_reset_aspect(nux_nid_t e, nux_viewport_t *viewport);
+void     nux_camera_set_ortho(nux_nid_t e, nux_b32_t ortho);
+void     nux_camera_set_ortho_size(nux_nid_t e, nux_v2_t size);
+nux_m4_t nux_camera_get_projection(nux_nid_t e);
 nux_v3_t nux_camera_unproject(nux_nid_t e, nux_v2_t pos);
 
 nux_b32_t      nux_staticmesh_has(nux_nid_t n);

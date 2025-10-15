@@ -12,6 +12,17 @@ typedef struct
 
 typedef struct
 {
+    nux_u32_t vertex_offset;
+    nux_u32_t vertex_count;
+    nux_u32_t vertex_attributes;
+    nux_u32_t transform_offset;
+    nux_v4_t  color;
+} nux_graphics_command_t;
+
+NUX_VEC_DEFINE(nux_graphics_command_vec, nux_graphics_command_t);
+
+typedef struct
+{
     nux_gpu_pipeline_t uber_pipeline_opaque;
     nux_gpu_pipeline_t uber_pipeline_line;
     nux_gpu_pipeline_t blit_pipeline;
@@ -29,13 +40,14 @@ typedef struct
     nux_u32_t          identity_transform_offset;
 
     nux_gpu_encoder_t encoder;
-    nux_gpu_encoder_t immediate_encoder;
     nux_gpu_buffer_t  constants_buffer;
     nux_gpu_buffer_t  batches_buffer;
     nux_dsa_t         batches_dsa;
     nux_query_t      *transform_iter;
     nux_query_t      *transform_staticmesh_iter;
     nux_query_t      *transform_camera_iter;
+
+    nux_graphics_command_vec_t immediate_commands;
 
     const nux_texture_t *active_texture;
     const nux_palette_t *active_palette;

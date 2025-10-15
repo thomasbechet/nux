@@ -153,6 +153,34 @@ nux_lua_check_vec4 (lua_State *L, int index)
     }
 }
 void
+nux_lua_push_q4 (lua_State *L, nux_q4_t q)
+{
+    nux_q4_t *quat = new_userdata(L, NUX_LUA_TYPE_QUAT);
+    *quat          = q;
+}
+nux_q4_t
+nux_lua_check_q4 (lua_State *L, int index)
+{
+    if (lua_istable(L, index))
+    {
+        nux_q4_t v;
+        lua_geti(L, index, 1);
+        v.x = lua_tonumber(L, -1);
+        lua_geti(L, index, 2);
+        v.y = lua_tonumber(L, -1);
+        lua_geti(L, index, 3);
+        v.z = lua_tonumber(L, -1);
+        lua_geti(L, index, 4);
+        v.w = lua_tonumber(L, -1);
+        return v;
+    }
+    else
+    {
+        nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_QUAT);
+        return *u->quat;
+    }
+}
+void
 nux_lua_push_mat4 (lua_State *L, nux_m4_t m)
 {
     nux_m4_t *mat = new_userdata(L, NUX_LUA_TYPE_MAT4);
@@ -593,9 +621,9 @@ meta_index (lua_State *L)
         break;
         case NUX_LUA_TYPE_HIT: {
             const char *key = luaL_checkstring(L, 2);
-            if (NUX_MATCH(key, "entity"))
+            if (NUX_MATCH(key, "node"))
             {
-                lua_pushinteger(L, u->hit->e);
+                lua_pushinteger(L, u->hit->node);
                 return 1;
             }
             else if (NUX_MATCH(key, "position"))
@@ -694,6 +722,14 @@ meta_tostring (lua_State *L)
                             u->vec4->y,
                             u->vec4->z,
                             u->vec4->w);
+            return 1;
+        case NUX_LUA_TYPE_QUAT:
+            lua_pushfstring(L,
+                            "quat(%f, %f, %f, %f)",
+                            u->quat->x,
+                            u->quat->y,
+                            u->quat->z,
+                            u->quat->w);
             return 1;
         default:
             break;

@@ -40,12 +40,8 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
                 nux_m4_t {{ arg.name }} = nux_lua_check_mat4(L, {{ ns.stack + 0}});
                 {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name == "q4" %}
-                nux_q4_t {{ arg.name }};
-                {{ arg.name }}.x = luaL_checknumber(L, {{ ns.stack + 0 }});
-                {{ arg.name }}.y = luaL_checknumber(L, {{ ns.stack + 1 }});
-                {{ arg.name }}.z = luaL_checknumber(L, {{ ns.stack + 2 }});
-                {{ arg.name }}.w = luaL_checknumber(L, {{ ns.stack + 3 }});
-                {% set ns.stack = ns.stack + 4 %}
+                nux_q4_t {{ arg.name }} = nux_lua_check_q4(L, {{ ns.stack + 0}});
+                {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name == "c8" %}
                 const nux_c8_t *{{ arg.name }} = luaL_checkstring(L, {{ ns.stack }});
                 {% set ns.stack = ns.stack + 1 %}
@@ -54,6 +50,9 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
                 {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name == "nid" %}
                 nux_nid_t {{ arg.name }} = (nux_nid_t)luaL_checknumber(L, {{ ns.stack }});
+                {% set ns.stack = ns.stack + 1 %}
+            {%- elif arg.typename.name in ["b32"] %}
+                nux_b32_t {{ arg.name }} = lua_toboolean(L, {{ ns.stack }});
                 {% set ns.stack = ns.stack + 1 %}
             {%- elif arg.typename.name != "void" %}
                 nux_{{ arg.typename.name }}_t {{ arg.name }} = luaL_checknumber(L, {{ ns.stack }});
@@ -115,13 +114,10 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
             nux_lua_push_mat4(L, ret);
             return 1;
         {%- elif function.typename.name == "q4" %}
-            lua_pushnumber(L, ret.x);
-            lua_pushnumber(L, ret.y);
-            lua_pushnumber(L, ret.z);
-            lua_pushnumber(L, ret.w);
-            return 4;
+            nux_lua_push_q4(L, ret);
+            return 1;
         {%- elif function.typename.name == "raycast_hit" %}
-            if (ret.e)
+            if (ret.node)
                 nux_lua_push_hit(L, ret);
             else
                 lua_pushnil(L);
