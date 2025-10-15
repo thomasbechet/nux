@@ -165,12 +165,19 @@ nux_gpu_draw (nux_gpu_encoder_t *enc, nux_u32_t count)
     cmd->draw.count = count;
 }
 void
-nux_gpu_clear (nux_gpu_encoder_t *enc, nux_u32_t color)
+nux_gpu_clear_color (nux_gpu_encoder_t *enc, nux_u32_t color)
 {
     nux_gpu_command_t *cmd = push_cmd(enc);
     NUX_CHECK(cmd, return);
-    cmd->type        = NUX_GPU_COMMAND_CLEAR;
-    cmd->clear.color = color;
+    cmd->type              = NUX_GPU_COMMAND_CLEAR_COLOR;
+    cmd->clear_color.color = color;
+}
+void
+nux_gpu_clear_depth (nux_gpu_encoder_t *enc)
+{
+    nux_gpu_command_t *cmd = push_cmd(enc);
+    NUX_CHECK(cmd, return);
+    cmd->type = NUX_GPU_COMMAND_CLEAR_DEPTH;
 }
 void
 nux_gpu_viewport (nux_gpu_encoder_t *enc, nux_v4_t viewport)

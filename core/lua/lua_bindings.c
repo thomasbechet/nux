@@ -1102,6 +1102,18 @@ l_viewport_set_layer (lua_State *L)
     return 0;
 }
 static int
+l_viewport_set_clear_depth (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_b32_t clear = lua_toboolean(L, 2);
+
+    nux_viewport_set_clear_depth(vp, clear);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_viewport_set_camera (lua_State *L)
 {
     nux_viewport_t *vp
@@ -1451,9 +1463,9 @@ l_graphics_draw_dir (lua_State *L)
     return 0;
 }
 static int
-l_graphics_screen_target (lua_State *L)
+l_graphics_screen (lua_State *L)
 {
-    const nux_texture_t *ret = nux_graphics_screen_target();
+    const nux_texture_t *ret = nux_graphics_screen();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1587,6 +1599,27 @@ l_camera_unproject (lua_State *L)
     return 1;
 }
 static int
+l_camera_set_render_mask (lua_State *L)
+{
+    nux_nid_t n    = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_u32_t mask = luaL_checknumber(L, 2);
+
+    nux_camera_set_render_mask(n, mask);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_get_render_mask (lua_State *L)
+{
+    nux_nid_t n   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_u32_t ret = nux_camera_get_render_mask(n);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
 l_staticmesh_has (lua_State *L)
 {
     nux_nid_t n   = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1687,6 +1720,27 @@ l_staticmesh_set_colormap (lua_State *L)
     l_checkerror(L);
 
     return 0;
+}
+static int
+l_staticmesh_set_render_layer (lua_State *L)
+{
+    nux_nid_t n     = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_u32_t layer = luaL_checknumber(L, 2);
+
+    nux_staticmesh_set_render_layer(n, layer);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_staticmesh_get_render_layer (lua_State *L)
+{
+    nux_nid_t n   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_u32_t ret = nux_staticmesh_get_render_layer(n);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
 }
 static int
 l_rigidbody_add (lua_State *L)
@@ -1889,6 +1943,7 @@ static const struct luaL_Reg lib_viewport[]
         { "set_extent", l_viewport_set_extent },
         { "set_anchor", l_viewport_set_anchor },
         { "set_layer", l_viewport_set_layer },
+        { "set_clear_depth", l_viewport_set_clear_depth },
         { "set_camera", l_viewport_set_camera },
         { "set_texture", l_viewport_set_texture },
         { "get_target_size", l_viewport_get_target_size },
@@ -1922,7 +1977,7 @@ static const struct luaL_Reg lib_graphics[]
     = { { "draw_line_tr", l_graphics_draw_line_tr },
         { "draw_line", l_graphics_draw_line },
         { "draw_dir", l_graphics_draw_dir },
-        { "screen_target", l_graphics_screen_target },
+        { "screen", l_graphics_screen },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_camera[]
     = { { "add", l_camera_add },
@@ -1936,6 +1991,8 @@ static const struct luaL_Reg lib_camera[]
         { "set_ortho_size", l_camera_set_ortho_size },
         { "get_projection", l_camera_get_projection },
         { "unproject", l_camera_unproject },
+        { "set_render_mask", l_camera_set_render_mask },
+        { "get_render_mask", l_camera_get_render_mask },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_staticmesh[]
     = { { "has", l_staticmesh_has },
@@ -1946,6 +2003,8 @@ static const struct luaL_Reg lib_staticmesh[]
         { "set_texture", l_staticmesh_set_texture },
         { "get_texture", l_staticmesh_get_texture },
         { "set_colormap", l_staticmesh_set_colormap },
+        { "set_render_layer", l_staticmesh_set_render_layer },
+        { "get_render_layer", l_staticmesh_get_render_layer },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_colormap[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_primitive[] = { { NUX_NULL, NUX_NULL } };

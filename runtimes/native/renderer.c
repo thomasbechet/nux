@@ -501,11 +501,15 @@ nux_os_gpu_submit (void                    *userdata,
                 glBindVertexArray(0);
             }
             break;
-            case NUX_GPU_COMMAND_CLEAR: {
+            case NUX_GPU_COMMAND_CLEAR_COLOR: {
                 nux_f32_t clear[4];
-                hex_to_linear(cmd->clear.color, clear);
+                hex_to_linear(cmd->clear_color.color, clear);
                 glClearColor(clear[0], clear[1], clear[2], clear[3]);
-                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                glClear(GL_COLOR_BUFFER_BIT);
+            }
+            break;
+            case NUX_GPU_COMMAND_CLEAR_DEPTH: {
+                glClear(GL_DEPTH_BUFFER_BIT);
             }
             break;
             case NUX_GPU_COMMAND_VIEWPORT: {

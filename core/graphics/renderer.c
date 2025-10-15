@@ -180,6 +180,18 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
     NUX_ASSERT(target);
 
+    // Bind framebuffer
+    nux_gpu_bind_framebuffer(enc, target->gpu.framebuffer_slot);
+    nux_gpu_viewport(enc, extent);
+    if (viewport->clear_depth)
+    {
+        nux_gpu_clear_depth(enc);
+    }
+    if (viewport->clear_color.w != 0)
+    {
+        nux_gpu_clear_color(enc, nux_color_to_hex(viewport->clear_color));
+    }
+
     // Render scene
     if (camera)
     {
@@ -205,11 +217,6 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
                              sizeof(constants),
                              &constants);
 
-        // Bind framebuffer, pipeline and constants
-        nux_gpu_bind_framebuffer(enc, target->gpu.framebuffer_slot);
-        // nux_gpu_clear(enc, 0x4f9bd9);
-        nux_gpu_viewport(enc, extent);
-
         // Render nodes
         nux_gpu_bind_pipeline(enc, module->uber_pipeline_opaque.slot);
         nux_gpu_bind_buffer(
@@ -226,6 +233,10 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             nux_staticmesh_t *sm
                 = nux_component_get(it, NUX_COMPONENT_STATICMESH);
             if (!sm->mesh)
+            {
+                continue;
+            }
+            if (cc->render_mask != 0 && !(sm->render_layer & cc->render_mask))
             {
                 continue;
             }

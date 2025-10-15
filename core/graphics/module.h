@@ -62,6 +62,8 @@ struct nux_viewport_t
         nux_rid_t texture;
     } source;
     nux_i32_t layer;
+    nux_v4_t  clear_color;
+    nux_b32_t clear_depth;
 };
 
 typedef struct
@@ -200,7 +202,8 @@ void nux_gpu_push_u32(nux_gpu_encoder_t *enc, nux_u32_t desc, nux_u32_t value);
 void nux_gpu_push_f32(nux_gpu_encoder_t *enc, nux_u32_t desc, nux_f32_t value);
 void nux_gpu_push_v2(nux_gpu_encoder_t *enc, nux_u32_t desc, nux_v2_t value);
 void nux_gpu_draw(nux_gpu_encoder_t *enc, nux_u32_t count);
-void nux_gpu_clear(nux_gpu_encoder_t *enc, nux_u32_t color);
+void nux_gpu_clear_color(nux_gpu_encoder_t *enc, nux_u32_t color);
+void nux_gpu_clear_depth(nux_gpu_encoder_t *enc);
 void nux_gpu_viewport(nux_gpu_encoder_t *enc, nux_v4_t viewport);
 
 // texture.c

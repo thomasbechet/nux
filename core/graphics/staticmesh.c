@@ -49,6 +49,20 @@ void
 nux_staticmesh_set_colormap (nux_nid_t e, nux_texture_t *colormap)
 {
 }
+void
+nux_staticmesh_set_render_layer (nux_nid_t n, nux_u32_t layer)
+{
+    nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
+    NUX_CHECK(sm, return);
+    sm->render_layer = layer;
+}
+nux_u32_t
+nux_staticmesh_get_render_layer (nux_nid_t n)
+{
+    nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
+    NUX_CHECK(sm, return 0);
+    return sm->render_layer;
+}
 
 nux_status_t
 nux_staticmesh_write (nux_serde_writer_t *s, const void *data)

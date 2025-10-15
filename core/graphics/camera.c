@@ -24,12 +24,13 @@ nux_camera_add (nux_nid_t e)
 {
     nux_camera_t *c = nux_component_add(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
-    c->fov        = 60;
-    c->near       = 0.1;
-    c->far        = 500;
-    c->aspect     = 1;
-    c->ortho_size = nux_v2s(1);
-    c->ortho      = NUX_FALSE;
+    c->fov         = 60;
+    c->near        = 0.1;
+    c->far         = 500;
+    c->aspect      = 1;
+    c->ortho_size  = nux_v2s(1);
+    c->ortho       = NUX_FALSE;
+    c->render_mask = 0;
 }
 void
 nux_camera_remove (nux_nid_t e)
@@ -129,4 +130,18 @@ nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
     pos.y = 1 - pos.y; // convert screen to ndc space
     pos   = nux_v2_subs(nux_v2_muls(pos, 2), 1);
     return nux_v3_normalize(nux_m4_mulv3(inv, nux_v3(pos.x, pos.y, 1), 1));
+}
+void
+nux_camera_set_render_mask (nux_nid_t n, nux_u32_t mask)
+{
+    nux_camera_t *c = nux_component_get(n, NUX_COMPONENT_CAMERA);
+    NUX_CHECK(c, return);
+    c->render_mask = mask;
+}
+nux_u32_t
+nux_camera_get_render_mask (nux_nid_t n)
+{
+    nux_camera_t *c = nux_component_get(n, NUX_COMPONENT_CAMERA);
+    NUX_CHECK(c, return 0);
+    return c->render_mask;
 }

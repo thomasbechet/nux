@@ -271,11 +271,12 @@ nux_graphics_update (void)
 
         nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
-        // Empty frame
+        // Skip empty viewports
         if (target->gpu.width * target->gpu.height <= 0)
         {
             continue;
         }
+
         if (viewport->source.camera) // Render scene
         {
             nux_scene_t *scene = nux_scene_active();
@@ -364,7 +365,7 @@ nux_graphics_push_frame_transforms (nux_u32_t       count,
     return NUX_SUCCESS;
 }
 nux_texture_t *
-nux_graphics_screen_target (void)
+nux_graphics_screen (void)
 {
     return nux_graphics_module()->screen_target;
 }

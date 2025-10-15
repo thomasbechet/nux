@@ -247,6 +247,8 @@ function viewport.set_anchor(...) end
 ---@return None
 function viewport.set_layer(...) end
 ---@return None
+function viewport.set_clear_depth(...) end
+---@return None
 function viewport.set_camera(...) end
 ---@return None
 function viewport.set_texture(...) end
@@ -304,7 +306,7 @@ function graphics.draw_line(...) end
 ---@return None
 function graphics.draw_dir(...) end
 ---@return None
-function graphics.screen_target(...) end
+function graphics.screen(...) end
 camera={}
 ---@return None
 function camera.add(...) end
@@ -328,6 +330,10 @@ function camera.set_ortho_size(...) end
 function camera.get_projection(...) end
 ---@return None
 function camera.unproject(...) end
+---@return None
+function camera.set_render_mask(...) end
+---@return None
+function camera.get_render_mask(...) end
 staticmesh={}
 ---@return None
 function staticmesh.has(...) end
@@ -345,6 +351,10 @@ function staticmesh.set_texture(...) end
 function staticmesh.get_texture(...) end
 ---@return None
 function staticmesh.set_colormap(...) end
+---@return None
+function staticmesh.set_render_layer(...) end
+---@return None
+function staticmesh.get_render_layer(...) end
 colormap={}
 colormap.SIZE=256
 primitive={}

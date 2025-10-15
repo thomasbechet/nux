@@ -54,27 +54,24 @@ function M:on_load()
     gizmos = require("gizmos")
     gizmos.target = self.camera.node
 
-    local vp = viewport.new(self.arena, graphics.screen_target())
+    local vp = viewport.new(self.arena, graphics.screen())
     viewport.set_camera(vp, self.camera.node)
     viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, -1)
-    -- local vp = viewport.new(self.arena, graphics.screen_target())
-    -- viewport.set_camera(vp, self.camera.nid)
-    -- viewport.set_extent(vp, { 0.5, 0, 0.5, 0.5 })
-    -- local vp = viewport.new(self.arena, graphics.screen_target())
-    -- viewport.set_camera(vp, self.camera.nid)
-    -- viewport.set_extent(vp, { 0, 0.5, 1, 0.5 })
+
+    -- local vp = viewport.new(self.arena, graphics.screen())
+    -- viewport.set_camera(vp, self.camera.node)
+    -- viewport.set_extent(vp, { 0, 0, 1, 1 })
+    -- viewport.set_layer(vp, 2)
 
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
-    self.vp = viewport.new(self.arena, graphics.screen_target())
+    self.vp = viewport.new(self.arena, graphics.screen())
     viewport.set_extent(self.vp, { 0, 0, 0.3, 0.3 })
     viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
     viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
     viewport.set_layer(self.vp, 3)
-
-    -- Create version
 
     -- Create the API monolith
     local x, y = 350, 2000
@@ -89,16 +86,6 @@ function M:on_load()
     collider.add_aabb(self.cube, vmath.vec3(0), { x / 50, y / 50, 1 })
 
     self.api = inspect(event)
-end
-
-local function memhu(size)
-    local i = 1
-    while size > 1024 do
-        i = i + 1
-        size = size / 1024
-    end
-    local units = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" }
-    return string.format("%.02f%s", size, units[i])
 end
 
 function M:on_update()
@@ -121,11 +108,11 @@ function M:on_update()
     canvas.text(c, 10, 30, string.format("xyz: %.2f %.2f %.2f", position.x, position.y, position.z))
     canvas.text(c, 10, 40,
         string.format("core mem: %s bc:%d",
-            memhu(arena.memory_usage(arena.core())),
+            math.memhu(arena.memory_usage(arena.core())),
             arena.block_count(arena.core())))
     canvas.text(c, 10, 50,
         string.format("frame mem: %s bc:%d",
-            memhu(arena.memory_usage(arena.frame())),
+            math.memhu(arena.memory_usage(arena.frame())),
             arena.block_count(arena.frame())))
     canvas.text(c, 10, 60, string.format("nodes: %d", scene.count()))
     local cp = cursor.get(0)
@@ -137,6 +124,8 @@ function M:on_update()
 
     camera.reset_aspect(self.camera.node, self.vp)
 
+    camera.set_render_mask(self.camera.node, 1)
+
     local forward = transform.forward(self.camera.node)
     if button.just_pressed(0, button.RB) then
         local dir = camera.unproject(self.camera.node, cursor.get(0))
@@ -147,6 +136,7 @@ function M:on_update()
                 self.active_mesh = staticmesh.get_mesh(hit.node)
                 self.active_texture = staticmesh.get_texture(hit.node)
                 print("hit " .. self.active_mesh)
+                staticmesh.set_render_layer(hit.node, 1)
             end
         else
             if self.active_mesh and self.active_texture then

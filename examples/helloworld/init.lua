@@ -1,7 +1,7 @@
 function M:on_load()
     -- create screen canvas
     self.canvas = canvas.new(arena.core(), 1000, 500)
-    local vp = viewport.new(arena.core(), graphics.screen_target())
+    local vp = viewport.new(arena.core(), graphics.screen())
     viewport.set_texture(vp, canvas.get_texture(self.canvas))
 end
 

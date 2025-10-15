@@ -15,6 +15,8 @@ nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
     vp->source.camera  = NUX_NULL;
     vp->source.texture = NUX_NULL;
     vp->target         = nux_resource_rid(target);
+    vp->clear_color    = NUX_COLOR_RGBA(0, 0, 0, 0);
+    vp->clear_depth    = NUX_FALSE;
     return vp;
 }
 void
@@ -36,6 +38,11 @@ void
 nux_viewport_set_layer (nux_viewport_t *vp, nux_i32_t layer)
 {
     vp->layer = layer;
+}
+void
+nux_viewport_set_clear_depth (nux_viewport_t *vp, nux_b32_t clear)
+{
+    vp->clear_depth = clear;
 }
 void
 nux_viewport_set_camera (nux_viewport_t *vp, nux_nid_t camera)

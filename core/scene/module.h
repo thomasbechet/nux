@@ -68,6 +68,7 @@ typedef struct
     nux_f32_t aspect; // 0 for no aspect ratio
     nux_b32_t ortho;
     nux_v2_t  ortho_size;
+    nux_u32_t render_mask;
 } nux_camera_t;
 
 typedef struct
@@ -84,6 +85,7 @@ typedef struct
     nux_rid_t mesh;
     nux_rid_t texture;
     nux_u32_t transform;
+    nux_u32_t render_layer;
 } nux_staticmesh_t;
 
 typedef enum

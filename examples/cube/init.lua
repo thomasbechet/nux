@@ -1,8 +1,9 @@
 function M:on_load()
     physics.set_ground_height(-10)
     -- create screen canvas
-    self.canvas = canvas.new(arena.core(), canvas.WIDTH, canvas.HEIGHT)
-    canvas.set_layer(self.canvas, 1)
+    self.canvas = canvas.new(arena.core(), 150, 100)
+    local vp = viewport.new(arena.core(), graphics.screen())
+    viewport.set_texture(vp, canvas.get_texture(self.canvas))
     -- create camera
     local e = node.create(node.root())
     self.camera = e
@@ -10,6 +11,8 @@ function M:on_load()
     camera.set_fov(e, 50)
     transform.add(e)
     transform.set_translation(e, vmath.vec3(2))
+    vp = viewport.new(arena.core(), graphics.screen())
+    viewport.set_camera(vp, self.camera)
     -- create cube
     local cube = mesh.new_cube(arena.core(), 1, 1, 1)
     mesh.set_origin(cube, vmath.vec3(0.5))
