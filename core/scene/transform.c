@@ -127,7 +127,7 @@ nux_transform_set_translation (nux_nid_t e, nux_v3_t position)
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
     t->translation = position;
-    t->dirty       = NUX_TRUE;
+    mark_dirty(e);
 }
 void
 nux_transform_set_rotation (nux_nid_t e, nux_q4_t rotation)
@@ -135,7 +135,7 @@ nux_transform_set_rotation (nux_nid_t e, nux_q4_t rotation)
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
     t->rotation = rotation;
-    t->dirty    = NUX_TRUE;
+    mark_dirty(e);
 }
 void
 nux_transform_set_rotation_euler (nux_nid_t e, nux_v3_t euler)
@@ -206,7 +206,7 @@ nux_transform_rotate (nux_nid_t e, nux_v3_t axis, nux_f32_t angle)
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return);
     t->rotation = nux_q4_mul_axis(t->rotation, axis, angle);
-    t->dirty    = NUX_TRUE;
+    mark_dirty(e);
 }
 void
 nux_transform_rotate_x (nux_nid_t e, nux_f32_t angle)
@@ -246,5 +246,6 @@ nux_transform_look_at (nux_nid_t e, nux_v3_t center)
     t->global_matrix.z2 = -zaxis.y;
     t->global_matrix.z3 = -zaxis.z;
 
+    mark_dirty(e);
     t->dirty = NUX_FALSE;
 }
