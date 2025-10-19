@@ -89,7 +89,7 @@ nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_f32_t *t0, nux_f32_t *t1)
     tmin = NUX_MAX(tmin, NUX_MIN(tz1, tz2));
     tmax = NUX_MIN(tmax, NUX_MAX(tz1, tz2));
 
-    nux_b32_t hit = tmax >= NUX_MAX(0, tmin) && tmin < NUX_FLT_MAX;
+    nux_b32_t hit = (tmax >= NUX_MAX(0, tmin)) && (tmin < NUX_FLT_MAX);
 
     if (hit)
     {

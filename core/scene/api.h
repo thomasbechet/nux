@@ -8,6 +8,7 @@ typedef struct nux_query nux_query_t;
 
 void     nux_transform_add(nux_nid_t e);
 void     nux_transform_remove(nux_nid_t e);
+nux_m4_t nux_transform_get_matrix(nux_nid_t e);
 nux_v3_t nux_transform_get_local_translation(nux_nid_t e);
 nux_q4_t nux_transform_get_local_rotation(nux_nid_t e);
 nux_v3_t nux_transform_get_local_scale(nux_nid_t e);

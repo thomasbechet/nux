@@ -140,6 +140,8 @@ function transform.add(...) end
 ---@return None
 function transform.remove(...) end
 ---@return None
+function transform.get_matrix(...) end
+---@return None
 function transform.get_local_translation(...) end
 ---@return None
 function transform.get_local_rotation(...) end
@@ -255,7 +257,11 @@ function viewport.set_texture(...) end
 ---@return None
 function viewport.get_target_size(...) end
 ---@return None
-function viewport.get_render_extent(...) end
+function viewport.get_global_extent(...) end
+---@return None
+function viewport.to_global(...) end
+---@return None
+function viewport.to_local(...) end
 texture={}
 texture.IMAGE_RGBA=0
 texture.IMAGE_INDEX=1
@@ -367,6 +373,8 @@ function staticmesh.set_colormap(...) end
 function staticmesh.set_render_layer(...) end
 ---@return None
 function staticmesh.get_render_layer(...) end
+---@return None
+function staticmesh.set_draw_bounds(...) end
 colormap={}
 colormap.SIZE=256
 layer={}
@@ -404,6 +412,8 @@ function collider.add_sphere(...) end
 function collider.add_aabb(...) end
 ---@return None
 function collider.remove(...) end
+---@return None
+function collider.has(...) end
 physics={}
 ---@return None
 function physics.raycast(...) end

@@ -278,7 +278,7 @@ nux_graphics_update (void)
     for (nux_u32_t i = 0; i < viewports_count; ++i)
     {
         nux_viewport_t *viewport = viewports[i];
-        nux_v4_t        extent   = nux_viewport_get_render_extent(viewport);
+        nux_v4_t        extent   = nux_viewport_get_global_extent(viewport);
 
         nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);

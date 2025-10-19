@@ -25,3 +25,8 @@ nux_collider_remove (nux_nid_t e)
 {
     nux_node_remove(e, NUX_COMPONENT_COLLIDER);
 }
+nux_b32_t
+nux_collider_has (nux_nid_t e)
+{
+    return nux_node_has(e, NUX_COMPONENT_COLLIDER);
+}

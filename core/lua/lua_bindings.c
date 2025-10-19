@@ -483,6 +483,16 @@ l_transform_remove (lua_State *L)
     return 0;
 }
 static int
+l_transform_get_matrix (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_m4_t  ret = nux_transform_get_matrix(e);
+    l_checkerror(L);
+
+    nux_lua_push_mat4(L, ret);
+    return 1;
+}
+static int
 l_transform_get_local_translation (lua_State *L)
 {
     nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1150,14 +1160,38 @@ l_viewport_get_target_size (lua_State *L)
     return 1;
 }
 static int
-l_viewport_get_render_extent (lua_State *L)
+l_viewport_get_global_extent (lua_State *L)
 {
     nux_viewport_t *viewport
         = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_v4_t ret = nux_viewport_get_render_extent(viewport);
+    nux_v4_t ret = nux_viewport_get_global_extent(viewport);
     l_checkerror(L);
 
     nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
+l_viewport_to_global (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_v2_t coord = nux_lua_check_vec2(L, 2);
+    nux_v2_t ret   = nux_viewport_to_global(vp, coord);
+    l_checkerror(L);
+
+    nux_lua_push_vec2(L, ret);
+    return 1;
+}
+static int
+l_viewport_to_local (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_v2_t coord = nux_lua_check_vec2(L, 2);
+    nux_v2_t ret   = nux_viewport_to_local(vp, coord);
+    l_checkerror(L);
+
+    nux_lua_push_vec2(L, ret);
     return 1;
 }
 static int
@@ -1794,6 +1828,17 @@ l_staticmesh_get_render_layer (lua_State *L)
     return 1;
 }
 static int
+l_staticmesh_set_draw_bounds (lua_State *L)
+{
+    nux_nid_t n    = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b32_t draw = lua_toboolean(L, 2);
+
+    nux_staticmesh_set_draw_bounds(n, draw);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_rigidbody_add (lua_State *L)
 {
     nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1856,6 +1901,16 @@ l_collider_remove (lua_State *L)
     l_checkerror(L);
 
     return 0;
+}
+static int
+l_collider_has (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b32_t ret = nux_collider_has(e);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
 }
 static int
 l_physics_raycast (lua_State *L)
@@ -1943,6 +1998,7 @@ static const struct luaL_Reg lib_lua[]
 static const struct luaL_Reg lib_transform[]
     = { { "add", l_transform_add },
         { "remove", l_transform_remove },
+        { "get_matrix", l_transform_get_matrix },
         { "get_local_translation", l_transform_get_local_translation },
         { "get_local_rotation", l_transform_get_local_rotation },
         { "get_local_scale", l_transform_get_local_scale },
@@ -1998,7 +2054,9 @@ static const struct luaL_Reg lib_viewport[]
         { "set_camera", l_viewport_set_camera },
         { "set_texture", l_viewport_set_texture },
         { "get_target_size", l_viewport_get_target_size },
-        { "get_render_extent", l_viewport_get_render_extent },
+        { "get_global_extent", l_viewport_get_global_extent },
+        { "to_global", l_viewport_to_global },
+        { "to_local", l_viewport_to_local },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "screen", l_texture_screen },
@@ -2062,6 +2120,7 @@ static const struct luaL_Reg lib_staticmesh[]
         { "set_colormap", l_staticmesh_set_colormap },
         { "set_render_layer", l_staticmesh_set_render_layer },
         { "get_render_layer", l_staticmesh_get_render_layer },
+        { "set_draw_bounds", l_staticmesh_set_draw_bounds },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_colormap[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_layer[]     = { { NUX_NULL, NUX_NULL } };
@@ -2077,6 +2136,7 @@ static const struct luaL_Reg lib_collider[]
     = { { "add_sphere", l_collider_add_sphere },
         { "add_aabb", l_collider_add_aabb },
         { "remove", l_collider_remove },
+        { "has", l_collider_has },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_physics[]
     = { { "raycast", l_physics_raycast },

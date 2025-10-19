@@ -12,6 +12,7 @@ nux_staticmesh_add (nux_nid_t e)
     NUX_CHECK(sm, return);
     sm->mesh         = NUX_NULL;
     sm->render_layer = NUX_LAYER_DEFAULT; // visible in default layer
+    sm->draw_bounds  = NUX_FALSE;
 }
 void
 nux_staticmesh_remove (nux_nid_t e)
@@ -63,6 +64,13 @@ nux_staticmesh_get_render_layer (nux_nid_t n)
     nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return 0);
     return sm->render_layer;
+}
+void
+nux_staticmesh_set_draw_bounds (nux_nid_t n, nux_b32_t draw)
+{
+    nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
+    NUX_CHECK(sm, return);
+    sm->draw_bounds = draw;
 }
 
 nux_status_t

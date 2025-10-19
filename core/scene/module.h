@@ -7,7 +7,10 @@
 ///        TYPES         ///
 ////////////////////////////
 
-#define NODE_PER_MASK 32
+typedef enum
+{
+    NUX_NODE_PER_MASK = 32,
+} nux_scene_constants_t;
 
 typedef nux_u32_t nux_scene_mask_t;
 NUX_VEC_DEFINE(nux_scene_bitset, nux_scene_mask_t);
@@ -86,6 +89,7 @@ typedef struct
     nux_rid_t texture;
     nux_u32_t transform;
     nux_u32_t render_layer;
+    nux_b32_t draw_bounds;
 } nux_staticmesh_t;
 
 typedef enum
@@ -134,7 +138,6 @@ void nux_scene_cleanup(void *data);
 
 // transform.c
 
-nux_m4_t     nux_transform_get_matrix(nux_nid_t e);
 nux_status_t nux_transform_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_transform_read(nux_serde_reader_t *s, void *data);
 

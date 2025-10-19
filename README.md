@@ -4,7 +4,7 @@ Version 0.0.1
 
 ## Features
 
-## Dependencies
+## Core Third-Parties
 
 - lua PUC v5.8.4
   - license : core/externals/lua/LICENSE.md

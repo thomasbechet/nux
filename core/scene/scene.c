@@ -33,15 +33,15 @@ mask_count (nux_scene_mask_t mask)
 static nux_b32_t
 bitset_isset (const nux_scene_bitset_t *bitset, nux_u32_t index)
 {
-    nux_u32_t mask   = index / NODE_PER_MASK;
-    nux_u32_t offset = index % NODE_PER_MASK;
+    nux_u32_t mask   = index / NUX_NODE_PER_MASK;
+    nux_u32_t offset = index % NUX_NODE_PER_MASK;
     return (mask < bitset->size && mask_isset(bitset->data[mask], offset));
 }
 static nux_status_t
 bitset_set (nux_scene_bitset_t *bitset, nux_u32_t index)
 {
-    nux_u32_t mask   = index / NODE_PER_MASK;
-    nux_u32_t offset = index % NODE_PER_MASK;
+    nux_u32_t mask   = index / NUX_NODE_PER_MASK;
+    nux_u32_t offset = index % NUX_NODE_PER_MASK;
     while (bitset->size <= mask)
     {
         if (!nux_scene_bitset_pushv(bitset, 0x0))
@@ -55,8 +55,8 @@ bitset_set (nux_scene_bitset_t *bitset, nux_u32_t index)
 static nux_b32_t
 bitset_unset (nux_scene_bitset_t *bitset, nux_u32_t index)
 {
-    nux_u32_t mask   = index / NODE_PER_MASK;
-    nux_u32_t offset = index % NODE_PER_MASK;
+    nux_u32_t mask   = index / NUX_NODE_PER_MASK;
+    nux_u32_t offset = index % NUX_NODE_PER_MASK;
     if (bitset->size > mask)
     {
         mask_unset(&bitset->data[mask], offset);
@@ -97,7 +97,7 @@ bitset_find_unset (const nux_scene_bitset_t *bitset, nux_u32_t *found)
                 mask >>= 1;
                 ++index;
             }
-            *found = i * NODE_PER_MASK + index;
+            *found = i * NUX_NODE_PER_MASK + index;
             return NUX_TRUE;
         }
     }
@@ -297,7 +297,7 @@ query_next (const nux_scene_t *ins, nux_query_t *it)
     }
     it->mask >>= 1;
     nux_u32_t offset = it->mask_offset++;
-    return NUX_NID_MAKE(it->mask_index * NODE_PER_MASK + offset);
+    return NUX_NID_MAKE(it->mask_index * NUX_NODE_PER_MASK + offset);
 }
 nux_u32_t
 nux_query_next (nux_query_t *it, nux_nid_t e)
@@ -389,7 +389,7 @@ nux_node_create (nux_nid_t parent)
     nux_u32_t index;
     if (!bitset_find_unset(&scene->bitset, &index))
     {
-        index = scene->bitset.size * NODE_PER_MASK;
+        index = scene->bitset.size * NUX_NODE_PER_MASK;
     }
     NUX_CHECK(bitset_set(&scene->bitset, index), return NUX_NULL);
     while (index >= scene->nodes.size)
@@ -466,8 +466,8 @@ static void *
 component_get (const nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
 {
     nux_u32_t              index     = NUX_NID_INDEX(e);
-    nux_u32_t              mask      = index / NODE_PER_MASK;
-    nux_u32_t              offset    = index % NODE_PER_MASK;
+    nux_u32_t              mask      = index / NUX_NODE_PER_MASK;
+    nux_u32_t              offset    = index % NUX_NODE_PER_MASK;
     nux_scene_container_t *container = scene->containers.data + c;
     return (void *)((nux_intptr_t)container->chunks.data[mask]
                     + container->component_size * offset);
@@ -520,7 +520,7 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         bitset_set(&container->bitset, index);
 
         // initialize chunks
-        nux_u32_t mask = index / NODE_PER_MASK;
+        nux_u32_t mask = index / NUX_NODE_PER_MASK;
         while (mask >= container->chunks.size)
         {
             if (!nux_scene_chunk_vec_pushv(&container->chunks, NUX_NULL))
@@ -534,11 +534,11 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         {
             // allocate new chunk
             container->chunks.data[mask] = nux_arena_malloc(
-                scene->arena, container->component_size * NODE_PER_MASK);
+                scene->arena, container->component_size * NUX_NODE_PER_MASK);
             // expect zero memory by default
             nux_memset(container->chunks.data[mask],
                        0,
-                       container->component_size * NODE_PER_MASK);
+                       container->component_size * NUX_NODE_PER_MASK);
         }
     }
 

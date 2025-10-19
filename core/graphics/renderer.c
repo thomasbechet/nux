@@ -144,7 +144,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 {
     nux_graphics_module_t *module = nux_graphics_module();
     nux_gpu_encoder_t     *enc    = &module->encoder;
-    nux_v4_t               extent = nux_viewport_get_render_extent(viewport);
+    nux_v4_t               extent = nux_viewport_get_global_extent(viewport);
     nux_nid_t              camera = viewport->source.camera;
     nux_texture_t         *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
@@ -242,7 +242,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         {
             nux_staticmesh_t *sm
                 = nux_component_get(it, NUX_COMPONENT_STATICMESH);
-            if (!sm->mesh)
+            if (!sm->mesh || !sm->draw_bounds)
             {
                 continue;
             }

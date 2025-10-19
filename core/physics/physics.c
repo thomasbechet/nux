@@ -317,8 +317,8 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
     nux_f32_t             nearest = NUX_FLT_MAX;
     nux_raycast_hit_t     hit;
     hit.node = NUX_NULL;
-    hit.p = NUX_V3_ZEROS;
-    hit.n = NUX_V3_ZEROS;
+    hit.p    = NUX_V3_ZEROS;
+    hit.n    = NUX_V3_ZEROS;
     while ((it = nux_query_next(module->collider_transform_iter, it)))
     {
         nux_transform_t *transform
@@ -337,9 +337,9 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
                 nux_f32_t t0;
                 if (nux_intersect_ray_sphere(r, s, &t0) && t0 < nearest)
                 {
-                    nearest = t0;
-                    hit.node   = it;
-                    hit.p   = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
+                    nearest  = t0;
+                    hit.node = it;
+                    hit.p    = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
                 }
             }
             break;
@@ -350,9 +350,9 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
                 nux_f32_t t0, t1;
                 if (nux_intersect_ray_box(r, box, &t0, &t1) && t0 < nearest)
                 {
-                    nearest = t0;
-                    hit.node   = it;
-                    hit.p   = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
+                    nearest  = t0;
+                    hit.node = it;
+                    hit.p    = nux_v3_add(r.p, nux_v3_muls(r.d, t0));
                 }
             }
             break;

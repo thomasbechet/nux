@@ -70,7 +70,7 @@ nux_viewport_get_target_size (nux_viewport_t *vp)
     return target_size;
 }
 nux_v4_t
-nux_viewport_get_render_extent (nux_viewport_t *viewport)
+nux_viewport_get_global_extent (nux_viewport_t *viewport)
 {
     nux_v2_t extent_pos  = nux_v2(viewport->extent.x, viewport->extent.y);
     nux_v2_t extent_size = nux_v2(viewport->extent.z, viewport->extent.w);
@@ -195,4 +195,22 @@ nux_viewport_get_render_extent (nux_viewport_t *viewport)
     extent.z = (nux_f32_t)vsize.x / target->gpu.width;
     extent.w = (nux_f32_t)vsize.y / target->gpu.height;
     return extent;
+}
+nux_v2_t
+nux_viewport_to_global (nux_viewport_t *vp, nux_v2_t coord)
+{
+    nux_v4_t extent = nux_viewport_get_global_extent(vp);
+    nux_v2_t global;
+    global.x = extent.x + coord.x * extent.z;
+    global.y = extent.y + coord.y * extent.w;
+    return global;
+}
+nux_v2_t
+nux_viewport_to_local (nux_viewport_t *vp, nux_v2_t coord)
+{
+    nux_v4_t extent = nux_viewport_get_global_extent(vp);
+    nux_v2_t local;
+    local.x = (coord.x - extent.x) / extent.z;
+    local.y = (coord.y - extent.y) / extent.w;
+    return local;
 }

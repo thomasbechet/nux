@@ -81,7 +81,9 @@ void     nux_viewport_set_clear_depth(nux_viewport_t *vp, nux_b32_t clear);
 void     nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
 void     nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
 nux_v2_t nux_viewport_get_target_size(nux_viewport_t *vp);
-nux_v4_t nux_viewport_get_render_extent(nux_viewport_t *viewport);
+nux_v4_t nux_viewport_get_global_extent(nux_viewport_t *viewport);
+nux_v2_t nux_viewport_to_global(nux_viewport_t *vp, nux_v2_t coord);
+nux_v2_t nux_viewport_to_local(nux_viewport_t *vp, nux_v2_t coord);
 
 nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_texture_type_t format,
@@ -155,5 +157,6 @@ nux_texture_t *nux_staticmesh_get_texture(nux_nid_t n);
 void      nux_staticmesh_set_colormap(nux_nid_t e, nux_texture_t *colormap);
 void      nux_staticmesh_set_render_layer(nux_nid_t n, nux_u32_t layer);
 nux_u32_t nux_staticmesh_get_render_layer(nux_nid_t n);
+void      nux_staticmesh_set_draw_bounds(nux_nid_t n, nux_b32_t draw);
 
 #endif
