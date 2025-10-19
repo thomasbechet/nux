@@ -262,7 +262,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
                      NUX_COLOR_WHITE);
         }
 
-        // Draw lines
+        // Draw immediate lines
         nux_gpu_bind_pipeline(enc, module->uber_pipeline_line.slot);
         nux_gpu_bind_buffer(
             enc, NUX_GPU_DESC_UBER_CONSTANTS, module->constants_buffer.slot);

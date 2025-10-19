@@ -30,8 +30,8 @@ local function add_colliders(root)
     end
 end
 
-local WIDTH = 200
-local HEIGHT = 100
+local WIDTH = 1024
+local HEIGHT = 576
 
 function M:on_load()
     self.arena = arena.core()
@@ -68,9 +68,9 @@ function M:on_load()
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
     self.vp = viewport.new(self.arena, texture.screen())
-    viewport.set_extent(self.vp, { 0, 0, 0.3, 0.3 })
+    viewport.set_extent(self.vp, { 0, 0, 1, 1 })
     viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
-    viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
+    -- viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
     viewport.set_layer(self.vp, 2)
 
@@ -122,8 +122,7 @@ function M:on_update()
     canvas.text(c, 10, 70, string.format("cursor: %.2f %.2f", cp.x, cp.y))
 
     local cp = cursor.get(0)
-    canvas.rectangle(c, cp.x * WIDTH - 1, cp.y * HEIGHT - 1, 3, 3)
-    canvas.rectangle(c, WIDTH / 2, HEIGHT / 2, 3, 3);
+    canvas.rectangle(c, cp.x * WIDTH - 1, cp.y * HEIGHT - 1, 5, 5)
 
     camera.reset_aspect(self.camera.node, self.vp)
     camera.reset_aspect(self.camera.top_node, self.vp)
