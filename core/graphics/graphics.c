@@ -4,6 +4,7 @@
 
 NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
 NUX_VEC_IMPL(nux_graphics_command_vec, nux_graphics_command_t)
+NUX_VEC_IMPL(nux_immediate_state_vec, nux_immediate_state_t);
 
 static nux_status_t
 update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
@@ -112,6 +113,12 @@ nux_graphics_init (void)
     // Allocate immediate command buffer
     NUX_CHECK(nux_graphics_command_vec_init(a, &module->immediate_commands),
               return NUX_NULL);
+    NUX_CHECK(nux_immediate_state_vec_init_capa(
+                  a,
+                  NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE,
+                  &module->immediate_states),
+              return NUX_NULL);
+    NUX_ASSERT(nux_immediate_state_vec_push(&module->immediate_states));
 
     // Allocate constants buffer
     module->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
@@ -213,6 +220,10 @@ nux_graphics_pre_update (void)
     nux_dsa_push_bottom(
         &module->transforms_dsa, 1, NUX_NULL); // keep identity transform
     module->active_texture = NUX_NULL;
+
+    // Reset immediate state
+    module->immediate_state = module->immediate_states.data;
+    nux_graphics_reset_state();
 
     // Update default screen size
     module->screen_target->gpu.width  = nux_stat(NUX_STAT_SCREEN_WIDTH);
@@ -363,9 +374,4 @@ nux_graphics_push_frame_transforms (nux_u32_t       count,
     NUX_CHECK(update_transform_buffer(*offset, count, data),
               return NUX_FAILURE);
     return NUX_SUCCESS;
-}
-nux_texture_t *
-nux_graphics_screen (void)
-{
-    return nux_graphics_module()->screen_target;
 }

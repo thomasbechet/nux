@@ -55,6 +55,11 @@ nux_texture_cleanup (void *data)
                           tex->gpu.framebuffer_slot);
     }
 }
+nux_texture_t *
+nux_texture_screen (void)
+{
+    return nux_graphics_module()->screen_target;
+}
 void
 nux_texture_write (nux_texture_t *tex,
                    nux_u32_t      x,

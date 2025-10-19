@@ -54,12 +54,12 @@ function M:on_load()
     gizmos = require("gizmos")
     gizmos.target = self.camera.node
 
-    local vp = viewport.new(self.arena, graphics.screen())
+    local vp = viewport.new(self.arena, texture.screen())
     viewport.set_camera(vp, self.camera.node)
     viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 0)
 
-    local vp = viewport.new(self.arena, graphics.screen())
+    local vp = viewport.new(self.arena, texture.screen())
     viewport.set_camera(vp, self.camera.top_node)
     viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 1)
@@ -67,7 +67,7 @@ function M:on_load()
 
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
-    self.vp = viewport.new(self.arena, graphics.screen())
+    self.vp = viewport.new(self.arena, texture.screen())
     viewport.set_extent(self.vp, { 0, 0, 0.3, 0.3 })
     viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
     viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
@@ -94,9 +94,10 @@ function M:on_update()
     -- draw_hierarchy(node.root(), vmath.vec3(0))
 
     local p = vmath.vec3(0, 0, -10)
-    graphics.draw_dir(p, vmath.vec3(1, 0, 0), 2, color.RED)
-    graphics.draw_dir(p, vmath.vec3(0, 1, 0), 2, color.GREEN)
-    graphics.draw_dir(p, vmath.vec3(0, 0, 1), 2, color.BLUE)
+    graphics.set_layer(1)
+    graphics.draw_dir(p, vmath.vec3(1, 0, 0), 2)
+    graphics.draw_dir(p, vmath.vec3(0, 1, 0), 2)
+    graphics.draw_dir(p, vmath.vec3(0, 0, 1), 2)
 
     local c = self.monolith_canvas
     canvas.set_clear_color(c, color.BACKGROUND)
@@ -137,7 +138,6 @@ function M:on_update()
                 self.active_mesh = staticmesh.get_mesh(hit.node)
                 self.active_texture = staticmesh.get_texture(hit.node)
                 print("hit " .. self.active_mesh)
-                staticmesh.set_render_layer(hit.node, 1)
             end
         else
             if self.active_mesh and self.active_texture then

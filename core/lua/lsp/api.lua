@@ -262,6 +262,8 @@ texture.IMAGE_INDEX=1
 texture.RENDER_TARGET=2
 ---@return None
 function texture.new(...) end
+---@return None
+function texture.screen(...) end
 palette={}
 palette.SIZE=256
 ---@return None
@@ -300,13 +302,23 @@ function canvas.text(...) end
 function canvas.rectangle(...) end
 graphics={}
 ---@return None
-function graphics.draw_line_tr(...) end
+function graphics.begin_state(...) end
+---@return None
+function graphics.end_state(...) end
+---@return None
+function graphics.reset_state(...) end
 ---@return None
 function graphics.draw_line(...) end
 ---@return None
 function graphics.draw_dir(...) end
 ---@return None
-function graphics.screen(...) end
+function graphics.set_layer(...) end
+---@return None
+function graphics.set_color(...) end
+---@return None
+function graphics.set_transform(...) end
+---@return None
+function graphics.set_transform_identity(...) end
 camera={}
 ---@return None
 function camera.add(...) end
@@ -357,6 +369,8 @@ function staticmesh.set_render_layer(...) end
 function staticmesh.get_render_layer(...) end
 colormap={}
 colormap.SIZE=256
+layer={}
+layer.DEFAULT=0x1
 primitive={}
 primitive.TRIANGLES=0
 primitive.LINES=1

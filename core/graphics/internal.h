@@ -17,9 +17,19 @@ typedef struct
     nux_u32_t vertex_attributes;
     nux_u32_t transform_offset;
     nux_v4_t  color;
+    nux_u32_t layer;
 } nux_graphics_command_t;
 
 NUX_VEC_DEFINE(nux_graphics_command_vec, nux_graphics_command_t);
+
+typedef struct
+{
+    nux_u32_t immediate_layer;
+    nux_u32_t immediate_color;
+    nux_u32_t immediate_transform;
+} nux_immediate_state_t;
+
+NUX_VEC_DEFINE(nux_immediate_state_vec, nux_immediate_state_t);
 
 typedef struct
 {
@@ -48,6 +58,8 @@ typedef struct
     nux_query_t      *transform_camera_iter;
 
     nux_graphics_command_vec_t immediate_commands;
+    nux_immediate_state_vec_t  immediate_states;
+    nux_immediate_state_t     *immediate_state;
 
     const nux_texture_t *active_texture;
     const nux_palette_t *active_palette;

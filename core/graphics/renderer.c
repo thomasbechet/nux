@@ -139,36 +139,6 @@ draw_box (nux_gpu_encoder_t *enc,
                                    nux_v3(box.min.x, box.max.y, box.max.z) };
     draw_rect(enc, transform, primitive, positions, color);
 }
-static void
-draw_line (nux_u32_t transform, nux_v3_t a, nux_v3_t b, nux_u32_t color)
-{
-    const nux_v3_t  positions[]  = { a, b };
-    const nux_u32_t vertex_count = NUX_ARRAY_SIZE(positions);
-    const nux_u32_t stride       = 3;
-    nux_f32_t       data[stride * vertex_count];
-    nux_v4_t        c
-        = nux_palette_get_color(nux_graphics_module()->active_palette, color);
-    for (nux_u32_t i = 0; i < vertex_count; ++i)
-    {
-        data[i * stride + 0] = positions[i].x;
-        data[i * stride + 1] = positions[i].y;
-        data[i * stride + 2] = positions[i].z;
-    }
-    nux_u32_t offset;
-    NUX_CHECK(
-        nux_graphics_push_frame_vertices(vertex_count * stride, data, &offset),
-        return);
-
-    nux_graphics_module_t  *module = nux_graphics_module();
-    nux_graphics_command_t *cmd
-        = nux_graphics_command_vec_push(&module->immediate_commands);
-    NUX_CHECK(cmd, return);
-    cmd->vertex_offset     = offset;
-    cmd->vertex_count      = vertex_count;
-    cmd->vertex_attributes = NUX_VERTEX_POSITION;
-    cmd->transform_offset  = transform;
-    cmd->color             = c;
-}
 void
 nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 {
@@ -236,7 +206,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             {
                 continue;
             }
-            if (cc->render_mask != 0 && !(sm->render_layer & cc->render_mask))
+            if (!(sm->render_layer & cc->render_mask))
             {
                 continue;
             }
@@ -305,49 +275,18 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         for (nux_u32_t i = 0; i < module->immediate_commands.size; ++i)
         {
             nux_graphics_command_t *cmd = module->immediate_commands.data + i;
-            draw(enc,
-                 cmd->vertex_offset,
-                 cmd->vertex_count,
-                 cmd->transform_offset,
-                 cmd->vertex_attributes,
-                 cmd->color);
+            if (cmd->layer & cc->render_mask)
+            {
+                draw(enc,
+                     cmd->vertex_offset,
+                     cmd->vertex_count,
+                     cmd->transform_offset,
+                     cmd->vertex_attributes,
+                     cmd->color);
+            }
         }
 
         // Submit commands
         nux_gpu_encoder_submit(&module->encoder);
     }
-}
-void
-draw_line_tr (nux_u32_t transform_index,
-              nux_v3_t  a,
-              nux_v3_t  b,
-              nux_u32_t color)
-{
-    nux_graphics_module_t *module = nux_graphics_module();
-    draw_line(transform_index, a, b, color);
-}
-void
-nux_graphics_draw_line_tr (nux_m4_t tr, nux_v3_t a, nux_v3_t b, nux_u32_t color)
-{
-    nux_graphics_module_t *module = nux_graphics_module();
-    nux_u32_t              transform_index;
-    NUX_CHECK(nux_graphics_push_frame_transforms(1, &tr, &transform_index),
-              return);
-    draw_line_tr(transform_index, a, b, color);
-}
-void
-nux_graphics_draw_line (nux_v3_t a, nux_v3_t b, nux_u32_t color)
-{
-    nux_graphics_module_t *module = nux_graphics_module();
-    draw_line_tr(module->identity_transform_offset, a, b, color);
-}
-void
-nux_graphics_draw_dir (nux_v3_t  origin,
-                       nux_v3_t  dir,
-                       nux_f32_t length,
-                       nux_u32_t color)
-{
-    nux_v3_t a = origin;
-    nux_v3_t b = nux_v3_add(origin, nux_v3_muls(dir, length));
-    nux_graphics_draw_line(a, b, color);
 }

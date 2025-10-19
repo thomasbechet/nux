@@ -13,6 +13,7 @@ typedef enum
 {
     NUX_PALETTE_SIZE  = 256,
     NUX_COLORMAP_SIZE = 256,
+    NUX_LAYER_DEFAULT = 0x1,
 } nux_graphics_constants_t;
 
 typedef enum
@@ -86,6 +87,7 @@ nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_texture_type_t format,
                                nux_u32_t          w,
                                nux_u32_t          h);
+nux_texture_t *nux_texture_screen(void);
 
 nux_palette_t *nux_palette_new(nux_arena_t *arena, nux_u32_t size);
 nux_palette_t *nux_palette_default(void);
@@ -119,16 +121,15 @@ void nux_canvas_text(nux_canvas_t   *canvas,
 void nux_canvas_rectangle(
     nux_canvas_t *canvas, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h);
 
-void           nux_graphics_draw_line_tr(nux_m4_t  tr,
-                                         nux_v3_t  a,
-                                         nux_v3_t  b,
-                                         nux_u32_t color);
-void           nux_graphics_draw_line(nux_v3_t a, nux_v3_t b, nux_u32_t color);
-void           nux_graphics_draw_dir(nux_v3_t  origin,
-                                     nux_v3_t  dir,
-                                     nux_f32_t length,
-                                     nux_u32_t color);
-nux_texture_t *nux_graphics_screen(void);
+void nux_graphics_begin_state(void);
+void nux_graphics_end_state(void);
+void nux_graphics_reset_state(void);
+void nux_graphics_draw_line(nux_v3_t a, nux_v3_t b);
+void nux_graphics_draw_dir(nux_v3_t origin, nux_v3_t dir, nux_f32_t length);
+void nux_graphics_set_layer(nux_u32_t layer);
+void nux_graphics_set_color(nux_u32_t color);
+void nux_graphics_set_transform(nux_m4_t transform);
+void nux_graphics_set_transform_identity(void);
 
 void      nux_camera_add(nux_nid_t e);
 void      nux_camera_remove(nux_nid_t e);

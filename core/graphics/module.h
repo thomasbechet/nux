@@ -7,6 +7,11 @@
 ///        TYPES         ///
 ////////////////////////////
 
+typedef enum
+{
+    NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE = 8
+} nux_graphics_defaults_t;
+
 typedef struct
 {
     nux_m4_t  view;
