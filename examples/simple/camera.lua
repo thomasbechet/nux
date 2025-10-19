@@ -6,12 +6,12 @@ function M:on_load()
     self.yaw = 0
     self.node = node.create(node.root())
     camera.add(self.node)
-    camera.set_render_mask(self.node, 0x1)
+    camera.set_render_mask(self.node, 1)
     transform.add(self.node)
     transform.set_translation(self.node, { 13, 15, 10 })
     self.top_node = node.create(self.node)
     camera.add(self.top_node)
-    camera.set_render_mask(self.top_node, 0x01)
+    camera.set_render_mask(self.top_node, 2)
     transform.add(self.top_node)
 end
 
@@ -62,4 +62,6 @@ function M:on_update()
     transform.set_rotation_euler(e, vmath.vec3(-math.rad(self.pitch), -math.rad(self.yaw), 0))
     camera.set_far(e, 1000)
     camera.set_near(e, 0.1)
+    camera.set_far(self.top_node, 1000)
+    camera.set_near(self.top_node, 0.1)
 end

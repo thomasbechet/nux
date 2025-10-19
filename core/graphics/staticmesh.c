@@ -10,7 +10,8 @@ nux_staticmesh_add (nux_nid_t e)
 {
     nux_staticmesh_t *sm = nux_component_add(e, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return);
-    sm->mesh = NUX_NULL;
+    sm->mesh         = NUX_NULL;
+    sm->render_layer = 0x1; // visible in default layer
 }
 void
 nux_staticmesh_remove (nux_nid_t e)

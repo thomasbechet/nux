@@ -30,7 +30,7 @@ nux_camera_add (nux_nid_t e)
     c->aspect      = 1;
     c->ortho_size  = nux_v2s(1);
     c->ortho       = NUX_FALSE;
-    c->render_mask = 0;
+    c->render_mask = 0x1;
 }
 void
 nux_camera_remove (nux_nid_t e)

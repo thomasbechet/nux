@@ -57,13 +57,13 @@ function M:on_load()
     local vp = viewport.new(self.arena, graphics.screen())
     viewport.set_camera(vp, self.camera.node)
     viewport.set_extent(vp, { 0, 0, 1, 1 })
-    viewport.set_layer(vp, -1)
+    viewport.set_layer(vp, 0)
 
-    -- local vp = viewport.new(self.arena, graphics.screen())
-    -- viewport.set_camera(vp, self.camera.top_node)
-    -- viewport.set_extent(vp, { 0, 0, 1, 1 })
-    -- viewport.set_layer(vp, 2)
-    -- viewport.set_clear_depth(vp, true)
+    local vp = viewport.new(self.arena, graphics.screen())
+    viewport.set_camera(vp, self.camera.top_node)
+    viewport.set_extent(vp, { 0, 0, 1, 1 })
+    viewport.set_layer(vp, 1)
+    viewport.set_clear_depth(vp, true)
 
     -- Create canvas
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
@@ -72,7 +72,7 @@ function M:on_load()
     viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
     viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
-    viewport.set_layer(self.vp, 3)
+    viewport.set_layer(self.vp, 2)
 
     -- Create the API monolith
     local x, y = 350, 2000
@@ -84,7 +84,7 @@ function M:on_load()
     staticmesh.add(self.cube)
     staticmesh.set_mesh(self.cube, self.mesh_cube)
     staticmesh.set_texture(self.cube, canvas.get_texture(self.monolith_canvas))
-    staticmesh.set_render_layer(self.cube, 0x101)
+    staticmesh.set_render_layer(self.cube, 2)
     collider.add_aabb(self.cube, vmath.vec3(0), { x / 50, y / 50, 1 })
 
     self.api = inspect(event)
@@ -125,6 +125,7 @@ function M:on_update()
     canvas.rectangle(c, WIDTH / 2, HEIGHT / 2, 3, 3);
 
     camera.reset_aspect(self.camera.node, self.vp)
+    camera.reset_aspect(self.camera.top_node, self.vp)
 
     local forward = transform.forward(self.camera.node)
     if button.just_pressed(0, button.RB) then

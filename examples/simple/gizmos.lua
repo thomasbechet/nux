@@ -16,7 +16,6 @@ end
 function M:on_update()
     if self.target then
         camera.set_ortho(self.cam, true)
-        -- camera.set_fov(self.cam, 60)
         -- Copy rotation
         transform.set_rotation(self.cam, transform.get_rotation(self.target))
         -- Draw rotation axis in front of camera

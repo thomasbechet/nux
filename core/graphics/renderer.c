@@ -185,11 +185,11 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
     nux_gpu_viewport(enc, extent);
     if (viewport->clear_depth)
     {
-        // nux_gpu_clear_depth(enc);
+        nux_gpu_clear_depth(enc);
     }
     if (viewport->clear_color.w != 0)
     {
-        // nux_gpu_clear_color(enc, nux_color_to_hex(viewport->clear_color));
+        nux_gpu_clear_color(enc, nux_color_to_hex(viewport->clear_color));
     }
 
     // Render scene
@@ -236,8 +236,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             {
                 continue;
             }
-            if (cc->render_mask != 0 && sm->render_layer != 0
-                && !(sm->render_layer & cc->render_mask))
+            if (cc->render_mask != 0 && !(sm->render_layer & cc->render_mask))
             {
                 continue;
             }
@@ -277,6 +276,10 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             {
                 continue;
             }
+            if (!(sm->render_layer & cc->render_mask))
+            {
+                continue;
+            }
             nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
 
@@ -290,7 +293,6 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         }
 
         // Draw lines
-        // nux_gpu_bind_framebuffer(enc, 0);
         nux_gpu_bind_pipeline(enc, module->uber_pipeline_line.slot);
         nux_gpu_bind_buffer(
             enc, NUX_GPU_DESC_UBER_CONSTANTS, module->constants_buffer.slot);
@@ -307,7 +309,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
                  cmd->vertex_offset,
                  cmd->vertex_count,
                  cmd->transform_offset,
-                 NUX_VERTEX_POSITION,
+                 cmd->vertex_attributes,
                  cmd->color);
         }
 
