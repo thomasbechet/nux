@@ -211,7 +211,7 @@ load_node (nux_arena_t *arena,
     }
 
     // Set transform
-    nux_transform_add(e);
+    nux_node_add(e, NUX_COMPONENT_TRANSFORM);
     nux_transform_set_translation(e, translation);
     nux_transform_set_rotation(e, rotation);
     nux_transform_set_scale(e, scale);
@@ -267,7 +267,7 @@ load_node (nux_arena_t *arena,
                       texture);
 
             // Write staticmesh
-            nux_staticmesh_add(e);
+            nux_node_add(e, NUX_COMPONENT_STATICMESH);
             nux_staticmesh_set_mesh(e,
                                     nux_resource_get(NUX_RESOURCE_MESH, mesh));
             nux_staticmesh_set_texture(

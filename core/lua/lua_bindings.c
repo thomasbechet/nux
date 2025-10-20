@@ -463,26 +463,6 @@ l_lua_load (lua_State *L)
     return 1;
 }
 static int
-l_transform_add (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_transform_add(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_transform_remove (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_transform_remove(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
 l_transform_get_matrix (lua_State *L)
 {
     nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1000,6 +980,17 @@ l_node_child (lua_State *L)
         lua_pushnil(L);
     }
     return 1;
+}
+static int
+l_node_add (lua_State *L)
+{
+    nux_nid_t n = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_u32_t c = luaL_checknumber(L, 2);
+
+    nux_node_add(n, c);
+    l_checkerror(L);
+
+    return 0;
 }
 static int
 l_node_remove (lua_State *L)
@@ -1565,26 +1556,6 @@ l_graphics_set_transform_identity (lua_State *L)
     return 0;
 }
 static int
-l_camera_add (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_camera_add(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_camera_remove (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_camera_remove(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
 l_camera_set_fov (lua_State *L)
 {
     nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1705,36 +1676,6 @@ l_camera_get_render_mask (lua_State *L)
     return 1;
 }
 static int
-l_staticmesh_has (lua_State *L)
-{
-    nux_nid_t n   = (nux_nid_t)luaL_checknumber(L, 1);
-    nux_b32_t ret = nux_staticmesh_has(n);
-    l_checkerror(L);
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-static int
-l_staticmesh_add (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_staticmesh_add(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_staticmesh_remove (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_staticmesh_remove(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
 l_staticmesh_set_mesh (lua_State *L)
 {
     nux_nid_t   e = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1839,26 +1780,6 @@ l_staticmesh_set_draw_bounds (lua_State *L)
     return 0;
 }
 static int
-l_rigidbody_add (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_rigidbody_add(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_rigidbody_remove (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_rigidbody_remove(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
 l_rigidbody_set_velocity (lua_State *L)
 {
     nux_nid_t e        = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1870,47 +1791,27 @@ l_rigidbody_set_velocity (lua_State *L)
     return 0;
 }
 static int
-l_collider_add_sphere (lua_State *L)
+l_collider_set_sphere (lua_State *L)
 {
     nux_nid_t e      = (nux_nid_t)luaL_checknumber(L, 1);
     nux_f32_t radius = luaL_checknumber(L, 2);
 
-    nux_collider_add_sphere(e, radius);
+    nux_collider_set_sphere(e, radius);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_collider_add_aabb (lua_State *L)
+l_collider_set_aabb (lua_State *L)
 {
     nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
     nux_v3_t  min = nux_lua_check_vec3(L, 2);
     nux_v3_t  max = nux_lua_check_vec3(L, 3);
 
-    nux_collider_add_aabb(e, min, max);
+    nux_collider_set_aabb(e, min, max);
     l_checkerror(L);
 
     return 0;
-}
-static int
-l_collider_remove (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_collider_remove(e);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_collider_has (lua_State *L)
-{
-    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
-    nux_b32_t ret = nux_collider_has(e);
-    l_checkerror(L);
-
-    lua_pushboolean(L, ret);
-    return 1;
 }
 static int
 l_physics_raycast (lua_State *L)
@@ -1996,9 +1897,7 @@ static const struct luaL_Reg lib_disk[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_lua[]
     = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_transform[]
-    = { { "add", l_transform_add },
-        { "remove", l_transform_remove },
-        { "get_matrix", l_transform_get_matrix },
+    = { { "get_matrix", l_transform_get_matrix },
         { "get_local_translation", l_transform_get_local_translation },
         { "get_local_rotation", l_transform_get_local_rotation },
         { "get_local_scale", l_transform_get_local_scale },
@@ -2032,18 +1931,14 @@ static const struct luaL_Reg lib_scene[]
         { "clear", l_scene_clear },   { "load_gltf", l_scene_load_gltf },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_node[]
-    = { { "create", l_node_create },
-        { "delete", l_node_delete },
-        { "valid", l_node_valid },
-        { "root", l_node_root },
-        { "parent", l_node_parent },
-        { "set_parent", l_node_set_parent },
-        { "sibling", l_node_sibling },
-        { "child", l_node_child },
-        { "remove", l_node_remove },
-        { "has", l_node_has },
-        { "instantiate", l_node_instantiate },
+    = { { "create", l_node_create },   { "delete", l_node_delete },
+        { "valid", l_node_valid },     { "root", l_node_root },
+        { "parent", l_node_parent },   { "set_parent", l_node_set_parent },
+        { "sibling", l_node_sibling }, { "child", l_node_child },
+        { "add", l_node_add },         { "remove", l_node_remove },
+        { "has", l_node_has },         { "instantiate", l_node_instantiate },
         { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_component[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_viewport[]
     = { { "new", l_viewport_new },
         { "set_mode", l_viewport_set_mode },
@@ -2095,9 +1990,7 @@ static const struct luaL_Reg lib_graphics[]
         { "set_transform_identity", l_graphics_set_transform_identity },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_camera[]
-    = { { "add", l_camera_add },
-        { "remove", l_camera_remove },
-        { "set_fov", l_camera_set_fov },
+    = { { "set_fov", l_camera_set_fov },
         { "set_near", l_camera_set_near },
         { "set_far", l_camera_set_far },
         { "set_aspect", l_camera_set_aspect },
@@ -2110,10 +2003,7 @@ static const struct luaL_Reg lib_camera[]
         { "get_render_mask", l_camera_get_render_mask },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_staticmesh[]
-    = { { "has", l_staticmesh_has },
-        { "add", l_staticmesh_add },
-        { "remove", l_staticmesh_remove },
-        { "set_mesh", l_staticmesh_set_mesh },
+    = { { "set_mesh", l_staticmesh_set_mesh },
         { "get_mesh", l_staticmesh_get_mesh },
         { "set_texture", l_staticmesh_set_texture },
         { "get_texture", l_staticmesh_get_texture },
@@ -2128,15 +2018,10 @@ static const struct luaL_Reg lib_primitive[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_vertex[]    = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_anchor[]    = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_rigidbody[]
-    = { { "add", l_rigidbody_add },
-        { "remove", l_rigidbody_remove },
-        { "set_velocity", l_rigidbody_set_velocity },
-        { NUX_NULL, NUX_NULL } };
+    = { { "set_velocity", l_rigidbody_set_velocity }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_collider[]
-    = { { "add_sphere", l_collider_add_sphere },
-        { "add_aabb", l_collider_add_aabb },
-        { "remove", l_collider_remove },
-        { "has", l_collider_has },
+    = { { "set_sphere", l_collider_set_sphere },
+        { "set_aabb", l_collider_set_aabb },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_physics[]
     = { { "raycast", l_physics_raycast },
@@ -2295,6 +2180,21 @@ nux_lua_open_api (void)
     lua_newtable(L);
     luaL_setfuncs(L, lib_node, 0);
     lua_setglobal(L, "node");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_component, 0);
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "TRANSFORM");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "CAMERA");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "STATICMESH");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "RIGIDBODY");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "COLLIDER");
+    lua_pushinteger(L, 16);
+    lua_setfield(L, -2, "MAX");
+    lua_setglobal(L, "component");
     lua_newtable(L);
     luaL_setfuncs(L, lib_viewport, 0);
     lua_pushinteger(L, 0);

@@ -33,6 +33,16 @@ nux_transform_get_matrix (nux_nid_t e)
 
     return t->global_matrix;
 }
+
+void
+nux_transform_add (nux_nid_t e, void *data)
+{
+    nux_transform_t *t = data;
+    t->translation     = NUX_V3_ZEROS;
+    t->rotation        = nux_q4_identity();
+    t->scale           = NUX_V3_ONES;
+    t->dirty           = NUX_TRUE;
+}
 nux_status_t
 nux_transform_write (nux_serde_writer_t *s, const void *data)
 {
@@ -53,21 +63,6 @@ nux_transform_read (nux_serde_reader_t *s, void *data)
     return NUX_SUCCESS;
 }
 
-void
-nux_transform_add (nux_nid_t e)
-{
-    nux_transform_t *t = nux_component_add(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
-    t->translation = NUX_V3_ZEROS;
-    t->rotation    = nux_q4_identity();
-    t->scale       = NUX_V3_ONES;
-    t->dirty       = NUX_TRUE;
-}
-void
-nux_transform_remove (nux_nid_t e)
-{
-    nux_node_remove(e, NUX_COMPONENT_TRANSFORM);
-}
 nux_v3_t
 nux_transform_get_local_translation (nux_nid_t e)
 {

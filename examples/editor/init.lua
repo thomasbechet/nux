@@ -1,10 +1,11 @@
 local function add_colliders(root)
-    if staticmesh.has(root) then
+    if node.has(root, component.STATICMESH) then
         local m = staticmesh.get_mesh(root)
         mesh.update_bounds(m)
         local min = mesh.bounds_min(m)
         local max = mesh.bounds_max(m)
-        collider.add_aabb(root, min, max)
+        node.add(root, component.COLLIDER)
+        collider.set_aabb(root, min, max)
     end
     local child = node.child(root)
     while child do
@@ -13,8 +14,8 @@ local function add_colliders(root)
     end
 end
 
-local WIDTH = 1024
-local HEIGHT = 576
+local WIDTH = 640
+local HEIGHT = 480
 
 function M:on_load()
     self.arena = arena.core()
@@ -26,7 +27,7 @@ function M:on_load()
     self.scene = scene.load_gltf(self.arena, "assets/industrial.glb")
     scene.set_active(self.scene)
     local nid = node.instantiate(self.scene, node.root())
-    transform.add(nid)
+    node.add(nid, component.TRANSFORM)
     transform.set_rotation_euler(nid, { 0, 90, 0 })
     transform.set_scale(nid, vmath.vec3(10))
     -- add all colliders before camera creation
@@ -39,12 +40,14 @@ function M:on_load()
     viewport.set_camera(vp, self.camera.node)
     viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 0)
+    -- viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
 
     local vp = viewport.new(self.arena, texture.screen())
     viewport.set_camera(vp, self.camera.top_node)
     viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 1)
     viewport.set_clear_depth(vp, true)
+    -- viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
 
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
     self.vp = viewport.new(self.arena, texture.screen())

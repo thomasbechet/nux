@@ -46,10 +46,12 @@ nux_graphics_init (void)
     nux_component_t *comp;
     comp = nux_component_register(
         NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
+    comp->add   = nux_camera_add;
     comp->read  = nux_camera_read;
     comp->write = nux_camera_write;
     comp        = nux_component_register(
         NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
+    comp->add   = nux_staticmesh_add;
     comp->read  = nux_staticmesh_read;
     comp->write = nux_staticmesh_write;
 

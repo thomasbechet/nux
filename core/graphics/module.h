@@ -224,11 +224,13 @@ void nux_texture_blit(nux_texture_t *tex,
 
 // staticmesh.c
 
+void         nux_staticmesh_add(nux_nid_t e, void *data);
 nux_status_t nux_staticmesh_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_staticmesh_read(nux_serde_reader_t *s, void *data);
 
 // camera.c
 
+void         nux_camera_add(nux_nid_t e, void *data);
 nux_status_t nux_camera_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_camera_read(nux_serde_reader_t *s, void *data);
 

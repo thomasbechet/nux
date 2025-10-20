@@ -6,8 +6,17 @@
 typedef struct nux_scene nux_scene_t;
 typedef struct nux_query nux_query_t;
 
-void     nux_transform_add(nux_nid_t e);
-void     nux_transform_remove(nux_nid_t e);
+typedef enum
+{
+    NUX_COMPONENT_TRANSFORM  = 1,
+    NUX_COMPONENT_CAMERA     = 2,
+    NUX_COMPONENT_STATICMESH = 3,
+    NUX_COMPONENT_RIGIDBODY  = 4,
+    NUX_COMPONENT_COLLIDER   = 5,
+
+    NUX_COMPONENT_MAX = 16,
+} nux_component_type_;
+
 nux_m4_t nux_transform_get_matrix(nux_nid_t e);
 nux_v3_t nux_transform_get_local_translation(nux_nid_t e);
 nux_q4_t nux_transform_get_local_rotation(nux_nid_t e);
@@ -45,17 +54,19 @@ nux_status_t nux_scene_set_active(nux_scene_t *scene);
 nux_scene_t *nux_scene_active(void);
 nux_u32_t    nux_scene_count(void);
 void         nux_scene_clear(void);
-nux_nid_t    nux_node_create(nux_nid_t parent);
-void         nux_node_delete(nux_nid_t e);
-nux_b32_t    nux_node_valid(nux_nid_t e);
-nux_nid_t    nux_node_root(void);
-nux_nid_t    nux_node_parent(nux_nid_t e);
-void         nux_node_set_parent(nux_nid_t e, nux_nid_t p);
-nux_nid_t    nux_node_sibling(nux_nid_t e);
-nux_nid_t    nux_node_child(nux_nid_t e);
-void         nux_node_remove(nux_nid_t e, nux_u32_t c);
-nux_b32_t    nux_node_has(nux_nid_t e, nux_u32_t c);
-nux_nid_t    nux_node_instantiate(nux_scene_t *scene, nux_nid_t parent);
+
+nux_nid_t nux_node_create(nux_nid_t parent);
+void      nux_node_delete(nux_nid_t e);
+nux_b32_t nux_node_valid(nux_nid_t e);
+nux_nid_t nux_node_root(void);
+nux_nid_t nux_node_parent(nux_nid_t e);
+void      nux_node_set_parent(nux_nid_t e, nux_nid_t p);
+nux_nid_t nux_node_sibling(nux_nid_t e);
+nux_nid_t nux_node_child(nux_nid_t e);
+void      nux_node_add(nux_nid_t n, nux_u32_t c);
+void      nux_node_remove(nux_nid_t e, nux_u32_t c);
+nux_b32_t nux_node_has(nux_nid_t e, nux_u32_t c);
+nux_nid_t nux_node_instantiate(nux_scene_t *scene, nux_nid_t parent);
 
 nux_scene_t *nux_scene_load_gltf(nux_arena_t *arena, const nux_c8_t *path);
 

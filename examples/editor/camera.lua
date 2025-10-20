@@ -5,18 +5,17 @@ function M:on_load()
     self.pitch = 0
     self.yaw = 0
     self.node = node.create(node.root())
-    camera.add(self.node)
+    node.add(self.node, component.CAMERA)
+    node.add(self.node, component.TRANSFORM)
     camera.set_render_mask(self.node, 1)
-    transform.add(self.node)
     transform.set_translation(self.node, { 13, 15, 10 })
     self.top_node = node.create(self.node)
-    camera.add(self.top_node)
+    node.add(self.top_node, component.CAMERA)
+    node.add(self.top_node, component.TRANSFORM)
     camera.set_render_mask(self.top_node, 2)
-    transform.add(self.top_node)
 end
 
 function M:on_event(e)
-
 end
 
 function M:on_update()

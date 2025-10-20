@@ -1,5 +1,17 @@
 #include "internal.h"
 
+void
+nux_camera_add (nux_nid_t e, void *data)
+{
+    nux_camera_t *c = data;
+    c->fov          = 60;
+    c->near         = 0.1;
+    c->far          = 500;
+    c->aspect       = 1;
+    c->ortho_size   = nux_v2s(1);
+    c->ortho        = NUX_FALSE;
+    c->render_mask  = NUX_LAYER_DEFAULT;
+}
 nux_status_t
 nux_camera_write (nux_serde_writer_t *s, const void *data)
 {
@@ -19,24 +31,6 @@ nux_camera_read (nux_serde_reader_t *s, void *data)
     return NUX_SUCCESS;
 }
 
-void
-nux_camera_add (nux_nid_t e)
-{
-    nux_camera_t *c = nux_component_add(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
-    c->fov         = 60;
-    c->near        = 0.1;
-    c->far         = 500;
-    c->aspect      = 1;
-    c->ortho_size  = nux_v2s(1);
-    c->ortho       = NUX_FALSE;
-    c->render_mask = NUX_LAYER_DEFAULT;
-}
-void
-nux_camera_remove (nux_nid_t e)
-{
-    nux_node_remove(e, NUX_COMPONENT_CAMERA);
-}
 void
 nux_camera_set_fov (nux_nid_t e, nux_f32_t fov)
 {

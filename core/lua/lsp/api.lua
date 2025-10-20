@@ -136,10 +136,6 @@ lua={}
 function lua.load(...) end
 transform={}
 ---@return None
-function transform.add(...) end
----@return None
-function transform.remove(...) end
----@return None
 function transform.get_matrix(...) end
 ---@return None
 function transform.get_local_translation(...) end
@@ -227,11 +223,20 @@ function node.sibling(...) end
 ---@return None
 function node.child(...) end
 ---@return None
+function node.add(...) end
+---@return None
 function node.remove(...) end
 ---@return None
 function node.has(...) end
 ---@return None
 function node.instantiate(...) end
+component={}
+component.TRANSFORM=1
+component.CAMERA=2
+component.STATICMESH=3
+component.RIGIDBODY=4
+component.COLLIDER=5
+component.MAX=16
 viewport={}
 viewport.HIDDEN=0
 viewport.FIXED=1
@@ -327,10 +332,6 @@ function graphics.set_transform(...) end
 function graphics.set_transform_identity(...) end
 camera={}
 ---@return None
-function camera.add(...) end
----@return None
-function camera.remove(...) end
----@return None
 function camera.set_fov(...) end
 ---@return None
 function camera.set_near(...) end
@@ -353,12 +354,6 @@ function camera.set_render_mask(...) end
 ---@return None
 function camera.get_render_mask(...) end
 staticmesh={}
----@return None
-function staticmesh.has(...) end
----@return None
-function staticmesh.add(...) end
----@return None
-function staticmesh.remove(...) end
 ---@return None
 function staticmesh.set_mesh(...) end
 ---@return None
@@ -398,22 +393,14 @@ anchor.LEFT=1 << 3
 anchor.RIGHT=1 << 4
 rigidbody={}
 ---@return None
-function rigidbody.add(...) end
----@return None
-function rigidbody.remove(...) end
----@return None
 function rigidbody.set_velocity(...) end
 collider={}
 collider.SPHERE=0
 collider.AABB=1
 ---@return None
-function collider.add_sphere(...) end
+function collider.set_sphere(...) end
 ---@return None
-function collider.add_aabb(...) end
----@return None
-function collider.remove(...) end
----@return None
-function collider.has(...) end
+function collider.set_aabb(...) end
 physics={}
 ---@return None
 function physics.raycast(...) end

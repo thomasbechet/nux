@@ -30,6 +30,8 @@ typedef struct
 {
     const nux_c8_t *name;
     nux_u32_t       size;
+    void (*add)(nux_nid_t n, void *data);
+    void (*remove)(nux_nid_t n, void *data);
     nux_status_t (*read)(nux_serde_reader_t *s, void *data);
     nux_status_t (*write)(nux_serde_writer_t *s, const void *data);
 } nux_component_t;
@@ -92,17 +94,6 @@ typedef struct
     nux_b32_t draw_bounds;
 } nux_staticmesh_t;
 
-typedef enum
-{
-    NUX_COMPONENT_TRANSFORM  = 1,
-    NUX_COMPONENT_CAMERA     = 2,
-    NUX_COMPONENT_STATICMESH = 3,
-    NUX_COMPONENT_RIGIDBODY  = 4,
-    NUX_COMPONENT_COLLIDER   = 5,
-
-    NUX_COMPONENT_MAX = 16,
-} nux_component_type_base_t;
-
 typedef struct
 {
     nux_scene_t        *scene;
@@ -131,13 +122,13 @@ nux_component_t *nux_component_register(nux_u32_t       index,
                                         const nux_c8_t *name,
                                         nux_u32_t       size);
 
-void *nux_component_add(nux_nid_t e, nux_u32_t c);
 void *nux_component_get(nux_nid_t e, nux_u32_t c);
 
 void nux_scene_cleanup(void *data);
 
 // transform.c
 
+void         nux_transform_add(nux_nid_t e, void *data);
 nux_status_t nux_transform_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_transform_read(nux_serde_reader_t *s, void *data);
 

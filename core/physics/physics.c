@@ -149,10 +149,13 @@ nux_physics_init (void)
     nux_physics_module_t *module = nux_physics_module();
 
     // Register components
-    nux_component_register(
+    nux_component_t *comp;
+    comp = nux_component_register(
         NUX_COMPONENT_RIGIDBODY, "rigidbody", sizeof(nux_rigidbody_t));
-    nux_component_register(
+    comp->add = nux_rigidbody_add;
+    comp      = nux_component_register(
         NUX_COMPONENT_COLLIDER, "collider", sizeof(nux_collider_t));
+    comp->add = nux_collider_add;
 
     // Initialize values
     nux_arena_t *a = nux_arena_core();

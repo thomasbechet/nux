@@ -1,24 +1,5 @@
 #include "internal.h"
 
-nux_b32_t
-nux_staticmesh_has (nux_nid_t n)
-{
-    return nux_component_get(n, NUX_COMPONENT_STATICMESH);
-}
-void
-nux_staticmesh_add (nux_nid_t e)
-{
-    nux_staticmesh_t *sm = nux_component_add(e, NUX_COMPONENT_STATICMESH);
-    NUX_CHECK(sm, return);
-    sm->mesh         = NUX_NULL;
-    sm->render_layer = NUX_LAYER_DEFAULT; // visible in default layer
-    sm->draw_bounds  = NUX_FALSE;
-}
-void
-nux_staticmesh_remove (nux_nid_t e)
-{
-    nux_node_remove(e, NUX_COMPONENT_STATICMESH);
-}
 void
 nux_staticmesh_set_mesh (nux_nid_t e, nux_mesh_t *mesh)
 {
@@ -73,6 +54,14 @@ nux_staticmesh_set_draw_bounds (nux_nid_t n, nux_b32_t draw)
     sm->draw_bounds = draw;
 }
 
+void
+nux_staticmesh_add (nux_nid_t e, void *data)
+{
+    nux_staticmesh_t *sm = data;
+    sm->mesh             = NUX_NULL;
+    sm->render_layer     = NUX_LAYER_DEFAULT; // visible in default layer
+    sm->draw_bounds      = NUX_FALSE;
+}
 nux_status_t
 nux_staticmesh_write (nux_serde_writer_t *s, const void *data)
 {

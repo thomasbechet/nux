@@ -95,6 +95,14 @@ void      nux_physics_add_distance_constraint(nux_u32_t a,
                                               nux_u32_t b,
                                               float     distance);
 
+// rigidbody.c
+
+void nux_rigidbody_add(nux_nid_t e, void *data);
+
+// collider.c
+
+void nux_collider_add(nux_nid_t e, void *data);
+
 // intersect.c
 
 nux_b32_t nux_intersect_ray_sphere(nux_ray_t r, nux_sphere_t s, nux_f32_t *t0);

@@ -185,6 +185,7 @@ nux_scene_init (void)
     nux_component_t *comp;
     comp = nux_component_register(
         NUX_COMPONENT_TRANSFORM, "transform", sizeof(nux_transform_t));
+    comp->add   = nux_transform_add;
     comp->write = nux_transform_write;
     comp->read  = nux_transform_read;
 
@@ -379,6 +380,7 @@ nux_scene_clear (void)
     }
     nux_scene_bitset_clear(&scene->bitset);
 }
+
 nux_nid_t
 nux_node_create (nux_nid_t parent)
 {
@@ -542,14 +544,19 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         }
     }
 
-    return component_get(scene, e, c);
+    void *data = component_get(scene, e, c);
+    NUX_ASSERT(data);
+    if (component->add)
+    {
+        component->add(e, data);
+    }
+    return data;
 }
-void *
-nux_component_add (nux_nid_t e, nux_u32_t c)
+
+void
+nux_node_add (nux_nid_t n, nux_u32_t c)
 {
-    nux_scene_module_t *module = nux_scene_module();
-    nux_scene_t        *scene  = module->active;
-    return component_add(scene, e, c);
+    component_add(nux_scene_active(), n, c);
 }
 void
 nux_node_remove (nux_nid_t e, nux_u32_t c)
@@ -590,7 +597,7 @@ node_clone (nux_scene_t *scene,
         {
             void *src = component_get(scene, src_nid, c);
             NUX_ASSERT(src);
-            void *dst = nux_component_add(dst_nid, c);
+            void *dst = component_add(nux_scene_active(), dst_nid, c);
             NUX_CHECK(dst, return NUX_FAILURE);
             nux_memcpy(dst, src, comp->size);
 

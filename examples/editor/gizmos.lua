@@ -4,21 +4,22 @@ function M:on_load()
     self.node = node.create(node.root())
     self.target = nil
 
-    collider.add_sphere(self.node, 1)
-    transform.add(self.node)
+    node.add(self.node, component.COLLIDER)
+    node.add(self.node, component.TRANSFORM)
+    collider.set_sphere(self.node, 1)
 end
 
 function M:update(pos, ray, btn)
     local hit = physics.raycast(pos, ray)
     if hit then
-        local node = hit.node
+        local id = hit.node
         local just_pressed = button.just_pressed(0, btn)
         if just_pressed then
-            if collider.has(node) and node ~= self.target then
+            if node.has(id, component.COLLIDER) and id ~= self.target then
                 if self.target then
                     staticmesh.set_draw_bounds(self.target, false)
                 end
-                self.target = node
+                self.target = id
                 staticmesh.set_draw_bounds(self.target, true)
             end
         end
