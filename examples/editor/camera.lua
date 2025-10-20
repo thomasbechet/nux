@@ -5,6 +5,9 @@ function M:on_load()
     self.pitch = 0
     self.yaw = 0
     self.node = node.create(node.root())
+    self.velocity = vmath.vec3(0)
+    self.max_speed = 10
+    self.acc = 10
     node.add(self.node, component.CAMERA)
     node.add(self.node, component.TRANSFORM)
     camera.set_render_mask(self.node, 1)
@@ -13,9 +16,6 @@ function M:on_load()
     node.add(self.top_node, component.CAMERA)
     node.add(self.top_node, component.TRANSFORM)
     camera.set_render_mask(self.top_node, 2)
-end
-
-function M:on_event(e)
 end
 
 function M:on_update()
@@ -47,8 +47,17 @@ function M:on_update()
     dir = dir - left * mx * dt * speed
     -- Up
     dir.y = dir.y + my * dt * speed
+
+    -- Update velocity
+    self.velocity = vmath.add(self.velocity, dir * time.delta() * self.acc)
+    if vmath.length(self.velocity) > self.max_speed then
+        self.velocity = vmath.norm(self.velocity) * self.max_speed
+    end
+    self.velocity = vmath.mul(self.velocity, 0.9)
+
+    -- Update position
     local position = transform.get_translation(e)
-    transform.set_translation(e, position + dir)
+    transform.set_translation(e, position + self.velocity)
 
     -- Rotation
     if rx ~= 0 then

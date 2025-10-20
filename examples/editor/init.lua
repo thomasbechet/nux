@@ -80,8 +80,10 @@ function M:on_update()
 
     canvas.rectangle(c, cur.x * WIDTH - 1, cur.y * HEIGHT - 1, 5, 5)
 
-    camera.reset_aspect(self.camera.node, self.vp)
-    camera.reset_aspect(self.camera.top_node, self.vp)
+    -- camera.reset_aspect(self.camera.node, self.vp)
+    -- camera.reset_aspect(self.camera.top_node, self.vp)
+    camera.set_aspect(self.camera.node, WIDTH / HEIGHT)
+    camera.set_aspect(self.camera.top_node, WIDTH / HEIGHT)
 
     local dir = camera.unproject(self.camera.node, gcur)
     self.gizmos:update(position, dir, button.RB)
