@@ -24,6 +24,7 @@ typedef struct
     nux_controller_t    controllers[NUX_CONTROLLER_MAX];
     nux_log_level_t     log_level;
     nux_disk_t         *first_disk;
+    nux_os_event_vec_t  events;
 } nux_base_module_t;
 
 nux_base_module_t *nux_base_module(void);

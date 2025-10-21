@@ -23,6 +23,8 @@ nux_base_init (void *userdata)
     type->cleanup = nux_file_cleanup;
     type = nux_resource_register(NUX_RESOURCE_DISK, sizeof(nux_disk_t), "disk");
     type->cleanup = nux_disk_cleanup;
+    type          = nux_resource_register(
+        NUX_RESOURCE_INPUTMAP, sizeof(nux_inputmap_t), "inputmap");
 
     // Initialize resources with core arena
     NUX_CHECK(nux_resource_init(), return NUX_FAILURE);
@@ -57,6 +59,12 @@ nux_base_init (void *userdata)
     // Initialize values
     nux_u32_vec_fill_reversed(&module->free_file_slots);
 
+    // Allocate events queue
+    NUX_CHECK(nux_os_event_vec_init_capa(module->core_arena,
+                                         NUX_BASE_DEFAULT_EVENT_SIZE,
+                                         &module->events),
+              return NUX_FAILURE);
+
     // Add OS disk
     module->first_disk = nux_resource_new(nux_arena_core(), NUX_RESOURCE_DISK);
     module->first_disk->type = NUX_DISK_OS;
@@ -69,6 +77,13 @@ nux_base_init (void *userdata)
         controller->cursor_motion_axis[0] = NUX_AXIS_LEFTX;
         controller->cursor_motion_axis[1] = NUX_AXIS_LEFTY;
         controller->cursor_motion_speed   = 100;
+        controller->inputmap              = NUX_NULL;
+        nux_f32_vec_init_capa(module->core_arena,
+                              NUX_BASE_DEFAULT_CONTROLLER_INPUT_SIZE,
+                              &controller->inputs);
+        nux_f32_vec_init_capa(module->core_arena,
+                              NUX_BASE_DEFAULT_CONTROLLER_INPUT_SIZE,
+                              &controller->prev_inputs);
     }
 
     return NUX_SUCCESS;

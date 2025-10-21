@@ -76,86 +76,128 @@ gl_message_callback (GLenum        source,
     assert(severity != GL_DEBUG_SEVERITY_HIGH);
 }
 
+static nux_key_t key_map[] = {
+    [GLFW_KEY_SPACE]         = NUX_KEY_SPACE,
+    [GLFW_KEY_APOSTROPHE]    = NUX_KEY_APOSTROPHE,
+    [GLFW_KEY_COMMA]         = NUX_KEY_COMMA,
+    [GLFW_KEY_MINUS]         = NUX_KEY_MINUS,
+    [GLFW_KEY_PERIOD]        = NUX_KEY_PERIOD,
+    [GLFW_KEY_SLASH]         = NUX_KEY_SLASH,
+    [GLFW_KEY_0]             = NUX_KEY_NUM0,
+    [GLFW_KEY_1]             = NUX_KEY_NUM1,
+    [GLFW_KEY_2]             = NUX_KEY_NUM2,
+    [GLFW_KEY_3]             = NUX_KEY_NUM3,
+    [GLFW_KEY_4]             = NUX_KEY_NUM4,
+    [GLFW_KEY_5]             = NUX_KEY_NUM5,
+    [GLFW_KEY_6]             = NUX_KEY_NUM6,
+    [GLFW_KEY_7]             = NUX_KEY_NUM7,
+    [GLFW_KEY_8]             = NUX_KEY_NUM8,
+    [GLFW_KEY_9]             = NUX_KEY_NUM9,
+    [GLFW_KEY_SEMICOLON]     = NUX_KEY_SEMICOLON,
+    [GLFW_KEY_EQUAL]         = NUX_KEY_EQUAL,
+    [GLFW_KEY_A]             = NUX_KEY_A,
+    [GLFW_KEY_B]             = NUX_KEY_B,
+    [GLFW_KEY_C]             = NUX_KEY_C,
+    [GLFW_KEY_D]             = NUX_KEY_D,
+    [GLFW_KEY_E]             = NUX_KEY_E,
+    [GLFW_KEY_F]             = NUX_KEY_F,
+    [GLFW_KEY_G]             = NUX_KEY_G,
+    [GLFW_KEY_H]             = NUX_KEY_H,
+    [GLFW_KEY_I]             = NUX_KEY_I,
+    [GLFW_KEY_J]             = NUX_KEY_J,
+    [GLFW_KEY_K]             = NUX_KEY_K,
+    [GLFW_KEY_L]             = NUX_KEY_L,
+    [GLFW_KEY_M]             = NUX_KEY_M,
+    [GLFW_KEY_N]             = NUX_KEY_N,
+    [GLFW_KEY_O]             = NUX_KEY_O,
+    [GLFW_KEY_P]             = NUX_KEY_P,
+    [GLFW_KEY_Q]             = NUX_KEY_Q,
+    [GLFW_KEY_R]             = NUX_KEY_R,
+    [GLFW_KEY_S]             = NUX_KEY_S,
+    [GLFW_KEY_T]             = NUX_KEY_T,
+    [GLFW_KEY_U]             = NUX_KEY_U,
+    [GLFW_KEY_V]             = NUX_KEY_V,
+    [GLFW_KEY_W]             = NUX_KEY_W,
+    [GLFW_KEY_X]             = NUX_KEY_X,
+    [GLFW_KEY_Y]             = NUX_KEY_Y,
+    [GLFW_KEY_Z]             = NUX_KEY_Z,
+    [GLFW_KEY_LEFT_BRACKET]  = NUX_KEY_LEFT_BRACKET,
+    [GLFW_KEY_BACKSLASH]     = NUX_KEY_BACKSLASH,
+    [GLFW_KEY_RIGHT_BRACKET] = NUX_KEY_RIGHT_BRACKET,
+    [GLFW_KEY_GRAVE_ACCENT]  = NUX_KEY_GRAVE_ACCENT,
+    [GLFW_KEY_ESCAPE]        = NUX_KEY_ESCAPE,
+    [GLFW_KEY_ENTER]         = NUX_KEY_ENTER,
+    [GLFW_KEY_TAB]           = NUX_KEY_TAB,
+    [GLFW_KEY_BACKSPACE]     = NUX_KEY_BACKSPACE,
+    [GLFW_KEY_INSERT]        = NUX_KEY_INSERT,
+    [GLFW_KEY_DELETE]        = NUX_KEY_DELETE,
+    [GLFW_KEY_RIGHT]         = NUX_KEY_RIGHT,
+    [GLFW_KEY_LEFT]          = NUX_KEY_LEFT,
+    [GLFW_KEY_DOWN]          = NUX_KEY_DOWN,
+    [GLFW_KEY_UP]            = NUX_KEY_UP,
+    [GLFW_KEY_PAGE_UP]       = NUX_KEY_PAGE_UP,
+    [GLFW_KEY_PAGE_DOWN]     = NUX_KEY_PAGE_DOWN,
+    [GLFW_KEY_HOME]          = NUX_KEY_HOME,
+    [GLFW_KEY_END]           = NUX_KEY_END,
+    [GLFW_KEY_CAPS_LOCK]     = NUX_KEY_CAPS_LOCK,
+    [GLFW_KEY_SCROLL_LOCK]   = NUX_KEY_SCROLL_LOCK,
+    [GLFW_KEY_NUM_LOCK]      = NUX_KEY_NUM_LOCK,
+    [GLFW_KEY_PRINT_SCREEN]  = NUX_KEY_PRINT_SCREEN,
+    [GLFW_KEY_PAUSE]         = NUX_KEY_PAUSE,
+    [GLFW_KEY_F1]            = NUX_KEY_F1,
+    [GLFW_KEY_F2]            = NUX_KEY_F2,
+    [GLFW_KEY_F3]            = NUX_KEY_F3,
+    [GLFW_KEY_F4]            = NUX_KEY_F4,
+    [GLFW_KEY_F5]            = NUX_KEY_F5,
+    [GLFW_KEY_F6]            = NUX_KEY_F6,
+    [GLFW_KEY_F7]            = NUX_KEY_F7,
+    [GLFW_KEY_F8]            = NUX_KEY_F8,
+    [GLFW_KEY_F9]            = NUX_KEY_F9,
+    [GLFW_KEY_F10]           = NUX_KEY_F10,
+    [GLFW_KEY_F11]           = NUX_KEY_F11,
+    [GLFW_KEY_F12]           = NUX_KEY_F12,
+    [GLFW_KEY_F13]           = NUX_KEY_F13,
+    [GLFW_KEY_F14]           = NUX_KEY_F14,
+    [GLFW_KEY_F15]           = NUX_KEY_F15,
+    [GLFW_KEY_F16]           = NUX_KEY_F16,
+    [GLFW_KEY_F17]           = NUX_KEY_F17,
+    [GLFW_KEY_F18]           = NUX_KEY_F18,
+    [GLFW_KEY_F19]           = NUX_KEY_F19,
+    [GLFW_KEY_F20]           = NUX_KEY_F20,
+    [GLFW_KEY_F21]           = NUX_KEY_F21,
+    [GLFW_KEY_F22]           = NUX_KEY_F22,
+    [GLFW_KEY_F23]           = NUX_KEY_F23,
+    [GLFW_KEY_F24]           = NUX_KEY_F24,
+    [GLFW_KEY_F25]           = NUX_KEY_F25,
+    [GLFW_KEY_KP_0]          = NUX_KEY_KP_0,
+    [GLFW_KEY_KP_1]          = NUX_KEY_KP_1,
+    [GLFW_KEY_KP_2]          = NUX_KEY_KP_2,
+    [GLFW_KEY_KP_3]          = NUX_KEY_KP_3,
+    [GLFW_KEY_KP_4]          = NUX_KEY_KP_4,
+    [GLFW_KEY_KP_5]          = NUX_KEY_KP_5,
+    [GLFW_KEY_KP_6]          = NUX_KEY_KP_6,
+    [GLFW_KEY_KP_7]          = NUX_KEY_KP_7,
+    [GLFW_KEY_KP_8]          = NUX_KEY_KP_8,
+    [GLFW_KEY_KP_9]          = NUX_KEY_KP_9,
+    [GLFW_KEY_KP_DECIMAL]    = NUX_KEY_KP_DECIMAL,
+    [GLFW_KEY_KP_DIVIDE]     = NUX_KEY_KP_DIVIDE,
+    [GLFW_KEY_KP_MULTIPLY]   = NUX_KEY_KP_MULTIPLY,
+    [GLFW_KEY_KP_SUBTRACT]   = NUX_KEY_KP_SUBTRACT,
+    [GLFW_KEY_KP_ADD]        = NUX_KEY_KP_ADD,
+    [GLFW_KEY_KP_ENTER]      = NUX_KEY_KP_ENTER,
+    [GLFW_KEY_KP_EQUAL]      = NUX_KEY_KP_EQUAL,
+    [GLFW_KEY_LEFT_SHIFT]    = NUX_KEY_LEFT_SHIFT,
+    [GLFW_KEY_LEFT_CONTROL]  = NUX_KEY_LEFT_CONTROL,
+    [GLFW_KEY_LEFT_ALT]      = NUX_KEY_LEFT_ALT,
+    [GLFW_KEY_LEFT_SUPER]    = NUX_KEY_LEFT_SUPER,
+    [GLFW_KEY_RIGHT_SHIFT]   = NUX_KEY_RIGHT_SHIFT,
+    [GLFW_KEY_RIGHT_CONTROL] = NUX_KEY_RIGHT_CONTROL,
+    [GLFW_KEY_RIGHT_ALT]     = NUX_KEY_RIGHT_ALT,
+    [GLFW_KEY_RIGHT_SUPER]   = NUX_KEY_RIGHT_SUPER,
+    [GLFW_KEY_MENU]          = NUX_KEY_MENU,
+};
 static nux_button_t
-key_to_button (int code)
-{
-    switch (code)
-    {
-        // D-Pad
-        case GLFW_KEY_LEFT:
-            return NUX_BUTTON_LEFT;
-        case GLFW_KEY_DOWN:
-            return NUX_BUTTON_DOWN;
-        case GLFW_KEY_UP:
-            return NUX_BUTTON_UP;
-        case GLFW_KEY_RIGHT:
-            return NUX_BUTTON_RIGHT;
-
-        // Triggers
-        case GLFW_KEY_E:
-            return NUX_BUTTON_RB;
-        case GLFW_KEY_LEFT_SHIFT:
-            return NUX_BUTTON_LB;
-
-        // Action buttons
-        case GLFW_KEY_X:
-            return NUX_BUTTON_A;
-        case GLFW_KEY_Z:
-            return NUX_BUTTON_B;
-        case GLFW_KEY_C:
-            return NUX_BUTTON_Y;
-        case GLFW_KEY_V:
-            return NUX_BUTTON_X;
-    }
-    return -1;
-}
-static nux_axis_t
-key_to_axis (int code, float *value)
-{
-    switch (code)
-    {
-        // Left Stick
-        case GLFW_KEY_W:
-            *value = 1;
-            return NUX_AXIS_LEFTY;
-        case GLFW_KEY_A:
-            *value = -1;
-            return NUX_AXIS_LEFTX;
-        case GLFW_KEY_S:
-            *value = -1;
-            return NUX_AXIS_LEFTY;
-        case GLFW_KEY_D:
-            *value = 1;
-            return NUX_AXIS_LEFTX;
-
-        // Right Stick
-        case GLFW_KEY_J:
-            *value = -1;
-            return NUX_AXIS_RIGHTY;
-        case GLFW_KEY_H:
-            *value = -1;
-            return NUX_AXIS_RIGHTX;
-        case GLFW_KEY_K:
-            *value = 1;
-            return NUX_AXIS_RIGHTY;
-        case GLFW_KEY_L:
-            *value = 1;
-            return NUX_AXIS_RIGHTX;
-
-        case GLFW_KEY_U:
-            *value = 1;
-            return NUX_AXIS_LT;
-        case GLFW_KEY_O:
-            *value = 1;
-            return NUX_AXIS_RT;
-
-        default:
-            break;
-    }
-    return -1;
-}
-static nux_button_t
-gamepad_button_to_button (int button)
+gamepad_button_map (int button)
 {
     switch (button)
     {
@@ -184,7 +226,7 @@ gamepad_button_to_button (int button)
     }
 }
 static nux_axis_t
-gamepad_axis_to_axis (int axis)
+gamepad_axis_map (int axis)
 {
     switch (axis)
     {
@@ -212,22 +254,21 @@ resize_callback (GLFWwindow *win, int w, int h)
 static void
 key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
 {
-    nux_button_t button = key_to_button(key);
-    float        axvalue;
-    nux_axis_t   axis = key_to_axis(key, &axvalue);
+    nux_key_t k = key_map[key];
     if (action == GLFW_PRESS)
     {
-        if (button != (nux_button_t)-1)
-        {
-            runtime.buttons |= button;
-        }
-        if (axis != (nux_axis_t)-1)
-        {
-            runtime.axis[axis] = axvalue;
-        }
+        nux_os_event_t event;
+        event.type = NUX_OS_EVENT_KEY_PRESSED;
+        event.key  = k;
+        nux_instance_push_event(runtime.instance, &event);
     }
     else if (action == GLFW_RELEASE)
     {
+        nux_os_event_t event;
+        event.type = NUX_OS_EVENT_KEY_RELEASED;
+        event.key  = k;
+        nux_instance_push_event(runtime.instance, &event);
+
         if (key == GLFW_KEY_ESCAPE)
         {
             bool unfocus = false;
@@ -261,14 +302,6 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
                     runtime.reload = true;
                     break;
             }
-        }
-        if (button != (nux_button_t)-1)
-        {
-            runtime.buttons &= ~button;
-        }
-        if (axis != (nux_axis_t)-1)
-        {
-            runtime.axis[axis] = 0;
         }
     }
 
@@ -443,18 +476,18 @@ window_begin_frame (void)
                     for (int button = 0; button < GLFW_GAMEPAD_BUTTON_LAST;
                          ++button)
                     {
-                        nux_button_t mask = gamepad_button_to_button(button);
-                        if (mask != (nux_button_t)-1)
-                        {
-                            if (state.buttons[button])
-                            {
-                                runtime.buttons |= mask;
-                            }
-                            else
-                            {
-                                runtime.buttons &= ~mask;
-                            }
-                        }
+                        // nux_button_t mask = gamepad_button_to_button(button);
+                        // if (mask != (nux_button_t)-1)
+                        // {
+                        //     if (state.buttons[button])
+                        //     {
+                        //         runtime.buttons |= mask;
+                        //     }
+                        //     else
+                        //     {
+                        //         runtime.buttons &= ~mask;
+                        //     }
+                        // }
                     }
 
                     for (int axis = 0; axis < GLFW_GAMEPAD_AXIS_LAST; ++axis)
@@ -469,7 +502,7 @@ window_begin_frame (void)
                         {
                             value = -value;
                         }
-                        runtime.axis[gamepad_axis_to_axis(axis)] = value;
+                        // runtime.axis[gamepad_axis_to_axis(axis)] = value;
                     }
                 }
             }
@@ -495,27 +528,4 @@ window_end_frame (void)
     int    fps        = (int)(1. / ((float)delta));
     runtime.prev_time = time;
     return fps;
-}
-
-void
-nux_os_input_update (void      *user,
-                     nux_u32_t  controller,
-                     nux_u32_t *buttons,
-                     nux_f32_t *axis,
-                     nux_f32_t *cursor)
-{
-    *buttons = runtime.buttons;
-    for (int a = 0; a < NUX_AXIS_MAX; ++a)
-    {
-        axis[a] = runtime.axis[a];
-    }
-    if (runtime.focused)
-    {
-        struct nk_rect vp = runtime.viewport;
-        double         x, y;
-        glfwGetCursorPos(runtime.win, &x, &y);
-        y         = runtime.size.y - y;
-        cursor[0] = (x - vp.x) / vp.w;
-        cursor[1] = 1 - (y - vp.y) / vp.h;
-    }
 }

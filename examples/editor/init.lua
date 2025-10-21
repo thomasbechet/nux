@@ -20,6 +20,20 @@ local HEIGHT = 480
 function M:on_load()
     self.arena = arena.core()
 
+    local map = inputmap.new(self.arena)
+    inputmap.bind_key(map, "up", key.X, 1)
+    inputmap.bind_key(map, "down", key.Z, 1)
+    inputmap.bind_key(map, "left", key.A, 1)
+    inputmap.bind_key(map, "right", key.D, 1)
+    inputmap.bind_key(map, "forward", key.W, 1)
+    inputmap.bind_key(map, "backward", key.S, 1)
+    inputmap.bind_key(map, "sprint", key.LEFT_SHIFT, 1)
+    inputmap.bind_key(map, "viewx+", key.H, 1)
+    inputmap.bind_key(map, "viewx-", key.L, 1)
+    inputmap.bind_key(map, "viewy+", key.J, 1)
+    inputmap.bind_key(map, "viewy-", key.K, 1)
+    input.set_map(0, map)
+
     self.mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
     self.active_texture = nil
     self.active_mesh = nil
@@ -56,8 +70,6 @@ function M:on_load()
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
     viewport.set_layer(self.vp, 2)
 end
-
--- local function get_screen()
 
 function M:on_update()
     local position = transform.get_translation(self.camera.node)

@@ -13,7 +13,7 @@ function M:update(pos, ray, btn)
     local hit = physics.raycast(pos, ray)
     if hit then
         local id = hit.node
-        local just_pressed = button.just_pressed(0, btn)
+        local just_pressed = input.just_pressed(0, btn)
         if just_pressed then
             if node.has(id, component.COLLIDER) and id ~= self.target then
                 if self.target then

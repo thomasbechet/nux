@@ -9,7 +9,9 @@
 
 typedef enum
 {
-    NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE = 8
+    NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE = 8,
+    NUX_QUADS_DEFAULT_SIZE                    = 4096 * 8,
+    NUX_BATCHES_DEFAULT_SIZE                  = 512,
 } nux_graphics_defaults_t;
 
 typedef struct

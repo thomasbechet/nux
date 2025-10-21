@@ -18,7 +18,7 @@ struct nux_instance_t
 };
 
 static void
-begin_thread_context (nux_instance_t *instance)
+setup_thread_context (nux_instance_t *instance)
 {
     _instance = instance;
 }
@@ -61,7 +61,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     nux_instance_t *instance
         = nux_os_alloc(userdata, NUX_NULL, 0, sizeof(*instance));
     NUX_ASSERT(instance);
-    begin_thread_context(instance);
+    setup_thread_context(instance);
     nux_memset(instance, 0, sizeof(*instance));
 
     // Initialize mandatory modules
@@ -114,7 +114,7 @@ cleanup:
 void
 nux_instance_free (nux_instance_t *instance)
 {
-    begin_thread_context(instance);
+    setup_thread_context(instance);
 
     // Cleanup all resources
     nux_arena_reset(nux_arena_core());
@@ -134,37 +134,23 @@ nux_instance_free (nux_instance_t *instance)
 void
 nux_instance_update (nux_instance_t *instance)
 {
-    begin_thread_context(instance);
+    setup_thread_context(instance);
 
-    // Update stats
+    // Pre update
     nux_os_stats_update(nux_base_module()->userdata, nux_base_module()->stats);
-
-    // Prepare render
     nux_graphics_pre_update();
 
-    // Update inputs
+    // Update
     nux_input_update();
-
-    // Update physics
     nux_physics_update();
-
-    // Update lua
     nux_lua_update();
-
-    // Process events
     nux_event_process_all();
-
-    // Update debug
     nux_debug_update();
-
-    // Error handling
     if (!nux_error_get_status())
     {
         NUX_ERROR("%s", nux_error_get_message());
     }
     nux_error_reset();
-
-    // Render
     nux_graphics_update();
 
     // Hotreload
@@ -179,10 +165,15 @@ nux_instance_update (nux_instance_t *instance)
         }
     }
 
-    // Reset frame resources
+    // Post update
     nux_arena_reset(nux_arena_frame());
-
-    // Frame integration
     nux_base_module()->time_elapsed += nux_time_delta();
     ++nux_base_module()->frame;
+    nux_os_event_vec_clear(&nux_base_module()->events);
+}
+void
+nux_instance_push_event (nux_instance_t *instance, nux_os_event_t *event)
+{
+    setup_thread_context(instance);
+    nux_os_event_vec_pushv(&nux_base_module()->events, *event);
 }

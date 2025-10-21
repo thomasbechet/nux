@@ -22,20 +22,16 @@ function M:on_update()
     local speed = self.speed
     local e = self.node
 
-    if button.pressed(0, button.LB) then
+    if input.pressed(0, "sprint") then
         speed = self.fast_speed
     end
 
-    local mx = axis.value(0, axis.LEFTX)
-    local mz = axis.value(0, axis.LEFTY)
-    local my = 0
-    if button.pressed(0, button.A) then
-        my = 1
-    elseif button.pressed(0, button.B) then
-        my = -1
-    end
-    local rx = axis.value(0, axis.RIGHTX)
-    local ry = axis.value(0, axis.RIGHTY)
+    local mx = input.value(0, "right") - input.value(0, "left")
+    local mz = input.value(0, "forward") - input.value(0, "backward")
+    local my = input.value(0, "up") - input.value(0, "down")
+    local rx = input.value(0, "viewx-") - input.value(0, "viewx+")
+    local ry = input.value(0, "viewy-") - input.value(0, "viewy+")
+    print(ry)
 
     -- Translation
     local forward = transform.forward(e)

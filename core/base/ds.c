@@ -4,6 +4,8 @@ NUX_VEC_IMPL(nux_u32_vec, nux_u32_t);
 NUX_VEC_IMPL(nux_f32_vec, nux_f32_t)
 NUX_VEC_IMPL(nux_v4_vec, nux_v4_t)
 NUX_VEC_IMPL(nux_ptr_vec, void *);
+NUX_VEC_IMPL(nux_os_event_vec, nux_os_event_t);
+NUX_VEC_IMPL(nux_inputmap_entry_vec, nux_inputmap_entry_t);
 NUX_POOL_IMPL(nux_resource_pool, nux_resource_entry_t)
 
 void

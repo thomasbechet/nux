@@ -49,38 +49,6 @@ log.WARNING=2
 log.ERROR=1
 ---@return None
 function log.set_level(...) end
-button={}
-button.MAX=10
-button.A=1 << 0
-button.X=1 << 1
-button.Y=1 << 2
-button.B=1 << 3
-button.UP=1 << 4
-button.DOWN=1 << 5
-button.LEFT=1 << 6
-button.RIGHT=1 << 7
-button.LB=1 << 8
-button.RB=1 << 9
----@return None
-function button.state(...) end
----@return None
-function button.pressed(...) end
----@return None
-function button.released(...) end
----@return None
-function button.just_pressed(...) end
----@return None
-function button.just_released(...) end
-axis={}
-axis.MAX=6
-axis.LEFTX=0
-axis.LEFTY=1
-axis.RIGHTX=2
-axis.RIGHTY=3
-axis.RT=4
-axis.LT=5
----@return None
-function axis.value(...) end
 cursor={}
 ---@return None
 function cursor.get(...) end
@@ -90,6 +58,35 @@ function cursor.set(...) end
 function cursor.x(...) end
 ---@return None
 function cursor.y(...) end
+inputmap={}
+---@return None
+function inputmap.new(...) end
+---@return None
+function inputmap.bind_key(...) end
+---@return None
+function inputmap.bind_mouse(...) end
+---@return None
+function inputmap.bind_button(...) end
+input={}
+input.UNMAPPED=0
+input.KEYBOARD=1
+input.BUTTON=2
+input.AXIS=3
+input.MOUSE=4
+input.PRESSED=1
+input.RELEASED=0
+---@return None
+function input.set_map(...) end
+---@return None
+function input.pressed(...) end
+---@return None
+function input.released(...) end
+---@return None
+function input.just_pressed(...) end
+---@return None
+function input.just_released(...) end
+---@return None
+function input.value(...) end
 io={}
 ---@return None
 function io.cart_begin(...) end
@@ -131,6 +128,147 @@ name={}
 name.MAX=64
 disk={}
 disk.MAX=8
+key={}
+key.SPACE=0
+key.APOSTROPHE=1
+key.COMMA=2
+key.MINUS=3
+key.PERIOD=4
+key.SLASH=5
+key.NUM0=6
+key.NUM1=7
+key.NUM2=8
+key.NUM3=9
+key.NUM4=10
+key.NUM5=11
+key.NUM6=12
+key.NUM7=13
+key.NUM8=14
+key.NUM9=15
+key.SEMICOLON=16
+key.EQUAL=17
+key.A=18
+key.B=19
+key.C=20
+key.D=21
+key.E=22
+key.F=23
+key.G=24
+key.H=25
+key.I=26
+key.J=27
+key.K=29
+key.L=30
+key.M=31
+key.N=32
+key.O=33
+key.P=34
+key.Q=35
+key.R=36
+key.S=37
+key.T=38
+key.U=39
+key.V=40
+key.W=41
+key.X=42
+key.Y=43
+key.Z=44
+key.LEFT_BRACKET=45
+key.BACKSLASH=46
+key.RIGHT_BRACKET=47
+key.GRAVE_ACCENT=48
+key.ESCAPE=49
+key.ENTER=50
+key.TAB=51
+key.BACKSPACE=52
+key.INSERT=53
+key.DELETE=54
+key.RIGHT=55
+key.LEFT=56
+key.DOWN=57
+key.UP=58
+key.PAGE_UP=59
+key.PAGE_DOWN=60
+key.HOME=61
+key.END=62
+key.CAPS_LOCK=63
+key.SCROLL_LOCK=64
+key.NUM_LOCK=65
+key.PRINT_SCREEN=66
+key.PAUSE=67
+key.F1=68
+key.F2=69
+key.F3=70
+key.F4=71
+key.F5=72
+key.F6=73
+key.F7=74
+key.F8=75
+key.F9=76
+key.F10=77
+key.F11=78
+key.F12=79
+key.F13=80
+key.F14=81
+key.F15=82
+key.F16=83
+key.F17=84
+key.F18=85
+key.F19=86
+key.F20=87
+key.F21=88
+key.F22=89
+key.F23=90
+key.F24=91
+key.F25=92
+key.KP_0=93
+key.KP_1=94
+key.KP_2=95
+key.KP_3=96
+key.KP_4=97
+key.KP_5=98
+key.KP_6=99
+key.KP_7=100
+key.KP_8=101
+key.KP_9=102
+key.KP_DECIMAL=103
+key.KP_DIVIDE=104
+key.KP_MULTIPLY=105
+key.KP_SUBTRACT=106
+key.KP_ADD=107
+key.KP_ENTER=108
+key.KP_EQUAL=109
+key.LEFT_SHIFT=110
+key.LEFT_CONTROL=111
+key.LEFT_ALT=112
+key.LEFT_SUPER=113
+key.RIGHT_SHIFT=114
+key.RIGHT_CONTROL=115
+key.RIGHT_ALT=116
+key.RIGHT_SUPER=117
+key.MENU=118
+button={}
+button.A=1 << 0
+button.X=1 << 1
+button.Y=1 << 2
+button.B=1 << 3
+button.UP=1 << 4
+button.DOWN=1 << 5
+button.LEFT=1 << 6
+button.RIGHT=1 << 7
+button.LB=1 << 8
+button.RB=1 << 9
+mouse={}
+mouse.X=0
+mouse.LEFT=1
+mouse.RIGHT=2
+axis={}
+axis.LEFTX=0
+axis.LEFTY=1
+axis.RIGHTX=2
+axis.RIGHTY=3
+axis.RT=4
+axis.LT=5
 lua={}
 ---@return None
 function lua.load(...) end

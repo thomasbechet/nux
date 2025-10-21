@@ -263,71 +263,6 @@ l_log_set_level (lua_State *L)
     return 0;
 }
 static int
-l_button_state (lua_State *L)
-{
-    nux_u32_t controller = luaL_checknumber(L, 1);
-    nux_u32_t ret        = nux_button_state(controller);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_button_pressed (lua_State *L)
-{
-    nux_u32_t    controller = luaL_checknumber(L, 1);
-    nux_button_t button     = luaL_checknumber(L, 2);
-    nux_b32_t    ret        = nux_button_pressed(controller, button);
-    l_checkerror(L);
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-static int
-l_button_released (lua_State *L)
-{
-    nux_u32_t    controller = luaL_checknumber(L, 1);
-    nux_button_t button     = luaL_checknumber(L, 2);
-    nux_b32_t    ret        = nux_button_released(controller, button);
-    l_checkerror(L);
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-static int
-l_button_just_pressed (lua_State *L)
-{
-    nux_u32_t    controller = luaL_checknumber(L, 1);
-    nux_button_t button     = luaL_checknumber(L, 2);
-    nux_b32_t    ret        = nux_button_just_pressed(controller, button);
-    l_checkerror(L);
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-static int
-l_button_just_released (lua_State *L)
-{
-    nux_u32_t    controller = luaL_checknumber(L, 1);
-    nux_button_t button     = luaL_checknumber(L, 2);
-    nux_b32_t    ret        = nux_button_just_released(controller, button);
-    l_checkerror(L);
-
-    lua_pushboolean(L, ret);
-    return 1;
-}
-static int
-l_axis_value (lua_State *L)
-{
-    nux_u32_t  controller = luaL_checknumber(L, 1);
-    nux_axis_t axis       = luaL_checknumber(L, 2);
-    nux_f32_t  ret        = nux_axis_value(controller, axis);
-    l_checkerror(L);
-
-    lua_pushnumber(L, ret);
-    return 1;
-}
-static int
 l_cursor_get (lua_State *L)
 {
     nux_u32_t controller = luaL_checknumber(L, 1);
@@ -364,6 +299,134 @@ l_cursor_y (lua_State *L)
 {
     nux_u32_t controller = luaL_checknumber(L, 1);
     nux_f32_t ret        = nux_cursor_y(controller);
+    l_checkerror(L);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+static int
+l_inputmap_new (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    const nux_inputmap_t *ret = nux_inputmap_new(arena);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_inputmap_bind_key (lua_State *L)
+{
+    nux_inputmap_t *map
+        = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
+    const nux_c8_t *name  = luaL_checkstring(L, 2);
+    nux_key_t       key   = luaL_checknumber(L, 3);
+    nux_f32_t       value = luaL_checknumber(L, 4);
+
+    nux_inputmap_bind_key(map, name, key, value);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_inputmap_bind_mouse (lua_State *L)
+{
+    nux_inputmap_t *map
+        = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
+    const nux_c8_t *name  = luaL_checkstring(L, 2);
+    nux_key_t       key   = luaL_checknumber(L, 3);
+    nux_f32_t       value = luaL_checknumber(L, 4);
+
+    nux_inputmap_bind_mouse(map, name, key, value);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_inputmap_bind_button (lua_State *L)
+{
+    nux_inputmap_t *map
+        = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
+    const nux_c8_t *name  = luaL_checkstring(L, 2);
+    nux_key_t       key   = luaL_checknumber(L, 3);
+    nux_f32_t       value = luaL_checknumber(L, 4);
+
+    nux_inputmap_bind_button(map, name, key, value);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_input_set_map (lua_State *L)
+{
+    nux_u32_t       controller = luaL_checknumber(L, 1);
+    nux_inputmap_t *map
+        = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 2));
+
+    nux_input_set_map(controller, map);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_input_pressed (lua_State *L)
+{
+    nux_u32_t       controller = luaL_checknumber(L, 1);
+    const nux_c8_t *name       = luaL_checkstring(L, 2);
+    nux_b32_t       ret        = nux_input_pressed(controller, name);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_input_released (lua_State *L)
+{
+    nux_u32_t       controller = luaL_checknumber(L, 1);
+    const nux_c8_t *name       = luaL_checkstring(L, 2);
+    nux_b32_t       ret        = nux_input_released(controller, name);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_input_just_pressed (lua_State *L)
+{
+    nux_u32_t       controller = luaL_checknumber(L, 1);
+    const nux_c8_t *name       = luaL_checkstring(L, 2);
+    nux_b32_t       ret        = nux_input_just_pressed(controller, name);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_input_just_released (lua_State *L)
+{
+    nux_u32_t       controller = luaL_checknumber(L, 1);
+    const nux_c8_t *name       = luaL_checkstring(L, 2);
+    nux_b32_t       ret        = nux_input_just_released(controller, name);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_input_value (lua_State *L)
+{
+    nux_u32_t       controller = luaL_checknumber(L, 1);
+    const nux_c8_t *name       = luaL_checkstring(L, 2);
+    nux_f32_t       ret        = nux_input_value(controller, name);
     l_checkerror(L);
 
     lua_pushnumber(L, ret);
@@ -1865,20 +1928,25 @@ static const struct luaL_Reg lib_resource[]
         { "find", l_resource_find }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]
     = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_button[]
-    = { { "state", l_button_state },
-        { "pressed", l_button_pressed },
-        { "released", l_button_released },
-        { "just_pressed", l_button_just_pressed },
-        { "just_released", l_button_just_released },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_axis[]
-    = { { "value", l_axis_value }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_cursor[] = { { "get", l_cursor_get },
                                               { "set", l_cursor_set },
                                               { "x", l_cursor_x },
                                               { "y", l_cursor_y },
                                               { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_inputmap[]
+    = { { "new", l_inputmap_new },
+        { "bind_key", l_inputmap_bind_key },
+        { "bind_mouse", l_inputmap_bind_mouse },
+        { "bind_button", l_inputmap_bind_button },
+        { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_input[]
+    = { { "set_map", l_input_set_map },
+        { "pressed", l_input_pressed },
+        { "released", l_input_released },
+        { "just_pressed", l_input_just_pressed },
+        { "just_released", l_input_just_released },
+        { "value", l_input_value },
+        { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_io[]
     = { { "cart_begin", l_io_cart_begin },
         { "cart_end", l_io_cart_end },
@@ -1894,6 +1962,10 @@ static const struct luaL_Reg lib_stat[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_name[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_disk[]       = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_key[]        = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_button[]     = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_mouse[]      = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_axis[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_lua[]
     = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_transform[]
@@ -2060,50 +2132,28 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "ERROR");
     lua_setglobal(L, "log");
     lua_newtable(L);
-    luaL_setfuncs(L, lib_button, 0);
-    lua_pushinteger(L, 10);
-    lua_setfield(L, -2, "MAX");
-    lua_pushinteger(L, 1 << 0);
-    lua_setfield(L, -2, "A");
-    lua_pushinteger(L, 1 << 1);
-    lua_setfield(L, -2, "X");
-    lua_pushinteger(L, 1 << 2);
-    lua_setfield(L, -2, "Y");
-    lua_pushinteger(L, 1 << 3);
-    lua_setfield(L, -2, "B");
-    lua_pushinteger(L, 1 << 4);
-    lua_setfield(L, -2, "UP");
-    lua_pushinteger(L, 1 << 5);
-    lua_setfield(L, -2, "DOWN");
-    lua_pushinteger(L, 1 << 6);
-    lua_setfield(L, -2, "LEFT");
-    lua_pushinteger(L, 1 << 7);
-    lua_setfield(L, -2, "RIGHT");
-    lua_pushinteger(L, 1 << 8);
-    lua_setfield(L, -2, "LB");
-    lua_pushinteger(L, 1 << 9);
-    lua_setfield(L, -2, "RB");
-    lua_setglobal(L, "button");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_axis, 0);
-    lua_pushinteger(L, 6);
-    lua_setfield(L, -2, "MAX");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "LEFTX");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LEFTY");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "RIGHTX");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "RIGHTY");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "RT");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "LT");
-    lua_setglobal(L, "axis");
-    lua_newtable(L);
     luaL_setfuncs(L, lib_cursor, 0);
     lua_setglobal(L, "cursor");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_inputmap, 0);
+    lua_setglobal(L, "inputmap");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_input, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "UNMAPPED");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "KEYBOARD");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "BUTTON");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "AXIS");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "MOUSE");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "PRESSED");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "RELEASED");
+    lua_setglobal(L, "input");
     lua_newtable(L);
     luaL_setfuncs(L, lib_io, 0);
     lua_setglobal(L, "io");
@@ -2165,6 +2215,292 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 8);
     lua_setfield(L, -2, "MAX");
     lua_setglobal(L, "disk");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_key, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "SPACE");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "APOSTROPHE");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "COMMA");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "MINUS");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "PERIOD");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "SLASH");
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "NUM0");
+    lua_pushinteger(L, 7);
+    lua_setfield(L, -2, "NUM1");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "NUM2");
+    lua_pushinteger(L, 9);
+    lua_setfield(L, -2, "NUM3");
+    lua_pushinteger(L, 10);
+    lua_setfield(L, -2, "NUM4");
+    lua_pushinteger(L, 11);
+    lua_setfield(L, -2, "NUM5");
+    lua_pushinteger(L, 12);
+    lua_setfield(L, -2, "NUM6");
+    lua_pushinteger(L, 13);
+    lua_setfield(L, -2, "NUM7");
+    lua_pushinteger(L, 14);
+    lua_setfield(L, -2, "NUM8");
+    lua_pushinteger(L, 15);
+    lua_setfield(L, -2, "NUM9");
+    lua_pushinteger(L, 16);
+    lua_setfield(L, -2, "SEMICOLON");
+    lua_pushinteger(L, 17);
+    lua_setfield(L, -2, "EQUAL");
+    lua_pushinteger(L, 18);
+    lua_setfield(L, -2, "A");
+    lua_pushinteger(L, 19);
+    lua_setfield(L, -2, "B");
+    lua_pushinteger(L, 20);
+    lua_setfield(L, -2, "C");
+    lua_pushinteger(L, 21);
+    lua_setfield(L, -2, "D");
+    lua_pushinteger(L, 22);
+    lua_setfield(L, -2, "E");
+    lua_pushinteger(L, 23);
+    lua_setfield(L, -2, "F");
+    lua_pushinteger(L, 24);
+    lua_setfield(L, -2, "G");
+    lua_pushinteger(L, 25);
+    lua_setfield(L, -2, "H");
+    lua_pushinteger(L, 26);
+    lua_setfield(L, -2, "I");
+    lua_pushinteger(L, 27);
+    lua_setfield(L, -2, "J");
+    lua_pushinteger(L, 29);
+    lua_setfield(L, -2, "K");
+    lua_pushinteger(L, 30);
+    lua_setfield(L, -2, "L");
+    lua_pushinteger(L, 31);
+    lua_setfield(L, -2, "M");
+    lua_pushinteger(L, 32);
+    lua_setfield(L, -2, "N");
+    lua_pushinteger(L, 33);
+    lua_setfield(L, -2, "O");
+    lua_pushinteger(L, 34);
+    lua_setfield(L, -2, "P");
+    lua_pushinteger(L, 35);
+    lua_setfield(L, -2, "Q");
+    lua_pushinteger(L, 36);
+    lua_setfield(L, -2, "R");
+    lua_pushinteger(L, 37);
+    lua_setfield(L, -2, "S");
+    lua_pushinteger(L, 38);
+    lua_setfield(L, -2, "T");
+    lua_pushinteger(L, 39);
+    lua_setfield(L, -2, "U");
+    lua_pushinteger(L, 40);
+    lua_setfield(L, -2, "V");
+    lua_pushinteger(L, 41);
+    lua_setfield(L, -2, "W");
+    lua_pushinteger(L, 42);
+    lua_setfield(L, -2, "X");
+    lua_pushinteger(L, 43);
+    lua_setfield(L, -2, "Y");
+    lua_pushinteger(L, 44);
+    lua_setfield(L, -2, "Z");
+    lua_pushinteger(L, 45);
+    lua_setfield(L, -2, "LEFT_BRACKET");
+    lua_pushinteger(L, 46);
+    lua_setfield(L, -2, "BACKSLASH");
+    lua_pushinteger(L, 47);
+    lua_setfield(L, -2, "RIGHT_BRACKET");
+    lua_pushinteger(L, 48);
+    lua_setfield(L, -2, "GRAVE_ACCENT");
+    lua_pushinteger(L, 49);
+    lua_setfield(L, -2, "ESCAPE");
+    lua_pushinteger(L, 50);
+    lua_setfield(L, -2, "ENTER");
+    lua_pushinteger(L, 51);
+    lua_setfield(L, -2, "TAB");
+    lua_pushinteger(L, 52);
+    lua_setfield(L, -2, "BACKSPACE");
+    lua_pushinteger(L, 53);
+    lua_setfield(L, -2, "INSERT");
+    lua_pushinteger(L, 54);
+    lua_setfield(L, -2, "DELETE");
+    lua_pushinteger(L, 55);
+    lua_setfield(L, -2, "RIGHT");
+    lua_pushinteger(L, 56);
+    lua_setfield(L, -2, "LEFT");
+    lua_pushinteger(L, 57);
+    lua_setfield(L, -2, "DOWN");
+    lua_pushinteger(L, 58);
+    lua_setfield(L, -2, "UP");
+    lua_pushinteger(L, 59);
+    lua_setfield(L, -2, "PAGE_UP");
+    lua_pushinteger(L, 60);
+    lua_setfield(L, -2, "PAGE_DOWN");
+    lua_pushinteger(L, 61);
+    lua_setfield(L, -2, "HOME");
+    lua_pushinteger(L, 62);
+    lua_setfield(L, -2, "END");
+    lua_pushinteger(L, 63);
+    lua_setfield(L, -2, "CAPS_LOCK");
+    lua_pushinteger(L, 64);
+    lua_setfield(L, -2, "SCROLL_LOCK");
+    lua_pushinteger(L, 65);
+    lua_setfield(L, -2, "NUM_LOCK");
+    lua_pushinteger(L, 66);
+    lua_setfield(L, -2, "PRINT_SCREEN");
+    lua_pushinteger(L, 67);
+    lua_setfield(L, -2, "PAUSE");
+    lua_pushinteger(L, 68);
+    lua_setfield(L, -2, "F1");
+    lua_pushinteger(L, 69);
+    lua_setfield(L, -2, "F2");
+    lua_pushinteger(L, 70);
+    lua_setfield(L, -2, "F3");
+    lua_pushinteger(L, 71);
+    lua_setfield(L, -2, "F4");
+    lua_pushinteger(L, 72);
+    lua_setfield(L, -2, "F5");
+    lua_pushinteger(L, 73);
+    lua_setfield(L, -2, "F6");
+    lua_pushinteger(L, 74);
+    lua_setfield(L, -2, "F7");
+    lua_pushinteger(L, 75);
+    lua_setfield(L, -2, "F8");
+    lua_pushinteger(L, 76);
+    lua_setfield(L, -2, "F9");
+    lua_pushinteger(L, 77);
+    lua_setfield(L, -2, "F10");
+    lua_pushinteger(L, 78);
+    lua_setfield(L, -2, "F11");
+    lua_pushinteger(L, 79);
+    lua_setfield(L, -2, "F12");
+    lua_pushinteger(L, 80);
+    lua_setfield(L, -2, "F13");
+    lua_pushinteger(L, 81);
+    lua_setfield(L, -2, "F14");
+    lua_pushinteger(L, 82);
+    lua_setfield(L, -2, "F15");
+    lua_pushinteger(L, 83);
+    lua_setfield(L, -2, "F16");
+    lua_pushinteger(L, 84);
+    lua_setfield(L, -2, "F17");
+    lua_pushinteger(L, 85);
+    lua_setfield(L, -2, "F18");
+    lua_pushinteger(L, 86);
+    lua_setfield(L, -2, "F19");
+    lua_pushinteger(L, 87);
+    lua_setfield(L, -2, "F20");
+    lua_pushinteger(L, 88);
+    lua_setfield(L, -2, "F21");
+    lua_pushinteger(L, 89);
+    lua_setfield(L, -2, "F22");
+    lua_pushinteger(L, 90);
+    lua_setfield(L, -2, "F23");
+    lua_pushinteger(L, 91);
+    lua_setfield(L, -2, "F24");
+    lua_pushinteger(L, 92);
+    lua_setfield(L, -2, "F25");
+    lua_pushinteger(L, 93);
+    lua_setfield(L, -2, "KP_0");
+    lua_pushinteger(L, 94);
+    lua_setfield(L, -2, "KP_1");
+    lua_pushinteger(L, 95);
+    lua_setfield(L, -2, "KP_2");
+    lua_pushinteger(L, 96);
+    lua_setfield(L, -2, "KP_3");
+    lua_pushinteger(L, 97);
+    lua_setfield(L, -2, "KP_4");
+    lua_pushinteger(L, 98);
+    lua_setfield(L, -2, "KP_5");
+    lua_pushinteger(L, 99);
+    lua_setfield(L, -2, "KP_6");
+    lua_pushinteger(L, 100);
+    lua_setfield(L, -2, "KP_7");
+    lua_pushinteger(L, 101);
+    lua_setfield(L, -2, "KP_8");
+    lua_pushinteger(L, 102);
+    lua_setfield(L, -2, "KP_9");
+    lua_pushinteger(L, 103);
+    lua_setfield(L, -2, "KP_DECIMAL");
+    lua_pushinteger(L, 104);
+    lua_setfield(L, -2, "KP_DIVIDE");
+    lua_pushinteger(L, 105);
+    lua_setfield(L, -2, "KP_MULTIPLY");
+    lua_pushinteger(L, 106);
+    lua_setfield(L, -2, "KP_SUBTRACT");
+    lua_pushinteger(L, 107);
+    lua_setfield(L, -2, "KP_ADD");
+    lua_pushinteger(L, 108);
+    lua_setfield(L, -2, "KP_ENTER");
+    lua_pushinteger(L, 109);
+    lua_setfield(L, -2, "KP_EQUAL");
+    lua_pushinteger(L, 110);
+    lua_setfield(L, -2, "LEFT_SHIFT");
+    lua_pushinteger(L, 111);
+    lua_setfield(L, -2, "LEFT_CONTROL");
+    lua_pushinteger(L, 112);
+    lua_setfield(L, -2, "LEFT_ALT");
+    lua_pushinteger(L, 113);
+    lua_setfield(L, -2, "LEFT_SUPER");
+    lua_pushinteger(L, 114);
+    lua_setfield(L, -2, "RIGHT_SHIFT");
+    lua_pushinteger(L, 115);
+    lua_setfield(L, -2, "RIGHT_CONTROL");
+    lua_pushinteger(L, 116);
+    lua_setfield(L, -2, "RIGHT_ALT");
+    lua_pushinteger(L, 117);
+    lua_setfield(L, -2, "RIGHT_SUPER");
+    lua_pushinteger(L, 118);
+    lua_setfield(L, -2, "MENU");
+    lua_setglobal(L, "key");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_button, 0);
+    lua_pushinteger(L, 1 << 0);
+    lua_setfield(L, -2, "A");
+    lua_pushinteger(L, 1 << 1);
+    lua_setfield(L, -2, "X");
+    lua_pushinteger(L, 1 << 2);
+    lua_setfield(L, -2, "Y");
+    lua_pushinteger(L, 1 << 3);
+    lua_setfield(L, -2, "B");
+    lua_pushinteger(L, 1 << 4);
+    lua_setfield(L, -2, "UP");
+    lua_pushinteger(L, 1 << 5);
+    lua_setfield(L, -2, "DOWN");
+    lua_pushinteger(L, 1 << 6);
+    lua_setfield(L, -2, "LEFT");
+    lua_pushinteger(L, 1 << 7);
+    lua_setfield(L, -2, "RIGHT");
+    lua_pushinteger(L, 1 << 8);
+    lua_setfield(L, -2, "LB");
+    lua_pushinteger(L, 1 << 9);
+    lua_setfield(L, -2, "RB");
+    lua_setglobal(L, "button");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_mouse, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "X");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "LEFT");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "RIGHT");
+    lua_setglobal(L, "mouse");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_axis, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "LEFTX");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "LEFTY");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "RIGHTX");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "RIGHTY");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "RT");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "LT");
+    lua_setglobal(L, "axis");
     lua_newtable(L);
     luaL_setfuncs(L, lib_lua, 0);
     lua_setglobal(L, "lua");

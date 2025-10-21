@@ -159,6 +159,22 @@ typedef enum
     NUX_IO_READ_WRITE = 1,
 } nux_io_mode_t;
 
+typedef enum
+{
+    NUX_OS_EVENT_KEY_PRESSED,
+    NUX_OS_EVENT_KEY_RELEASED,
+} nux_os_event_type_t;
+
+typedef struct
+{
+    nux_os_event_type_t type;
+    union
+    {
+        nux_button_t button;
+        nux_key_t    key;
+    };
+} nux_os_event_t;
+
 //////////////////////////////////////////////////////////////////////////
 //////                       Platform Callbacks                     //////
 //////////////////////////////////////////////////////////////////////////
@@ -222,11 +238,6 @@ NUX_API nux_status_t nux_os_buffer_update(void       *userdata,
 NUX_API void         nux_os_gpu_submit(void                    *userdata,
                                        const nux_gpu_command_t *cmds,
                                        nux_u32_t                count);
-NUX_API void         nux_os_input_update(void      *user,
-                                         nux_u32_t  controller,
-                                         nux_u32_t *buttons,
-                                         nux_f32_t *axis,
-                                         nux_f32_t *cursor);
 NUX_API void         nux_os_stats_update(void *userdata, nux_u64_t *stats);
 NUX_API void         nux_os_hotreload_add(void           *userdata,
                                           const nux_c8_t *path,
@@ -244,5 +255,7 @@ NUX_API nux_instance_t *nux_instance_init(void           *userdata,
                                           const nux_c8_t *entry);
 NUX_API void            nux_instance_free(nux_instance_t *instance);
 NUX_API void            nux_instance_update(nux_instance_t *instance);
+NUX_API void            nux_instance_push_event(nux_instance_t *instance,
+                                                nux_os_event_t *event);
 
 #endif

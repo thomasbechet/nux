@@ -382,6 +382,12 @@
 
 typedef enum
 {
+    NUX_BASE_DEFAULT_EVENT_SIZE            = 32,
+    NUX_BASE_DEFAULT_CONTROLLER_INPUT_SIZE = 16
+} nux_base_defaults_t;
+
+typedef enum
+{
     NUX_RESOURCE_NULL       = 0,
     NUX_RESOURCE_ARENA      = 1,
     NUX_RESOURCE_LUA_MODULE = 2,
@@ -396,6 +402,7 @@ typedef enum
     NUX_RESOURCE_SCENE      = 11,
     NUX_RESOURCE_QUERY      = 12,
     NUX_RESOURCE_EVENT      = 13,
+    NUX_RESOURCE_INPUTMAP   = 14,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
@@ -716,12 +723,27 @@ typedef enum
 
 typedef struct
 {
-    nux_controller_mode_t mode;
+    const nux_c8_t  *name;
+    nux_input_type_t type;
+    union
+    {
+        nux_key_t    key;
+        nux_button_t button;
+        nux_mouse_t  mouse;
+    };
+    nux_f32_t value;
+} nux_inputmap_entry_t;
 
-    nux_u32_t buttons;
-    nux_u32_t buttons_prev;
-    nux_f32_t axis[NUX_AXIS_MAX];
-    nux_f32_t axis_prev[NUX_AXIS_MAX];
+NUX_VEC_DEFINE(nux_inputmap_entry_vec, nux_inputmap_entry_t);
+
+struct nux_inputmap_t
+{
+    nux_inputmap_entry_vec_t entries;
+};
+
+typedef struct
+{
+    nux_controller_mode_t mode;
 
     nux_v2_t cursor; // in [0, 1[ top-left coordinate system
     nux_v2_t cursor_prev;
@@ -729,6 +751,10 @@ typedef struct
     nux_button_t cursor_motion_buttons[4];
     nux_axis_t   cursor_motion_axis[2];
     nux_f32_t    cursor_motion_speed;
+
+    nux_rid_t     inputmap;
+    nux_f32_vec_t inputs;
+    nux_f32_vec_t prev_inputs;
 } nux_controller_t;
 
 typedef enum
@@ -815,6 +841,8 @@ typedef struct
     nux_u32_t          depth;
     struct jsmntok    *iters[256];
 } nux_json_reader_t;
+
+NUX_VEC_DEFINE(nux_os_event_vec, nux_os_event_t);
 
 ////////////////////////////
 ///      FUNCTIONS       ///
@@ -1051,6 +1079,12 @@ void nux_disk_cleanup(void *data);
 // input.c
 
 void nux_input_update(void);
+
+// inputmap.c
+
+nux_status_t nux_inputmap_find_index(const nux_inputmap_t *map,
+                                     const nux_c8_t       *name,
+                                     nux_u32_t            *index);
 
 // serde.c
 
