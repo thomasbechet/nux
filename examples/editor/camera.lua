@@ -29,8 +29,8 @@ function M:on_update()
     local mx = input.value(0, "right") - input.value(0, "left")
     local mz = input.value(0, "forward") - input.value(0, "backward")
     local my = input.value(0, "up") - input.value(0, "down")
-    local rx = input.value(0, "viewx-") - input.value(0, "viewx+")
-    local ry = input.value(0, "viewy-") - input.value(0, "viewy+")
+    local rx = input.value(0, "view_right") - input.value(0, "view_left")
+    local ry = input.value(0, "view_up") - input.value(0, "view_down")
 
     -- Translation
     local forward = transform.forward(e)
@@ -46,9 +46,9 @@ function M:on_update()
     -- Update velocity
     self.velocity = vmath.add(self.velocity, dir * time.delta() * self.acc)
     if vmath.length(self.velocity) > self.max_speed then
-        self.velocity = vmath.norm(self.velocity) * self.max_speed
+        self.velocity = vmath.normalize(self.velocity) * self.max_speed
     end
-    self.velocity = vmath.mul(self.velocity, 0.95)
+    self.velocity = vmath.mul(self.velocity, 0.90)
 
     -- Update position
     local position = transform.get_translation(e)
@@ -67,4 +67,9 @@ function M:on_update()
     camera.set_near(e, 0.1)
     camera.set_far(self.top_node, 1000)
     camera.set_near(self.top_node, 0.1)
+
+    -- Update fov
+    self.fov = self.fov + input.value(0, "zoom") - input.value(0, "dezoom")
+    camera.set_fov(e, self.fov)
+    camera.set_fov(self.top_node, self.fov)
 end

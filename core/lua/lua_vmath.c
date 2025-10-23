@@ -360,6 +360,25 @@ math_div (lua_State *L)
     return 0;
 }
 static int
+math_normalize (lua_State *L)
+{
+    nux_lua_userdata_t *a = check_anyuserdata(L, 1);
+    switch (a->type)
+    {
+        case NUX_LUA_TYPE_VEC3: {
+            if (lua_isuserdata(L, 2))
+            {
+                nux_lua_push_vec3(L, nux_v3_normalize(*a->vec3));
+                return 1;
+            }
+        }
+        break;
+        default:
+            luaL_error(L, "unsupported userdata");
+    }
+    return 0;
+}
+static int
 math_unm (lua_State *L)
 {
     nux_lua_userdata_t *a = check_anyuserdata(L, 1);
@@ -762,13 +781,21 @@ nux_status_t
 nux_lua_open_vmath (void)
 {
     static const struct luaL_Reg vmath_lib[]
-        = { { "vec2", math_vec2 },     { "vec3", math_vec3 },
-            { "vec4", math_vec4 },     { "mat4", math_mat4 },
-            { "dot", math_dot },       { "cross", math_cross },
-            { "length", math_length }, { "dist", math_dist },
-            { "dist2", math_dist2 },   { "add", math_add },
-            { "sub", math_sub },       { "mul", math_mul },
-            { "div", math_div },       { NULL, NULL } };
+        = { { "vec2", math_vec2 },
+            { "vec3", math_vec3 },
+            { "vec4", math_vec4 },
+            { "mat4", math_mat4 },
+            { "dot", math_dot },
+            { "cross", math_cross },
+            { "length", math_length },
+            { "dist", math_dist },
+            { "dist2", math_dist2 },
+            { "add", math_add },
+            { "sub", math_sub },
+            { "mul", math_mul },
+            { "div", math_div },
+            { "normalize", math_normalize },
+            { NULL, NULL } };
     lua_State *L = nux_lua_module()->L;
     register_metatable(L);
     lua_newtable(L);

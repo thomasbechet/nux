@@ -233,13 +233,16 @@ resize_callback (GLFWwindow *win, int w, int h)
 static void
 key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
 {
-    nux_os_event_t event;
-    event.type       = NUX_OS_EVENT_INPUT;
-    event.input.type = NUX_INPUT_KEY;
-    event.input.key  = key_map[key];
-    event.input.button_state
-        = action == GLFW_PRESS ? NUX_BUTTON_PRESSED : NUX_BUTTON_RELEASED;
-    nux_instance_push_event(runtime.instance, &event);
+    if (action == GLFW_PRESS || action == GLFW_RELEASE)
+    {
+        nux_os_event_t event;
+        event.type       = NUX_OS_EVENT_INPUT;
+        event.input.type = NUX_INPUT_KEY;
+        event.input.key  = key_map[key];
+        event.input.button_state
+            = action == GLFW_PRESS ? NUX_BUTTON_PRESSED : NUX_BUTTON_RELEASED;
+        nux_instance_push_event(runtime.instance, &event);
+    }
 
     if (action == GLFW_RELEASE)
     {
@@ -293,6 +296,12 @@ mouse_button_callback (GLFWwindow *win, int button, int action, int mods)
     nux_instance_push_event(runtime.instance, &event);
 
     nk_glfw3_mouse_button_callback(win, button, action, mods);
+}
+void
+scroll_callback (GLFWwindow *win, double xoff, double yoff)
+{
+    runtime.scroll = yoff;
+    nk_gflw3_scroll_callback(win, xoff, yoff);
 }
 static void
 cursor_position_callback (GLFWwindow *window, double xpos, double ypos)
@@ -374,7 +383,7 @@ window_init (void)
     glfwSetFramebufferSizeCallback(runtime.win, resize_callback);
     glfwSetKeyCallback(runtime.win, key_callback);
     glfwSetMouseButtonCallback(runtime.win, mouse_button_callback);
-    glfwSetScrollCallback(runtime.win, nk_gflw3_scroll_callback);
+    glfwSetScrollCallback(runtime.win, scroll_callback);
     glfwSetCharCallback(runtime.win, nk_glfw3_char_callback);
     glfwSetCursorPosCallback(runtime.win, cursor_position_callback);
 
@@ -397,33 +406,50 @@ window_begin_frame (void)
     glfwPollEvents();
 
     // Mouse delta
-    nux_v2_t delta;
-    delta.x = runtime.cursor_position.x - runtime.prev_cursor_position.x;
-    delta.y = runtime.cursor_position.y - runtime.prev_cursor_position.y;
+    if (runtime.focused)
+    {
+        nux_v2_t delta;
+        delta.x = runtime.cursor_position.x - runtime.prev_cursor_position.x;
+        delta.y = runtime.cursor_position.y - runtime.prev_cursor_position.y;
 
-    nux_os_event_t event;
-    event.type             = NUX_OS_EVENT_INPUT;
-    event.input.type       = NUX_INPUT_MOUSE_AXIS;
-    event.input.mouse_axis = NUX_MOUSE_X_POS;
-    event.input.axis_value = delta.x > 0 ? delta.x : 0;
-    nux_instance_push_event(runtime.instance, &event);
-    event.type             = NUX_OS_EVENT_INPUT;
-    event.input.type       = NUX_INPUT_MOUSE_AXIS;
-    event.input.mouse_axis = NUX_MOUSE_X_NEG;
-    event.input.axis_value = delta.x < 0 ? fabsf(delta.x) : 0;
-    nux_instance_push_event(runtime.instance, &event);
-    event.type             = NUX_OS_EVENT_INPUT;
-    event.input.type       = NUX_INPUT_MOUSE_AXIS;
-    event.input.mouse_axis = NUX_MOUSE_Y_POS;
-    event.input.axis_value = delta.y > 0 ? delta.y : 0;
-    nux_instance_push_event(runtime.instance, &event);
-    event.type             = NUX_OS_EVENT_INPUT;
-    event.input.type       = NUX_INPUT_MOUSE_AXIS;
-    event.input.mouse_axis = NUX_MOUSE_Y_NEG;
-    event.input.axis_value = delta.y < 0 ? fabsf(delta.y) : 0;
-    nux_instance_push_event(runtime.instance, &event);
+        nux_os_event_t event;
+        event.type             = NUX_OS_EVENT_INPUT;
+        event.input.type       = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis = NUX_MOUSE_X_RIGHT;
+        event.input.axis_value = delta.x > 0 ? delta.x : 0;
+        nux_instance_push_event(runtime.instance, &event);
+        event.type             = NUX_OS_EVENT_INPUT;
+        event.input.type       = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis = NUX_MOUSE_X_LEFT;
+        event.input.axis_value = delta.x < 0 ? fabsf(delta.x) : 0;
+        nux_instance_push_event(runtime.instance, &event);
+        event.type             = NUX_OS_EVENT_INPUT;
+        event.input.type       = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis = NUX_MOUSE_Y_DOWN;
+        event.input.axis_value = delta.y > 0 ? delta.y : 0;
+        nux_instance_push_event(runtime.instance, &event);
+        event.type             = NUX_OS_EVENT_INPUT;
+        event.input.type       = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis = NUX_MOUSE_Y_UP;
+        event.input.axis_value = delta.y < 0 ? fabsf(delta.y) : 0;
+        nux_instance_push_event(runtime.instance, &event);
 
-    runtime.prev_cursor_position = runtime.cursor_position;
+        runtime.prev_cursor_position = runtime.cursor_position;
+
+        // Scroll delta
+        event.type             = NUX_OS_EVENT_INPUT;
+        event.input.type       = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis = NUX_MOUSE_SCROLL_UP;
+        event.input.axis_value = runtime.scroll > 0 ? runtime.scroll : 0;
+        nux_instance_push_event(runtime.instance, &event);
+        event.type             = NUX_OS_EVENT_INPUT;
+        event.input.type       = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis = NUX_MOUSE_SCROLL_DOWN;
+        event.input.axis_value = runtime.scroll < 0 ? fabsf(runtime.scroll) : 0;
+        nux_instance_push_event(runtime.instance, &event);
+
+        runtime.scroll = 0;
+    }
 
     if (runtime.win)
     {

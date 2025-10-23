@@ -88,23 +88,6 @@ nux_input_update (void)
                    sizeof(*controller->inputs.data)
                        * controller->prev_inputs.size);
         controller->cursor_prev = controller->cursor;
-
-        // Reset motion axis
-        nux_inputmap_t *map
-            = nux_resource_get(NUX_RESOURCE_INPUTMAP, controller->inputmap);
-        NUX_CHECK(map, continue);
-        for (nux_u32_t j = 0; j < map->entries.size; ++j)
-        {
-            nux_inputmap_entry_t *entry = map->entries.data + j;
-            switch (entry->type)
-            {
-                case NUX_INPUT_MOUSE_AXIS:
-                case NUX_INPUT_GAMEPAD_AXIS:
-                    break;
-                default:
-                    break;
-            }
-        }
     }
 
     // Dispatch input events

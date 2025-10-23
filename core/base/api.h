@@ -274,10 +274,12 @@ typedef enum
 
 typedef enum
 {
-    NUX_MOUSE_X_POS = 0,
-    NUX_MOUSE_X_NEG = 1,
-    NUX_MOUSE_Y_POS = 2,
-    NUX_MOUSE_Y_NEG = 3,
+    NUX_MOUSE_X_RIGHT     = 0,
+    NUX_MOUSE_X_LEFT      = 1,
+    NUX_MOUSE_Y_DOWN      = 2,
+    NUX_MOUSE_Y_UP        = 3,
+    NUX_MOUSE_SCROLL_UP   = 4,
+    NUX_MOUSE_SCROLL_DOWN = 5,
 } nux_mouse_axis_t;
 
 typedef enum
