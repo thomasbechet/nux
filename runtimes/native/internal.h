@@ -11,19 +11,11 @@
 #include <stdio.h>
 #include <time.h>
 #include <nux.h>
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-#include <nuklear/nuklear.h>
 #include <glad/gl.h>
-#include <nuklear/nuklear_glfw_gl3.h>
+#include <GLFW/glfw3.h>
 
 #define MAX_COMMAND   64
-#define PATH_MAX_LEN  256
+#define PATH_MAX_LEN  255
 #define PATH_BUF_LEN  256
 #define ARRAY_LEN(ar) (nux_u32_t)(sizeof(ar) / sizeof(ar[0]))
 #define CHECK(cond, action) \
@@ -31,19 +23,6 @@
     {                       \
         action;             \
     }
-
-typedef enum
-{
-    VIEW_GAME     = 0,
-    VIEW_OPEN     = 1,
-    VIEW_CONTROLS = 2,
-    VIEW_SETTINGS = 3,
-} view_t;
-
-typedef struct
-{
-    view_t active_view;
-} settings_t;
 
 typedef struct
 {
@@ -87,12 +66,17 @@ typedef struct
 
 typedef struct
 {
+    int x;
+    int y;
+} v2i_t;
+
+typedef struct
+{
     // instance
 
     int             fps;
-    char            path[PATH_MAX_LEN];
+    char            path[PATH_BUF_LEN];
     nux_instance_t *instance;
-    struct nk_rect  viewport;
     bool            running;
 
     // renderer
@@ -109,25 +93,22 @@ typedef struct
 
     FILE *files[NUX_IO_FILE_MAX];
 
-    // gui
-
-    view_t active_view;
-
     // window
 
-    bool            fullscreen;
-    bool            focused;
-    bool            switch_fullscreen;
-    bool            reload;
-    GLFWwindow     *win;
-    struct nk_vec2i size;
-    double          prev_time;
-    struct nk_vec2i prev_position;
-    struct nk_vec2i prev_size;
-    struct nk_glfw  nk_glfw;
-    nux_f32_t       scroll;
-    nux_v2_t        cursor_position;
-    nux_v2_t        prev_cursor_position;
+    bool        fullscreen;
+    bool        focused;
+    bool        switch_fullscreen;
+    bool        reload;
+    GLFWwindow *win;
+    v2i_t       size;
+    double      prev_time;
+    v2i_t       prev_position;
+    v2i_t       prev_size;
+    nux_f32_t   scroll;
+    nux_v2_t    cursor_position;
+    nux_v2_t    prev_cursor_position;
+    double      prev_left_click;
+    bool        double_click;
 } runtime_t;
 
 extern runtime_t runtime;
@@ -138,9 +119,8 @@ void         runtime_reset(void);
 
 nux_status_t renderer_init(void);
 void         renderer_free(void);
-void         renderer_clear(void);
-void renderer_begin(struct nk_rect viewport, struct nk_vec2i window_size);
-void renderer_end(void);
+void         renderer_begin(void);
+void         renderer_end(void);
 
 nux_status_t window_init(void);
 void         window_free(void);
@@ -149,13 +129,6 @@ int          window_end_frame(void);
 
 void io_init(void);
 void io_free(void);
-
-void view_game(struct nk_context *ctx, struct nk_rect bounds);
-void view_controls(struct nk_context *ctx, struct nk_rect bounds);
-void view_settings(struct nk_context *ctx, struct nk_rect bounds);
-void view_open(struct nk_context *ctx, struct nk_rect bounds);
-
-void gui_update(void);
 
 nux_status_t hotreload_init(void);
 void         hotreload_free(void);

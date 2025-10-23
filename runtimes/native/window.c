@@ -4,11 +4,6 @@
 
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/gl.h>
-#include <nuklear/nuklear.h>
-#include <nuklear/nuklear_glfw_gl3.h>
-
-#define MAX_VERTEX_BUFFER  512 * 1024
-#define MAX_ELEMENT_BUFFER 128 * 1024
 
 static nux_key_t key_map[] = {
     [GLFW_KEY_SPACE]         = NUX_KEY_SPACE,
@@ -248,7 +243,7 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
     {
         if (key == GLFW_KEY_ESCAPE)
         {
-            bool unfocus = false;
+            bool unfocus = true;
             if (runtime.fullscreen)
             {
                 runtime.switch_fullscreen = true;
@@ -281,8 +276,6 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
             }
         }
     }
-
-    nk_glfw3_key_callback(win, key, scancode, action, mods);
 }
 static void
 mouse_button_callback (GLFWwindow *win, int button, int action, int mods)
@@ -295,13 +288,23 @@ mouse_button_callback (GLFWwindow *win, int button, int action, int mods)
         = action == GLFW_PRESS ? NUX_BUTTON_PRESSED : NUX_BUTTON_RELEASED;
     nux_instance_push_event(runtime.instance, &event);
 
-    nk_glfw3_mouse_button_callback(win, button, action, mods);
+    if (action == GLFW_RELEASE)
+    {
+        if (button == GLFW_MOUSE_BUTTON_LEFT)
+        {
+            double time = glfwGetTime();
+            if (time - runtime.prev_left_click < 0.3)
+            {
+                runtime.double_click = true;
+            }
+            runtime.prev_left_click = time;
+        }
+    }
 }
 void
 scroll_callback (GLFWwindow *win, double xoff, double yoff)
 {
     runtime.scroll = yoff;
-    nk_gflw3_scroll_callback(win, xoff, yoff);
 }
 static void
 cursor_position_callback (GLFWwindow *window, double xpos, double ypos)
@@ -376,27 +379,19 @@ window_init (void)
     runtime.size.x = w;
     runtime.size.y = h;
 
-    // Initialize nuklear context
-    nk_glfw3_init(&runtime.nk_glfw, runtime.win, NK_GLFW3_DEFAULT);
-
     // Bind callbacks
     glfwSetFramebufferSizeCallback(runtime.win, resize_callback);
     glfwSetKeyCallback(runtime.win, key_callback);
     glfwSetMouseButtonCallback(runtime.win, mouse_button_callback);
     glfwSetScrollCallback(runtime.win, scroll_callback);
-    glfwSetCharCallback(runtime.win, nk_glfw3_char_callback);
+    // glfwSetCharCallback(runtime.win, nk_glfw3_char_callback);
     glfwSetCursorPosCallback(runtime.win, cursor_position_callback);
-
-    struct nk_font_atlas *atlas;
-    nk_glfw3_font_stash_begin(&runtime.nk_glfw, &atlas);
-    nk_glfw3_font_stash_end(&runtime.nk_glfw);
 
     return NUX_SUCCESS;
 }
 void
 window_free (void)
 {
-    nk_glfw3_shutdown(&runtime.nk_glfw);
     glfwDestroyWindow(runtime.win);
     glfwTerminate();
 }
@@ -434,8 +429,6 @@ window_begin_frame (void)
         event.input.axis_value = delta.y < 0 ? fabsf(delta.y) : 0;
         nux_instance_push_event(runtime.instance, &event);
 
-        runtime.prev_cursor_position = runtime.cursor_position;
-
         // Scroll delta
         event.type             = NUX_OS_EVENT_INPUT;
         event.input.type       = NUX_INPUT_MOUSE_AXIS;
@@ -447,9 +440,11 @@ window_begin_frame (void)
         event.input.mouse_axis = NUX_MOUSE_SCROLL_DOWN;
         event.input.axis_value = runtime.scroll < 0 ? fabsf(runtime.scroll) : 0;
         nux_instance_push_event(runtime.instance, &event);
-
-        runtime.scroll = 0;
     }
+
+    // Update previous cursor and scroll
+    runtime.prev_cursor_position = runtime.cursor_position;
+    runtime.scroll               = 0;
 
     if (runtime.win)
     {
@@ -461,10 +456,10 @@ window_begin_frame (void)
 
         // Check focus actions
         bool focus = false;
-        if (!runtime.focused && runtime.nk_glfw.is_double_click_down
-            && runtime.active_view == VIEW_GAME)
+        if (!runtime.focused && runtime.double_click)
         {
-            focus = true;
+            focus                = true;
+            runtime.double_click = false;
         }
 
         // Check fullscreen button
@@ -494,7 +489,7 @@ window_begin_frame (void)
                                      mode->refreshRate);
                 int xpos, ypos;
                 glfwGetWindowPos(runtime.win, &xpos, &ypos);
-                runtime.prev_position = (struct nk_vec2i) { xpos, ypos };
+                runtime.prev_position = (v2i_t) { xpos, ypos };
                 runtime.prev_size     = runtime.size;
                 focus                 = true;
             }
@@ -552,19 +547,10 @@ window_begin_frame (void)
             }
         }
     }
-
-    // Begin nuklear context
-    nk_glfw3_new_frame(&runtime.nk_glfw);
 }
 int
 window_end_frame (void)
 {
-    // Render GUI
-    nk_glfw3_render(&runtime.nk_glfw,
-                    NK_ANTI_ALIASING_ON,
-                    MAX_VERTEX_BUFFER,
-                    MAX_ELEMENT_BUFFER);
-
     // Swap buffers
     glfwSwapBuffers(runtime.win);
     double time       = glfwGetTime();

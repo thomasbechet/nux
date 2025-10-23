@@ -36,10 +36,10 @@ function M:on_load()
     inputmap.bind_mouse_axis(map, "zoom", mouse.SCROLL_UP, 1)
     inputmap.bind_mouse_axis(map, "dezoom", mouse.SCROLL_DOWN, 1)
 
-    -- inputmap.bind_key(map, "view_right", key.L)
-    -- inputmap.bind_key(map, "view_left", key.H)
-    -- inputmap.bind_key(map, "view_up", key.K)
-    -- inputmap.bind_key(map, "view_down", key.J)
+    inputmap.bind_key(map, "view_right", key.L)
+    inputmap.bind_key(map, "view_left", key.H)
+    inputmap.bind_key(map, "view_up", key.K)
+    inputmap.bind_key(map, "view_down", key.J)
 
     input.set_map(0, map)
 

@@ -1,5 +1,7 @@
 #include "internal.h"
 
+#include <stdarg.h>
+
 static void
 logger_vlog (nux_log_level_t level, const char *fmt, va_list args)
 {

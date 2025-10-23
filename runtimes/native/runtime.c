@@ -46,17 +46,12 @@ runtime_run (const config_t *config)
 
         // Retrieve window events
         window_begin_frame();
-        struct nk_vec2i window_size = runtime.size;
-
-        // Clear background
-        renderer_clear();
 
         // Update instance
         if (runtime.instance)
         {
             // Begin renderer
-            renderer_begin(nk_rect(0, 0, window_size.x, window_size.y),
-                           window_size);
+            renderer_begin();
 
             // Update
             nux_instance_update(runtime.instance);
@@ -64,9 +59,6 @@ runtime_run (const config_t *config)
             // End renderer
             renderer_end();
         }
-
-        // Update GUI
-        gui_update();
 
         // Swap buffers
         runtime.fps = window_end_frame();
@@ -87,9 +79,8 @@ runtime_open (const char *path)
 {
     runtime_close();
 
-    strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN - 1);
+    strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN);
     runtime.instance = NULL;
-    runtime.viewport = nk_rect(0, 0, 10, 10);
 
     runtime.instance = nux_instance_init(NULL, path);
     if (!runtime.instance)
@@ -136,7 +127,7 @@ void
 nux_os_stats_update (void *userdata, nux_u64_t *stats)
 {
     stats[NUX_STAT_FPS]           = runtime.fps;
-    stats[NUX_STAT_SCREEN_WIDTH]  = runtime.viewport.w;
-    stats[NUX_STAT_SCREEN_HEIGHT] = runtime.viewport.h;
+    stats[NUX_STAT_SCREEN_WIDTH]  = runtime.size.x;
+    stats[NUX_STAT_SCREEN_HEIGHT] = runtime.size.y;
     stats[NUX_STAT_TIMESTAMP]     = time(NULL);
 }

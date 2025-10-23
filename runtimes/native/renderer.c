@@ -442,6 +442,7 @@ nux_os_gpu_submit (void                    *userdata,
                 if (runtime.active_pipeline->enable_blend)
                 {
                     glEnable(GL_BLEND);
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 }
                 else
                 {
@@ -522,8 +523,8 @@ nux_os_gpu_submit (void                    *userdata,
                 }
                 else
                 {
-                    width  = runtime.viewport.w;
-                    height = runtime.viewport.h;
+                    width  = runtime.size.x;
+                    height = runtime.size.y;
                 }
                 float x = cmd->viewport.extent.x * width;
                 float y = cmd->viewport.extent.y * height;
@@ -561,25 +562,10 @@ renderer_free (void)
     }
 }
 void
-renderer_clear (void)
+renderer_begin (void)
 {
-    float clear[4];
-    rgba_to_linear(25, 27, 43, 255, clear);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glEnable(GL_FRAMEBUFFER_SRGB);
-    glClearColor(clear[0], clear[1], clear[2], clear[3]);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_FRAMEBUFFER_SRGB);
-}
-void
-renderer_begin (struct nk_rect viewport, struct nk_vec2i window_size)
-{
-    struct nk_vec2i pos  = { viewport.x, viewport.y };
-    struct nk_vec2i size = { viewport.w, viewport.h };
-    // Patch pos (bottom left in opengl)
-    pos.y = window_size.y - (pos.y + size.y);
-    glViewport(0, 0, window_size.x, window_size.y);
-    // glScissor(pos.x, pos.y, size.x, size.y);
+    glViewport(0, 0, runtime.size.x, runtime.size.y);
+    glScissor(0, 0, runtime.size.x, runtime.size.y);
     glEnable(GL_FRAMEBUFFER_SRGB);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -589,11 +575,9 @@ renderer_begin (struct nk_rect viewport, struct nk_vec2i window_size)
 void
 renderer_end (void)
 {
-    // Restore state
-    struct nk_rect vp = runtime.viewport;
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_MULTISAMPLE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glViewport(vp.x, vp.y, vp.w, vp.h);
+    glViewport(0, 0, runtime.size.x, runtime.size.y);
     glDisable(GL_FRAMEBUFFER_SRGB);
 }
