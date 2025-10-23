@@ -31,7 +31,6 @@ function M:on_update()
     local my = input.value(0, "up") - input.value(0, "down")
     local rx = input.value(0, "viewx-") - input.value(0, "viewx+")
     local ry = input.value(0, "viewy-") - input.value(0, "viewy+")
-    print(ry)
 
     -- Translation
     local forward = transform.forward(e)

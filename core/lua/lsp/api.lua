@@ -64,17 +64,16 @@ function inputmap.new(...) end
 ---@return None
 function inputmap.bind_key(...) end
 ---@return None
-function inputmap.bind_mouse(...) end
+function inputmap.bind_mouse_button(...) end
 ---@return None
-function inputmap.bind_button(...) end
+function inputmap.bind_mouse_axis(...) end
 input={}
 input.UNMAPPED=0
-input.KEYBOARD=1
-input.BUTTON=2
-input.AXIS=3
-input.MOUSE=4
-input.PRESSED=1
-input.RELEASED=0
+input.KEY=1
+input.MOUSE_BUTTON=2
+input.MOUSE_AXIS=3
+input.GAMEPAD_BUTTON=4
+input.GAMEPAD_AXIS=5
 ---@return None
 function input.set_map(...) end
 ---@return None
@@ -128,6 +127,9 @@ name={}
 name.MAX=64
 disk={}
 disk.MAX=8
+button={}
+button.PRESSED=1
+button.RELEASED=0
 key={}
 key.SPACE=0
 key.APOSTROPHE=1
@@ -247,28 +249,37 @@ key.RIGHT_CONTROL=115
 key.RIGHT_ALT=116
 key.RIGHT_SUPER=117
 key.MENU=118
-button={}
-button.A=1 << 0
-button.X=1 << 1
-button.Y=1 << 2
-button.B=1 << 3
-button.UP=1 << 4
-button.DOWN=1 << 5
-button.LEFT=1 << 6
-button.RIGHT=1 << 7
-button.LB=1 << 8
-button.RB=1 << 9
 mouse={}
-mouse.X=0
-mouse.LEFT=1
-mouse.RIGHT=2
-axis={}
-axis.LEFTX=0
-axis.LEFTY=1
-axis.RIGHTX=2
-axis.RIGHTY=3
-axis.RT=4
-axis.LT=5
+mouse.BUTTON_LEFT=0
+mouse.BUTTON_RIGHT=1
+mouse.BUTTON_MIDDLE=2
+mouse.WHEEL_UP=3
+mouse.WHEEL_DOWN=4
+mouse.X_POS=0
+mouse.X_NEG=1
+mouse.Y_POS=2
+mouse.Y_NEG=3
+gamepad={}
+gamepad.A=0
+gamepad.X=1
+gamepad.Y=2
+gamepad.B=3
+gamepad.UP=4
+gamepad.DOWN=5
+gamepad.LEFT=6
+gamepad.RIGHT=7
+gamepad.LEFT_BUTTON=8
+gamepad.RIGHT_BUTTON=9
+gamepad.LEFT_X_POS=0
+gamepad.LEFT_X_NEG=1
+gamepad.LEFT_Y_POS=2
+gamepad.LEFT_Y_NEG=3
+gamepad.RIGHT_X_POS=4
+gamepad.RIGHT_X_NEG=5
+gamepad.RIGHT_Y_POS=6
+gamepad.RIGHT_Y_NEG=7
+gamepad.LEFT_TRIGGER=8
+gamepad.RIGHT_TRIGGER=9
 lua={}
 ---@return None
 function lua.load(...) end

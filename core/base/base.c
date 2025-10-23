@@ -72,12 +72,9 @@ nux_base_init (void *userdata)
     // Initialize controllers
     for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
     {
-        nux_controller_t *controller      = module->controllers + i;
-        controller->mode                  = NUX_CONTROLLER_MODE_MOTION;
-        controller->cursor_motion_axis[0] = NUX_AXIS_LEFTX;
-        controller->cursor_motion_axis[1] = NUX_AXIS_LEFTY;
-        controller->cursor_motion_speed   = 100;
-        controller->inputmap              = NUX_NULL;
+        nux_controller_t *controller = module->controllers + i;
+        controller->mode             = NUX_CONTROLLER_MODE_MOTION;
+        controller->inputmap         = NUX_NULL;
         nux_f32_vec_init_capa(module->core_arena,
                               NUX_BASE_DEFAULT_CONTROLLER_INPUT_SIZE,
                               &controller->inputs);

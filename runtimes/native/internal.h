@@ -125,6 +125,7 @@ typedef struct
     struct nk_vec2i prev_position;
     struct nk_vec2i prev_size;
     struct nk_glfw  nk_glfw;
+    nux_v2_t        prev_cursor_position;
 } runtime_t;
 
 extern runtime_t runtime;

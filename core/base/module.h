@@ -727,11 +727,13 @@ typedef struct
     nux_input_type_t type;
     union
     {
-        nux_key_t    key;
-        nux_button_t button;
-        nux_mouse_t  mouse;
+        nux_key_t            key;
+        nux_mouse_button_t   mouse_button;
+        nux_mouse_axis_t     mouse_axis;
+        nux_gamepad_button_t gamepad_button;
+        nux_gamepad_axis_t   gamepad_axis;
     };
-    nux_f32_t value;
+    nux_f32_t sensivity;
 } nux_inputmap_entry_t;
 
 NUX_VEC_DEFINE(nux_inputmap_entry_vec, nux_inputmap_entry_t);
@@ -748,9 +750,9 @@ typedef struct
     nux_v2_t cursor; // in [0, 1[ top-left coordinate system
     nux_v2_t cursor_prev;
 
-    nux_button_t cursor_motion_buttons[4];
-    nux_axis_t   cursor_motion_axis[2];
-    nux_f32_t    cursor_motion_speed;
+    // nux_button_t cursor_motion_buttons[4];
+    // nux_axis_t   cursor_motion_axis[2];
+    // nux_f32_t    cursor_motion_speed;
 
     nux_rid_t     inputmap;
     nux_f32_vec_t inputs;

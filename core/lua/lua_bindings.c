@@ -328,39 +328,36 @@ l_inputmap_bind_key (lua_State *L)
 {
     nux_inputmap_t *map
         = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
-    const nux_c8_t *name  = luaL_checkstring(L, 2);
-    nux_key_t       key   = luaL_checknumber(L, 3);
-    nux_f32_t       value = luaL_checknumber(L, 4);
+    const nux_c8_t *name = luaL_checkstring(L, 2);
+    nux_key_t       key  = luaL_checknumber(L, 3);
 
-    nux_inputmap_bind_key(map, name, key, value);
+    nux_inputmap_bind_key(map, name, key);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_inputmap_bind_mouse (lua_State *L)
+l_inputmap_bind_mouse_button (lua_State *L)
 {
     nux_inputmap_t *map
         = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
-    const nux_c8_t *name  = luaL_checkstring(L, 2);
-    nux_key_t       key   = luaL_checknumber(L, 3);
-    nux_f32_t       value = luaL_checknumber(L, 4);
+    const nux_c8_t    *name   = luaL_checkstring(L, 2);
+    nux_mouse_button_t button = luaL_checknumber(L, 3);
 
-    nux_inputmap_bind_mouse(map, name, key, value);
+    nux_inputmap_bind_mouse_button(map, name, button);
     l_checkerror(L);
 
     return 0;
 }
 static int
-l_inputmap_bind_button (lua_State *L)
+l_inputmap_bind_mouse_axis (lua_State *L)
 {
     nux_inputmap_t *map
         = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
-    const nux_c8_t *name  = luaL_checkstring(L, 2);
-    nux_key_t       key   = luaL_checknumber(L, 3);
-    nux_f32_t       value = luaL_checknumber(L, 4);
+    const nux_c8_t  *name = luaL_checkstring(L, 2);
+    nux_mouse_axis_t axis = luaL_checknumber(L, 3);
 
-    nux_inputmap_bind_button(map, name, key, value);
+    nux_inputmap_bind_mouse_axis(map, name, axis);
     l_checkerror(L);
 
     return 0;
@@ -1936,8 +1933,8 @@ static const struct luaL_Reg lib_cursor[] = { { "get", l_cursor_get },
 static const struct luaL_Reg lib_inputmap[]
     = { { "new", l_inputmap_new },
         { "bind_key", l_inputmap_bind_key },
-        { "bind_mouse", l_inputmap_bind_mouse },
-        { "bind_button", l_inputmap_bind_button },
+        { "bind_mouse_button", l_inputmap_bind_mouse_button },
+        { "bind_mouse_axis", l_inputmap_bind_mouse_axis },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_input[]
     = { { "set_map", l_input_set_map },
@@ -1962,10 +1959,10 @@ static const struct luaL_Reg lib_stat[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_name[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_disk[]       = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_key[]        = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_button[]     = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_key[]        = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_mouse[]      = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_axis[]       = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_gamepad[]    = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_lua[]
     = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_transform[]
@@ -2142,17 +2139,15 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "UNMAPPED");
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "KEYBOARD");
+    lua_setfield(L, -2, "KEY");
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "BUTTON");
+    lua_setfield(L, -2, "MOUSE_BUTTON");
     lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "AXIS");
+    lua_setfield(L, -2, "MOUSE_AXIS");
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "MOUSE");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "PRESSED");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "RELEASED");
+    lua_setfield(L, -2, "GAMEPAD_BUTTON");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "GAMEPAD_AXIS");
     lua_setglobal(L, "input");
     lua_newtable(L);
     luaL_setfuncs(L, lib_io, 0);
@@ -2215,6 +2210,13 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 8);
     lua_setfield(L, -2, "MAX");
     lua_setglobal(L, "disk");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_button, 0);
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "PRESSED");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "RELEASED");
+    lua_setglobal(L, "button");
     lua_newtable(L);
     luaL_setfuncs(L, lib_key, 0);
     lua_pushinteger(L, 0);
@@ -2455,52 +2457,69 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "MENU");
     lua_setglobal(L, "key");
     lua_newtable(L);
-    luaL_setfuncs(L, lib_button, 0);
-    lua_pushinteger(L, 1 << 0);
-    lua_setfield(L, -2, "A");
-    lua_pushinteger(L, 1 << 1);
-    lua_setfield(L, -2, "X");
-    lua_pushinteger(L, 1 << 2);
-    lua_setfield(L, -2, "Y");
-    lua_pushinteger(L, 1 << 3);
-    lua_setfield(L, -2, "B");
-    lua_pushinteger(L, 1 << 4);
-    lua_setfield(L, -2, "UP");
-    lua_pushinteger(L, 1 << 5);
-    lua_setfield(L, -2, "DOWN");
-    lua_pushinteger(L, 1 << 6);
-    lua_setfield(L, -2, "LEFT");
-    lua_pushinteger(L, 1 << 7);
-    lua_setfield(L, -2, "RIGHT");
-    lua_pushinteger(L, 1 << 8);
-    lua_setfield(L, -2, "LB");
-    lua_pushinteger(L, 1 << 9);
-    lua_setfield(L, -2, "RB");
-    lua_setglobal(L, "button");
-    lua_newtable(L);
     luaL_setfuncs(L, lib_mouse, 0);
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "X");
+    lua_setfield(L, -2, "BUTTON_LEFT");
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LEFT");
+    lua_setfield(L, -2, "BUTTON_RIGHT");
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "RIGHT");
+    lua_setfield(L, -2, "BUTTON_MIDDLE");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "WHEEL_UP");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "WHEEL_DOWN");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "X_POS");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "X_NEG");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "Y_POS");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "Y_NEG");
     lua_setglobal(L, "mouse");
     lua_newtable(L);
-    luaL_setfuncs(L, lib_axis, 0);
+    luaL_setfuncs(L, lib_gamepad, 0);
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "LEFTX");
+    lua_setfield(L, -2, "A");
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LEFTY");
+    lua_setfield(L, -2, "X");
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "RIGHTX");
+    lua_setfield(L, -2, "Y");
     lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "RIGHTY");
+    lua_setfield(L, -2, "B");
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "RT");
+    lua_setfield(L, -2, "UP");
     lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "LT");
-    lua_setglobal(L, "axis");
+    lua_setfield(L, -2, "DOWN");
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "LEFT");
+    lua_pushinteger(L, 7);
+    lua_setfield(L, -2, "RIGHT");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "LEFT_BUTTON");
+    lua_pushinteger(L, 9);
+    lua_setfield(L, -2, "RIGHT_BUTTON");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "LEFT_X_POS");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "LEFT_X_NEG");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "LEFT_Y_POS");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "LEFT_Y_NEG");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "RIGHT_X_POS");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "RIGHT_X_NEG");
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "RIGHT_Y_POS");
+    lua_pushinteger(L, 7);
+    lua_setfield(L, -2, "RIGHT_Y_NEG");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "LEFT_TRIGGER");
+    lua_pushinteger(L, 9);
+    lua_setfield(L, -2, "RIGHT_TRIGGER");
+    lua_setglobal(L, "gamepad");
     lua_newtable(L);
     luaL_setfuncs(L, lib_lua, 0);
     lua_setglobal(L, "lua");

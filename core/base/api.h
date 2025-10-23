@@ -127,18 +127,19 @@ typedef enum
 
 typedef enum
 {
-    NUX_INPUT_UNMAPPED = 0,
-    NUX_INPUT_KEY      = 1,
-    NUX_INPUT_BUTTON   = 2,
-    NUX_INPUT_AXIS     = 3,
-    NUX_INPUT_MOUSE    = 4
+    NUX_INPUT_UNMAPPED       = 0,
+    NUX_INPUT_KEY            = 1,
+    NUX_INPUT_MOUSE_BUTTON   = 2,
+    NUX_INPUT_MOUSE_AXIS     = 3,
+    NUX_INPUT_GAMEPAD_BUTTON = 4,
+    NUX_INPUT_GAMEPAD_AXIS   = 5,
 } nux_input_type_t;
 
 typedef enum
 {
-    NUX_INPUT_PRESSED  = 1,
-    NUX_INPUT_RELEASED = 0,
-} nux_input_state_t;
+    NUX_BUTTON_PRESSED  = 1,
+    NUX_BUTTON_RELEASED = 0,
+} nux_button_state_t;
 
 typedef enum
 {
@@ -264,34 +265,48 @@ typedef enum
 
 typedef enum
 {
-    NUX_BUTTON_A     = 1 << 0,
-    NUX_BUTTON_X     = 1 << 1,
-    NUX_BUTTON_Y     = 1 << 2,
-    NUX_BUTTON_B     = 1 << 3,
-    NUX_BUTTON_UP    = 1 << 4,
-    NUX_BUTTON_DOWN  = 1 << 5,
-    NUX_BUTTON_LEFT  = 1 << 6,
-    NUX_BUTTON_RIGHT = 1 << 7,
-    NUX_BUTTON_LB    = 1 << 8,
-    NUX_BUTTON_RB    = 1 << 9,
-} nux_button_t;
+    NUX_MOUSE_BUTTON_LEFT   = 0,
+    NUX_MOUSE_BUTTON_RIGHT  = 1,
+    NUX_MOUSE_BUTTON_MIDDLE = 2,
+    NUX_MOUSE_WHEEL_UP      = 3,
+    NUX_MOUSE_WHEEL_DOWN    = 4,
+} nux_mouse_button_t;
 
 typedef enum
 {
-    NUX_MOUSE_X     = 0,
-    NUX_MOUSE_LEFT  = 1,
-    NUX_MOUSE_RIGHT = 2
-} nux_mouse_t;
+    NUX_MOUSE_X_POS = 0,
+    NUX_MOUSE_X_NEG = 1,
+    NUX_MOUSE_Y_POS = 2,
+    NUX_MOUSE_Y_NEG = 3,
+} nux_mouse_axis_t;
 
 typedef enum
 {
-    NUX_AXIS_LEFTX  = 0,
-    NUX_AXIS_LEFTY  = 1,
-    NUX_AXIS_RIGHTX = 2,
-    NUX_AXIS_RIGHTY = 3,
-    NUX_AXIS_RT     = 4,
-    NUX_AXIS_LT     = 5,
-} nux_axis_t;
+    NUX_GAMEPAD_A            = 0,
+    NUX_GAMEPAD_X            = 1,
+    NUX_GAMEPAD_Y            = 2,
+    NUX_GAMEPAD_B            = 3,
+    NUX_GAMEPAD_UP           = 4,
+    NUX_GAMEPAD_DOWN         = 5,
+    NUX_GAMEPAD_LEFT         = 6,
+    NUX_GAMEPAD_RIGHT        = 7,
+    NUX_GAMEPAD_LEFT_BUTTON  = 8,
+    NUX_GAMEPAD_RIGHT_BUTTON = 9,
+} nux_gamepad_button_t;
+
+typedef enum
+{
+    NUX_GAMEPAD_LEFT_X_POS    = 0,
+    NUX_GAMEPAD_LEFT_X_NEG    = 1,
+    NUX_GAMEPAD_LEFT_Y_POS    = 2,
+    NUX_GAMEPAD_LEFT_Y_NEG    = 3,
+    NUX_GAMEPAD_RIGHT_X_POS   = 4,
+    NUX_GAMEPAD_RIGHT_X_NEG   = 5,
+    NUX_GAMEPAD_RIGHT_Y_POS   = 6,
+    NUX_GAMEPAD_RIGHT_Y_NEG   = 7,
+    NUX_GAMEPAD_LEFT_TRIGGER  = 8,
+    NUX_GAMEPAD_RIGHT_TRIGGER = 9,
+} nux_gamepad_axis_t;
 
 typedef enum
 {
@@ -333,24 +348,17 @@ nux_rid_t       nux_resource_find(const nux_c8_t *name);
 
 void nux_log_set_level(nux_log_level_t level);
 
-nux_v2_t  nux_cursor_get(nux_u32_t controller);
-void      nux_cursor_set(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
-nux_f32_t nux_cursor_x(nux_u32_t controller);
-nux_f32_t nux_cursor_y(nux_u32_t controller);
-
 nux_inputmap_t *nux_inputmap_new(nux_arena_t *arena);
 void            nux_inputmap_bind_key(nux_inputmap_t *map,
                                       const nux_c8_t *name,
-                                      nux_key_t       key,
-                                      nux_f32_t       value);
-void            nux_inputmap_bind_mouse(nux_inputmap_t *map,
-                                        const nux_c8_t *name,
-                                        nux_key_t       key,
-                                        nux_f32_t       value);
-void            nux_inputmap_bind_button(nux_inputmap_t *map,
-                                         const nux_c8_t *name,
-                                         nux_key_t       key,
-                                         nux_f32_t       value);
+                                      nux_key_t       key);
+void            nux_inputmap_bind_mouse_button(nux_inputmap_t    *map,
+                                               const nux_c8_t    *name,
+                                               nux_mouse_button_t button);
+void            nux_inputmap_bind_mouse_axis(nux_inputmap_t  *map,
+                                             const nux_c8_t  *name,
+                                             nux_mouse_axis_t axis,
+                                             nux_f32_t        sensivity);
 
 void      nux_input_set_map(nux_u32_t controller, nux_inputmap_t *map);
 nux_b32_t nux_input_pressed(nux_u32_t controller, const nux_c8_t *name);
@@ -358,6 +366,8 @@ nux_b32_t nux_input_released(nux_u32_t controller, const nux_c8_t *name);
 nux_b32_t nux_input_just_pressed(nux_u32_t controller, const nux_c8_t *name);
 nux_b32_t nux_input_just_released(nux_u32_t controller, const nux_c8_t *name);
 nux_f32_t nux_input_value(nux_u32_t controller, const nux_c8_t *name);
+nux_v2_t  nux_input_cursor(nux_u32_t controller);
+void      nux_input_set_cursor(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
 
 nux_status_t nux_io_cart_begin(const nux_c8_t *path, nux_u32_t entry_count);
 nux_status_t nux_io_cart_end(void);

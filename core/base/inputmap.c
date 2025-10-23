@@ -62,28 +62,32 @@ nux_inputmap_new (nux_arena_t *arena)
     return map;
 }
 void
-nux_inputmap_bind_key (nux_inputmap_t *map,
-                       const nux_c8_t *name,
-                       nux_key_t       key,
-                       nux_f32_t       value)
+nux_inputmap_bind_key (nux_inputmap_t *map, const nux_c8_t *name, nux_key_t key)
 {
     nux_inputmap_entry_t *entry = find_entry(map, name);
     NUX_CHECK(entry, return);
-    entry->type  = NUX_INPUT_KEY;
-    entry->key   = key;
-    entry->value = value;
+    entry->type = NUX_INPUT_KEY;
+    entry->key  = key;
 }
 void
-nux_inputmap_bind_mouse (nux_inputmap_t *map,
-                         const nux_c8_t *name,
-                         nux_key_t       key,
-                         nux_f32_t       value)
+nux_inputmap_bind_mouse_button (nux_inputmap_t    *map,
+                                const nux_c8_t    *name,
+                                nux_mouse_button_t button)
 {
+    nux_inputmap_entry_t *entry = find_entry(map, name);
+    NUX_CHECK(entry, return);
+    entry->type         = NUX_INPUT_MOUSE_BUTTON;
+    entry->mouse_button = button;
 }
 void
-nux_inputmap_bind_button (nux_inputmap_t *map,
-                          const nux_c8_t *name,
-                          nux_key_t       key,
-                          nux_f32_t       value)
+nux_inputmap_bind_mouse_axis (nux_inputmap_t  *map,
+                              const nux_c8_t  *name,
+                              nux_mouse_axis_t axis,
+                              nux_f32_t        sensivity)
 {
+    nux_inputmap_entry_t *entry = find_entry(map, name);
+    NUX_CHECK(entry, return);
+    entry->type       = NUX_INPUT_MOUSE_AXIS;
+    entry->mouse_axis = axis;
+    entry->sensivity  = sensivity;
 }

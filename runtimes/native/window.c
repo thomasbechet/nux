@@ -10,72 +10,6 @@
 #define MAX_VERTEX_BUFFER  512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
-static const GLchar *
-gl_message_type_string (GLenum type)
-{
-    switch (type)
-    {
-        case GL_DEBUG_TYPE_ERROR:
-            return "ERROR";
-        case GL_DEBUG_TYPE_MARKER:
-            return "MARKER";
-        case GL_DEBUG_TYPE_OTHER:
-            return "OTHER";
-        case GL_DEBUG_TYPE_PERFORMANCE:
-            return "PERFORMANCE";
-        case GL_DEBUG_TYPE_PORTABILITY:
-            return "PORTABILITY";
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-            return "UNDEFINED_BEHAVIOR";
-    }
-    return "";
-}
-static void GLAPIENTRY
-gl_message_callback (GLenum        source,
-                     GLenum        type,
-                     GLuint        id,
-                     GLenum        severity,
-                     GLsizei       length,
-                     const GLchar *message,
-                     const void   *userParam)
-{
-    (void)source;
-    (void)id;
-    (void)length;
-    if (type == GL_DEBUG_TYPE_OTHER) // Skip other messages
-    {
-        return;
-    }
-    switch (severity)
-    {
-        case GL_DEBUG_SEVERITY_HIGH:
-            fprintf(stderr,
-                    "GL: %s, message = %s\n",
-                    gl_message_type_string(type),
-                    message);
-            break;
-        case GL_DEBUG_SEVERITY_MEDIUM:
-            fprintf(stderr,
-                    "GL: %s, message = %s\n",
-                    gl_message_type_string(type),
-                    message);
-            break;
-        case GL_DEBUG_SEVERITY_LOW:
-            fprintf(stderr,
-                    "GL: %s, message = %s\n",
-                    gl_message_type_string(type),
-                    message);
-            break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION:
-            fprintf(stderr,
-                    "GL: %s, message = %s\n",
-                    gl_message_type_string(type),
-                    message);
-            break;
-    }
-    assert(severity != GL_DEBUG_SEVERITY_HIGH);
-}
-
 static nux_key_t key_map[] = {
     [GLFW_KEY_SPACE]         = NUX_KEY_SPACE,
     [GLFW_KEY_APOSTROPHE]    = NUX_KEY_APOSTROPHE,
@@ -196,55 +130,100 @@ static nux_key_t key_map[] = {
     [GLFW_KEY_RIGHT_SUPER]   = NUX_KEY_RIGHT_SUPER,
     [GLFW_KEY_MENU]          = NUX_KEY_MENU,
 };
-static nux_button_t
-gamepad_button_map (int button)
+static nux_gamepad_button_t gamepad_button_map[] = {
+    [GLFW_GAMEPAD_BUTTON_A]            = 0,
+    [GLFW_GAMEPAD_BUTTON_B]            = 0,
+    [GLFW_GAMEPAD_BUTTON_X]            = 0,
+    [GLFW_GAMEPAD_BUTTON_Y]            = 0,
+    [GLFW_GAMEPAD_BUTTON_LEFT_BUMPER]  = 0,
+    [GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER] = 0,
+    [GLFW_GAMEPAD_BUTTON_BACK]         = 0,
+    [GLFW_GAMEPAD_BUTTON_START]        = 0,
+    [GLFW_GAMEPAD_BUTTON_GUIDE]        = 0,
+    [GLFW_GAMEPAD_BUTTON_LEFT_THUMB]   = 0,
+    [GLFW_GAMEPAD_BUTTON_RIGHT_THUMB]  = 0,
+    [GLFW_GAMEPAD_BUTTON_DPAD_UP]      = 0,
+    [GLFW_GAMEPAD_BUTTON_DPAD_RIGHT]   = 0,
+    [GLFW_GAMEPAD_BUTTON_DPAD_DOWN]    = 0,
+    [GLFW_GAMEPAD_BUTTON_DPAD_LEFT]    = 0,
+};
+static nux_mouse_button_t mouse_button_map[] = {
+    [GLFW_MOUSE_BUTTON_1] = NUX_MOUSE_BUTTON_LEFT,
+    [GLFW_MOUSE_BUTTON_2] = NUX_MOUSE_BUTTON_RIGHT,
+    [GLFW_MOUSE_BUTTON_3] = NUX_MOUSE_BUTTON_MIDDLE,
+    [GLFW_MOUSE_BUTTON_4] = 0,
+    [GLFW_MOUSE_BUTTON_5] = 0,
+    [GLFW_MOUSE_BUTTON_6] = 0,
+    [GLFW_MOUSE_BUTTON_7] = 0,
+    [GLFW_MOUSE_BUTTON_8] = 0,
+};
+
+static const GLchar *
+gl_message_type_string (GLenum type)
 {
-    switch (button)
+    switch (type)
     {
-        case GLFW_GAMEPAD_BUTTON_A:
-            return NUX_BUTTON_A;
-        case GLFW_GAMEPAD_BUTTON_X:
-            return NUX_BUTTON_X;
-        case GLFW_GAMEPAD_BUTTON_Y:
-            return NUX_BUTTON_Y;
-        case GLFW_GAMEPAD_BUTTON_B:
-            return NUX_BUTTON_B;
-        case GLFW_GAMEPAD_BUTTON_DPAD_UP:
-            return NUX_BUTTON_UP;
-        case GLFW_GAMEPAD_BUTTON_DPAD_DOWN:
-            return NUX_BUTTON_DOWN;
-        case GLFW_GAMEPAD_BUTTON_DPAD_RIGHT:
-            return NUX_BUTTON_RIGHT;
-        case GLFW_GAMEPAD_BUTTON_DPAD_LEFT:
-            return NUX_BUTTON_LEFT;
-        case GLFW_GAMEPAD_BUTTON_RIGHT_BUMPER:
-            return NUX_BUTTON_RB;
-        case GLFW_GAMEPAD_BUTTON_LEFT_BUMPER:
-            return NUX_BUTTON_LB;
-        default:
-            return -1;
+        case GL_DEBUG_TYPE_ERROR:
+            return "ERROR";
+        case GL_DEBUG_TYPE_MARKER:
+            return "MARKER";
+        case GL_DEBUG_TYPE_OTHER:
+            return "OTHER";
+        case GL_DEBUG_TYPE_PERFORMANCE:
+            return "PERFORMANCE";
+        case GL_DEBUG_TYPE_PORTABILITY:
+            return "PORTABILITY";
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+            return "UNDEFINED_BEHAVIOR";
     }
+    return "";
 }
-static nux_axis_t
-gamepad_axis_map (int axis)
+static void GLAPIENTRY
+gl_message_callback (GLenum        source,
+                     GLenum        type,
+                     GLuint        id,
+                     GLenum        severity,
+                     GLsizei       length,
+                     const GLchar *message,
+                     const void   *userParam)
 {
-    switch (axis)
+    (void)source;
+    (void)id;
+    (void)length;
+    if (type == GL_DEBUG_TYPE_OTHER) // Skip other messages
     {
-        case GLFW_GAMEPAD_AXIS_LEFT_X:
-            return NUX_AXIS_LEFTX;
-        case GLFW_GAMEPAD_AXIS_LEFT_Y:
-            return NUX_AXIS_LEFTY;
-        case GLFW_GAMEPAD_AXIS_RIGHT_X:
-            return NUX_AXIS_RIGHTX;
-        case GLFW_GAMEPAD_AXIS_RIGHT_Y:
-            return NUX_AXIS_RIGHTY;
-        case GLFW_GAMEPAD_AXIS_LEFT_TRIGGER:
-            return NUX_AXIS_LT;
-        case GLFW_GAMEPAD_AXIS_RIGHT_TRIGGER:
-            return NUX_AXIS_RT;
+        return;
     }
-    return NUX_AXIS_LEFTX;
+    switch (severity)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:
+            fprintf(stderr,
+                    "GL: %s, message = %s\n",
+                    gl_message_type_string(type),
+                    message);
+            break;
+        case GL_DEBUG_SEVERITY_MEDIUM:
+            fprintf(stderr,
+                    "GL: %s, message = %s\n",
+                    gl_message_type_string(type),
+                    message);
+            break;
+        case GL_DEBUG_SEVERITY_LOW:
+            fprintf(stderr,
+                    "GL: %s, message = %s\n",
+                    gl_message_type_string(type),
+                    message);
+            break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION:
+            fprintf(stderr,
+                    "GL: %s, message = %s\n",
+                    gl_message_type_string(type),
+                    message);
+            break;
+    }
+    assert(severity != GL_DEBUG_SEVERITY_HIGH);
 }
+
 static void
 resize_callback (GLFWwindow *win, int w, int h)
 {
@@ -254,21 +233,16 @@ resize_callback (GLFWwindow *win, int w, int h)
 static void
 key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
 {
-    nux_key_t k = key_map[key];
-    if (action == GLFW_PRESS)
-    {
-        nux_os_event_t event;
-        event.type = NUX_OS_EVENT_KEY_PRESSED;
-        event.key  = k;
-        nux_instance_push_event(runtime.instance, &event);
-    }
-    else if (action == GLFW_RELEASE)
-    {
-        nux_os_event_t event;
-        event.type = NUX_OS_EVENT_KEY_RELEASED;
-        event.key  = k;
-        nux_instance_push_event(runtime.instance, &event);
+    nux_os_event_t event;
+    event.type       = NUX_OS_EVENT_INPUT;
+    event.input.type = NUX_INPUT_KEY;
+    event.input.key  = key_map[key];
+    event.input.button_state
+        = action == GLFW_PRESS ? NUX_BUTTON_PRESSED : NUX_BUTTON_RELEASED;
+    nux_instance_push_event(runtime.instance, &event);
 
+    if (action == GLFW_RELEASE)
+    {
         if (key == GLFW_KEY_ESCAPE)
         {
             bool unfocus = false;
@@ -310,7 +284,46 @@ key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)
 static void
 mouse_button_callback (GLFWwindow *win, int button, int action, int mods)
 {
+    nux_os_event_t event;
+    event.type               = NUX_OS_EVENT_INPUT;
+    event.input.type         = NUX_INPUT_MOUSE_BUTTON;
+    event.input.mouse_button = mouse_button_map[button];
+    event.input.button_state
+        = action == GLFW_PRESS ? NUX_BUTTON_PRESSED : NUX_BUTTON_RELEASED;
+    nux_instance_push_event(runtime.instance, &event);
+
     nk_glfw3_mouse_button_callback(win, button, action, mods);
+}
+static void
+cursor_position_callback (GLFWwindow *window, double xpos, double ypos)
+{
+    nux_v2_t delta;
+    delta.x = xpos - runtime.prev_cursor_position.x;
+    delta.y = ypos - runtime.prev_cursor_position.y;
+
+    if (delta.x != 0)
+    {
+        nux_os_event_t event;
+        event.type       = NUX_OS_EVENT_INPUT;
+        event.input.type = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis
+            = delta.x > 0 ? NUX_MOUSE_X_POS : NUX_MOUSE_X_NEG;
+        event.input.axis_value = fabsf(delta.x);
+        nux_instance_push_event(runtime.instance, &event);
+    }
+    if (delta.y != 0)
+    {
+        nux_os_event_t event;
+        event.type       = NUX_OS_EVENT_INPUT;
+        event.input.type = NUX_INPUT_MOUSE_AXIS;
+        event.input.mouse_axis
+            = delta.y > 0 ? NUX_MOUSE_Y_POS : NUX_MOUSE_Y_NEG;
+        event.input.axis_value = fabsf(delta.y);
+        nux_instance_push_event(runtime.instance, &event);
+    }
+
+    runtime.prev_cursor_position.x = xpos;
+    runtime.prev_cursor_position.y = ypos;
 }
 
 nux_status_t
@@ -388,6 +401,7 @@ window_init (void)
     glfwSetMouseButtonCallback(runtime.win, mouse_button_callback);
     glfwSetScrollCallback(runtime.win, nk_gflw3_scroll_callback);
     glfwSetCharCallback(runtime.win, nk_glfw3_char_callback);
+    glfwSetCursorPosCallback(runtime.win, cursor_position_callback);
 
     struct nk_font_atlas *atlas;
     nk_glfw3_font_stash_begin(&runtime.nk_glfw, &atlas);
