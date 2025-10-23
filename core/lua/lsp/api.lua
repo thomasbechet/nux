@@ -49,15 +49,6 @@ log.WARNING=2
 log.ERROR=1
 ---@return None
 function log.set_level(...) end
-cursor={}
----@return None
-function cursor.get(...) end
----@return None
-function cursor.set(...) end
----@return None
-function cursor.x(...) end
----@return None
-function cursor.y(...) end
 inputmap={}
 ---@return None
 function inputmap.new(...) end
@@ -86,6 +77,10 @@ function input.just_pressed(...) end
 function input.just_released(...) end
 ---@return None
 function input.value(...) end
+---@return None
+function input.cursor(...) end
+---@return None
+function input.set_cursor(...) end
 io={}
 ---@return None
 function io.cart_begin(...) end

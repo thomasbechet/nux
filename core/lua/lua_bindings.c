@@ -263,48 +263,6 @@ l_log_set_level (lua_State *L)
     return 0;
 }
 static int
-l_cursor_get (lua_State *L)
-{
-    nux_u32_t controller = luaL_checknumber(L, 1);
-    nux_v2_t  ret        = nux_cursor_get(controller);
-    l_checkerror(L);
-
-    nux_lua_push_vec2(L, ret);
-    return 1;
-}
-static int
-l_cursor_set (lua_State *L)
-{
-    nux_u32_t controller = luaL_checknumber(L, 1);
-    nux_f32_t x          = luaL_checknumber(L, 2);
-    nux_f32_t y          = luaL_checknumber(L, 3);
-
-    nux_cursor_set(controller, x, y);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_cursor_x (lua_State *L)
-{
-    nux_u32_t controller = luaL_checknumber(L, 1);
-    nux_f32_t ret        = nux_cursor_x(controller);
-    l_checkerror(L);
-
-    lua_pushnumber(L, ret);
-    return 1;
-}
-static int
-l_cursor_y (lua_State *L)
-{
-    nux_u32_t controller = luaL_checknumber(L, 1);
-    nux_f32_t ret        = nux_cursor_y(controller);
-    l_checkerror(L);
-
-    lua_pushnumber(L, ret);
-    return 1;
-}
-static int
 l_inputmap_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -354,10 +312,11 @@ l_inputmap_bind_mouse_axis (lua_State *L)
 {
     nux_inputmap_t *map
         = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
-    const nux_c8_t  *name = luaL_checkstring(L, 2);
-    nux_mouse_axis_t axis = luaL_checknumber(L, 3);
+    const nux_c8_t  *name      = luaL_checkstring(L, 2);
+    nux_mouse_axis_t axis      = luaL_checknumber(L, 3);
+    nux_f32_t        sensivity = luaL_checknumber(L, 4);
 
-    nux_inputmap_bind_mouse_axis(map, name, axis);
+    nux_inputmap_bind_mouse_axis(map, name, axis, sensivity);
     l_checkerror(L);
 
     return 0;
@@ -428,6 +387,28 @@ l_input_value (lua_State *L)
 
     lua_pushnumber(L, ret);
     return 1;
+}
+static int
+l_input_cursor (lua_State *L)
+{
+    nux_u32_t controller = luaL_checknumber(L, 1);
+    nux_v2_t  ret        = nux_input_cursor(controller);
+    l_checkerror(L);
+
+    nux_lua_push_vec2(L, ret);
+    return 1;
+}
+static int
+l_input_set_cursor (lua_State *L)
+{
+    nux_u32_t controller = luaL_checknumber(L, 1);
+    nux_f32_t x          = luaL_checknumber(L, 2);
+    nux_f32_t y          = luaL_checknumber(L, 3);
+
+    nux_input_set_cursor(controller, x, y);
+    l_checkerror(L);
+
+    return 0;
 }
 static int
 l_io_cart_begin (lua_State *L)
@@ -1925,11 +1906,6 @@ static const struct luaL_Reg lib_resource[]
         { "find", l_resource_find }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]
     = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_cursor[] = { { "get", l_cursor_get },
-                                              { "set", l_cursor_set },
-                                              { "x", l_cursor_x },
-                                              { "y", l_cursor_y },
-                                              { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_inputmap[]
     = { { "new", l_inputmap_new },
         { "bind_key", l_inputmap_bind_key },
@@ -1943,6 +1919,8 @@ static const struct luaL_Reg lib_input[]
         { "just_pressed", l_input_just_pressed },
         { "just_released", l_input_just_released },
         { "value", l_input_value },
+        { "cursor", l_input_cursor },
+        { "set_cursor", l_input_set_cursor },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_io[]
     = { { "cart_begin", l_io_cart_begin },
@@ -2128,9 +2106,6 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 1);
     lua_setfield(L, -2, "ERROR");
     lua_setglobal(L, "log");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_cursor, 0);
-    lua_setglobal(L, "cursor");
     lua_newtable(L);
     luaL_setfuncs(L, lib_inputmap, 0);
     lua_setglobal(L, "inputmap");

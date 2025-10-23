@@ -48,7 +48,7 @@ function M:on_update()
     if vmath.length(self.velocity) > self.max_speed then
         self.velocity = vmath.norm(self.velocity) * self.max_speed
     end
-    self.velocity = vmath.mul(self.velocity, 0.9)
+    self.velocity = vmath.mul(self.velocity, 0.95)
 
     -- Update position
     local position = transform.get_translation(e)
