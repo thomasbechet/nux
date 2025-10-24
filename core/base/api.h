@@ -274,41 +274,49 @@ typedef enum
 
 typedef enum
 {
-    NUX_MOUSE_X_RIGHT     = 0,
-    NUX_MOUSE_X_LEFT      = 1,
-    NUX_MOUSE_Y_DOWN      = 2,
-    NUX_MOUSE_Y_UP        = 3,
-    NUX_MOUSE_SCROLL_UP   = 4,
-    NUX_MOUSE_SCROLL_DOWN = 5,
+    NUX_MOUSE_MOTION_RIGHT = 0,
+    NUX_MOUSE_MOTION_LEFT  = 1,
+    NUX_MOUSE_MOTION_DOWN  = 2,
+    NUX_MOUSE_MOTION_UP    = 3,
+    NUX_MOUSE_SCROLL_UP    = 4,
+    NUX_MOUSE_SCROLL_DOWN  = 5,
 } nux_mouse_axis_t;
 
 typedef enum
 {
-    NUX_GAMEPAD_A            = 0,
-    NUX_GAMEPAD_X            = 1,
-    NUX_GAMEPAD_Y            = 2,
-    NUX_GAMEPAD_B            = 3,
-    NUX_GAMEPAD_UP           = 4,
-    NUX_GAMEPAD_DOWN         = 5,
-    NUX_GAMEPAD_LEFT         = 6,
-    NUX_GAMEPAD_RIGHT        = 7,
-    NUX_GAMEPAD_LEFT_BUTTON  = 8,
-    NUX_GAMEPAD_RIGHT_BUTTON = 9,
+    NUX_GAMEPAD_A              = 0,
+    NUX_GAMEPAD_X              = 1,
+    NUX_GAMEPAD_Y              = 2,
+    NUX_GAMEPAD_B              = 3,
+    NUX_GAMEPAD_DPAD_UP        = 4,
+    NUX_GAMEPAD_DPAD_DOWN      = 5,
+    NUX_GAMEPAD_DPAD_LEFT      = 6,
+    NUX_GAMEPAD_DPAD_RIGHT     = 7,
+    NUX_GAMEPAD_SHOULDER_LEFT  = 8,
+    NUX_GAMEPAD_SHOULDER_RIGHT = 9,
 } nux_gamepad_button_t;
 
 typedef enum
 {
-    NUX_GAMEPAD_LEFT_X_POS    = 0,
-    NUX_GAMEPAD_LEFT_X_NEG    = 1,
-    NUX_GAMEPAD_LEFT_Y_POS    = 2,
-    NUX_GAMEPAD_LEFT_Y_NEG    = 3,
-    NUX_GAMEPAD_RIGHT_X_POS   = 4,
-    NUX_GAMEPAD_RIGHT_X_NEG   = 5,
-    NUX_GAMEPAD_RIGHT_Y_POS   = 6,
-    NUX_GAMEPAD_RIGHT_Y_NEG   = 7,
-    NUX_GAMEPAD_LEFT_TRIGGER  = 8,
-    NUX_GAMEPAD_RIGHT_TRIGGER = 9,
+    NUX_GAMEPAD_LSTICK_LEFT  = 0,
+    NUX_GAMEPAD_LSTICK_RIGHT = 1,
+    NUX_GAMEPAD_LSTICK_UP    = 2,
+    NUX_GAMEPAD_LSTICK_DOWN  = 3,
+    NUX_GAMEPAD_RSTICK_LEFT  = 4,
+    NUX_GAMEPAD_RSTICK_RIGHT = 5,
+    NUX_GAMEPAD_RSTICK_UP    = 6,
+    NUX_GAMEPAD_RSTICK_DOWN  = 7,
+    NUX_GAMEPAD_LTRIGGER     = 8,
+    NUX_GAMEPAD_RTRIGGER     = 9,
 } nux_gamepad_axis_t;
+
+typedef enum
+{
+    NUX_CURSOR_UP    = 0,
+    NUX_CURSOR_DOWN  = 1,
+    NUX_CURSOR_LEFT  = 2,
+    NUX_CURSOR_RIGHT = 3,
+} nux_cursor_mode_t;
 
 typedef enum
 {

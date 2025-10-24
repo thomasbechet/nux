@@ -109,33 +109,33 @@ nux_input_update (void)
             nux_v2_max(controller->cursor, NUX_V2_ZEROS), NUX_V2_ONES);
 
         // Integrate cursor motion
-        if (controller->mode == NUX_CONTROLLER_MODE_CURSOR)
-        {
-            // nux_f32_t speed
-            //     = nux_time_delta() * controller->cursor_motion_speed;
-            // const nux_v2_t motion[] = {
-            //     nux_v2(1, 0),
-            //     nux_v2(-1, 0),
-            //     nux_v2(0, 1),
-            //     nux_v2(0, -1),
-            // };
-            // for (nux_u32_t j = 0;
-            //      j < NUX_ARRAY_SIZE(controller->cursor_motion_buttons);
-            //      ++j)
-            // {
-            //     if (controller->buttons &
-            //     controller->cursor_motion_buttons[j])
-            //     {
-            //         controller->cursor = nux_v2_add(
-            //             controller->cursor, nux_v2_muls(motion[j], speed));
-            //     }
-            // }
-            // nux_v2_t axis_motion
-            //     = nux_v2(controller->axis[controller->cursor_motion_axis[0]],
-            //              controller->axis[controller->cursor_motion_axis[1]]);
-            // controller->cursor = nux_v2_add(controller->cursor,
-            //                                 nux_v2_muls(axis_motion, speed));
-        }
+        // if (controller->mode == NUX_CONTROLLER_MODE_CURSOR)
+        // {
+        // nux_f32_t speed
+        //     = nux_time_delta() * controller->cursor_motion_speed;
+        // const nux_v2_t motion[] = {
+        //     nux_v2(1, 0),
+        //     nux_v2(-1, 0),
+        //     nux_v2(0, 1),
+        //     nux_v2(0, -1),
+        // };
+        // for (nux_u32_t j = 0;
+        //      j < NUX_ARRAY_SIZE(controller->cursor_motion_buttons);
+        //      ++j)
+        // {
+        //     if (controller->buttons &
+        //     controller->cursor_motion_buttons[j])
+        //     {
+        //         controller->cursor = nux_v2_add(
+        //             controller->cursor, nux_v2_muls(motion[j], speed));
+        //     }
+        // }
+        // nux_v2_t axis_motion
+        //     = nux_v2(controller->axis[controller->cursor_motion_axis[0]],
+        //              controller->axis[controller->cursor_motion_axis[1]]);
+        // controller->cursor = nux_v2_add(controller->cursor,
+        //                                 nux_v2_muls(axis_motion, speed));
+        // }
     }
 }
 

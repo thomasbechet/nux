@@ -355,7 +355,7 @@ window_init (void)
     glfwUpdateGamepadMappings(gamecontrollerdb_txt);
 
     // Configure vsync
-    // glfwSwapInterval(0);
+    glfwSwapInterval(0);
 
     // Initialize GL functions
     glfwMakeContextCurrent(runtime.win);
@@ -410,22 +410,22 @@ window_begin_frame (void)
         nux_os_event_t event;
         event.type             = NUX_OS_EVENT_INPUT;
         event.input.type       = NUX_INPUT_MOUSE_AXIS;
-        event.input.mouse_axis = NUX_MOUSE_X_RIGHT;
+        event.input.mouse_axis = NUX_MOUSE_MOTION_RIGHT;
         event.input.axis_value = delta.x > 0 ? delta.x : 0;
         nux_instance_push_event(runtime.instance, &event);
         event.type             = NUX_OS_EVENT_INPUT;
         event.input.type       = NUX_INPUT_MOUSE_AXIS;
-        event.input.mouse_axis = NUX_MOUSE_X_LEFT;
+        event.input.mouse_axis = NUX_MOUSE_MOTION_LEFT;
         event.input.axis_value = delta.x < 0 ? fabsf(delta.x) : 0;
         nux_instance_push_event(runtime.instance, &event);
         event.type             = NUX_OS_EVENT_INPUT;
         event.input.type       = NUX_INPUT_MOUSE_AXIS;
-        event.input.mouse_axis = NUX_MOUSE_Y_DOWN;
+        event.input.mouse_axis = NUX_MOUSE_MOTION_DOWN;
         event.input.axis_value = delta.y > 0 ? delta.y : 0;
         nux_instance_push_event(runtime.instance, &event);
         event.type             = NUX_OS_EVENT_INPUT;
         event.input.type       = NUX_INPUT_MOUSE_AXIS;
-        event.input.mouse_axis = NUX_MOUSE_Y_UP;
+        event.input.mouse_axis = NUX_MOUSE_MOTION_UP;
         event.input.axis_value = delta.y < 0 ? fabsf(delta.y) : 0;
         nux_instance_push_event(runtime.instance, &event);
 

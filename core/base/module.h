@@ -715,12 +715,6 @@ typedef struct nux_disk
     };
 } nux_disk_t;
 
-typedef enum
-{
-    NUX_CONTROLLER_MODE_MOTION,
-    NUX_CONTROLLER_MODE_CURSOR,
-} nux_controller_mode_t;
-
 typedef struct
 {
     const nux_c8_t  *name;
@@ -741,18 +735,13 @@ NUX_VEC_DEFINE(nux_inputmap_entry_vec, nux_inputmap_entry_t);
 struct nux_inputmap_t
 {
     nux_inputmap_entry_vec_t entries;
+    nux_u32_t                cursor_motions[4];
 };
 
 typedef struct
 {
-    nux_controller_mode_t mode;
-
-    nux_v2_t cursor; // in [0, 1[ top-left coordinate system
+    nux_v2_t cursor;
     nux_v2_t cursor_prev;
-
-    // nux_button_t cursor_motion_buttons[4];
-    // nux_axis_t   cursor_motion_axis[2];
-    // nux_f32_t    cursor_motion_speed;
 
     nux_rid_t     inputmap;
     nux_f32_vec_t inputs;
