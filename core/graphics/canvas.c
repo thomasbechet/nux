@@ -117,6 +117,7 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     c->active_batch.first = 0;
     c->active_batch.count = 0;
     c->active_texture     = 0;
+    c->wrap_mode          = NUX_TEXTURE_WRAP_REPEAT;
 
     // Create render target
     c->target
@@ -142,6 +143,11 @@ void
 nux_canvas_set_clear_color (nux_canvas_t *canvas, nux_u32_t color)
 {
     canvas->clear_color = color;
+}
+void
+nux_canvas_set_wrap_mode (nux_canvas_t *canvas, nux_texture_wrap_mode_t mode)
+{
+    canvas->wrap_mode = mode;
 }
 void
 nux_canvas_text (nux_canvas_t   *canvas,
@@ -201,6 +207,273 @@ nux_canvas_rectangle (
     nux_u32_t first;
     NUX_CHECK(push_quads(canvas, &quad, 1), return);
     end_batch(canvas);
+}
+void
+nux_canvas_blit (nux_canvas_t  *canvas,
+                 nux_texture_t *texture,
+                 nux_b2i_t      extent,
+                 nux_b2i_t      tex_extent)
+{
+    begin_batch_textured(canvas,
+                         texture->gpu.slot,
+                         texture->gpu.width,
+                         texture->gpu.height,
+                         nux_v4s(1));
+
+    nux_gpu_canvas_quad_t quads[6];
+    nux_u32_t             quads_count = 0;
+
+    nux_v2u_t extent_s     = nux_b2i_size(extent);
+    nux_v2u_t tex_extent_s = nux_b2i_size(tex_extent);
+
+    switch (canvas->wrap_mode)
+    {
+        case NUX_TEXTURE_WRAP_CLAMP: {
+            quads[0]    = make_quad(extent.min.x,
+                                 extent.min.y,
+                                 tex_extent.min.x,
+                                 tex_extent.min.y,
+                                 NUX_MIN(extent_s.x, tex_extent_s.x),
+                                 NUX_MIN(extent_s.y, tex_extent_s.y));
+            quads_count = 1;
+        }
+        break;
+        case NUX_TEXTURE_WRAP_REPEAT: {
+            // Calculate blit count
+            nux_u32_t full_hblit_count = extent_s.x / tex_extent_s.x;
+            nux_u32_t full_vblit_count = extent_s.y / tex_extent_s.y;
+
+            // Insert full blits
+            for (nux_u32_t y = 0; y < full_vblit_count; ++y)
+            {
+                for (nux_u32_t x = 0; x < full_hblit_count; ++x)
+                {
+                    nux_i32_t pos_x    = extent.min.x + (x * tex_extent_s.x);
+                    nux_i32_t pos_y    = extent.min.y + (y * tex_extent_s.y);
+                    quads[quads_count] = make_quad(pos_x,
+                                                   pos_y,
+                                                   tex_extent.min.x,
+                                                   tex_extent.min.y,
+                                                   tex_extent_s.x,
+                                                   tex_extent_s.y);
+                    ++quads_count;
+                }
+            }
+
+            // Insert partial blits
+            nux_u32_t partial_hblit_size = extent_s.x % tex_extent_s.x;
+            nux_u32_t partial_vblit_size = extent_s.y % tex_extent_s.y;
+
+            if (partial_hblit_size)
+            {
+                for (nux_u32_t y = 0; y < full_vblit_count; ++y)
+                {
+                    nux_i32_t pos_x
+                        = extent.min.x + (full_hblit_count * tex_extent_s.x);
+                    nux_i32_t pos_y = extent.min.y + (y * tex_extent_s.y);
+                    nux_v2u_t size
+                        = nux_v2u(partial_hblit_size, tex_extent_s.y);
+                    quads[quads_count] = make_quad(pos_x,
+                                                   pos_y,
+                                                   tex_extent.min.x,
+                                                   tex_extent.min.y,
+                                                   size.x,
+                                                   size.y);
+                    ++quads_count;
+                }
+            }
+            if (partial_vblit_size)
+            {
+                for (nux_u32_t x = 0; x < full_hblit_count; ++x)
+                {
+                    nux_i32_t pos_x = extent.min.x + (x * tex_extent_s.x);
+                    nux_i32_t pos_y
+                        = extent.min.y + (full_vblit_count * tex_extent_s.y);
+                    nux_v2u_t size
+                        = nux_v2u(tex_extent_s.x, partial_vblit_size);
+                    quads[quads_count] = make_quad(pos_x,
+                                                   pos_y,
+                                                   tex_extent.min.x,
+                                                   tex_extent.min.y,
+                                                   size.x,
+                                                   size.y);
+                    ++quads_count;
+                }
+            }
+            if (partial_hblit_size && partial_vblit_size)
+            {
+                nux_i32_t pos_x
+                    = extent.min.x + (full_hblit_count * tex_extent_s.x);
+                nux_i32_t pos_y
+                    = extent.min.y + (full_vblit_count * tex_extent_s.y);
+                nux_v2u_t size
+                    = nux_v2u(partial_hblit_size, partial_vblit_size);
+                quads[quads_count] = make_quad(pos_x,
+                                               pos_y,
+                                               tex_extent.min.x,
+                                               tex_extent.min.y,
+                                               size.x,
+                                               size.y);
+                ++quads_count;
+            }
+        }
+        break;
+        case NUX_TEXTURE_WRAP_MIRROR:
+            break;
+    }
+
+    nux_u32_t first;
+    NUX_CHECK(push_quads(canvas, quads, quads_count), return);
+    end_batch(canvas);
+}
+void
+nux_canvas_blit_sliced (nux_canvas_t  *canvas,
+                        nux_texture_t *texture,
+                        nux_b2i_t      extent,
+                        nux_b2i_t      tex_extent,
+                        nux_b2i_t      inner)
+{
+    nux_u32_t margin_left   = inner.min.x - tex_extent.min.x;
+    nux_u32_t margin_right  = tex_extent.max.x - inner.max.x;
+    nux_u32_t margin_top    = inner.min.y - tex_extent.min.y;
+    nux_u32_t margin_bottom = tex_extent.max.y - inner.max.y;
+
+    nux_u32_t tex_mid_width
+        = nux_b2i_size(tex_extent).x - margin_left - margin_right;
+    nux_u32_t tex_mid_height
+        = nux_b2i_size(tex_extent).y - margin_top - margin_bottom;
+    nux_u32_t ext_mid_width
+        = nux_b2i_size(extent).x - margin_left - margin_right;
+    nux_u32_t ext_mid_height
+        = nux_b2i_size(extent).y - margin_top - margin_bottom;
+
+    // Top-Left
+    if (margin_top && margin_left)
+    {
+        nux_canvas_blit(
+            canvas,
+            texture,
+            nux_b2i_xywh(extent.min.x, extent.min.y, margin_left, margin_top),
+            nux_b2i_xywh(
+                tex_extent.min.x, tex_extent.min.y, margin_left, margin_top));
+    }
+
+    // Top-Mid
+    if (margin_top)
+    {
+        nux_canvas_blit(canvas,
+                        texture,
+                        nux_b2i_xywh(extent.min.x + margin_left,
+                                     extent.min.y,
+                                     ext_mid_width,
+                                     margin_top),
+                        nux_b2i_xywh(tex_extent.min.x + margin_left,
+                                     tex_extent.min.y,
+                                     tex_mid_width,
+                                     margin_top));
+    }
+
+    // Top-Right
+    if (margin_top && margin_right)
+    {
+        nux_canvas_blit(canvas,
+                        texture,
+                        nux_b2i_xywh(extent.max.x - margin_right + 1,
+                                     extent.min.y,
+                                     margin_right,
+                                     margin_top),
+                        nux_b2i_xywh(tex_extent.max.x - margin_right + 1,
+                                     tex_extent.min.y,
+                                     margin_right,
+                                     margin_top));
+    }
+
+    // Mid-Left
+    if (margin_left)
+    {
+        nux_canvas_blit(canvas,
+                        texture,
+                        nux_b2i_xywh(extent.min.x,
+                                     extent.min.y + margin_top,
+                                     margin_right,
+                                     ext_mid_height),
+                        nux_b2i_xywh(tex_extent.min.x,
+                                     tex_extent.min.y + margin_top,
+                                     margin_right,
+                                     tex_mid_height));
+    }
+
+    // Mid-Mid
+    nux_canvas_blit(canvas,
+                    texture,
+                    nux_b2i_xywh(extent.min.x + margin_left,
+                                 extent.min.y + margin_top,
+                                 ext_mid_width,
+                                 ext_mid_height),
+                    nux_b2i_xywh(tex_extent.min.x + margin_left,
+                                 tex_extent.min.y + margin_top,
+                                 tex_mid_width,
+                                 tex_mid_height));
+
+    // Mid-Right
+    if (margin_right)
+    {
+        nux_canvas_blit(canvas,
+                        texture,
+                        nux_b2i_xywh(extent.max.x - margin_right + 1,
+                                     extent.min.y + margin_top,
+                                     margin_right,
+                                     ext_mid_height),
+                        nux_b2i_xywh(tex_extent.max.x - margin_right + 1,
+                                     tex_extent.min.y + margin_top,
+                                     margin_right,
+                                     tex_mid_height));
+    }
+
+    // Bottom-Left
+    if (margin_bottom && margin_left)
+    {
+        nux_canvas_blit(canvas,
+                        texture,
+                        nux_b2i_xywh(extent.min.x,
+                                     extent.max.y - margin_bottom + 1,
+                                     margin_left,
+                                     margin_bottom),
+                        nux_b2i_xywh(tex_extent.min.x,
+                                     tex_extent.max.y - margin_bottom + 1,
+                                     margin_right,
+                                     margin_bottom));
+    }
+
+    // Bottom-Mid
+    if (margin_bottom)
+    {
+        nux_canvas_blit(canvas,
+                        texture,
+                        nux_b2i_xywh(extent.min.x + margin_left,
+                                     extent.max.y - margin_bottom + 1,
+                                     ext_mid_width,
+                                     margin_bottom),
+                        nux_b2i_xywh(tex_extent.min.x + margin_left,
+                                     tex_extent.max.y - margin_bottom + 1,
+                                     tex_mid_width,
+                                     margin_bottom));
+    }
+
+    // Bottom-Right
+    if (margin_bottom && margin_right)
+    {
+        nux_canvas_blit(canvas,
+                        texture,
+                        nux_b2i_xywh(extent.max.x - margin_right + 1,
+                                     extent.max.y - margin_bottom + 1,
+                                     margin_right,
+                                     margin_bottom),
+                        nux_b2i_xywh(tex_extent.max.x - margin_right + 1,
+                                     tex_extent.max.y - margin_bottom + 1,
+                                     margin_right,
+                                     margin_bottom));
+    }
 }
 
 void

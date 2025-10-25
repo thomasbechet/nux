@@ -46,6 +46,13 @@ typedef enum
 
 typedef enum
 {
+    NUX_TEXTURE_WRAP_CLAMP  = 0,
+    NUX_TEXTURE_WRAP_REPEAT = 1,
+    NUX_TEXTURE_WRAP_MIRROR = 2
+} nux_texture_wrap_mode_t;
+
+typedef enum
+{
     NUX_COLOR_TRANSPARENT = 0,
     NUX_COLOR_WHITE       = 1,
     NUX_COLOR_RED         = 2,
@@ -90,6 +97,7 @@ nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_u32_t          w,
                                nux_u32_t          h);
 nux_texture_t *nux_texture_screen(void);
+nux_v2i_t      nux_texture_get_size(nux_texture_t *texture);
 
 nux_palette_t *nux_palette_new(nux_arena_t *arena, nux_u32_t size);
 nux_palette_t *nux_palette_default(void);
@@ -116,12 +124,23 @@ nux_canvas_t  *nux_canvas_new(nux_arena_t *arena,
                               nux_u32_t    height);
 nux_texture_t *nux_canvas_get_texture(nux_canvas_t *canvas);
 void nux_canvas_set_clear_color(nux_canvas_t *canvas, nux_u32_t color);
+void nux_canvas_set_wrap_mode(nux_canvas_t           *canvas,
+                              nux_texture_wrap_mode_t mode);
 void nux_canvas_text(nux_canvas_t   *canvas,
                      nux_u32_t       x,
                      nux_u32_t       y,
                      const nux_c8_t *text);
 void nux_canvas_rectangle(
     nux_canvas_t *canvas, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h);
+void nux_canvas_blit(nux_canvas_t  *canvas,
+                     nux_texture_t *texture,
+                     nux_b2i_t      extent,
+                     nux_b2i_t      tex_extent);
+void nux_canvas_blit_sliced(nux_canvas_t  *canvas,
+                            nux_texture_t *texture,
+                            nux_b2i_t      extent,
+                            nux_b2i_t      tex_extent,
+                            nux_b2i_t      inner);
 
 void nux_graphics_begin_state(void);
 void nux_graphics_end_state(void);

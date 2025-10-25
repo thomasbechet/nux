@@ -3,10 +3,12 @@
 typedef enum
 {
     NUX_LUA_TYPE_VEC2,
+    NUX_LUA_TYPE_VEC2I,
     NUX_LUA_TYPE_VEC3,
     NUX_LUA_TYPE_VEC4,
     NUX_LUA_TYPE_QUAT,
     NUX_LUA_TYPE_MAT4,
+    NUX_LUA_TYPE_BOX2I,
     NUX_LUA_TYPE_HIT,
 } nux_lua_userdata_type_t;
 
@@ -17,10 +19,12 @@ typedef struct
     {
         void              *data;
         nux_v2_t          *vec2;
+        nux_v2i_t         *vec2i;
         nux_v3_t          *vec3;
         nux_v4_t          *vec4;
         nux_q4_t          *quat;
         nux_m4_t          *mat4;
+        nux_b2i_t         *box2i;
         nux_raycast_hit_t *hit;
     };
 } nux_lua_userdata_t;
@@ -34,6 +38,9 @@ new_userdata (lua_State *L, nux_lua_userdata_type_t type)
         case NUX_LUA_TYPE_VEC2:
             size = sizeof(nux_v2_t);
             break;
+        case NUX_LUA_TYPE_VEC2I:
+            size = sizeof(nux_v2i_t);
+            break;
         case NUX_LUA_TYPE_VEC3:
             size = sizeof(nux_v3_t);
             break;
@@ -45,6 +52,9 @@ new_userdata (lua_State *L, nux_lua_userdata_type_t type)
             break;
         case NUX_LUA_TYPE_MAT4:
             size = sizeof(nux_m4_t);
+            break;
+        case NUX_LUA_TYPE_BOX2I:
+            size = sizeof(nux_b2i_t);
             break;
         case NUX_LUA_TYPE_HIT:
             size = sizeof(nux_raycast_hit_t);
@@ -96,6 +106,30 @@ nux_lua_check_vec2 (lua_State *L, int index)
     {
         nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_VEC2);
         return *u->vec2;
+    }
+}
+void
+nux_lua_push_vec2i (lua_State *L, nux_v2i_t v)
+{
+    nux_v2i_t *vec = new_userdata(L, NUX_LUA_TYPE_VEC2I);
+    *vec           = v;
+}
+nux_v2i_t
+nux_lua_check_vec2i (lua_State *L, int index)
+{
+    if (lua_istable(L, index))
+    {
+        nux_v2i_t v;
+        lua_geti(L, index, 1);
+        v.x = lua_tointeger(L, -1);
+        lua_geti(L, index, 2);
+        v.y = lua_tointeger(L, -1);
+        return v;
+    }
+    else
+    {
+        nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_VEC2I);
+        return *u->vec2i;
     }
 }
 void
@@ -191,6 +225,18 @@ nux_lua_check_mat4 (lua_State *L, int index)
 {
     nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_MAT4);
     return *u->mat4;
+}
+void
+nux_lua_push_box2i (lua_State *L, nux_b2i_t b)
+{
+    nux_b2i_t *box = new_userdata(L, NUX_LUA_TYPE_BOX2I);
+    *box           = b;
+}
+nux_b2i_t
+nux_lua_check_box2i (lua_State *L, int index)
+{
+    nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_BOX2I);
+    return *u->box2i;
 }
 void
 nux_lua_push_hit (lua_State *L, nux_raycast_hit_t hit)
@@ -423,6 +469,33 @@ math_vec2 (lua_State *L)
     return 1;
 }
 static int
+math_vec2i (lua_State *L)
+{
+    nux_v2i_t v;
+    if (lua_gettop(L) == 0)
+    {
+        v = nux_v2is(0);
+    }
+    else if (lua_gettop(L) == 1)
+    {
+        if (lua_isnumber(L, 1))
+        {
+            v = nux_v2is(luaL_checknumber(L, 1));
+        }
+        else
+        {
+            v = nux_lua_check_vec2i(L, 1);
+        }
+    }
+    else
+    {
+        v.x = luaL_checknumber(L, 1);
+        v.y = luaL_checknumber(L, 2);
+    }
+    nux_lua_push_vec2i(L, v);
+    return 1;
+}
+static int
 math_vec3 (lua_State *L)
 {
     nux_v3_t v;
@@ -484,6 +557,24 @@ math_mat4 (lua_State *L)
 {
     nux_m4_t m = nux_m4_identity();
     nux_lua_push_mat4(L, m);
+    return 1;
+}
+static int
+math_box2i (lua_State *L)
+{
+    nux_b2i_t b;
+    if (lua_gettop(L) == 1)
+    {
+        b = nux_lua_check_box2i(L, 1);
+    }
+    else
+    {
+        b = nux_b2i_xywh(luaL_checknumber(L, 1),
+                         luaL_checknumber(L, 2),
+                         luaL_checknumber(L, 3),
+                         luaL_checknumber(L, 4));
+    }
+    nux_lua_push_box2i(L, b);
     return 1;
 }
 static int
@@ -618,6 +709,21 @@ meta_index (lua_State *L)
             return 0;
         }
         break;
+        case NUX_LUA_TYPE_VEC2I: {
+            const char *key = luaL_checkstring(L, 2);
+            if (key[0] == 'x')
+            {
+                lua_pushinteger(L, u->vec2i->x);
+                return 1;
+            }
+            else if (key[0] == 'y')
+            {
+                lua_pushinteger(L, u->vec2i->y);
+                return 1;
+            }
+            return 0;
+        }
+        break;
         case NUX_LUA_TYPE_VEC3: {
             const char *key = luaL_checkstring(L, 2);
             if (key[0] == 'x')
@@ -633,6 +739,31 @@ meta_index (lua_State *L)
             else if (key[0] == 'z')
             {
                 lua_pushnumber(L, u->vec3->z);
+                return 1;
+            }
+            return 0;
+        }
+        break;
+        case NUX_LUA_TYPE_BOX2I: {
+            const char *key = luaL_checkstring(L, 2);
+            if (key[0] == 'x')
+            {
+                lua_pushinteger(L, u->box2i->min.x);
+                return 1;
+            }
+            else if (key[0] == 'y')
+            {
+                lua_pushinteger(L, u->box2i->min.y);
+                return 1;
+            }
+            else if (key[0] == 'w')
+            {
+                lua_pushinteger(L, nux_b2i_size(*u->box2i).x);
+                return 1;
+            }
+            else if (key[0] == 'h')
+            {
+                lua_pushinteger(L, nux_b2i_size(*u->box2i).y);
                 return 1;
             }
             return 0;
@@ -782,9 +913,11 @@ nux_lua_open_vmath (void)
 {
     static const struct luaL_Reg vmath_lib[]
         = { { "vec2", math_vec2 },
+            { "vec2i", math_vec2i },
             { "vec3", math_vec3 },
             { "vec4", math_vec4 },
             { "mat4", math_mat4 },
+            { "box2i", math_box2i },
             { "dot", math_dot },
             { "cross", math_cross },
             { "length", math_length },

@@ -37,6 +37,16 @@ typedef union
 {
     struct
     {
+        nux_i32_t x;
+        nux_i32_t y;
+    };
+    nux_i32_t data[2];
+} nux_v2i_t;
+
+typedef union
+{
+    struct
+    {
         nux_f32_t x;
         nux_f32_t y;
         nux_f32_t z;
@@ -55,6 +65,18 @@ typedef union
     };
     nux_f32_t data[4];
 } nux_v4_t;
+
+typedef union
+{
+    struct
+    {
+        nux_f32_t x;
+        nux_f32_t y;
+        nux_f32_t z;
+        nux_f32_t w;
+    };
+    nux_f32_t data[4];
+} nux_q4_t;
 
 typedef union
 {
@@ -81,17 +103,11 @@ typedef union
     nux_f32_t data2d[4][4];
 } nux_m4_t;
 
-typedef union
+typedef struct
 {
-    struct
-    {
-        nux_f32_t x;
-        nux_f32_t y;
-        nux_f32_t z;
-        nux_f32_t w;
-    };
-    nux_f32_t data[4];
-} nux_q4_t;
+    nux_v2i_t min;
+    nux_v2i_t max;
+} nux_b2i_t;
 
 typedef enum
 {

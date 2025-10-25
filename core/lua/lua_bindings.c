@@ -1266,6 +1266,17 @@ l_texture_screen (lua_State *L)
     return 1;
 }
 static int
+l_texture_get_size (lua_State *L)
+{
+    nux_texture_t *texture
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 1));
+    nux_v2i_t ret = nux_texture_get_size(texture);
+    l_checkerror(L);
+
+    nux_lua_push_vec2i(L, ret);
+    return 1;
+}
+static int
 l_palette_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -1479,6 +1490,18 @@ l_canvas_set_clear_color (lua_State *L)
     return 0;
 }
 static int
+l_canvas_set_wrap_mode (lua_State *L)
+{
+    nux_canvas_t *canvas
+        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
+    nux_texture_wrap_mode_t mode = luaL_checknumber(L, 2);
+
+    nux_canvas_set_wrap_mode(canvas, mode);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_canvas_text (lua_State *L)
 {
     nux_canvas_t *canvas
@@ -1503,6 +1526,37 @@ l_canvas_rectangle (lua_State *L)
     nux_u32_t h = luaL_checknumber(L, 5);
 
     nux_canvas_rectangle(canvas, x, y, w, h);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_canvas_blit (lua_State *L)
+{
+    nux_canvas_t *canvas
+        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
+    nux_texture_t *texture
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
+    nux_b2i_t extent     = nux_lua_check_box2i(L, 3);
+    nux_b2i_t tex_extent = nux_lua_check_box2i(L, 4);
+
+    nux_canvas_blit(canvas, texture, extent, tex_extent);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_canvas_blit_sliced (lua_State *L)
+{
+    nux_canvas_t *canvas
+        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
+    nux_texture_t *texture
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
+    nux_b2i_t extent     = nux_lua_check_box2i(L, 3);
+    nux_b2i_t tex_extent = nux_lua_check_box2i(L, 4);
+    nux_b2i_t inner      = nux_lua_check_box2i(L, 5);
+
+    nux_canvas_blit_sliced(canvas, texture, extent, tex_extent, inner);
     l_checkerror(L);
 
     return 0;
@@ -2001,9 +2055,11 @@ static const struct luaL_Reg lib_viewport[]
         { "to_global", l_viewport_to_global },
         { "to_local", l_viewport_to_local },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
-                                               { "screen", l_texture_screen },
-                                               { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_texture[]
+    = { { "new", l_texture_new },
+        { "screen", l_texture_screen },
+        { "get_size", l_texture_get_size },
+        { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_palette[]
     = { { "new", l_palette_new },
         { "default", l_palette_default },
@@ -2023,8 +2079,11 @@ static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
         { "get_texture", l_canvas_get_texture },
         { "set_clear_color", l_canvas_set_clear_color },
+        { "set_wrap_mode", l_canvas_set_wrap_mode },
         { "text", l_canvas_text },
         { "rectangle", l_canvas_rectangle },
+        { "blit", l_canvas_blit },
+        { "blit_sliced", l_canvas_blit_sliced },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_graphics[]
     = { { "begin_state", l_graphics_begin_state },
@@ -2562,6 +2621,12 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "IMAGE_INDEX");
     lua_pushinteger(L, 2);
     lua_setfield(L, -2, "RENDER_TARGET");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "WRAP_CLAMP");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "WRAP_REPEAT");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "WRAP_MIRROR");
     lua_setglobal(L, "texture");
     lua_newtable(L);
     luaL_setfuncs(L, lib_palette, 0);

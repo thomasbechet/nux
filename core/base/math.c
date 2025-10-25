@@ -125,6 +125,12 @@ nux_b2i_moveto (nux_b2i_t b, nux_v2i_t p)
 {
     return nux_b2i_translate(b, nux_v2i_sub(p, b.min));
 }
+nux_v2u_t
+nux_b2i_size (nux_b2i_t b)
+{
+    NUX_ASSERT((b.max.x - b.min.x) >= 0 && (b.max.y - b.min.y) >= 0);
+    return nux_v2u(b.max.x - b.min.x + 1, b.max.y - b.min.y + 1);
+}
 
 void
 nux_qsort (void     *base,

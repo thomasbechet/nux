@@ -118,16 +118,17 @@ typedef struct
 
 struct nux_canvas_t
 {
-    nux_gpu_encoder_t      encoder;
-    nux_gpu_buffer_t       constants_buffer;
-    nux_gpu_buffer_t       quads_buffer;
-    nux_u32_t              quads_buffer_head;
-    nux_gpu_buffer_t       batches_buffer;
-    nux_u32_t              batches_buffer_head;
-    nux_gpu_canvas_batch_t active_batch;
-    nux_u32_t              active_texture;
-    nux_texture_t         *target;
-    nux_u32_t              clear_color;
+    nux_gpu_encoder_t       encoder;
+    nux_gpu_buffer_t        constants_buffer;
+    nux_gpu_buffer_t        quads_buffer;
+    nux_u32_t               quads_buffer_head;
+    nux_gpu_buffer_t        batches_buffer;
+    nux_u32_t               batches_buffer_head;
+    nux_gpu_canvas_batch_t  active_batch;
+    nux_u32_t               active_texture;
+    nux_texture_t          *target;
+    nux_u32_t               clear_color;
+    nux_texture_wrap_mode_t wrap_mode;
 };
 
 typedef struct

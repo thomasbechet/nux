@@ -138,6 +138,11 @@ def parse_header(args, header, modules):
         {
             int _;
         } nux_v2_t;
+
+        typedef union
+        {
+            int _;
+        } nux_v2i_t;
         
         typedef union
         {
@@ -158,6 +163,11 @@ def parse_header(args, header, modules):
         {
             int _;
         } nux_m4_t;
+
+        typedef union
+        {
+            int _;
+        } nux_b2i_t;
     """
 
     # Append resource types

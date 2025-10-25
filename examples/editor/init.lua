@@ -44,8 +44,6 @@ function M:on_load()
     input.set_map(0, map)
 
     self.mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
-    self.active_texture = nil
-    self.active_mesh = nil
 
     self.scene = scene.load_gltf(self.arena, "assets/industrial.glb")
     scene.set_active(self.scene)
@@ -102,6 +100,12 @@ function M:on_update()
     local cur = viewport.to_local(self.vp, gcur)
     canvas.text(c, 10, 70, string.format("cursor: %.2f %.2f", cur.x, cur.y))
     canvas.text(c, 10, 80, string.format("fov: %d", self.camera.fov))
+
+    if self.gizmos.target then
+        local tex = staticmesh.get_texture(self.gizmos.target)
+        local size = texture.get_size(tex)
+        canvas.blit(c, tex, vmath.box2i(100, 100, size.x, size.y), vmath.box2i(0, 0, size.x, size.y))
+    end
 
     canvas.rectangle(c, cur.x * WIDTH - 1, cur.y * HEIGHT - 1, 5, 5)
 

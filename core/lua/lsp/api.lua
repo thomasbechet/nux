@@ -422,10 +422,15 @@ texture={}
 texture.IMAGE_RGBA=0
 texture.IMAGE_INDEX=1
 texture.RENDER_TARGET=2
+texture.WRAP_CLAMP=0
+texture.WRAP_REPEAT=1
+texture.WRAP_MIRROR=2
 ---@return None
 function texture.new(...) end
 ---@return None
 function texture.screen(...) end
+---@return None
+function texture.get_size(...) end
 palette={}
 palette.SIZE=256
 ---@return None
@@ -459,9 +464,15 @@ function canvas.get_texture(...) end
 ---@return None
 function canvas.set_clear_color(...) end
 ---@return None
+function canvas.set_wrap_mode(...) end
+---@return None
 function canvas.text(...) end
 ---@return None
 function canvas.rectangle(...) end
+---@return None
+function canvas.blit(...) end
+---@return None
+function canvas.blit_sliced(...) end
 graphics={}
 ---@return None
 function graphics.begin_state(...) end

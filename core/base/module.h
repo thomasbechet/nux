@@ -403,19 +403,10 @@ typedef enum
     NUX_RESOURCE_QUERY      = 12,
     NUX_RESOURCE_EVENT      = 13,
     NUX_RESOURCE_INPUTMAP   = 14,
+    NUX_RESOURCE_GUI        = 15,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
-
-typedef union
-{
-    struct
-    {
-        nux_i32_t x;
-        nux_i32_t y;
-    };
-    nux_i32_t data[2];
-} nux_v2i_t;
 
 typedef union
 {
@@ -472,12 +463,6 @@ typedef union
     };
     nux_u32_t data[4];
 } nux_v4u_t;
-
-typedef struct
-{
-    nux_v2i_t min;
-    nux_v2i_t max;
-} nux_b2i_t;
 
 typedef union
 {
@@ -875,6 +860,7 @@ nux_b2i_t nux_b2i(nux_v2i_t min, nux_v2i_t max);
 nux_b2i_t nux_b2i_xywh(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 nux_b2i_t nux_b2i_translate(nux_b2i_t b, nux_v2i_t t);
 nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
+nux_v2u_t nux_b2i_size(nux_b2i_t b);
 
 void nux_qsort(void     *base,
                nux_u32_t n,
