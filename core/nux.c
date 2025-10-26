@@ -3,6 +3,7 @@
 #include <scene/internal.h>
 #include <graphics/internal.h>
 #include <physics/internal.h>
+#include <gui/internal.h>
 #include <debug/internal.h>
 
 static nux_instance_t __thread *_instance;
@@ -95,6 +96,7 @@ nux_instance_init (void *userdata, const nux_c8_t *entry)
     NUX_CHECK(nux_scene_init(), goto cleanup);
     NUX_CHECK(nux_graphics_init(), goto cleanup);
     NUX_CHECK(nux_physics_init(), goto cleanup);
+    NUX_CHECK(nux_gui_init(), goto cleanup);
     NUX_CHECK(nux_debug_init(), goto cleanup);
 
     // Register entry script
@@ -121,6 +123,7 @@ nux_instance_free (nux_instance_t *instance)
 
     // Reset runtime
     nux_debug_free();
+    nux_gui_free();
     nux_physics_free();
     nux_graphics_free();
     nux_scene_free();

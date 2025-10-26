@@ -172,7 +172,9 @@ def parse_header(args, header, modules):
 
     # Append resource types
     for typename in [
-        'nux_arena_t'
+        'nux_arena_t',
+        'nux_texture_t',
+        'nux_canvas_t',
         ]:
         prelude += f"\ntypedef struct {typename} {typename};"
 
@@ -208,6 +210,7 @@ if __name__ == "__main__":
         "core/scene/api.h",
         "core/graphics/api.h",
         "core/physics/api.h",
+        "core/gui/api.h",
     ]
     modules = {}
     for header in headers:

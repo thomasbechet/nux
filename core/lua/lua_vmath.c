@@ -235,8 +235,23 @@ nux_lua_push_box2i (lua_State *L, nux_b2i_t b)
 nux_b2i_t
 nux_lua_check_box2i (lua_State *L, int index)
 {
-    nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_BOX2I);
-    return *u->box2i;
+    if (lua_istable(L, index))
+    {
+        lua_geti(L, index, 1);
+        nux_i32_t x = lua_tointeger(L, -1);
+        lua_geti(L, index, 2);
+        nux_i32_t y = lua_tointeger(L, -1);
+        lua_geti(L, index, 3);
+        nux_u32_t w = lua_tointeger(L, -1);
+        lua_geti(L, index, 4);
+        nux_u32_t h = lua_tointeger(L, -1);
+        return nux_b2i_xywh(x, y, w, h);
+    }
+    else
+    {
+        nux_lua_userdata_t *u = check_userdata(L, index, NUX_LUA_TYPE_BOX2I);
+        return *u->box2i;
+    }
 }
 void
 nux_lua_push_hit (lua_State *L, nux_raycast_hit_t hit)
@@ -860,6 +875,9 @@ meta_tostring (lua_State *L)
     {
         case NUX_LUA_TYPE_VEC2:
             lua_pushfstring(L, "vec2(%f, %f)", u->vec2->x, u->vec2->y);
+            return 1;
+        case NUX_LUA_TYPE_VEC2I:
+            lua_pushfstring(L, "vec2i(%d, %d)", u->vec2i->x, u->vec2i->y);
             return 1;
         case NUX_LUA_TYPE_VEC3:
             lua_pushfstring(

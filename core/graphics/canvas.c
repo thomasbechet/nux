@@ -1,12 +1,38 @@
 #include "internal.h"
 
-static nux_gpu_canvas_quad_t
-make_quad (nux_u16_t x,
-           nux_u16_t y,
-           nux_u16_t tx,
-           nux_u16_t ty,
-           nux_u16_t sx,
-           nux_u16_t sy)
+static nux_status_t
+flush_quads (nux_canvas_t *canvas)
+{
+    if (canvas->quads_count == 0)
+    {
+        return NUX_SUCCESS;
+    }
+    NUX_ENSURE(canvas->quads_gpu_buffer_head + canvas->quads_count
+                   < NUX_QUADS_DEFAULT_SIZE,
+               return NUX_FAILURE,
+               "out of quads");
+    NUX_ENSURE(
+        nux_os_buffer_update(
+            nux_userdata(),
+            canvas->quads_gpu_buffer.slot,
+            canvas->quads_gpu_buffer_head * sizeof(*canvas->quads_buffer),
+            canvas->quads_count * sizeof(*canvas->quads_buffer),
+            canvas->quads_buffer),
+        return NUX_FAILURE,
+        "failed to update quads buffer");
+    canvas->active_batch.count += canvas->quads_count;
+    canvas->quads_gpu_buffer_head += canvas->quads_count;
+    canvas->quads_count = 0;
+    return NUX_SUCCESS;
+}
+static void
+push_quad (nux_canvas_t *canvas,
+           nux_u16_t     x,
+           nux_u16_t     y,
+           nux_u16_t     tx,
+           nux_u16_t     ty,
+           nux_u16_t     sx,
+           nux_u16_t     sy)
 {
     nux_gpu_canvas_quad_t q;
     q.pos  = ((nux_u32_t)y << 16) | x;
@@ -15,7 +41,13 @@ make_quad (nux_u16_t x,
     // blit->depth
     //     = (pass->depth - NUGL__MIN_DEPTH) / (NUGL__MAX_DEPTH -
     //     NUGL__MIN_DEPTH);
-    return q;
+
+    if (canvas->quads_count >= NUX_CANVAS_QUAD_BUFFER_SIZE)
+    {
+        flush_quads(canvas);
+    }
+    canvas->quads_buffer[canvas->quads_count] = q;
+    ++canvas->quads_count;
 }
 static void
 begin_batch_textured (nux_canvas_t *canvas,
@@ -25,7 +57,7 @@ begin_batch_textured (nux_canvas_t *canvas,
                       nux_v4_t      color)
 {
     canvas->active_batch.mode           = 1;
-    canvas->active_batch.first          = canvas->quads_buffer_head;
+    canvas->active_batch.first          = canvas->quads_gpu_buffer_head;
     canvas->active_batch.count          = 0;
     canvas->active_batch.texture_width  = texture_width;
     canvas->active_batch.texture_height = texture_height;
@@ -36,7 +68,7 @@ static void
 begin_batch_colored (nux_canvas_t *canvas, nux_v4_t color)
 {
     canvas->active_batch.mode           = 0;
-    canvas->active_batch.first          = canvas->quads_buffer_head;
+    canvas->active_batch.first          = canvas->quads_gpu_buffer_head;
     canvas->active_batch.count          = 0;
     canvas->active_batch.texture_width  = 0;
     canvas->active_batch.texture_height = 0;
@@ -46,16 +78,18 @@ begin_batch_colored (nux_canvas_t *canvas, nux_v4_t color)
 static nux_status_t
 end_batch (nux_canvas_t *canvas)
 {
+    flush_quads(canvas);
+
     // Update buffer
-    nux_u32_t index = canvas->batches_buffer_head;
+    nux_u32_t index = canvas->batches_gpu_buffer_head;
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    canvas->batches_buffer.slot,
+                                    canvas->batches_gpu_buffer.slot,
                                     index * sizeof(canvas->active_batch),
                                     sizeof(canvas->active_batch),
                                     &canvas->active_batch),
                return NUX_FAILURE,
                "failed to update batches buffer");
-    ++canvas->batches_buffer_head;
+    ++canvas->batches_gpu_buffer_head;
 
     // Build commands
     nux_gpu_bind_texture(
@@ -65,23 +99,24 @@ end_batch (nux_canvas_t *canvas)
 
     return NUX_SUCCESS;
 }
-static nux_status_t
-push_quads (nux_canvas_t *canvas, nux_gpu_canvas_quad_t *quads, nux_u32_t count)
-{
-    NUX_ENSURE(canvas->quads_buffer_head + count < NUX_QUADS_DEFAULT_SIZE,
-               return NUX_FAILURE,
-               "out of quads");
-    NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    canvas->quads_buffer.slot,
-                                    canvas->quads_buffer_head * sizeof(*quads),
-                                    count * sizeof(*quads),
-                                    quads),
-               return NUX_FAILURE,
-               "failed to update quads buffer");
-    canvas->active_batch.count += count;
-    canvas->quads_buffer_head += count;
-    return NUX_SUCCESS;
-}
+// static nux_status_t
+// push_quad (nux_canvas_t *canvas, nux_gpu_canvas_quad_t *quads, nux_u32_t
+// count)
+// {
+//     NUX_ENSURE(canvas->quads_buffer_head + count < NUX_QUADS_DEFAULT_SIZE,
+//                return NUX_FAILURE,
+//                "out of quads");
+//     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
+//                                     canvas->quads_buffer.slot,
+//                                     canvas->quads_buffer_head *
+//                                     sizeof(*quads), count * sizeof(*quads),
+//                                     quads),
+//                return NUX_FAILURE,
+//                "failed to update quads buffer");
+//     canvas->active_batch.count += count;
+//     canvas->quads_buffer_head += count;
+//     return NUX_SUCCESS;
+// }
 
 nux_canvas_t *
 nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
@@ -89,24 +124,29 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     nux_canvas_t *c = nux_resource_new(arena, NUX_RESOURCE_CANVAS);
     NUX_CHECK(c, return NUX_NULL);
 
-    // Allocate constants buffer
+    // Allocate quads buffer
+    c->quads_buffer = nux_arena_malloc(
+        arena, sizeof(*c->quads_buffer) * NUX_CANVAS_QUAD_BUFFER_SIZE);
+    c->quads_count = 0;
+
+    // Allocate constants gpu buffer
     c->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
     c->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
     NUX_CHECK(nux_gpu_buffer_init(&c->constants_buffer), return NUX_NULL);
 
-    // Allocate quads buffer
-    c->quads_buffer_head = 0;
-    c->quads_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    c->quads_buffer.size
+    // Allocate quads gpu buffer
+    c->quads_gpu_buffer_head = 0;
+    c->quads_gpu_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    c->quads_gpu_buffer.size
         = sizeof(nux_gpu_canvas_quad_t) * NUX_QUADS_DEFAULT_SIZE;
-    NUX_CHECK(nux_gpu_buffer_init(&c->quads_buffer), return NUX_NULL);
+    NUX_CHECK(nux_gpu_buffer_init(&c->quads_gpu_buffer), return NUX_NULL);
 
-    // Allocate batches buffer
-    c->batches_buffer_head = 0;
-    c->batches_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    c->batches_buffer.size
+    // Allocate batches gpu buffer
+    c->batches_gpu_buffer_head = 0;
+    c->batches_gpu_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    c->batches_gpu_buffer.size
         = sizeof(nux_gpu_canvas_batch_t) * NUX_BATCHES_DEFAULT_SIZE;
-    NUX_CHECK(nux_gpu_buffer_init(&c->batches_buffer), return NUX_NULL);
+    NUX_CHECK(nux_gpu_buffer_init(&c->batches_gpu_buffer), return NUX_NULL);
 
     // Allocate commands
     NUX_CHECK(nux_gpu_encoder_init(nux_arena_core(), &c->encoder),
@@ -131,13 +171,18 @@ nux_canvas_cleanup (void *data)
 {
     nux_canvas_t *canvas = data;
     nux_gpu_buffer_free(&canvas->constants_buffer);
-    nux_gpu_buffer_free(&canvas->batches_buffer);
-    nux_gpu_buffer_free(&canvas->quads_buffer);
+    nux_gpu_buffer_free(&canvas->batches_gpu_buffer);
+    nux_gpu_buffer_free(&canvas->quads_gpu_buffer);
 }
 nux_texture_t *
 nux_canvas_get_texture (nux_canvas_t *canvas)
 {
     return canvas->target;
+}
+nux_v2i_t
+nux_canvas_get_size (nux_canvas_t *canvas)
+{
+    return nux_v2i(canvas->target->gpu.width, canvas->target->gpu.height);
 }
 void
 nux_canvas_set_clear_color (nux_canvas_t *canvas, nux_u32_t color)
@@ -180,14 +225,14 @@ nux_canvas_text (nux_canvas_t   *canvas,
         }
 
         // Generate quad
-        nux_u32_t             index = font->char_to_glyph_index[(nux_u8_t)*it];
-        nux_gpu_canvas_quad_t quad  = make_quad(extent.min.x,
-                                               extent.min.y,
-                                               index * font->glyph_width,
-                                               0,
-                                               font->glyph_width,
-                                               font->glyph_height);
-        NUX_CHECK(push_quads(canvas, &quad, 1), return);
+        nux_u32_t index = font->char_to_glyph_index[(nux_u8_t)*it];
+        push_quad(canvas,
+                  extent.min.x,
+                  extent.min.y,
+                  index * font->glyph_width,
+                  0,
+                  font->glyph_width,
+                  font->glyph_height);
 
         // Move to next character
         extent = nux_b2i_translate(extent, nux_v2i(font->glyph_width - 1, 0));
@@ -201,11 +246,8 @@ void
 nux_canvas_rectangle (
     nux_canvas_t *canvas, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
 {
-    nux_gpu_canvas_quad_t quad = make_quad(x, y, 0, 0, w, h);
-
     begin_batch_colored(canvas, nux_v4(0.5, 1, 0.3, 1));
-    nux_u32_t first;
-    NUX_CHECK(push_quads(canvas, &quad, 1), return);
+    push_quad(canvas, x, y, 0, 0, w, h);
     end_batch(canvas);
 }
 void
@@ -220,22 +262,19 @@ nux_canvas_blit (nux_canvas_t  *canvas,
                          texture->gpu.height,
                          nux_v4s(1));
 
-    nux_gpu_canvas_quad_t quads[6];
-    nux_u32_t             quads_count = 0;
-
     nux_v2u_t extent_s     = nux_b2i_size(extent);
     nux_v2u_t tex_extent_s = nux_b2i_size(tex_extent);
 
     switch (canvas->wrap_mode)
     {
         case NUX_TEXTURE_WRAP_CLAMP: {
-            quads[0]    = make_quad(extent.min.x,
-                                 extent.min.y,
-                                 tex_extent.min.x,
-                                 tex_extent.min.y,
-                                 NUX_MIN(extent_s.x, tex_extent_s.x),
-                                 NUX_MIN(extent_s.y, tex_extent_s.y));
-            quads_count = 1;
+            push_quad(canvas,
+                      extent.min.x,
+                      extent.min.y,
+                      tex_extent.min.x,
+                      tex_extent.min.y,
+                      NUX_MIN(extent_s.x, tex_extent_s.x),
+                      NUX_MIN(extent_s.y, tex_extent_s.y));
         }
         break;
         case NUX_TEXTURE_WRAP_REPEAT: {
@@ -248,15 +287,15 @@ nux_canvas_blit (nux_canvas_t  *canvas,
             {
                 for (nux_u32_t x = 0; x < full_hblit_count; ++x)
                 {
-                    nux_i32_t pos_x    = extent.min.x + (x * tex_extent_s.x);
-                    nux_i32_t pos_y    = extent.min.y + (y * tex_extent_s.y);
-                    quads[quads_count] = make_quad(pos_x,
-                                                   pos_y,
-                                                   tex_extent.min.x,
-                                                   tex_extent.min.y,
-                                                   tex_extent_s.x,
-                                                   tex_extent_s.y);
-                    ++quads_count;
+                    nux_i32_t pos_x = extent.min.x + (x * tex_extent_s.x);
+                    nux_i32_t pos_y = extent.min.y + (y * tex_extent_s.y);
+                    push_quad(canvas,
+                              pos_x,
+                              pos_y,
+                              tex_extent.min.x,
+                              tex_extent.min.y,
+                              tex_extent_s.x,
+                              tex_extent_s.y);
                 }
             }
 
@@ -273,13 +312,13 @@ nux_canvas_blit (nux_canvas_t  *canvas,
                     nux_i32_t pos_y = extent.min.y + (y * tex_extent_s.y);
                     nux_v2u_t size
                         = nux_v2u(partial_hblit_size, tex_extent_s.y);
-                    quads[quads_count] = make_quad(pos_x,
-                                                   pos_y,
-                                                   tex_extent.min.x,
-                                                   tex_extent.min.y,
-                                                   size.x,
-                                                   size.y);
-                    ++quads_count;
+                    push_quad(canvas,
+                              pos_x,
+                              pos_y,
+                              tex_extent.min.x,
+                              tex_extent.min.y,
+                              size.x,
+                              size.y);
                 }
             }
             if (partial_vblit_size)
@@ -291,13 +330,13 @@ nux_canvas_blit (nux_canvas_t  *canvas,
                         = extent.min.y + (full_vblit_count * tex_extent_s.y);
                     nux_v2u_t size
                         = nux_v2u(tex_extent_s.x, partial_vblit_size);
-                    quads[quads_count] = make_quad(pos_x,
-                                                   pos_y,
-                                                   tex_extent.min.x,
-                                                   tex_extent.min.y,
-                                                   size.x,
-                                                   size.y);
-                    ++quads_count;
+                    push_quad(canvas,
+                              pos_x,
+                              pos_y,
+                              tex_extent.min.x,
+                              tex_extent.min.y,
+                              size.x,
+                              size.y);
                 }
             }
             if (partial_hblit_size && partial_vblit_size)
@@ -308,13 +347,13 @@ nux_canvas_blit (nux_canvas_t  *canvas,
                     = extent.min.y + (full_vblit_count * tex_extent_s.y);
                 nux_v2u_t size
                     = nux_v2u(partial_hblit_size, partial_vblit_size);
-                quads[quads_count] = make_quad(pos_x,
-                                               pos_y,
-                                               tex_extent.min.x,
-                                               tex_extent.min.y,
-                                               size.x,
-                                               size.y);
-                ++quads_count;
+                push_quad(canvas,
+                          pos_x,
+                          pos_y,
+                          tex_extent.min.x,
+                          tex_extent.min.y,
+                          size.x,
+                          size.y);
             }
         }
         break;
@@ -322,8 +361,6 @@ nux_canvas_blit (nux_canvas_t  *canvas,
             break;
     }
 
-    nux_u32_t first;
-    NUX_CHECK(push_quads(canvas, quads, quads_count), return);
     end_batch(canvas);
 }
 void
@@ -505,8 +542,9 @@ nux_canvas_render (nux_canvas_t *c)
     nux_gpu_bind_buffer(
         &enc, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
     nux_gpu_bind_buffer(
-        &enc, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_buffer.slot);
-    nux_gpu_bind_buffer(&enc, NUX_GPU_DESC_CANVAS_QUADS, c->quads_buffer.slot);
+        &enc, NUX_GPU_DESC_CANVAS_BATCHES, c->batches_gpu_buffer.slot);
+    nux_gpu_bind_buffer(
+        &enc, NUX_GPU_DESC_CANVAS_QUADS, c->quads_gpu_buffer.slot);
     nux_u32_t clear_color = nux_color_to_hex(
         nux_palette_get_color(module->active_palette, c->clear_color));
     nux_gpu_clear_color(&enc, clear_color);
@@ -516,6 +554,6 @@ nux_canvas_render (nux_canvas_t *c)
     nux_gpu_encoder_submit(&c->encoder);
 
     // Reset for next loop
-    c->batches_buffer_head = 0;
-    c->quads_buffer_head   = 0;
+    c->batches_gpu_buffer_head = 0;
+    c->quads_gpu_buffer_head   = 0;
 }

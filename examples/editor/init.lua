@@ -79,6 +79,30 @@ function M:on_load()
     viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
     viewport.set_layer(self.vp, 2)
+
+    local gui_tex = texture.load(self.arena, "assets/GUI.png")
+    local style = stylesheet.new(self.arena)
+    stylesheet.set(style, stylesheet.BUTTON_PRESSED, gui_tex,
+        { 113, 97, 30, 14 },
+        { 115, 100, 26, 8 })
+    stylesheet.set(style, stylesheet.BUTTON_RELEASED, gui_tex,
+        { 113, 81, 30, 14 },
+        { 115, 83, 26, 8 })
+    stylesheet.set(style, stylesheet.BUTTON_HOVERED, gui_tex,
+        { 113, 113, 30, 14 },
+        { 115, 115, 26, 8 })
+    stylesheet.set(style, stylesheet.CHECKBOX_CHECKED, gui_tex,
+        { 97, 257, 14, 14 },
+        { 99, 260, 10, 8 })
+    stylesheet.set(style, stylesheet.CHECKBOX_UNCHECKED, gui_tex,
+        { 81, 257, 14, 14 },
+        { 99, 261, 10, 8 })
+    stylesheet.set(style, stylesheet.CURSOR, gui_tex,
+        { 52, 83, 8, 7 },
+        { 52, 83, 8, 7 })
+
+    self.gui = gui.new(self.arena, self.gui_canvas)
+    gui.push_style(self.gui, style)
 end
 
 function M:on_update()
@@ -108,6 +132,9 @@ function M:on_update()
     end
 
     canvas.rectangle(c, cur.x * WIDTH - 1, cur.y * HEIGHT - 1, 5, 5)
+
+    gui.button(self.gui, 200, 400, 200, 50)
+    -- gui.button(self.gui, 400, 200, 100, 50)
 
     camera.reset_aspect(self.camera.node, self.vp)
     camera.reset_aspect(self.camera.top_node, self.vp)

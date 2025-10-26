@@ -7,17 +7,6 @@
 #define JSMN_PARENT_LINKS
 #include <externals/jsmn/jsmn.h>
 #include <externals/cgltf/cgltf.h>
-#define STBIR_DEBUG
-#define STB_IMAGE_STATIC
-#define STBI_NO_STDIO
-#define STBI_ASSERT(x) NUX_ASSERT(x)
-#define STB_IMAGE_IMPLEMENTATION
-#include <externals/stb/stb_image.h>
-// #define STB_IMAGE_RESIZE_IMPLEMENTATION
-// #include <stb_image_resize.h>
-// #include <stb_image_resize2.h>
-// #define STB_IMAGE_WRITE_IMPLEMENTATION
-// #include <stb_image_write.h>
 #endif
 
 typedef struct
@@ -157,26 +146,15 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
 static nux_texture_t *
 load_texture (nux_arena_t *arena, const cgltf_texture *texture)
 {
-    nux_status_t status = NUX_FAILURE;
-
-    // Load image buffer
     cgltf_buffer_view *view = texture->image->buffer_view;
-    nux_i32_t          w, h, n;
-    nux_u8_t *img = stbi_load_from_memory(view->buffer->data + view->offset,
-                                          view->size,
-                                          &w,
-                                          &h,
-                                          &n,
-                                          STBI_rgb_alpha);
-    NUX_ENSURE(img, return NUX_NULL, "failed to load image %s", texture->name);
-
-    NUX_DEBUG("loading texture %s w %d h %d", texture->name, w, h);
-
-    nux_texture_t *tex = nux_texture_new(arena, NUX_TEXTURE_IMAGE_RGBA, w, h);
-    NUX_CHECK(tex, return NUX_NULL);
-    nux_texture_write(tex, 0, 0, w, h, img);
-
-    stbi_image_free(img);
+    nux_texture_t     *tex  = nux_texture_load_from_memory(
+        arena, view->buffer->data + view->offset, view->size);
+    NUX_ENSURE(
+        tex, return NUX_NULL, "failed to load texture %s", texture->name);
+    NUX_DEBUG("loading texture %s w %d h %d",
+              texture->name,
+              tex->gpu.width,
+              tex->gpu.height);
     return tex;
 }
 static nux_status_t

@@ -12,6 +12,7 @@ typedef enum
     NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE = 8,
     NUX_QUADS_DEFAULT_SIZE                    = 4096 * 8,
     NUX_BATCHES_DEFAULT_SIZE                  = 512,
+    NUX_CANVAS_QUAD_BUFFER_SIZE               = 64,
 } nux_graphics_defaults_t;
 
 typedef struct
@@ -120,10 +121,12 @@ struct nux_canvas_t
 {
     nux_gpu_encoder_t       encoder;
     nux_gpu_buffer_t        constants_buffer;
-    nux_gpu_buffer_t        quads_buffer;
-    nux_u32_t               quads_buffer_head;
-    nux_gpu_buffer_t        batches_buffer;
-    nux_u32_t               batches_buffer_head;
+    nux_gpu_canvas_quad_t  *quads_buffer;
+    nux_u32_t               quads_count;
+    nux_gpu_buffer_t        quads_gpu_buffer;
+    nux_u32_t               quads_gpu_buffer_head;
+    nux_gpu_buffer_t        batches_gpu_buffer;
+    nux_u32_t               batches_gpu_buffer_head;
     nux_gpu_canvas_batch_t  active_batch;
     nux_u32_t               active_texture;
     nux_texture_t          *target;
@@ -214,16 +217,19 @@ void nux_gpu_viewport(nux_gpu_encoder_t *enc, nux_v4_t viewport);
 
 // texture.c
 
-void nux_texture_cleanup(void *data);
-void nux_texture_write(nux_texture_t *tex,
-                       nux_u32_t      x,
-                       nux_u32_t      y,
-                       nux_u32_t      w,
-                       nux_u32_t      h,
-                       const void    *data);
-void nux_texture_blit(nux_texture_t *tex,
-                      nux_texture_t *target,
-                      nux_v4_t       extent);
+void           nux_texture_cleanup(void *data);
+nux_texture_t *nux_texture_load_from_memory(nux_arena_t    *arena,
+                                            const nux_u8_t *data,
+                                            nux_u32_t       size);
+void           nux_texture_write(nux_texture_t *tex,
+                                 nux_u32_t      x,
+                                 nux_u32_t      y,
+                                 nux_u32_t      w,
+                                 nux_u32_t      h,
+                                 const void    *data);
+void           nux_texture_blit(nux_texture_t *tex,
+                                nux_texture_t *target,
+                                nux_v4_t       extent);
 
 // staticmesh.c
 

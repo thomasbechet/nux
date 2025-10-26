@@ -1249,6 +1249,26 @@ l_texture_new (lua_State *L)
     return 1;
 }
 static int
+l_texture_load (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    const nux_c8_t      *path = luaL_checkstring(L, 2);
+    const nux_texture_t *ret  = nux_texture_load(arena, path);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
 l_texture_screen (lua_State *L)
 {
     const nux_texture_t *ret = nux_texture_screen();
@@ -1475,6 +1495,17 @@ l_canvas_get_texture (lua_State *L)
     {
         lua_pushnil(L);
     }
+    return 1;
+}
+static int
+l_canvas_get_size (lua_State *L)
+{
+    nux_canvas_t *canvas
+        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
+    nux_v2i_t ret = nux_canvas_get_size(canvas);
+    l_checkerror(L);
+
+    nux_lua_push_vec2i(L, ret);
     return 1;
 }
 static int
@@ -1936,6 +1967,101 @@ l_physics_set_ground_height (lua_State *L)
 
     return 0;
 }
+static int
+l_stylesheet_new (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    const nux_stylesheet_t *ret = nux_stylesheet_new(arena);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_stylesheet_set (lua_State *L)
+{
+    nux_stylesheet_t *style
+        = nux_resource_check(NUX_RESOURCE_STYLESHEET, luaL_checkinteger(L, 1));
+    nux_stylesheet_property_t property = luaL_checknumber(L, 2);
+    nux_texture_t            *texture
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 3));
+    nux_b2i_t extent = nux_lua_check_box2i(L, 4);
+    nux_b2i_t inner  = nux_lua_check_box2i(L, 5);
+
+    nux_stylesheet_set(style, property, texture, extent, inner);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_gui_new (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_canvas_t *canvas
+        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 2));
+    const nux_gui_t *ret = nux_gui_new(arena, canvas);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_gui_push_style (lua_State *L)
+{
+    nux_gui_t *gui
+        = nux_resource_check(NUX_RESOURCE_GUI, luaL_checkinteger(L, 1));
+    nux_stylesheet_t *stylesheet
+        = nux_resource_check(NUX_RESOURCE_STYLESHEET, luaL_checkinteger(L, 2));
+
+    nux_gui_push_style(gui, stylesheet);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_gui_pop_style (lua_State *L)
+{
+    nux_gui_t *gui
+        = nux_resource_check(NUX_RESOURCE_GUI, luaL_checkinteger(L, 1));
+
+    nux_gui_pop_style(gui);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_gui_button (lua_State *L)
+{
+    nux_gui_t *gui
+        = nux_resource_check(NUX_RESOURCE_GUI, luaL_checkinteger(L, 1));
+    nux_u32_t x   = luaL_checknumber(L, 2);
+    nux_u32_t y   = luaL_checknumber(L, 3);
+    nux_u32_t w   = luaL_checknumber(L, 4);
+    nux_u32_t h   = luaL_checknumber(L, 5);
+    nux_b32_t ret = nux_gui_button(gui, x, y, w, h);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
 static const struct luaL_Reg lib_core[] = { { "stat", l_core_stat },
                                             { "random", l_core_random },
                                             { "random01", l_core_random01 },
@@ -2057,6 +2183,7 @@ static const struct luaL_Reg lib_viewport[]
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_texture[]
     = { { "new", l_texture_new },
+        { "load", l_texture_load },
         { "screen", l_texture_screen },
         { "get_size", l_texture_get_size },
         { NUX_NULL, NUX_NULL } };
@@ -2078,6 +2205,7 @@ static const struct luaL_Reg lib_mesh[]
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
         { "get_texture", l_canvas_get_texture },
+        { "get_size", l_canvas_get_size },
         { "set_clear_color", l_canvas_set_clear_color },
         { "set_wrap_mode", l_canvas_set_wrap_mode },
         { "text", l_canvas_text },
@@ -2134,6 +2262,14 @@ static const struct luaL_Reg lib_physics[]
     = { { "raycast", l_physics_raycast },
         { "set_ground_height", l_physics_set_ground_height },
         { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_stylesheet[] = { { "new", l_stylesheet_new },
+                                                  { "set", l_stylesheet_set },
+                                                  { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_gui[]        = { { "new", l_gui_new },
+                                                  { "push_style", l_gui_push_style },
+                                                  { "pop_style", l_gui_pop_style },
+                                                  { "button", l_gui_button },
+                                                  { NUX_NULL, NUX_NULL } };
 
 nux_status_t
 nux_lua_open_api (void)
@@ -2234,6 +2370,10 @@ nux_lua_open_api (void)
     luaL_setfuncs(L, lib_controller, 0);
     lua_pushinteger(L, 4);
     lua_setfield(L, -2, "MAX");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "MODE_SELECTION");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "MODE_CURSOR");
     lua_setglobal(L, "controller");
     lua_newtable(L);
     luaL_setfuncs(L, lib_name, 0);
@@ -2708,5 +2848,23 @@ nux_lua_open_api (void)
     lua_newtable(L);
     luaL_setfuncs(L, lib_physics, 0);
     lua_setglobal(L, "physics");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_stylesheet, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "BUTTON_PRESSED");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "BUTTON_RELEASED");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "BUTTON_HOVERED");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "CHECKBOX_CHECKED");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "CHECKBOX_UNCHECKED");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "CURSOR");
+    lua_setglobal(L, "stylesheet");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_gui, 0);
+    lua_setglobal(L, "gui");
     return NUX_SUCCESS;
 }

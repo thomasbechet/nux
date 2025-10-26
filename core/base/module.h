@@ -220,6 +220,7 @@
     T           *name##_pop(name##_t *v);                            \
     void         name##_clear(name##_t *v);                          \
     T           *name##_get(name##_t *v, nux_u32_t i);               \
+    T           *name##_last(name##_t *v);                           \
     void         name##_swap(name##_t *v, nux_u32_t a, nux_u32_t b); \
     T           *name##_swap_pop(name##_t *v, nux_u32_t i);
 #define NUX_VEC_IMPL(name, T)                                                   \
@@ -295,6 +296,10 @@
     T *name##_get(name##_t *v, nux_u32_t i)                                     \
     {                                                                           \
         return i < (v)->size ? (v)->data + i : NUX_NULL;                        \
+    }                                                                           \
+    T *name##_last(name##_t *v)                                                 \
+    {                                                                           \
+        return (v)->size ? (v)->data + (v)->size - 1 : NUX_NULL;                \
     }                                                                           \
     void name##_swap(name##_t *v, nux_u32_t a, nux_u32_t b)                     \
     {                                                                           \
@@ -404,6 +409,7 @@ typedef enum
     NUX_RESOURCE_EVENT      = 13,
     NUX_RESOURCE_INPUTMAP   = 14,
     NUX_RESOURCE_GUI        = 15,
+    NUX_RESOURCE_STYLESHEET = 16,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
@@ -530,6 +536,7 @@ NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 NUX_VEC_DEFINE(nux_f32_vec, nux_f32_t)
 NUX_VEC_DEFINE(nux_v4_vec, nux_v4_t)
 NUX_VEC_DEFINE(nux_ptr_vec, void *);
+typedef nux_u32_vec_t nux_rid_vec_t;
 
 typedef void (*nux_resource_cleanup_t)(void *data);
 typedef nux_status_t (*nux_resource_reload_t)(void *data, const nux_c8_t *path);
@@ -861,6 +868,9 @@ nux_b2i_t nux_b2i_xywh(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 nux_b2i_t nux_b2i_translate(nux_b2i_t b, nux_v2i_t t);
 nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 nux_v2u_t nux_b2i_size(nux_b2i_t b);
+nux_v2u_t nux_b2i_size(nux_b2i_t b);
+nux_b32_t nux_b2i_containsi(nux_b2i_t b, nux_v2i_t p);
+nux_b32_t nux_b2i_contains(nux_b2i_t b, nux_v2_t p);
 
 void nux_qsort(void     *base,
                nux_u32_t n,

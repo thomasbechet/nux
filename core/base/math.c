@@ -110,6 +110,7 @@ nux_b2i (nux_v2i_t min, nux_v2i_t max)
 nux_b2i_t
 nux_b2i_xywh (nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
 {
+    NUX_ASSERT(w && h);
     nux_b2i_t ret;
     ret.min = nux_v2i(x, y);
     ret.max = nux_v2i(x + w - 1, y + h - 1);
@@ -130,6 +131,17 @@ nux_b2i_size (nux_b2i_t b)
 {
     NUX_ASSERT((b.max.x - b.min.x) >= 0 && (b.max.y - b.min.y) >= 0);
     return nux_v2u(b.max.x - b.min.x + 1, b.max.y - b.min.y + 1);
+}
+nux_b32_t
+nux_b2i_containsi (nux_b2i_t b, nux_v2i_t p)
+{
+    return (p.x >= b.min.x && p.x <= b.max.x && p.y >= b.min.y
+            && p.y <= b.max.y);
+}
+nux_b32_t
+nux_b2i_contains (nux_b2i_t b, nux_v2_t p)
+{
+    return nux_b2i_containsi(b, nux_v2i(p.x, p.y));
 }
 
 void

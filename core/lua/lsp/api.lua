@@ -118,6 +118,8 @@ stat.TIMESTAMP=3
 stat.MAX=4
 controller={}
 controller.MAX=4
+controller.MODE_SELECTION=0
+controller.MODE_CURSOR=1
 name={}
 name.MAX=64
 disk={}
@@ -428,6 +430,8 @@ texture.WRAP_MIRROR=2
 ---@return None
 function texture.new(...) end
 ---@return None
+function texture.load(...) end
+---@return None
 function texture.screen(...) end
 ---@return None
 function texture.get_size(...) end
@@ -461,6 +465,8 @@ canvas={}
 function canvas.new(...) end
 ---@return None
 function canvas.get_texture(...) end
+---@return None
+function canvas.get_size(...) end
 ---@return None
 function canvas.set_clear_color(...) end
 ---@return None
@@ -568,3 +574,23 @@ physics={}
 function physics.raycast(...) end
 ---@return None
 function physics.set_ground_height(...) end
+stylesheet={}
+stylesheet.BUTTON_PRESSED=0
+stylesheet.BUTTON_RELEASED=1
+stylesheet.BUTTON_HOVERED=2
+stylesheet.CHECKBOX_CHECKED=3
+stylesheet.CHECKBOX_UNCHECKED=4
+stylesheet.CURSOR=5
+---@return None
+function stylesheet.new(...) end
+---@return None
+function stylesheet.set(...) end
+gui={}
+---@return None
+function gui.new(...) end
+---@return None
+function gui.push_style(...) end
+---@return None
+function gui.pop_style(...) end
+---@return None
+function gui.button(...) end

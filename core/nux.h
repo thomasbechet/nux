@@ -7,6 +7,7 @@
 #include "scene/api.h"
 #include "graphics/api.h"
 #include "physics/api.h"
+#include "gui/api.h"
 
 //////////////////////////////////////////////////////////////////////////
 //////                               Types                          //////

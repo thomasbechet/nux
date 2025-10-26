@@ -96,6 +96,7 @@ nux_texture_t *nux_texture_new(nux_arena_t       *arena,
                                nux_texture_type_t format,
                                nux_u32_t          w,
                                nux_u32_t          h);
+nux_texture_t *nux_texture_load(nux_arena_t *arena, const nux_c8_t *path);
 nux_texture_t *nux_texture_screen(void);
 nux_v2i_t      nux_texture_get_size(nux_texture_t *texture);
 
@@ -123,6 +124,7 @@ nux_canvas_t  *nux_canvas_new(nux_arena_t *arena,
                               nux_u32_t    width,
                               nux_u32_t    height);
 nux_texture_t *nux_canvas_get_texture(nux_canvas_t *canvas);
+nux_v2i_t      nux_canvas_get_size(nux_canvas_t *canvas);
 void nux_canvas_set_clear_color(nux_canvas_t *canvas, nux_u32_t color);
 void nux_canvas_set_wrap_mode(nux_canvas_t           *canvas,
                               nux_texture_wrap_mode_t mode);

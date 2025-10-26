@@ -1,5 +1,12 @@
 #include "internal.h"
 
+#define STBIR_DEBUG
+#define STB_IMAGE_STATIC
+#define STBI_NO_STDIO
+#define STBI_ASSERT(x) NUX_ASSERT(x)
+#define STB_IMAGE_IMPLEMENTATION
+#include <externals/stb/stb_image.h>
+
 nux_texture_t *
 nux_texture_new (nux_arena_t       *arena,
                  nux_texture_type_t type,
@@ -37,6 +44,29 @@ nux_texture_new (nux_arena_t       *arena,
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
+    return tex;
+}
+nux_texture_t *
+nux_texture_load (nux_arena_t *arena, const nux_c8_t *path)
+{
+    nux_u32_t size;
+    void     *data = nux_file_load(nux_arena_frame(), path, &size);
+    NUX_CHECK(data, return NUX_NULL);
+    return nux_texture_load_from_memory(arena, data, size);
+}
+nux_texture_t *
+nux_texture_load_from_memory (nux_arena_t    *arena,
+                              const nux_u8_t *data,
+                              nux_u32_t       size)
+{
+    nux_i32_t w, h, n;
+    nux_u8_t *img
+        = stbi_load_from_memory(data, size, &w, &h, &n, STBI_rgb_alpha);
+    nux_texture_t *tex = nux_texture_new(arena, NUX_TEXTURE_IMAGE_RGBA, w, h);
+    NUX_CHECK(tex, goto error);
+    nux_texture_write(tex, 0, 0, w, h, img);
+error:
+    stbi_image_free(img);
     return tex;
 }
 void
