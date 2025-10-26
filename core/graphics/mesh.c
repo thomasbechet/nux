@@ -34,34 +34,59 @@ update_data (nux_mesh_t *mesh)
                                         mesh->data);
 }
 static void
+append_vertices (nux_mesh_t     *mesh,
+                 nux_u32_t       count,
+                 const nux_v3_t *positions,
+                 const nux_v2_t *uvs)
+{
+    mesh->size += count;
+
+    for (nux_u32_t i = 0; i < mesh->vertex_count; ++i)
+    {
+        nux_u32_t offset = i * mesh->vertex_layout.stride;
+        if (positions)
+        {
+            mesh->data[offset + mesh->vertex_layout.position + 0]
+                = positions[i].x;
+            mesh->data[offset + mesh->vertex_layout.position + 1]
+                = positions[i].y;
+            mesh->data[offset + mesh->vertex_layout.position + 2]
+                = positions[i].z;
+        }
+        if (uvs)
+        {
+            mesh->data[offset + mesh->vertex_layout.texcoord + 0] = uvs[i].x;
+            mesh->data[offset + mesh->vertex_layout.texcoord + 1] = uvs[i].y;
+        }
+    }
+}
+static void
 append_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
 {
-    switch (m->vertex_attributes)
+    switch (m->vertex_assembly)
     {
-        case NUX_PRIMITIVE_POINTS: {
-            nu__append_vertices(m, 4, positions, uvs);
+        case NUX_VERTEX_POINTS: {
+            append_vertices(m, 4, positions, uvs);
         }
         break;
-        case NU_PRIMITIVE_LINES: {
-            const nu_size_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
-            for (nu_size_t i = 0; i < NU_ARRAY_SIZE(indices); ++i)
+        case NUX_VERTEX_LINES: {
+            const nux_u32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
+            for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(indices); ++i)
             {
-                nu__append_vertices(
-                    m, 1, positions + indices[i], uvs + indices[i]);
+                append_vertices(m, 1, positions + indices[i], uvs + indices[i]);
             }
         }
         break;
-        case NU_PRIMITIVE_LINES_STRIP: {
-            nu__append_vertices(m, 4, positions, uvs);
-            nu__append_vertices(m, 1, positions, uvs);
-        }
-        break;
-        case NU_PRIMITIVE_TRIANGLES: {
-            const nu_size_t indices[] = { 0, 1, 2, 2, 3, 0 };
-            for (nu_size_t i = 0; i < NU_ARRAY_SIZE(indices); ++i)
+        // case NU_PRIMITIVE_LINES_STRIP: {
+        //     append_vertices(m, 4, positions, uvs);
+        //     append_vertices(m, 1, positions, uvs);
+        // }
+        // break;
+        case NUX_VERTEX_TRIANGLES: {
+            const nux_u32_t indices[] = { 0, 1, 2, 2, 3, 0 };
+            for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(indices); ++i)
             {
-                nu__append_vertices(
-                    m, 1, positions + indices[i], uvs + indices[i]);
+                append_vertices(m, 1, positions + indices[i], uvs + indices[i]);
             }
         }
         break;
@@ -71,11 +96,13 @@ append_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
 nux_mesh_t *
 nux_mesh_new (nux_arena_t           *arena,
               nux_u32_t              capa,
-              nux_vertex_attribute_t attributes)
+              nux_vertex_attribute_t attributes,
+              nux_vertex_assembly_t  assembly)
 {
     nux_mesh_t *mesh = nux_resource_new(arena, NUX_RESOURCE_MESH);
     NUX_CHECK(mesh, return NUX_NULL);
     mesh->vertex_attributes = attributes;
+    mesh->vertex_assembly   = assembly;
     mesh->vertex_layout     = vertex_layout(mesh->vertex_attributes);
     mesh->vertex_count      = capa;
     mesh->data              = nux_arena_malloc(arena,

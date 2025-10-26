@@ -18,13 +18,6 @@ typedef enum
 
 typedef enum
 {
-    NUX_PRIMITIVE_TRIANGLES = 0,
-    NUX_PRIMITIVE_LINES     = 1,
-    NUX_PRIMITIVE_POINTS    = 2,
-} nux_primitive_t;
-
-typedef enum
-{
     NUX_VERTEX_TRIANGLES = 0,
     NUX_VERTEX_LINES     = 1,
     NUX_VERTEX_POINTS    = 2,
@@ -110,7 +103,8 @@ nux_v4_t nux_palette_get_color(const nux_palette_t *palette, nux_u32_t index);
 
 nux_mesh_t *nux_mesh_new(nux_arena_t           *arena,
                          nux_u32_t              capa,
-                         nux_vertex_attribute_t attributes);
+                         nux_vertex_attribute_t attributes,
+                         nux_vertex_assembly_t  assembly);
 nux_mesh_t *nux_mesh_new_cube(nux_arena_t *arena,
                               nux_f32_t    sx,
                               nux_f32_t    sy,

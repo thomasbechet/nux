@@ -54,20 +54,20 @@ draw (nux_gpu_encoder_t *enc,
     return NUX_SUCCESS;
 }
 static void
-draw_rect (nux_gpu_encoder_t *enc,
-           nux_u32_t          transform,
-           nux_primitive_t    primitive,
-           const nux_v3_t    *positions,
-           nux_u32_t          color)
+draw_rect (nux_gpu_encoder_t    *enc,
+           nux_u32_t             transform,
+           nux_vertex_assembly_t assembly,
+           const nux_v3_t       *positions,
+           nux_u32_t             color)
 {
     nux_u32_t        vertex_count;
     const nux_u32_t  stride = 5;
     nux_f32_t        data[24 * stride]; // must constains all primitives type
     const nux_u32_t *indices;
 
-    switch (primitive)
+    switch (assembly)
     {
-        case NUX_PRIMITIVE_TRIANGLES: {
+        case NUX_VERTEX_TRIANGLES: {
             static const nux_u32_t triangles_indices[]
                 = { 0, 1, 2, 2, 3, 0, 4, 6, 5, 6, 4, 7, 0, 3, 7, 7, 4, 0,
                     1, 5, 6, 6, 2, 1, 0, 4, 5, 5, 1, 0, 3, 2, 6, 6, 7, 3 };
@@ -75,7 +75,7 @@ draw_rect (nux_gpu_encoder_t *enc,
             vertex_count = NUX_ARRAY_SIZE(triangles_indices);
         }
         break;
-        case NUX_PRIMITIVE_LINES: {
+        case NUX_VERTEX_LINES: {
             static const nux_u32_t lines_indices[]
                 = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
                     6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
@@ -83,7 +83,7 @@ draw_rect (nux_gpu_encoder_t *enc,
             vertex_count = NUX_ARRAY_SIZE(lines_indices);
         }
         break;
-        case NUX_PRIMITIVE_POINTS:
+        case NUX_VERTEX_POINTS:
             break;
     }
 
@@ -123,11 +123,11 @@ draw_rect (nux_gpu_encoder_t *enc,
          c);
 }
 static void
-draw_box (nux_gpu_encoder_t *enc,
-          nux_u32_t          transform,
-          nux_primitive_t    primitive,
-          nux_b3_t           box,
-          nux_u32_t          color)
+draw_box (nux_gpu_encoder_t    *enc,
+          nux_u32_t             transform,
+          nux_vertex_assembly_t assembly,
+          nux_b3_t              box,
+          nux_u32_t             color)
 {
     const nux_v3_t positions[] = { nux_v3(box.min.x, box.min.y, box.min.z),
                                    nux_v3(box.max.x, box.min.y, box.min.z),
@@ -137,7 +137,7 @@ draw_box (nux_gpu_encoder_t *enc,
                                    nux_v3(box.max.x, box.max.y, box.min.z),
                                    nux_v3(box.max.x, box.max.y, box.max.z),
                                    nux_v3(box.min.x, box.max.y, box.max.z) };
-    draw_rect(enc, transform, primitive, positions, color);
+    draw_rect(enc, transform, assembly, positions, color);
 }
 void
 nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
@@ -257,7 +257,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             bind_texture(enc, NUX_NULL);
             draw_box(enc,
                      sm->transform,
-                     NUX_PRIMITIVE_LINES,
+                     NUX_VERTEX_LINES,
                      m->bounds,
                      NUX_COLOR_WHITE);
         }
