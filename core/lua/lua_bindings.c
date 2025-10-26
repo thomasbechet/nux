@@ -1413,6 +1413,27 @@ l_mesh_new_cube (lua_State *L)
     return 1;
 }
 static int
+l_mesh_new_plane (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_f32_t         sx  = luaL_checknumber(L, 2);
+    nux_f32_t         sy  = luaL_checknumber(L, 3);
+    const nux_mesh_t *ret = nux_mesh_new_plane(arena, sx, sy);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
 l_mesh_update_bounds (lua_State *L)
 {
     nux_mesh_t *mesh
@@ -2197,6 +2218,7 @@ static const struct luaL_Reg lib_palette[]
 static const struct luaL_Reg lib_mesh[]
     = { { "new", l_mesh_new },
         { "new_cube", l_mesh_new_cube },
+        { "new_plane", l_mesh_new_plane },
         { "update_bounds", l_mesh_update_bounds },
         { "bounds_min", l_mesh_bounds_min },
         { "bounds_max", l_mesh_bounds_max },

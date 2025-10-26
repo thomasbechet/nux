@@ -115,6 +115,7 @@ nux_mesh_t *nux_mesh_new_cube(nux_arena_t *arena,
                               nux_f32_t    sx,
                               nux_f32_t    sy,
                               nux_f32_t    sz);
+nux_mesh_t *nux_mesh_new_plane(nux_arena_t *arena, nux_f32_t sx, nux_f32_t sy);
 void        nux_mesh_update_bounds(nux_mesh_t *mesh);
 nux_v3_t    nux_mesh_bounds_min(nux_mesh_t *mesh);
 nux_v3_t    nux_mesh_bounds_max(nux_mesh_t *mesh);

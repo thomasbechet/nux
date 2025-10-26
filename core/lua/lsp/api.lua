@@ -453,6 +453,8 @@ function mesh.new(...) end
 ---@return None
 function mesh.new_cube(...) end
 ---@return None
+function mesh.new_plane(...) end
+---@return None
 function mesh.update_bounds(...) end
 ---@return None
 function mesh.bounds_min(...) end

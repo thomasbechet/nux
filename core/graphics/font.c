@@ -18,10 +18,16 @@ nux_font_init_default (nux_font_t *font)
     font->char_to_glyph_index = default_font_data_chars;
     NUX_CHECK(nux_gpu_texture_init(&font->texture), return NUX_FAILURE);
 
+    // NUX_INFO("default font : %d %d %d %d",
+    //          font->glyph_width,
+    //          font->glyph_height,
+    //          glyph_count,
+    //          pixel_per_glyph);
+
     // Rasterize glyphs
     for (nux_u32_t g = 0; g < glyph_count; ++g)
     {
-        nux_u32_t pixels[128];
+        nux_u32_t pixels[256];
         NUX_ASSERT(NUX_ARRAY_SIZE(pixels) >= pixel_per_glyph);
         for (nux_u32_t p = 0; p < pixel_per_glyph; ++p)
         {

@@ -12,12 +12,16 @@ if __name__ == "__main__":
 
     font_path = os.path.join(args.rootdir, "core/graphics/fonts/PublicPixel.ttf")
     font = ImageFont.truetype(font_path, 8)
-    left, top, right, bottom = font.getbbox("A", stroke_width=0)
+    # font_path = os.path.join(args.rootdir, "core/graphics/fonts/VCR_OSD_MONO_1.001.ttf")
+    # font = ImageFont.truetype(font_path, 26)
+    # left, top, right, bottom = font.getbbox("A", stroke_width=0)
+    left, top, right, bottom = font.getbbox("A")
     w = right - left + 1
     h = bottom - top + 1
     # print('w', w, 'h', h)
     im = Image.new("RGB", (w, h))
     draw = ImageDraw.Draw(im)
+    draw.fontmode = "1"
 
     ba = bitarray()
 
@@ -28,6 +32,10 @@ if __name__ == "__main__":
     for i, c in enumerate(ascii):
         chars[ord(c)] = i
         draw.text((0, 0), c, font=font)
+        # draw.text((0, 0), c, font=font, anchor="lt")
+
+        # if c == '1':
+        #     im.save("test.png")
     
         for i in range(w * h):
             coord = (i % w, i // w)
@@ -37,7 +45,7 @@ if __name__ == "__main__":
             else:
                 ba.append(0)
     
-        draw.rectangle((0, 0, w, h), fill=(0, 0, 0, 0))
+        draw.rectangle((0, 0, w, h), fill=(0, 0, 0, 0)) # Clear image
     
     output = "core/graphics/fonts_data.c.inc"
     with open(os.path.join(args.rootdir, output), "w") as f:

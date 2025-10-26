@@ -252,7 +252,7 @@ deserialize_config (nux_config_t *config)
     serde_config(config, NUX_FALSE);
 }
 
-void
+static void
 copy_functions (lua_State *L, int src, int dst)
 {
     lua_pushnil(L);

@@ -89,6 +89,7 @@ struct nux_mesh_t
     nux_u32_t              vertex_count; // vertex count
     nux_vertex_layout_t    vertex_layout;
     nux_vertex_attribute_t vertex_attributes;
+    nux_vertex_assembly_t  vertex_assembly;
     nux_b3_t               bounds;
 };
 

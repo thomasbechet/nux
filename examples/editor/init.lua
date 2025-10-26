@@ -103,32 +103,42 @@ function M:on_load()
 
     self.gui = gui.new(self.arena, self.gui_canvas)
     gui.push_style(self.gui, style)
+
+    local plane = mesh.new_plane(self.arena, 5, 5)
+    local n = node.create(node.root())
+    node.add(n, component.STATICMESH)
+    node.add(n, component.TRANSFORM)
+    staticmesh.set_mesh(n, plane)
+    transform.set_translation(n, { 10, 2, 0 })
 end
 
 function M:on_update()
     local position = transform.get_translation(self.camera.node)
     c = self.gui_canvas
-    canvas.text(c, 10, 10, time.date())
-    canvas.text(c, 10, 20, string.format("time: %.2fs", time.elapsed()))
-    canvas.text(c, 10, 30, string.format("xyz: %.2f %.2f %.2f", position.x, position.y, position.z))
-    canvas.text(c, 10, 40,
+    local h = 9
+    canvas.text(c, 10, h * 1, time.date())
+    canvas.text(c, 10, h * 2, string.format("time: %.2fs", time.elapsed()))
+    canvas.text(c, 10, h * 3, string.format("xyz: %.2f %.2f %.2f", position.x, position.y, position.z))
+    canvas.text(c, 10, h * 4,
         string.format("core mem: %s bc:%d",
             math.memhu(arena.memory_usage(arena.core())),
             arena.block_count(arena.core())))
-    canvas.text(c, 10, 50,
+    canvas.text(c, 10, h * 5,
         string.format("frame mem: %s bc:%d",
             math.memhu(arena.memory_usage(arena.frame())),
             arena.block_count(arena.frame())))
-    canvas.text(c, 10, 60, string.format("nodes: %d", scene.count()))
+    canvas.text(c, 10, h * 6, string.format("nodes: %d", scene.count()))
     local gcur = input.cursor(0)
     local cur = viewport.to_local(self.vp, gcur)
-    canvas.text(c, 10, 70, string.format("cursor: %.2f %.2f", cur.x, cur.y))
-    canvas.text(c, 10, 80, string.format("fov: %d", self.camera.fov))
+    canvas.text(c, 10, h * 7, string.format("cursor: %.2f %.2f", cur.x, cur.y))
+    canvas.text(c, 10, h * 8, string.format("fov: %d", self.camera.fov))
 
     if self.gizmos.target then
         local tex = staticmesh.get_texture(self.gizmos.target)
         local size = texture.get_size(tex)
-        canvas.blit(c, tex, vmath.box2i(100, 100, size.x, size.y), vmath.box2i(0, 0, size.x, size.y))
+        local csize = canvas.get_size(c)
+        canvas.blit(c, tex, vmath.box2i(csize.x - size.x, csize.y - size.y, size.x, size.y),
+            vmath.box2i(0, 0, size.x, size.y))
     end
 
     canvas.rectangle(c, cur.x * WIDTH - 1, cur.y * HEIGHT - 1, 5, 5)
