@@ -84,13 +84,17 @@ typedef struct
 
 struct nux_mesh_t
 {
-    nux_f32_t             *data;
-    nux_u32_t              vertex_offset;
-    nux_u32_t              vertex_count; // vertex count
-    nux_vertex_layout_t    vertex_layout;
-    nux_vertex_attribute_t vertex_attributes;
-    nux_vertex_assembly_t  vertex_assembly;
+    nux_f32_vec_t          vertices;
+    nux_vertex_layout_t    layout;
+    nux_vertex_attribute_t attributes;
+    nux_vertex_primitive_t primitive;
     nux_b3_t               bounds;
+    nux_b32_t              upload_required;
+    struct
+    {
+        nux_u32_t offset;
+        nux_u32_t capacity;
+    } gpu;
 };
 
 typedef struct
@@ -231,6 +235,14 @@ void           nux_texture_write(nux_texture_t *tex,
 void           nux_texture_blit(nux_texture_t *tex,
                                 nux_texture_t *target,
                                 nux_v4_t       extent);
+
+// mesh.c
+
+void nux_mesh_push_vertices(nux_mesh_t     *mesh,
+                            nux_u32_t       count,
+                            const nux_v3_t *positions,
+                            const nux_v2_t *uvs,
+                            const nux_v3_t *colors);
 
 // staticmesh.c
 

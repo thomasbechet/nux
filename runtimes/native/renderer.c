@@ -122,13 +122,13 @@ nux_os_pipeline_create (void                          *userdata,
     pipeline->enable_depth_test = info->enable_depth_test ? GL_TRUE : GL_FALSE;
     switch (info->primitive)
     {
-        case NUX_PRIMITIVE_TRIANGLES:
+        case NUX_VERTEX_TRIANGLES:
             pipeline->primitive = GL_TRIANGLES;
             break;
-        case NUX_PRIMITIVE_LINES:
+        case NUX_VERTEX_LINES:
             pipeline->primitive = GL_LINES;
             break;
-        case NUX_PRIMITIVE_POINTS:
+        case NUX_VERTEX_POINTS:
             pipeline->primitive = GL_POINTS;
             break;
     }

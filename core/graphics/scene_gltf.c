@@ -1,3 +1,4 @@
+#include "graphics/module.h"
 #include "internal.h"
 
 #ifdef NUX_BUILD_IMPORTER
@@ -99,44 +100,29 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     nux_u32_t       indice_count = accessor->count;
 
     // Create mesh
-    nux_mesh_t *mesh = nux_mesh_new(arena, indice_count, attributes);
+    nux_mesh_t *mesh
+        = nux_mesh_new(arena, indice_count, attributes, NUX_VERTEX_TRIANGLES);
     NUX_CHECK(mesh, return NUX_NULL);
 
     // Write vertices
-    const nux_vertex_layout_t layout = mesh->vertex_layout;
-    if (attributes & NUX_VERTEX_POSITION)
+    for (nux_u32_t i = 0; i < indice_count; ++i)
     {
-        for (nux_u32_t i = 0; i < indice_count; ++i)
+        const nux_v3_t *position = NUX_NULL;
+        const nux_v2_t *uv       = NUX_NULL;
+        const nux_v3_t *color    = NUX_NULL;
+        if (attributes & NUX_VERTEX_POSITION)
         {
-            nux_v3_t  position = positions[buffer_index(accessor, i)];
-            nux_u32_t offset   = i * mesh->vertex_layout.stride;
-            mesh->data[offset + layout.position + 0] = position.x;
-            mesh->data[offset + layout.position + 1] = position.y;
-            mesh->data[offset + layout.position + 2] = position.z;
+            position = positions + buffer_index(accessor, i);
         }
-    }
-    if (attributes & NUX_VERTEX_TEXCOORD)
-    {
-        for (nux_u32_t i = 0; i < indice_count; ++i)
+        if (attributes * NUX_VERTEX_TEXCOORD)
         {
-            nux_v2_t  uv     = uvs[buffer_index(accessor, i)];
-            nux_u32_t offset = i * mesh->vertex_layout.stride;
-            mesh->data[offset + layout.texcoord + 0] = uv.x;
-            mesh->data[offset + layout.texcoord + 1] = uv.y;
+            uv = uvs + buffer_index(accessor, i);
         }
-    }
-    if (attributes & NUX_VERTEX_COLOR)
-    {
-        for (nux_u32_t i = 0; i < indice_count; ++i)
+        if (attributes * NUX_VERTEX_COLOR)
         {
         }
+        nux_mesh_push_vertices(mesh, 1, position, uv, color);
     }
-
-    NUX_CHECK(nux_graphics_push_vertices(mesh->vertex_count
-                                             * mesh->vertex_layout.stride,
-                                         mesh->data,
-                                         &mesh->vertex_offset),
-              return NUX_NULL);
 
     // Optional : Generate bounds
     nux_mesh_update_bounds(mesh);

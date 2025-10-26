@@ -1376,7 +1376,8 @@ l_mesh_new (lua_State *L)
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
     nux_u32_t              capa       = luaL_checknumber(L, 2);
     nux_vertex_attribute_t attributes = luaL_checknumber(L, 3);
-    const nux_mesh_t      *ret        = nux_mesh_new(arena, capa, attributes);
+    nux_vertex_primitive_t primitive  = luaL_checknumber(L, 4);
+    const nux_mesh_t *ret = nux_mesh_new(arena, capa, attributes, primitive);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1474,6 +1475,18 @@ l_mesh_set_origin (lua_State *L)
     nux_v3_t origin = nux_lua_check_vec3(L, 2);
 
     nux_mesh_set_origin(mesh, origin);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_mesh_transform (lua_State *L)
+{
+    nux_mesh_t *mesh
+        = nux_resource_check(NUX_RESOURCE_MESH, luaL_checkinteger(L, 1));
+    nux_m4_t transform = nux_lua_check_mat4(L, 2);
+
+    nux_mesh_transform(mesh, transform);
     l_checkerror(L);
 
     return 0;
@@ -2223,6 +2236,7 @@ static const struct luaL_Reg lib_mesh[]
         { "bounds_min", l_mesh_bounds_min },
         { "bounds_max", l_mesh_bounds_max },
         { "set_origin", l_mesh_set_origin },
+        { "transform", l_mesh_transform },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
@@ -2269,11 +2283,10 @@ static const struct luaL_Reg lib_staticmesh[]
         { "get_render_layer", l_staticmesh_get_render_layer },
         { "set_draw_bounds", l_staticmesh_set_draw_bounds },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_colormap[]  = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_layer[]     = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_primitive[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_vertex[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_anchor[]    = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_colormap[] = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_layer[]    = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_vertex[]   = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_anchor[]   = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_rigidbody[]
     = { { "set_velocity", l_rigidbody_set_velocity }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_collider[]
@@ -2820,15 +2833,6 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 0x1);
     lua_setfield(L, -2, "DEFAULT");
     lua_setglobal(L, "layer");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_primitive, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "TRIANGLES");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LINES");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "POINTS");
-    lua_setglobal(L, "primitive");
     lua_newtable(L);
     luaL_setfuncs(L, lib_vertex, 0);
     lua_pushinteger(L, 0);

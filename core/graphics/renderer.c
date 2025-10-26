@@ -54,18 +54,18 @@ draw (nux_gpu_encoder_t *enc,
     return NUX_SUCCESS;
 }
 static void
-draw_rect (nux_gpu_encoder_t    *enc,
-           nux_u32_t             transform,
-           nux_vertex_assembly_t assembly,
-           const nux_v3_t       *positions,
-           nux_u32_t             color)
+draw_rect (nux_gpu_encoder_t     *enc,
+           nux_u32_t              transform,
+           nux_vertex_primitive_t primitive,
+           const nux_v3_t        *positions,
+           nux_u32_t              color)
 {
     nux_u32_t        vertex_count;
     const nux_u32_t  stride = 5;
     nux_f32_t        data[24 * stride]; // must constains all primitives type
     const nux_u32_t *indices;
 
-    switch (assembly)
+    switch (primitive)
     {
         case NUX_VERTEX_TRIANGLES: {
             static const nux_u32_t triangles_indices[]
@@ -123,11 +123,11 @@ draw_rect (nux_gpu_encoder_t    *enc,
          c);
 }
 static void
-draw_box (nux_gpu_encoder_t    *enc,
-          nux_u32_t             transform,
-          nux_vertex_assembly_t assembly,
-          nux_b3_t              box,
-          nux_u32_t             color)
+draw_box (nux_gpu_encoder_t     *enc,
+          nux_u32_t              transform,
+          nux_vertex_primitive_t primitive,
+          nux_b3_t               box,
+          nux_u32_t              color)
 {
     const nux_v3_t positions[] = { nux_v3(box.min.x, box.min.y, box.min.z),
                                    nux_v3(box.max.x, box.min.y, box.min.z),
@@ -137,7 +137,7 @@ draw_box (nux_gpu_encoder_t    *enc,
                                    nux_v3(box.max.x, box.max.y, box.min.z),
                                    nux_v3(box.max.x, box.max.y, box.max.z),
                                    nux_v3(box.min.x, box.max.y, box.max.z) };
-    draw_rect(enc, transform, assembly, positions, color);
+    draw_rect(enc, transform, primitive, positions, color);
 }
 void
 nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
@@ -227,10 +227,10 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             // Draw
             bind_texture(enc, tex);
             NUX_CHECK(draw(enc,
-                           m->vertex_offset,
-                           m->vertex_count,
+                           m->gpu.offset,
+                           nux_mesh_size(m),
                            sm->transform,
-                           m->vertex_attributes,
+                           m->attributes,
                            nux_v4s(1)),
                       return);
         }

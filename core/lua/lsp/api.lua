@@ -462,6 +462,8 @@ function mesh.bounds_min(...) end
 function mesh.bounds_max(...) end
 ---@return None
 function mesh.set_origin(...) end
+---@return None
+function mesh.transform(...) end
 canvas={}
 ---@return None
 function canvas.new(...) end
@@ -544,10 +546,6 @@ colormap={}
 colormap.SIZE=256
 layer={}
 layer.DEFAULT=0x1
-primitive={}
-primitive.TRIANGLES=0
-primitive.LINES=1
-primitive.POINTS=2
 vertex={}
 vertex.TRIANGLES=0
 vertex.LINES=1

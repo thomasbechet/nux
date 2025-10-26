@@ -21,7 +21,7 @@ typedef enum
     NUX_VERTEX_TRIANGLES = 0,
     NUX_VERTEX_LINES     = 1,
     NUX_VERTEX_POINTS    = 2,
-} nux_vertex_assembly_t;
+} nux_vertex_primitive_t;
 
 typedef enum
 {
@@ -104,7 +104,7 @@ nux_v4_t nux_palette_get_color(const nux_palette_t *palette, nux_u32_t index);
 nux_mesh_t *nux_mesh_new(nux_arena_t           *arena,
                          nux_u32_t              capa,
                          nux_vertex_attribute_t attributes,
-                         nux_vertex_assembly_t  assembly);
+                         nux_vertex_primitive_t primitive);
 nux_mesh_t *nux_mesh_new_cube(nux_arena_t *arena,
                               nux_f32_t    sx,
                               nux_f32_t    sy,
@@ -114,6 +114,8 @@ void        nux_mesh_update_bounds(nux_mesh_t *mesh);
 nux_v3_t    nux_mesh_bounds_min(nux_mesh_t *mesh);
 nux_v3_t    nux_mesh_bounds_max(nux_mesh_t *mesh);
 void        nux_mesh_set_origin(nux_mesh_t *mesh, nux_v3_t origin);
+void        nux_mesh_transform(nux_mesh_t *mesh, nux_m4_t transform);
+nux_u32_t   nux_mesh_size(nux_mesh_t *mesh);
 
 nux_canvas_t  *nux_canvas_new(nux_arena_t *arena,
                               nux_u32_t    width,

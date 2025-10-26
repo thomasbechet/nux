@@ -25,96 +25,146 @@ vertex_layout (nux_vertex_attribute_t attributes)
     }
     return layout;
 }
-static nux_status_t
-update_data (nux_mesh_t *mesh)
-{
-    return nux_graphics_update_vertices(mesh->vertex_offset,
-                                        mesh->vertex_count
-                                            * mesh->vertex_layout.stride,
-                                        mesh->data);
-}
 static void
-append_vertices (nux_mesh_t     *mesh,
-                 nux_u32_t       count,
-                 const nux_v3_t *positions,
-                 const nux_v2_t *uvs)
+push_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
 {
-    mesh->size += count;
-
-    for (nux_u32_t i = 0; i < mesh->vertex_count; ++i)
-    {
-        nux_u32_t offset = i * mesh->vertex_layout.stride;
-        if (positions)
-        {
-            mesh->data[offset + mesh->vertex_layout.position + 0]
-                = positions[i].x;
-            mesh->data[offset + mesh->vertex_layout.position + 1]
-                = positions[i].y;
-            mesh->data[offset + mesh->vertex_layout.position + 2]
-                = positions[i].z;
-        }
-        if (uvs)
-        {
-            mesh->data[offset + mesh->vertex_layout.texcoord + 0] = uvs[i].x;
-            mesh->data[offset + mesh->vertex_layout.texcoord + 1] = uvs[i].y;
-        }
-    }
-}
-static void
-append_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
-{
-    switch (m->vertex_assembly)
+    switch (m->primitive)
     {
         case NUX_VERTEX_POINTS: {
-            append_vertices(m, 4, positions, uvs);
+            nux_mesh_push_vertices(m, 4, positions, uvs, NUX_NULL);
         }
         break;
         case NUX_VERTEX_LINES: {
             const nux_u32_t indices[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
             for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(indices); ++i)
             {
-                append_vertices(m, 1, positions + indices[i], uvs + indices[i]);
+                nux_mesh_push_vertices(
+                    m, 1, positions + indices[i], uvs + indices[i], NUX_NULL);
             }
         }
         break;
         // case NU_PRIMITIVE_LINES_STRIP: {
-        //     append_vertices(m, 4, positions, uvs);
-        //     append_vertices(m, 1, positions, uvs);
+        //     nux_mesh_push_vertices(m, 4, positions, uvs, NUX_NULL);
+        //     nux_mesh_push_vertices(m, 1, positions, uvs, NUX_NULL);
         // }
         // break;
         case NUX_VERTEX_TRIANGLES: {
             const nux_u32_t indices[] = { 0, 1, 2, 2, 3, 0 };
             for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(indices); ++i)
             {
-                append_vertices(m, 1, positions + indices[i], uvs + indices[i]);
+                nux_mesh_push_vertices(
+                    m, 1, positions + indices[i], uvs + indices[i], NUX_NULL);
             }
         }
         break;
     }
+}
+static void
+nu__append_triangle (nu__mesh_t    *m,
+                     const nu_v3_t *positions,
+                     const nu_v2_t *uvs)
+{
+    switch (m->primitive)
+    {
+        case NU_PRIMITIVE_POINTS:
+            nu__append_vertices(m, 3, positions, uvs);
+            break;
+        case NU_PRIMITIVE_LINES: {
+            const nu_size_t indices[] = { 0, 1, 1, 2, 2, 0 };
+            for (nu_size_t i = 0; i < NU_ARRAY_SIZE(indices); ++i)
+            {
+                nu__append_vertices(
+                    m, 1, positions + indices[i], uvs + indices[i]);
+            }
+        }
+        break;
+        case NU_PRIMITIVE_LINES_STRIP:
+            nu__append_vertices(m, 3, positions, uvs);
+            break;
+        case NU_PRIMITIVE_TRIANGLES:
+            nu__append_vertices(m, 3, positions, uvs);
+            break;
+    }
+}
+
+nux_status_t
+nux_mesh_upload (nux_mesh_t *mesh)
+{
+    if (mesh->upload_required)
+    {
+        nux_u32_t count = nux_mesh_size(mesh);
+        if (count > mesh->gpu.capacity)
+        {
+            mesh->gpu.capacity = count;
+            NUX_CHECK(nux_graphics_push_vertices(count * mesh->layout.stride,
+                                                 mesh->vertices.data,
+                                                 &mesh->gpu.offset),
+                      return NUX_FAILURE);
+        }
+        else
+        {
+            NUX_CHECK(nux_graphics_update_vertices(mesh->gpu.offset,
+                                                   count * mesh->layout.stride,
+                                                   mesh->vertices.data),
+                      return NUX_FAILURE);
+        }
+        mesh->upload_required = NUX_FALSE;
+    }
+    return NUX_SUCCESS;
+}
+void
+nux_mesh_push_vertices (nux_mesh_t     *mesh,
+                        nux_u32_t       count,
+                        const nux_v3_t *positions,
+                        const nux_v2_t *uvs,
+                        const nux_v3_t *colors)
+{
+    nux_u32_t vertex_count = nux_mesh_size(mesh);
+    nux_f32_vec_resize(&mesh->vertices,
+                       mesh->vertices.size + count * mesh->layout.stride);
+    nux_f32_t *data = mesh->vertices.data + vertex_count * mesh->layout.stride;
+    for (nux_u32_t i = 0; i < count; ++i)
+    {
+        nux_u32_t offset = i * mesh->layout.stride;
+        if (positions)
+        {
+            data[offset + mesh->layout.position + 0] = positions[i].x;
+            data[offset + mesh->layout.position + 1] = positions[i].y;
+            data[offset + mesh->layout.position + 2] = positions[i].z;
+        }
+        if (uvs)
+        {
+            data[offset + mesh->layout.texcoord + 0] = uvs[i].x;
+            data[offset + mesh->layout.texcoord + 1] = uvs[i].y;
+        }
+        if (colors)
+        {
+            data[offset + mesh->layout.color + 0] = colors[i].x;
+            data[offset + mesh->layout.color + 1] = colors[i].y;
+            data[offset + mesh->layout.color + 2] = colors[i].z;
+        }
+    }
+    mesh->upload_required = NUX_TRUE;
 }
 
 nux_mesh_t *
 nux_mesh_new (nux_arena_t           *arena,
               nux_u32_t              capa,
               nux_vertex_attribute_t attributes,
-              nux_vertex_assembly_t  assembly)
+              nux_vertex_primitive_t primitive)
 {
     nux_mesh_t *mesh = nux_resource_new(arena, NUX_RESOURCE_MESH);
     NUX_CHECK(mesh, return NUX_NULL);
-    mesh->vertex_attributes = attributes;
-    mesh->vertex_assembly   = assembly;
-    mesh->vertex_layout     = vertex_layout(mesh->vertex_attributes);
-    mesh->vertex_count      = capa;
-    mesh->data              = nux_arena_malloc(arena,
-                                  sizeof(nux_f32_t) * mesh->vertex_layout.stride
-                                      * mesh->vertex_count);
-    NUX_CHECK(mesh->data, return NUX_NULL);
-    mesh->bounds = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
-    NUX_CHECK(nux_graphics_push_vertices(mesh->vertex_count
-                                             * mesh->vertex_layout.stride,
-                                         mesh->data,
-                                         &mesh->vertex_offset),
+    mesh->attributes = attributes;
+    mesh->primitive  = primitive;
+    mesh->layout     = vertex_layout(mesh->attributes);
+    NUX_CHECK(nux_f32_vec_init_capa(
+                  arena, mesh->layout.stride * capa, &mesh->vertices),
               return NUX_NULL);
+    mesh->bounds          = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
+    mesh->upload_required = NUX_TRUE;
+    mesh->gpu.offset      = 0;
+    mesh->gpu.capacity    = 0;
     return mesh;
 }
 nux_mesh_t *
@@ -150,21 +200,13 @@ nux_mesh_new_cube (nux_arena_t *arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 
     nux_mesh_t *mesh = nux_mesh_new(arena,
                                     NUX_ARRAY_SIZE(positions),
-                                    NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD);
+                                    NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD,
+                                    NUX_VERTEX_TRIANGLES);
     NUX_CHECK(mesh, return NUX_NULL);
     mesh->bounds = box;
 
-    for (nux_u32_t i = 0; i < mesh->vertex_count; ++i)
-    {
-        nux_u32_t offset = i * mesh->vertex_layout.stride;
-        mesh->data[offset + mesh->vertex_layout.position + 0] = positions[i].x;
-        mesh->data[offset + mesh->vertex_layout.position + 1] = positions[i].y;
-        mesh->data[offset + mesh->vertex_layout.position + 2] = positions[i].z;
-        mesh->data[offset + mesh->vertex_layout.texcoord + 0] = uvs[i].x;
-        mesh->data[offset + mesh->vertex_layout.texcoord + 1] = uvs[i].y;
-    }
-
-    NUX_CHECK(update_data(mesh), return NUX_NULL);
+    nux_mesh_push_vertices(
+        mesh, NUX_ARRAY_SIZE(positions), positions, uvs, NUX_NULL);
 
     return mesh;
 }
@@ -181,40 +223,32 @@ nux_mesh_new_plane (nux_arena_t *arena, nux_f32_t sx, nux_f32_t sy)
 
     nux_mesh_t *mesh = nux_mesh_new(arena,
                                     NUX_ARRAY_SIZE(positions),
-                                    NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD);
+                                    NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD,
+                                    NUX_VERTEX_TRIANGLES);
     NUX_CHECK(mesh, return NUX_NULL);
 
-    for (nux_u32_t i = 0; i < mesh->vertex_count; ++i)
-    {
-        nux_u32_t offset = i * mesh->vertex_layout.stride;
-        mesh->data[offset + mesh->vertex_layout.position + 0] = positions[i].x;
-        mesh->data[offset + mesh->vertex_layout.position + 1] = positions[i].y;
-        mesh->data[offset + mesh->vertex_layout.position + 2] = positions[i].z;
-        mesh->data[offset + mesh->vertex_layout.texcoord + 0] = uvs[i].x;
-        mesh->data[offset + mesh->vertex_layout.texcoord + 1] = uvs[i].y;
-    }
-
-    NUX_CHECK(update_data(mesh), return NUX_NULL);
+    push_quad(mesh, positions, uvs);
 
     return mesh;
 }
 void
 nux_mesh_update_bounds (nux_mesh_t *mesh)
 {
-    if (mesh->vertex_count == 0)
+    nux_u32_t count = nux_mesh_size(mesh);
+    if (mesh == 0)
     {
         return;
     }
 
     nux_v3_t min = nux_v3s(NUX_FLT_MAX);
     nux_v3_t max = nux_v3s(NUX_FLT_MIN);
-    for (nux_u32_t i = 0; i < mesh->vertex_count; ++i)
+    for (nux_u32_t i = 0; i < count; ++i)
     {
-        nux_u32_t offset = i * mesh->vertex_layout.stride;
+        nux_u32_t offset = i * mesh->layout.stride;
         nux_v3_t  v
-            = nux_v3(mesh->data[offset + mesh->vertex_layout.position + 0],
-                     mesh->data[offset + mesh->vertex_layout.position + 1],
-                     mesh->data[offset + mesh->vertex_layout.position + 2]);
+            = nux_v3(mesh->vertices.data[offset + mesh->layout.position + 0],
+                     mesh->vertices.data[offset + mesh->layout.position + 1],
+                     mesh->vertices.data[offset + mesh->layout.position + 2]);
         min = nux_v3_min(min, v);
         max = nux_v3_max(max, v);
     }
@@ -234,13 +268,30 @@ nux_mesh_bounds_max (nux_mesh_t *mesh)
 void
 nux_mesh_set_origin (nux_mesh_t *mesh, nux_v3_t origin)
 {
-    for (nux_u32_t i = 0; i < mesh->vertex_count; ++i)
+    nux_mesh_transform(mesh, nux_m4_translate(nux_v3_muls(origin, -1)));
+}
+void
+nux_mesh_transform (nux_mesh_t *mesh, nux_m4_t transform)
+{
+    nux_u32_t count = nux_mesh_size(mesh);
+    for (nux_u32_t i = 0; i < count; ++i)
     {
-        nux_u32_t offset = i * mesh->vertex_layout.stride;
-        mesh->data[offset + mesh->vertex_layout.position + 0] -= origin.x;
-        mesh->data[offset + mesh->vertex_layout.position + 1] -= origin.y;
-        mesh->data[offset + mesh->vertex_layout.position + 2] -= origin.z;
+        nux_u32_t offset = i * mesh->layout.stride;
+        nux_v3_t  v
+            = nux_v3(mesh->vertices.data[offset + mesh->layout.position + 0],
+                     mesh->vertices.data[offset + mesh->layout.position + 1],
+                     mesh->vertices.data[offset + mesh->layout.position + 2]);
+        v = nux_m4_mulv3(transform, v, 1);
+        mesh->vertices.data[offset + mesh->layout.position + 0] = v.x;
+        mesh->vertices.data[offset + mesh->layout.position + 1] = v.y;
+        mesh->vertices.data[offset + mesh->layout.position + 2] = v.z;
     }
-    update_data(mesh);
+    mesh->upload_required = NUX_TRUE;
     nux_mesh_update_bounds(mesh);
+}
+nux_u32_t
+nux_mesh_size (nux_mesh_t *mesh)
+{
+    NUX_ASSERT(mesh->layout.stride);
+    return mesh->vertices.size / mesh->layout.stride;
 }

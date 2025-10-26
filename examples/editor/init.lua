@@ -109,7 +109,9 @@ function M:on_load()
     node.add(n, component.STATICMESH)
     node.add(n, component.TRANSFORM)
     staticmesh.set_mesh(n, plane)
+    staticmesh.set_texture(n, canvas.get_texture(self.gui_canvas))
     transform.set_translation(n, { 10, 2, 0 })
+    transform.set_rotation_euler(n, { -math.rad(90), 0, 0 })
 end
 
 function M:on_update()

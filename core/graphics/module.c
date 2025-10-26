@@ -74,23 +74,23 @@ nux_graphics_init (void)
     nux_u32_vec_fill_reversed(&module->free_texture_slots);
 
     // Create pipelines
-    module->uber_pipeline_opaque.info.type         = NUX_GPU_PIPELINE_UBER;
-    module->uber_pipeline_opaque.info.primitive    = NUX_PRIMITIVE_TRIANGLES;
-    module->uber_pipeline_opaque.info.enable_blend = NUX_FALSE;
+    module->uber_pipeline_opaque.info.type              = NUX_GPU_PIPELINE_UBER;
+    module->uber_pipeline_opaque.info.primitive         = NUX_VERTEX_TRIANGLES;
+    module->uber_pipeline_opaque.info.enable_blend      = NUX_FALSE;
     module->uber_pipeline_opaque.info.enable_depth_test = NUX_TRUE;
     NUX_CHECK(nux_gpu_pipeline_init(&module->uber_pipeline_opaque), goto error);
     module->uber_pipeline_line.info.type              = NUX_GPU_PIPELINE_UBER;
-    module->uber_pipeline_line.info.primitive         = NUX_PRIMITIVE_LINES;
+    module->uber_pipeline_line.info.primitive         = NUX_VERTEX_LINES;
     module->uber_pipeline_line.info.enable_blend      = NUX_FALSE;
     module->uber_pipeline_line.info.enable_depth_test = NUX_TRUE;
     NUX_CHECK(nux_gpu_pipeline_init(&module->uber_pipeline_line), goto error);
     module->canvas_pipeline.info.type              = NUX_GPU_PIPELINE_CANVAS;
-    module->uber_pipeline_opaque.info.primitive    = NUX_PRIMITIVE_TRIANGLES;
+    module->uber_pipeline_opaque.info.primitive    = NUX_VERTEX_TRIANGLES;
     module->canvas_pipeline.info.enable_blend      = NUX_TRUE;
     module->canvas_pipeline.info.enable_depth_test = NUX_FALSE;
     NUX_CHECK(nux_gpu_pipeline_init(&module->canvas_pipeline), goto error);
     module->blit_pipeline.info.type              = NUX_GPU_PIPELINE_BLIT;
-    module->uber_pipeline_opaque.info.primitive  = NUX_PRIMITIVE_TRIANGLES;
+    module->uber_pipeline_opaque.info.primitive  = NUX_VERTEX_TRIANGLES;
     module->blit_pipeline.info.enable_blend      = NUX_TRUE;
     module->blit_pipeline.info.enable_depth_test = NUX_FALSE;
     NUX_CHECK(nux_gpu_pipeline_init(&module->blit_pipeline), goto error);
@@ -246,13 +246,21 @@ nux_graphics_update (void)
     nux_graphics_module_t *module = nux_graphics_module();
 
     // Propagate transforms
+    nux_nid_t transform = NUX_NULL;
+    while ((transform = nux_query_next(module->transform_iter, transform)))
     {
-        nux_nid_t it = NUX_NULL;
-        while ((it = nux_query_next(module->transform_iter, it)))
-        {
-            nux_transform_get_matrix(it);
-        }
+        nux_transform_get_matrix(transform);
     }
+
+    // Upload meshes
+    nux_rid_t mesh = NUX_NULL;
+    while ((mesh = nux_resource_next(NUX_RESOURCE_MESH, mesh)))
+    {
+        nux_mesh_t *c = nux_resource_check(NUX_RESOURCE_MESH, mesh);
+        nux_mesh_upload(c);
+    }
+
+    // Update textures
 
     // Submit canvas commands
     nux_rid_t canvas = NUX_NULL;
