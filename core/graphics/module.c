@@ -175,8 +175,8 @@ nux_graphics_init (void)
     NUX_CHECK(module->screen_target, return NUX_FAILURE);
     module->screen_target->gpu.type             = NUX_TEXTURE_RENDER_TARGET;
     module->screen_target->gpu.framebuffer_slot = 0;
-    module->screen_target->gpu.width            = 0;
-    module->screen_target->gpu.height           = 0;
+    module->screen_target->gpu.width            = 1600;
+    module->screen_target->gpu.height           = 900;
     nux_u32_vec_pop(&module->free_framebuffer_slots);
 
     return NUX_SUCCESS;
@@ -227,9 +227,26 @@ nux_graphics_pre_update (void)
     module->immediate_state = module->immediate_states.data;
     nux_graphics_reset_state();
 
-    // Update default screen size
+    // Update screen size
     module->screen_target->gpu.width  = nux_stat(NUX_STAT_SCREEN_WIDTH);
     module->screen_target->gpu.height = nux_stat(NUX_STAT_SCREEN_HEIGHT);
+
+    // Update viewports with auto resize enabled
+    nux_rid_t it = NUX_NULL;
+    while ((it = nux_resource_next(NUX_RESOURCE_VIEWPORT, it)))
+    {
+        nux_viewport_t *vp = nux_resource_get(NUX_RESOURCE_VIEWPORT, it);
+        if (vp->auto_resize
+            && vp->target == nux_resource_rid(module->screen_target))
+        {
+            nux_viewport_set_extent(
+                vp,
+                nux_b2i_xywh(0,
+                             0,
+                             module->screen_target->gpu.width,
+                             module->screen_target->gpu.height));
+        }
+    }
 
     return NUX_SUCCESS;
 }
@@ -276,6 +293,7 @@ nux_graphics_update (void)
     nux_rid_t       it              = NUX_NULL;
     while ((it = nux_resource_next(NUX_RESOURCE_VIEWPORT, it)))
     {
+        NUX_ASSERT(viewports_count < NUX_ARRAY_SIZE(viewports));
         viewports[viewports_count]
             = nux_resource_get(NUX_RESOURCE_VIEWPORT, it);
         ++viewports_count;
@@ -288,7 +306,7 @@ nux_graphics_update (void)
     for (nux_u32_t i = 0; i < viewports_count; ++i)
     {
         nux_viewport_t *viewport = viewports[i];
-        nux_v4_t        extent   = nux_viewport_get_global_extent(viewport);
+        nux_v4_t        extent   = nux_viewport_get_normalized_viewport(viewport);
 
         nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);

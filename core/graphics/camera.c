@@ -6,8 +6,8 @@ nux_camera_add (nux_nid_t e, void *data)
     nux_camera_t *c = data;
     c->fov          = 60;
     c->near         = 0.1;
-    c->far          = 500;
-    c->aspect       = 1;
+    c->far          = 1000;
+    c->aspect       = 16. / 9.;
     c->ortho_size   = nux_v2s(1);
     c->ortho        = NUX_FALSE;
     c->render_mask  = NUX_LAYER_DEFAULT;

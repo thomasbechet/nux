@@ -62,7 +62,7 @@ struct nux_viewport_t
 {
     nux_rid_t           target;
     nux_viewport_mode_t mode;
-    nux_v4_t            extent;
+    nux_b2i_t           extent;
     nux_u32_t           anchor;
     struct
     {
@@ -72,6 +72,7 @@ struct nux_viewport_t
     nux_i32_t layer;
     nux_v4_t  clear_color;
     nux_b32_t clear_depth;
+    nux_b32_t auto_resize;
 };
 
 typedef struct

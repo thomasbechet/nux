@@ -91,9 +91,9 @@ nux_input_update (void)
     }
 
     // Dispatch input events
-    for (nux_u32_t i = 0; i < module->events.size; ++i)
+    for (nux_u32_t i = 0; i < module->input_events.size; ++i)
     {
-        nux_os_event_t *event = module->events.data + i;
+        nux_os_event_t *event = module->input_events.data + i;
         if (event->type == NUX_OS_EVENT_INPUT)
         {
             dispatch_event(event);

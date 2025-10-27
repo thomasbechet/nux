@@ -59,33 +59,33 @@ push_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
         break;
     }
 }
-static void
-nu__append_triangle (nu__mesh_t    *m,
-                     const nu_v3_t *positions,
-                     const nu_v2_t *uvs)
-{
-    switch (m->primitive)
-    {
-        case NU_PRIMITIVE_POINTS:
-            nu__append_vertices(m, 3, positions, uvs);
-            break;
-        case NU_PRIMITIVE_LINES: {
-            const nu_size_t indices[] = { 0, 1, 1, 2, 2, 0 };
-            for (nu_size_t i = 0; i < NU_ARRAY_SIZE(indices); ++i)
-            {
-                nu__append_vertices(
-                    m, 1, positions + indices[i], uvs + indices[i]);
-            }
-        }
-        break;
-        case NU_PRIMITIVE_LINES_STRIP:
-            nu__append_vertices(m, 3, positions, uvs);
-            break;
-        case NU_PRIMITIVE_TRIANGLES:
-            nu__append_vertices(m, 3, positions, uvs);
-            break;
-    }
-}
+// static void
+// nu__append_triangle (nu__mesh_t    *m,
+//                      const nu_v3_t *positions,
+//                      const nu_v2_t *uvs)
+// {
+//     switch (m->primitive)
+//     {
+//         case NU_PRIMITIVE_POINTS:
+//             nu__append_vertices(m, 3, positions, uvs);
+//             break;
+//         case NU_PRIMITIVE_LINES: {
+//             const nu_size_t indices[] = { 0, 1, 1, 2, 2, 0 };
+//             for (nu_size_t i = 0; i < NU_ARRAY_SIZE(indices); ++i)
+//             {
+//                 nu__append_vertices(
+//                     m, 1, positions + indices[i], uvs + indices[i]);
+//             }
+//         }
+//         break;
+//         case NU_PRIMITIVE_LINES_STRIP:
+//             nu__append_vertices(m, 3, positions, uvs);
+//             break;
+//         case NU_PRIMITIVE_TRIANGLES:
+//             nu__append_vertices(m, 3, positions, uvs);
+//             break;
+//     }
+// }
 
 nux_status_t
 nux_mesh_upload (nux_mesh_t *mesh)

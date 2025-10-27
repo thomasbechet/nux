@@ -29,21 +29,22 @@ TODO
 ## Inputs
 
 Controller inputs :
-- axis
-- buttons
-- virtual cursor
+- keys
+- mouse buttons
+- gamepad buttons
+- gamepad axes
 - text
 
 Virtual Cursor :
 - from joystick
 - from mouse
 
-- Buttons
-
-- Axis
-
-- Cursor
-
 ## Scene Format
 
-- 
+## Viewport
+
+Describe where to render a source to a target.
+Type of source :
+- Camera
+- Texture
+

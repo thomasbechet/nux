@@ -224,6 +224,7 @@ resize_callback (GLFWwindow *win, int w, int h)
 {
     runtime.size.x = w;
     runtime.size.y = h;
+    nux_os_event_t event;
 }
 static void
 key_callback (GLFWwindow *win, int key, int scancode, int action, int mods)

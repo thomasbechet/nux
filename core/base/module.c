@@ -62,7 +62,7 @@ nux_base_init (void *userdata)
     // Allocate events queue
     NUX_CHECK(nux_os_event_vec_init_capa(module->core_arena,
                                          NUX_BASE_DEFAULT_EVENT_SIZE,
-                                         &module->events),
+                                         &module->input_events),
               return NUX_FAILURE);
 
     // Add OS disk

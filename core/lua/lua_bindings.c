@@ -1112,7 +1112,7 @@ l_viewport_set_extent (lua_State *L)
 {
     nux_viewport_t *vp
         = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_v4_t extent = nux_lua_check_vec4(L, 2);
+    nux_b2i_t extent = nux_lua_check_box2i(L, 2);
 
     nux_viewport_set_extent(vp, extent);
     l_checkerror(L);
@@ -1156,6 +1156,18 @@ l_viewport_set_clear_depth (lua_State *L)
     return 0;
 }
 static int
+l_viewport_set_auto_resize (lua_State *L)
+{
+    nux_viewport_t *vp
+        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
+    nux_b32_t enable = lua_toboolean(L, 2);
+
+    nux_viewport_set_auto_resize(vp, enable);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_viewport_set_camera (lua_State *L)
 {
     nux_viewport_t *vp
@@ -1181,22 +1193,11 @@ l_viewport_set_texture (lua_State *L)
     return 0;
 }
 static int
-l_viewport_get_target_size (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_v2_t ret = nux_viewport_get_target_size(vp);
-    l_checkerror(L);
-
-    nux_lua_push_vec2(L, ret);
-    return 1;
-}
-static int
-l_viewport_get_global_extent (lua_State *L)
+l_viewport_get_normalized_viewport (lua_State *L)
 {
     nux_viewport_t *viewport
         = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_v4_t ret = nux_viewport_get_global_extent(viewport);
+    nux_v4_t ret = nux_viewport_get_normalized_viewport(viewport);
     l_checkerror(L);
 
     nux_lua_push_vec4(L, ret);
@@ -1490,6 +1491,17 @@ l_mesh_transform (lua_State *L)
     l_checkerror(L);
 
     return 0;
+}
+static int
+l_mesh_size (lua_State *L)
+{
+    nux_mesh_t *mesh
+        = nux_resource_check(NUX_RESOURCE_MESH, luaL_checkinteger(L, 1));
+    nux_u32_t ret = nux_mesh_size(mesh);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
 }
 static int
 l_canvas_new (lua_State *L)
@@ -2208,10 +2220,10 @@ static const struct luaL_Reg lib_viewport[]
         { "set_anchor", l_viewport_set_anchor },
         { "set_layer", l_viewport_set_layer },
         { "set_clear_depth", l_viewport_set_clear_depth },
+        { "set_auto_resize", l_viewport_set_auto_resize },
         { "set_camera", l_viewport_set_camera },
         { "set_texture", l_viewport_set_texture },
-        { "get_target_size", l_viewport_get_target_size },
-        { "get_global_extent", l_viewport_get_global_extent },
+        { "get_normalized_viewport", l_viewport_get_normalized_viewport },
         { "to_global", l_viewport_to_global },
         { "to_local", l_viewport_to_local },
         { NUX_NULL, NUX_NULL } };
@@ -2237,6 +2249,7 @@ static const struct luaL_Reg lib_mesh[]
         { "bounds_max", l_mesh_bounds_max },
         { "set_origin", l_mesh_set_origin },
         { "transform", l_mesh_transform },
+        { "size", l_mesh_size },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },

@@ -74,14 +74,14 @@ typedef enum
 
 nux_viewport_t *nux_viewport_new(nux_arena_t *arena, nux_texture_t *target);
 void     nux_viewport_set_mode(nux_viewport_t *vp, nux_viewport_mode_t mode);
-void     nux_viewport_set_extent(nux_viewport_t *vp, nux_v4_t extent);
+void     nux_viewport_set_extent(nux_viewport_t *vp, nux_b2i_t extent);
 void     nux_viewport_set_anchor(nux_viewport_t *vp, nux_u32_t anchor);
 void     nux_viewport_set_layer(nux_viewport_t *vp, nux_i32_t layer);
 void     nux_viewport_set_clear_depth(nux_viewport_t *vp, nux_b32_t clear);
+void     nux_viewport_set_auto_resize(nux_viewport_t *vp, nux_b32_t enable);
 void     nux_viewport_set_camera(nux_viewport_t *vp, nux_nid_t camera);
 void     nux_viewport_set_texture(nux_viewport_t *vp, nux_texture_t *texture);
-nux_v2_t nux_viewport_get_target_size(nux_viewport_t *vp);
-nux_v4_t nux_viewport_get_global_extent(nux_viewport_t *viewport);
+nux_v4_t nux_viewport_get_normalized_viewport(nux_viewport_t *viewport);
 nux_v2_t nux_viewport_to_global(nux_viewport_t *vp, nux_v2_t coord);
 nux_v2_t nux_viewport_to_local(nux_viewport_t *vp, nux_v2_t coord);
 

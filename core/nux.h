@@ -79,7 +79,7 @@ typedef enum
 typedef struct
 {
     nux_gpu_pipeline_type_t type;
-    nux_vertex_primitive_t   primitive;
+    nux_vertex_primitive_t  primitive;
     nux_b32_t               enable_blend;
     nux_b32_t               enable_depth_test;
 } nux_gpu_pipeline_info_t;
@@ -162,29 +162,32 @@ typedef enum
 
 typedef enum
 {
-    NUX_OS_EVENT_INPUT
+    NUX_OS_EVENT_INPUT,
 } nux_os_event_type_t;
 
 typedef struct
 {
     nux_os_event_type_t type;
-    struct
+    union
     {
-        nux_input_type_t type;
-        union
+        struct
         {
-            nux_key_t            key;
-            nux_mouse_button_t   mouse_button;
-            nux_mouse_axis_t     mouse_axis;
-            nux_gamepad_button_t gamepad_button;
-            nux_gamepad_axis_t   gamepad_axis;
-        };
-        union
-        {
-            nux_f32_t          axis_value;
-            nux_button_state_t button_state;
-        };
-    } input;
+            nux_input_type_t type;
+            union
+            {
+                nux_key_t            key;
+                nux_mouse_button_t   mouse_button;
+                nux_mouse_axis_t     mouse_axis;
+                nux_gamepad_button_t gamepad_button;
+                nux_gamepad_axis_t   gamepad_axis;
+            };
+            union
+            {
+                nux_f32_t          axis_value;
+                nux_button_state_t button_state;
+            };
+        } input;
+    };
 } nux_os_event_t;
 
 //////////////////////////////////////////////////////////////////////////

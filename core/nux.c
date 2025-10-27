@@ -172,11 +172,14 @@ nux_instance_update (nux_instance_t *instance)
     nux_arena_reset(nux_arena_frame());
     nux_base_module()->time_elapsed += nux_time_delta();
     ++nux_base_module()->frame;
-    nux_os_event_vec_clear(&nux_base_module()->events);
+    nux_os_event_vec_clear(&nux_base_module()->input_events);
 }
 void
 nux_instance_push_event (nux_instance_t *instance, nux_os_event_t *event)
 {
     setup_thread_context(instance);
-    nux_os_event_vec_pushv(&nux_base_module()->events, *event);
+    if (event->type == NUX_OS_EVENT_INPUT)
+    {
+        nux_os_event_vec_pushv(&nux_base_module()->input_events, *event);
+    }
 }

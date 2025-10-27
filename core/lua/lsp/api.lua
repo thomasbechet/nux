@@ -409,13 +409,13 @@ function viewport.set_layer(...) end
 ---@return None
 function viewport.set_clear_depth(...) end
 ---@return None
+function viewport.set_auto_resize(...) end
+---@return None
 function viewport.set_camera(...) end
 ---@return None
 function viewport.set_texture(...) end
 ---@return None
-function viewport.get_target_size(...) end
----@return None
-function viewport.get_global_extent(...) end
+function viewport.get_normalized_viewport(...) end
 ---@return None
 function viewport.to_global(...) end
 ---@return None
@@ -464,6 +464,8 @@ function mesh.bounds_max(...) end
 function mesh.set_origin(...) end
 ---@return None
 function mesh.transform(...) end
+---@return None
+function mesh.size(...) end
 canvas={}
 ---@return None
 function canvas.new(...) end

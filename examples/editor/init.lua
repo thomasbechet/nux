@@ -62,23 +62,28 @@ function M:on_load()
 
     local vp = viewport.new(self.arena, texture.screen())
     viewport.set_camera(vp, self.camera.node)
-    viewport.set_extent(vp, { 0, 0, 1, 1 })
+    -- viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 0)
     viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
+    viewport.set_auto_resize(vp, true)
 
     local vp = viewport.new(self.arena, texture.screen())
     viewport.set_camera(vp, self.camera.top_node)
-    viewport.set_extent(vp, { 0, 0, 1, 1 })
+    -- viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 1)
     viewport.set_clear_depth(vp, true)
     viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
+    viewport.set_auto_resize(vp, true)
+    viewport.set_anchor(vp, anchor.LEFT)
 
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
     self.vp = viewport.new(self.arena, texture.screen())
-    viewport.set_extent(self.vp, { 0, 0, 1, 1 })
+    -- viewport.set_extent(self.vp, { 0, 0, 1, 1 })
     viewport.set_texture(self.vp, canvas.get_texture(self.gui_canvas))
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
     viewport.set_layer(self.vp, 2)
+    viewport.set_auto_resize(vp, true)
+    -- viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
 
     local gui_tex = texture.load(self.arena, "assets/GUI.png")
     local style = stylesheet.new(self.arena)
@@ -104,14 +109,14 @@ function M:on_load()
     self.gui = gui.new(self.arena, self.gui_canvas)
     gui.push_style(self.gui, style)
 
-    local plane = mesh.new_plane(self.arena, 5, 5)
+    local plane = mesh.new_plane(self.arena, 6.4, 4.8)
     local n = node.create(node.root())
     node.add(n, component.STATICMESH)
     node.add(n, component.TRANSFORM)
     staticmesh.set_mesh(n, plane)
     staticmesh.set_texture(n, canvas.get_texture(self.gui_canvas))
     transform.set_translation(n, { 10, 2, 0 })
-    transform.set_rotation_euler(n, { -math.rad(90), 0, 0 })
+    transform.set_rotation_euler(n, { -math.rad(95), 0, 0 })
 end
 
 function M:on_update()
@@ -134,6 +139,8 @@ function M:on_update()
     local cur = viewport.to_local(self.vp, gcur)
     canvas.text(c, 10, h * 7, string.format("cursor: %.2f %.2f", cur.x, cur.y))
     canvas.text(c, 10, h * 8, string.format("fov: %d", self.camera.fov))
+    local screen_size = texture.get_size(texture.screen())
+    canvas.text(c, 10, h * 9, string.format("size: %dx%d", screen_size.x, screen_size.y))
 
     if self.gizmos.target then
         local tex = staticmesh.get_texture(self.gizmos.target)
@@ -145,11 +152,14 @@ function M:on_update()
 
     canvas.rectangle(c, cur.x * WIDTH - 1, cur.y * HEIGHT - 1, 5, 5)
 
-    gui.button(self.gui, 200, 400, 200, 50)
+    gui.button(self.gui, 200, 400, 100, 50)
     -- gui.button(self.gui, 400, 200, 100, 50)
 
     camera.reset_aspect(self.camera.node, self.vp)
     camera.reset_aspect(self.camera.top_node, self.vp)
+    -- local aspect = WIDTH / HEIGHT
+    -- camera.set_aspect(self.camera.node, aspect)
+    -- camera.set_aspect(self.camera.top_node, aspect)
 
     local dir = camera.unproject(self.camera.node, gcur)
     self.gizmos:update(position, dir, "click")
