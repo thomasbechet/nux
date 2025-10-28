@@ -27,21 +27,6 @@ check_entry (nux_rid_t rid, nux_u32_t type)
     NUX_ENSURE(entry, return NUX_NULL, "invalid resource 0x%X", rid);
     return entry;
 }
-static nux_rid_t
-add_entry (nux_arena_t *arena, nux_u32_t type, void *data)
-{
-    nux_base_module_t    *module = nux_base_module();
-    nux_resource_entry_t *entry  = nux_resource_pool_add(&module->resources);
-    NUX_ENSURE(entry, return NUX_NULL, "out of resources");
-    nux_u32_t index = entry - module->resources.data;
-    entry->self     = RID_BUILD(entry->self, type, index);
-    entry->arena    = arena;
-    entry->type     = type;
-    entry->data     = data;
-    entry->path     = NUX_NULL;
-    entry->name     = NUX_NULL;
-    return entry->self;
-}
 
 nux_resource_type_t *
 nux_resource_register (nux_u32_t index, nux_u32_t size, const nux_c8_t *name)
@@ -51,8 +36,9 @@ nux_resource_register (nux_u32_t index, nux_u32_t size, const nux_c8_t *name)
     NUX_ASSERT(module->resources_types[index].name == NUX_NULL);
     nux_resource_type_t *resource = module->resources_types + index;
     nux_memset(resource, 0, sizeof(*resource));
-    resource->name = name;
-    resource->size = size;
+    resource->name              = name;
+    resource->size              = size;
+    resource->first_entry_index = NUX_NULL;
     return resource;
 }
 
@@ -94,10 +80,32 @@ nux_resource_new (nux_arena_t *arena, nux_u32_t type)
         arena->first_header = header;
     }
     arena->last_header = header;
-    void     *data     = header + 1; // TODO: handle proper memory alignment
-    nux_rid_t id       = add_entry(arena, type, data);
-    NUX_CHECK(id, return NUX_NULL);
-    header->rid = id;
+    void *data         = header + 1; // TODO: handle proper memory alignment
+
+    // Add new entry
+    nux_resource_entry_t *entry = nux_resource_pool_add(&module->resources);
+    NUX_ENSURE(entry, return NUX_NULL, "out of resources");
+    nux_u32_t index         = entry - module->resources.data;
+    entry->self             = RID_BUILD(entry->self, type, index);
+    entry->arena            = arena;
+    entry->type             = type;
+    entry->data             = data;
+    entry->path             = NUX_NULL;
+    entry->name             = NUX_NULL;
+    entry->next_entry_index = NUX_NULL;
+    if (t->last_entry_index)
+    {
+        entry->prev_entry_index = t->first_entry_index;
+        module->resources.data[t->last_entry_index].next_entry_index = index;
+        t->last_entry_index                                          = index;
+    }
+    else
+    {
+        t->first_entry_index = index;
+        t->last_entry_index  = index;
+    }
+
+    header->rid = entry->self;
     return data;
 }
 void
@@ -106,6 +114,7 @@ nux_resource_delete (nux_rid_t rid)
     nux_base_module_t    *module = nux_base_module();
     nux_resource_entry_t *entry  = check_entry(rid, NUX_NULL);
     NUX_CHECK(entry, return);
+    nux_u32_t index = RID_INDEX(rid);
 
     // Remove from hotreload
     if (module->config.hotreload && entry->path)
@@ -114,15 +123,15 @@ nux_resource_delete (nux_rid_t rid)
     }
 
     // Cleanup resource
-    nux_resource_type_t *type = module->resources_types + entry->type;
+    nux_resource_type_t *t = module->resources_types + entry->type;
     NUX_DEBUG("cleanup type:%s rid:0x%08X name:%s path:%s",
-              type->name,
+              t->name,
               rid,
               entry->name ? entry->name : "null",
               entry->path ? entry->path : "null");
-    if (type->cleanup)
+    if (t->cleanup)
     {
-        type->cleanup(entry->data);
+        t->cleanup(entry->data);
     }
 
     // Remove entry
@@ -131,6 +140,20 @@ nux_resource_delete (nux_rid_t rid)
     entry->self  = NUX_NULL;
     entry->type  = NUX_NULL;
     entry->path  = NUX_NULL;
+    if (entry->prev_entry_index)
+    {
+        module->resources.data[entry->prev_entry_index].next_entry_index
+            = entry->next_entry_index;
+    }
+    if (entry->next_entry_index)
+    {
+        module->resources.data[entry->next_entry_index].prev_entry_index
+            = entry->prev_entry_index;
+    }
+    if (t->first_entry_index == index)
+    {
+        t->first_entry_index = entry->next_entry_index;
+    }
     nux_resource_pool_remove(&module->resources, entry);
 }
 void
@@ -229,21 +252,28 @@ nux_resource_reload (nux_rid_t rid)
 nux_rid_t
 nux_resource_next (nux_u32_t type, nux_rid_t rid)
 {
-    nux_base_module_t *module = nux_base_module();
-    nux_u32_t          start  = 0;
+    nux_base_module_t   *module = nux_base_module();
+    nux_resource_type_t *t      = &module->resources_types[type];
+    nux_u32_t            index;
     if (rid)
     {
-        start = RID_INDEX(rid) + 1;
+        nux_resource_entry_t *entry = check_entry(rid, type);
+        index                       = entry->next_entry_index;
     }
-    for (nux_u32_t i = start; i < module->resources.size; ++i)
+    else
     {
-        nux_resource_entry_t *r = module->resources.data + i;
-        if (r->type == type)
-        {
-            return r->self;
-        }
+        index = t->first_entry_index;
     }
-    return NUX_NULL;
+    NUX_CHECK(index, return NUX_NULL);
+    nux_resource_entry_t *entry = &module->resources.data[index];
+    NUX_ASSERT(entry->type == type);
+    return entry->self;
+}
+void *
+nux_resource_nextp (nux_u32_t type, const void *p)
+{
+    nux_rid_t next = nux_resource_next(type, nux_resource_rid(p));
+    return next ? nux_resource_get(type, next) : NUX_NULL;
 }
 nux_rid_t
 nux_resource_rid (const void *data)

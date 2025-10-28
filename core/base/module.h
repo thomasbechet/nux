@@ -540,13 +540,6 @@ typedef nux_u32_vec_t nux_rid_vec_t;
 
 typedef void (*nux_resource_cleanup_t)(void *data);
 typedef nux_status_t (*nux_resource_reload_t)(void *data, const nux_c8_t *path);
-typedef struct
-{
-    const nux_c8_t        *name;
-    nux_u32_t              size;
-    nux_resource_cleanup_t cleanup;
-    nux_resource_reload_t  reload;
-} nux_resource_type_t;
 
 typedef struct
 {
@@ -556,7 +549,19 @@ typedef struct
     void           *data;
     const nux_c8_t *path;
     const nux_c8_t *name;
+    nux_u32_t       prev_entry_index;
+    nux_u32_t       next_entry_index;
 } nux_resource_entry_t;
+
+typedef struct
+{
+    const nux_c8_t        *name;
+    nux_u32_t              size;
+    nux_resource_cleanup_t cleanup;
+    nux_resource_reload_t  reload;
+    nux_u32_t              first_entry_index;
+    nux_u32_t              last_entry_index;
+} nux_resource_type_t;
 
 NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
 
@@ -922,7 +927,8 @@ void                 nux_resource_set_path(nux_rid_t rid, const nux_c8_t *path);
 void                *nux_resource_get(nux_u32_t type, nux_rid_t rid);
 void                *nux_resource_check(nux_u32_t type, nux_rid_t rid);
 nux_status_t         nux_resource_reload(nux_rid_t rid);
-nux_rid_t            nux_resource_next(nux_u32_t type, nux_rid_t rid);
+// nux_rid_t            nux_resource_next(nux_u32_t type, nux_rid_t rid);
+void                *nux_resource_nextp(nux_u32_t type, const void *p);
 nux_rid_t            nux_resource_rid(const void *data);
 
 // arena.c

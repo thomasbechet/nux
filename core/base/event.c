@@ -110,9 +110,9 @@ nux_event_process (nux_event_t *event)
 void
 nux_event_process_all (void)
 {
-    nux_rid_t it = NUX_NULL;
-    while ((it = nux_resource_next(NUX_RESOURCE_EVENT, it)))
+    nux_event_t *it = NUX_NULL;
+    while ((it = nux_resource_nextp(NUX_RESOURCE_EVENT, it)))
     {
-        nux_event_process(nux_resource_get(NUX_RESOURCE_EVENT, it));
+        nux_event_process(it);
     }
 }
