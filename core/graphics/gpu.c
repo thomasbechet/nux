@@ -165,6 +165,11 @@ nux_gpu_draw (nux_gpu_encoder_t *enc, nux_u32_t count)
     cmd->draw.count = count;
 }
 void
+nux_gpu_draw_full_quad (nux_gpu_encoder_t *enc)
+{
+    nux_gpu_draw(enc, 3); // use extented triangle to cover full screen
+}
+void
 nux_gpu_clear_color (nux_gpu_encoder_t *enc, nux_u32_t color)
 {
     nux_gpu_command_t *cmd = push_cmd(enc);

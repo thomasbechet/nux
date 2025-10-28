@@ -88,6 +88,7 @@ void         nux_dsa_reset_top(nux_dsa_t *a);
 // palette.c
 
 nux_status_t nux_palette_register_default(void);
+nux_status_t nux_palette_upload(nux_palette_t *palette);
 
 // mesh.c
 

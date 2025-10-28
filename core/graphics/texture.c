@@ -7,6 +7,45 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <externals/stb/stb_image.h>
 
+static nux_status_t
+nux_texture_upload (nux_texture_t *texture)
+{
+    NUX_ENSURE(texture->gpu.type != NUX_TEXTURE_RENDER_TARGET,
+               return NUX_FAILURE,
+               "trying to write render target texture");
+    if (texture->dirty)
+    {
+        nux_v2u_t size = nux_b2i_size(texture->dirty_extent);
+        NUX_ENSURE(nux_os_texture_update(nux_userdata(),
+                                         texture->gpu.slot,
+                                         texture->dirty_extent.min.x,
+                                         texture->dirty_extent.min.y,
+                                         size.x,
+                                         size.y,
+                                         texture->data),
+                   return NUX_FAILURE,
+                   "failed to update colormap texture");
+        texture->dirty = NUX_FALSE;
+    }
+    return NUX_SUCCESS;
+}
+static void
+nux_texture_update (nux_texture_t *tex,
+                    nux_u32_t      x,
+                    nux_u32_t      y,
+                    nux_u32_t      w,
+                    nux_u32_t      h,
+                    const void    *data)
+{
+    NUX_ENSURE(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
+               return,
+               "trying to write render target texture");
+    NUX_ENSURE(
+        nux_os_texture_update(nux_userdata(), tex->gpu.slot, x, y, w, h, data),
+        return,
+        "failed to update colormap texture");
+}
+
 nux_texture_t *
 nux_texture_new (nux_arena_t       *arena,
                  nux_texture_type_t type,
@@ -16,9 +55,11 @@ nux_texture_new (nux_arena_t       *arena,
     // Create object
     nux_texture_t *tex = nux_resource_new(arena, NUX_RESOURCE_TEXTURE);
     NUX_CHECK(tex, return NUX_NULL);
-    tex->gpu.type   = type;
-    tex->gpu.width  = w;
-    tex->gpu.height = h;
+    tex->gpu.type     = type;
+    tex->gpu.width    = w;
+    tex->gpu.height   = h;
+    tex->dirty        = NUX_TRUE;
+    tex->dirty_extent = nux_b2i_xywh(0, 0, w, h);
 
     // Create gpu texture
     NUX_CHECK(nux_gpu_texture_init(&tex->gpu), return NUX_NULL);
@@ -64,7 +105,7 @@ nux_texture_load_from_memory (nux_arena_t    *arena,
         = stbi_load_from_memory(data, size, &w, &h, &n, STBI_rgb_alpha);
     nux_texture_t *tex = nux_texture_new(arena, NUX_TEXTURE_IMAGE_RGBA, w, h);
     NUX_CHECK(tex, goto error);
-    nux_texture_write(tex, 0, 0, w, h, img);
+    nux_texture_update(tex, 0, 0, w, h, img);
 error:
     stbi_image_free(img);
     return tex;
@@ -95,22 +136,6 @@ nux_texture_get_size (nux_texture_t *texture)
     return nux_v2i(texture->gpu.width, texture->gpu.height);
 }
 void
-nux_texture_write (nux_texture_t *tex,
-                   nux_u32_t      x,
-                   nux_u32_t      y,
-                   nux_u32_t      w,
-                   nux_u32_t      h,
-                   const void    *data)
-{
-    NUX_ENSURE(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
-               return,
-               "trying to write render target texture");
-    NUX_ENSURE(
-        nux_os_texture_update(nux_userdata(), tex->gpu.slot, x, y, w, h, data),
-        return,
-        "failed to update colormap texture");
-}
-void
 nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
 {
     nux_graphics_module_t *module = nux_graphics_module();
@@ -123,6 +148,6 @@ nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
     nux_gpu_bind_texture(&enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
     nux_gpu_push_u32(&enc, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
     nux_gpu_push_u32(&enc, NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT, tex->gpu.height);
-    nux_gpu_draw(&enc, 3);
+    nux_gpu_draw_full_quad(&enc);
     nux_gpu_encoder_submit(&enc);
 }

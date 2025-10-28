@@ -50,12 +50,15 @@ struct nux_texture_t
 {
     nux_gpu_texture_t gpu;
     nux_u8_t         *data;
+    nux_b32_t         dirty;
+    nux_b2i_t         dirty_extent;
 };
 
 struct nux_palette_t
 {
-    nux_v4_t *colors;
-    nux_u32_t size;
+    nux_v4_t      *colors;
+    nux_u32_t      size;
+    nux_texture_t *texture;
 };
 
 struct nux_viewport_t
@@ -90,7 +93,7 @@ struct nux_mesh_t
     nux_vertex_attribute_t attributes;
     nux_vertex_primitive_t primitive;
     nux_b3_t               bounds;
-    nux_b32_t              upload_required;
+    nux_b32_t              dirty;
     struct
     {
         nux_u32_t offset;
@@ -217,6 +220,7 @@ void nux_gpu_push_u32(nux_gpu_encoder_t *enc, nux_u32_t desc, nux_u32_t value);
 void nux_gpu_push_f32(nux_gpu_encoder_t *enc, nux_u32_t desc, nux_f32_t value);
 void nux_gpu_push_v2(nux_gpu_encoder_t *enc, nux_u32_t desc, nux_v2_t value);
 void nux_gpu_draw(nux_gpu_encoder_t *enc, nux_u32_t count);
+void nux_gpu_draw_full_quad(nux_gpu_encoder_t *enc);
 void nux_gpu_clear_color(nux_gpu_encoder_t *enc, nux_u32_t color);
 void nux_gpu_clear_depth(nux_gpu_encoder_t *enc);
 void nux_gpu_viewport(nux_gpu_encoder_t *enc, nux_v4_t viewport);
@@ -227,12 +231,6 @@ void           nux_texture_cleanup(void *data);
 nux_texture_t *nux_texture_load_from_memory(nux_arena_t    *arena,
                                             const nux_u8_t *data,
                                             nux_u32_t       size);
-void           nux_texture_write(nux_texture_t *tex,
-                                 nux_u32_t      x,
-                                 nux_u32_t      y,
-                                 nux_u32_t      w,
-                                 nux_u32_t      h,
-                                 const void    *data);
 void           nux_texture_blit(nux_texture_t *tex,
                                 nux_texture_t *target,
                                 nux_v4_t       extent);

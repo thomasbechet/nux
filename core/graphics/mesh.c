@@ -90,7 +90,7 @@ push_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
 nux_status_t
 nux_mesh_upload (nux_mesh_t *mesh)
 {
-    if (mesh->upload_required)
+    if (mesh->dirty)
     {
         nux_u32_t count = nux_mesh_size(mesh);
         if (count > mesh->gpu.capacity)
@@ -108,7 +108,7 @@ nux_mesh_upload (nux_mesh_t *mesh)
                                                    mesh->vertices.data),
                       return NUX_FAILURE);
         }
-        mesh->upload_required = NUX_FALSE;
+        mesh->dirty = NUX_FALSE;
     }
     return NUX_SUCCESS;
 }
@@ -144,7 +144,7 @@ nux_mesh_push_vertices (nux_mesh_t     *mesh,
             data[offset + mesh->layout.color + 2] = colors[i].z;
         }
     }
-    mesh->upload_required = NUX_TRUE;
+    mesh->dirty = NUX_TRUE;
 }
 
 nux_mesh_t *
@@ -161,10 +161,10 @@ nux_mesh_new (nux_arena_t           *arena,
     NUX_CHECK(nux_f32_vec_init_capa(
                   arena, mesh->layout.stride * capa, &mesh->vertices),
               return NUX_NULL);
-    mesh->bounds          = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
-    mesh->upload_required = NUX_TRUE;
-    mesh->gpu.offset      = 0;
-    mesh->gpu.capacity    = 0;
+    mesh->bounds       = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
+    mesh->dirty        = NUX_TRUE;
+    mesh->gpu.offset   = 0;
+    mesh->gpu.capacity = 0;
     return mesh;
 }
 nux_mesh_t *
@@ -286,7 +286,7 @@ nux_mesh_transform (nux_mesh_t *mesh, nux_m4_t transform)
         mesh->vertices.data[offset + mesh->layout.position + 1] = v.y;
         mesh->vertices.data[offset + mesh->layout.position + 2] = v.z;
     }
-    mesh->upload_required = NUX_TRUE;
+    mesh->dirty = NUX_TRUE;
     nux_mesh_update_bounds(mesh);
 }
 nux_u32_t
