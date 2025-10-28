@@ -1,6 +1,7 @@
 function M:on_load()
     self.speed = 10
     self.fast_speed = 20
+    self.slow_spped = 2
     self.fov = 90
     self.pitch = 0
     self.yaw = 0
@@ -24,6 +25,8 @@ function M:on_update()
 
     if input.pressed(0, "sprint") then
         speed = self.fast_speed
+    elseif input.pressed(0, "slow") then
+        speed = self.slow_spped
     end
 
     local mx = input.value(0, "right") - input.value(0, "left")

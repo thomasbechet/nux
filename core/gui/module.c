@@ -1,5 +1,16 @@
 #include "internal.h"
 
+// void
+// nux_gui_register (void)
+// {
+//     nux_module_t module;
+//     module.name   = "name";
+//     module.size   = sizeof(nux_gui_t);
+//     module.load   = nux_gui_init;
+//     module.unload = nux_gui_free;
+//     nux_module_register_at(NUX_MODULE_GUI, &module);
+// }
+
 nux_status_t
 nux_gui_init (void)
 {

@@ -351,13 +351,6 @@ nux_u64_t nux_time_timestamp();
 nux_u32_t nux_random();
 nux_f32_t nux_random01();
 
-#ifdef NUX_BUILD_VARARGS
-void nux_textfmt(
-    nux_i32_t x, nux_i32_t y, nux_u8_t c, const nux_c8_t *fmt, ...);
-void nux_printfmt(nux_u8_t c, const nux_c8_t *fmt, ...);
-void nux_tracefmt(const nux_c8_t *fmt, ...);
-#endif
-
 nux_arena_t *nux_arena_new(nux_arena_t *arena);
 void         nux_arena_reset(nux_arena_t *arena);
 nux_u32_t    nux_arena_memory_usage(const nux_arena_t *arena);

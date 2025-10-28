@@ -387,12 +387,6 @@
 
 typedef enum
 {
-    NUX_BASE_DEFAULT_EVENT_SIZE            = 32,
-    NUX_BASE_DEFAULT_CONTROLLER_INPUT_SIZE = 16
-} nux_base_defaults_t;
-
-typedef enum
-{
     NUX_RESOURCE_NULL       = 0,
     NUX_RESOURCE_ARENA      = 1,
     NUX_RESOURCE_LUA_MODULE = 2,
@@ -605,6 +599,17 @@ typedef struct
     nux_b32_t hotreload;
 
 } nux_config_t;
+
+typedef struct
+{
+    const nux_c8_t *name;
+    nux_u32_t       size;
+    nux_status_t (*load)(void);
+    nux_status_t (*unload)(void);
+    nux_status_t (*pre_update)(void);
+    nux_status_t (*update)(void);
+    nux_status_t (*post_update)(void);
+} nux_module_t;
 
 typedef enum
 {
@@ -927,7 +932,7 @@ void                 nux_resource_set_path(nux_rid_t rid, const nux_c8_t *path);
 void                *nux_resource_get(nux_u32_t type, nux_rid_t rid);
 void                *nux_resource_check(nux_u32_t type, nux_rid_t rid);
 nux_status_t         nux_resource_reload(nux_rid_t rid);
-// nux_rid_t            nux_resource_next(nux_u32_t type, nux_rid_t rid);
+nux_rid_t            nux_resource_next(nux_u32_t type, nux_rid_t rid);
 void                *nux_resource_nextp(nux_u32_t type, const void *p);
 nux_rid_t            nux_resource_rid(const void *data);
 
@@ -1017,10 +1022,9 @@ void            nux_error_reset(void);
 const nux_c8_t *nux_error_get_message(void);
 nux_status_t    nux_error_get_status(void);
 
-// base.c
+// module.c
 
-nux_status_t        nux_base_init(void *userdata);
-void                nux_base_free(void);
+nux_status_t        nux_module_register(nux_module_t *module);
 const nux_config_t *nux_config(void);
 void               *nux_userdata(void);
 

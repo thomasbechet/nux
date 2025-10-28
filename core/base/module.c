@@ -51,6 +51,11 @@ nux_base_init (void *userdata)
     module->config.debug.enable                    = NUX_TRUE;
     module->config.debug.console                   = NUX_TRUE;
 
+    // Initialize modules
+    NUX_CHECK(nux_module_vec_init_capa(
+                  nux_arena_core(), DEFAULT_MODULE_CAPACITY, &module->modules),
+              return NUX_FAILURE);
+
     // Initialize files
     NUX_CHECK(nux_u32_vec_init_capa(
                   nux_arena_core(), NUX_IO_FILE_MAX, &module->free_file_slots),
@@ -61,7 +66,7 @@ nux_base_init (void *userdata)
 
     // Allocate events queue
     NUX_CHECK(nux_os_event_vec_init_capa(module->core_arena,
-                                         NUX_BASE_DEFAULT_EVENT_SIZE,
+                                         DEFAULT_EVENT_SIZE,
                                          &module->input_events),
               return NUX_FAILURE);
 
@@ -75,10 +80,10 @@ nux_base_init (void *userdata)
         nux_controller_t *controller = module->controllers + i;
         controller->inputmap         = NUX_NULL;
         nux_f32_vec_init_capa(module->core_arena,
-                              NUX_BASE_DEFAULT_CONTROLLER_INPUT_SIZE,
+                              DEFAULT_CONTROLLER_INPUT_SIZE,
                               &controller->inputs);
         nux_f32_vec_init_capa(module->core_arena,
-                              NUX_BASE_DEFAULT_CONTROLLER_INPUT_SIZE,
+                              DEFAULT_CONTROLLER_INPUT_SIZE,
                               &controller->prev_inputs);
     }
 
@@ -89,6 +94,23 @@ nux_base_free (void)
 {
     nux_base_module_t *module = nux_base_module();
     NUX_ASSERT(module->free_file_slots.size == NUX_IO_FILE_MAX);
+}
+
+nux_status_t
+nux_module_register (nux_module_t *info)
+{
+    nux_base_module_t *module = nux_base_module();
+    nux_module_t      *m      = nux_module_vec_push(&module->modules);
+    NUX_CHECK(m, return NUX_FAILURE);
+    *m = *info;
+    if (m->load)
+    {
+        NUX_ENSURE(m->load(),
+                   return NUX_FAILURE,
+                   "failed to load %s module",
+                   info->name);
+    }
+    return NUX_SUCCESS;
 }
 const nux_config_t *
 nux_config (void)

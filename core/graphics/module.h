@@ -164,7 +164,7 @@ typedef struct
 ///      FUNCTIONS       ///
 ////////////////////////////
 
-// graphics.c
+// module.c
 
 nux_status_t nux_graphics_update_vertices(nux_u32_t        offset,
                                           nux_u32_t        count,

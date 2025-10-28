@@ -25,10 +25,7 @@ runtime_run (const config_t *config)
     CHECK(status, goto cleanup2);
 
     // Initialize base
-    if (config->path)
-    {
-        runtime_open(config->path);
-    }
+    runtime_open(config->path);
 
     // Main loop
     runtime.running = true;
