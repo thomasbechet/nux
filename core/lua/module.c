@@ -407,12 +407,10 @@ nux_lua_free (void)
 void
 nux_lua_update (void)
 {
-    nux_rid_t rid = NUX_NULL;
-    while ((rid = nux_resource_next(NUX_RESOURCE_LUA_MODULE, rid)))
+    nux_lua_t *lua = NUX_NULL;
+    while ((lua = nux_resource_nextp(NUX_RESOURCE_LUA_MODULE, lua)))
     {
-        nux_lua_call_module(nux_resource_get(NUX_RESOURCE_LUA_MODULE, rid),
-                            NUX_LUA_ON_UPDATE,
-                            0);
+        nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);
     }
 }
 nux_status_t

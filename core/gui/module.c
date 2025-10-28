@@ -18,20 +18,18 @@ nux_gui_free (void)
 void
 nux_gui_pre_update (void)
 {
-    nux_rid_t it = NUX_NULL;
-    while ((it = nux_resource_next(NUX_RESOURCE_GUI, it)))
+    nux_gui_t *gui = NUX_NULL;
+    while ((gui = nux_resource_nextp(NUX_RESOURCE_GUI, gui)))
     {
-        nux_gui_t *gui = nux_resource_get(NUX_RESOURCE_GUI, it);
         nux_gui_begin(gui);
     }
 }
 void
 nux_gui_post_update (void)
 {
-    nux_rid_t it = NUX_NULL;
-    while ((it = nux_resource_next(NUX_RESOURCE_GUI, it)))
+    nux_gui_t *gui = NUX_NULL;
+    while ((gui = nux_resource_nextp(NUX_RESOURCE_GUI, gui)))
     {
-        nux_gui_t *gui = nux_resource_get(NUX_RESOURCE_GUI, it);
         nux_gui_end(gui);
     }
 }

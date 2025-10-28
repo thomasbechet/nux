@@ -272,7 +272,8 @@ nux_resource_next (nux_u32_t type, nux_rid_t rid)
 void *
 nux_resource_nextp (nux_u32_t type, const void *p)
 {
-    nux_rid_t next = nux_resource_next(type, nux_resource_rid(p));
+    nux_rid_t rid  = p ? nux_resource_rid(p) : NUX_NULL;
+    nux_rid_t next = nux_resource_next(type, rid);
     return next ? nux_resource_get(type, next) : NUX_NULL;
 }
 nux_rid_t

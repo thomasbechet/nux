@@ -18,14 +18,14 @@ l_require (lua_State *L)
     nux_path_set_extension(filepath, "lua");
 
     // check already loaded
-    nux_rid_t rid = NUX_NULL;
-    while ((rid = nux_resource_next(NUX_RESOURCE_LUA_MODULE, rid)))
+    nux_lua_t *it = NUX_NULL;
+    while ((it = nux_resource_nextp(NUX_RESOURCE_LUA_MODULE, it)))
     {
-        if (!nux_strncmp(nux_resource_path(rid), filepath, NUX_PATH_MAX))
+        if (!nux_strncmp(nux_resource_path(nux_resource_rid(it)),
+                         filepath,
+                         NUX_PATH_MAX))
         {
-            nux_lua_t *lua = nux_resource_check(NUX_RESOURCE_LUA_MODULE, rid);
-            NUX_ASSERT(lua);
-            lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, it->ref);
             return 1;
         }
     }

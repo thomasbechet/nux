@@ -232,10 +232,9 @@ nux_graphics_pre_update (void)
     module->screen_target->gpu.height = nux_stat(NUX_STAT_SCREEN_HEIGHT);
 
     // Update viewports with auto resize enabled
-    nux_rid_t it = NUX_NULL;
-    while ((it = nux_resource_next(NUX_RESOURCE_VIEWPORT, it)))
+    nux_viewport_t *vp = NUX_NULL;
+    while ((vp = nux_resource_nextp(NUX_RESOURCE_VIEWPORT, vp)))
     {
-        nux_viewport_t *vp = nux_resource_get(NUX_RESOURCE_VIEWPORT, it);
         if (vp->auto_resize
             && vp->target == nux_resource_rid(module->screen_target))
         {
@@ -270,41 +269,37 @@ nux_graphics_update (void)
     }
 
     // Upload meshes
-    nux_rid_t mesh = NUX_NULL;
-    while ((mesh = nux_resource_next(NUX_RESOURCE_MESH, mesh)))
+    nux_mesh_t *mesh = NUX_NULL;
+    while ((mesh = nux_resource_nextp(NUX_RESOURCE_MESH, mesh)))
     {
-        nux_mesh_t *c = nux_resource_check(NUX_RESOURCE_MESH, mesh);
-        nux_mesh_upload(c);
+        nux_mesh_upload(mesh);
     }
 
     // Update textures
-    nux_rid_t texture = NUX_NULL;
-    while ((texture = nux_resource_next(NUX_RESOURCE_TEXTURE, texture)))
+    nux_texture_t *texture = NUX_NULL;
+    while ((texture = nux_resource_nextp(NUX_RESOURCE_TEXTURE, texture)))
     {
-        nux_texture_t *t = nux_resource_check(NUX_RESOURCE_TEXTURE, texture);
-        if (t->dirty)
+        if (texture->dirty)
         {
-            nux_texture_upload(t);
+            nux_texture_upload(texture);
         }
     }
 
     // Submit canvas commands
-    nux_rid_t canvas = NUX_NULL;
-    while ((canvas = nux_resource_next(NUX_RESOURCE_CANVAS, canvas)))
+    nux_canvas_t *canvas = NUX_NULL;
+    while ((canvas = nux_resource_nextp(NUX_RESOURCE_CANVAS, canvas)))
     {
-        nux_canvas_t *c = nux_resource_check(NUX_RESOURCE_CANVAS, canvas);
-        nux_canvas_render(c);
+        nux_canvas_render(canvas);
     }
 
     // Collect viewports
     nux_viewport_t *viewports[32];
     nux_u32_t       viewports_count = 0;
-    nux_rid_t       it              = NUX_NULL;
-    while ((it = nux_resource_next(NUX_RESOURCE_VIEWPORT, it)))
+    nux_viewport_t *vp              = NUX_NULL;
+    while ((vp = nux_resource_nextp(NUX_RESOURCE_VIEWPORT, vp)))
     {
         NUX_ASSERT(viewports_count < NUX_ARRAY_SIZE(viewports));
-        viewports[viewports_count]
-            = nux_resource_get(NUX_RESOURCE_VIEWPORT, it);
+        viewports[viewports_count] = vp;
         ++viewports_count;
     }
 
