@@ -143,6 +143,11 @@ nux_b2i_contains (nux_b2i_t b, nux_v2_t p)
 {
     return nux_b2i_containsi(b, nux_v2i(p.x, p.y));
 }
+nux_b2i_t
+nux_b2i_merge (nux_b2i_t a, nux_b2i_t b)
+{
+    return nux_b2i(nux_v2i_min(a.min, b.min), nux_v2i_max(a.max, b.max));
+}
 
 void
 nux_qsort (void     *base,

@@ -871,6 +871,7 @@ nux_v2u_t nux_b2i_size(nux_b2i_t b);
 nux_v2u_t nux_b2i_size(nux_b2i_t b);
 nux_b32_t nux_b2i_containsi(nux_b2i_t b, nux_v2i_t p);
 nux_b32_t nux_b2i_contains(nux_b2i_t b, nux_v2_t p);
+nux_b2i_t nux_b2i_merge(nux_b2i_t a, nux_b2i_t b);
 
 void nux_qsort(void     *base,
                nux_u32_t n,

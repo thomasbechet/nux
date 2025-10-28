@@ -234,6 +234,7 @@ nux_texture_t *nux_texture_load_from_memory(nux_arena_t    *arena,
 void           nux_texture_blit(nux_texture_t *tex,
                                 nux_texture_t *target,
                                 nux_v4_t       extent);
+nux_status_t   nux_texture_upload(nux_texture_t *texture);
 
 // mesh.c
 

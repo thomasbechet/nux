@@ -278,6 +278,15 @@ nux_graphics_update (void)
     }
 
     // Update textures
+    nux_rid_t texture = NUX_NULL;
+    while ((texture = nux_resource_next(NUX_RESOURCE_TEXTURE, texture)))
+    {
+        nux_texture_t *t = nux_resource_check(NUX_RESOURCE_TEXTURE, texture);
+        if (t->dirty)
+        {
+            nux_texture_upload(t);
+        }
+    }
 
     // Submit canvas commands
     nux_rid_t canvas = NUX_NULL;
@@ -306,7 +315,7 @@ nux_graphics_update (void)
     for (nux_u32_t i = 0; i < viewports_count; ++i)
     {
         nux_viewport_t *viewport = viewports[i];
-        nux_v4_t        extent   = nux_viewport_get_normalized_viewport(viewport);
+        nux_v4_t        extent = nux_viewport_get_normalized_viewport(viewport);
 
         nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
