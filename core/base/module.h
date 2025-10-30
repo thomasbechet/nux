@@ -859,15 +859,15 @@ nux_status_t    nux_error_get_status(void);
 
 // module.c
 
-nux_status_t        nux_modules_register(const nux_module_t *module);
-nux_status_t        nux_modules_init(void);
-nux_status_t        nux_modules_free(void);
-nux_status_t        nux_modules_pre_update(void);
-nux_status_t        nux_modules_update(void);
-nux_status_t        nux_modules_post_update(void);
-nux_status_t        nux_modules_on_event(nux_os_event_t *event);
-const nux_config_t *nux_config(void);
-void               *nux_userdata(void);
+nux_status_t  nux_modules_register(const nux_module_t *module);
+nux_status_t  nux_modules_init(void);
+nux_status_t  nux_modules_free(void);
+nux_status_t  nux_modules_pre_update(void);
+nux_status_t  nux_modules_update(void);
+nux_status_t  nux_modules_post_update(void);
+nux_status_t  nux_modules_on_event(nux_os_event_t *event);
+nux_config_t *nux_config(void);
+void         *nux_userdata(void);
 
 // event.c
 

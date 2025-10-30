@@ -84,6 +84,7 @@ nux_base_init (void *userdata)
     // Create frame arena
     _module.frame_arena = nux_arena_new(_module.core_arena);
     NUX_ASSERT(_module.frame_arena);
+    nux_resource_set_name(_module.frame_arena, "frame_arena");
 
     // Initialize modules
     NUX_CHECK(nux_module_vec_init_capa(
@@ -228,7 +229,7 @@ nux_modules_on_event (nux_os_event_t *event)
     return NUX_SUCCESS;
 }
 
-const nux_config_t *
+nux_config_t *
 nux_config (void)
 {
     return &_module.config;

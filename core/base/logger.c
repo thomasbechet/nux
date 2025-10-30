@@ -2,15 +2,10 @@
 
 #include <debug/internal.h>
 
-static struct
-{
-    nux_log_level_t log_level;
-} _module;
-
 void
 nux_vlog (nux_log_level_t level, const nux_c8_t *fmt, va_list args)
 {
-    if (level <= _module.log_level)
+    if (level <= nux_log_level())
     {
         nux_c8_t  buf[256];
         nux_u32_t n = nux_vsnprintf(buf, sizeof(buf), fmt, args);
@@ -30,5 +25,10 @@ nux_log (nux_log_level_t level, const nux_c8_t *fmt, ...)
 void
 nux_log_set_level (nux_log_level_t level)
 {
-    _module.log_level = level;
+    nux_config()->log.level = level;
+}
+nux_log_level_t
+nux_log_level (void)
+{
+    return nux_config()->log.level;
 }

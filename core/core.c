@@ -11,9 +11,10 @@
 nux_status_t
 nux_core_init (void *userdata, const nux_c8_t *entry)
 {
-    // Initialize mandatory modules
+    // Initialize base module
     NUX_CHECK(nux_base_init(userdata), goto cleanup);
 
+    // Register modules
     nux_modules_register(nux_io_module_info());
     nux_modules_register(nux_input_module_info());
     nux_modules_register(nux_lua_module_info());
@@ -23,6 +24,7 @@ nux_core_init (void *userdata, const nux_c8_t *entry)
     nux_modules_register(nux_gui_module_info());
     nux_modules_register(nux_debug_module_info());
 
+    // Initialize modules
     NUX_CHECK(nux_modules_init(), goto cleanup);
 
     // Detect entry point type

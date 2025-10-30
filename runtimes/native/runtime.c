@@ -78,7 +78,7 @@ runtime_open (const char *path)
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN);
     runtime.running = false;
-    if (!nux_core_init(NULL, path))
+    if (!nux_core_init(NULL, runtime.path))
     {
         fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
