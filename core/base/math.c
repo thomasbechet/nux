@@ -113,7 +113,6 @@ nux_b2i_min_max (nux_v2i_t min, nux_v2i_t max)
 nux_b2i_t
 nux_b2i (nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
 {
-    NUX_ASSERT(w && h);
     nux_b2i_t ret;
     ret.x = x;
     ret.y = y;

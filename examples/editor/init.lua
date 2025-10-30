@@ -162,6 +162,6 @@ function M:on_update()
     -- camera.set_aspect(self.camera.node, aspect)
     -- camera.set_aspect(self.camera.top_node, aspect)
 
-    local dir = camera.unproject(self.camera.node, gcur)
+    local dir = camera.unproject(self.camera.node, vmath.vec2(0.5, 0.5))
     self.gizmos:update(position, dir, "click")
 end
