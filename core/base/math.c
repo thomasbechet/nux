@@ -100,43 +100,50 @@ nux_atan2 (nux_f32_t x, nux_f32_t y)
 }
 
 nux_b2i_t
-nux_b2i (nux_v2i_t min, nux_v2i_t max)
+nux_b2i_min_max (nux_v2i_t min, nux_v2i_t max)
 {
+    NUX_ASSERT(max.x >= min.x && max.y >= min.y);
     nux_b2i_t ret;
-    ret.min = min;
-    ret.max = max;
+    ret.x = min.x;
+    ret.y = min.y;
+    ret.w = max.x - min.x;
+    ret.h = max.y - min.y;
     return ret;
 }
 nux_b2i_t
-nux_b2i_xywh (nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
+nux_b2i (nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
 {
     NUX_ASSERT(w && h);
     nux_b2i_t ret;
-    ret.min = nux_v2i(x, y);
-    ret.max = nux_v2i(x + w - 1, y + h - 1);
+    ret.x = x;
+    ret.y = y;
+    ret.w = w;
+    ret.h = h;
     return ret;
 }
 nux_b2i_t
 nux_b2i_translate (nux_b2i_t b, nux_v2i_t t)
 {
-    return nux_b2i(nux_v2i_add(b.min, t), nux_v2i_add(b.max, t));
+    b.x += t.x;
+    b.y += t.y;
+    return b;
 }
 nux_b2i_t
 nux_b2i_moveto (nux_b2i_t b, nux_v2i_t p)
 {
-    return nux_b2i_translate(b, nux_v2i_sub(p, b.min));
+    b.x = p.x;
+    b.y = p.y;
+    return b;
 }
 nux_v2u_t
 nux_b2i_size (nux_b2i_t b)
 {
-    NUX_ASSERT((b.max.x - b.min.x) >= 0 && (b.max.y - b.min.y) >= 0);
-    return nux_v2u(b.max.x - b.min.x + 1, b.max.y - b.min.y + 1);
+    return nux_v2u(b.w, b.h);
 }
 nux_b32_t
 nux_b2i_containsi (nux_b2i_t b, nux_v2i_t p)
 {
-    return (p.x >= b.min.x && p.x <= b.max.x && p.y >= b.min.y
-            && p.y <= b.max.y);
+    return (p.x >= b.x && p.x < (b.x + b.w) && p.y >= b.y && p.y < (b.y + b.h));
 }
 nux_b32_t
 nux_b2i_contains (nux_b2i_t b, nux_v2_t p)
@@ -146,7 +153,41 @@ nux_b2i_contains (nux_b2i_t b, nux_v2_t p)
 nux_b2i_t
 nux_b2i_merge (nux_b2i_t a, nux_b2i_t b)
 {
-    return nux_b2i(nux_v2i_min(a.min, b.min), nux_v2i_max(a.max, b.max));
+    nux_v2i_t tla = nux_b2i_tl(a);
+    nux_v2i_t tlb = nux_b2i_tl(b);
+    nux_v2i_t bra = nux_b2i_br(a);
+    nux_v2i_t brb = nux_b2i_br(b);
+    return nux_b2i_min_max(nux_v2i_min(tla, tlb), nux_v2i_max(bra, brb));
+}
+nux_i32_t
+nux_b2i_top (nux_b2i_t b)
+{
+    return b.y;
+}
+nux_i32_t
+nux_b2i_bottom (nux_b2i_t b)
+{
+    return b.y + b.h;
+}
+nux_i32_t
+nux_b2i_left (nux_b2i_t b)
+{
+    return b.x;
+}
+nux_i32_t
+nux_b2i_right (nux_b2i_t b)
+{
+    return b.x + b.w;
+}
+nux_v2i_t
+nux_b2i_tl (nux_b2i_t b)
+{
+    return nux_v2i(b.x, b.y);
+}
+nux_v2i_t
+nux_b2i_br (nux_b2i_t b)
+{
+    return nux_v2i(b.x + b.w, b.y + b.h);
 }
 
 void

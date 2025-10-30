@@ -8,10 +8,10 @@ nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
                "viewport target must be a render target texture");
     nux_viewport_t *vp = nux_resource_new(arena, NUX_RESOURCE_VIEWPORT);
     NUX_CHECK(vp, return NUX_NULL);
-    vp->mode   = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
-    vp->extent = nux_b2i_xywh(0, 0, target->gpu.width, target->gpu.height);
-    vp->anchor = NUX_ANCHOR_CENTER;
-    vp->layer  = 0;
+    vp->mode           = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
+    vp->extent         = nux_b2i(0, 0, target->gpu.width, target->gpu.height);
+    vp->anchor         = NUX_ANCHOR_CENTER;
+    vp->layer          = 0;
     vp->source.camera  = NUX_NULL;
     vp->source.texture = NUX_NULL;
     vp->target         = nux_resource_rid(target);
@@ -176,8 +176,8 @@ nux_viewport_get_normalized_viewport (nux_viewport_t *viewport)
     {
         vpos.y = ((nux_i32_t)target_size.y - (nux_i32_t)vsize.y) / 2;
     }
-    vpos.x += viewport->extent.min.x;
-    vpos.y += viewport->extent.min.y;
+    vpos.x += viewport->extent.x;
+    vpos.y += viewport->extent.y;
 
     // Compute final extent
     nux_v4_t extent;

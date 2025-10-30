@@ -104,8 +104,10 @@ typedef union
 
 typedef struct
 {
-    nux_v2i_t min;
-    nux_v2i_t max;
+    nux_i32_t x;
+    nux_i32_t y;
+    nux_u32_t w;
+    nux_u32_t h;
 } nux_b2i_t;
 
 typedef enum

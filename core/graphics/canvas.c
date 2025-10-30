@@ -208,17 +208,16 @@ nux_canvas_text (nux_canvas_t   *canvas,
                          font->texture.height,
                          nux_v4s(1));
 
-    nux_u32_t len = nux_strnlen(text, 1024);
-    nux_b2i_t extent
-        = nux_b2i_xywh(x, y, font->glyph_width, font->glyph_height);
+    nux_u32_t len      = nux_strnlen(text, 1024);
+    nux_b2i_t extent   = nux_b2i(x, y, font->glyph_width, font->glyph_height);
     const nux_c8_t *it = text;
     while (*it != '\0')
     {
         // Check next line
         if (*it == '\n')
         {
-            extent = nux_b2i_moveto(
-                extent, nux_v2i(x, extent.min.y + font->glyph_height));
+            extent = nux_b2i_moveto(extent,
+                                    nux_v2i(x, extent.y + font->glyph_height));
             ++it;
             continue;
         }
@@ -226,8 +225,8 @@ nux_canvas_text (nux_canvas_t   *canvas,
         // Generate quad
         nux_u32_t index = font->char_to_glyph_index[(nux_u8_t)*it];
         push_quad(canvas,
-                  extent.min.x,
-                  extent.min.y,
+                  extent.x,
+                  extent.y,
                   index * font->glyph_width,
                   0,
                   font->glyph_width,
@@ -261,61 +260,57 @@ nux_canvas_blit (nux_canvas_t  *canvas,
                          texture->gpu.height,
                          nux_v4s(1));
 
-    nux_v2u_t extent_s     = nux_b2i_size(extent);
-    nux_v2u_t tex_extent_s = nux_b2i_size(tex_extent);
-
     switch (canvas->wrap_mode)
     {
         case NUX_TEXTURE_WRAP_CLAMP: {
             push_quad(canvas,
-                      extent.min.x,
-                      extent.min.y,
-                      tex_extent.min.x,
-                      tex_extent.min.y,
-                      NUX_MIN(extent_s.x, tex_extent_s.x),
-                      NUX_MIN(extent_s.y, tex_extent_s.y));
+                      extent.x,
+                      extent.y,
+                      tex_extent.x,
+                      tex_extent.y,
+                      NUX_MIN(extent.w, tex_extent.w),
+                      NUX_MIN(extent.h, tex_extent.h));
         }
         break;
         case NUX_TEXTURE_WRAP_REPEAT: {
             // Calculate blit count
-            nux_u32_t full_hblit_count = extent_s.x / tex_extent_s.x;
-            nux_u32_t full_vblit_count = extent_s.y / tex_extent_s.y;
+            nux_u32_t full_hblit_count = extent.w / tex_extent.w;
+            nux_u32_t full_vblit_count = extent.h / tex_extent.h;
 
             // Insert full blits
             for (nux_u32_t y = 0; y < full_vblit_count; ++y)
             {
                 for (nux_u32_t x = 0; x < full_hblit_count; ++x)
                 {
-                    nux_i32_t pos_x = extent.min.x + (x * tex_extent_s.x);
-                    nux_i32_t pos_y = extent.min.y + (y * tex_extent_s.y);
+                    nux_i32_t pos_x = extent.x + (x * tex_extent.w);
+                    nux_i32_t pos_y = extent.y + (y * tex_extent.h);
                     push_quad(canvas,
                               pos_x,
                               pos_y,
-                              tex_extent.min.x,
-                              tex_extent.min.y,
-                              tex_extent_s.x,
-                              tex_extent_s.y);
+                              tex_extent.x,
+                              tex_extent.y,
+                              tex_extent.w,
+                              tex_extent.h);
                 }
             }
 
             // Insert partial blits
-            nux_u32_t partial_hblit_size = extent_s.x % tex_extent_s.x;
-            nux_u32_t partial_vblit_size = extent_s.y % tex_extent_s.y;
+            nux_u32_t partial_hblit_size = extent.w % tex_extent.w;
+            nux_u32_t partial_vblit_size = extent.h % tex_extent.h;
 
             if (partial_hblit_size)
             {
                 for (nux_u32_t y = 0; y < full_vblit_count; ++y)
                 {
                     nux_i32_t pos_x
-                        = extent.min.x + (full_hblit_count * tex_extent_s.x);
-                    nux_i32_t pos_y = extent.min.y + (y * tex_extent_s.y);
-                    nux_v2u_t size
-                        = nux_v2u(partial_hblit_size, tex_extent_s.y);
+                        = extent.x + (full_hblit_count * tex_extent.w);
+                    nux_i32_t pos_y = extent.y + (y * tex_extent.h);
+                    nux_v2u_t size  = nux_v2u(partial_hblit_size, tex_extent.h);
                     push_quad(canvas,
                               pos_x,
                               pos_y,
-                              tex_extent.min.x,
-                              tex_extent.min.y,
+                              tex_extent.x,
+                              tex_extent.y,
                               size.x,
                               size.y);
                 }
@@ -324,33 +319,30 @@ nux_canvas_blit (nux_canvas_t  *canvas,
             {
                 for (nux_u32_t x = 0; x < full_hblit_count; ++x)
                 {
-                    nux_i32_t pos_x = extent.min.x + (x * tex_extent_s.x);
+                    nux_i32_t pos_x = extent.x + (x * tex_extent.w);
                     nux_i32_t pos_y
-                        = extent.min.y + (full_vblit_count * tex_extent_s.y);
-                    nux_v2u_t size
-                        = nux_v2u(tex_extent_s.x, partial_vblit_size);
+                        = extent.y + (full_vblit_count * tex_extent.h);
+                    nux_v2u_t size = nux_v2u(tex_extent.w, partial_vblit_size);
                     push_quad(canvas,
                               pos_x,
                               pos_y,
-                              tex_extent.min.x,
-                              tex_extent.min.y,
+                              tex_extent.x,
+                              tex_extent.y,
                               size.x,
                               size.y);
                 }
             }
             if (partial_hblit_size && partial_vblit_size)
             {
-                nux_i32_t pos_x
-                    = extent.min.x + (full_hblit_count * tex_extent_s.x);
-                nux_i32_t pos_y
-                    = extent.min.y + (full_vblit_count * tex_extent_s.y);
+                nux_i32_t pos_x = extent.x + (full_hblit_count * tex_extent.w);
+                nux_i32_t pos_y = extent.y + (full_vblit_count * tex_extent.h);
                 nux_v2u_t size
                     = nux_v2u(partial_hblit_size, partial_vblit_size);
                 push_quad(canvas,
                           pos_x,
                           pos_y,
-                          tex_extent.min.x,
-                          tex_extent.min.y,
+                          tex_extent.x,
+                          tex_extent.y,
                           size.x,
                           size.y);
             }
@@ -369,19 +361,16 @@ nux_canvas_blit_sliced (nux_canvas_t  *canvas,
                         nux_b2i_t      tex_extent,
                         nux_b2i_t      inner)
 {
-    nux_u32_t margin_left   = inner.min.x - tex_extent.min.x;
-    nux_u32_t margin_right  = tex_extent.max.x - inner.max.x;
-    nux_u32_t margin_top    = inner.min.y - tex_extent.min.y;
-    nux_u32_t margin_bottom = tex_extent.max.y - inner.max.y;
+    nux_u32_t margin_left  = inner.x - tex_extent.x;
+    nux_u32_t margin_right = nux_b2i_right(tex_extent) - nux_b2i_right(inner);
+    nux_u32_t margin_top   = inner.y - tex_extent.y;
+    nux_u32_t margin_bottom
+        = nux_b2i_bottom(tex_extent) - nux_b2i_bottom(inner);
 
-    nux_u32_t tex_mid_width
-        = nux_b2i_size(tex_extent).x - margin_left - margin_right;
-    nux_u32_t tex_mid_height
-        = nux_b2i_size(tex_extent).y - margin_top - margin_bottom;
-    nux_u32_t ext_mid_width
-        = nux_b2i_size(extent).x - margin_left - margin_right;
-    nux_u32_t ext_mid_height
-        = nux_b2i_size(extent).y - margin_top - margin_bottom;
+    nux_u32_t tex_mid_width  = tex_extent.w - margin_left - margin_right;
+    nux_u32_t tex_mid_height = tex_extent.h - margin_top - margin_bottom;
+    nux_u32_t ext_mid_width  = extent.w - margin_left - margin_right;
+    nux_u32_t ext_mid_height = extent.h - margin_top - margin_bottom;
 
     // Top-Left
     if (margin_top && margin_left)
@@ -389,24 +378,22 @@ nux_canvas_blit_sliced (nux_canvas_t  *canvas,
         nux_canvas_blit(
             canvas,
             texture,
-            nux_b2i_xywh(extent.min.x, extent.min.y, margin_left, margin_top),
-            nux_b2i_xywh(
-                tex_extent.min.x, tex_extent.min.y, margin_left, margin_top));
+            nux_b2i(extent.x, extent.y, margin_left, margin_top),
+            nux_b2i(tex_extent.x, tex_extent.y, margin_left, margin_top));
     }
 
     // Top-Mid
     if (margin_top)
     {
-        nux_canvas_blit(canvas,
-                        texture,
-                        nux_b2i_xywh(extent.min.x + margin_left,
-                                     extent.min.y,
-                                     ext_mid_width,
-                                     margin_top),
-                        nux_b2i_xywh(tex_extent.min.x + margin_left,
-                                     tex_extent.min.y,
-                                     tex_mid_width,
-                                     margin_top));
+        nux_canvas_blit(
+            canvas,
+            texture,
+            nux_b2i(
+                extent.x + margin_left, extent.y, ext_mid_width, margin_top),
+            nux_b2i(tex_extent.x + margin_left,
+                    tex_extent.y,
+                    tex_mid_width,
+                    margin_top));
     }
 
     // Top-Right
@@ -414,56 +401,55 @@ nux_canvas_blit_sliced (nux_canvas_t  *canvas,
     {
         nux_canvas_blit(canvas,
                         texture,
-                        nux_b2i_xywh(extent.max.x - margin_right + 1,
-                                     extent.min.y,
-                                     margin_right,
-                                     margin_top),
-                        nux_b2i_xywh(tex_extent.max.x - margin_right + 1,
-                                     tex_extent.min.y,
-                                     margin_right,
-                                     margin_top));
+                        nux_b2i(nux_b2i_right(extent) - margin_right,
+                                extent.y,
+                                margin_right,
+                                margin_top),
+                        nux_b2i(nux_b2i_right(tex_extent) - margin_right,
+                                tex_extent.y,
+                                margin_right,
+                                margin_top));
     }
 
     // Mid-Left
     if (margin_left)
     {
-        nux_canvas_blit(canvas,
-                        texture,
-                        nux_b2i_xywh(extent.min.x,
-                                     extent.min.y + margin_top,
-                                     margin_right,
-                                     ext_mid_height),
-                        nux_b2i_xywh(tex_extent.min.x,
-                                     tex_extent.min.y + margin_top,
-                                     margin_right,
-                                     tex_mid_height));
+        nux_canvas_blit(
+            canvas,
+            texture,
+            nux_b2i(
+                extent.x, extent.y + margin_top, margin_right, ext_mid_height),
+            nux_b2i(tex_extent.x,
+                    tex_extent.y + margin_top,
+                    margin_right,
+                    tex_mid_height));
     }
 
     // Mid-Mid
     nux_canvas_blit(canvas,
                     texture,
-                    nux_b2i_xywh(extent.min.x + margin_left,
-                                 extent.min.y + margin_top,
-                                 ext_mid_width,
-                                 ext_mid_height),
-                    nux_b2i_xywh(tex_extent.min.x + margin_left,
-                                 tex_extent.min.y + margin_top,
-                                 tex_mid_width,
-                                 tex_mid_height));
+                    nux_b2i(extent.x + margin_left,
+                            extent.y + margin_top,
+                            ext_mid_width,
+                            ext_mid_height),
+                    nux_b2i(tex_extent.x + margin_left,
+                            tex_extent.y + margin_top,
+                            tex_mid_width,
+                            tex_mid_height));
 
     // Mid-Right
     if (margin_right)
     {
         nux_canvas_blit(canvas,
                         texture,
-                        nux_b2i_xywh(extent.max.x - margin_right + 1,
-                                     extent.min.y + margin_top,
-                                     margin_right,
-                                     ext_mid_height),
-                        nux_b2i_xywh(tex_extent.max.x - margin_right + 1,
-                                     tex_extent.min.y + margin_top,
-                                     margin_right,
-                                     tex_mid_height));
+                        nux_b2i(nux_b2i_right(extent) - margin_right,
+                                extent.y + margin_top,
+                                margin_right,
+                                ext_mid_height),
+                        nux_b2i(nux_b2i_right(tex_extent) - margin_right,
+                                tex_extent.y + margin_top,
+                                margin_right,
+                                tex_mid_height));
     }
 
     // Bottom-Left
@@ -471,14 +457,14 @@ nux_canvas_blit_sliced (nux_canvas_t  *canvas,
     {
         nux_canvas_blit(canvas,
                         texture,
-                        nux_b2i_xywh(extent.min.x,
-                                     extent.max.y - margin_bottom + 1,
-                                     margin_left,
-                                     margin_bottom),
-                        nux_b2i_xywh(tex_extent.min.x,
-                                     tex_extent.max.y - margin_bottom + 1,
-                                     margin_right,
-                                     margin_bottom));
+                        nux_b2i(extent.x,
+                                nux_b2i_bottom(extent) - margin_bottom,
+                                margin_left,
+                                margin_bottom),
+                        nux_b2i(tex_extent.x,
+                                nux_b2i_bottom(tex_extent) - margin_bottom,
+                                margin_right,
+                                margin_bottom));
     }
 
     // Bottom-Mid
@@ -486,14 +472,14 @@ nux_canvas_blit_sliced (nux_canvas_t  *canvas,
     {
         nux_canvas_blit(canvas,
                         texture,
-                        nux_b2i_xywh(extent.min.x + margin_left,
-                                     extent.max.y - margin_bottom + 1,
-                                     ext_mid_width,
-                                     margin_bottom),
-                        nux_b2i_xywh(tex_extent.min.x + margin_left,
-                                     tex_extent.max.y - margin_bottom + 1,
-                                     tex_mid_width,
-                                     margin_bottom));
+                        nux_b2i(extent.x + margin_left,
+                                nux_b2i_bottom(extent) - margin_bottom,
+                                ext_mid_width,
+                                margin_bottom),
+                        nux_b2i(tex_extent.x + margin_left,
+                                nux_b2i_bottom(tex_extent) - margin_bottom,
+                                tex_mid_width,
+                                margin_bottom));
     }
 
     // Bottom-Right
@@ -501,14 +487,14 @@ nux_canvas_blit_sliced (nux_canvas_t  *canvas,
     {
         nux_canvas_blit(canvas,
                         texture,
-                        nux_b2i_xywh(extent.max.x - margin_right + 1,
-                                     extent.max.y - margin_bottom + 1,
-                                     margin_right,
-                                     margin_bottom),
-                        nux_b2i_xywh(tex_extent.max.x - margin_right + 1,
-                                     tex_extent.max.y - margin_bottom + 1,
-                                     margin_right,
-                                     margin_bottom));
+                        nux_b2i(nux_b2i_right(extent) - margin_right,
+                                nux_b2i_bottom(extent) - margin_bottom,
+                                margin_right,
+                                margin_bottom),
+                        nux_b2i(nux_b2i_right(tex_extent) - margin_right,
+                                nux_b2i_bottom(tex_extent) - margin_bottom,
+                                margin_right,
+                                margin_bottom));
     }
 }
 

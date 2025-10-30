@@ -691,8 +691,8 @@ nux_f32_t nux_tan(nux_f32_t x);
 nux_f32_t nux_exp(nux_f32_t x);
 nux_f32_t nux_atan2(nux_f32_t x, nux_f32_t y);
 
-nux_b2i_t nux_b2i(nux_v2i_t min, nux_v2i_t max);
-nux_b2i_t nux_b2i_xywh(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
+nux_b2i_t nux_b2i_min_max(nux_v2i_t min, nux_v2i_t max);
+nux_b2i_t nux_b2i(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
 nux_b2i_t nux_b2i_translate(nux_b2i_t b, nux_v2i_t t);
 nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 nux_v2u_t nux_b2i_size(nux_b2i_t b);
@@ -700,6 +700,12 @@ nux_v2u_t nux_b2i_size(nux_b2i_t b);
 nux_b32_t nux_b2i_containsi(nux_b2i_t b, nux_v2i_t p);
 nux_b32_t nux_b2i_contains(nux_b2i_t b, nux_v2_t p);
 nux_b2i_t nux_b2i_merge(nux_b2i_t a, nux_b2i_t b);
+nux_i32_t nux_b2i_top(nux_b2i_t b);
+nux_i32_t nux_b2i_bottom(nux_b2i_t b);
+nux_i32_t nux_b2i_left(nux_b2i_t b);
+nux_i32_t nux_b2i_right(nux_b2i_t b);
+nux_v2i_t nux_b2i_tl(nux_b2i_t b);
+nux_v2i_t nux_b2i_br(nux_b2i_t b);
 
 void nux_qsort(void     *base,
                nux_u32_t n,

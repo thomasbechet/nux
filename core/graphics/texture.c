@@ -42,7 +42,7 @@ texture_update (nux_texture_t *tex,
     {
         NUX_ASSERT(0);
     }
-    nux_b2i_t extent = nux_b2i_xywh(x, y, w, h);
+    nux_b2i_t extent = nux_b2i(x, y, w, h);
     if (tex->dirty)
     {
         tex->dirty_extent = nux_b2i_merge(tex->dirty_extent, extent);
@@ -67,7 +67,7 @@ nux_texture_new (nux_arena_t       *arena,
     tex->gpu.width    = w;
     tex->gpu.height   = h;
     tex->dirty        = type != NUX_TEXTURE_RENDER_TARGET;
-    tex->dirty_extent = nux_b2i_xywh(0, 0, w, h);
+    tex->dirty_extent = nux_b2i(0, 0, w, h);
 
     // Create gpu texture
     NUX_CHECK(nux_gpu_texture_init(&tex->gpu), return NUX_NULL);
@@ -167,13 +167,12 @@ nux_texture_upload (nux_texture_t *texture)
                "trying to write render target texture");
     if (texture->dirty)
     {
-        nux_v2u_t size = nux_b2i_size(texture->dirty_extent);
         NUX_ENSURE(nux_os_texture_update(nux_userdata(),
                                          texture->gpu.slot,
-                                         texture->dirty_extent.min.x,
-                                         texture->dirty_extent.min.y,
-                                         size.x,
-                                         size.y,
+                                         texture->dirty_extent.x,
+                                         texture->dirty_extent.y,
+                                         texture->dirty_extent.w,
+                                         texture->dirty_extent.h,
                                          texture->data),
                    return NUX_FAILURE,
                    "failed to update colormap texture");

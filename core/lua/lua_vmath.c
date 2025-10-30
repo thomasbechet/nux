@@ -245,7 +245,7 @@ nux_lua_check_box2i (lua_State *L, int index)
         nux_u32_t w = lua_tointeger(L, -1);
         lua_geti(L, index, 4);
         nux_u32_t h = lua_tointeger(L, -1);
-        return nux_b2i_xywh(x, y, w, h);
+        return nux_b2i(x, y, w, h);
     }
     else
     {
@@ -584,10 +584,10 @@ math_box2i (lua_State *L)
     }
     else
     {
-        b = nux_b2i_xywh(luaL_checknumber(L, 1),
-                         luaL_checknumber(L, 2),
-                         luaL_checknumber(L, 3),
-                         luaL_checknumber(L, 4));
+        b = nux_b2i(luaL_checknumber(L, 1),
+                    luaL_checknumber(L, 2),
+                    luaL_checknumber(L, 3),
+                    luaL_checknumber(L, 4));
     }
     nux_lua_push_box2i(L, b);
     return 1;
@@ -763,22 +763,22 @@ meta_index (lua_State *L)
             const char *key = luaL_checkstring(L, 2);
             if (key[0] == 'x')
             {
-                lua_pushinteger(L, u->box2i->min.x);
+                lua_pushinteger(L, u->box2i->x);
                 return 1;
             }
             else if (key[0] == 'y')
             {
-                lua_pushinteger(L, u->box2i->min.y);
+                lua_pushinteger(L, u->box2i->y);
                 return 1;
             }
             else if (key[0] == 'w')
             {
-                lua_pushinteger(L, nux_b2i_size(*u->box2i).x);
+                lua_pushinteger(L, u->box2i->w);
                 return 1;
             }
             else if (key[0] == 'h')
             {
-                lua_pushinteger(L, nux_b2i_size(*u->box2i).y);
+                lua_pushinteger(L, u->box2i->h);
                 return 1;
             }
             return 0;

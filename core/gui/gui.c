@@ -48,7 +48,7 @@ nux_gui_end (nux_gui_t *gui)
     NUX_CHECK(style, return);
     nux_v2i_t cursor = gui->controllers[0].cursor;
     draw_image(gui,
-               nux_b2i_xywh(cursor.x - 4, cursor.y - 4, 8, 7),
+               nux_b2i(cursor.x - 4, cursor.y - 4, 8, 7),
                &style->cursor.image);
 }
 
@@ -92,7 +92,7 @@ nux_gui_button (
 {
     nux_stylesheet_t *style = active_style(gui);
     NUX_CHECK(style, return NUX_FALSE);
-    nux_b2i_t extent = nux_b2i_xywh(x, y, w, h);
+    nux_b2i_t extent = nux_b2i(x, y, w, h);
 
     nux_u32_t id = gui->next_id++;
     nux_u32_t controller;

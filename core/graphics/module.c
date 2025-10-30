@@ -243,7 +243,7 @@ module_pre_update (void)
         {
             nux_viewport_set_extent(
                 vp,
-                nux_b2i_xywh(0,
+                nux_b2i(0,
                              0,
                              _module.screen_target->gpu.width,
                              _module.screen_target->gpu.height));
