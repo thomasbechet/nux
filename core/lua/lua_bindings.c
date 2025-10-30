@@ -171,88 +171,6 @@ l_arena_frame (lua_State *L)
     return 1;
 }
 static int
-l_resource_path (lua_State *L)
-{
-    nux_rid_t       rid = (nux_rid_t)luaL_checknumber(L, 1);
-    const nux_c8_t *ret = nux_resource_path(rid);
-    l_checkerror(L);
-
-    nux_rid_t ret_rid = nux_resource_rid(ret);
-    if (ret_rid)
-    {
-        lua_pushinteger(L, ret_rid);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
-l_resource_set_name (lua_State *L)
-{
-    nux_rid_t       rid  = (nux_rid_t)luaL_checknumber(L, 1);
-    const nux_c8_t *name = luaL_checkstring(L, 2);
-
-    nux_resource_set_name(rid, name);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_resource_name (lua_State *L)
-{
-    nux_rid_t       rid = (nux_rid_t)luaL_checknumber(L, 1);
-    const nux_c8_t *ret = nux_resource_name(rid);
-    l_checkerror(L);
-
-    nux_rid_t ret_rid = nux_resource_rid(ret);
-    if (ret_rid)
-    {
-        lua_pushinteger(L, ret_rid);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
-l_resource_arena (lua_State *L)
-{
-    nux_rid_t          rid = (nux_rid_t)luaL_checknumber(L, 1);
-    const nux_arena_t *ret = nux_resource_arena(rid);
-    l_checkerror(L);
-
-    nux_rid_t ret_rid = nux_resource_rid(ret);
-    if (ret_rid)
-    {
-        lua_pushinteger(L, ret_rid);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
-l_resource_find (lua_State *L)
-{
-    const nux_c8_t *name = luaL_checkstring(L, 1);
-    nux_rid_t       ret  = nux_resource_find(name);
-    l_checkerror(L);
-
-    if (ret)
-    {
-        lua_pushinteger(L, ret);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
 l_log_set_level (lua_State *L)
 {
     nux_log_level_t level = luaL_checknumber(L, 1);
@@ -2126,10 +2044,6 @@ static const struct luaL_Reg lib_arena[]
         { "core", l_arena_core },
         { "frame", l_arena_frame },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_resource[]
-    = { { "path", l_resource_path }, { "set_name", l_resource_set_name },
-        { "name", l_resource_name }, { "arena", l_resource_arena },
-        { "find", l_resource_find }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]
     = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_color[] = { { "rgba", l_color_rgba },
@@ -2336,9 +2250,6 @@ nux_lua_open_api (void)
     lua_newtable(L);
     luaL_setfuncs(L, lib_arena, 0);
     lua_setglobal(L, "arena");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_resource, 0);
-    lua_setglobal(L, "resource");
     lua_newtable(L);
     luaL_setfuncs(L, lib_log, 0);
     lua_pushinteger(L, 4);

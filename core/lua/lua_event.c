@@ -64,7 +64,7 @@ event_subscribe (lua_State *L)
             return 0;
         }
     }
-    nux_arena_t         *arena = nux_resource_arena(nux_resource_rid(module));
+    nux_arena_t         *arena = nux_resource_arena(module);
     nux_event_handler_t *handler
         = nux_event_subscribe(arena, event, module, event_handler);
     l_checkerror(L);

@@ -26,7 +26,7 @@ static nux_status_t
 module_pre_update (void)
 {
     nux_gui_t *gui = NUX_NULL;
-    while ((gui = nux_resource_nextp(NUX_RESOURCE_GUI, gui)))
+    while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
     {
         nux_gui_begin(gui);
     }
@@ -36,7 +36,7 @@ static nux_status_t
 module_post_update (void)
 {
     nux_gui_t *gui = NUX_NULL;
-    while ((gui = nux_resource_nextp(NUX_RESOURCE_GUI, gui)))
+    while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
     {
         nux_gui_end(gui);
     }

@@ -34,4 +34,6 @@ nux_pcg_t           *nux_base_pcg(void);
 nux_resource_pool_t *nux_base_resources(void);
 nux_resource_type_t *nux_base_resource_types(void);
 
+void nux_resource_delete(nux_rid_t rid);
+
 #endif

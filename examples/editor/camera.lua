@@ -1,6 +1,6 @@
 function M:on_load()
     self.speed = 10
-    self.fast_speed = 20
+    self.fast_speed = 50
     self.slow_spped = 2
     self.fov = 90
     self.pitch = 0

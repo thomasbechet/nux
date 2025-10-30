@@ -77,7 +77,7 @@ arena_reset (nux_arena_t *arena, nux_rid_t rid)
     nux_c8_t alloc_buf[10];
     nux_c8_t waste_buf[10];
     NUX_DEBUG("reset arena '%s' - alloc %s - waste %s (%.02lf%)",
-              nux_resource_name(nux_resource_rid(arena)),
+              nux_resource_name(arena),
               nux_mem_human(arena->total_alloc, alloc_buf),
               nux_mem_human(arena->total_waste, waste_buf),
               (nux_f32_t)arena->total_waste / arena->total_alloc * 100);

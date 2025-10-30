@@ -31,17 +31,6 @@ function arena.block_count(...) end
 function arena.core(...) end
 ---@return None
 function arena.frame(...) end
-resource={}
----@return None
-function resource.path(...) end
----@return None
-function resource.set_name(...) end
----@return None
-function resource.name(...) end
----@return None
-function resource.arena(...) end
----@return None
-function resource.find(...) end
 log={}
 log.DEBUG=4
 log.INFO=3

@@ -751,14 +751,25 @@ nux_resource_type_t *nux_resource_register(nux_u32_t       index,
                                            nux_u32_t       size,
                                            const nux_c8_t *name);
 void                *nux_resource_new(nux_arena_t *arena, nux_u32_t type);
-void                 nux_resource_delete(nux_rid_t rid);
-void                 nux_resource_set_path(nux_rid_t rid, const nux_c8_t *path);
 void                *nux_resource_get(nux_u32_t type, nux_rid_t rid);
 void                *nux_resource_check(nux_u32_t type, nux_rid_t rid);
 nux_status_t         nux_resource_reload(nux_rid_t rid);
-nux_rid_t            nux_resource_next(nux_u32_t type, nux_rid_t rid);
-void                *nux_resource_nextp(nux_u32_t type, const void *p);
-nux_rid_t            nux_resource_rid(const void *data);
+
+void            nux_resource_set_path_rid(nux_rid_t rid, const nux_c8_t *path);
+void            nux_resource_set_path(void *data, const nux_c8_t *path);
+const nux_c8_t *nux_resource_path_rid(nux_rid_t rid);
+const nux_c8_t *nux_resource_path(void *data);
+void            nux_resource_set_name_rid(nux_rid_t rid, const nux_c8_t *name);
+void            nux_resource_set_name(void *data, const nux_c8_t *name);
+const nux_c8_t *nux_resource_name_rid(nux_rid_t rid);
+const nux_c8_t *nux_resource_name(void *data);
+nux_rid_t       nux_resource_next_rid(nux_u32_t type, nux_rid_t rid);
+void           *nux_resource_next(nux_u32_t type, const void *p);
+nux_rid_t       nux_resource_rid(const void *data);
+nux_arena_t    *nux_resource_arena_rid(nux_rid_t rid);
+nux_arena_t    *nux_resource_arena(void *data);
+nux_rid_t       nux_resource_find_rid(const nux_c8_t *name);
+void           *nux_resource_find(const nux_c8_t *name);
 
 // arena.c
 

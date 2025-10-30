@@ -10,11 +10,11 @@ function M:on_load()
 end
 
 function M:update(pos, ray, btn)
-    local hit = physics.raycast(pos, ray)
-    if hit then
-        local id = hit.node
-        local just_pressed = input.just_pressed(0, btn)
-        if just_pressed then
+    local just_pressed = input.just_pressed(0, btn)
+    if just_pressed then
+        local hit = physics.raycast(pos, ray)
+        if hit then
+            local id = hit.node
             if node.has(id, component.COLLIDER) and id ~= self.target then
                 if self.target then
                     staticmesh.set_draw_bounds(self.target, false)
@@ -22,6 +22,11 @@ function M:update(pos, ray, btn)
                 self.target = id
                 staticmesh.set_draw_bounds(self.target, true)
             end
+        else
+            if self.target then
+                staticmesh.set_draw_bounds(self.target, false)
+            end
+            self.target = nil
         end
     end
 end

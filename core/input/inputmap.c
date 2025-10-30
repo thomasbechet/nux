@@ -12,7 +12,7 @@ find_entry (nux_inputmap_t *map, const nux_c8_t *name)
         }
     }
 
-    nux_arena_t          *a     = nux_resource_arena(nux_resource_rid(map));
+    nux_arena_t          *a     = nux_resource_arena(map);
     nux_inputmap_entry_t *entry = nux_inputmap_entry_vec_push(&map->entries);
     NUX_CHECK(entry, return NUX_NULL);
     entry->name = nux_arena_alloc_string(a, name);
