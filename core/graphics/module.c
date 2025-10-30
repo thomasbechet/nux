@@ -333,10 +333,10 @@ module_update (void)
 
     return NUX_SUCCESS;
 }
-const nux_module_t *
+const nux_module_info_t *
 nux_graphics_module_info (void)
 {
-    static nux_module_t info = {
+    static nux_module_info_t info = {
         .name       = "graphics",
         .size       = sizeof(_module),
         .data       = &_module,

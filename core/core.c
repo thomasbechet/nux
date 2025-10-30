@@ -14,17 +14,18 @@ nux_core_init (void *userdata, const nux_c8_t *entry)
     // Initialize base module
     NUX_CHECK(nux_base_init(userdata), goto cleanup);
 
-    // Register modules
+    // Register mandatory modules
     nux_modules_register(nux_io_module_info());
     nux_modules_register(nux_input_module_info());
     nux_modules_register(nux_lua_module_info());
+    NUX_CHECK(nux_modules_init(), goto cleanup);
+
+    // Register additional modules
     nux_modules_register(nux_scene_module_info());
     nux_modules_register(nux_graphics_module_info());
     nux_modules_register(nux_physics_module_info());
     nux_modules_register(nux_gui_module_info());
     nux_modules_register(nux_debug_module_info());
-
-    // Initialize modules
     NUX_CHECK(nux_modules_init(), goto cleanup);
 
     // Detect entry point type

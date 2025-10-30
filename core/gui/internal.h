@@ -46,7 +46,7 @@ struct nux_gui_t
     nux_u32_t hot_id;
 };
 
-const nux_module_t *nux_gui_module_info(void);
+const nux_module_info_t *nux_gui_module_info(void);
 
 void nux_gui_begin(nux_gui_t *gui);
 void nux_gui_end(nux_gui_t *gui);

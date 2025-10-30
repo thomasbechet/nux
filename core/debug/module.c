@@ -47,10 +47,10 @@ module_update (void)
     // }
     return NUX_SUCCESS;
 }
-const nux_module_t *
+const nux_module_info_t *
 nux_debug_module_info (void)
 {
-    static const nux_module_t info = {
+    static const nux_module_info_t info = {
         .name   = "debug",
         .size   = sizeof(_module),
         .data   = &_module,

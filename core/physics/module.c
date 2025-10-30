@@ -187,10 +187,10 @@ module_update (void)
     compute_transforms();
     return NUX_SUCCESS;
 }
-const nux_module_t *
+const nux_module_info_t *
 nux_physics_module_info (void)
 {
-    static const nux_module_t info = {
+    static const nux_module_info_t info = {
         .name   = "physics",
         .size   = sizeof(_module),
         .data   = &_module,

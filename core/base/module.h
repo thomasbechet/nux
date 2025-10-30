@@ -605,6 +605,13 @@ typedef enum
     NUX_MODULE_NO_DATA_INITIALIZATION = 1 << 0,
 } nux_module_flags_t;
 
+typedef enum
+{
+    NUX_MODULE_UNINITIALIZED,
+    NUX_MODULE_INITIALIZED,
+    NUX_MODULE_STARTED,
+} nux_module_status_t;
+
 typedef struct
 {
     const nux_c8_t *name;
@@ -617,7 +624,7 @@ typedef struct
     nux_status_t (*update)(void);
     nux_status_t (*post_update)(void);
     nux_status_t (*on_event)(nux_os_event_t *event);
-} nux_module_t;
+} nux_module_info_t;
 
 typedef enum
 {
@@ -859,7 +866,7 @@ nux_status_t    nux_error_get_status(void);
 
 // module.c
 
-nux_status_t  nux_modules_register(const nux_module_t *module);
+nux_status_t  nux_modules_register(const nux_module_info_t *module);
 nux_status_t  nux_modules_init(void);
 nux_status_t  nux_modules_free(void);
 nux_status_t  nux_modules_pre_update(void);

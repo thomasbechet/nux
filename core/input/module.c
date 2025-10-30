@@ -182,10 +182,10 @@ module_on_event (nux_os_event_t *event)
     }
     return NUX_SUCCESS;
 }
-const nux_module_t *
+const nux_module_info_t *
 nux_input_module_info (void)
 {
-    static nux_module_t info = {
+    static nux_module_info_t info = {
         .name        = "input",
         .size        = sizeof(_module),
         .data        = &_module,

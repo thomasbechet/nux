@@ -3,6 +3,12 @@
 
 #include <base/module.h>
 
+typedef struct
+{
+    nux_module_info_t   info;
+    nux_module_status_t status;
+} nux_module_t;
+
 NUX_VEC_DEFINE(nux_module_vec, nux_module_t);
 
 typedef enum

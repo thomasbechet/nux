@@ -92,7 +92,7 @@ nux_base_init (void *userdata)
               return NUX_FAILURE);
 
     // Register itself
-    static const nux_module_t info = {
+    static const nux_module_info_t info = {
         .name        = "base",
         .size        = sizeof(_module),
         .data        = &_module,
@@ -122,11 +122,12 @@ nux_base_resource_types (void)
 }
 
 nux_status_t
-nux_modules_register (const nux_module_t *info)
+nux_modules_register (const nux_module_info_t *info)
 {
     nux_module_t *m = nux_module_vec_push(&_module.modules);
     NUX_CHECK(m, return NUX_FAILURE);
-    *m = *info;
+    m->info   = *info;
+    m->status = NUX_MODULE_UNINITIALIZED;
     return NUX_SUCCESS;
 }
 nux_status_t
@@ -135,18 +136,23 @@ nux_modules_init (void)
     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
     {
         nux_module_t *m = _module.modules.data + i;
-        if (m->data && m->size
-            && !(m->flags & NUX_MODULE_NO_DATA_INITIALIZATION))
+        if (m->status != NUX_MODULE_UNINITIALIZED)
         {
-            nux_memset(m->data, 0, m->size);
+            continue;
         }
-        if (m->init)
+        if (m->info.data && m->info.size
+            && !(m->info.flags & NUX_MODULE_NO_DATA_INITIALIZATION))
         {
-            NUX_ENSURE(m->init(),
+            nux_memset(m->info.data, 0, m->info.size);
+        }
+        if (m->info.init)
+        {
+            NUX_ENSURE(m->info.init(),
                        return NUX_FAILURE,
                        "failed to init '%s' module",
-                       m->name);
+                       m->info.name);
         }
+        m->status = NUX_MODULE_INITIALIZED;
     }
     return NUX_SUCCESS;
 }
@@ -157,13 +163,18 @@ nux_modules_free (void)
     for (nux_u32_t i = _module.modules.size; i > 0; --i)
     {
         nux_module_t *m = _module.modules.data + (i - 1);
-        if (m->free)
+        if (m->status != NUX_MODULE_UNINITIALIZED)
         {
-            NUX_ENSURE(m->free(),
+            continue;
+        }
+        if (m->info.free)
+        {
+            NUX_ENSURE(m->info.free(),
                        return NUX_FAILURE,
                        "failed to free '%s' module",
-                       m->name);
+                       m->info.name);
         }
+        m->status = NUX_MODULE_UNINITIALIZED;
     }
     return NUX_SUCCESS;
 }
@@ -173,12 +184,12 @@ nux_modules_pre_update (void)
     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
     {
         nux_module_t *m = _module.modules.data + i;
-        if (m->pre_update)
+        if (m->info.pre_update)
         {
-            NUX_ENSURE(m->pre_update(),
+            NUX_ENSURE(m->info.pre_update(),
                        return NUX_FAILURE,
                        "failed to pre update '%s' module",
-                       m->name);
+                       m->info.name);
         }
     }
     return NUX_SUCCESS;
@@ -189,12 +200,12 @@ nux_modules_update (void)
     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
     {
         nux_module_t *m = _module.modules.data + i;
-        if (m->update)
+        if (m->info.update)
         {
-            NUX_ENSURE(m->update(),
+            NUX_ENSURE(m->info.update(),
                        return NUX_FAILURE,
                        "failed to update '%s' module",
-                       m->name);
+                       m->info.name);
         }
     }
     return NUX_SUCCESS;
@@ -205,12 +216,12 @@ nux_modules_post_update (void)
     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
     {
         nux_module_t *m = _module.modules.data + i;
-        if (m->post_update)
+        if (m->info.post_update)
         {
-            NUX_ENSURE(m->post_update(),
+            NUX_ENSURE(m->info.post_update(),
                        return NUX_FAILURE,
                        "failed to post update '%s' module",
-                       m->name);
+                       m->info.name);
         }
     }
     return NUX_SUCCESS;
@@ -221,9 +232,9 @@ nux_modules_on_event (nux_os_event_t *event)
     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
     {
         nux_module_t *m = _module.modules.data + i;
-        if (m->on_event)
+        if (m->info.on_event)
         {
-            m->on_event(event);
+            m->info.on_event(event);
         }
     }
     return NUX_SUCCESS;

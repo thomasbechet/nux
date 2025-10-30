@@ -31,10 +31,10 @@ module_free (void)
     NUX_ASSERT(_module.free_file_slots.size = NUX_IO_FILE_MAX);
     return NUX_SUCCESS;
 }
-const nux_module_t *
+const nux_module_info_t *
 nux_io_module_info (void)
 {
-    static nux_module_t info = {
+    static nux_module_info_t info = {
         .name = "io",
         .size = sizeof(_module),
         .data = &_module,

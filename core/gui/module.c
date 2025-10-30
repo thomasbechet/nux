@@ -42,10 +42,10 @@ module_post_update (void)
     }
     return NUX_SUCCESS;
 }
-const nux_module_t *
+const nux_module_info_t *
 nux_gui_module_info (void)
 {
-    static const nux_module_t info = { .name        = "gui",
+    static const nux_module_info_t info = { .name        = "gui",
                                        .init        = module_init,
                                        .data        = NUX_NULL,
                                        .pre_update  = module_pre_update,
