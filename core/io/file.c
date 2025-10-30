@@ -1,47 +1,16 @@
 #include "internal.h"
 
 static nux_status_t
-open_os_file (const nux_c8_t *path, nux_io_mode_t mode, nux_u32_t *ret_slot)
-{
-    nux_base_module_t *module = nux_base_module();
-
-    nux_c8_t  normpath[NUX_PATH_BUF_SIZE];
-    nux_u32_t len = nux_path_normalize(normpath, path);
-    NUX_ENSURE(!nux_path_isdir(normpath),
-               return NUX_NULL,
-               "trying to open a directory '%s' as file",
-               normpath);
-    nux_u32_t *slot = nux_u32_vec_pop(&module->free_file_slots);
-    NUX_ENSURE(slot, return NUX_NULL, "out of os file slots");
-    NUX_ENSURE(nux_os_file_open(nux_userdata(), *slot, normpath, len, mode),
-               goto cleanup,
-               "failed to open os file '%s'",
-               normpath);
-    *ret_slot = *slot;
-    return NUX_SUCCESS;
-cleanup:
-    nux_u32_vec_pushv(&module->free_file_slots, *slot);
-    return NUX_FAILURE;
-}
-static void
-close_os_file (nux_u32_t slot)
-{
-    nux_os_file_close(nux_userdata(), slot);
-    nux_u32_vec_pushv(&nux_base_module()->free_file_slots, slot);
-}
-static nux_status_t
 open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
 {
-    nux_base_module_t *module = nux_base_module();
-
-    nux_disk_t *disk = module->first_disk;
-    while (disk)
+    nux_disk_t *disk = NUX_NULL;
+    while ((disk = nux_resource_nextp(NUX_RESOURCE_DISK, disk)))
     {
         if (disk->type == NUX_DISK_OS)
         {
             nux_u32_t slot;
             nux_error_disable();
-            nux_status_t status = open_os_file(path, mode, &slot);
+            nux_status_t status = nux_io_open_os_file(path, mode, &slot);
             nux_error_enable();
             if (status)
             {
@@ -71,8 +40,6 @@ open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
                 }
             }
         }
-
-        disk = disk->next;
     }
     return NUX_FAILURE;
 }
@@ -82,7 +49,7 @@ close_file (nux_file_t *file)
     NUX_CHECK(file->is_open, return NUX_SUCCESS);
     if (file->type == NUX_DISK_OS)
     {
-        close_os_file(file->os.slot);
+        nux_io_close_os_file(file->os.slot);
     }
     file->is_open = NUX_FALSE;
     return NUX_SUCCESS;
@@ -91,8 +58,7 @@ close_file (nux_file_t *file)
 nux_file_t *
 nux_file_open (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
 {
-    nux_base_module_t *module = nux_base_module();
-    nux_file_t        *file   = nux_resource_new(arena, NUX_RESOURCE_FILE);
+    nux_file_t *file = nux_resource_new(arena, NUX_RESOURCE_FILE);
     NUX_CHECK(file, return NUX_NULL);
     NUX_ENSURE(open_file(file, path, mode),
                return NUX_NULL,

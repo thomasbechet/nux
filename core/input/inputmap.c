@@ -19,17 +19,7 @@ find_entry (nux_inputmap_t *map, const nux_c8_t *name)
     entry->type = NUX_INPUT_UNMAPPED;
 
     // Update controllers
-    nux_base_module_t *module = nux_base_module();
-    for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(module->controllers); ++i)
-    {
-        nux_controller_t *controller = module->controllers + i;
-        if (controller->inputmap == nux_resource_rid(map))
-        {
-            NUX_CHECK(
-                nux_f32_vec_resize(&controller->inputs, map->entries.size),
-                return NUX_NULL);
-        }
-    }
+    NUX_CHECK(nux_controller_resize_values(map), return NUX_NULL);
 
     return entry;
 }

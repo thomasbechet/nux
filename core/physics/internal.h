@@ -13,10 +13,7 @@ typedef struct
     nux_f32_t                      ground_height;
 } nux_physics_module_t;
 
-nux_physics_module_t *nux_physics_module(void);
-
-nux_status_t nux_physics_init(void);
-void         nux_physics_free(void);
-void         nux_physics_update(void);
+const nux_module_t   *nux_physics_module_info(void);
+nux_physics_module_t *nux_physics(void);
 
 #endif

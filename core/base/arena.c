@@ -33,7 +33,7 @@ arena_alloc (nux_arena_t *arena, nux_u32_t size)
                 NUX_ASSERT(arena->block_size);
                 nux_u32_t          block_count = (size / arena->block_size) + 1;
                 nux_arena_block_t *new_block
-                    = nux_os_alloc(nux_base_module()->userdata,
+                    = nux_os_alloc(nux_userdata(),
                                    NUX_NULL,
                                    0,
                                    arena->block_size * block_count);
@@ -191,7 +191,7 @@ nux_arena_free (nux_arena_t *arena)
         {
             void *p = block;
             block   = block->next;
-            nux_os_alloc(nux_base_module()->userdata, p, 0, 0);
+            nux_os_alloc(nux_userdata(), p, 0, 0);
         }
     }
 }
@@ -237,14 +237,4 @@ nux_arena_block_count (const nux_arena_t *arena)
         ++i;
     }
     return i;
-}
-nux_arena_t *
-nux_arena_core (void)
-{
-    return nux_base_module()->core_arena;
-}
-nux_arena_t *
-nux_arena_frame (void)
-{
-    return nux_base_module()->frame_arena;
 }

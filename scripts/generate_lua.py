@@ -206,6 +206,8 @@ if __name__ == "__main__":
     # Parse C headers
     headers = [
         "core/base/api.h",
+        "core/io/api.h",
+        "core/input/api.h",
         "core/lua/api.h",
         "core/scene/api.h",
         "core/graphics/api.h",

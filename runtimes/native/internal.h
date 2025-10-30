@@ -74,10 +74,9 @@ typedef struct
 {
     // instance
 
-    int             fps;
-    char            path[PATH_BUF_LEN];
-    nux_instance_t *instance;
-    bool            running;
+    int  fps;
+    char path[PATH_BUF_LEN];
+    bool running;
 
     // renderer
 

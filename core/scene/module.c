@@ -1,5 +1,7 @@
 #include "internal.h"
 
+static nux_scene_module_t _module;
+
 NUX_VEC_IMPL(nux_scene_bitset, nux_scene_mask_t);
 NUX_VEC_IMPL(nux_scene_chunk_vec, void *);
 NUX_VEC_IMPL(nux_scene_container_vec, nux_scene_container_t);
@@ -160,11 +162,9 @@ node_attach (nux_node_t *entities, nux_nid_t e, nux_nid_t p)
     parent->prev  = NUX_NULL;
 }
 
-nux_status_t
-nux_scene_init (void)
+static nux_status_t
+module_init (void)
 {
-    nux_scene_module_t *module = nux_scene_module();
-
     // Register types
     nux_resource_type_t *type;
     type = nux_resource_register(
@@ -174,12 +174,12 @@ nux_scene_init (void)
         NUX_RESOURCE_QUERY, sizeof(nux_query_t), "query");
 
     // Initialize values
-    nux_memset(module->components, 0, sizeof(module->components));
-    module->components_max     = 0;
+    nux_memset(_module.components, 0, sizeof(_module.components));
+    _module.components_max     = 0;
     nux_scene_t *default_scene = nux_scene_new(nux_arena_core());
     NUX_CHECK(default_scene, return NUX_FAILURE);
-    module->default_scene = default_scene;
-    module->active        = module->default_scene;
+    _module.default_scene = default_scene;
+    _module.active        = _module.default_scene;
 
     // Register components
     nux_component_t *comp;
@@ -191,23 +191,35 @@ nux_scene_init (void)
 
     return NUX_SUCCESS;
 }
-void
-nux_scene_free (void)
+const nux_module_t *
+nux_scene_module_info (void)
 {
+    static const nux_module_t info = {
+        .name = "scene",
+        .size = sizeof(_module),
+        .data = &_module,
+        .init = module_init,
+    };
+    return &info;
 }
+nux_scene_module_t *
+nux_scene_module (void)
+{
+    return &_module;
+}
+
 nux_component_t *
 nux_component_register (nux_u32_t index, const nux_c8_t *name, nux_u32_t size)
 {
-    nux_scene_module_t *module = nux_scene_module();
     NUX_ASSERT(index != 0);
     NUX_ASSERT(index < NUX_COMPONENT_MAX);
-    NUX_ASSERT(module->components[index].size == 0);
-    nux_component_t *comp  = &module->components[index];
+    NUX_ASSERT(_module.components[index].size == 0);
+    nux_component_t *comp  = &_module.components[index];
     comp->name             = nux_arena_alloc_string(nux_arena_core(), name);
     comp->size             = size;
     comp->read             = NUX_NULL;
     comp->write            = NUX_NULL;
-    module->components_max = NUX_MAX(module->components_max, index + 1);
+    _module.components_max = NUX_MAX(_module.components_max, index + 1);
     return comp;
 }
 
@@ -305,7 +317,7 @@ nux_query_next (nux_query_t *it, nux_nid_t e)
 {
     if (!e) // initialize iterator
     {
-        it->scene       = nux_scene_module()->active;
+        it->scene       = _module.active;
         it->mask        = 0;
         it->mask_offset = 0;
         it->mask_index  = (nux_u32_t)-1; // trick for first iteration
@@ -316,12 +328,11 @@ nux_query_next (nux_query_t *it, nux_nid_t e)
 nux_scene_t *
 nux_scene_new (nux_arena_t *arena)
 {
-    nux_scene_module_t *module = nux_scene_module();
-    nux_scene_t        *scene  = nux_resource_new(arena, NUX_RESOURCE_SCENE);
+    nux_scene_t *scene = nux_resource_new(arena, NUX_RESOURCE_SCENE);
     NUX_CHECK(scene, return NUX_NULL);
     scene->arena = arena;
     NUX_CHECK(nux_scene_container_vec_init_capa(
-                  arena, module->components_max, &scene->containers),
+                  arena, _module.components_max, &scene->containers),
               return NUX_NULL);
     NUX_CHECK(nux_scene_bitset_init(arena, &scene->bitset), return NUX_NULL);
     NUX_CHECK(nux_node_vec_init(arena, &scene->nodes), return NUX_NULL);
@@ -336,9 +347,8 @@ nux_scene_new (nux_arena_t *arena)
 void
 nux_scene_cleanup (void *data)
 {
-    nux_scene_module_t *module = nux_scene_module();
-    nux_scene_t        *scene  = data;
-    if (module->active == scene && scene != module->default_scene)
+    nux_scene_t *scene = data;
+    if (_module.active == scene && scene != _module.default_scene)
     {
         NUX_WARNING("cleanup active scene, default scene has been set");
         nux_scene_set_active(NUX_NULL);
@@ -347,21 +357,20 @@ nux_scene_cleanup (void *data)
 nux_status_t
 nux_scene_set_active (nux_scene_t *scene)
 {
-    nux_scene_module_t *module = nux_scene_module();
     if (scene)
     {
-        module->active = scene;
+        _module.active = scene;
     }
     else
     {
-        module->active = module->default_scene;
+        _module.active = _module.default_scene;
     }
     return NUX_SUCCESS;
 }
 nux_scene_t *
 nux_scene_active (void)
 {
-    return nux_scene_module()->active;
+    return _module.active;
 }
 nux_u32_t
 nux_scene_count (void)
@@ -384,8 +393,7 @@ nux_scene_clear (void)
 nux_nid_t
 nux_node_create (nux_nid_t parent)
 {
-    nux_scene_module_t *module = nux_scene_module();
-    nux_scene_t        *scene  = module->active;
+    nux_scene_t *scene = _module.active;
     NUX_CHECK(scene, return NUX_NULL);
     NUX_CHECK(node_check(scene, parent), return NUX_NULL);
     nux_u32_t index;
@@ -488,14 +496,13 @@ nux_component_get (nux_nid_t e, nux_u32_t c)
 static void *
 component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
 {
-    nux_scene_module_t *module = nux_scene_module();
-    nux_u32_t           index  = NUX_NID_INDEX(e);
+    nux_u32_t index = NUX_NID_INDEX(e);
 
     NUX_CHECK(node_check(scene, e), return NUX_NULL);
-    NUX_ENSURE(c < module->components_max,
+    NUX_ENSURE(c < _module.components_max,
                return NUX_NULL,
                "invalid scene component id");
-    const nux_component_t *component = module->components + c;
+    const nux_component_t *component = _module.components + c;
 
     // initialize pool if component missing
     while (c >= scene->containers.size)
@@ -504,7 +511,7 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         nux_scene_container_t *container
             = nux_scene_container_vec_push(&scene->containers);
         NUX_CHECK(container, return NUX_NULL);
-        container->component_size = module->components[index].size;
+        container->component_size = _module.components[index].size;
         NUX_CHECK(nux_scene_chunk_vec_init_capa(
                       scene->arena, scene->bitset.capa, &container->chunks),
                   return NUX_NULL);
@@ -585,13 +592,12 @@ node_clone (nux_scene_t *scene,
             nux_nid_t    src_nid,
             nux_nid_t    parent)
 {
-    nux_scene_module_t *module = nux_scene_module();
-    nux_u32_t           index  = NUX_NID_INDEX(src_nid);
+    nux_u32_t index = NUX_NID_INDEX(src_nid);
 
     // Duplicate components
     for (nux_u32_t c = 0; c < scene->containers.size; ++c)
     {
-        nux_component_t *comp = module->components + c;
+        nux_component_t *comp = _module.components + c;
         if (scene->containers.data[c].component_size
             && bitset_isset(&scene->containers.data[c].bitset, index))
         {

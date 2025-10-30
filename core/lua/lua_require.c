@@ -41,7 +41,7 @@ l_require (lua_State *L)
 nux_status_t
 nux_lua_open_require (void)
 {
-    lua_State *L = nux_lua_module()->L;
+    lua_State *L = nux_lua_state();
     lua_pushcfunction(L, l_require);
     lua_setglobal(L, "require");
     return NUX_SUCCESS;

@@ -12,7 +12,7 @@ l_checkerror (lua_State *L)
 static void
 event_handler (void *userdata, nux_rid_t event, const void *data)
 {
-    lua_State   *L = nux_lua_module()->L;
+    lua_State   *L = nux_lua_state();
     nux_lua_t   *m = userdata;
     nux_event_t *e = nux_resource_get(NUX_RESOURCE_EVENT, event);
     NUX_ASSERT(e);
@@ -34,7 +34,7 @@ static void
 event_cleanup (void *data)
 {
     nux_u32_t ref = *(nux_u32_t *)data;
-    luaL_unref(nux_lua_module()->L, LUA_REGISTRYINDEX, ref);
+    luaL_unref(nux_lua_state(), LUA_REGISTRYINDEX, ref);
 }
 
 static int
@@ -64,7 +64,7 @@ event_subscribe (lua_State *L)
             return 0;
         }
     }
-    nux_arena_t *arena = nux_resource_arena(nux_resource_rid(module));
+    nux_arena_t         *arena = nux_resource_arena(nux_resource_rid(module));
     nux_event_handler_t *handler
         = nux_event_subscribe(arena, event, module, event_handler);
     l_checkerror(L);
@@ -117,7 +117,7 @@ nux_lua_open_event (void)
             { "unsubscribe", event_unsubscribe },
             { "emit", event_emit },
             { NULL, NULL } };
-    lua_State *L = nux_lua_module()->L;
+    lua_State *L = nux_lua_state();
     lua_newtable(L);
     luaL_setfuncs(L, event_lib, 0);
     lua_setglobal(L, "event");

@@ -3,6 +3,8 @@
 
 #include "nux_config.h"
 #include "base/api.h"
+#include "io/api.h"
+#include "input/api.h"
 #include "lua/api.h"
 #include "scene/api.h"
 #include "graphics/api.h"
@@ -12,8 +14,6 @@
 //////////////////////////////////////////////////////////////////////////
 //////                               Types                          //////
 //////////////////////////////////////////////////////////////////////////
-
-typedef struct nux_instance_t nux_instance_t;
 
 typedef enum
 {
@@ -266,11 +266,9 @@ NUX_API void         nux_os_hotreload_pull(void      *userdata,
 //////                          Instance API                        //////
 //////////////////////////////////////////////////////////////////////////
 
-NUX_API nux_instance_t *nux_instance_init(void           *userdata,
-                                          const nux_c8_t *entry);
-NUX_API void            nux_instance_free(nux_instance_t *instance);
-NUX_API void            nux_instance_update(nux_instance_t *instance);
-NUX_API void            nux_instance_push_event(nux_instance_t *instance,
-                                                nux_os_event_t *event);
+NUX_API nux_status_t nux_core_init(void *userdata, const nux_c8_t *entry);
+NUX_API void         nux_core_free(void);
+NUX_API void         nux_core_update(void);
+NUX_API void         nux_core_push_event(nux_os_event_t *event);
 
 #endif

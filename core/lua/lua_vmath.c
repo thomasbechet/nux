@@ -947,7 +947,7 @@ nux_lua_open_vmath (void)
             { "div", math_div },
             { "normalize", math_normalize },
             { NULL, NULL } };
-    lua_State *L = nux_lua_module()->L;
+    lua_State *L = nux_lua_state();
     register_metatable(L);
     lua_newtable(L);
     luaL_setfuncs(L, vmath_lib, 0);

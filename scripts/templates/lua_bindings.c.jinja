@@ -165,7 +165,7 @@ static const struct luaL_Reg lib_{{ module_name }}[] = {
 
 nux_status_t nux_lua_open_api(void)
 {
-    lua_State *L = nux_lua_module()->L;
+    lua_State *L = nux_lua_state();
 {% for module_name, module in modules.items() %}
     lua_newtable(L);
     luaL_setfuncs(L, lib_{{ module_name }}, 0);

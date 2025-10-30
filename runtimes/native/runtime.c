@@ -5,10 +5,10 @@ runtime_t runtime;
 static void
 runtime_close (void)
 {
-    if (runtime.instance)
+    if (runtime.running)
     {
-        nux_instance_free(runtime.instance);
-        runtime.instance = NULL;
+        nux_core_free();
+        runtime.running = false;
     }
 }
 
@@ -45,13 +45,13 @@ runtime_run (const config_t *config)
         window_begin_frame();
 
         // Update instance
-        if (runtime.instance)
+        if (runtime.running)
         {
             // Begin renderer
             renderer_begin();
 
             // Update
-            nux_instance_update(runtime.instance);
+            nux_core_update();
 
             // End renderer
             renderer_end();
@@ -77,14 +77,13 @@ runtime_open (const char *path)
     runtime_close();
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN);
-    runtime.instance = NULL;
-
-    runtime.instance = nux_instance_init(NULL, path);
-    if (!runtime.instance)
+    runtime.running = false;
+    if (!nux_core_init(NULL, path))
     {
         fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
     }
+    runtime.running = true;
 
     return NUX_SUCCESS;
 cleanup0:
@@ -94,7 +93,7 @@ cleanup0:
 void
 runtime_reset (void)
 {
-    if (runtime.instance)
+    if (runtime.running)
     {
         char path[PATH_MAX_LEN];
         memcpy(path, runtime.path, PATH_MAX_LEN);

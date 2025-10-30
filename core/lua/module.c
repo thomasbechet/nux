@@ -2,7 +2,12 @@
 
 #include "lua_code.c.inc"
 
-#include <base/internal.h>
+#include <io/module.h>
+
+static struct
+{
+    lua_State *L;
+} _module;
 
 static void
 serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
@@ -159,10 +164,9 @@ serde_end_table (nux_lua_serde_t *s)
 nux_status_t
 nux_lua_call_function (nux_u32_t nargs, nux_u32_t nreturns)
 {
-    nux_lua_module_t *module = nux_lua_module();
-    if (lua_pcall(module->L, nargs, nreturns, 0) != LUA_OK) // consume field
+    if (lua_pcall(_module.L, nargs, nreturns, 0) != LUA_OK) // consume field
     {
-        nux_error("%s", lua_tostring(module->L, -1));
+        nux_error("%s", lua_tostring(_module.L, -1));
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;
@@ -171,7 +175,7 @@ nux_status_t
 nux_lua_call_module (nux_lua_t *lua, const nux_c8_t *name, nux_u32_t nargs)
 {
     nux_status_t status = NUX_SUCCESS;
-    lua_State   *L      = nux_lua_module()->L;
+    lua_State   *L      = _module.L;
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
     NUX_ASSERT(lua_istable(L, -1));
     // -1=M
@@ -192,10 +196,8 @@ nux_lua_call_module (nux_lua_t *lua, const nux_c8_t *name, nux_u32_t nargs)
 static void
 serde_config (nux_config_t *config, nux_b32_t serialize)
 {
-    nux_lua_module_t *module = nux_lua_module();
-
     nux_lua_serde_t s;
-    serde_begin(&s, module->L, serialize);
+    serde_begin(&s, _module.L, serialize);
 
     // window
     serde_begin_table(&s, "window", &config->window.enable);
@@ -278,7 +280,7 @@ copy_functions (lua_State *L, int src, int dst)
 static nux_status_t
 load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
 {
-    lua_State *L = nux_lua_module()->L;
+    lua_State *L = _module.L;
 
     // 1. keep previous module on stack
     lua_getglobal(L, NUX_LUA_MODULE_TABLE);
@@ -348,7 +350,7 @@ lua_module_cleanup (void *data)
 {
     nux_lua_t *lua = data;
     // unregister lua module
-    lua_State *L = nux_lua_module()->L;
+    lua_State *L = _module.L;
     luaL_unref(L, LUA_REGISTRYINDEX, lua->ref);
     // unsubscribe events
     for (nux_u32_t i = 0; i < lua->event_handles.size; ++i)
@@ -367,11 +369,9 @@ lua_module_reload (void *data, const nux_c8_t *path)
     return NUX_SUCCESS;
 }
 
-nux_status_t
-nux_lua_init (void)
+static nux_status_t
+module_init (void)
 {
-    nux_lua_module_t *module = nux_lua_module();
-
     // Register types
     nux_resource_type_t *type;
     type = nux_resource_register(
@@ -380,11 +380,11 @@ nux_lua_init (void)
     type->reload  = lua_module_reload;
 
     // Initialize Lua VM
-    module->L = luaL_newstate();
-    NUX_ENSURE(module->L, return NUX_FAILURE, "failed to initialize lua state");
+    _module.L = luaL_newstate();
+    NUX_ENSURE(_module.L, return NUX_FAILURE, "failed to initialize lua state");
 
     // Register base lua API
-    luaL_openlibs(module->L);
+    luaL_openlibs(_module.L);
 
     // Register lua API
     nux_lua_open_api();
@@ -395,52 +395,70 @@ nux_lua_init (void)
 
     return NUX_SUCCESS;
 }
-void
-nux_lua_free (void)
+static nux_status_t
+module_free (void)
 {
-    nux_lua_module_t *module = nux_lua_module();
-    if (module->L)
+    if (_module.L)
     {
-        lua_close(module->L);
+        lua_close(_module.L);
     }
+    return NUX_SUCCESS;
 }
-void
-nux_lua_update (void)
+static nux_status_t
+module_update (void)
 {
     nux_lua_t *lua = NUX_NULL;
     while ((lua = nux_resource_nextp(NUX_RESOURCE_LUA_MODULE, lua)))
     {
         nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);
     }
+    return NUX_SUCCESS;
 }
+const nux_module_t *
+nux_lua_module_info (void)
+{
+    static const nux_module_t info = {
+        .name   = "lua",
+        .size   = sizeof(_module),
+        .data   = &_module,
+        .init   = module_init,
+        .free   = module_free,
+        .update = module_update,
+    };
+    return &info;
+}
+lua_State *
+nux_lua_state (void)
+{
+    return _module.L;
+}
+
 nux_status_t
 nux_lua_configure (nux_config_t *config)
 {
-    nux_lua_module_t *module = nux_lua_module();
-
     if (nux_file_exists(NUX_LUA_CONF_FILE))
     {
         // Execute configuration script
-        if (luaL_dofile(module->L, NUX_LUA_CONF_FILE) != LUA_OK)
+        if (luaL_dofile(_module.L, NUX_LUA_CONF_FILE) != LUA_OK)
         {
-            NUX_ERROR("%s", lua_tostring(module->L, -1));
+            NUX_ERROR("%s", lua_tostring(_module.L, -1));
             return NUX_FAILURE;
         }
 
         // Call nux.conf
-        lua_newtable(module->L);
+        lua_newtable(_module.L);
         serialize_config(config);
 
-        if (lua_getglobal(module->L, NUX_LUA_ON_CONF) != LUA_TFUNCTION)
+        if (lua_getglobal(_module.L, NUX_LUA_ON_CONF) != LUA_TFUNCTION)
         {
-            lua_pop(module->L, 1);
+            lua_pop(_module.L, 1);
             return NUX_FAILURE;
         }
-        lua_pushvalue(module->L, -2); // push config as argument
+        lua_pushvalue(_module.L, -2); // push config as argument
         NUX_CHECK(nux_lua_call_function(1, 0), return NUX_FAILURE);
 
         deserialize_config(config);
-        lua_pop(module->L, 1);
+        lua_pop(_module.L, 1);
     }
 
     return NUX_SUCCESS;
@@ -448,10 +466,9 @@ nux_lua_configure (nux_config_t *config)
 nux_status_t
 nux_lua_dostring (const nux_c8_t *string)
 {
-    nux_lua_module_t *module = nux_lua_module();
-    if (luaL_dostring(module->L, string) != LUA_OK)
+    if (luaL_dostring(_module.L, string) != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(module->L, -1));
+        NUX_ERROR("%s", lua_tostring(_module.L, -1));
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;

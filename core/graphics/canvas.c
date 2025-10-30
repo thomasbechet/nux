@@ -200,8 +200,7 @@ nux_canvas_text (nux_canvas_t   *canvas,
                  nux_u32_t       y,
                  const nux_c8_t *text)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    nux_font_t            *font   = &module->default_font;
+    nux_font_t *font = &nux_graphics()->default_font;
 
     begin_batch_textured(canvas,
                          font->texture.slot,
@@ -516,7 +515,7 @@ nux_canvas_blit_sliced (nux_canvas_t  *canvas,
 void
 nux_canvas_render (nux_canvas_t *c)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
+    nux_graphics_module_t *gfx = nux_graphics();
 
     NUX_ASSERT(c->target);
     nux_u32_t framebuffer = c->target->gpu.framebuffer_slot;
@@ -538,7 +537,7 @@ nux_canvas_render (nux_canvas_t *c)
     nux_gpu_encoder_init(nux_arena_frame(), &enc);
     nux_gpu_bind_framebuffer(&enc, framebuffer);
     nux_gpu_viewport(&enc, nux_v4(0, 0, 1, 1));
-    nux_gpu_bind_pipeline(&enc, module->canvas_pipeline.slot);
+    nux_gpu_bind_pipeline(&enc, gfx->canvas_pipeline.slot);
     nux_gpu_bind_buffer(
         &enc, NUX_GPU_DESC_CANVAS_CONSTANTS, c->constants_buffer.slot);
     nux_gpu_bind_buffer(
@@ -546,7 +545,7 @@ nux_canvas_render (nux_canvas_t *c)
     nux_gpu_bind_buffer(
         &enc, NUX_GPU_DESC_CANVAS_QUADS, c->quads_gpu_buffer.slot);
     nux_u32_t clear_color = nux_color_to_hex(
-        nux_palette_get_color(module->active_palette, c->clear_color));
+        nux_palette_get_color(gfx->active_palette, c->clear_color));
     nux_gpu_clear_color(&enc, clear_color);
 
     // Submit commands

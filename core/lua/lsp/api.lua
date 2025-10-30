@@ -49,6 +49,49 @@ log.WARNING=2
 log.ERROR=1
 ---@return None
 function log.set_level(...) end
+color={}
+color.TRANSPARENT=0
+color.WHITE=1
+color.RED=2
+color.GREEN=3
+color.BLUE=4
+color.BACKGROUND=5
+---@return None
+function color.rgba(...) end
+---@return None
+function color.hex(...) end
+---@return None
+function color.to_hex(...) end
+---@return None
+function color.to_srgb(...) end
+error={}
+error.NONE=0
+error.OUT_OF_MEMORY=1
+error.INVALID_TEXTURE_SIZE=4
+error.WASM_RUNTIME=8
+error.CART_EOF=10
+error.CART_MOUNT=11
+stat={}
+stat.FPS=0
+stat.SCREEN_WIDTH=1
+stat.SCREEN_HEIGHT=2
+stat.TIMESTAMP=3
+stat.MAX=4
+io={}
+---@return None
+function io.cart_begin(...) end
+---@return None
+function io.cart_end(...) end
+---@return None
+function io.write_cart_file(...) end
+controller={}
+controller.MAX=4
+controller.MODE_SELECTION=0
+controller.MODE_CURSOR=1
+name={}
+name.MAX=64
+disk={}
+disk.MAX=8
 inputmap={}
 ---@return None
 function inputmap.new(...) end
@@ -81,49 +124,6 @@ function input.value(...) end
 function input.cursor(...) end
 ---@return None
 function input.set_cursor(...) end
-io={}
----@return None
-function io.cart_begin(...) end
----@return None
-function io.cart_end(...) end
----@return None
-function io.write_cart_file(...) end
-color={}
-color.TRANSPARENT=0
-color.WHITE=1
-color.RED=2
-color.GREEN=3
-color.BLUE=4
-color.BACKGROUND=5
----@return None
-function color.rgba(...) end
----@return None
-function color.hex(...) end
----@return None
-function color.to_hex(...) end
----@return None
-function color.to_srgb(...) end
-error={}
-error.NONE=0
-error.OUT_OF_MEMORY=1
-error.INVALID_TEXTURE_SIZE=4
-error.WASM_RUNTIME=8
-error.CART_EOF=10
-error.CART_MOUNT=11
-stat={}
-stat.FPS=0
-stat.SCREEN_WIDTH=1
-stat.SCREEN_HEIGHT=2
-stat.TIMESTAMP=3
-stat.MAX=4
-controller={}
-controller.MAX=4
-controller.MODE_SELECTION=0
-controller.MODE_CURSOR=1
-name={}
-name.MAX=64
-disk={}
-disk.MAX=8
 button={}
 button.PRESSED=1
 button.RELEASED=0

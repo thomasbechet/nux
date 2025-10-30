@@ -263,6 +263,79 @@ l_log_set_level (lua_State *L)
     return 0;
 }
 static int
+l_color_rgba (lua_State *L)
+{
+    nux_u8_t r   = luaL_checknumber(L, 1);
+    nux_u8_t g   = luaL_checknumber(L, 2);
+    nux_u8_t b   = luaL_checknumber(L, 3);
+    nux_u8_t a   = luaL_checknumber(L, 4);
+    nux_v4_t ret = nux_color_rgba(r, g, b, a);
+    l_checkerror(L);
+
+    nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
+l_color_hex (lua_State *L)
+{
+    nux_u32_t hex = luaL_checknumber(L, 1);
+    nux_v4_t  ret = nux_color_hex(hex);
+    l_checkerror(L);
+
+    nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
+l_color_to_hex (lua_State *L)
+{
+    nux_v4_t  color = nux_lua_check_vec4(L, 1);
+    nux_u32_t ret   = nux_color_to_hex(color);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_color_to_srgb (lua_State *L)
+{
+    nux_v4_t color = nux_lua_check_vec4(L, 1);
+    nux_v4_t ret   = nux_color_to_srgb(color);
+    l_checkerror(L);
+
+    nux_lua_push_vec4(L, ret);
+    return 1;
+}
+static int
+l_io_cart_begin (lua_State *L)
+{
+    const nux_c8_t *path        = luaL_checkstring(L, 1);
+    nux_u32_t       entry_count = luaL_checknumber(L, 2);
+    nux_status_t    ret         = nux_io_cart_begin(path, entry_count);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_cart_end (lua_State *L)
+{
+    nux_status_t ret = nux_io_cart_end();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_write_cart_file (lua_State *L)
+{
+    const nux_c8_t *path = luaL_checkstring(L, 1);
+    nux_status_t    ret  = nux_io_write_cart_file(path);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
 l_inputmap_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -409,79 +482,6 @@ l_input_set_cursor (lua_State *L)
     l_checkerror(L);
 
     return 0;
-}
-static int
-l_io_cart_begin (lua_State *L)
-{
-    const nux_c8_t *path        = luaL_checkstring(L, 1);
-    nux_u32_t       entry_count = luaL_checknumber(L, 2);
-    nux_status_t    ret         = nux_io_cart_begin(path, entry_count);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_io_cart_end (lua_State *L)
-{
-    nux_status_t ret = nux_io_cart_end();
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_io_write_cart_file (lua_State *L)
-{
-    const nux_c8_t *path = luaL_checkstring(L, 1);
-    nux_status_t    ret  = nux_io_write_cart_file(path);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_color_rgba (lua_State *L)
-{
-    nux_u8_t r   = luaL_checknumber(L, 1);
-    nux_u8_t g   = luaL_checknumber(L, 2);
-    nux_u8_t b   = luaL_checknumber(L, 3);
-    nux_u8_t a   = luaL_checknumber(L, 4);
-    nux_v4_t ret = nux_color_rgba(r, g, b, a);
-    l_checkerror(L);
-
-    nux_lua_push_vec4(L, ret);
-    return 1;
-}
-static int
-l_color_hex (lua_State *L)
-{
-    nux_u32_t hex = luaL_checknumber(L, 1);
-    nux_v4_t  ret = nux_color_hex(hex);
-    l_checkerror(L);
-
-    nux_lua_push_vec4(L, ret);
-    return 1;
-}
-static int
-l_color_to_hex (lua_State *L)
-{
-    nux_v4_t  color = nux_lua_check_vec4(L, 1);
-    nux_u32_t ret   = nux_color_to_hex(color);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_color_to_srgb (lua_State *L)
-{
-    nux_v4_t color = nux_lua_check_vec4(L, 1);
-    nux_v4_t ret   = nux_color_to_srgb(color);
-    l_checkerror(L);
-
-    nux_lua_push_vec4(L, ret);
-    return 1;
 }
 static int
 l_lua_load (lua_State *L)
@@ -2132,6 +2132,21 @@ static const struct luaL_Reg lib_resource[]
         { "find", l_resource_find }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]
     = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_color[] = { { "rgba", l_color_rgba },
+                                             { "hex", l_color_hex },
+                                             { "to_hex", l_color_to_hex },
+                                             { "to_srgb", l_color_to_srgb },
+                                             { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_stat[]  = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_io[]
+    = { { "cart_begin", l_io_cart_begin },
+        { "cart_end", l_io_cart_end },
+        { "write_cart_file", l_io_write_cart_file },
+        { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_name[]       = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_disk[]       = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_inputmap[]
     = { { "new", l_inputmap_new },
         { "bind_key", l_inputmap_bind_key },
@@ -2148,26 +2163,11 @@ static const struct luaL_Reg lib_input[]
         { "cursor", l_input_cursor },
         { "set_cursor", l_input_set_cursor },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_io[]
-    = { { "cart_begin", l_io_cart_begin },
-        { "cart_end", l_io_cart_end },
-        { "write_cart_file", l_io_write_cart_file },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_color[]      = { { "rgba", l_color_rgba },
-                                                  { "hex", l_color_hex },
-                                                  { "to_hex", l_color_to_hex },
-                                                  { "to_srgb", l_color_to_srgb },
-                                                  { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_error[]      = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_stat[]       = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_name[]       = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_disk[]       = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_button[]     = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_key[]        = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_mouse[]      = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_gamepad[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_cursor[]     = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_button[]  = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_key[]     = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_mouse[]   = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_gamepad[] = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_cursor[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_lua[]
     = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_transform[]
@@ -2322,7 +2322,7 @@ static const struct luaL_Reg lib_gui[]        = { { "new", l_gui_new },
 nux_status_t
 nux_lua_open_api (void)
 {
-    lua_State *L = nux_lua_module()->L;
+    lua_State *L = nux_lua_state();
     lua_newtable(L);
     luaL_setfuncs(L, lib_core, 0);
     lua_pushinteger(L, 1);
@@ -2350,27 +2350,6 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 1);
     lua_setfield(L, -2, "ERROR");
     lua_setglobal(L, "log");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_inputmap, 0);
-    lua_setglobal(L, "inputmap");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_input, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "UNMAPPED");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "KEY");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "MOUSE_BUTTON");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "MOUSE_AXIS");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "GAMEPAD_BUTTON");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "GAMEPAD_AXIS");
-    lua_setglobal(L, "input");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_io, 0);
-    lua_setglobal(L, "io");
     lua_newtable(L);
     luaL_setfuncs(L, lib_color, 0);
     lua_pushinteger(L, 0);
@@ -2415,6 +2394,9 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "MAX");
     lua_setglobal(L, "stat");
     lua_newtable(L);
+    luaL_setfuncs(L, lib_io, 0);
+    lua_setglobal(L, "io");
+    lua_newtable(L);
     luaL_setfuncs(L, lib_controller, 0);
     lua_pushinteger(L, 4);
     lua_setfield(L, -2, "MAX");
@@ -2433,6 +2415,24 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 8);
     lua_setfield(L, -2, "MAX");
     lua_setglobal(L, "disk");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_inputmap, 0);
+    lua_setglobal(L, "inputmap");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_input, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "UNMAPPED");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "KEY");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "MOUSE_BUTTON");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "MOUSE_AXIS");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "GAMEPAD_BUTTON");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "GAMEPAD_AXIS");
+    lua_setglobal(L, "input");
     lua_newtable(L);
     luaL_setfuncs(L, lib_button, 0);
     lua_pushinteger(L, 1);

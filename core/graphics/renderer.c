@@ -3,11 +3,11 @@
 static void
 bind_texture (nux_gpu_encoder_t *enc, const nux_texture_t *texture)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    if (module->active_texture != texture)
+    nux_graphics_module_t *gfx = nux_graphics();
+    if (gfx->active_texture != texture)
     {
-        module->active_texture = texture;
-        if (module->active_texture)
+        gfx->active_texture = texture;
+        if (gfx->active_texture)
         {
             nux_gpu_bind_texture(
                 enc, NUX_GPU_DESC_UBER_TEXTURE0, texture->gpu.slot);
@@ -26,21 +26,21 @@ draw (nux_gpu_encoder_t *enc,
       nux_u32_t          attributes,
       nux_v4_t           color)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
+    nux_graphics_module_t *gfx = nux_graphics();
 
     // Create batch
     nux_u32_t batch_index;
-    NUX_ENSURE(nux_dsa_push_bottom(&module->batches_dsa, 1, &batch_index),
+    NUX_ENSURE(nux_dsa_push_bottom(&gfx->batches_dsa, 1, &batch_index),
                return NUX_FAILURE,
                "out of batches");
     nux_gpu_scene_batch_t batch;
     batch.vertex_offset     = first;
     batch.vertex_attributes = attributes;
     batch.transform_offset  = transform;
-    batch.has_texture       = module->active_texture ? 1 : 0;
+    batch.has_texture       = gfx->active_texture ? 1 : 0;
     batch.color             = color;
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    module->batches_buffer.slot,
+                                    gfx->batches_buffer.slot,
                                     batch_index * sizeof(batch),
                                     sizeof(batch),
                                     &batch),
@@ -60,6 +60,8 @@ draw_rect (nux_gpu_encoder_t     *enc,
            const nux_v3_t        *positions,
            nux_u32_t              color)
 {
+    nux_graphics_module_t *gfx = nux_graphics();
+
     nux_u32_t        vertex_count;
     const nux_u32_t  stride = 5;
     nux_f32_t        data[24 * stride]; // must constains all primitives type
@@ -98,8 +100,7 @@ draw_rect (nux_gpu_encoder_t     *enc,
         { { 0, 0 } },
     };
 
-    nux_v4_t c
-        = nux_palette_get_color(nux_graphics_module()->active_palette, color);
+    nux_v4_t c = nux_palette_get_color(gfx->active_palette, color);
     for (nux_u32_t i = 0; i < vertex_count; ++i)
     {
         nux_u32_t index      = indices[i];
@@ -142,11 +143,12 @@ draw_box (nux_gpu_encoder_t     *enc,
 void
 nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    nux_gpu_encoder_t     *enc    = &module->encoder;
-    nux_v4_t               extent = nux_viewport_get_normalized_viewport(viewport);
-    nux_nid_t              camera = viewport->source.camera;
-    nux_texture_t         *target
+    nux_graphics_module_t *gfx = nux_graphics();
+
+    nux_gpu_encoder_t *enc    = &gfx->encoder;
+    nux_v4_t           extent = nux_viewport_get_normalized_viewport(viewport);
+    nux_nid_t          camera = viewport->source.camera;
+    nux_texture_t     *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
     NUX_ASSERT(target);
 
@@ -182,23 +184,23 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
                                         nux_stat(NUX_STAT_SCREEN_HEIGHT));
         constants.time        = nux_time_elapsed();
         nux_os_buffer_update(nux_userdata(),
-                             module->constants_buffer.slot,
+                             gfx->constants_buffer.slot,
                              0,
                              sizeof(constants),
                              &constants);
 
         // Render nodes
-        nux_gpu_bind_pipeline(enc, module->uber_pipeline_opaque.slot);
+        nux_gpu_bind_pipeline(enc, gfx->uber_pipeline_opaque.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_CONSTANTS, module->constants_buffer.slot);
+            enc, NUX_GPU_DESC_UBER_CONSTANTS, gfx->constants_buffer.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_BATCHES, module->batches_buffer.slot);
+            enc, NUX_GPU_DESC_UBER_BATCHES, gfx->batches_buffer.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_TRANSFORMS, module->transforms_buffer.slot);
+            enc, NUX_GPU_DESC_UBER_TRANSFORMS, gfx->transforms_buffer.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_VERTICES, module->vertices_buffer.slot);
+            enc, NUX_GPU_DESC_UBER_VERTICES, gfx->vertices_buffer.slot);
         nux_nid_t it = NUX_NULL;
-        while ((it = nux_query_next(module->transform_staticmesh_iter, it)))
+        while ((it = nux_query_next(gfx->transform_staticmesh_iter, it)))
         {
             nux_staticmesh_t *sm
                 = nux_component_get(it, NUX_COMPONENT_STATICMESH);
@@ -236,9 +238,9 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         }
 
         // Draw debug lines
-        nux_gpu_bind_pipeline(enc, module->uber_pipeline_line.slot);
+        nux_gpu_bind_pipeline(enc, gfx->uber_pipeline_line.slot);
         it = NUX_NULL;
-        while ((it = nux_query_next(module->transform_staticmesh_iter, it)))
+        while ((it = nux_query_next(gfx->transform_staticmesh_iter, it)))
         {
             nux_staticmesh_t *sm
                 = nux_component_get(it, NUX_COMPONENT_STATICMESH);
@@ -263,18 +265,18 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         }
 
         // Draw immediate lines
-        nux_gpu_bind_pipeline(enc, module->uber_pipeline_line.slot);
+        nux_gpu_bind_pipeline(enc, gfx->uber_pipeline_line.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_CONSTANTS, module->constants_buffer.slot);
+            enc, NUX_GPU_DESC_UBER_CONSTANTS, gfx->constants_buffer.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_BATCHES, module->batches_buffer.slot);
+            enc, NUX_GPU_DESC_UBER_BATCHES, gfx->batches_buffer.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_TRANSFORMS, module->transforms_buffer.slot);
+            enc, NUX_GPU_DESC_UBER_TRANSFORMS, gfx->transforms_buffer.slot);
         nux_gpu_bind_buffer(
-            enc, NUX_GPU_DESC_UBER_VERTICES, module->vertices_buffer.slot);
-        for (nux_u32_t i = 0; i < module->immediate_commands.size; ++i)
+            enc, NUX_GPU_DESC_UBER_VERTICES, gfx->vertices_buffer.slot);
+        for (nux_u32_t i = 0; i < gfx->immediate_commands.size; ++i)
         {
-            nux_graphics_command_t *cmd = module->immediate_commands.data + i;
+            nux_graphics_command_t *cmd = gfx->immediate_commands.data + i;
             if (cmd->layer & cc->render_mask)
             {
                 draw(enc,
@@ -287,6 +289,6 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         }
 
         // Submit commands
-        nux_gpu_encoder_submit(&module->encoder);
+        nux_gpu_encoder_submit(&gfx->encoder);
     }
 }

@@ -7,7 +7,7 @@
 #ifndef lprefix_h
 #define lprefix_h
 
-#include <base/internal.h>
+#include <io/module.h>
 
 /*
 ** Allows POSIX/XSI stuff

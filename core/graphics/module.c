@@ -2,6 +2,8 @@
 
 #include "fonts_data.c.inc"
 
+static nux_graphics_module_t _module;
+
 NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
 NUX_VEC_IMPL(nux_graphics_command_vec, nux_graphics_command_t)
 NUX_VEC_IMPL(nux_immediate_state_vec, nux_immediate_state_t);
@@ -9,9 +11,8 @@ NUX_VEC_IMPL(nux_immediate_state_vec, nux_immediate_state_t);
 static nux_status_t
 update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    module->transforms_buffer.slot,
+                                    _module.transforms_buffer.slot,
                                     first * NUX_M4_SIZE * sizeof(nux_f32_t),
                                     count * NUX_M4_SIZE * sizeof(nux_f32_t),
                                     data),
@@ -19,12 +20,18 @@ update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
                "failed to update transform buffer");
     return NUX_SUCCESS;
 }
-
-nux_status_t
-nux_graphics_init (void)
+static nux_i32_t
+viewport_compare (const void *a, const void *b)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    nux_arena_t           *a      = nux_arena_core();
+    const nux_viewport_t *va = *(const nux_viewport_t **)a;
+    const nux_viewport_t *vb = *(const nux_viewport_t **)b;
+    return va->layer - vb->layer;
+}
+
+static nux_status_t
+module_init (void)
+{
+    nux_arena_t *a = nux_arena_core();
 
     // Register resources
     nux_resource_type_t *type;
@@ -57,213 +64,200 @@ nux_graphics_init (void)
 
     // Initialize gpu slots
     NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_FRAMEBUFFER_MAX, &module->free_framebuffer_slots),
+                  a, NUX_GPU_FRAMEBUFFER_MAX, &_module.free_framebuffer_slots),
               goto error);
     NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_PIPELINE_MAX, &module->free_pipeline_slots),
+                  a, NUX_GPU_PIPELINE_MAX, &_module.free_pipeline_slots),
               goto error);
     NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_TEXTURE_MAX, &module->free_texture_slots),
+                  a, NUX_GPU_TEXTURE_MAX, &_module.free_texture_slots),
               goto error);
     NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_BUFFER_MAX, &module->free_buffer_slots),
+                  a, NUX_GPU_BUFFER_MAX, &_module.free_buffer_slots),
               goto error);
-    nux_u32_vec_fill_reversed(&module->free_framebuffer_slots);
-    nux_u32_vec_fill_reversed(&module->free_pipeline_slots);
-    nux_u32_vec_fill_reversed(&module->free_buffer_slots);
-    nux_u32_vec_fill_reversed(&module->free_texture_slots);
+    nux_u32_vec_fill_reversed(&_module.free_framebuffer_slots);
+    nux_u32_vec_fill_reversed(&_module.free_pipeline_slots);
+    nux_u32_vec_fill_reversed(&_module.free_buffer_slots);
+    nux_u32_vec_fill_reversed(&_module.free_texture_slots);
 
     // Create pipelines
-    module->uber_pipeline_opaque.info.type              = NUX_GPU_PIPELINE_UBER;
-    module->uber_pipeline_opaque.info.primitive         = NUX_VERTEX_TRIANGLES;
-    module->uber_pipeline_opaque.info.enable_blend      = NUX_FALSE;
-    module->uber_pipeline_opaque.info.enable_depth_test = NUX_TRUE;
-    NUX_CHECK(nux_gpu_pipeline_init(&module->uber_pipeline_opaque), goto error);
-    module->uber_pipeline_line.info.type              = NUX_GPU_PIPELINE_UBER;
-    module->uber_pipeline_line.info.primitive         = NUX_VERTEX_LINES;
-    module->uber_pipeline_line.info.enable_blend      = NUX_FALSE;
-    module->uber_pipeline_line.info.enable_depth_test = NUX_TRUE;
-    NUX_CHECK(nux_gpu_pipeline_init(&module->uber_pipeline_line), goto error);
-    module->canvas_pipeline.info.type              = NUX_GPU_PIPELINE_CANVAS;
-    module->uber_pipeline_opaque.info.primitive    = NUX_VERTEX_TRIANGLES;
-    module->canvas_pipeline.info.enable_blend      = NUX_TRUE;
-    module->canvas_pipeline.info.enable_depth_test = NUX_FALSE;
-    NUX_CHECK(nux_gpu_pipeline_init(&module->canvas_pipeline), goto error);
-    module->blit_pipeline.info.type              = NUX_GPU_PIPELINE_BLIT;
-    module->uber_pipeline_opaque.info.primitive  = NUX_VERTEX_TRIANGLES;
-    module->blit_pipeline.info.enable_blend      = NUX_TRUE;
-    module->blit_pipeline.info.enable_depth_test = NUX_FALSE;
-    NUX_CHECK(nux_gpu_pipeline_init(&module->blit_pipeline), goto error);
+    _module.uber_pipeline_opaque.info.type              = NUX_GPU_PIPELINE_UBER;
+    _module.uber_pipeline_opaque.info.primitive         = NUX_VERTEX_TRIANGLES;
+    _module.uber_pipeline_opaque.info.enable_blend      = NUX_FALSE;
+    _module.uber_pipeline_opaque.info.enable_depth_test = NUX_TRUE;
+    NUX_CHECK(nux_gpu_pipeline_init(&_module.uber_pipeline_opaque), goto error);
+    _module.uber_pipeline_line.info.type              = NUX_GPU_PIPELINE_UBER;
+    _module.uber_pipeline_line.info.primitive         = NUX_VERTEX_LINES;
+    _module.uber_pipeline_line.info.enable_blend      = NUX_FALSE;
+    _module.uber_pipeline_line.info.enable_depth_test = NUX_TRUE;
+    NUX_CHECK(nux_gpu_pipeline_init(&_module.uber_pipeline_line), goto error);
+    _module.canvas_pipeline.info.type              = NUX_GPU_PIPELINE_CANVAS;
+    _module.uber_pipeline_opaque.info.primitive    = NUX_VERTEX_TRIANGLES;
+    _module.canvas_pipeline.info.enable_blend      = NUX_TRUE;
+    _module.canvas_pipeline.info.enable_depth_test = NUX_FALSE;
+    NUX_CHECK(nux_gpu_pipeline_init(&_module.canvas_pipeline), goto error);
+    _module.blit_pipeline.info.type              = NUX_GPU_PIPELINE_BLIT;
+    _module.uber_pipeline_opaque.info.primitive  = NUX_VERTEX_TRIANGLES;
+    _module.blit_pipeline.info.enable_blend      = NUX_TRUE;
+    _module.blit_pipeline.info.enable_depth_test = NUX_FALSE;
+    NUX_CHECK(nux_gpu_pipeline_init(&_module.blit_pipeline), goto error);
 
     // Create vertices buffers
-    module->vertices_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    module->vertices_buffer.size
+    _module.vertices_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    _module.vertices_buffer.size
         = nux_config()->graphics.vertices_buffer_size * sizeof(nux_f32_t);
-    nux_dsa_init(&module->vertices_dsa,
+    nux_dsa_init(&_module.vertices_dsa,
                  nux_config()->graphics.vertices_buffer_size);
-    NUX_CHECK(nux_gpu_buffer_init(&module->vertices_buffer), goto error);
+    NUX_CHECK(nux_gpu_buffer_init(&_module.vertices_buffer), goto error);
 
     // Create default font
-    NUX_CHECK(nux_font_init_default(&module->default_font), goto error);
+    NUX_CHECK(nux_font_init_default(&_module.default_font), goto error);
 
     // Create default palette
     NUX_CHECK(nux_palette_register_default(), goto error);
 
     // Allocate gpu commands buffer
-    NUX_CHECK(nux_gpu_encoder_init(a, &module->encoder), return NUX_NULL);
+    NUX_CHECK(nux_gpu_encoder_init(a, &_module.encoder), return NUX_NULL);
 
     // Allocate immediate command buffer
-    NUX_CHECK(nux_graphics_command_vec_init(a, &module->immediate_commands),
+    NUX_CHECK(nux_graphics_command_vec_init(a, &_module.immediate_commands),
               return NUX_NULL);
     NUX_CHECK(nux_immediate_state_vec_init_capa(
                   a,
                   NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE,
-                  &module->immediate_states),
+                  &_module.immediate_states),
               return NUX_NULL);
-    NUX_ASSERT(nux_immediate_state_vec_push(&module->immediate_states));
+    NUX_ASSERT(nux_immediate_state_vec_push(&_module.immediate_states));
 
     // Allocate constants buffer
-    module->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
-    module->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
-    NUX_CHECK(nux_gpu_buffer_init(&module->constants_buffer),
+    _module.constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
+    _module.constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
+    NUX_CHECK(nux_gpu_buffer_init(&_module.constants_buffer),
               return NUX_FAILURE);
 
     // Allocate batches buffer
-    module->batches_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    module->batches_buffer.size = sizeof(nux_gpu_scene_batch_t)
+    _module.batches_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    _module.batches_buffer.size = sizeof(nux_gpu_scene_batch_t)
                                   * nux_config()->graphics.batches_buffer_size;
-    nux_dsa_init(&module->batches_dsa,
+    nux_dsa_init(&_module.batches_dsa,
                  nux_config()->graphics.batches_buffer_size);
-    NUX_CHECK(nux_gpu_buffer_init(&module->batches_buffer), return NUX_FAILURE);
+    NUX_CHECK(nux_gpu_buffer_init(&_module.batches_buffer), return NUX_FAILURE);
 
     // Allocate transforms buffer
-    module->transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
-    module->transforms_buffer.size
+    _module.transforms_buffer.type = NUX_GPU_BUFFER_STORAGE;
+    _module.transforms_buffer.size
         = NUX_M4_SIZE * nux_config()->graphics.transforms_buffer_size
           * sizeof(nux_f32_t);
-    nux_dsa_init(&module->transforms_dsa,
+    nux_dsa_init(&_module.transforms_dsa,
                  nux_config()->graphics.transforms_buffer_size);
-    NUX_CHECK(nux_gpu_buffer_init(&module->transforms_buffer),
+    NUX_CHECK(nux_gpu_buffer_init(&_module.transforms_buffer),
               return NUX_FAILURE);
 
     // Create iterators
-    module->transform_iter = nux_query_new(nux_arena_core(), 1, 0);
-    NUX_CHECK(module->transform_iter, return NUX_FAILURE);
-    nux_query_includes(module->transform_iter, NUX_COMPONENT_TRANSFORM);
+    _module.transform_iter = nux_query_new(nux_arena_core(), 1, 0);
+    NUX_CHECK(_module.transform_iter, return NUX_FAILURE);
+    nux_query_includes(_module.transform_iter, NUX_COMPONENT_TRANSFORM);
 
-    module->transform_camera_iter = nux_query_new(nux_arena_core(), 2, 0);
-    NUX_CHECK(module->transform_camera_iter, return NUX_FAILURE);
-    nux_query_includes(module->transform_camera_iter, NUX_COMPONENT_TRANSFORM);
-    nux_query_includes(module->transform_camera_iter, NUX_COMPONENT_CAMERA);
+    _module.transform_camera_iter = nux_query_new(nux_arena_core(), 2, 0);
+    NUX_CHECK(_module.transform_camera_iter, return NUX_FAILURE);
+    nux_query_includes(_module.transform_camera_iter, NUX_COMPONENT_TRANSFORM);
+    nux_query_includes(_module.transform_camera_iter, NUX_COMPONENT_CAMERA);
 
-    module->transform_staticmesh_iter = nux_query_new(nux_arena_core(), 2, 0);
-    NUX_CHECK(module->transform_staticmesh_iter, return NUX_FAILURE);
-    nux_query_includes(module->transform_staticmesh_iter,
+    _module.transform_staticmesh_iter = nux_query_new(nux_arena_core(), 2, 0);
+    NUX_CHECK(_module.transform_staticmesh_iter, return NUX_FAILURE);
+    nux_query_includes(_module.transform_staticmesh_iter,
                        NUX_COMPONENT_TRANSFORM);
-    nux_query_includes(module->transform_staticmesh_iter,
+    nux_query_includes(_module.transform_staticmesh_iter,
                        NUX_COMPONENT_STATICMESH);
 
     // Push identity transform
     nux_m4_t identity = nux_m4_identity();
     NUX_ASSERT(nux_graphics_push_transforms(
-        1, &identity, &module->identity_transform_offset));
-    NUX_ASSERT(module->identity_transform_offset == 0);
+        1, &identity, &_module.identity_transform_offset));
+    NUX_ASSERT(_module.identity_transform_offset == 0);
 
     // Create screen rendertarget
-    module->screen_target
+    _module.screen_target
         = nux_resource_new(nux_arena_core(), NUX_RESOURCE_TEXTURE);
-    NUX_CHECK(module->screen_target, return NUX_FAILURE);
-    module->screen_target->gpu.type             = NUX_TEXTURE_RENDER_TARGET;
-    module->screen_target->gpu.framebuffer_slot = 0;
-    module->screen_target->gpu.width            = 1600;
-    module->screen_target->gpu.height           = 900;
-    nux_u32_vec_pop(&module->free_framebuffer_slots);
+    NUX_CHECK(_module.screen_target, return NUX_FAILURE);
+    _module.screen_target->gpu.type             = NUX_TEXTURE_RENDER_TARGET;
+    _module.screen_target->gpu.framebuffer_slot = 0;
+    _module.screen_target->gpu.width            = 1600;
+    _module.screen_target->gpu.height           = 900;
+    nux_u32_vec_pop(&_module.free_framebuffer_slots);
 
     return NUX_SUCCESS;
 
 error:
     return NUX_FAILURE;
 }
-void
-nux_graphics_free (void)
+static nux_status_t
+module_free (void)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    NUX_CHECK(module, return);
+    nux_gpu_buffer_free(&_module.constants_buffer);
+    nux_gpu_buffer_free(&_module.batches_buffer);
+    nux_gpu_buffer_free(&_module.transforms_buffer);
 
-    nux_gpu_buffer_free(&module->constants_buffer);
-    nux_gpu_buffer_free(&module->batches_buffer);
-    nux_gpu_buffer_free(&module->transforms_buffer);
+    nux_gpu_pipeline_free(&_module.uber_pipeline_line);
+    nux_gpu_pipeline_free(&_module.uber_pipeline_opaque);
+    nux_gpu_pipeline_free(&_module.canvas_pipeline);
+    nux_gpu_pipeline_free(&_module.blit_pipeline);
 
-    nux_gpu_pipeline_free(&module->uber_pipeline_line);
-    nux_gpu_pipeline_free(&module->uber_pipeline_opaque);
-    nux_gpu_pipeline_free(&module->canvas_pipeline);
-    nux_gpu_pipeline_free(&module->blit_pipeline);
+    nux_gpu_buffer_free(&_module.vertices_buffer);
 
-    nux_gpu_buffer_free(&module->vertices_buffer);
+    nux_font_free(&_module.default_font);
 
-    nux_font_free(&module->default_font);
-
-    NUX_ASSERT(module->free_texture_slots.size == NUX_GPU_TEXTURE_MAX);
-    NUX_ASSERT(module->free_buffer_slots.size == NUX_GPU_BUFFER_MAX);
-    NUX_ASSERT(module->free_pipeline_slots.size == NUX_GPU_PIPELINE_MAX);
-    NUX_ASSERT(module->free_framebuffer_slots.size
+    NUX_ASSERT(_module.free_texture_slots.size == NUX_GPU_TEXTURE_MAX);
+    NUX_ASSERT(_module.free_buffer_slots.size == NUX_GPU_BUFFER_MAX);
+    NUX_ASSERT(_module.free_pipeline_slots.size == NUX_GPU_PIPELINE_MAX);
+    NUX_ASSERT(_module.free_framebuffer_slots.size
                == NUX_GPU_FRAMEBUFFER_MAX - 1); // 0 reserved for default
+    return NUX_SUCCESS;
 }
-nux_status_t
-nux_graphics_pre_update (void)
+static nux_status_t
+module_pre_update (void)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-
     // Reset frame data
-    nux_dsa_reset_bottom(&module->batches_dsa);
-    nux_dsa_reset_top(&module->vertices_dsa);
-    nux_dsa_reset_top(&module->transforms_dsa);
-    nux_dsa_reset_bottom(&module->transforms_dsa);
+    nux_dsa_reset_bottom(&_module.batches_dsa);
+    nux_dsa_reset_top(&_module.vertices_dsa);
+    nux_dsa_reset_top(&_module.transforms_dsa);
+    nux_dsa_reset_bottom(&_module.transforms_dsa);
     nux_dsa_push_bottom(
-        &module->transforms_dsa, 1, NUX_NULL); // keep identity transform
-    module->active_texture = NUX_NULL;
+        &_module.transforms_dsa, 1, NUX_NULL); // keep identity transform
+    _module.active_texture = NUX_NULL;
 
     // Reset immediate state
-    module->immediate_state = module->immediate_states.data;
+    _module.immediate_state = _module.immediate_states.data;
     nux_graphics_reset_state();
 
     // Update screen size
-    module->screen_target->gpu.width  = nux_stat(NUX_STAT_SCREEN_WIDTH);
-    module->screen_target->gpu.height = nux_stat(NUX_STAT_SCREEN_HEIGHT);
+    _module.screen_target->gpu.width  = nux_stat(NUX_STAT_SCREEN_WIDTH);
+    _module.screen_target->gpu.height = nux_stat(NUX_STAT_SCREEN_HEIGHT);
 
     // Update viewports with auto resize enabled
     nux_viewport_t *vp = NUX_NULL;
     while ((vp = nux_resource_nextp(NUX_RESOURCE_VIEWPORT, vp)))
     {
         if (vp->auto_resize
-            && vp->target == nux_resource_rid(module->screen_target))
+            && vp->target == nux_resource_rid(_module.screen_target))
         {
             nux_viewport_set_extent(
                 vp,
                 nux_b2i_xywh(0,
                              0,
-                             module->screen_target->gpu.width,
-                             module->screen_target->gpu.height));
+                             _module.screen_target->gpu.width,
+                             _module.screen_target->gpu.height));
         }
     }
 
     return NUX_SUCCESS;
 }
-static nux_i32_t
-viewport_compare (const void *a, const void *b)
+static nux_status_t
+module_update (void)
 {
-    const nux_viewport_t *va = *(const nux_viewport_t **)a;
-    const nux_viewport_t *vb = *(const nux_viewport_t **)b;
-    return va->layer - vb->layer;
-}
-nux_status_t
-nux_graphics_update (void)
-{
-    nux_graphics_module_t *module = nux_graphics_module();
-
     // Propagate transforms
     nux_nid_t transform = NUX_NULL;
-    while ((transform = nux_query_next(module->transform_iter, transform)))
+    while ((transform = nux_query_next(_module.transform_iter, transform)))
     {
         nux_transform_get_matrix(transform);
     }
@@ -335,9 +329,29 @@ nux_graphics_update (void)
     }
 
     // Clear frame buffers
-    nux_graphics_command_vec_clear(&module->immediate_commands);
+    nux_graphics_command_vec_clear(&_module.immediate_commands);
 
     return NUX_SUCCESS;
+}
+const nux_module_t *
+nux_graphics_module_info (void)
+{
+    static nux_module_t info = {
+        .name       = "graphics",
+        .size       = sizeof(_module),
+        .data       = &_module,
+        .init       = module_init,
+        .free       = module_free,
+        .pre_update = module_pre_update,
+        .update     = module_update,
+    };
+    return &info;
+}
+
+nux_graphics_module_t *
+nux_graphics (void)
+{
+    return &_module;
 }
 
 nux_status_t
@@ -345,9 +359,8 @@ nux_graphics_update_vertices (nux_u32_t        offset,
                               nux_u32_t        count,
                               const nux_f32_t *data)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    module->vertices_buffer.slot,
+                                    _module.vertices_buffer.slot,
                                     offset * sizeof(nux_f32_t),
                                     count * sizeof(nux_f32_t),
                                     data),
@@ -360,8 +373,7 @@ nux_graphics_push_vertices (nux_u32_t        count,
                             const nux_f32_t *data,
                             nux_u32_t       *offset)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_bottom(&module->vertices_dsa, count, offset),
+    NUX_ENSURE(nux_dsa_push_bottom(&_module.vertices_dsa, count, offset),
                return NUX_FAILURE,
                "out of vertices");
     NUX_CHECK(nux_graphics_update_vertices(*offset, count, data),
@@ -373,8 +385,7 @@ nux_graphics_push_frame_vertices (nux_u32_t        count,
                                   const nux_f32_t *data,
                                   nux_u32_t       *offset)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_top(&module->vertices_dsa, count, offset),
+    NUX_ENSURE(nux_dsa_push_top(&_module.vertices_dsa, count, offset),
                return NUX_FAILURE,
                "out of frame vertices");
     NUX_CHECK(nux_graphics_update_vertices(*offset, count, data),
@@ -386,8 +397,7 @@ nux_graphics_push_transforms (nux_u32_t       count,
                               const nux_m4_t *data,
                               nux_u32_t      *offset)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_bottom(&module->transforms_dsa, count, offset),
+    NUX_ENSURE(nux_dsa_push_bottom(&_module.transforms_dsa, count, offset),
                return NUX_FAILURE,
                "out of transforms");
     NUX_CHECK(update_transform_buffer(*offset, count, data),
@@ -399,8 +409,7 @@ nux_graphics_push_frame_transforms (nux_u32_t       count,
                                     const nux_m4_t *data,
                                     nux_u32_t      *offset)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    NUX_ENSURE(nux_dsa_push_top(&module->transforms_dsa, count, offset),
+    NUX_ENSURE(nux_dsa_push_top(&_module.transforms_dsa, count, offset),
                return NUX_FAILURE,
                "out of frame transforms");
     NUX_CHECK(update_transform_buffer(*offset, count, data),

@@ -7,15 +7,15 @@ static nux_v4_t default_palette[]
 nux_status_t
 nux_palette_register_default (void)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    module->default_palette
+    nux_graphics_module_t *gfx = nux_graphics();
+    gfx->default_palette
         = nux_palette_new(nux_arena_core(), NUX_ARRAY_SIZE(default_palette));
-    NUX_CHECK(module->default_palette, return NUX_FAILURE);
+    NUX_CHECK(gfx->default_palette, return NUX_FAILURE);
     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(default_palette); ++i)
     {
-        nux_palette_set_color(module->default_palette, i, default_palette[i]);
+        nux_palette_set_color(gfx->default_palette, i, default_palette[i]);
     }
-    nux_palette_set_active(module->default_palette);
+    nux_palette_set_active(gfx->default_palette);
     return NUX_SUCCESS;
 }
 
@@ -34,13 +34,13 @@ nux_palette_new (nux_arena_t *arena, nux_u32_t size)
 nux_palette_t *
 nux_palette_default (void)
 {
-    return nux_graphics_module()->default_palette;
+    return nux_graphics()->default_palette;
 }
 void
 nux_palette_set_active (nux_palette_t *palette)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    module->active_palette        = palette;
+    nux_graphics_module_t *gfx = nux_graphics();
+    gfx->active_palette        = palette;
 }
 void
 nux_palette_set_color (nux_palette_t *palette, nux_u32_t index, nux_v4_t color)

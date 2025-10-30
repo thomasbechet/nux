@@ -63,8 +63,6 @@ nux_disk_cleanup (void *data)
 nux_status_t
 nux_disk_mount (const nux_c8_t *path)
 {
-    nux_base_module_t *module = nux_base_module();
-
     NUX_DEBUG("mounting '%s", path);
     nux_disk_t *disk = nux_resource_new(nux_arena_core(), NUX_RESOURCE_DISK);
     NUX_CHECK(disk, return NUX_FAILURE);
@@ -79,16 +77,6 @@ nux_disk_mount (const nux_c8_t *path)
 
     // Read entries
     NUX_CHECK(cart_read_entries(&disk->cart), return NUX_FAILURE);
-
-    if (module->first_disk)
-    {
-        module->first_disk->next = disk;
-        disk->prev               = module->first_disk;
-    }
-    else
-    {
-        module->first_disk = disk;
-    }
 
     return NUX_SUCCESS;
 }

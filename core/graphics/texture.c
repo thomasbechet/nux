@@ -121,22 +121,22 @@ error:
 void
 nux_texture_cleanup (void *data)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
-    nux_texture_t         *tex    = data;
+    nux_graphics_module_t *gfx = nux_graphics();
+    nux_texture_t         *tex = data;
     if (tex->gpu.slot)
     {
-        nux_u32_vec_pushv(&module->free_texture_slots, tex->gpu.slot);
+        nux_u32_vec_pushv(&gfx->free_texture_slots, tex->gpu.slot);
     }
     if (tex->gpu.framebuffer_slot)
     {
-        nux_u32_vec_pushv(&module->free_framebuffer_slots,
+        nux_u32_vec_pushv(&gfx->free_framebuffer_slots,
                           tex->gpu.framebuffer_slot);
     }
 }
 nux_texture_t *
 nux_texture_screen (void)
 {
-    return nux_graphics_module()->screen_target;
+    return nux_graphics()->screen_target;
 }
 nux_v2i_t
 nux_texture_get_size (nux_texture_t *texture)
@@ -146,13 +146,13 @@ nux_texture_get_size (nux_texture_t *texture)
 void
 nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
 {
-    nux_graphics_module_t *module = nux_graphics_module();
+    nux_graphics_module_t *gfx = nux_graphics();
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_encoder_t enc;
     nux_gpu_encoder_init(nux_arena_frame(), &enc);
     nux_gpu_bind_framebuffer(&enc, target->gpu.framebuffer_slot);
     nux_gpu_viewport(&enc, extent);
-    nux_gpu_bind_pipeline(&enc, module->blit_pipeline.slot);
+    nux_gpu_bind_pipeline(&enc, gfx->blit_pipeline.slot);
     nux_gpu_bind_texture(&enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);
     nux_gpu_push_u32(&enc, NUX_GPU_DESC_BLIT_TEXTURE_WIDTH, tex->gpu.width);
     nux_gpu_push_u32(&enc, NUX_GPU_DESC_BLIT_TEXTURE_HEIGHT, tex->gpu.height);

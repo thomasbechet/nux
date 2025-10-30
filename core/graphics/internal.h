@@ -33,29 +33,35 @@ NUX_VEC_DEFINE(nux_immediate_state_vec, nux_immediate_state_t);
 
 typedef struct
 {
+    nux_u32_vec_t free_texture_slots;
+    nux_u32_vec_t free_buffer_slots;
+    nux_u32_vec_t free_pipeline_slots;
+    nux_u32_vec_t free_framebuffer_slots;
+
+    nux_font_t     default_font;
+    nux_palette_t *default_palette;
+    nux_texture_t *screen_target;
+
     nux_gpu_pipeline_t uber_pipeline_opaque;
     nux_gpu_pipeline_t uber_pipeline_line;
     nux_gpu_pipeline_t blit_pipeline;
     nux_gpu_pipeline_t canvas_pipeline;
-    nux_gpu_buffer_t   vertices_buffer;
-    nux_dsa_t          vertices_dsa;
-    nux_gpu_buffer_t   transforms_buffer;
-    nux_dsa_t          transforms_dsa;
-    nux_font_t         default_font;
-    nux_palette_t     *default_palette;
-    nux_u32_vec_t      free_texture_slots;
-    nux_u32_vec_t      free_buffer_slots;
-    nux_u32_vec_t      free_pipeline_slots;
-    nux_u32_vec_t      free_framebuffer_slots;
-    nux_u32_t          identity_transform_offset;
+
+    nux_gpu_buffer_t vertices_buffer;
+    nux_dsa_t        vertices_dsa;
+    nux_gpu_buffer_t constants_buffer;
+    nux_gpu_buffer_t batches_buffer;
+    nux_dsa_t        batches_dsa;
+    nux_gpu_buffer_t transforms_buffer;
+    nux_dsa_t        transforms_dsa;
+
+    nux_u32_t identity_transform_offset;
 
     nux_gpu_encoder_t encoder;
-    nux_gpu_buffer_t  constants_buffer;
-    nux_gpu_buffer_t  batches_buffer;
-    nux_dsa_t         batches_dsa;
-    nux_query_t      *transform_iter;
-    nux_query_t      *transform_staticmesh_iter;
-    nux_query_t      *transform_camera_iter;
+
+    nux_query_t *transform_iter;
+    nux_query_t *transform_staticmesh_iter;
+    nux_query_t *transform_camera_iter;
 
     nux_graphics_command_vec_t immediate_commands;
     nux_immediate_state_vec_t  immediate_states;
@@ -63,17 +69,12 @@ typedef struct
 
     const nux_texture_t *active_texture;
     const nux_palette_t *active_palette;
-    nux_texture_t       *screen_target;
 } nux_graphics_module_t;
-
-nux_graphics_module_t *nux_graphics_module(void);
 
 // graphics.c
 
-nux_status_t nux_graphics_init(void);
-void         nux_graphics_free(void);
-nux_status_t nux_graphics_pre_update(void);
-nux_status_t nux_graphics_update(void);
+const nux_module_t    *nux_graphics_module_info(void);
+nux_graphics_module_t *nux_graphics(void);
 
 // buffer.c
 
