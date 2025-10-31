@@ -614,10 +614,11 @@ typedef enum
 
 typedef struct
 {
-    const nux_c8_t *name;
-    nux_u32_t       size;
-    void           *data;
-    nux_u32_t       flags;
+    const nux_c8_t  *name;
+    nux_u32_t        size;
+    void            *data;
+    nux_u32_t        flags;
+    const nux_c8_t **deps;
     nux_status_t (*init)(void);
     nux_status_t (*free)(void);
     nux_status_t (*pre_update)(void);

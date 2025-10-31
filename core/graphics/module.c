@@ -241,12 +241,11 @@ module_pre_update (void)
         if (vp->auto_resize
             && vp->target == nux_resource_rid(_module.screen_target))
         {
-            nux_viewport_set_extent(
-                vp,
-                nux_b2i(0,
-                             0,
-                             _module.screen_target->gpu.width,
-                             _module.screen_target->gpu.height));
+            nux_viewport_set_extent(vp,
+                                    nux_b2i(0,
+                                            0,
+                                            _module.screen_target->gpu.width,
+                                            _module.screen_target->gpu.height));
         }
     }
 
@@ -336,14 +335,16 @@ module_update (void)
 const nux_module_info_t *
 nux_graphics_module_info (void)
 {
-    static nux_module_info_t info = {
-        .name       = "graphics",
-        .size       = sizeof(_module),
-        .data       = &_module,
-        .init       = module_init,
-        .free       = module_free,
-        .pre_update = module_pre_update,
-        .update     = module_update,
+    static const nux_c8_t   *deps[] = { "base", NUX_NULL };
+    static nux_module_info_t info   = {
+          .name       = "graphics",
+          .size       = sizeof(_module),
+          .data       = &_module,
+          .deps       = deps,
+          .init       = module_init,
+          .free       = module_free,
+          .pre_update = module_pre_update,
+          .update     = module_update,
     };
     return &info;
 }
