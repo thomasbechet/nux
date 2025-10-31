@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "stdlib.h"
 
 nux_q4_t
 nux_q4 (nux_f32_t x, nux_f32_t y, nux_f32_t z, nux_f32_t w)

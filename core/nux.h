@@ -1,7 +1,6 @@
 #ifndef NUX_H
 #define NUX_H
 
-#include "nux_config.h"
 #include "base/api.h"
 #include "io/api.h"
 #include "input/api.h"
@@ -23,8 +22,6 @@ typedef enum
     NUX_GPU_BUFFER_MAX      = 32,
     NUX_IO_FILE_MAX         = 64,
     NUX_IO_DISK_MAX         = 4,
-    NUX_PATH_MAX            = 256, // does not include '\0'
-    NUX_PATH_BUF_SIZE       = NUX_PATH_MAX + 1
 } nux_os_constants_t;
 
 typedef struct

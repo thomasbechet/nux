@@ -1,5 +1,4 @@
-#include "internal.h"
-#include <stdlib.h>
+#include "stdlib.h"
 
 #define NUX_B3_IMPL(name, type)                                         \
     nux_##name##_t nux_##name(type min, type max)                       \
