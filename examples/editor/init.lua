@@ -50,10 +50,12 @@ function M:on_load()
     scene.set_active(self.scene)
     local nid = node.instantiate(self.scene, node.root())
     node.add(nid, component.TRANSFORM)
-    transform.set_translation(nid, { 100, 0, 0 })
-    nid = node.instantiate(self.scene, node.root())
-    node.add(nid, component.TRANSFORM)
-    transform.set_translation(nid, { -100, 0, 0 })
+    transform.set_translation(nid, { 0, 0, 0 })
+    for i = 0, 2 do
+        local child = node.instantiate(self.scene, node.root())
+        node.add(child, component.TRANSFORM)
+        transform.set_translation(child, { i * 100, 0, 0 })
+    end
 
     -- add all colliders before camera creation
     add_colliders(node.root())
