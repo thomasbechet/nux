@@ -215,7 +215,7 @@ nux_component_register (nux_u32_t index, const nux_c8_t *name, nux_u32_t size)
     NUX_ASSERT(index < NUX_COMPONENT_MAX);
     NUX_ASSERT(_module.components[index].size == 0);
     nux_component_t *comp  = &_module.components[index];
-    comp->name             = nux_arena_alloc_string(nux_arena_core(), name);
+    comp->name             = nux_strdup(nux_allocator_core(), name);
     comp->size             = size;
     comp->read             = NUX_NULL;
     comp->write            = NUX_NULL;
@@ -228,16 +228,17 @@ nux_query_new (nux_arena_t *arena,
                nux_u32_t    include_count,
                nux_u32_t    exclude_count)
 {
-    nux_query_t *it = nux_resource_new(arena, NUX_RESOURCE_QUERY);
+    nux_query_t     *it = nux_resource_new(arena, NUX_RESOURCE_QUERY);
+    nux_allocator_t *a  = nux_arena_allocator(arena);
     NUX_CHECK(it, return NUX_NULL);
     if (include_count)
     {
-        NUX_CHECK(nux_u32_vec_init_capa(arena, include_count, &it->includes),
+        NUX_CHECK(nux_u32_vec_init_capa(a, include_count, &it->includes),
                   return NUX_NULL);
     }
     if (exclude_count)
     {
-        NUX_CHECK(nux_u32_vec_init_capa(arena, exclude_count, &it->excludes),
+        NUX_CHECK(nux_u32_vec_init_capa(a, exclude_count, &it->excludes),
                   return NUX_NULL);
     }
     return it;
@@ -328,14 +329,15 @@ nux_query_next (nux_query_t *it, nux_nid_t e)
 nux_scene_t *
 nux_scene_new (nux_arena_t *arena)
 {
-    nux_scene_t *scene = nux_resource_new(arena, NUX_RESOURCE_SCENE);
+    nux_scene_t     *scene = nux_resource_new(arena, NUX_RESOURCE_SCENE);
+    nux_allocator_t *a     = nux_arena_allocator(arena);
     NUX_CHECK(scene, return NUX_NULL);
     scene->arena = arena;
     NUX_CHECK(nux_scene_container_vec_init_capa(
-                  arena, _module.components_max, &scene->containers),
+                  a, _module.components_max, &scene->containers),
               return NUX_NULL);
-    NUX_CHECK(nux_scene_bitset_init(arena, &scene->bitset), return NUX_NULL);
-    NUX_CHECK(nux_node_vec_init(arena, &scene->nodes), return NUX_NULL);
+    NUX_CHECK(nux_scene_bitset_init(a, &scene->bitset), return NUX_NULL);
+    NUX_CHECK(nux_node_vec_init(a, &scene->nodes), return NUX_NULL);
     // create root node
     nux_node_t *root = nux_node_vec_push(&scene->nodes);
     NUX_CHECK(root, return NUX_NULL);
@@ -503,6 +505,7 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
                return NUX_NULL,
                "invalid scene component id");
     const nux_component_t *component = _module.components + c;
+    nux_allocator_t       *a         = nux_arena_allocator(scene->arena);
 
     // initialize pool if component missing
     while (c >= scene->containers.size)
@@ -513,10 +516,10 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         NUX_CHECK(container, return NUX_NULL);
         container->component_size = _module.components[index].size;
         NUX_CHECK(nux_scene_chunk_vec_init_capa(
-                      scene->arena, scene->bitset.capa, &container->chunks),
+                      a, scene->bitset.capa, &container->chunks),
                   return NUX_NULL);
         NUX_CHECK(nux_scene_bitset_init_capa(
-                      scene->arena, scene->bitset.capa, &container->bitset),
+                      a, scene->bitset.capa, &container->bitset),
                   return NUX_NULL);
     }
 
@@ -542,8 +545,8 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         if (!container->chunks.data[mask])
         {
             // allocate new chunk
-            container->chunks.data[mask] = nux_arena_malloc(
-                scene->arena, container->component_size * NUX_NODE_PER_MASK);
+            container->chunks.data[mask]
+                = nux_malloc(a, container->component_size * NUX_NODE_PER_MASK);
             // expect zero memory by default
             nux_memset(container->chunks.data[mask],
                        0,

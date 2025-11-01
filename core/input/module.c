@@ -78,26 +78,25 @@ error:
 static nux_status_t
 module_init (void)
 {
+    nux_allocator_t *a = nux_allocator_core();
+
     nux_resource_type_t *type;
     type = nux_resource_register(
         NUX_RESOURCE_INPUTMAP, sizeof(nux_inputmap_t), "inputmap");
 
     // Allocate events queue
-    NUX_CHECK(nux_os_event_vec_init_capa(nux_arena_core(),
-                                         DEFAULT_INPUT_EVENT_SIZE,
-                                         &_module.input_events),
+    NUX_CHECK(nux_os_event_vec_init_capa(
+                  a, DEFAULT_INPUT_EVENT_SIZE, &_module.input_events),
               return NUX_FAILURE);
 
     for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
     {
         nux_controller_t *controller = _module.controllers + i;
         controller->inputmap         = NUX_NULL;
-        nux_f32_vec_init_capa(nux_arena_core(),
-                              DEFAULT_CONTROLLER_INPUT_SIZE,
-                              &controller->inputs);
-        nux_f32_vec_init_capa(nux_arena_core(),
-                              DEFAULT_CONTROLLER_INPUT_SIZE,
-                              &controller->prev_inputs);
+        nux_f32_vec_init_capa(
+            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->inputs);
+        nux_f32_vec_init_capa(
+            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->prev_inputs);
     }
 
     return NUX_SUCCESS;

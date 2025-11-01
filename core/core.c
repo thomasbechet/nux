@@ -74,9 +74,6 @@ nux_core_free (void)
 
     // Free modules
     nux_modules_free();
-
-    // Free core memory
-    nux_arena_free(nux_arena_core());
 }
 void
 nux_core_update (void)

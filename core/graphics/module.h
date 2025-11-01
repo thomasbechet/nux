@@ -206,7 +206,8 @@ void         nux_gpu_texture_free(nux_gpu_texture_t *texture);
 nux_status_t nux_gpu_pipeline_init(nux_gpu_pipeline_t *pipeline);
 void         nux_gpu_pipeline_free(nux_gpu_pipeline_t *pipeline);
 
-nux_status_t nux_gpu_encoder_init(nux_arena_t *arena, nux_gpu_encoder_t *enc);
+nux_status_t nux_gpu_encoder_init(nux_allocator_t   *allocator,
+                                  nux_gpu_encoder_t *enc);
 void         nux_gpu_encoder_submit(nux_gpu_encoder_t *enc);
 void         nux_gpu_bind_framebuffer(nux_gpu_encoder_t *enc, nux_u32_t slot);
 void         nux_gpu_bind_pipeline(nux_gpu_encoder_t *enc, nux_u32_t slot);

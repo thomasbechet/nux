@@ -5,27 +5,33 @@ static nux_base_module_t _module;
 static nux_status_t
 bootstrap_resources (void)
 {
-    nux_resource_pool_t *resources = nux_base_resources();
-    // Create core arena
-    nux_arena_t core_arena;
-    nux_arena_init(&core_arena);
-    // Create resource pool
-    NUX_CHECK(nux_resource_pool_init(&core_arena, resources),
-              return NUX_FAILURE);
+    // Allocate resource table
+    NUX_ASSERT(
+        nux_resource_pool_init(_module.core_allocator, &_module.resources));
     // Reserve index 0 for null id
-    nux_resource_pool_add(resources);
-    // Reserve index 1 for core arena
-    _module.core_arena = nux_resource_new(&core_arena, NUX_RESOURCE_ARENA);
-    NUX_CHECK(_module.core_arena, return NUX_FAILURE);
-    *_module.core_arena = core_arena;
-    // Patch core arena resource to reference itself
-    resources->data[1].arena = _module.core_arena;
-    // Patch resource pool freelist to reference new core arena
-    resources->freelist.arena = _module.core_arena;
+    nux_resource_pool_add(&_module.resources);
+    // Create core arena resource
+    nux_resource_entry_t *entry
+        = nux_resource_add(&_module.resources, NUX_RESOURCE_ARENA);
+    NUX_ASSERT(entry);
+    // Allocate core arena
+    _module.core_arena = nux_resource_malloc(
+        _module.core_allocator, entry->rid, sizeof(*_module.core_arena));
+    NUX_ASSERT(_module.core_arena);
+    // Initialize core arena
+    nux_arena_init(_module.core_arena, _module.core_allocator);
 
     return NUX_SUCCESS;
 }
 
+static nux_status_t
+module_free (void)
+{
+    // Free core memory
+    nux_block_allocator_free(&_module.core_block_allocator);
+
+    return NUX_SUCCESS;
+}
 static nux_status_t
 module_pre_update (void)
 {
@@ -41,10 +47,21 @@ module_post_update (void)
     nux_os_stats_update(nux_userdata(), _module.stats);
     return NUX_SUCCESS;
 }
+
 nux_status_t
 nux_base_init (void *userdata)
 {
     nux_memset(&_module, 0, sizeof(_module));
+
+    // Initialize os allocator
+    _module.os_allocator.userdata = userdata;
+    _module.os_allocator.alloc    = nux_os_alloc;
+
+    // Initialize core allocator
+    nux_block_allocator_init(&_module.core_block_allocator,
+                             &_module.os_allocator);
+    _module.core_allocator
+        = nux_block_allocator_interface(&_module.core_block_allocator);
 
     // Initialize system state
     _module.userdata = userdata;
@@ -87,8 +104,9 @@ nux_base_init (void *userdata)
     nux_resource_set_name(_module.frame_arena, "frame_arena");
 
     // Initialize modules
-    NUX_CHECK(nux_module_vec_init_capa(
-                  nux_arena_core(), DEFAULT_MODULE_CAPACITY, &_module.modules),
+    NUX_CHECK(nux_module_vec_init_capa(_module.core_allocator,
+                                       DEFAULT_MODULE_CAPACITY,
+                                       &_module.modules),
               return NUX_FAILURE);
 
     // Register itself
@@ -97,6 +115,7 @@ nux_base_init (void *userdata)
         .size        = sizeof(_module),
         .data        = &_module,
         .flags       = NUX_MODULE_NO_DATA_INITIALIZATION, // already initialized
+        .free        = module_free,
         .pre_update  = module_pre_update,
         .post_update = module_post_update,
     };
@@ -330,4 +349,15 @@ nux_arena_t *
 nux_arena_frame (void)
 {
     return _module.frame_arena;
+}
+
+nux_allocator_t *
+nux_allocator_core (void)
+{
+    return nux_arena_allocator(_module.core_arena);
+}
+nux_allocator_t *
+nux_allocator_frame (void)
+{
+    return nux_arena_allocator(_module.frame_arena);
 }

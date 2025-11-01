@@ -158,8 +158,9 @@ nux_mesh_new (nux_arena_t           *arena,
     mesh->attributes = attributes;
     mesh->primitive  = primitive;
     mesh->layout     = vertex_layout(mesh->attributes);
-    NUX_CHECK(nux_f32_vec_init_capa(
-                  arena, mesh->layout.stride * capa, &mesh->vertices),
+    NUX_CHECK(nux_f32_vec_init_capa(nux_arena_allocator(arena),
+                                    mesh->layout.stride * capa,
+                                    &mesh->vertices),
               return NUX_NULL);
     mesh->bounds       = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
     mesh->dirty        = NUX_TRUE;

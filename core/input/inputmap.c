@@ -12,10 +12,10 @@ find_entry (nux_inputmap_t *map, const nux_c8_t *name)
         }
     }
 
-    nux_arena_t          *a     = nux_resource_arena(map);
+    nux_allocator_t      *a     = nux_resource_allocator(map);
     nux_inputmap_entry_t *entry = nux_inputmap_entry_vec_push(&map->entries);
     NUX_CHECK(entry, return NUX_NULL);
-    entry->name = nux_arena_alloc_string(a, name);
+    entry->name = nux_strdup(a, name);
     entry->type = NUX_INPUT_UNMAPPED;
 
     // Update controllers
@@ -46,8 +46,9 @@ nux_inputmap_new (nux_arena_t *arena)
 {
     nux_inputmap_t *map = nux_resource_new(arena, NUX_RESOURCE_INPUTMAP);
     NUX_CHECK(map, return NUX_NULL);
-    NUX_CHECK(nux_inputmap_entry_vec_init_capa(
-                  arena, DEFAULT_CONTROLLER_INPUT_SIZE, &map->entries),
+    NUX_CHECK(nux_inputmap_entry_vec_init_capa(nux_arena_allocator(arena),
+                                               DEFAULT_CONTROLLER_INPUT_SIZE,
+                                               &map->entries),
               return NUX_NULL);
     return map;
 }

@@ -153,7 +153,7 @@ module_init (void)
     comp->add = nux_collider_add;
 
     // Initialize values
-    nux_arena_t *a = nux_arena_core();
+    nux_allocator_t *a = nux_allocator_core();
     NUX_CHECK(nux_point_mass_vec_init(a, &_module.point_masses),
               return NUX_FAILURE);
     NUX_CHECK(
@@ -163,14 +163,15 @@ module_init (void)
         nux_distance_constraint_vec_init(a, &_module.distance_constraints),
         return NUX_FAILURE);
 
-    _module.rigidbody_transform_iter = nux_query_new(a, 2, 0);
+    nux_arena_t *arena               = nux_arena_core();
+    _module.rigidbody_transform_iter = nux_query_new(arena, 2, 0);
     NUX_CHECK(_module.rigidbody_transform_iter, return NUX_FAILURE);
     nux_query_includes(_module.rigidbody_transform_iter,
                        NUX_COMPONENT_RIGIDBODY);
     nux_query_includes(_module.rigidbody_transform_iter,
                        NUX_COMPONENT_TRANSFORM);
 
-    _module.collider_transform_iter = nux_query_new(a, 2, 0);
+    _module.collider_transform_iter = nux_query_new(arena, 2, 0);
     NUX_CHECK(_module.collider_transform_iter, return NUX_FAILURE);
     nux_query_includes(_module.collider_transform_iter, NUX_COMPONENT_COLLIDER);
     nux_query_includes(_module.collider_transform_iter,

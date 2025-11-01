@@ -262,7 +262,7 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
 
     // Load file
     nux_u32_t buf_size;
-    void     *buf = nux_file_load(nux_arena_frame(), path, &buf_size);
+    void     *buf = nux_file_load(nux_allocator_frame(), path, &buf_size);
     NUX_CHECK(buf, goto error);
 
     // Parse file

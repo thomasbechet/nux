@@ -266,7 +266,7 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
 {
     nux_serde_reader_init(&j->reader, j, json_reader);
 
-    nux_arena_t *a = nux_arena_frame();
+    nux_allocator_t *a = nux_allocator_frame();
 
     j->json = nux_file_load(a, path, &j->json_size);
     NUX_CHECK(j->json, return NUX_FAILURE);
@@ -275,7 +275,7 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
     jsmn_init(&parser);
 
     j->tokens_capa = 256;
-    j->tokens      = nux_arena_malloc(a, sizeof(jsmntok_t) * j->tokens_capa);
+    j->tokens      = nux_malloc(a, sizeof(jsmntok_t) * j->tokens_capa);
     NUX_CHECK(j->tokens, return NUX_FAILURE);
 
     nux_i32_t r
@@ -284,10 +284,10 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
     {
         nux_u32_t old_capa = j->tokens_capa;
         j->tokens_capa *= 2;
-        j->tokens = nux_arena_alloc(a,
-                                    j->tokens,
-                                    sizeof(jsmntok_t) * old_capa,
-                                    sizeof(jsmntok_t) * j->tokens_capa);
+        j->tokens = nux_realloc(a,
+                                j->tokens,
+                                sizeof(jsmntok_t) * old_capa,
+                                sizeof(jsmntok_t) * j->tokens_capa);
         NUX_CHECK(j->tokens, return NUX_FAILURE);
         r = jsmn_parse(
             &parser, j->json, j->json_size, j->tokens, j->tokens_capa);

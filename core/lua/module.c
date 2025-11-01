@@ -339,7 +339,7 @@ nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
     NUX_CHECK(lua, return NUX_NULL);
     nux_resource_set_path(lua, path);
     // initialize event handles
-    nux_ptr_vec_init(arena, &lua->event_handles);
+    nux_ptr_vec_init(nux_arena_allocator(arena), &lua->event_handles);
     // dofile and call load function
     NUX_CHECK(load_lua_module(lua, path), return NUX_NULL);
     NUX_CHECK(nux_lua_call_module(lua, NUX_LUA_ON_LOAD, 0), return NUX_NULL);

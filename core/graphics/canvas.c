@@ -125,8 +125,9 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     NUX_CHECK(c, return NUX_NULL);
 
     // Allocate quads buffer
-    c->quads_buffer = nux_arena_malloc(
-        arena, sizeof(*c->quads_buffer) * NUX_CANVAS_QUAD_BUFFER_SIZE);
+    c->quads_buffer
+        = nux_malloc(nux_arena_allocator(arena),
+                     sizeof(*c->quads_buffer) * NUX_CANVAS_QUAD_BUFFER_SIZE);
     c->quads_count = 0;
 
     // Allocate constants gpu buffer
@@ -149,7 +150,7 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     NUX_CHECK(nux_gpu_buffer_init(&c->batches_gpu_buffer), return NUX_NULL);
 
     // Allocate commands
-    NUX_CHECK(nux_gpu_encoder_init(nux_arena_core(), &c->encoder),
+    NUX_CHECK(nux_gpu_encoder_init(nux_arena_allocator(arena), &c->encoder),
               return NUX_NULL);
 
     // Initialize base active batch
@@ -520,7 +521,7 @@ nux_canvas_render (nux_canvas_t *c)
 
     // Begin canvas render
     nux_gpu_encoder_t enc;
-    nux_gpu_encoder_init(nux_arena_frame(), &enc);
+    nux_gpu_encoder_init(nux_allocator_frame(), &enc);
     nux_gpu_bind_framebuffer(&enc, framebuffer);
     nux_gpu_viewport(&enc, nux_v4(0, 0, 1, 1));
     nux_gpu_bind_pipeline(&enc, gfx->canvas_pipeline.slot);

@@ -88,7 +88,7 @@ nux_texture_new (nux_arena_t       *arena,
     }
     if (pixel_size)
     {
-        tex->data = nux_arena_malloc(arena, pixel_size * w * h);
+        tex->data = nux_malloc(nux_arena_allocator(arena), pixel_size * w * h);
         NUX_CHECK(tex->data, return NUX_NULL);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
@@ -99,7 +99,7 @@ nux_texture_t *
 nux_texture_load (nux_arena_t *arena, const nux_c8_t *path)
 {
     nux_u32_t size;
-    void     *data = nux_file_load(nux_arena_frame(), path, &size);
+    void     *data = nux_file_load(nux_allocator_frame(), path, &size);
     NUX_CHECK(data, return NUX_NULL);
     return nux_texture_load_from_memory(arena, data, size);
 }
@@ -149,7 +149,7 @@ nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
     nux_graphics_module_t *gfx = nux_graphics();
     NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_encoder_t enc;
-    nux_gpu_encoder_init(nux_arena_frame(), &enc);
+    nux_gpu_encoder_init(nux_allocator_frame(), &enc);
     nux_gpu_bind_framebuffer(&enc, target->gpu.framebuffer_slot);
     nux_gpu_viewport(&enc, extent);
     nux_gpu_bind_pipeline(&enc, gfx->blit_pipeline.slot);
