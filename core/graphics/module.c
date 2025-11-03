@@ -31,7 +31,7 @@ viewport_compare (const void *a, const void *b)
 static nux_status_t
 module_init (void)
 {
-    nux_allocator_t *a = nux_allocator_core();
+    nux_arena_t *a = nux_arena_core();
 
     // Register resources
     nux_resource_type_t *type;
@@ -340,7 +340,7 @@ nux_graphics_module_info (void)
           .name       = "graphics",
           .size       = sizeof(_module),
           .data       = &_module,
-          .deps       = deps,
+          .dependencies       = deps,
           .init       = module_init,
           .free       = module_free,
           .pre_update = module_pre_update,

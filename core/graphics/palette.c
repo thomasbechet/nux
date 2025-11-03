@@ -24,9 +24,8 @@ nux_palette_new (nux_arena_t *arena, nux_u32_t size)
 {
     nux_palette_t *pal = nux_resource_new(arena, NUX_RESOURCE_PALETTE);
     NUX_CHECK(pal, return NUX_NULL);
-    pal->size = size;
-    pal->colors
-        = nux_malloc(nux_arena_allocator(arena), sizeof(*pal->colors) * size);
+    pal->size   = size;
+    pal->colors = nux_arena_malloc(arena, sizeof(*pal->colors) * size);
     NUX_CHECK(pal->colors, return NUX_NULL);
     pal->texture = nux_texture_new(arena, NUX_TEXTURE_IMAGE_RGBA, size, 1);
     NUX_CHECK(pal->texture, return NUX_NULL);

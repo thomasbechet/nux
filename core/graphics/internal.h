@@ -73,8 +73,8 @@ typedef struct
 
 // graphics.c
 
-const nux_module_info_t    *nux_graphics_module_info(void);
-nux_graphics_module_t *nux_graphics(void);
+const nux_module_info_t *nux_graphics_module_info(void);
+nux_graphics_module_t   *nux_graphics(void);
 
 // buffer.c
 

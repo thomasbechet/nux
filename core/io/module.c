@@ -12,9 +12,8 @@ module_init (void)
     type->cleanup = nux_disk_cleanup;
 
     // Initialize files
-    NUX_CHECK(nux_u32_vec_init_capa(nux_allocator_core(),
-                                    NUX_IO_FILE_MAX,
-                                    &_module.free_file_slots),
+    NUX_CHECK(nux_u32_vec_init_capa(
+                  nux_arena_core(), NUX_IO_FILE_MAX, &_module.free_file_slots),
               return NUX_FAILURE);
 
     // Initialize values
@@ -199,7 +198,7 @@ nux_status_t
 nux_io_write_cart_file (const nux_c8_t *path)
 {
     nux_u32_t size;
-    void     *data = nux_file_load(nux_allocator_frame(), path, &size);
+    void     *data = nux_file_load(nux_arena_frame(), path, &size);
     NUX_CHECK(data, return NUX_FAILURE);
     return nux_io_write_cart_data(path, 0, NUX_FALSE, data, size);
 }

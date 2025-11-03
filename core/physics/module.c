@@ -153,7 +153,7 @@ module_init (void)
     comp->add = nux_collider_add;
 
     // Initialize values
-    nux_allocator_t *a = nux_allocator_core();
+    nux_arena_t *a = nux_arena_core();
     NUX_CHECK(nux_point_mass_vec_init(a, &_module.point_masses),
               return NUX_FAILURE);
     NUX_CHECK(

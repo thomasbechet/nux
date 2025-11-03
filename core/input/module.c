@@ -78,7 +78,7 @@ error:
 static nux_status_t
 module_init (void)
 {
-    nux_allocator_t *a = nux_allocator_core();
+    nux_arena_t *a = nux_arena_core();
 
     nux_resource_type_t *type;
     type = nux_resource_register(

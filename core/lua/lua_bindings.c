@@ -78,7 +78,7 @@ l_arena_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_arena_t *ret = nux_arena_new(arena);
+    nux_arena_t *ret = nux_arena_new(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -93,37 +93,15 @@ l_arena_new (lua_State *L)
     return 1;
 }
 static int
-l_arena_reset (lua_State *L)
+l_arena_clear (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
 
-    nux_arena_reset(arena);
+    nux_arena_clear(arena);
     l_checkerror(L);
 
     return 0;
-}
-static int
-l_arena_memory_usage (lua_State *L)
-{
-    nux_arena_t *arena
-        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t ret = nux_arena_memory_usage(arena);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_arena_memory_capacity (lua_State *L)
-{
-    nux_arena_t *arena
-        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t ret = nux_arena_memory_capacity(arena);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
 }
 static int
 l_arena_block_count (lua_State *L)
@@ -137,9 +115,20 @@ l_arena_block_count (lua_State *L)
     return 1;
 }
 static int
+l_arena_memory_usage (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_u32_t ret = nux_arena_memory_usage(arena);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
 l_arena_core (lua_State *L)
 {
-    const nux_arena_t *ret = nux_arena_core();
+    nux_arena_t *ret = nux_arena_core();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -156,7 +145,7 @@ l_arena_core (lua_State *L)
 static int
 l_arena_frame (lua_State *L)
 {
-    const nux_arena_t *ret = nux_arena_frame();
+    nux_arena_t *ret = nux_arena_frame();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -181,47 +170,10 @@ l_log_set_level (lua_State *L)
     return 0;
 }
 static int
-l_color_rgba (lua_State *L)
+l_log_level (lua_State *L)
 {
-    nux_u8_t r   = luaL_checknumber(L, 1);
-    nux_u8_t g   = luaL_checknumber(L, 2);
-    nux_u8_t b   = luaL_checknumber(L, 3);
-    nux_u8_t a   = luaL_checknumber(L, 4);
-    nux_v4_t ret = nux_color_rgba(r, g, b, a);
+    nux_log_level_t ret = nux_log_level();
     l_checkerror(L);
-
-    nux_lua_push_vec4(L, ret);
-    return 1;
-}
-static int
-l_color_hex (lua_State *L)
-{
-    nux_u32_t hex = luaL_checknumber(L, 1);
-    nux_v4_t  ret = nux_color_hex(hex);
-    l_checkerror(L);
-
-    nux_lua_push_vec4(L, ret);
-    return 1;
-}
-static int
-l_color_to_hex (lua_State *L)
-{
-    nux_v4_t  color = nux_lua_check_vec4(L, 1);
-    nux_u32_t ret   = nux_color_to_hex(color);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_color_to_srgb (lua_State *L)
-{
-    nux_v4_t color = nux_lua_check_vec4(L, 1);
-    nux_v4_t ret   = nux_color_to_srgb(color);
-    l_checkerror(L);
-
-    nux_lua_push_vec4(L, ret);
-    return 1;
 }
 static int
 l_io_cart_begin (lua_State *L)
@@ -258,7 +210,7 @@ l_inputmap_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_inputmap_t *ret = nux_inputmap_new(arena);
+    nux_inputmap_t *ret = nux_inputmap_new(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -406,8 +358,8 @@ l_lua_load (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_c8_t  *path = luaL_checkstring(L, 2);
-    const nux_lua_t *ret  = nux_lua_load(arena, path);
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+    nux_lua_t      *ret  = nux_lua_load(arena, path);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -669,9 +621,9 @@ l_query_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t          include_count = luaL_checknumber(L, 2);
-    nux_u32_t          exclude_count = luaL_checknumber(L, 3);
-    const nux_query_t *ret = nux_query_new(arena, include_count, exclude_count);
+    nux_u32_t    include_count = luaL_checknumber(L, 2);
+    nux_u32_t    exclude_count = luaL_checknumber(L, 3);
+    nux_query_t *ret = nux_query_new(arena, include_count, exclude_count);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -690,7 +642,7 @@ l_query_new_any (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_query_t *ret = nux_query_new_any(arena);
+    nux_query_t *ret = nux_query_new_any(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -745,7 +697,7 @@ l_scene_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_scene_t *ret = nux_scene_new(arena);
+    nux_scene_t *ret = nux_scene_new(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -773,7 +725,7 @@ l_scene_set_active (lua_State *L)
 static int
 l_scene_active (lua_State *L)
 {
-    const nux_scene_t *ret = nux_scene_active();
+    nux_scene_t *ret = nux_scene_active();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -810,8 +762,8 @@ l_scene_load_gltf (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_c8_t    *path = luaL_checkstring(L, 2);
-    const nux_scene_t *ret  = nux_scene_load_gltf(arena, path);
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+    nux_scene_t    *ret  = nux_scene_load_gltf(arena, path);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -999,7 +951,7 @@ l_viewport_new (lua_State *L)
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
     nux_texture_t *target
         = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
-    const nux_viewport_t *ret = nux_viewport_new(arena, target);
+    nux_viewport_t *ret = nux_viewport_new(arena, target);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1150,10 +1102,10 @@ l_texture_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_texture_type_t   format = luaL_checknumber(L, 2);
-    nux_u32_t            w      = luaL_checknumber(L, 3);
-    nux_u32_t            h      = luaL_checknumber(L, 4);
-    const nux_texture_t *ret    = nux_texture_new(arena, format, w, h);
+    nux_texture_type_t format = luaL_checknumber(L, 2);
+    nux_u32_t          w      = luaL_checknumber(L, 3);
+    nux_u32_t          h      = luaL_checknumber(L, 4);
+    nux_texture_t     *ret    = nux_texture_new(arena, format, w, h);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1172,8 +1124,8 @@ l_texture_load (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_c8_t      *path = luaL_checkstring(L, 2);
-    const nux_texture_t *ret  = nux_texture_load(arena, path);
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+    nux_texture_t  *ret  = nux_texture_load(arena, path);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1190,7 +1142,7 @@ l_texture_load (lua_State *L)
 static int
 l_texture_screen (lua_State *L)
 {
-    const nux_texture_t *ret = nux_texture_screen();
+    nux_texture_t *ret = nux_texture_screen();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1220,8 +1172,8 @@ l_palette_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t            size = luaL_checknumber(L, 2);
-    const nux_palette_t *ret  = nux_palette_new(arena, size);
+    nux_u32_t      size = luaL_checknumber(L, 2);
+    nux_palette_t *ret  = nux_palette_new(arena, size);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1238,7 +1190,7 @@ l_palette_new (lua_State *L)
 static int
 l_palette_default (lua_State *L)
 {
-    const nux_palette_t *ret = nux_palette_default();
+    nux_palette_t *ret = nux_palette_default();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1296,7 +1248,7 @@ l_mesh_new (lua_State *L)
     nux_u32_t              capa       = luaL_checknumber(L, 2);
     nux_vertex_attribute_t attributes = luaL_checknumber(L, 3);
     nux_vertex_primitive_t primitive  = luaL_checknumber(L, 4);
-    const nux_mesh_t *ret = nux_mesh_new(arena, capa, attributes, primitive);
+    nux_mesh_t *ret = nux_mesh_new(arena, capa, attributes, primitive);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1315,10 +1267,10 @@ l_mesh_new_cube (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_f32_t         sx  = luaL_checknumber(L, 2);
-    nux_f32_t         sy  = luaL_checknumber(L, 3);
-    nux_f32_t         sz  = luaL_checknumber(L, 4);
-    const nux_mesh_t *ret = nux_mesh_new_cube(arena, sx, sy, sz);
+    nux_f32_t   sx  = luaL_checknumber(L, 2);
+    nux_f32_t   sy  = luaL_checknumber(L, 3);
+    nux_f32_t   sz  = luaL_checknumber(L, 4);
+    nux_mesh_t *ret = nux_mesh_new_cube(arena, sx, sy, sz);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1337,9 +1289,9 @@ l_mesh_new_plane (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_f32_t         sx  = luaL_checknumber(L, 2);
-    nux_f32_t         sy  = luaL_checknumber(L, 3);
-    const nux_mesh_t *ret = nux_mesh_new_plane(arena, sx, sy);
+    nux_f32_t   sx  = luaL_checknumber(L, 2);
+    nux_f32_t   sy  = luaL_checknumber(L, 3);
+    nux_mesh_t *ret = nux_mesh_new_plane(arena, sx, sy);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1426,9 +1378,9 @@ l_canvas_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t           width  = luaL_checknumber(L, 2);
-    nux_u32_t           height = luaL_checknumber(L, 3);
-    const nux_canvas_t *ret    = nux_canvas_new(arena, width, height);
+    nux_u32_t     width  = luaL_checknumber(L, 2);
+    nux_u32_t     height = luaL_checknumber(L, 3);
+    nux_canvas_t *ret    = nux_canvas_new(arena, width, height);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1447,7 +1399,7 @@ l_canvas_get_texture (lua_State *L)
 {
     nux_canvas_t *canvas
         = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
-    const nux_texture_t *ret = nux_canvas_get_texture(canvas);
+    nux_texture_t *ret = nux_canvas_get_texture(canvas);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1780,8 +1732,8 @@ l_staticmesh_set_mesh (lua_State *L)
 static int
 l_staticmesh_get_mesh (lua_State *L)
 {
-    nux_nid_t         n   = (nux_nid_t)luaL_checknumber(L, 1);
-    const nux_mesh_t *ret = nux_staticmesh_get_mesh(n);
+    nux_nid_t   n   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_mesh_t *ret = nux_staticmesh_get_mesh(n);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1810,8 +1762,8 @@ l_staticmesh_set_texture (lua_State *L)
 static int
 l_staticmesh_get_texture (lua_State *L)
 {
-    nux_nid_t            n   = (nux_nid_t)luaL_checknumber(L, 1);
-    const nux_texture_t *ret = nux_staticmesh_get_texture(n);
+    nux_nid_t      n   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_texture_t *ret = nux_staticmesh_get_texture(n);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1936,7 +1888,7 @@ l_stylesheet_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_stylesheet_t *ret = nux_stylesheet_new(arena);
+    nux_stylesheet_t *ret = nux_stylesheet_new(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1973,7 +1925,7 @@ l_gui_new (lua_State *L)
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
     nux_canvas_t *canvas
         = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 2));
-    const nux_gui_t *ret = nux_gui_new(arena, canvas);
+    nux_gui_t *ret = nux_gui_new(arena, canvas);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -2037,19 +1989,14 @@ static const struct luaL_Reg lib_time[] = { { "elapsed", l_time_elapsed },
                                             { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_arena[]
     = { { "new", l_arena_new },
-        { "reset", l_arena_reset },
-        { "memory_usage", l_arena_memory_usage },
-        { "memory_capacity", l_arena_memory_capacity },
+        { "clear", l_arena_clear },
         { "block_count", l_arena_block_count },
+        { "memory_usage", l_arena_memory_usage },
         { "core", l_arena_core },
         { "frame", l_arena_frame },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_log[]
-    = { { "set_level", l_log_set_level }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_color[] = { { "rgba", l_color_rgba },
-                                             { "hex", l_color_hex },
-                                             { "to_hex", l_color_to_hex },
-                                             { "to_srgb", l_color_to_srgb },
+static const struct luaL_Reg lib_log[]   = { { "set_level", l_log_set_level },
+                                             { "level", l_log_level },
                                              { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_error[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_stat[]  = { { NUX_NULL, NUX_NULL } };
@@ -2213,6 +2160,7 @@ static const struct luaL_Reg lib_staticmesh[]
 static const struct luaL_Reg lib_colormap[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_layer[]    = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_vertex[]   = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_color[]    = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_anchor[]   = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_rigidbody[]
     = { { "set_velocity", l_rigidbody_set_velocity }, { NUX_NULL, NUX_NULL } };
@@ -2239,10 +2187,6 @@ nux_lua_open_api (void)
     lua_State *L = nux_lua_state();
     lua_newtable(L);
     luaL_setfuncs(L, lib_core, 0);
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "SUCCESS");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "FAILURE");
     lua_setglobal(L, "core");
     lua_newtable(L);
     luaL_setfuncs(L, lib_time, 0);
@@ -2261,21 +2205,6 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 1);
     lua_setfield(L, -2, "ERROR");
     lua_setglobal(L, "log");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_color, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "TRANSPARENT");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "WHITE");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "RED");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "GREEN");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "BLUE");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "BACKGROUND");
-    lua_setglobal(L, "color");
     lua_newtable(L);
     luaL_setfuncs(L, lib_error, 0);
     lua_pushinteger(L, 0);
@@ -2772,6 +2701,21 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 1 << 2);
     lua_setfield(L, -2, "COLOR");
     lua_setglobal(L, "vertex");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_color, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "TRANSPARENT");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "WHITE");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "RED");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "GREEN");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "BLUE");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "BACKGROUND");
+    lua_setglobal(L, "color");
     lua_newtable(L);
     luaL_setfuncs(L, lib_anchor, 0);
     lua_pushinteger(L, 0);

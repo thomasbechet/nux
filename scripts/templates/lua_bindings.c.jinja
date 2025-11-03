@@ -78,7 +78,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
         {%- if function.typename.type == "primitive" %}
             nux_{{ function.typename.name }}_t ret =
         {%- elif function.typename.type == "resource" %}
-            const nux_{{ function.typename.name }}_t *ret =
+            nux_{{ function.typename.name }}_t *ret =
         {%- endif %}
     {% endif %}
 

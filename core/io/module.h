@@ -100,7 +100,7 @@ nux_u32_t    nux_file_read(nux_file_t *file, void *data, nux_u32_t n);
 nux_u32_t    nux_file_write(nux_file_t *file, const void *data, nux_u32_t n);
 nux_status_t nux_file_seek(nux_file_t *file, nux_u32_t cursor);
 nux_status_t nux_file_stat(nux_file_t *file, nux_file_stat_t *stat);
-void *nux_file_load(nux_allocator_t *a, const nux_c8_t *path, nux_u32_t *size);
+void *nux_file_load(nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size);
 
 nux_status_t nux_io_write_cart_data(const nux_c8_t *path,
                                     nux_u32_t       type,

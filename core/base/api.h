@@ -6,8 +6,6 @@
 typedef nux_u32_t nux_rid_t;
 typedef nux_u32_t nux_nid_t;
 
-typedef struct nux_arena_t nux_arena_t;
-
 typedef enum
 {
     NUX_ERROR_NONE                 = 0,
@@ -45,10 +43,10 @@ nux_u32_t nux_random();
 nux_f32_t nux_random01();
 
 nux_arena_t *nux_arena_new(nux_arena_t *arena);
-void         nux_arena_reset(nux_arena_t *arena);
-nux_u32_t    nux_arena_memory_usage(const nux_arena_t *arena);
-nux_u32_t    nux_arena_memory_capacity(const nux_arena_t *arena);
-nux_u32_t    nux_arena_block_count(const nux_arena_t *arena);
+void         nux_arena_clear(nux_arena_t *arena);
+nux_u32_t    nux_arena_block_count(nux_arena_t *arena);
+nux_u32_t    nux_arena_memory_usage(nux_arena_t *arena);
+
 nux_arena_t *nux_arena_core(void);
 nux_arena_t *nux_arena_frame(void);
 

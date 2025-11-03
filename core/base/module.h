@@ -46,13 +46,6 @@ typedef enum
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;
 
-struct nux_arena_t
-{
-    nux_block_allocator_t block_allocator;
-    nux_rid_t             first_resource;
-    nux_rid_t             last_resource;
-};
-
 NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
 NUX_VEC_DEFINE(nux_f32_vec, nux_f32_t)
 NUX_VEC_DEFINE(nux_v4_vec, nux_v4_t)
@@ -75,9 +68,8 @@ typedef struct
     void           *data;
     const nux_c8_t *path;
     const nux_c8_t *name;
-    nux_u32_t       prev_entry_index;       // same type
-    nux_u32_t       next_entry_index;       // same type
-    nux_u32_t       prev_arena_chain_index; // same lifetime
+    nux_u32_t       prev_entry_index; // same type
+    nux_u32_t       next_entry_index; // same type
 } nux_resource_entry_t;
 
 typedef struct
@@ -145,18 +137,28 @@ typedef enum
     NUX_MODULE_STARTED,
 } nux_module_status_t;
 
+typedef enum
+{
+    NUX_SYSTEM_PRE_UPDATE,
+    NUX_SYSTEM_UPDATE,
+    NUX_SYSTEM_POST_UPDATE
+} nux_system_phase_t;
+
 typedef struct
 {
-    const nux_c8_t  *name;
-    nux_u32_t        size;
-    void            *data;
-    nux_u32_t        flags;
-    const nux_c8_t **deps;
+    const nux_c8_t    *name;
+    nux_system_phase_t phase;
+    void (*callback)(void);
+} nux_module_system_t;
+
+typedef struct
+{
+    const nux_c8_t *name;
+    nux_u32_t       size;
+    void           *data;
+    nux_u32_t       flags;
     nux_status_t (*init)(void);
     nux_status_t (*free)(void);
-    nux_status_t (*pre_update)(void);
-    nux_status_t (*update)(void);
-    nux_status_t (*post_update)(void);
     nux_status_t (*on_event)(nux_os_event_t *event);
 } nux_module_info_t;
 
@@ -205,11 +207,10 @@ void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
 nux_resource_type_t *nux_resource_register(nux_u32_t       index,
                                            nux_u32_t       size,
                                            const nux_c8_t *name);
-void                *nux_resource_new(nux_arena_t *arena, nux_u32_t type);
+void                *nux_resource_new(nux_arena_t *a, nux_u32_t type);
 void                *nux_resource_get(nux_u32_t type, nux_rid_t rid);
 void                *nux_resource_check(nux_u32_t type, nux_rid_t rid);
 nux_status_t         nux_resource_reload(nux_rid_t rid);
-nux_allocator_t     *nux_resource_allocator(void *p);
 
 void            nux_resource_set_path_rid(nux_rid_t rid, const nux_c8_t *path);
 void            nux_resource_set_path(void *data, const nux_c8_t *path);
@@ -220,20 +221,14 @@ void            nux_resource_set_name(void *data, const nux_c8_t *name);
 const nux_c8_t *nux_resource_name_rid(nux_rid_t rid);
 const nux_c8_t *nux_resource_name(void *data);
 nux_rid_t       nux_resource_next_rid(nux_u32_t type, nux_rid_t rid);
-void           *nux_resource_next(nux_u32_t type, const void *p);
-nux_rid_t       nux_resource_rid(const void *data);
+void           *nux_resource_next(nux_u32_t type, void *p);
+nux_rid_t       nux_resource_rid(void *data);
 nux_arena_t    *nux_resource_arena_rid(nux_rid_t rid);
 nux_arena_t    *nux_resource_arena(void *data);
 nux_rid_t       nux_resource_find_rid(const nux_c8_t *name);
 void           *nux_resource_find(const nux_c8_t *name);
-nux_rid_t       nux_resource_next_arena(nux_rid_t rid);
 
-void             nux_arena_init(nux_arena_t *arena, nux_allocator_t *allocator);
-nux_allocator_t *nux_arena_allocator(nux_arena_t *arena);
-void             nux_arena_cleanup(void *data);
-
-nux_allocator_t *nux_allocator_core(void);
-nux_allocator_t *nux_allocator_frame(void);
+void nux_arena_cleanup(void *data);
 
 void nux_vlog(nux_log_level_t level, const nux_c8_t *fmt, va_list args);
 void nux_log(nux_log_level_t level, const nux_c8_t *fmt, ...);
@@ -245,13 +240,12 @@ void            nux_error_reset(void);
 const nux_c8_t *nux_error_get_message(void);
 nux_status_t    nux_error_get_status(void);
 
-nux_status_t  nux_modules_register(const nux_module_info_t *module);
-nux_status_t  nux_modules_init(void);
-nux_status_t  nux_modules_free(void);
-nux_status_t  nux_modules_pre_update(void);
-nux_status_t  nux_modules_update(void);
-nux_status_t  nux_modules_post_update(void);
-nux_status_t  nux_modules_on_event(nux_os_event_t *event);
+nux_status_t nux_module_register(const nux_module_info_t *module);
+void         nux_module_requires(const nux_c8_t *name);
+void         nux_module_init(const nux_c8_t *name);
+
+void nux_config_set_u32(const nux_c8_t *name, nux_u32_t v);
+
 nux_config_t *nux_config(void);
 void         *nux_userdata(void);
 

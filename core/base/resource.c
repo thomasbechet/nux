@@ -20,7 +20,7 @@ get_entry (nux_rid_t rid, nux_u32_t type)
     return entry;
 }
 static nux_resource_entry_t *
-get_entry_from_data (const void *data)
+get_entry_from_data (void *data)
 {
     NUX_CHECK(data, return NUX_NULL);
     nux_rid_t                  rid       = nux_resource_rid(data);
@@ -62,7 +62,7 @@ resource_set_path (nux_resource_entry_t *entry, const nux_c8_t *path)
     NUX_CHECK(entry, return);
     nux_resource_type_t *type = resource_types + entry->type_index;
     NUX_ASSERT(type->reload);
-    entry->path = nux_strdup(nux_arena_allocator(entry->arena), path);
+    entry->path = nux_strdup(entry->arena, path);
     NUX_CHECK(entry->path, return);
     if (nux_config()->hotreload)
     {
@@ -77,7 +77,7 @@ resource_set_name (nux_resource_entry_t *entry, const nux_c8_t *name)
                "duplicated resource name '%s'",
                name);
     NUX_CHECK(entry, return);
-    entry->name = nux_strdup(nux_arena_allocator(entry->arena), name);
+    entry->name = nux_strdup(entry->arena, name);
     NUX_ASSERT(entry->name);
 }
 nux_resource_entry_t *
@@ -117,16 +117,15 @@ nux_resource_add (nux_resource_pool_t *resources, nux_u32_t type)
 {
     nux_resource_entry_t *entry = nux_resource_pool_add(resources);
     NUX_ENSURE(entry, return NUX_NULL, "out of resources");
-    nux_u32_t index               = entry - resources->data;
-    entry->rid                    = RID_BUILD(entry->rid, type, index);
-    entry->arena                  = NUX_NULL;
-    entry->type_index             = type;
-    entry->data                   = NUX_NULL;
-    entry->path                   = NUX_NULL;
-    entry->name                   = NUX_NULL;
-    entry->next_entry_index       = NUX_NULL;
-    entry->prev_arena_chain_index = NUX_NULL;
-    nux_resource_type_t *t        = nux_base_resource_types() + type;
+    nux_u32_t index         = entry - resources->data;
+    entry->rid              = RID_BUILD(entry->rid, type, index);
+    entry->arena            = NUX_NULL;
+    entry->type_index       = type;
+    entry->data             = NUX_NULL;
+    entry->path             = NUX_NULL;
+    entry->name             = NUX_NULL;
+    entry->next_entry_index = NUX_NULL;
+    nux_resource_type_t *t  = nux_base_resource_types() + type;
     if (t->last_entry_index)
     {
         entry->prev_entry_index = t->first_entry_index;
@@ -138,21 +137,17 @@ nux_resource_add (nux_resource_pool_t *resources, nux_u32_t type)
         t->first_entry_index = index;
         t->last_entry_index  = index;
     }
+    NUX_DEBUG("new resource type '%s' rid 0x%08X", t->name, entry->rid);
     return entry;
 }
-void *
-nux_resource_malloc (nux_allocator_t *allocator, nux_rid_t rid, nux_u32_t size)
+static void
+resource_finalizer (void *p)
 {
-    nux_resource_header_t *header
-        = nux_malloc(allocator, sizeof(nux_resource_header_t) + size);
-    NUX_CHECK(header, return NUX_NULL);
-    void *data  = header + 1; // TODO: handle proper memory alignment
-    header->rid = rid;
-    return data;
-}
-void
-nux_resource_delete (nux_rid_t rid)
-{
+    nux_resource_header_t *header = p;
+    NUX_ASSERT(p);
+    NUX_ASSERT(header->rid);
+
+    nux_rid_t             rid            = header->rid;
     nux_resource_pool_t  *resources      = nux_base_resources();
     nux_resource_type_t  *resource_types = nux_base_resource_types();
     nux_resource_entry_t *entry          = check_entry(rid, NUX_NULL);
@@ -174,6 +169,7 @@ nux_resource_delete (nux_rid_t rid)
               entry->path ? entry->path : "null");
     if (t->cleanup)
     {
+        NUX_ASSERT(entry->data);
         t->cleanup(entry->data);
     }
 
@@ -200,30 +196,51 @@ nux_resource_delete (nux_rid_t rid)
     nux_resource_pool_remove(resources, entry);
 }
 
-void *
-nux_resource_new (nux_arena_t *arena, nux_u32_t type)
+nux_u32_t
+nux_resource_header_size (nux_u32_t size)
 {
+    return size
+           + sizeof(
+               nux_resource_header_t); // TODO: handle proper memory alignment
+}
+void
+nux_resource_header_init (nux_resource_header_t *header, nux_rid_t rid)
+{
+    NUX_ASSERT(rid);
+    header->rid = rid;
+}
+void *
+nux_resource_header_to_data (nux_resource_header_t *header)
+{
+    return header + 1; // TODO: handle proper memory alignment
+}
+nux_resource_header_t *
+nux_resource_header_from_data (void *data)
+{
+    return ((nux_resource_header_t *)data)
+           - 1; // TODO: handle proper memory alignment
+}
+
+void *
+nux_resource_new (nux_arena_t *a, nux_u32_t type)
+{
+    NUX_ENSURE(a, return NUX_NULL, "invalid null arena");
+
     nux_resource_pool_t *resources = nux_base_resources();
     nux_resource_type_t *t         = nux_base_resource_types() + type;
 
     // Add entry
     nux_resource_entry_t *entry = nux_resource_add(resources, type);
     NUX_CHECK(entry, return NUX_NULL);
-    entry->arena = arena;
+    entry->arena = a;
 
-    // Allocate resource
-    void *data
-        = nux_resource_malloc(nux_arena_allocator(arena), entry->rid, t->size);
-    NUX_CHECK(data, return NUX_NULL);
+    // Allocate header + resource
+    nux_resource_header_t *header = nux_arena_new_object(
+        a, nux_resource_header_size(t->size), resource_finalizer);
+    NUX_CHECK(header, return NUX_NULL);
+    nux_resource_header_init(header, entry->rid);
+    void *data  = nux_resource_header_to_data(header);
     entry->data = data;
-
-    // Append to arena chain
-    entry->prev_arena_chain_index = arena->last_resource;
-    if (!arena->first_resource)
-    {
-        arena->first_resource = entry->rid;
-    }
-    arena->last_resource = entry->rid;
 
     return data;
 }
@@ -254,11 +271,6 @@ nux_resource_reload (nux_rid_t rid)
     }
     NUX_INFO("resource 0x%08X '%s' successfully reloaded", rid, entry->path);
     return NUX_SUCCESS;
-}
-nux_allocator_t *
-nux_resource_allocator (void *p)
-{
-    return nux_arena_allocator(nux_resource_arena(p));
 }
 void
 nux_resource_set_path_rid (nux_rid_t rid, const nux_c8_t *path)
@@ -321,18 +333,16 @@ nux_resource_next_rid (nux_u32_t type, nux_rid_t rid)
     return entry->rid;
 }
 void *
-nux_resource_next (nux_u32_t type, const void *p)
+nux_resource_next (nux_u32_t type, void *p)
 {
     nux_resource_entry_t *entry = resource_next(type, get_entry_from_data(p));
     NUX_CHECK(entry, return NUX_NULL);
     return entry->data;
 }
 nux_rid_t
-nux_resource_rid (const void *data)
+nux_resource_rid (void *data)
 {
-    const nux_resource_header_t *header
-        = ((const nux_resource_header_t *)data) - 1;
-    return header->rid;
+    return nux_resource_header_from_data(data)->rid;
 }
 nux_arena_t *
 nux_resource_arena_rid (nux_rid_t rid)
@@ -361,12 +371,4 @@ nux_resource_find (const nux_c8_t *name)
     nux_resource_entry_t *entry = resource_find(name);
     NUX_CHECK(entry, return NUX_NULL);
     return entry->data;
-}
-nux_rid_t
-nux_resource_next_arena (nux_rid_t rid)
-{
-    nux_resource_entry_t *entry = get_entry(rid, NUX_NULL);
-    NUX_CHECK(entry, return NUX_NULL);
-    nux_resource_pool_t *entries = nux_base_resources();
-    return entries->data[entry->prev_arena_chain_index].rid;
 }

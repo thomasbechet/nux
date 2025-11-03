@@ -41,7 +41,7 @@ nux_strtof (const nux_c8_t *s, nux_c8_t **end)
 #endif
 }
 nux_c8_t *
-nux_strdup (nux_allocator_t *a, const nux_c8_t *s)
+nux_strdup (nux_arena_t *a, const nux_c8_t *s)
 {
     if (!s)
     {
@@ -52,7 +52,7 @@ nux_strdup (nux_allocator_t *a, const nux_c8_t *s)
     {
         return NUX_NULL;
     }
-    nux_c8_t *p = nux_malloc(a, len + 1);
+    nux_c8_t *p = nux_arena_malloc(a, len + 1);
     NUX_CHECK(p, return NUX_NULL);
     nux_memcpy(p, s, len + 1); // include '\0'
     return p;

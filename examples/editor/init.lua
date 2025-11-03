@@ -20,6 +20,8 @@ local HEIGHT = 480
 function M:on_load()
     self.arena = arena.core()
 
+    print(arena.core())
+    print(arena.frame())
     local map = inputmap.new(self.arena)
     inputmap.bind_key(map, "up", key.X)
     inputmap.bind_key(map, "down", key.Z)

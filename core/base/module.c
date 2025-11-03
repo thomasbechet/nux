@@ -3,35 +3,37 @@
 static nux_base_module_t _module;
 
 static nux_status_t
-bootstrap_resources (void)
+bootstrap_core_arena (void)
 {
-    // Allocate resource table
-    NUX_ASSERT(
-        nux_resource_pool_init(_module.core_allocator, &_module.resources));
-    // Reserve index 0 for null id
+    // Create core arena
+    // NOTE: The core arena is a block arena using the os allocator
+    // NOTE: The core arena resource entry doesn't have arena
+
+    // 1. Allocate arena + header
+    nux_resource_header_t *core_arena_header = nux_malloc(
+        &_module.os_allocator, nux_resource_header_size(sizeof(nux_arena_t)));
+    NUX_CHECK(core_arena_header, return NUX_FAILURE);
+    // 2. Get arena from the header
+    _module.core_arena = nux_resource_header_to_data(core_arena_header);
+    // 3. Initialize core arena with block arena
+    nux_block_arena_init(
+        _module.core_arena, &_module.core_block_arena, &_module.os_allocator);
+    // 4. Allocate resource table
+    NUX_CHECK(nux_resource_pool_init(_module.core_arena, &_module.resources),
+              return NUX_FAILURE);
+    // 5. Reserve index 0 for null id
     nux_resource_pool_add(&_module.resources);
-    // Create core arena resource
+    // 6. Create core arena resource entry
     nux_resource_entry_t *entry
         = nux_resource_add(&_module.resources, NUX_RESOURCE_ARENA);
-    NUX_ASSERT(entry);
-    // Allocate core arena
-    _module.core_arena = nux_resource_malloc(
-        _module.core_allocator, entry->rid, sizeof(*_module.core_arena));
-    NUX_ASSERT(_module.core_arena);
-    // Initialize core arena
-    nux_arena_init(_module.core_arena, _module.core_allocator);
+    NUX_CHECK(entry, return NUX_FAILURE);
+    entry->data = _module.core_arena;
+    // 7. Initialize core arena header
+    nux_resource_header_init(core_arena_header, entry->rid);
 
     return NUX_SUCCESS;
 }
 
-static nux_status_t
-module_free (void)
-{
-    // Free core memory
-    nux_block_allocator_free(&_module.core_block_allocator);
-
-    return NUX_SUCCESS;
-}
 static nux_status_t
 module_pre_update (void)
 {
@@ -41,7 +43,7 @@ module_pre_update (void)
 static nux_status_t
 module_post_update (void)
 {
-    nux_arena_reset(nux_arena_frame());
+    nux_arena_clear(nux_arena_frame());
     _module.time_elapsed += nux_time_delta();
     ++_module.frame;
     nux_os_stats_update(nux_userdata(), _module.stats);
@@ -57,11 +59,14 @@ nux_base_init (void *userdata)
     _module.os_allocator.userdata = userdata;
     _module.os_allocator.alloc    = nux_os_alloc;
 
-    // Initialize core allocator
-    nux_block_allocator_init(&_module.core_block_allocator,
-                             &_module.os_allocator);
-    _module.core_allocator
-        = nux_block_allocator_interface(&_module.core_block_allocator);
+    // Bootstrap core arena
+    bootstrap_core_arena();
+
+    // Initialize modules
+    NUX_CHECK(nux_module_vec_init_capa(_module.core_arena,
+                                       DEFAULT_MODULE_CAPACITY,
+                                       &_module.modules),
+              return NUX_FAILURE);
 
     // Initialize system state
     _module.userdata = userdata;
@@ -95,33 +100,24 @@ nux_base_init (void *userdata)
     type          = nux_resource_register(
         NUX_RESOURCE_EVENT, sizeof(nux_event_t), "event");
 
-    // Initialize resources with core arena
-    NUX_CHECK(bootstrap_resources(), return NUX_FAILURE);
-
     // Create frame arena
     _module.frame_arena = nux_arena_new(_module.core_arena);
     NUX_ASSERT(_module.frame_arena);
     nux_resource_set_name(_module.frame_arena, "frame_arena");
 
-    // Initialize modules
-    NUX_CHECK(nux_module_vec_init_capa(_module.core_allocator,
-                                       DEFAULT_MODULE_CAPACITY,
-                                       &_module.modules),
-              return NUX_FAILURE);
-
-    // Register itself
-    static const nux_module_info_t info = {
-        .name        = "base",
-        .size        = sizeof(_module),
-        .data        = &_module,
-        .flags       = NUX_MODULE_NO_DATA_INITIALIZATION, // already initialized
-        .free        = module_free,
-        .pre_update  = module_pre_update,
-        .post_update = module_post_update,
-    };
-    nux_modules_register(&info);
-
     return NUX_SUCCESS;
+}
+void
+nux_base_free (void)
+{
+    // Free core memory
+    nux_arena_free(_module.core_arena);
+    // Free core arena
+    nux_resource_header_t *core_arena_header
+        = nux_resource_header_from_data(_module.core_arena);
+    nux_free(&_module.os_allocator,
+             core_arena_header,
+             nux_resource_header_size(sizeof(nux_block_arena_t)));
 }
 
 nux_pcg_t *
@@ -139,9 +135,14 @@ nux_base_resource_types (void)
 {
     return _module.resources_types;
 }
+nux_allocator_t *
+nux_os_allocator (void)
+{
+    return &_module.os_allocator;
+}
 
 nux_status_t
-nux_modules_register (const nux_module_info_t *info)
+nux_module_register (const nux_module_info_t *info)
 {
     nux_module_t *m = nux_module_vec_push(&_module.modules);
     NUX_CHECK(m, return NUX_FAILURE);
@@ -149,6 +150,15 @@ nux_modules_register (const nux_module_info_t *info)
     m->status = NUX_MODULE_UNINITIALIZED;
     return NUX_SUCCESS;
 }
+void
+nux_module_requires (const nux_c8_t *name)
+{
+}
+void
+nux_module_init (const nux_c8_t *name)
+{
+}
+
 nux_status_t
 nux_modules_init (void)
 {
@@ -182,7 +192,7 @@ nux_modules_free (void)
     for (nux_u32_t i = _module.modules.size; i > 0; --i)
     {
         nux_module_t *m = _module.modules.data + (i - 1);
-        if (m->status != NUX_MODULE_UNINITIALIZED)
+        if (m->status == NUX_MODULE_UNINITIALIZED)
         {
             continue;
         }
@@ -267,7 +277,7 @@ nux_config (void)
 void *
 nux_userdata (void)
 {
-    return &_module.userdata;
+    return _module.userdata;
 }
 
 nux_u32_t
@@ -349,15 +359,4 @@ nux_arena_t *
 nux_arena_frame (void)
 {
     return _module.frame_arena;
-}
-
-nux_allocator_t *
-nux_allocator_core (void)
-{
-    return nux_arena_allocator(_module.core_arena);
-}
-nux_allocator_t *
-nux_allocator_frame (void)
-{
-    return nux_arena_allocator(_module.frame_arena);
 }

@@ -27,7 +27,7 @@ module_init (void)
 
     // Create log buffer
     _module.lines
-        = nux_malloc(nux_allocator_core(), LOG_LINE_LEN * LOG_LINE_COUNT);
+        = nux_arena_malloc(nux_arena_core(), LOG_LINE_LEN * LOG_LINE_COUNT);
     NUX_CHECK(_module.lines, return NUX_FAILURE);
     _module.lines_count  = 0;
     _module.lines_cursor = 0;

@@ -1,6 +1,4 @@
 core={}
-core.SUCCESS=1
-core.FAILURE=0
 ---@return None
 function core.stat(...) end
 ---@return None
@@ -20,13 +18,11 @@ arena={}
 ---@return None
 function arena.new(...) end
 ---@return None
-function arena.reset(...) end
----@return None
-function arena.memory_usage(...) end
----@return None
-function arena.memory_capacity(...) end
+function arena.clear(...) end
 ---@return None
 function arena.block_count(...) end
+---@return None
+function arena.memory_usage(...) end
 ---@return None
 function arena.core(...) end
 ---@return None
@@ -38,21 +34,8 @@ log.WARNING=2
 log.ERROR=1
 ---@return None
 function log.set_level(...) end
-color={}
-color.TRANSPARENT=0
-color.WHITE=1
-color.RED=2
-color.GREEN=3
-color.BLUE=4
-color.BACKGROUND=5
 ---@return None
-function color.rgba(...) end
----@return None
-function color.hex(...) end
----@return None
-function color.to_hex(...) end
----@return None
-function color.to_srgb(...) end
+function log.level(...) end
 error={}
 error.NONE=0
 error.OUT_OF_MEMORY=1
@@ -544,6 +527,13 @@ vertex.POINTS=2
 vertex.POSITION=1 << 0
 vertex.TEXCOORD=1 << 1
 vertex.COLOR=1 << 2
+color={}
+color.TRANSPARENT=0
+color.WHITE=1
+color.RED=2
+color.GREEN=3
+color.BLUE=4
+color.BACKGROUND=5
 anchor={}
 anchor.CENTER=0
 anchor.TOP=1 << 1

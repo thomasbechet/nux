@@ -58,9 +58,8 @@ nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
     NUX_CHECK(gui, return NUX_NULL);
     gui->canvas = nux_resource_rid(canvas);
     NUX_ASSERT(gui->canvas);
-    NUX_CHECK(
-        nux_u32_vec_init_capa(nux_arena_allocator(arena), 1, &gui->stylesheets),
-        return NUX_NULL);
+    NUX_CHECK(nux_u32_vec_init_capa(arena, 1, &gui->stylesheets),
+              return NUX_NULL);
     gui->next_id   = 0;
     gui->active_id = 0;
     gui->hot_id    = 0;
