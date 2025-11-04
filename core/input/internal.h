@@ -49,6 +49,6 @@ typedef struct
     nux_os_event_vec_t input_events;
 } nux_input_module_t;
 
-const nux_module_info_t *nux_input_module_info(void);
+void nux_input_module_register(void);
 
 #endif

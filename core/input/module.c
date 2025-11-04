@@ -181,19 +181,13 @@ module_on_event (nux_os_event_t *event)
     }
     return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_input_module_info (void)
+void
+nux_input_module_register (void)
 {
-    static nux_module_info_t info = {
-        .name        = "input",
-        .size        = sizeof(_module),
-        .data        = &_module,
-        .init        = module_init,
-        .update      = module_update,
-        .post_update = module_post_update,
-        .on_event    = module_on_event,
-    };
-    return &info;
+    nux_module_begin("input", &_module, sizeof(_module));
+    nux_module_on_init(module_init);
+    nux_module_requires("base");
+    nux_module_end();
 }
 
 nux_status_t

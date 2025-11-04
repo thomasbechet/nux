@@ -188,17 +188,12 @@ module_update (void)
     compute_transforms();
     return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_physics_module_info (void)
+void
+nux_physics_module_register (void)
 {
-    static const nux_module_info_t info = {
-        .name   = "physics",
-        .size   = sizeof(_module),
-        .data   = &_module,
-        .init   = module_init,
-        .update = module_update,
-    };
-    return &info;
+    nux_module_begin("physics", &_module, sizeof(_module));
+    nux_module_on_init(module_init);
+    nux_module_end();
 }
 nux_physics_module_t *
 nux_physics (void)

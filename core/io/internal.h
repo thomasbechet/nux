@@ -79,7 +79,7 @@ typedef struct
     nux_u32_vec_t     free_file_slots;
 } nux_io_module_t;
 
-const nux_module_info_t *nux_io_module_info(void);
+void nux_io_module_register(void);
 
 void nux_file_cleanup(void *data);
 void nux_disk_cleanup(void *data);

@@ -3,7 +3,7 @@
 
 #include "module.h"
 
-const nux_module_info_t *nux_lua_module_info(void);
-lua_State          *nux_lua_state(void);
+void       nux_lua_module_register(void);
+lua_State *nux_lua_state(void);
 
 #endif

@@ -191,7 +191,7 @@ module_init (void)
 error:
     return NUX_FAILURE;
 }
-static nux_status_t
+static void
 module_free (void)
 {
     nux_gpu_buffer_free(&_module.constants_buffer);
@@ -212,7 +212,6 @@ module_free (void)
     NUX_ASSERT(_module.free_pipeline_slots.size == NUX_GPU_PIPELINE_MAX);
     NUX_ASSERT(_module.free_framebuffer_slots.size
                == NUX_GPU_FRAMEBUFFER_MAX - 1); // 0 reserved for default
-    return NUX_SUCCESS;
 }
 static nux_status_t
 module_pre_update (void)
@@ -332,21 +331,13 @@ module_update (void)
 
     return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_graphics_module_info (void)
+void
+nux_graphics_module_register (void)
 {
-    static const nux_c8_t   *deps[] = { "base", NUX_NULL };
-    static nux_module_info_t info   = {
-          .name       = "graphics",
-          .size       = sizeof(_module),
-          .data       = &_module,
-          .dependencies       = deps,
-          .init       = module_init,
-          .free       = module_free,
-          .pre_update = module_pre_update,
-          .update     = module_update,
-    };
-    return &info;
+    nux_module_begin("graphics", &_module, sizeof(_module));
+    nux_module_on_init(module_init);
+    nux_module_on_free(module_free);
+    nux_module_end();
 }
 
 nux_graphics_module_t *

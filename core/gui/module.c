@@ -31,13 +31,10 @@ module_post_update (void)
     }
     return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_gui_module_info (void)
+void
+nux_gui_module_register (void)
 {
-    static const nux_module_info_t info = { .name        = "gui",
-                                            .init        = module_init,
-                                            .data        = NUX_NULL,
-                                            .pre_update  = module_pre_update,
-                                            .post_update = module_post_update };
-    return &info;
+    nux_module_begin("gui", NUX_NULL, 0);
+    nux_module_on_init(module_init);
+    nux_module_end();
 }

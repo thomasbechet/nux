@@ -1,5 +1,5 @@
-#ifndef NUX_H
-#define NUX_H
+#ifndef NUX_CORE_H
+#define NUX_CORE_H
 
 #include "base/api.h"
 #include "io/api.h"

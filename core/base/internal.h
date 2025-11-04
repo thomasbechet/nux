@@ -5,6 +5,19 @@
 
 typedef struct
 {
+    const nux_c8_t *name;
+    nux_u32_t       size;
+    void           *data;
+    nux_u32_t       flags;
+    nux_status_t (*on_init)(void);
+    void (*on_free)(void);
+    nux_status_t (*on_event)(nux_os_event_t *event);
+    nux_u32_t dependencies_count;
+    nux_u32_t dependencies_first;
+} nux_module_info_t;
+
+typedef struct
+{
     nux_module_info_t   info;
     nux_module_status_t status;
 } nux_module_t;
@@ -13,8 +26,9 @@ NUX_VEC_DEFINE(nux_module_vec, nux_module_t);
 
 typedef enum
 {
-    DEFAULT_MODULE_CAPACITY = 8,
-    ARENA_ALLOCATOR_TYPE    = 12345,
+    DEFAULT_MODULE_CAPACITY              = 8,
+    DEFAULT_MODULE_DEPENDENCIES_CAPACITY = 64,
+    ARENA_ALLOCATOR_TYPE                 = 12345,
 } nux_base_defaults_t;
 
 typedef struct
@@ -25,7 +39,6 @@ typedef struct
     nux_u64_t           frame;
     nux_f32_t           time_elapsed;
     nux_pcg_t           pcg;
-    nux_module_vec_t    modules;
     nux_u64_t           stats[NUX_STAT_MAX];
     nux_resource_pool_t resources;
     nux_resource_type_t resources_types[NUX_RESOURCE_MAX];
@@ -36,6 +49,10 @@ typedef struct
     nux_allocator_t     os_allocator;
     nux_block_arena_t   core_block_arena;
     nux_arena_t        *core_arena;
+
+    nux_module_vec_t modules;
+    nux_ptr_vec_t    modules_dependencies;
+    nux_module_t    *active_module;
 } nux_base_module_t;
 
 nux_status_t nux_base_init(void *userdata);

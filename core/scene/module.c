@@ -191,16 +191,12 @@ module_init (void)
 
     return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_scene_module_info (void)
+void
+nux_scene_module_register (void)
 {
-    static const nux_module_info_t info = {
-        .name = "scene",
-        .size = sizeof(_module),
-        .data = &_module,
-        .init = module_init,
-    };
-    return &info;
+    nux_module_begin("scene", &_module, sizeof(_module));
+    nux_module_on_init(module_init);
+    nux_module_end();
 }
 nux_scene_module_t *
 nux_scene_module (void)

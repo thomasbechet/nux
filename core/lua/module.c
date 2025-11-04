@@ -395,14 +395,13 @@ module_init (void)
 
     return NUX_SUCCESS;
 }
-static nux_status_t
+static void
 module_free (void)
 {
     if (_module.L)
     {
         lua_close(_module.L);
     }
-    return NUX_SUCCESS;
 }
 static nux_status_t
 module_update (void)
@@ -414,18 +413,13 @@ module_update (void)
     }
     return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_lua_module_info (void)
+void
+nux_lua_module_register (void)
 {
-    static const nux_module_info_t info = {
-        .name   = "lua",
-        .size   = sizeof(_module),
-        .data   = &_module,
-        .init   = module_init,
-        .free   = module_free,
-        .update = module_update,
-    };
-    return &info;
+    nux_module_begin("lua", &_module, sizeof(_module));
+    nux_module_on_init(module_init);
+    nux_module_on_free(module_free);
+    nux_module_end();
 }
 lua_State *
 nux_lua_state (void)

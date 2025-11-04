@@ -67,6 +67,11 @@ nux_base_init (void *userdata)
                                        DEFAULT_MODULE_CAPACITY,
                                        &_module.modules),
               return NUX_FAILURE);
+    NUX_CHECK(nux_ptr_vec_init_capa(_module.core_arena,
+                                    DEFAULT_MODULE_DEPENDENCIES_CAPACITY,
+                                    &_module.modules_dependencies),
+              return NUX_FAILURE);
+    _module.active_module = NUX_NULL;
 
     // Initialize system state
     _module.userdata = userdata;
@@ -141,22 +146,44 @@ nux_os_allocator (void)
     return &_module.os_allocator;
 }
 
-nux_status_t
-nux_module_register (const nux_module_info_t *info)
+void
+nux_module_begin (const nux_c8_t *name, void *data, nux_u32_t size)
 {
     nux_module_t *m = nux_module_vec_push(&_module.modules);
-    NUX_CHECK(m, return NUX_FAILURE);
-    m->info   = *info;
-    m->status = NUX_MODULE_UNINITIALIZED;
-    return NUX_SUCCESS;
+    NUX_ASSERT(_module.active_module);
+    nux_memset(m, 0, sizeof(*m));
+    m->info.name               = name;
+    m->info.data               = data;
+    m->info.size               = size;
+    m->info.dependencies_first = _module.modules_dependencies.size;
+    _module.active_module      = m;
+}
+void
+nux_module_on_init (nux_status_t (*callback)(void))
+{
+    nux_module_t *m = _module.active_module;
+    NUX_ASSERT(m);
+    m->info.on_init = callback;
+}
+void
+nux_module_on_free (void (*callback)(void))
+{
+    nux_module_t *m = _module.active_module;
+    NUX_ASSERT(m);
+    m->info.on_free = callback;
 }
 void
 nux_module_requires (const nux_c8_t *name)
 {
+    nux_module_t *m = _module.active_module;
+    NUX_ASSERT(m);
+    NUX_ASSERT(nux_ptr_vec_pushv(&_module.modules_dependencies, (void *)name));
+    ++m->info.dependencies_count;
 }
 void
-nux_module_init (const nux_c8_t *name)
+nux_module_end (void)
 {
+    _module.active_module = NUX_NULL;
 }
 
 nux_status_t

@@ -16,7 +16,6 @@ static struct
 nux_status_t
 module_init (void)
 {
-    // Create module
     // Create debug console
     if (nux_config()->debug.console)
     {
@@ -47,17 +46,12 @@ module_update (void)
     // }
     return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_debug_module_info (void)
+void
+nux_debug_module_register (void)
 {
-    static const nux_module_info_t info = {
-        .name   = "debug",
-        .size   = sizeof(_module),
-        .data   = &_module,
-        .init   = module_init,
-        .update = module_update,
-    };
-    return &info;
+    nux_module_begin("debug", &_module, sizeof(_module));
+    nux_module_on_init(module_init);
+    nux_module_end();
 }
 
 void

@@ -25,23 +25,18 @@ module_init (void)
 
     return NUX_SUCCESS;
 }
-static nux_status_t
+static void
 module_free (void)
 {
     NUX_ASSERT(_module.free_file_slots.size = NUX_IO_FILE_MAX);
-    return NUX_SUCCESS;
 }
-const nux_module_info_t *
-nux_io_module_info (void)
+void
+nux_io_module_register (void)
 {
-    static nux_module_info_t info = {
-        .name = "io",
-        .size = sizeof(_module),
-        .data = &_module,
-        .init = module_init,
-        .free = module_free,
-    };
-    return &info;
+    nux_module_begin("io", &_module, sizeof(_module));
+    nux_module_on_init(module_init);
+    nux_module_on_free(module_free);
+    nux_module_end();
 }
 
 nux_status_t

@@ -11,18 +11,18 @@
 nux_status_t
 nux_core_init (void *userdata, const nux_c8_t *entry)
 {
-    // Initialize base module
+    // Initialize base
     NUX_CHECK(nux_base_init(userdata), goto cleanup);
 
-    // Register mandatory modules
-    nux_module_register(nux_io_module_info());
-    nux_module_register(nux_input_module_info());
-    nux_module_register(nux_lua_module_info());
-    nux_module_register(nux_scene_module_info());
-    nux_module_register(nux_graphics_module_info());
-    nux_module_register(nux_physics_module_info());
-    nux_module_register(nux_gui_module_info());
-    nux_module_register(nux_debug_module_info());
+    // Register modules
+    nux_io_module_register();
+    nux_input_module_register();
+    nux_lua_module_register();
+    nux_scene_module_register();
+    nux_graphics_module_register();
+    nux_physics_module_register();
+    nux_gui_module_register();
+    nux_debug_module_register();
 
     NUX_CHECK(nux_modules_init(), goto cleanup);
 

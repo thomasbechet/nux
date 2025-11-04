@@ -15,7 +15,7 @@ typedef struct
     nux_query_t    *iter_any;
 } nux_scene_module_t;
 
-const nux_module_info_t *nux_scene_module_info(void);
+void                nux_scene_module_register(void);
 nux_scene_module_t *nux_scene_module(void);
 
 #endif

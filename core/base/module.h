@@ -1,7 +1,7 @@
 #ifndef NUX_BASE_MODULE_H
 #define NUX_BASE_MODULE_H
 
-#include <nux.h>
+#include <core.h>
 
 ////////////////////////////
 ///        MACROS        ///
@@ -151,17 +151,6 @@ typedef struct
     void (*callback)(void);
 } nux_module_system_t;
 
-typedef struct
-{
-    const nux_c8_t *name;
-    nux_u32_t       size;
-    void           *data;
-    nux_u32_t       flags;
-    nux_status_t (*init)(void);
-    nux_status_t (*free)(void);
-    nux_status_t (*on_event)(nux_os_event_t *event);
-} nux_module_info_t;
-
 typedef enum
 {
     NUX_EVENT_LUA = 0,
@@ -240,9 +229,11 @@ void            nux_error_reset(void);
 const nux_c8_t *nux_error_get_message(void);
 nux_status_t    nux_error_get_status(void);
 
-nux_status_t nux_module_register(const nux_module_info_t *module);
-void         nux_module_requires(const nux_c8_t *name);
-void         nux_module_init(const nux_c8_t *name);
+void nux_module_begin(const nux_c8_t *name, void *data, nux_u32_t size);
+void nux_module_on_init(nux_status_t (*callback)(void));
+void nux_module_on_free(void (*callback)(void));
+void nux_module_requires(const nux_c8_t *name);
+void nux_module_end(void);
 
 void nux_config_set_u32(const nux_c8_t *name, nux_u32_t v);
 
