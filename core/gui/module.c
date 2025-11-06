@@ -4,10 +4,15 @@ static nux_status_t
 module_init (void)
 {
     // Register resources
-    nux_resource_type_t *type;
-    type = nux_resource_register(NUX_RESOURCE_GUI, sizeof(nux_gui_t), "gui");
-    type = nux_resource_register(
-        NUX_RESOURCE_STYLESHEET, sizeof(nux_stylesheet_t), "stylesheet");
+    nux_resource_register(NUX_RESOURCE_GUI,
+                          (nux_resource_type_info_t) {
+                              .name = "gui",
+                              .size = sizeof(nux_gui_t),
+                          });
+    nux_resource_register(
+        NUX_RESOURCE_STYLESHEET,
+        (nux_resource_type_info_t) { .name = "stylesheet",
+                                     .size = sizeof(nux_stylesheet_t) });
 
     return NUX_SUCCESS;
 }

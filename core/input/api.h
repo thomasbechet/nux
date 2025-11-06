@@ -1,5 +1,5 @@
-#ifndef NUX_INPUT_API_H
-#define NUX_INPUT_API_H
+#ifndef NUX_INPUT_H
+#define NUX_INPUT_H
 
 #include <base/api.h>
 
@@ -196,6 +196,29 @@ typedef enum
     NUX_CURSOR_RIGHT = 3,
 } nux_cursor_mode_t;
 
+typedef enum
+{
+    NUX_CONTROLLER_MAX = 4,
+} nux_input_constants_t;
+
+typedef struct
+{
+    nux_input_type_t type;
+    union
+    {
+        nux_key_t            key;
+        nux_mouse_button_t   mouse_button;
+        nux_mouse_axis_t     mouse_axis;
+        nux_gamepad_button_t gamepad_button;
+        nux_gamepad_axis_t   gamepad_axis;
+    };
+    union
+    {
+        nux_f32_t          axis_value;
+        nux_button_state_t button_state;
+    };
+} nux_input_event_t;
+
 typedef struct nux_inputmap_t nux_inputmap_t;
 
 nux_inputmap_t *nux_inputmap_new(nux_arena_t *arena);
@@ -218,5 +241,13 @@ nux_b32_t nux_input_just_released(nux_u32_t controller, const nux_c8_t *name);
 nux_f32_t nux_input_value(nux_u32_t controller, const nux_c8_t *name);
 nux_v2_t  nux_input_cursor(nux_u32_t controller);
 void      nux_input_set_cursor(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
+
+nux_status_t nux_controller_resize_values(nux_inputmap_t *map);
+
+nux_status_t nux_inputmap_find_index(const nux_inputmap_t *map,
+                                     const nux_c8_t       *name,
+                                     nux_u32_t            *index);
+
+void nux_input_push_event(nux_input_event_t *event);
 
 #endif

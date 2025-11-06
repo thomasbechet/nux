@@ -16,7 +16,7 @@ event_handler (void *userdata, nux_rid_t event, const void *data)
     nux_lua_t   *m = userdata;
     nux_event_t *e = nux_resource_get(NUX_RESOURCE_EVENT, event);
     NUX_ASSERT(e);
-    switch (e->type)
+    switch (nux_event_type(e))
     {
         case NUX_EVENT_LUA: {
             // push event
@@ -59,7 +59,7 @@ event_subscribe (lua_State *L)
     for (nux_u32_t i = 0; i < module->event_handles.size; ++i)
     {
         nux_event_handler_t *handler = module->event_handles.data[i];
-        if (handler->event == nux_resource_rid(event))
+        if (nux_event_handler_event(handler) == nux_resource_rid(event))
         {
             return 0;
         }
@@ -85,7 +85,7 @@ event_unsubscribe (lua_State *L)
     for (nux_u32_t i = 0; i < module->event_handles.size; ++i)
     {
         nux_event_handler_t *handler = module->event_handles.data[i];
-        if (handler->event == nux_resource_rid(event))
+        if (nux_event_handler_event(handler) == nux_resource_rid(event))
         {
             nux_ptr_vec_swap_pop(&module->event_handles, i);
             return 0;

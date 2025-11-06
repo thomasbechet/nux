@@ -1,8 +1,9 @@
 #ifndef NUX_INPUT_INTERNAL_H
 #define NUX_INPUT_INTERNAL_H
 
-#include <base/module.h>
-#include <input/module.h>
+#include <input/api.h>
+
+NUX_VEC_DEFINE(nux_input_event_vec, nux_input_event_t);
 
 typedef enum
 {
@@ -45,8 +46,8 @@ typedef struct
 
 typedef struct
 {
-    nux_controller_t   controllers[NUX_CONTROLLER_MAX];
-    nux_os_event_vec_t input_events;
+    nux_controller_t      controllers[NUX_CONTROLLER_MAX];
+    nux_input_event_vec_t input_events;
 } nux_input_module_t;
 
 void nux_input_module_register(void);

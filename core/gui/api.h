@@ -2,6 +2,7 @@
 #define NUX_GUI_API_H
 
 #include <graphics/api.h>
+#include <input/api.h>
 
 typedef struct nux_gui_t        nux_gui_t;
 typedef struct nux_stylesheet_t nux_stylesheet_t;

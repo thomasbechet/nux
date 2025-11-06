@@ -5,15 +5,22 @@ static nux_io_module_t _module;
 static nux_status_t
 module_init (void)
 {
-    nux_resource_type_t *type;
-    type = nux_resource_register(NUX_RESOURCE_FILE, sizeof(nux_file_t), "file");
-    type->cleanup = nux_file_cleanup;
-    type = nux_resource_register(NUX_RESOURCE_DISK, sizeof(nux_disk_t), "disk");
-    type->cleanup = nux_disk_cleanup;
+    nux_resource_register(NUX_RESOURCE_FILE,
+                          (nux_resource_type_info_t) {
+                              .name    = "file",
+                              .size    = sizeof(nux_file_t),
+                              .cleanup = nux_file_cleanup,
+                          });
+    nux_resource_register(NUX_RESOURCE_DISK,
+                          (nux_resource_type_info_t) {
+                              .name    = "disk",
+                              .size    = sizeof(nux_disk_t),
+                              .cleanup = nux_disk_cleanup,
+                          });
 
     // Initialize files
     NUX_CHECK(nux_u32_vec_init_capa(
-                  nux_arena_core(), NUX_IO_FILE_MAX, &_module.free_file_slots),
+                  nux_arena_core(), NUX_FILE_MAX, &_module.free_file_slots),
               return NUX_FAILURE);
 
     // Initialize values
@@ -28,7 +35,7 @@ module_init (void)
 static void
 module_free (void)
 {
-    NUX_ASSERT(_module.free_file_slots.size = NUX_IO_FILE_MAX);
+    NUX_ASSERT(_module.free_file_slots.size = NUX_FILE_MAX);
 }
 void
 nux_io_module_register (void)

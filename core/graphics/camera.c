@@ -109,12 +109,13 @@ nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return NUX_V3_ZEROS);
-    nux_transform_t *ct = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(ct, return NUX_V3_ZEROS);
+    NUX_CHECK(nux_node_has(e, NUX_COMPONENT_TRANSFORM), return NUX_V3_ZEROS);
 
-    nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROS, 1);
-    nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
-    nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 0);
+    nux_m4_t global_matrix = nux_transform_get_matrix(e);
+
+    nux_v3_t eye    = nux_m4_mulv3(global_matrix, NUX_V3_ZEROS, 1);
+    nux_v3_t center = nux_m4_mulv3(global_matrix, NUX_V3_FORWARD, 1);
+    nux_v3_t up     = nux_m4_mulv3(global_matrix, NUX_V3_UP, 0);
 
     nux_m4_t view = nux_m4_lookat(eye, center, up);
     nux_m4_t proj = nux_camera_get_projection(e);

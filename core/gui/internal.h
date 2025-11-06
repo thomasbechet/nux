@@ -1,7 +1,6 @@
 #ifndef NUX_GUI_INTERNAL_H
 #define NUX_GUI_INTERNAL_H
 
-#include <base/module.h>
 #include <gui/api.h>
 
 typedef struct

@@ -1,7 +1,7 @@
-#ifndef NUX_PHYSICS_API_H
-#define NUX_PHYSICS_API_H
+#ifndef NUX_PHYSICS_H
+#define NUX_PHYSICS_H
 
-#include <base/api.h>
+#include <scene/api.h>
 
 typedef enum
 {

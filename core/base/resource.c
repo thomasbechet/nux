@@ -1,5 +1,7 @@
 #include "internal.h"
 
+#include <core.h>
+
 #define RID_INDEX(rid)   (((nux_rid_t)(rid) >> 0) & 0xFFFFFF)
 #define RID_VERSION(rid) (((nux_rid_t)(rid) >> 24) & 0xFF)
 #define RID_BUILD(old, type, index) \
@@ -61,7 +63,7 @@ resource_set_path (nux_resource_entry_t *entry, const nux_c8_t *path)
     nux_resource_type_t *resource_types = nux_base_resource_types();
     NUX_CHECK(entry, return);
     nux_resource_type_t *type = resource_types + entry->type_index;
-    NUX_ASSERT(type->reload);
+    NUX_ASSERT(type->info.reload);
     entry->path = nux_strdup(entry->arena, path);
     NUX_CHECK(entry->path, return);
     if (nux_config()->hotreload)
@@ -98,18 +100,16 @@ resource_find (const nux_c8_t *name)
     return NUX_NULL;
 }
 
-nux_resource_type_t *
-nux_resource_register (nux_u32_t index, nux_u32_t size, const nux_c8_t *name)
+void
+nux_resource_register (nux_u32_t index, nux_resource_type_info_t info)
 {
     nux_resource_type_t *resource_types = nux_base_resource_types();
     NUX_ASSERT(index < NUX_RESOURCE_MAX);
-    NUX_ASSERT(resource_types[index].name == NUX_NULL);
+    NUX_ASSERT(resource_types[index].info.name == NUX_NULL);
     nux_resource_type_t *type = resource_types + index;
     nux_memset(type, 0, sizeof(*type));
-    type->name              = name;
-    type->size              = size;
+    type->info              = info;
     type->first_entry_index = NUX_NULL;
-    return type;
 }
 
 nux_resource_entry_t *
@@ -137,7 +137,7 @@ nux_resource_add (nux_resource_pool_t *resources, nux_u32_t type)
         t->first_entry_index = index;
         t->last_entry_index  = index;
     }
-    NUX_DEBUG("new resource type '%s' rid 0x%08X", t->name, entry->rid);
+    NUX_DEBUG("new resource type '%s' rid 0x%08X", t->info.name, entry->rid);
     return entry;
 }
 static void
@@ -163,14 +163,14 @@ resource_finalizer (void *p)
     // Cleanup resource
     nux_resource_type_t *t = resource_types + entry->type_index;
     NUX_DEBUG("cleanup type:%s rid:0x%08X name:%s path:%s",
-              t->name,
+              t->info.name,
               rid,
               entry->name ? entry->name : "null",
               entry->path ? entry->path : "null");
-    if (t->cleanup)
+    if (t->info.cleanup)
     {
         NUX_ASSERT(entry->data);
-        t->cleanup(entry->data);
+        t->info.cleanup(entry->data);
     }
 
     // Remove entry
@@ -236,7 +236,7 @@ nux_resource_new (nux_arena_t *a, nux_u32_t type)
 
     // Allocate header + resource
     nux_resource_header_t *header = nux_arena_new_object(
-        a, nux_resource_header_size(t->size), resource_finalizer);
+        a, nux_resource_header_size(t->info.size), resource_finalizer);
     NUX_CHECK(header, return NUX_NULL);
     nux_resource_header_init(header, entry->rid);
     void *data  = nux_resource_header_to_data(header);
@@ -265,9 +265,9 @@ nux_resource_reload (nux_rid_t rid)
     nux_resource_entry_t *entry          = check_entry(rid, NUX_NULL);
     NUX_CHECK(entry, return NUX_FAILURE);
     nux_resource_type_t *type = resource_types + entry->type_index;
-    if (type->reload)
+    if (type->info.reload)
     {
-        type->reload(entry->data, entry->path);
+        type->info.reload(entry->data, entry->path);
     }
     NUX_INFO("resource 0x%08X '%s' successfully reloaded", rid, entry->path);
     return NUX_SUCCESS;

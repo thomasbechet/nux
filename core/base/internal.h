@@ -1,7 +1,34 @@
 #ifndef NUX_BASE_INTERNAL_H
 #define NUX_BASE_INTERNAL_H
 
-#include <base/module.h>
+#include <core.h>
+#include <base/api.h>
+
+typedef struct nux_resource_finalizer
+{
+    nux_rid_t rid;
+} nux_resource_header_t;
+
+typedef struct
+{
+    nux_rid_t       rid; // for validity check
+    nux_arena_t    *arena;
+    nux_u32_t       type_index;
+    void           *data;
+    const nux_c8_t *path;
+    const nux_c8_t *name;
+    nux_u32_t       prev_entry_index; // same type
+    nux_u32_t       next_entry_index; // same type
+} nux_resource_entry_t;
+
+typedef struct
+{
+    nux_resource_type_info_t info;
+    nux_u32_t                first_entry_index;
+    nux_u32_t                last_entry_index;
+} nux_resource_type_t;
+
+NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
 
 typedef struct
 {
@@ -11,7 +38,6 @@ typedef struct
     nux_u32_t       flags;
     nux_status_t (*on_init)(void);
     void (*on_free)(void);
-    nux_status_t (*on_event)(nux_os_event_t *event);
     nux_u32_t dependencies_count;
     nux_u32_t dependencies_first;
 } nux_module_info_t;
@@ -30,6 +56,30 @@ typedef enum
     DEFAULT_MODULE_DEPENDENCIES_CAPACITY = 64,
     ARENA_ALLOCATOR_TYPE                 = 12345,
 } nux_base_defaults_t;
+
+struct nux_event_handler_t
+{
+    nux_rid_t                   event;
+    struct nux_event_handler_t *next;
+    struct nux_event_handler_t *prev;
+    nux_event_callback_t        callback;
+    void                       *userdata;
+};
+
+typedef struct nux_event_header
+{
+    struct nux_event_header *next;
+    void                    *data;
+} nux_event_header_t;
+
+struct nux_event_t
+{
+    nux_event_type_t     type;
+    nux_arena_t         *arena;
+    nux_event_handler_t *first_handler;
+    nux_event_header_t  *first_event;
+    nux_event_cleanup_t  cleanup;
+};
 
 typedef struct
 {
@@ -57,6 +107,9 @@ typedef struct
 
 nux_status_t nux_base_init(void *userdata);
 void         nux_base_free(void);
+nux_status_t nux_base_start(const nux_c8_t *module);
+void         nux_base_update(void);
+void         nux_base_on_event(nux_os_event_t *event);
 
 nux_pcg_t           *nux_base_pcg(void);
 nux_resource_pool_t *nux_base_resources(void);
@@ -70,5 +123,7 @@ nux_u32_t nux_resource_header_size(nux_u32_t size);
 void  nux_resource_header_init(nux_resource_header_t *header, nux_rid_t rid);
 void *nux_resource_header_to_data(nux_resource_header_t *header);
 nux_resource_header_t *nux_resource_header_from_data(void *data);
+
+void nux_arena_cleanup(void *data);
 
 #endif

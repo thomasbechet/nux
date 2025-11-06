@@ -13,8 +13,4 @@
 
 // debug.c
 
-void nux_debug_log_callback(nux_log_level_t level,
-                            const nux_c8_t *buf,
-                            nux_u32_t       n);
-
 #endif

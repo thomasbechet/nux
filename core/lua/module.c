@@ -2,8 +2,6 @@
 
 #include "lua_code.c.inc"
 
-#include <io/module.h>
-
 static struct
 {
     lua_State *L;

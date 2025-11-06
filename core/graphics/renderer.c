@@ -140,15 +140,15 @@ draw_box (nux_gpu_encoder_t     *enc,
                                    nux_v3(box.min.x, box.max.y, box.max.z) };
     draw_rect(enc, transform, primitive, positions, color);
 }
+
 void
 nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 {
     nux_graphics_module_t *gfx = nux_graphics();
-
-    nux_gpu_encoder_t *enc    = &gfx->encoder;
-    nux_v4_t           extent = nux_viewport_get_normalized_viewport(viewport);
-    nux_nid_t          camera = viewport->source.camera;
-    nux_texture_t     *target
+    nux_gpu_encoder_t     *enc = &gfx->encoder;
+    nux_v4_t       extent      = nux_viewport_get_normalized_viewport(viewport);
+    nux_nid_t      camera      = viewport->source.camera;
+    nux_texture_t *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
     NUX_ASSERT(target);
 
@@ -168,14 +168,14 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
     if (camera)
     {
         // Update constants
-        nux_camera_t    *cc = nux_component_get(camera, NUX_COMPONENT_CAMERA);
-        nux_transform_t *ct
-            = nux_component_get(camera, NUX_COMPONENT_TRANSFORM);
-        NUX_ASSERT(ct && cc);
+        nux_camera_t *cc = nux_component_get(camera, NUX_COMPONENT_CAMERA);
+        NUX_ASSERT(nux_node_has(camera, NUX_COMPONENT_TRANSFORM) && cc);
 
-        nux_v3_t eye    = nux_m4_mulv3(ct->global_matrix, NUX_V3_ZEROS, 1);
-        nux_v3_t center = nux_m4_mulv3(ct->global_matrix, NUX_V3_FORWARD, 1);
-        nux_v3_t up     = nux_m4_mulv3(ct->global_matrix, NUX_V3_UP, 0);
+        nux_m4_t global_matrix = nux_transform_get_matrix(camera);
+
+        nux_v3_t eye    = nux_m4_mulv3(global_matrix, NUX_V3_ZEROS, 1);
+        nux_v3_t center = nux_m4_mulv3(global_matrix, NUX_V3_FORWARD, 1);
+        nux_v3_t up     = nux_m4_mulv3(global_matrix, NUX_V3_UP, 0);
 
         nux_gpu_constants_buffer_t constants;
         constants.view        = nux_m4_lookat(eye, center, up);
@@ -212,7 +212,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             {
                 continue;
             }
-            nux_transform_t *t = nux_component_get(it, NUX_COMPONENT_TRANSFORM);
+            nux_m4_t    global_matrix = nux_transform_get_matrix(it);
             nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
             nux_texture_t *tex = NUX_NULL;
@@ -222,9 +222,9 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             }
 
             // Push transform
-            NUX_CHECK(nux_graphics_push_transforms(
-                          1, &t->global_matrix, &sm->transform),
-                      continue);
+            NUX_CHECK(
+                nux_graphics_push_transforms(1, &global_matrix, &sm->transform),
+                continue);
 
             // Draw
             bind_texture(enc, tex);

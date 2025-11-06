@@ -34,20 +34,32 @@ module_init (void)
     nux_arena_t *a = nux_arena_core();
 
     // Register resources
-    nux_resource_type_t *type;
-    type = nux_resource_register(
-        NUX_RESOURCE_VIEWPORT, sizeof(nux_viewport_t), "viewport");
-    type = nux_resource_register(
-        NUX_RESOURCE_TEXTURE, sizeof(nux_texture_t), "texture");
-    type->cleanup = nux_texture_cleanup;
-    type          = nux_resource_register(
-        NUX_RESOURCE_PALETTE, sizeof(nux_palette_t), "palette");
-    type = nux_resource_register(NUX_RESOURCE_MESH, sizeof(nux_mesh_t), "mesh");
-    type = nux_resource_register(
-        NUX_RESOURCE_CANVAS, sizeof(nux_canvas_t), "canvas");
-    type->cleanup = nux_canvas_cleanup;
-    type = nux_resource_register(NUX_RESOURCE_FONT, sizeof(nux_font_t), "font");
-    type->cleanup = nux_font_cleanup;
+    nux_resource_register(
+        NUX_RESOURCE_VIEWPORT,
+        (nux_resource_type_info_t) { .name = "viewport",
+                                     .size = sizeof(nux_viewport_t) });
+    nux_resource_register(
+        NUX_RESOURCE_TEXTURE,
+        (nux_resource_type_info_t) { .name    = "texture",
+                                     .size    = sizeof(nux_texture_t),
+                                     .cleanup = nux_texture_cleanup });
+    nux_resource_register(
+        NUX_RESOURCE_PALETTE,
+        (nux_resource_type_info_t) { .name = "palette",
+                                     .size = sizeof(nux_palette_t) });
+    nux_resource_register(NUX_RESOURCE_MESH,
+                          (nux_resource_type_info_t) {
+                              .name = "mesh", .size = sizeof(nux_mesh_t) });
+    nux_resource_register(
+        NUX_RESOURCE_CANVAS,
+        (nux_resource_type_info_t) { .name    = "canvas",
+                                     .size    = sizeof(nux_canvas_t),
+                                     .cleanup = nux_canvas_cleanup });
+    nux_resource_register(
+        NUX_RESOURCE_FONT,
+        (nux_resource_type_info_t) { .name    = "font",
+                                     .size    = sizeof(nux_font_t),
+                                     .cleanup = nux_font_cleanup });
 
     // Register components
     nux_component_t *comp;

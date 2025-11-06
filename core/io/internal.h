@@ -1,7 +1,7 @@
 #ifndef NUX_IO_INTERNAL_H
 #define NUX_IO_INTERNAL_H
 
-#include "module.h"
+#include <io/platform.h>
 
 typedef enum
 {

@@ -1,3 +1,4 @@
+#include <core.h>
 #include <base/internal.h>
 #include <io/internal.h>
 #include <input/internal.h>
@@ -24,7 +25,7 @@ nux_core_init (void *userdata, const nux_c8_t *entry)
     nux_gui_module_register();
     nux_debug_module_register();
 
-    NUX_CHECK(nux_modules_init(), goto cleanup);
+    NUX_CHECK(nux_base_start("app"), goto cleanup);
 
     // Detect entry point type
     NUX_ASSERT(entry);
@@ -71,16 +72,13 @@ nux_core_free (void)
     nux_arena_clear(nux_arena_core());
 
     // Free modules
-    nux_modules_free();
+    nux_base_free();
 }
 void
 nux_core_update (void)
 {
-    // Pre update
-    nux_modules_pre_update();
+    nux_base_update();
 
-    // Update
-    nux_modules_update();
     if (!nux_error_get_status())
     {
         NUX_ERROR("%s", nux_error_get_message());
@@ -97,12 +95,9 @@ nux_core_update (void)
             nux_resource_reload(handles[i]);
         }
     }
-
-    // Post update
-    nux_modules_post_update();
 }
 void
 nux_core_push_event (nux_os_event_t *event)
 {
-    nux_modules_on_event(event);
+    nux_base_on_event(event);
 }

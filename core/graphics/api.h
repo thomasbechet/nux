@@ -1,13 +1,14 @@
 #ifndef NUX_GRAPHICS_API_H
 #define NUX_GRAPHICS_API_H
 
-#include <base/api.h>
+#include <scene/api.h>
 
 typedef struct nux_canvas_t   nux_canvas_t;
 typedef struct nux_mesh_t     nux_mesh_t;
 typedef struct nux_texture_t  nux_texture_t;
 typedef struct nux_palette_t  nux_palette_t;
 typedef struct nux_viewport_t nux_viewport_t;
+typedef struct nux_font_t     nux_font_t;
 
 typedef enum
 {

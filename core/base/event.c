@@ -14,6 +14,11 @@ nux_event_new (nux_arena_t        *arena,
     event->cleanup       = cleanup;
     return event;
 }
+nux_event_type_t
+nux_event_type (nux_event_t *event)
+{
+    return event->type;
+}
 nux_event_handler_t *
 nux_event_subscribe (nux_arena_t         *arena,
                      nux_event_t         *event,
@@ -60,6 +65,11 @@ nux_event_unsubscribe (const nux_event_handler_t *handler)
     {
         e->first_handler = h->next;
     }
+}
+nux_rid_t
+nux_event_handler_event (nux_event_handler_t *handler)
+{
+    return handler->event;
 }
 void
 nux_event_emit (nux_event_t *event, nux_u32_t size, const void *data)

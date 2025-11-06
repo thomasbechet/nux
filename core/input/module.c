@@ -2,10 +2,11 @@
 
 static nux_input_module_t _module;
 
+NUX_VEC_IMPL(nux_input_event_vec, nux_input_event_t);
 NUX_VEC_IMPL(nux_inputmap_entry_vec, nux_inputmap_entry_t);
 
 static void
-dispatch_event (const nux_os_event_t *event)
+dispatch_event (const nux_input_event_t *event)
 {
     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(_module.controllers); ++i)
     {
@@ -16,31 +17,31 @@ dispatch_event (const nux_os_event_t *event)
         for (nux_u32_t j = 0; j < map->entries.size; ++j)
         {
             nux_inputmap_entry_t *entry = map->entries.data + j;
-            if (entry->type == event->input.type)
+            if (entry->type == event->type)
             {
                 switch (entry->type)
                 {
                     case NUX_INPUT_UNMAPPED:
                         break;
                     case NUX_INPUT_KEY: {
-                        if (entry->key == event->input.key)
+                        if (entry->key == event->key)
                         {
-                            ctrl->inputs.data[j] = event->input.button_state;
+                            ctrl->inputs.data[j] = event->button_state;
                         }
                     }
                     break;
                     case NUX_INPUT_MOUSE_BUTTON: {
-                        if (entry->mouse_button == event->input.mouse_button)
+                        if (entry->mouse_button == event->mouse_button)
                         {
-                            ctrl->inputs.data[j] = event->input.button_state;
+                            ctrl->inputs.data[j] = event->button_state;
                         }
                     }
                     break;
                     case NUX_INPUT_MOUSE_AXIS: {
-                        if (entry->mouse_axis == event->input.mouse_axis)
+                        if (entry->mouse_axis == event->mouse_axis)
                         {
                             ctrl->inputs.data[j]
-                                = event->input.axis_value * entry->sensivity;
+                                = event->axis_value * entry->sensivity;
                         }
                     }
                     break;
@@ -80,12 +81,13 @@ module_init (void)
 {
     nux_arena_t *a = nux_arena_core();
 
-    nux_resource_type_t *type;
-    type = nux_resource_register(
-        NUX_RESOURCE_INPUTMAP, sizeof(nux_inputmap_t), "inputmap");
+    nux_resource_register(
+        NUX_RESOURCE_INPUTMAP,
+        (nux_resource_type_info_t) { .name = "inputmap",
+                                     .size = sizeof(nux_inputmap_t) });
 
     // Allocate events queue
-    NUX_CHECK(nux_os_event_vec_init_capa(
+    NUX_CHECK(nux_input_event_vec_init_capa(
                   a, DEFAULT_INPUT_EVENT_SIZE, &_module.input_events),
               return NUX_FAILURE);
 
@@ -119,11 +121,7 @@ module_update (void)
     // Dispatch input events
     for (nux_u32_t i = 0; i < _module.input_events.size; ++i)
     {
-        nux_os_event_t *event = _module.input_events.data + i;
-        if (event->type == NUX_OS_EVENT_INPUT)
-        {
-            dispatch_event(event);
-        }
+        dispatch_event(_module.input_events.data + i);
     }
 
     for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
@@ -169,16 +167,7 @@ module_update (void)
 static nux_status_t
 module_post_update (void)
 {
-    nux_os_event_vec_clear(&_module.input_events);
-    return NUX_SUCCESS;
-}
-static nux_status_t
-module_on_event (nux_os_event_t *event)
-{
-    if (event->type == NUX_OS_EVENT_INPUT)
-    {
-        nux_os_event_vec_pushv(&_module.input_events, *event);
-    }
+    nux_input_event_vec_clear(&_module.input_events);
     return NUX_SUCCESS;
 }
 void
@@ -188,6 +177,12 @@ nux_input_module_register (void)
     nux_module_on_init(module_init);
     nux_module_requires("base");
     nux_module_end();
+}
+
+void
+nux_input_push_event (nux_input_event_t *event)
+{
+    nux_input_event_vec_pushv(&_module.input_events, *event);
 }
 
 nux_status_t
