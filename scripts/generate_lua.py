@@ -61,6 +61,7 @@ def parse_function(node, modules):
         arg["name"] = param.name
         typename = {}
         if type(param.type) is c_ast.PtrDecl:
+            print(param)
             typename["name"] = normalize_typenme(param.type.type.type.names[0])
             typename["type"] = "resource" 
             typename["const"] = False
@@ -175,6 +176,8 @@ def parse_header(args, header, modules):
         'nux_arena_t',
         'nux_texture_t',
         'nux_canvas_t',
+        'nux_serde_reader_t',
+        'nux_serde_writer_t',
         ]:
         prelude += f"\ntypedef struct {typename} {typename};"
 
@@ -205,8 +208,8 @@ if __name__ == "__main__":
 
     # Parse C headers
     headers = [
-        "core/base/api.h",
-        "core/io/api.h",
+        # "core/base/api.h",
+        # "core/io/api.h",
         "core/input/api.h",
         "core/lua/api.h",
         "core/scene/api.h",

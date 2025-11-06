@@ -2,9 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <nux.h>
+#include <core.h>
 
-static FILE *files[NUX_IO_FILE_MAX];
+static FILE *files[NUX_FILE_MAX];
 
 void *
 nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)

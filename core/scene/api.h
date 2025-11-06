@@ -6,24 +6,6 @@
 typedef struct nux_scene nux_scene_t;
 typedef struct nux_query nux_query_t;
 
-typedef struct
-{
-    nux_scene_t        *scene;
-    nux_serde_writer_t *output;
-    nux_serde_writer_t  writer;
-    nux_u32_t          *node_map;
-    nux_u32_t           node_count;
-} nux_scene_writer_t;
-
-typedef struct
-{
-    nux_scene_t        *scene;
-    nux_serde_reader_t *input;
-    nux_serde_reader_t  reader;
-    nux_u32_t          *node_map;
-    nux_u32_t           node_count;
-} nux_scene_reader_t;
-
 typedef enum
 {
     NUX_COMPONENT_TRANSFORM  = 1,
@@ -35,20 +17,23 @@ typedef enum
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_;
 
-typedef struct
-{
-    const nux_c8_t *name;
-    nux_u32_t       size;
-    void (*add)(nux_nid_t n, void *data);
-    void (*remove)(nux_nid_t n, void *data);
-    nux_status_t (*read)(nux_serde_reader_t *s, void *data);
-    nux_status_t (*write)(nux_serde_writer_t *s, const void *data);
-} nux_component_t;
+typedef void (*nux_component_add_callback_t)(nux_nid_t nid, void *data);
+typedef void (*nux_component_remove_callback_t)(nux_nid_t nid, void *data);
+typedef nux_status_t (*nux_component_read_callback_t)(nux_serde_reader_t *s,
+                                                      void               *data);
+typedef nux_status_t (*nux_component_write_callback_t)(nux_serde_writer_t *s,
+                                                       const void *data);
 
-nux_component_t *nux_component_register(nux_u32_t       index,
-                                        const nux_c8_t *name,
-                                        nux_u32_t       size);
-void            *nux_component_get(nux_nid_t e, nux_u32_t c);
+void  nux_component_register(nux_u32_t index, const nux_c8_t *name, nux_u32_t size);
+void  nux_component_set_add(nux_u32_t                    index,
+                            nux_component_add_callback_t callback);
+void  nux_component_set_remove(nux_u32_t                       index,
+                               nux_component_remove_callback_t callback);
+void  nux_component_set_read(nux_u32_t                     index,
+                             nux_component_read_callback_t callback);
+void  nux_component_set_write(nux_u32_t                      index,
+                              nux_component_write_callback_t callback);
+void *nux_component_get(nux_nid_t e, nux_u32_t c);
 
 nux_m4_t nux_transform_get_matrix(nux_nid_t e);
 nux_v3_t nux_transform_get_local_translation(nux_nid_t e);
@@ -102,19 +87,5 @@ nux_b32_t nux_node_has(nux_nid_t e, nux_u32_t c);
 nux_nid_t nux_node_instantiate(nux_scene_t *scene, nux_nid_t parent);
 
 nux_scene_t *nux_scene_load_gltf(nux_arena_t *arena, const nux_c8_t *path);
-
-nux_status_t nux_scene_writer_init(nux_scene_writer_t *s,
-                                   nux_serde_writer_t *output,
-                                   nux_scene_t        *scene);
-nux_status_t nux_scene_reader_init(nux_scene_reader_t *s,
-                                   nux_serde_reader_t *input,
-                                   nux_scene_t        *scene);
-
-nux_status_t nux_scene_write(nux_serde_writer_t *s,
-                             const nux_c8_t     *key,
-                             nux_scene_t        *scene);
-nux_status_t nux_scene_read(nux_serde_reader_t *s,
-                            const nux_c8_t     *key,
-                            nux_scene_t        *scene);
 
 #endif

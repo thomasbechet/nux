@@ -62,17 +62,17 @@ module_init (void)
                                      .cleanup = nux_font_cleanup });
 
     // Register components
-    nux_component_t *comp;
-    comp = nux_component_register(
+    nux_component_register(
         NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
-    comp->add   = nux_camera_add;
-    comp->read  = nux_camera_read;
-    comp->write = nux_camera_write;
-    comp        = nux_component_register(
+    nux_component_set_add(NUX_COMPONENT_CAMERA, nux_camera_add);
+    nux_component_set_read(NUX_COMPONENT_CAMERA, nux_camera_read);
+    nux_component_set_write(NUX_COMPONENT_CAMERA, nux_camera_write);
+
+    nux_component_register(
         NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
-    comp->add   = nux_staticmesh_add;
-    comp->read  = nux_staticmesh_read;
-    comp->write = nux_staticmesh_write;
+    nux_component_set_add(NUX_COMPONENT_STATICMESH, nux_staticmesh_add);
+    nux_component_set_read(NUX_COMPONENT_STATICMESH, nux_staticmesh_read);
+    nux_component_set_write(NUX_COMPONENT_STATICMESH, nux_staticmesh_write);
 
     // Initialize gpu slots
     NUX_CHECK(nux_u32_vec_init_capa(

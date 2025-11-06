@@ -144,13 +144,13 @@ static nux_status_t
 module_init (void)
 {
     // Register components
-    nux_component_t *comp;
-    comp = nux_component_register(
+    nux_component_register(
         NUX_COMPONENT_RIGIDBODY, "rigidbody", sizeof(nux_rigidbody_t));
-    comp->add = nux_rigidbody_add;
-    comp      = nux_component_register(
+    nux_component_set_add(NUX_COMPONENT_RIGIDBODY, nux_rigidbody_add);
+
+    nux_component_register(
         NUX_COMPONENT_COLLIDER, "collider", sizeof(nux_collider_t));
-    comp->add = nux_collider_add;
+    nux_component_set_add(NUX_COMPONENT_COLLIDER, nux_collider_add);
 
     // Initialize values
     nux_arena_t *a = nux_arena_core();
@@ -326,8 +326,6 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
     hit.n    = NUX_V3_ZEROS;
     while ((it = nux_query_next(_module.collider_transform_iter, it)))
     {
-        nux_transform_t *transform
-            = nux_component_get(it, NUX_COMPONENT_TRANSFORM);
         nux_collider_t *collider
             = nux_component_get(it, NUX_COMPONENT_COLLIDER);
 

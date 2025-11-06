@@ -2,6 +2,10 @@
 #define NUX_LUA_INTERNAL_H
 
 #include <lua/api.h>
+#include <physics/api.h>
+#include <input/api.h>
+#include <scene/api.h>
+#include <graphics/api.h>
 #include <externals/lua/lua.h>
 #include <externals/lua/lualib.h>
 #include <externals/lua/lauxlib.h>
@@ -57,7 +61,7 @@ void      nux_lua_push_mat4(lua_State *L, nux_m4_t m);
 nux_m4_t  nux_lua_check_mat4(lua_State *L, int index);
 void      nux_lua_push_box2i(lua_State *L, nux_b2i_t b);
 nux_b2i_t nux_lua_check_box2i(lua_State *L, int index);
-// void      nux_lua_push_hit(lua_State *L, nux_raycast_hit_t hit);
+void      nux_lua_push_hit(lua_State *L, nux_raycast_hit_t hit);
 
 nux_status_t nux_lua_open_api(void);
 nux_status_t nux_lua_open_vmath(void);

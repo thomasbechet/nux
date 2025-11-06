@@ -166,12 +166,17 @@ static nux_status_t
 module_init (void)
 {
     // Register types
-    nux_resource_type_t *type;
-    type = nux_resource_register(
-        NUX_RESOURCE_SCENE, sizeof(nux_scene_t), "scene");
-    type->cleanup = nux_scene_cleanup;
-    type          = nux_resource_register(
-        NUX_RESOURCE_QUERY, sizeof(nux_query_t), "query");
+    nux_resource_register(NUX_RESOURCE_SCENE,
+                          (nux_resource_type_info_t) {
+                              .name    = "scene",
+                              .size    = sizeof(nux_scene_t),
+                              .cleanup = nux_scene_cleanup,
+                          });
+    nux_resource_register(NUX_RESOURCE_QUERY,
+                          (nux_resource_type_info_t) {
+                              .name = "query",
+                              .size = sizeof(nux_query_t),
+                          });
 
     // Initialize values
     nux_memset(_module.components, 0, sizeof(_module.components));
@@ -182,12 +187,11 @@ module_init (void)
     _module.active        = _module.default_scene;
 
     // Register components
-    nux_component_t *comp;
-    comp = nux_component_register(
+    nux_component_register(
         NUX_COMPONENT_TRANSFORM, "transform", sizeof(nux_transform_t));
-    comp->add   = nux_transform_add;
-    comp->write = nux_transform_write;
-    comp->read  = nux_transform_read;
+    nux_component_set_add(NUX_COMPONENT_TRANSFORM, nux_transform_add);
+    nux_component_set_write(NUX_COMPONENT_TRANSFORM, nux_transform_write);
+    nux_component_set_read(NUX_COMPONENT_TRANSFORM, nux_transform_read);
 
     return NUX_SUCCESS;
 }
@@ -202,21 +206,6 @@ nux_scene_module_t *
 nux_scene_module (void)
 {
     return &_module;
-}
-
-nux_component_t *
-nux_component_register (nux_u32_t index, const nux_c8_t *name, nux_u32_t size)
-{
-    NUX_ASSERT(index != 0);
-    NUX_ASSERT(index < NUX_COMPONENT_MAX);
-    NUX_ASSERT(_module.components[index].size == 0);
-    nux_component_t *comp  = &_module.components[index];
-    comp->name             = nux_strdup(nux_arena_core(), name);
-    comp->size             = size;
-    comp->read             = NUX_NULL;
-    comp->write            = NUX_NULL;
-    _module.components_max = NUX_MAX(_module.components_max, index + 1);
-    return comp;
 }
 
 nux_query_t *
@@ -477,6 +466,37 @@ component_get (const nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
     nux_scene_container_t *container = scene->containers.data + c;
     return (void *)((nux_intptr_t)container->chunks.data[mask]
                     + container->component_size * offset);
+}
+void
+nux_component_register (nux_u32_t index, const nux_c8_t *name, nux_u32_t size)
+{
+    NUX_ASSERT(index != 0);
+    NUX_ASSERT(index < NUX_COMPONENT_MAX);
+    NUX_ASSERT(_module.components[index].size == 0);
+    nux_component_t *comp  = &_module.components[index];
+    comp->name             = nux_strdup(nux_arena_core(), name);
+    comp->size             = size;
+    comp->read             = NUX_NULL;
+    comp->write            = NUX_NULL;
+    _module.components_max = NUX_MAX(_module.components_max, index + 1);
+}
+void
+nux_component_set_add (nux_u32_t index, nux_component_add_callback_t callback)
+{
+}
+void
+nux_component_set_remove (nux_u32_t                       index,
+                          nux_component_remove_callback_t callback)
+{
+}
+void
+nux_component_set_read (nux_u32_t index, nux_component_read_callback_t callback)
+{
+}
+void
+nux_component_set_write (nux_u32_t                      index,
+                         nux_component_write_callback_t callback)
+{
 }
 void *
 nux_component_get (nux_nid_t e, nux_u32_t c)

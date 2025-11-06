@@ -1,69 +1,3 @@
-core={}
----@return None
-function core.stat(...) end
----@return None
-function core.random(...) end
----@return None
-function core.random01(...) end
-time={}
----@return None
-function time.elapsed(...) end
----@return None
-function time.delta(...) end
----@return None
-function time.frame(...) end
----@return None
-function time.timestamp(...) end
-arena={}
----@return None
-function arena.new(...) end
----@return None
-function arena.clear(...) end
----@return None
-function arena.block_count(...) end
----@return None
-function arena.memory_usage(...) end
----@return None
-function arena.core(...) end
----@return None
-function arena.frame(...) end
-log={}
-log.DEBUG=4
-log.INFO=3
-log.WARNING=2
-log.ERROR=1
----@return None
-function log.set_level(...) end
----@return None
-function log.level(...) end
-error={}
-error.NONE=0
-error.OUT_OF_MEMORY=1
-error.INVALID_TEXTURE_SIZE=4
-error.WASM_RUNTIME=8
-error.CART_EOF=10
-error.CART_MOUNT=11
-stat={}
-stat.FPS=0
-stat.SCREEN_WIDTH=1
-stat.SCREEN_HEIGHT=2
-stat.TIMESTAMP=3
-stat.MAX=4
-io={}
----@return None
-function io.cart_begin(...) end
----@return None
-function io.cart_end(...) end
----@return None
-function io.write_cart_file(...) end
-controller={}
-controller.MAX=4
-controller.MODE_SELECTION=0
-controller.MODE_CURSOR=1
-name={}
-name.MAX=64
-disk={}
-disk.MAX=8
 inputmap={}
 ---@return None
 function inputmap.new(...) end
@@ -73,6 +7,8 @@ function inputmap.bind_key(...) end
 function inputmap.bind_mouse_button(...) end
 ---@return None
 function inputmap.bind_mouse_axis(...) end
+---@return None
+function inputmap.find_index(...) end
 input={}
 input.UNMAPPED=0
 input.KEY=1
@@ -96,6 +32,14 @@ function input.value(...) end
 function input.cursor(...) end
 ---@return None
 function input.set_cursor(...) end
+---@return None
+function input.push_event(...) end
+controller={}
+controller.MAX=4
+controller.MODE_SELECTION=0
+controller.MODE_CURSOR=1
+---@return None
+function controller.resize_values(...) end
 button={}
 button.PRESSED=1
 button.RELEASED=0
@@ -259,6 +203,33 @@ cursor.RIGHT=3
 lua={}
 ---@return None
 function lua.load(...) end
+component={}
+component.TRANSFORM=1
+component.CAMERA=2
+component.STATICMESH=3
+component.RIGIDBODY=4
+component.COLLIDER=5
+component.MAX=16
+---@return None
+function component.add_callback_t(...) end
+---@return None
+function component.remove_callback_t(...) end
+---@return None
+function component.read_callback_t(...) end
+---@return None
+function component.write_callback_t(...) end
+---@return None
+function component.new(...) end
+---@return None
+function component.set_add(...) end
+---@return None
+function component.set_remove(...) end
+---@return None
+function component.set_read(...) end
+---@return None
+function component.set_write(...) end
+---@return None
+function component.get(...) end
 transform={}
 ---@return None
 function transform.get_matrix(...) end
@@ -355,13 +326,6 @@ function node.remove(...) end
 function node.has(...) end
 ---@return None
 function node.instantiate(...) end
-component={}
-component.TRANSFORM=1
-component.CAMERA=2
-component.STATICMESH=3
-component.RIGIDBODY=4
-component.COLLIDER=5
-component.MAX=16
 viewport={}
 viewport.HIDDEN=0
 viewport.FIXED=1

@@ -371,11 +371,12 @@ static nux_status_t
 module_init (void)
 {
     // Register types
-    nux_resource_type_t *type;
-    type = nux_resource_register(
-        NUX_RESOURCE_LUA_MODULE, sizeof(nux_lua_t), "lua_module");
-    type->cleanup = lua_module_cleanup;
-    type->reload  = lua_module_reload;
+    nux_resource_register(
+        NUX_RESOURCE_LUA_MODULE,
+        (nux_resource_type_info_t) { .name    = "lua_module",
+                                     .size    = sizeof(nux_lua_t),
+                                     .cleanup = lua_module_cleanup,
+                                     .reload  = lua_module_reload });
 
     // Initialize Lua VM
     _module.L = luaL_newstate();
