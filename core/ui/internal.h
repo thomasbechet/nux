@@ -1,7 +1,7 @@
-#ifndef NUX_GUI_INTERNAL_H
-#define NUX_GUI_INTERNAL_H
+#ifndef NUX_UI_INTERNAL_H
+#define NUX_UI_INTERNAL_H
 
-#include <gui/api.h>
+#include <ui/ui.h>
 
 typedef struct
 {
@@ -45,7 +45,7 @@ struct nux_gui_t
     nux_u32_t hot_id;
 };
 
-void nux_gui_module_register(void);
+void nux_ui_module_register(void);
 
 void nux_gui_begin(nux_gui_t *gui);
 void nux_gui_end(nux_gui_t *gui);

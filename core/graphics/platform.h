@@ -1,7 +1,7 @@
 #ifndef NUX_GRAPHICS_PLATFORM_H
 #define NUX_GRAPHICS_PLATFORM_H
 
-#include <graphics/api.h>
+#include <graphics/graphics.h>
 
 typedef enum
 {

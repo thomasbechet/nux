@@ -1,11 +1,14 @@
 #ifndef NUX_LUA_INTERNAL_H
 #define NUX_LUA_INTERNAL_H
 
-#include <lua/api.h>
-#include <physics/api.h>
-#include <input/api.h>
-#include <scene/api.h>
-#include <graphics/api.h>
+#include <lua/lua.h>
+
+#include <input/input.h>
+#include <scene/scene.h>
+#include <physics/physics.h>
+#include <graphics/graphics.h>
+#include <ui/ui.h>
+
 #include <externals/lua/lua.h>
 #include <externals/lua/lualib.h>
 #include <externals/lua/lauxlib.h>

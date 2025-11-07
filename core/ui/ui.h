@@ -1,8 +1,8 @@
-#ifndef NUX_GUI_API_H
-#define NUX_GUI_API_H
+#ifndef NUX_UI_H
+#define NUX_UI_H
 
-#include <graphics/api.h>
-#include <input/api.h>
+#include <input/input.h>
+#include <graphics/graphics.h>
 
 typedef struct nux_gui_t        nux_gui_t;
 typedef struct nux_stylesheet_t nux_stylesheet_t;

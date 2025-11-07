@@ -1,7 +1,7 @@
-#ifndef NUX_GRAPHICS_API_H
-#define NUX_GRAPHICS_API_H
+#ifndef NUX_GRAPHICS_H
+#define NUX_GRAPHICS_H
 
-#include <scene/api.h>
+#include <scene/scene.h>
 
 typedef struct nux_canvas_t   nux_canvas_t;
 typedef struct nux_mesh_t     nux_mesh_t;

@@ -1,8 +1,7 @@
 #ifndef NUX_BASE_INTERNAL_H
 #define NUX_BASE_INTERNAL_H
 
-#include <core.h>
-#include <base/api.h>
+#include <core/platform.h>
 
 typedef struct nux_resource_finalizer
 {
@@ -81,6 +80,76 @@ struct nux_event_t
     nux_event_cleanup_t  cleanup;
 };
 
+typedef enum
+{
+    NUX_DISK_OS,
+    NUX_DISK_CART,
+} nux_disk_type_t;
+
+typedef enum
+{
+    NUX_CART_HEADER_SIZE = 4 * 3,
+    NUX_CART_ENTRY_SIZE  = 4 * 6,
+} nux_cart_layout_t;
+
+struct nux_file_t
+{
+    nux_disk_type_t type;
+    nux_io_mode_t   mode;
+    nux_b32_t       is_open;
+    union
+    {
+        struct
+        {
+            nux_u32_t slot;
+            nux_u32_t offset;
+            nux_u32_t length;
+            nux_u32_t cursor;
+        } cart;
+        struct
+        {
+            nux_u32_t slot;
+        } os;
+    };
+};
+
+typedef struct
+{
+    nux_b32_t compressed;
+    nux_u32_t data_type;
+    nux_u32_t data_offset;
+    nux_u32_t data_length;
+    nux_u32_t path_hash;
+    nux_u32_t path_offset;
+    nux_u32_t path_length;
+} nux_cart_entry_t;
+
+typedef struct
+{
+    const nux_c8_t   *path;
+    nux_file_t       *file;
+    nux_cart_entry_t *entries;
+    nux_u32_t         entries_count;
+} nux_cart_t;
+
+typedef struct
+{
+    nux_b32_t started;
+    nux_rid_t file;
+    nux_u32_t entry_count;
+    nux_u32_t entry_index;
+    nux_u32_t cursor;
+} nux_cart_writer_t;
+
+typedef struct nux_disk
+{
+    nux_disk_type_t type;
+    union
+    {
+        nux_cart_t cart;
+    };
+} nux_disk_t;
+
 typedef struct
 {
     void               *userdata;
@@ -103,13 +172,12 @@ typedef struct
     nux_module_vec_t modules;
     nux_ptr_vec_t    modules_dependencies;
     nux_module_t    *active_module;
-} nux_base_module_t;
 
-nux_status_t nux_base_init(void *userdata);
-void         nux_base_free(void);
-nux_status_t nux_base_start(const nux_c8_t *module);
-void         nux_base_update(void);
-void         nux_base_on_event(nux_os_event_t *event);
+    nux_cart_writer_t cart_writer;
+    nux_u32_vec_t     free_file_slots;
+} nux_core_module_t;
+
+nux_core_module_t *nux_core(void);
 
 nux_pcg_t           *nux_base_pcg(void);
 nux_resource_pool_t *nux_base_resources(void);
@@ -125,5 +193,16 @@ void *nux_resource_header_to_data(nux_resource_header_t *header);
 nux_resource_header_t *nux_resource_header_from_data(void *data);
 
 void nux_arena_cleanup(void *data);
+
+nux_status_t nux_io_init(void);
+void         nux_io_free(void);
+
+void nux_file_cleanup(void *data);
+void nux_disk_cleanup(void *data);
+
+nux_status_t nux_io_open_os_file(const nux_c8_t *path,
+                                 nux_io_mode_t   mode,
+                                 nux_u32_t      *ret_slot);
+void         nux_io_close_os_file(nux_u32_t slot);
 
 #endif

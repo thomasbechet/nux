@@ -1,7 +1,17 @@
-#ifndef NUX_IO_PLATFORM_H
-#define NUX_IO_PLATFORM_H
+#ifndef NUX_CORE_PLATFORM_H
+#define NUX_CORE_PLATFORM_H
 
-#include <io/api.h>
+#include <core/core.h>
+
+NUX_API void *nux_os_alloc(void     *userdata,
+                           void     *p,
+                           nux_u32_t osize,
+                           nux_u32_t nsize);
+NUX_API void  nux_os_log(void           *userdata,
+                         nux_log_level_t level,
+                         const nux_c8_t *log,
+                         nux_u32_t       len);
+NUX_API void  nux_os_stats_update(void *userdata, nux_u64_t *stats);
 
 NUX_API nux_status_t nux_os_file_open(void           *userdata,
                                       nux_u32_t       slot,
@@ -30,5 +40,9 @@ NUX_API void         nux_os_hotreload_remove(void *userdata, nux_rid_t handle);
 NUX_API void         nux_os_hotreload_pull(void      *userdata,
                                            nux_rid_t *handles,
                                            nux_u32_t *count);
+
+NUX_API nux_status_t nux_core_init(void *userdata, const nux_c8_t *entry);
+NUX_API void         nux_core_free(void);
+NUX_API void         nux_core_update(void);
 
 #endif

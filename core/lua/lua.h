@@ -1,7 +1,7 @@
 #ifndef NUX_LUA_H
 #define NUX_LUA_H
 
-#include <io/api.h>
+#include <core/core.h>
 
 typedef struct nux_lua_t nux_lua_t;
 

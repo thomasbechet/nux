@@ -1,7 +1,7 @@
 #ifndef NUX_DEBUG_INTERNAL_H
 #define NUX_DEBUG_INTERNAL_H
 
-#include <debug/api.h>
+#include <debug/debug.h>
 
 void nux_debug_module_register(void);
 

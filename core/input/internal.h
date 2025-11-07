@@ -1,7 +1,7 @@
 #ifndef NUX_INPUT_INTERNAL_H
 #define NUX_INPUT_INTERNAL_H
 
-#include <input/api.h>
+#include <input/input.h>
 
 NUX_VEC_DEFINE(nux_input_event_vec, nux_input_event_t);
 

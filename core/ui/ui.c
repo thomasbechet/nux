@@ -37,7 +37,7 @@ module_post_update (void)
     return NUX_SUCCESS;
 }
 void
-nux_gui_module_register (void)
+nux_ui_module_register (void)
 {
     nux_module_begin("gui", NUX_NULL, 0);
     nux_module_on_init(module_init);

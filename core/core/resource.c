@@ -1,7 +1,5 @@
 #include "internal.h"
 
-#include <core.h>
-
 #define RID_INDEX(rid)   (((nux_rid_t)(rid) >> 0) & 0xFFFFFF)
 #define RID_VERSION(rid) (((nux_rid_t)(rid) >> 24) & 0xFF)
 #define RID_BUILD(old, type, index) \

@@ -1,7 +1,7 @@
 #ifndef NUX_INPUT_H
 #define NUX_INPUT_H
 
-#include <base/api.h>
+#include <core/core.h>
 
 typedef enum
 {

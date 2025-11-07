@@ -1,7 +1,7 @@
-#ifndef NUX_SCENE_API_H
-#define NUX_SCENE_API_H
+#ifndef NUX_SCENE_H
+#define NUX_SCENE_H
 
-#include <io/api.h>
+#include <core/core.h>
 
 typedef struct nux_scene nux_scene_t;
 typedef struct nux_query nux_query_t;
@@ -24,7 +24,9 @@ typedef nux_status_t (*nux_component_read_callback_t)(nux_serde_reader_t *s,
 typedef nux_status_t (*nux_component_write_callback_t)(nux_serde_writer_t *s,
                                                        const void *data);
 
-void  nux_component_register(nux_u32_t index, const nux_c8_t *name, nux_u32_t size);
+void  nux_component_register(nux_u32_t       index,
+                             const nux_c8_t *name,
+                             nux_u32_t       size);
 void  nux_component_set_add(nux_u32_t                    index,
                             nux_component_add_callback_t callback);
 void  nux_component_set_remove(nux_u32_t                       index,

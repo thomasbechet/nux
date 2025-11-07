@@ -210,12 +210,12 @@ if __name__ == "__main__":
     headers = [
         # "core/base/api.h",
         # "core/io/api.h",
-        "core/input/api.h",
-        "core/lua/api.h",
-        "core/scene/api.h",
-        "core/graphics/api.h",
-        "core/physics/api.h",
-        "core/gui/api.h",
+        "core/input/input.h",
+        "core/lua/lua.h",
+        "core/scene/scene.h",
+        "core/graphics/graphics.h",
+        "core/physics/physics.h",
+        "core/ui/ui.h",
     ]
     modules = {}
     for header in headers:

@@ -1,7 +1,7 @@
 #ifndef NUX_PHYSICS_INTERNAL_H
 #define NUX_PHYSICS_INTERNAL_H
 
-#include <physics/api.h>
+#include <physics/physics.h>
 
 typedef struct
 {

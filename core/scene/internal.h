@@ -1,7 +1,7 @@
 #ifndef NUX_SCENE_INTERNAL_H
 #define NUX_SCENE_INTERNAL_H
 
-#include <scene/api.h>
+#include <scene/scene.h>
 
 #define NUX_NID_INDEX(id)   (id - 1)
 #define NUX_NID_MAKE(index) (index + 1)
