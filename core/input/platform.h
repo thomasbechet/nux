@@ -1,8 +1,7 @@
 #ifndef NUX_INPUT_PLATFORM_H
 #define NUX_INPUT_PLATFORM_H
 
-#include <core/core.h>
-#include <input/api.h>
+#include <input/input.h>
 
 typedef struct
 {

@@ -19,6 +19,13 @@
 #define NUX_WARNING(format, ...) nux_log(NUX_LOG_WARNING, format, ##__VA_ARGS__)
 #define NUX_ERROR(format, ...)   nux_log(NUX_LOG_ERROR, format, ##__VA_ARGS__)
 
+#define NUX_REGISTER_MODULE(mname, mdata, minit, mfree)               \
+    nux_module_register((nux_module_info_t) { .name = mname,          \
+                                              .data = mdata,          \
+                                              .size = sizeof(*mdata), \
+                                              .init = minit,          \
+                                              .free = mfree })
+
 ////////////////////////////
 ///        TYPES         ///
 ////////////////////////////
@@ -89,13 +96,6 @@ typedef enum
 
 typedef enum
 {
-    NUX_MODULE_UNINITIALIZED,
-    NUX_MODULE_INITIALIZED,
-    NUX_MODULE_STARTED,
-} nux_module_status_t;
-
-typedef enum
-{
     NUX_EVENT_LUA = 0,
 } nux_event_type_t;
 
@@ -122,6 +122,15 @@ typedef struct
     nux_resource_cleanup_t cleanup;
     nux_resource_reload_t  reload;
 } nux_resource_type_info_t;
+
+typedef struct
+{
+    const nux_c8_t *name;
+    nux_u32_t       size;
+    void           *data;
+    nux_status_t (*init)(void);
+    void (*free)(void);
+} nux_module_info_t;
 
 typedef struct
 {
@@ -340,11 +349,8 @@ void            nux_error_reset(void);
 const nux_c8_t *nux_error_get_message(void);
 nux_status_t    nux_error_get_status(void);
 
-void nux_module_begin(const nux_c8_t *name, void *data, nux_u32_t size);
-void nux_module_on_init(nux_status_t (*callback)(void));
-void nux_module_on_free(void (*callback)(void));
-void nux_module_requires(const nux_c8_t *name);
-void nux_module_end(void);
+void         nux_module_register(nux_module_info_t info);
+nux_status_t nux_module_requires(const nux_c8_t *name);
 
 void nux_config_set_u32(const nux_c8_t *name, nux_u32_t v);
 

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include <core.h>
+#include <nux.h>
 
 static FILE *files[NUX_FILE_MAX];
 

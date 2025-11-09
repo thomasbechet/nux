@@ -242,12 +242,4 @@ nux_f32_t nux_input_value(nux_u32_t controller, const nux_c8_t *name);
 nux_v2_t  nux_input_cursor(nux_u32_t controller);
 void      nux_input_set_cursor(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
 
-nux_status_t nux_controller_resize_values(nux_inputmap_t *map);
-
-nux_status_t nux_inputmap_find_index(const nux_inputmap_t *map,
-                                     const nux_c8_t       *name,
-                                     nux_u32_t            *index);
-
-void nux_input_push_event(nux_input_event_t *event);
-
 #endif

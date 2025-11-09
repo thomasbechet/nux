@@ -47,9 +47,7 @@ module_update (void)
 void
 nux_debug_module_register (void)
 {
-    nux_module_begin("debug", &_module, sizeof(_module));
-    nux_module_on_init(module_init);
-    nux_module_end();
+    NUX_REGISTER_MODULE("debug", &_module, module_init, NUX_NULL);
 }
 
 void

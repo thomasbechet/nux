@@ -81,11 +81,6 @@ nux_core_init (void *userdata, const nux_c8_t *entry)
                                        DEFAULT_MODULE_CAPACITY,
                                        &_module.modules),
               return NUX_FAILURE);
-    NUX_CHECK(nux_ptr_vec_init_capa(_module.core_arena,
-                                    DEFAULT_MODULE_DEPENDENCIES_CAPACITY,
-                                    &_module.modules_dependencies),
-              return NUX_FAILURE);
-    _module.active_module = NUX_NULL;
 
     // Initialize system state
     _module.userdata = userdata;
@@ -180,6 +175,8 @@ nux_core_free (void)
 {
     // Cleanup all resources
     nux_arena_clear(nux_arena_core());
+    // Free all modules
+    nux_module_free_all();
     // Free core memory
     nux_arena_free(_module.core_arena);
     // Free core arena
@@ -231,46 +228,6 @@ nux_allocator_t *
 nux_os_allocator (void)
 {
     return &_module.os_allocator;
-}
-
-void
-nux_module_begin (const nux_c8_t *name, void *data, nux_u32_t size)
-{
-    nux_module_t *m = nux_module_vec_push(&_module.modules);
-    NUX_ASSERT(_module.active_module);
-    nux_memset(m, 0, sizeof(*m));
-    m->info.name               = name;
-    m->info.data               = data;
-    m->info.size               = size;
-    m->info.dependencies_first = _module.modules_dependencies.size;
-    _module.active_module      = m;
-}
-void
-nux_module_on_init (nux_status_t (*callback)(void))
-{
-    nux_module_t *m = _module.active_module;
-    NUX_ASSERT(m);
-    m->info.on_init = callback;
-}
-void
-nux_module_on_free (void (*callback)(void))
-{
-    nux_module_t *m = _module.active_module;
-    NUX_ASSERT(m);
-    m->info.on_free = callback;
-}
-void
-nux_module_requires (const nux_c8_t *name)
-{
-    nux_module_t *m = _module.active_module;
-    NUX_ASSERT(m);
-    NUX_ASSERT(nux_ptr_vec_pushv(&_module.modules_dependencies, (void *)name));
-    ++m->info.dependencies_count;
-}
-void
-nux_module_end (void)
-{
-    _module.active_module = NUX_NULL;
 }
 
 nux_config_t *
@@ -364,113 +321,3 @@ nux_arena_frame (void)
 {
     return _module.frame_arena;
 }
-
-// nux_status_t
-// nux_modules_init (void)
-// {
-//     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
-//     {
-//         nux_module_t *m = _module.modules.data + i;
-//         if (m->status != NUX_MODULE_UNINITIALIZED)
-//         {
-//             continue;
-//         }
-//         if (m->info.data && m->info.size
-//             && !(m->info.flags & NUX_MODULE_NO_DATA_INITIALIZATION))
-//         {
-//             nux_memset(m->info.data, 0, m->info.size);
-//         }
-//         if (m->info.init)
-//         {
-//             NUX_ENSURE(m->info.init(),
-//                        return NUX_FAILURE,
-//                        "failed to init '%s' module",
-//                        m->info.name);
-//         }
-//         m->status = NUX_MODULE_INITIALIZED;
-//     }
-//     return NUX_SUCCESS;
-// }
-// nux_status_t
-// nux_modules_free (void)
-// {
-//     // Free in reverse order
-//     for (nux_u32_t i = _module.modules.size; i > 0; --i)
-//     {
-//         nux_module_t *m = _module.modules.data + (i - 1);
-//         if (m->status == NUX_MODULE_UNINITIALIZED)
-//         {
-//             continue;
-//         }
-//         if (m->info.free)
-//         {
-//             NUX_ENSURE(m->info.free(),
-//                        return NUX_FAILURE,
-//                        "failed to free '%s' module",
-//                        m->info.name);
-//         }
-//         m->status = NUX_MODULE_UNINITIALIZED;
-//     }
-//     return NUX_SUCCESS;
-// }
-// nux_status_t
-// nux_modules_pre_update (void)
-// {
-//     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
-//     {
-//         nux_module_t *m = _module.modules.data + i;
-//         if (m->info.pre_update)
-//         {
-//             NUX_ENSURE(m->info.pre_update(),
-//                        return NUX_FAILURE,
-//                        "failed to pre update '%s' module",
-//                        m->info.name);
-//         }
-//     }
-//     return NUX_SUCCESS;
-// }
-// nux_status_t
-// nux_modules_update (void)
-// {
-//     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
-//     {
-//         nux_module_t *m = _module.modules.data + i;
-//         if (m->info.update)
-//         {
-//             NUX_ENSURE(m->info.update(),
-//                        return NUX_FAILURE,
-//                        "failed to update '%s' module",
-//                        m->info.name);
-//         }
-//     }
-//     return NUX_SUCCESS;
-// }
-// nux_status_t
-// nux_modules_post_update (void)
-// {
-//     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
-//     {
-//         nux_module_t *m = _module.modules.data + i;
-//         if (m->info.post_update)
-//         {
-//             NUX_ENSURE(m->info.post_update(),
-//                        return NUX_FAILURE,
-//                        "failed to post update '%s' module",
-//                        m->info.name);
-//         }
-//     }
-//     return NUX_SUCCESS;
-// }
-// nux_status_t
-// nux_modules_on_event (nux_os_event_t *event)
-// {
-//     for (nux_u32_t i = 0; i < _module.modules.size; ++i)
-//     {
-//         nux_module_t *m = _module.modules.data + i;
-//         if (m->info.on_event)
-//         {
-//             m->info.on_event(event);
-//         }
-//     }
-//     return NUX_SUCCESS;
-// }

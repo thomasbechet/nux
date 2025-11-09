@@ -7,8 +7,6 @@ function inputmap.bind_key(...) end
 function inputmap.bind_mouse_button(...) end
 ---@return None
 function inputmap.bind_mouse_axis(...) end
----@return None
-function inputmap.find_index(...) end
 input={}
 input.UNMAPPED=0
 input.KEY=1
@@ -32,14 +30,6 @@ function input.value(...) end
 function input.cursor(...) end
 ---@return None
 function input.set_cursor(...) end
----@return None
-function input.push_event(...) end
-controller={}
-controller.MAX=4
-controller.MODE_SELECTION=0
-controller.MODE_CURSOR=1
----@return None
-function controller.resize_values(...) end
 button={}
 button.PRESSED=1
 button.RELEASED=0
@@ -200,6 +190,10 @@ cursor.UP=0
 cursor.DOWN=1
 cursor.LEFT=2
 cursor.RIGHT=3
+controller={}
+controller.MAX=4
+controller.MODE_SELECTION=0
+controller.MODE_CURSOR=1
 lua={}
 ---@return None
 function lua.load(...) end
@@ -211,25 +205,7 @@ component.RIGIDBODY=4
 component.COLLIDER=5
 component.MAX=16
 ---@return None
-function component.add_callback_t(...) end
----@return None
-function component.remove_callback_t(...) end
----@return None
-function component.read_callback_t(...) end
----@return None
-function component.write_callback_t(...) end
----@return None
-function component.new(...) end
----@return None
-function component.set_add(...) end
----@return None
-function component.set_remove(...) end
----@return None
-function component.set_read(...) end
----@return None
-function component.set_write(...) end
----@return None
-function component.get(...) end
+function component.register(...) end
 transform={}
 ---@return None
 function transform.get_matrix(...) end

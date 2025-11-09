@@ -39,7 +39,6 @@ module_post_update (void)
 void
 nux_ui_module_register (void)
 {
-    nux_module_begin("gui", NUX_NULL, 0);
-    nux_module_on_init(module_init);
-    nux_module_end();
+    nux_module_register((nux_module_info_t) {
+        .name = "ui", .data = NUX_NULL, .size = 0, .init = module_init });
 }

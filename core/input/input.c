@@ -173,10 +173,7 @@ module_post_update (void)
 void
 nux_input_module_register (void)
 {
-    nux_module_begin("input", &_module, sizeof(_module));
-    nux_module_on_init(module_init);
-    nux_module_requires("base");
-    nux_module_end();
+    NUX_REGISTER_MODULE("input", &_module, module_init, NUX_NULL);
 }
 
 void

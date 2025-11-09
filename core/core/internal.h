@@ -31,20 +31,8 @@ NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
 
 typedef struct
 {
-    const nux_c8_t *name;
-    nux_u32_t       size;
-    void           *data;
-    nux_u32_t       flags;
-    nux_status_t (*on_init)(void);
-    void (*on_free)(void);
-    nux_u32_t dependencies_count;
-    nux_u32_t dependencies_first;
-} nux_module_info_t;
-
-typedef struct
-{
-    nux_module_info_t   info;
-    nux_module_status_t status;
+    nux_module_info_t info;
+    nux_b32_t         initialized;
 } nux_module_t;
 
 NUX_VEC_DEFINE(nux_module_vec, nux_module_t);
@@ -170,8 +158,6 @@ typedef struct
     nux_arena_t        *core_arena;
 
     nux_module_vec_t modules;
-    nux_ptr_vec_t    modules_dependencies;
-    nux_module_t    *active_module;
 
     nux_cart_writer_t cart_writer;
     nux_u32_vec_t     free_file_slots;
@@ -204,5 +190,7 @@ nux_status_t nux_io_open_os_file(const nux_c8_t *path,
                                  nux_io_mode_t   mode,
                                  nux_u32_t      *ret_slot);
 void         nux_io_close_os_file(nux_u32_t slot);
+
+void nux_module_free_all(void);
 
 #endif

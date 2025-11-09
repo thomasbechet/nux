@@ -31,11 +31,15 @@ def parse_function(node, modules):
     funcname = ""
     typename = {}
     params = []
+
+    # Parse return value and function name
     if type(node.type) == c_parser.c_ast.PtrDecl: # Return pointer
         funcname = node.type.type.declname
         typename["name"] = normalize_typenme(node.type.type.type.names[0])
         typename["type"] = "resource"
         typename["const"] = True
+        if typename["name"] == "void": # Ignore void* returned value functions
+            return
         if node.args:
             params = node.args.params
     elif type(node.type) == c_parser.c_ast.TypeDecl: # Return value
@@ -45,6 +49,10 @@ def parse_function(node, modules):
         typename["const"] = True
         if node.args:
             params = node.args.params
+
+    # Ignore function callback typedefs
+    if (funcname.endswith("callback_t")): 
+        return
         
     # print(f"{funcname}: {typename}")
 
@@ -61,7 +69,6 @@ def parse_function(node, modules):
         arg["name"] = param.name
         typename = {}
         if type(param.type) is c_ast.PtrDecl:
-            print(param)
             typename["name"] = normalize_typenme(param.type.type.type.names[0])
             typename["type"] = "resource" 
             typename["const"] = False
@@ -74,6 +81,8 @@ def parse_function(node, modules):
             typename["name"] = normalize_typenme(param.type.type.names[0])
             typename["type"] = "primitive"
             typename["const"] = True
+        if typename["name"].endswith("callback"): # Ignore *_callback_t returned value functions
+            return
         arg["typename"] = typename
         if typename["name"] != "void":
             func["args"].append(arg)

@@ -69,19 +69,6 @@ l_inputmap_bind_mouse_axis (lua_State *L)
     return 0;
 }
 static int
-l_inputmap_find_index (lua_State *L)
-{
-    nux_inputmap_t *map
-        = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
-    const nux_c8_t *name  = luaL_checkstring(L, 2);
-    nux_u32_t      *index = nux_resource_check(None, luaL_checkinteger(L, 3));
-    nux_status_t    ret   = nux_inputmap_find_index(map, name, index);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
 l_input_set_map (lua_State *L)
 {
     nux_u32_t       controller = luaL_checknumber(L, 1);
@@ -171,28 +158,6 @@ l_input_set_cursor (lua_State *L)
     return 0;
 }
 static int
-l_input_push_event (lua_State *L)
-{
-    nux_input_event_t *event
-        = nux_resource_check(None, luaL_checkinteger(L, 1));
-
-    nux_input_push_event(event);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_controller_resize_values (lua_State *L)
-{
-    nux_inputmap_t *map
-        = nux_resource_check(NUX_RESOURCE_INPUTMAP, luaL_checkinteger(L, 1));
-    nux_status_t ret = nux_controller_resize_values(map);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
 l_lua_load (lua_State *L)
 {
     nux_arena_t *arena
@@ -213,120 +178,16 @@ l_lua_load (lua_State *L)
     return 1;
 }
 static int
-l_component_add_callback_t (lua_State *L)
-{
-    nux_nid_t nid = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_component_add_callback_t(nid);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_component_remove_callback_t (lua_State *L)
-{
-    nux_nid_t nid = (nux_nid_t)luaL_checknumber(L, 1);
-
-    nux_component_remove_callback_t(nid);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_component_read_callback_t (lua_State *L)
-{
-    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
-    nux_status_t        ret = nux_component_read_callback_t(s);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_component_write_callback_t (lua_State *L)
-{
-    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
-    nux_status_t        ret = nux_component_write_callback_t(s);
-    l_checkerror(L);
-
-    lua_pushinteger(L, ret);
-    return 1;
-}
-static int
-l_component_new (lua_State *L)
+l_component_register (lua_State *L)
 {
     nux_u32_t       index = luaL_checknumber(L, 1);
     const nux_c8_t *name  = luaL_checkstring(L, 2);
     nux_u32_t       size  = luaL_checknumber(L, 3);
 
-    nux_component_new(index, name, size);
+    nux_component_register(index, name, size);
     l_checkerror(L);
 
     return 0;
-}
-static int
-l_component_set_add (lua_State *L)
-{
-    nux_u32_t                    index    = luaL_checknumber(L, 1);
-    nux_component_add_callback_t callback = luaL_checknumber(L, 2);
-
-    nux_component_set_add(index, callback);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_component_set_remove (lua_State *L)
-{
-    nux_u32_t                       index    = luaL_checknumber(L, 1);
-    nux_component_remove_callback_t callback = luaL_checknumber(L, 2);
-
-    nux_component_set_remove(index, callback);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_component_set_read (lua_State *L)
-{
-    nux_u32_t                     index    = luaL_checknumber(L, 1);
-    nux_component_read_callback_t callback = luaL_checknumber(L, 2);
-
-    nux_component_set_read(index, callback);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_component_set_write (lua_State *L)
-{
-    nux_u32_t                      index    = luaL_checknumber(L, 1);
-    nux_component_write_callback_t callback = luaL_checknumber(L, 2);
-
-    nux_component_set_write(index, callback);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_component_get (lua_State *L)
-{
-    nux_nid_t e = (nux_nid_t)luaL_checknumber(L, 1);
-    nux_u32_t c = luaL_checknumber(L, 2);
-
-    nux_component_get(e, c);
-    l_checkerror(L);
-
-    nux_rid_t ret_rid = nux_resource_rid(ret);
-    if (ret_rid)
-    {
-        lua_pushinteger(L, ret_rid);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
 }
 static int
 l_transform_get_matrix (lua_State *L)
@@ -1938,7 +1799,6 @@ static const struct luaL_Reg lib_inputmap[]
         { "bind_key", l_inputmap_bind_key },
         { "bind_mouse_button", l_inputmap_bind_mouse_button },
         { "bind_mouse_axis", l_inputmap_bind_mouse_axis },
-        { "find_index", l_inputmap_find_index },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_input[]
     = { { "set_map", l_input_set_map },
@@ -1949,30 +1809,17 @@ static const struct luaL_Reg lib_input[]
         { "value", l_input_value },
         { "cursor", l_input_cursor },
         { "set_cursor", l_input_set_cursor },
-        { "push_event", l_input_push_event },
         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_controller[]
-    = { { "resize_values", l_controller_resize_values },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_button[]  = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_key[]     = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_mouse[]   = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_gamepad[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_cursor[]  = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_button[]     = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_key[]        = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_mouse[]      = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_gamepad[]    = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_cursor[]     = { { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_lua[]
     = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_component[]
-    = { { "add_callback_t", l_component_add_callback_t },
-        { "remove_callback_t", l_component_remove_callback_t },
-        { "read_callback_t", l_component_read_callback_t },
-        { "write_callback_t", l_component_write_callback_t },
-        { "new", l_component_new },
-        { "set_add", l_component_set_add },
-        { "set_remove", l_component_set_remove },
-        { "set_read", l_component_set_read },
-        { "set_write", l_component_set_write },
-        { "get", l_component_get },
-        { NUX_NULL, NUX_NULL } };
+    = { { "register", l_component_register }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_transform[]
     = { { "get_matrix", l_transform_get_matrix },
         { "get_local_translation", l_transform_get_local_translation },
@@ -2144,15 +1991,6 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 5);
     lua_setfield(L, -2, "GAMEPAD_AXIS");
     lua_setglobal(L, "input");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_controller, 0);
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "MAX");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "MODE_SELECTION");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "MODE_CURSOR");
-    lua_setglobal(L, "controller");
     lua_newtable(L);
     luaL_setfuncs(L, lib_button, 0);
     lua_pushinteger(L, 1);
@@ -2478,6 +2316,15 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 3);
     lua_setfield(L, -2, "RIGHT");
     lua_setglobal(L, "cursor");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_controller, 0);
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "MAX");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "MODE_SELECTION");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "MODE_CURSOR");
+    lua_setglobal(L, "controller");
     lua_newtable(L);
     luaL_setfuncs(L, lib_lua, 0);
     lua_setglobal(L, "lua");

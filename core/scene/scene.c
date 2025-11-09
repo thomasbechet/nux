@@ -198,9 +198,7 @@ module_init (void)
 void
 nux_scene_module_register (void)
 {
-    nux_module_begin("scene", &_module, sizeof(_module));
-    nux_module_on_init(module_init);
-    nux_module_end();
+    NUX_REGISTER_MODULE("scene", &_module, module_init, NUX_NULL);
 }
 nux_scene_module_t *
 nux_scene_module (void)

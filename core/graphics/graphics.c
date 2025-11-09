@@ -346,10 +346,7 @@ module_update (void)
 void
 nux_graphics_module_register (void)
 {
-    nux_module_begin("graphics", &_module, sizeof(_module));
-    nux_module_on_init(module_init);
-    nux_module_on_free(module_free);
-    nux_module_end();
+    NUX_REGISTER_MODULE("graphics", &_module, module_init, module_free);
 }
 
 nux_graphics_module_t *
