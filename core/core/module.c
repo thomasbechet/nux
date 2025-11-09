@@ -7,6 +7,7 @@ init_module (nux_module_t *module)
     {
         return NUX_SUCCESS;
     }
+    NUX_INFO("intitializing module '%s'", module->info.name);
     if (module->info.data && module->info.size)
     {
         nux_memset(module->info.data, 0, module->info.size);
@@ -26,6 +27,7 @@ free_module (nux_module_t *module)
 {
     if (module->initialized)
     {
+        NUX_INFO("terminating module '%s'", module->info.name);
         if (module->info.free)
         {
             module->info.free();
@@ -66,6 +68,6 @@ nux_module_free_all (void)
     nux_core_module_t *core = nux_core();
     for (nux_u32_t i = 0; i < core->modules.size; ++i)
     {
-        free_module(core->modules.data);
+        free_module(core->modules.data + i);
     }
 }

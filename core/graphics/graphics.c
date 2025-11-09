@@ -36,29 +36,29 @@ module_init (void)
     nux_resource_register(
         NUX_RESOURCE_VIEWPORT,
         (nux_resource_info_t) { .name = "viewport",
-                                     .size = sizeof(nux_viewport_t) });
+                                .size = sizeof(nux_viewport_t) });
     nux_resource_register(
         NUX_RESOURCE_TEXTURE,
         (nux_resource_info_t) { .name    = "texture",
-                                     .size    = sizeof(nux_texture_t),
-                                     .cleanup = nux_texture_cleanup });
+                                .size    = sizeof(nux_texture_t),
+                                .cleanup = nux_texture_cleanup });
     nux_resource_register(
         NUX_RESOURCE_PALETTE,
         (nux_resource_info_t) { .name = "palette",
-                                     .size = sizeof(nux_palette_t) });
-    nux_resource_register(NUX_RESOURCE_MESH,
-                          (nux_resource_info_t) {
-                              .name = "mesh", .size = sizeof(nux_mesh_t) });
+                                .size = sizeof(nux_palette_t) });
+    nux_resource_register(
+        NUX_RESOURCE_MESH,
+        (nux_resource_info_t) { .name = "mesh", .size = sizeof(nux_mesh_t) });
     nux_resource_register(
         NUX_RESOURCE_CANVAS,
         (nux_resource_info_t) { .name    = "canvas",
-                                     .size    = sizeof(nux_canvas_t),
-                                     .cleanup = nux_canvas_cleanup });
+                                .size    = sizeof(nux_canvas_t),
+                                .cleanup = nux_canvas_cleanup });
     nux_resource_register(
         NUX_RESOURCE_FONT,
         (nux_resource_info_t) { .name    = "font",
-                                     .size    = sizeof(nux_font_t),
-                                     .cleanup = nux_font_cleanup });
+                                .size    = sizeof(nux_font_t),
+                                .cleanup = nux_font_cleanup });
 
     // Register components
     nux_component_register(

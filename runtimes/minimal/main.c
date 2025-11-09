@@ -160,6 +160,7 @@ static void
 run (void)
 {
     NUX_INFO("Hello World !");
+    nux_module_requires("graphics");
 }
 
 int
