@@ -39,6 +39,16 @@ if __name__ == "__main__":
     for v in modules.values():
         api["functions"] |= v["functions"]
         api["constants"] |= v["constants"]
+    # Filter functions
+    for name in [
+            "module_register",
+            "event_new",
+            "event_unsubscribe",
+            "event_handler_event",
+            "resource_register",
+            "file_stat"
+            ]:
+        del api["functions"][name]
 
     # Generate lua_bindings.c
     apply_template(args.rootdir, "lua_bindings.c.jinja", "core/lua/lua_bindings.c", clang_format=True, api=api)

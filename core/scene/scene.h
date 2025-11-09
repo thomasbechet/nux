@@ -1,7 +1,7 @@
 #ifndef NUX_SCENE_H
 #define NUX_SCENE_H
 
-#include <core/core.h>
+#include <serde/serde.h>
 
 typedef struct nux_scene nux_scene_t;
 typedef struct nux_query nux_query_t;

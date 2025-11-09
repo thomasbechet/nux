@@ -23,8 +23,8 @@ typedef struct
 typedef struct
 {
     nux_resource_info_t info;
-    nux_u32_t                first_entry_index;
-    nux_u32_t                last_entry_index;
+    nux_u32_t           first_entry_index;
+    nux_u32_t           last_entry_index;
 } nux_resource_type_t;
 
 NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
@@ -189,6 +189,11 @@ nux_status_t nux_io_open_os_file(const nux_c8_t *path,
                                  nux_io_mode_t   mode,
                                  nux_u32_t      *ret_slot);
 void         nux_io_close_os_file(nux_u32_t slot);
+nux_status_t nux_io_write_cart_data(const nux_c8_t *path,
+                                    nux_u32_t       type,
+                                    nux_b32_t       compress,
+                                    const void     *data,
+                                    nux_u32_t       size);
 
 void nux_module_free_all(void);
 

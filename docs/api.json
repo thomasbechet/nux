@@ -134,22 +134,6 @@
                     }
                 ]
             },
-            "arena_core": {
-                "typename": {
-                    "name": "arena",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
-            "arena_frame": {
-                "typename": {
-                    "name": "arena",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
             "log_set_level": {
                 "typename": {
                     "name": "void",
@@ -166,14 +150,6 @@
                         }
                     }
                 ]
-            },
-            "log_level": {
-                "typename": {
-                    "name": "log_level",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
             },
             "resource_register": {
                 "typename": {
@@ -242,23 +218,6 @@
                     }
                 ]
             },
-            "resource_set_path": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "path",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
             "resource_path_rid": {
                 "typename": {
                     "name": "c8",
@@ -276,14 +235,6 @@
                     }
                 ]
             },
-            "resource_path": {
-                "typename": {
-                    "name": "c8",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
             "resource_set_name_rid": {
                 "typename": {
                     "name": "void",
@@ -299,23 +250,6 @@
                             "const": true
                         }
                     },
-                    {
-                        "name": "name",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "resource_set_name": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
                     {
                         "name": "name",
                         "typename": {
@@ -343,14 +277,6 @@
                     }
                 ]
             },
-            "resource_name": {
-                "typename": {
-                    "name": "c8",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
             "resource_next_rid": {
                 "typename": {
                     "name": "rid",
@@ -376,14 +302,6 @@
                     }
                 ]
             },
-            "resource_rid": {
-                "typename": {
-                    "name": "rid",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
             "resource_arena_rid": {
                 "typename": {
                     "name": "arena",
@@ -401,14 +319,6 @@
                     }
                 ]
             },
-            "resource_arena": {
-                "typename": {
-                    "name": "arena",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
             "resource_find_rid": {
                 "typename": {
                     "name": "rid",
@@ -425,46 +335,6 @@
                         }
                     }
                 ]
-            },
-            "error_enable": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
-            "error_disable": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
-            "error_reset": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
-            "error_get_message": {
-                "typename": {
-                    "name": "c8",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
-            "error_get_status": {
-                "typename": {
-                    "name": "status",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
             },
             "module_register": {
                 "typename": {
@@ -499,39 +369,6 @@
                         }
                     }
                 ]
-            },
-            "config_set_u32": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "name",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "config": {
-                "typename": {
-                    "name": "config",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
             },
             "event_new": {
                 "typename": {
@@ -617,31 +454,6 @@
                     }
                 ]
             },
-            "event_emit": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "event",
-                        "typename": {
-                            "name": "event",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "size",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
             "event_process": {
                 "typename": {
                     "name": "void",
@@ -658,14 +470,6 @@
                         }
                     }
                 ]
-            },
-            "event_process_all": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
             },
             "io_cart_begin": {
                 "typename": {
@@ -691,14 +495,6 @@
                         }
                     }
                 ]
-            },
-            "io_cart_end": {
-                "typename": {
-                    "name": "status",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
             },
             "io_write_cart_file": {
                 "typename": {
@@ -801,56 +597,6 @@
                     }
                 ]
             },
-            "file_read": {
-                "typename": {
-                    "name": "u32",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "file",
-                        "typename": {
-                            "name": "file",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "n",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "file_write": {
-                "typename": {
-                    "name": "u32",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "file",
-                        "typename": {
-                            "name": "file",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "n",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
             "file_seek": {
                 "typename": {
                     "name": "status",
@@ -895,817 +641,6 @@
                         "name": "stat",
                         "typename": {
                             "name": "file_stat",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "io_write_cart_data": {
-                "typename": {
-                    "name": "status",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "path",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "type",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "compress",
-                        "typename": {
-                            "name": "b32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "size",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "json_writer_init": {
-                "typename": {
-                    "name": "status",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "j",
-                        "typename": {
-                            "name": "json_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "path",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "json_writer_close": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "j",
-                        "typename": {
-                            "name": "json_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "json_reader_init": {
-                "typename": {
-                    "name": "status",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "j",
-                        "typename": {
-                            "name": "json_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "path",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "value",
-                        "typename": {
-                            "name": "serde_value",
-                            "type": "resource",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_object": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_array": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "size",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_end": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_write_u32": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_f32": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "f32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_v3": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "v3",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_q4": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "q4",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_bytes": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "bytes",
-                        "typename": {
-                            "name": "u8",
-                            "type": "resource",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "size",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_string": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_rid": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_write_eid": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_writer",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "nid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_read": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "value",
-                        "typename": {
-                            "name": "serde_value",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_object": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "serde_read_array": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "size",
-                        "typename": {
-                            "name": "u32",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_end": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_u32": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "u32",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_f32": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "f32",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_v3": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "v3",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_q4": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "q4",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_string": {
-                "typename": {
-                    "name": "c8",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "n",
-                        "typename": {
-                            "name": "u32",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_rid": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "resource",
-                            "const": false
-                        }
-                    }
-                ]
-            },
-            "serde_read_nid": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "s",
-                        "typename": {
-                            "name": "serde_reader",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "key",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "v",
-                        "typename": {
-                            "name": "nid",
                             "type": "resource",
                             "const": false
                         }
@@ -1822,17 +757,14 @@
             "NAME_MAX": {
                 "value": "64"
             },
-            "OS_EVENT_INPUT": {
-                "value": ""
-            },
             "SYSTEM_PRE_UPDATE": {
-                "value": ""
+                "value": "0"
             },
             "SYSTEM_UPDATE": {
-                "value": ""
+                "value": "1"
             },
             "SYSTEM_POST_UPDATE": {
-                "value": ""
+                "value": "2"
             },
             "FILE_MAX": {
                 "value": "64"
@@ -1845,39 +777,6 @@
             },
             "IO_READ_WRITE": {
                 "value": "1"
-            },
-            "SERDE_OBJECT": {
-                "value": ""
-            },
-            "SERDE_ARRAY": {
-                "value": ""
-            },
-            "SERDE_END": {
-                "value": ""
-            },
-            "SERDE_U32": {
-                "value": ""
-            },
-            "SERDE_F32": {
-                "value": ""
-            },
-            "SERDE_V3": {
-                "value": ""
-            },
-            "SERDE_Q4": {
-                "value": ""
-            },
-            "SERDE_BYTES": {
-                "value": ""
-            },
-            "SERDE_STRING": {
-                "value": ""
-            },
-            "SERDE_RID": {
-                "value": ""
-            },
-            "SERDE_NID": {
-                "value": ""
             }
         }
     },
@@ -3416,30 +2315,6 @@
                     }
                 ]
             },
-            "scene_active": {
-                "typename": {
-                    "name": "scene",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
-            "scene_count": {
-                "typename": {
-                    "name": "u32",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
-            "scene_clear": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
             "node_create": {
                 "typename": {
                     "name": "nid",
@@ -3490,14 +2365,6 @@
                         }
                     }
                 ]
-            },
-            "node_root": {
-                "typename": {
-                    "name": "nid",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
             },
             "node_parent": {
                 "typename": {
@@ -4082,14 +2949,6 @@
                     }
                 ]
             },
-            "texture_screen": {
-                "typename": {
-                    "name": "texture",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
-            },
             "texture_get_size": {
                 "typename": {
                     "name": "v2i",
@@ -4131,14 +2990,6 @@
                         }
                     }
                 ]
-            },
-            "palette_default": {
-                "typename": {
-                    "name": "palette",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": []
             },
             "palette_set_active": {
                 "typename": {
@@ -4745,30 +3596,6 @@
                     }
                 ]
             },
-            "graphics_begin_state": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
-            "graphics_end_state": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
-            "graphics_reset_state": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
-            },
             "graphics_draw_line": {
                 "typename": {
                     "name": "void",
@@ -4877,14 +3704,6 @@
                         }
                     }
                 ]
-            },
-            "graphics_set_transform_identity": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": []
             },
             "camera_set_fov": {
                 "typename": {

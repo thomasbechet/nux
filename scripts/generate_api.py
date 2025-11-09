@@ -74,8 +74,10 @@ def parse_function(node, module):
         if typename["name"].endswith("callback"): # Ignore *_callback_t returned value functions
             return
         arg["typename"] = typename
-        if typename["name"] != "void":
-            func["args"].append(arg)
+        # Ignore void * arguments
+        if typename["name"] == "void":
+            return
+        func["args"].append(arg)
 
     module["functions"][funcname] = func
 

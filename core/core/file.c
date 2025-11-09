@@ -54,6 +54,20 @@ close_file (nux_file_t *file)
     file->is_open = NUX_FALSE;
     return NUX_SUCCESS;
 }
+static nux_status_t
+file_stat (nux_file_t *file, nux_file_stat_t *stat)
+{
+    if (file->type == NUX_DISK_OS)
+    {
+        return nux_os_file_stat(file->os.slot, stat);
+    }
+    else if (file->type == NUX_DISK_CART)
+    {
+        stat->size = file->cart.length;
+        return NUX_SUCCESS;
+    }
+    return NUX_FAILURE;
+}
 
 nux_file_t *
 nux_file_open (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
@@ -144,19 +158,12 @@ nux_file_seek (nux_file_t *file, nux_u32_t cursor)
     }
     return NUX_FAILURE;
 }
-nux_status_t
-nux_file_stat (nux_file_t *file, nux_file_stat_t *stat)
+nux_u32_t
+nux_file_size (nux_file_t *file)
 {
-    if (file->type == NUX_DISK_OS)
-    {
-        return nux_os_file_stat(file->os.slot, stat);
-    }
-    else if (file->type == NUX_DISK_CART)
-    {
-        stat->size = file->cart.length;
-        return NUX_SUCCESS;
-    }
-    return NUX_FAILURE;
+    nux_file_stat_t stat;
+    NUX_CHECK(file_stat(file, &stat), return 0);
+    return stat.size;
 }
 void *
 nux_file_load (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
@@ -167,7 +174,7 @@ nux_file_load (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
 
     // Get the file size
     nux_file_stat_t stat;
-    NUX_CHECK(nux_file_stat(file, &stat), goto cleanup0);
+    NUX_CHECK(file_stat(file, &stat), goto cleanup0);
 
     // Seek to beginning
     NUX_CHECK(nux_file_seek(file, 0), goto cleanup0);

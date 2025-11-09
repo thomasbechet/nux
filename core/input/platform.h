@@ -3,6 +3,11 @@
 
 #include <input/input.h>
 
+typedef enum
+{
+    NUX_OS_EVENT_INPUT,
+} nux_os_event_type_t;
+
 typedef struct
 {
     nux_os_event_type_t type;
