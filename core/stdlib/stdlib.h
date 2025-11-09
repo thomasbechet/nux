@@ -642,6 +642,11 @@ NUX_V4_DEFINE(v4, nux_f32_t)
 NUX_B3_DEFINE(b3, nux_v3_t)
 NUX_B3_DEFINE(b3i, nux_v3i_t)
 
+NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
+NUX_VEC_DEFINE(nux_f32_vec, nux_f32_t)
+NUX_VEC_DEFINE(nux_v4_vec, nux_v4_t)
+NUX_VEC_DEFINE(nux_ptr_vec, void *);
+
 ////////////////////////////
 ///      FUNCTIONS       ///
 ////////////////////////////
@@ -795,5 +800,7 @@ void             nux_arena_clear(nux_arena_t *a);
 void nux_block_arena_init(nux_arena_t       *a,
                           nux_block_arena_t *ba,
                           nux_allocator_t   *allocator);
+
+void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
 
 #endif

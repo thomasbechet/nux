@@ -33,12 +33,6 @@
 typedef nux_u32_t nux_rid_t;
 typedef nux_u32_t nux_nid_t;
 
-NUX_VEC_DEFINE(nux_u32_vec, nux_u32_t)
-NUX_VEC_DEFINE(nux_f32_vec, nux_f32_t)
-NUX_VEC_DEFINE(nux_v4_vec, nux_v4_t)
-NUX_VEC_DEFINE(nux_ptr_vec, void *);
-typedef nux_u32_vec_t nux_rid_vec_t;
-
 typedef enum
 {
     NUX_ERROR_NONE                 = 0,
@@ -314,8 +308,6 @@ nux_arena_t *nux_arena_frame(void);
 
 void            nux_log_set_level(nux_log_level_t level);
 nux_log_level_t nux_log_level(void);
-
-void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
 
 void  nux_resource_register(nux_u32_t index, nux_resource_type_info_t info);
 void *nux_resource_new(nux_arena_t *a, nux_u32_t type);

@@ -32,7 +32,7 @@ struct nux_stylesheet_t
 struct nux_gui_t
 {
     nux_rid_t     canvas;
-    nux_rid_vec_t stylesheets;
+    nux_u32_vec_t stylesheets;
     struct
     {
         nux_controller_mode_t mode;
