@@ -109,6 +109,9 @@ typedef struct nux_event_handler_t nux_event_handler_t;
 typedef void (*nux_resource_cleanup_t)(void *data);
 typedef nux_status_t (*nux_resource_reload_t)(void *data, const nux_c8_t *path);
 
+typedef nux_status_t (*nux_module_init_callback_t)(void);
+typedef nux_status_t (*nux_module_free_callback_t)(void);
+
 typedef struct
 {
     const nux_c8_t        *name;
@@ -119,11 +122,11 @@ typedef struct
 
 typedef struct
 {
-    const nux_c8_t *name;
-    nux_u32_t       size;
-    void           *data;
-    nux_status_t (*init)(void);
-    void (*free)(void);
+    const nux_c8_t            *name;
+    nux_u32_t                  size;
+    void                      *data;
+    nux_module_init_callback_t init;
+    nux_module_free_callback_t free;
 } nux_module_info_t;
 
 typedef struct
@@ -441,19 +444,14 @@ void nux_serde_read_f32(nux_serde_reader_t *s,
                         nux_f32_t          *v);
 void nux_serde_read_v3(nux_serde_reader_t *s, const nux_c8_t *key, nux_v3_t *v);
 void nux_serde_read_q4(nux_serde_reader_t *s, const nux_c8_t *key, nux_q4_t *v);
-void nux_serde_read_bytes(nux_serde_reader_t *s,
-                          const nux_c8_t     *key,
-                          const nux_u8_t    **v,
-                          nux_u32_t          *n);
-void nux_serde_read_string(nux_serde_reader_t *s,
-                           const nux_c8_t     *key,
-                           const nux_c8_t    **v,
-                           nux_u32_t          *n);
-void nux_serde_read_rid(nux_serde_reader_t *s,
-                        const nux_c8_t     *key,
-                        nux_rid_t          *rid);
-void nux_serde_read_nid(nux_serde_reader_t *s,
-                        const nux_c8_t     *key,
-                        nux_nid_t          *v);
+const nux_c8_t *nux_serde_read_string(nux_serde_reader_t *s,
+                                      const nux_c8_t     *key,
+                                      nux_u32_t          *n);
+void            nux_serde_read_rid(nux_serde_reader_t *s,
+                                   const nux_c8_t     *key,
+                                   nux_rid_t          *rid);
+void            nux_serde_read_nid(nux_serde_reader_t *s,
+                                   const nux_c8_t     *key,
+                                   nux_nid_t          *v);
 
 #endif

@@ -1,0 +1,5978 @@
+{
+    "core": {
+        "functions": {
+            "nux_stat": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "info",
+                        "typename": {
+                            "name": "nux_stat_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_time_elapsed": {
+                "typename": {
+                    "name": "nux_f32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_time_delta": {
+                "typename": {
+                    "name": "nux_f32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_time_frame": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_time_timestamp": {
+                "typename": {
+                    "name": "nux_u64_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_random": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_random01": {
+                "typename": {
+                    "name": "nux_f32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_arena_new": {
+                "typename": {
+                    "name": "nux_arena_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_arena_clear": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_arena_block_count": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_arena_memory_usage": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_arena_core": {
+                "typename": {
+                    "name": "nux_arena_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_arena_frame": {
+                "typename": {
+                    "name": "nux_arena_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_log_set_level": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "level",
+                        "typename": {
+                            "name": "nux_log_level_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_log_level": {
+                "typename": {
+                    "name": "nux_log_level_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_resource_register": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "info",
+                        "typename": {
+                            "name": "nux_resource_info_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_reload": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_set_path_rid": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_set_path": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_path_rid": {
+                "typename": {
+                    "name": "nux_c8_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_path": {
+                "typename": {
+                    "name": "nux_c8_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_resource_set_name_rid": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_set_name": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_name_rid": {
+                "typename": {
+                    "name": "nux_c8_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_name": {
+                "typename": {
+                    "name": "nux_c8_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_resource_next_rid": {
+                "typename": {
+                    "name": "nux_rid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "type",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_rid": {
+                "typename": {
+                    "name": "nux_rid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_resource_arena_rid": {
+                "typename": {
+                    "name": "nux_arena_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_resource_arena": {
+                "typename": {
+                    "name": "nux_arena_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_resource_find_rid": {
+                "typename": {
+                    "name": "nux_rid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_error_enable": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_error_disable": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_error_reset": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_error_get_message": {
+                "typename": {
+                    "name": "nux_c8_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_error_get_status": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_module_register": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "info",
+                        "typename": {
+                            "name": "nux_module_info_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_module_requires": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_config_set_u32": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_config": {
+                "typename": {
+                    "name": "nux_config_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_event_new": {
+                "typename": {
+                    "name": "nux_event_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "typename": {
+                            "name": "nux_event_type_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "cleanup",
+                        "typename": {
+                            "name": "nux_event_cleanup_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_event_type": {
+                "typename": {
+                    "name": "nux_event_type_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "event",
+                        "typename": {
+                            "name": "nux_event_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_event_subscribe": {
+                "typename": {
+                    "name": "nux_event_handler_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "event",
+                        "typename": {
+                            "name": "nux_event_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_event_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_event_unsubscribe": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "handler",
+                        "typename": {
+                            "name": "nux_event_handler_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_event_handler_event": {
+                "typename": {
+                    "name": "nux_rid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "handler",
+                        "typename": {
+                            "name": "nux_event_handler_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_event_emit": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "event",
+                        "typename": {
+                            "name": "nux_event_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_event_process": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "event",
+                        "typename": {
+                            "name": "nux_event_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_event_process_all": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_system_register": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "phase",
+                        "typename": {
+                            "name": "nux_system_phase_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_system_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_io_cart_begin": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "entry_count",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_io_cart_end": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_io_write_cart_file": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_disk_mount": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_file_exists": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_file_open": {
+                "typename": {
+                    "name": "nux_file_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "mode",
+                        "typename": {
+                            "name": "nux_io_mode_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_file_close": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "file",
+                        "typename": {
+                            "name": "nux_file_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_file_read": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "file",
+                        "typename": {
+                            "name": "nux_file_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_file_write": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "file",
+                        "typename": {
+                            "name": "nux_file_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_file_seek": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "file",
+                        "typename": {
+                            "name": "nux_file_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "cursor",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_file_stat": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "file",
+                        "typename": {
+                            "name": "nux_file_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "stat",
+                        "typename": {
+                            "name": "nux_file_stat_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_io_write_cart_data": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "compress",
+                        "typename": {
+                            "name": "nux_b32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_writer_init": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_serde_writer_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_reader_init": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_serde_reader_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_json_writer_init": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "j",
+                        "typename": {
+                            "name": "nux_json_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_json_writer_close": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "j",
+                        "typename": {
+                            "name": "nux_json_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_json_reader_init": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "j",
+                        "typename": {
+                            "name": "nux_json_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "typename": {
+                            "name": "nux_serde_value_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_object": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_array": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_end": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_u32": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_f32": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_v3": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_q4": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_q4_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_bytes": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "bytes",
+                        "typename": {
+                            "name": "nux_u8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_string": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_rid": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_write_eid": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_writer_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "value",
+                        "typename": {
+                            "name": "nux_serde_value_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_object": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_array": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_end": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_u32": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_f32": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_v3": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_q4": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_q4_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_string": {
+                "typename": {
+                    "name": "nux_c8_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_rid": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "rid",
+                        "typename": {
+                            "name": "nux_rid_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_serde_read_nid": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "s",
+                        "typename": {
+                            "name": "nux_serde_reader_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "v",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            }
+        },
+        "constants": {
+            "NUX_ERROR_NONE": {
+                "value": "0"
+            },
+            "NUX_ERROR_OUT_OF_MEMORY": {
+                "value": "1"
+            },
+            "NUX_ERROR_INVALID_TEXTURE_SIZE": {
+                "value": "4"
+            },
+            "NUX_ERROR_WASM_RUNTIME": {
+                "value": "8"
+            },
+            "NUX_ERROR_CART_EOF": {
+                "value": "10"
+            },
+            "NUX_ERROR_CART_MOUNT": {
+                "value": "11"
+            },
+            "NUX_STAT_FPS": {
+                "value": "0"
+            },
+            "NUX_STAT_SCREEN_WIDTH": {
+                "value": "1"
+            },
+            "NUX_STAT_SCREEN_HEIGHT": {
+                "value": "2"
+            },
+            "NUX_STAT_TIMESTAMP": {
+                "value": "3"
+            },
+            "NUX_STAT_MAX": {
+                "value": "4"
+            },
+            "NUX_LOG_DEBUG": {
+                "value": "4"
+            },
+            "NUX_LOG_INFO": {
+                "value": "3"
+            },
+            "NUX_LOG_WARNING": {
+                "value": "2"
+            },
+            "NUX_LOG_ERROR": {
+                "value": "1"
+            },
+            "NUX_RESOURCE_NULL": {
+                "value": "0"
+            },
+            "NUX_RESOURCE_ARENA": {
+                "value": "1"
+            },
+            "NUX_RESOURCE_LUA_MODULE": {
+                "value": "2"
+            },
+            "NUX_RESOURCE_TEXTURE": {
+                "value": "3"
+            },
+            "NUX_RESOURCE_MESH": {
+                "value": "4"
+            },
+            "NUX_RESOURCE_PALETTE": {
+                "value": "5"
+            },
+            "NUX_RESOURCE_VIEWPORT": {
+                "value": "6"
+            },
+            "NUX_RESOURCE_CANVAS": {
+                "value": "7"
+            },
+            "NUX_RESOURCE_FONT": {
+                "value": "8"
+            },
+            "NUX_RESOURCE_FILE": {
+                "value": "9"
+            },
+            "NUX_RESOURCE_DISK": {
+                "value": "10"
+            },
+            "NUX_RESOURCE_SCENE": {
+                "value": "11"
+            },
+            "NUX_RESOURCE_QUERY": {
+                "value": "12"
+            },
+            "NUX_RESOURCE_EVENT": {
+                "value": "13"
+            },
+            "NUX_RESOURCE_INPUTMAP": {
+                "value": "14"
+            },
+            "NUX_RESOURCE_GUI": {
+                "value": "15"
+            },
+            "NUX_RESOURCE_STYLESHEET": {
+                "value": "16"
+            },
+            "NUX_RESOURCE_MAX": {
+                "value": "256"
+            },
+            "NUX_MODULE_NO_DATA_INITIALIZATION": {
+                "value": "1 << 0"
+            },
+            "NUX_EVENT_LUA": {
+                "value": "0"
+            },
+            "NUX_NAME_MAX": {
+                "value": "64"
+            },
+            "NUX_OS_EVENT_INPUT": {
+                "value": ""
+            },
+            "NUX_SYSTEM_PRE_UPDATE": {
+                "value": ""
+            },
+            "NUX_SYSTEM_UPDATE": {
+                "value": ""
+            },
+            "NUX_SYSTEM_POST_UPDATE": {
+                "value": ""
+            },
+            "NUX_FILE_MAX": {
+                "value": "64"
+            },
+            "NUX_DISK_MAX": {
+                "value": "4"
+            },
+            "NUX_IO_READ": {
+                "value": "0"
+            },
+            "NUX_IO_READ_WRITE": {
+                "value": "1"
+            },
+            "NUX_SERDE_OBJECT": {
+                "value": ""
+            },
+            "NUX_SERDE_ARRAY": {
+                "value": ""
+            },
+            "NUX_SERDE_END": {
+                "value": ""
+            },
+            "NUX_SERDE_U32": {
+                "value": ""
+            },
+            "NUX_SERDE_F32": {
+                "value": ""
+            },
+            "NUX_SERDE_V3": {
+                "value": ""
+            },
+            "NUX_SERDE_Q4": {
+                "value": ""
+            },
+            "NUX_SERDE_BYTES": {
+                "value": ""
+            },
+            "NUX_SERDE_STRING": {
+                "value": ""
+            },
+            "NUX_SERDE_RID": {
+                "value": ""
+            },
+            "NUX_SERDE_NID": {
+                "value": ""
+            }
+        }
+    },
+    "input": {
+        "functions": {
+            "nux_inputmap_new": {
+                "typename": {
+                    "name": "nux_inputmap_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_inputmap_bind_key": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "map",
+                        "typename": {
+                            "name": "nux_inputmap_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "key",
+                        "typename": {
+                            "name": "nux_key_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_inputmap_bind_mouse_button": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "map",
+                        "typename": {
+                            "name": "nux_inputmap_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "button",
+                        "typename": {
+                            "name": "nux_mouse_button_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_inputmap_bind_mouse_axis": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "map",
+                        "typename": {
+                            "name": "nux_inputmap_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "axis",
+                        "typename": {
+                            "name": "nux_mouse_axis_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "sensivity",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_input_set_map": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "map",
+                        "typename": {
+                            "name": "nux_inputmap_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_input_pressed": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_input_released": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_input_just_pressed": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_input_just_released": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_input_value": {
+                "typename": {
+                    "name": "nux_f32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_input_cursor": {
+                "typename": {
+                    "name": "nux_v2_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_input_set_cursor": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "controller",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "x",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "y",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            }
+        },
+        "constants": {
+            "NUX_INPUT_UNMAPPED": {
+                "value": "0"
+            },
+            "NUX_INPUT_KEY": {
+                "value": "1"
+            },
+            "NUX_INPUT_MOUSE_BUTTON": {
+                "value": "2"
+            },
+            "NUX_INPUT_MOUSE_AXIS": {
+                "value": "3"
+            },
+            "NUX_INPUT_GAMEPAD_BUTTON": {
+                "value": "4"
+            },
+            "NUX_INPUT_GAMEPAD_AXIS": {
+                "value": "5"
+            },
+            "NUX_BUTTON_PRESSED": {
+                "value": "1"
+            },
+            "NUX_BUTTON_RELEASED": {
+                "value": "0"
+            },
+            "NUX_KEY_SPACE": {
+                "value": "0"
+            },
+            "NUX_KEY_APOSTROPHE": {
+                "value": "1"
+            },
+            "NUX_KEY_COMMA": {
+                "value": "2"
+            },
+            "NUX_KEY_MINUS": {
+                "value": "3"
+            },
+            "NUX_KEY_PERIOD": {
+                "value": "4"
+            },
+            "NUX_KEY_SLASH": {
+                "value": "5"
+            },
+            "NUX_KEY_NUM0": {
+                "value": "6"
+            },
+            "NUX_KEY_NUM1": {
+                "value": "7"
+            },
+            "NUX_KEY_NUM2": {
+                "value": "8"
+            },
+            "NUX_KEY_NUM3": {
+                "value": "9"
+            },
+            "NUX_KEY_NUM4": {
+                "value": "10"
+            },
+            "NUX_KEY_NUM5": {
+                "value": "11"
+            },
+            "NUX_KEY_NUM6": {
+                "value": "12"
+            },
+            "NUX_KEY_NUM7": {
+                "value": "13"
+            },
+            "NUX_KEY_NUM8": {
+                "value": "14"
+            },
+            "NUX_KEY_NUM9": {
+                "value": "15"
+            },
+            "NUX_KEY_SEMICOLON": {
+                "value": "16"
+            },
+            "NUX_KEY_EQUAL": {
+                "value": "17"
+            },
+            "NUX_KEY_A": {
+                "value": "18"
+            },
+            "NUX_KEY_B": {
+                "value": "19"
+            },
+            "NUX_KEY_C": {
+                "value": "20"
+            },
+            "NUX_KEY_D": {
+                "value": "21"
+            },
+            "NUX_KEY_E": {
+                "value": "22"
+            },
+            "NUX_KEY_F": {
+                "value": "23"
+            },
+            "NUX_KEY_G": {
+                "value": "24"
+            },
+            "NUX_KEY_H": {
+                "value": "25"
+            },
+            "NUX_KEY_I": {
+                "value": "26"
+            },
+            "NUX_KEY_J": {
+                "value": "27"
+            },
+            "NUX_KEY_K": {
+                "value": "29"
+            },
+            "NUX_KEY_L": {
+                "value": "30"
+            },
+            "NUX_KEY_M": {
+                "value": "31"
+            },
+            "NUX_KEY_N": {
+                "value": "32"
+            },
+            "NUX_KEY_O": {
+                "value": "33"
+            },
+            "NUX_KEY_P": {
+                "value": "34"
+            },
+            "NUX_KEY_Q": {
+                "value": "35"
+            },
+            "NUX_KEY_R": {
+                "value": "36"
+            },
+            "NUX_KEY_S": {
+                "value": "37"
+            },
+            "NUX_KEY_T": {
+                "value": "38"
+            },
+            "NUX_KEY_U": {
+                "value": "39"
+            },
+            "NUX_KEY_V": {
+                "value": "40"
+            },
+            "NUX_KEY_W": {
+                "value": "41"
+            },
+            "NUX_KEY_X": {
+                "value": "42"
+            },
+            "NUX_KEY_Y": {
+                "value": "43"
+            },
+            "NUX_KEY_Z": {
+                "value": "44"
+            },
+            "NUX_KEY_LEFT_BRACKET": {
+                "value": "45"
+            },
+            "NUX_KEY_BACKSLASH": {
+                "value": "46"
+            },
+            "NUX_KEY_RIGHT_BRACKET": {
+                "value": "47"
+            },
+            "NUX_KEY_GRAVE_ACCENT": {
+                "value": "48"
+            },
+            "NUX_KEY_ESCAPE": {
+                "value": "49"
+            },
+            "NUX_KEY_ENTER": {
+                "value": "50"
+            },
+            "NUX_KEY_TAB": {
+                "value": "51"
+            },
+            "NUX_KEY_BACKSPACE": {
+                "value": "52"
+            },
+            "NUX_KEY_INSERT": {
+                "value": "53"
+            },
+            "NUX_KEY_DELETE": {
+                "value": "54"
+            },
+            "NUX_KEY_RIGHT": {
+                "value": "55"
+            },
+            "NUX_KEY_LEFT": {
+                "value": "56"
+            },
+            "NUX_KEY_DOWN": {
+                "value": "57"
+            },
+            "NUX_KEY_UP": {
+                "value": "58"
+            },
+            "NUX_KEY_PAGE_UP": {
+                "value": "59"
+            },
+            "NUX_KEY_PAGE_DOWN": {
+                "value": "60"
+            },
+            "NUX_KEY_HOME": {
+                "value": "61"
+            },
+            "NUX_KEY_END": {
+                "value": "62"
+            },
+            "NUX_KEY_CAPS_LOCK": {
+                "value": "63"
+            },
+            "NUX_KEY_SCROLL_LOCK": {
+                "value": "64"
+            },
+            "NUX_KEY_NUM_LOCK": {
+                "value": "65"
+            },
+            "NUX_KEY_PRINT_SCREEN": {
+                "value": "66"
+            },
+            "NUX_KEY_PAUSE": {
+                "value": "67"
+            },
+            "NUX_KEY_F1": {
+                "value": "68"
+            },
+            "NUX_KEY_F2": {
+                "value": "69"
+            },
+            "NUX_KEY_F3": {
+                "value": "70"
+            },
+            "NUX_KEY_F4": {
+                "value": "71"
+            },
+            "NUX_KEY_F5": {
+                "value": "72"
+            },
+            "NUX_KEY_F6": {
+                "value": "73"
+            },
+            "NUX_KEY_F7": {
+                "value": "74"
+            },
+            "NUX_KEY_F8": {
+                "value": "75"
+            },
+            "NUX_KEY_F9": {
+                "value": "76"
+            },
+            "NUX_KEY_F10": {
+                "value": "77"
+            },
+            "NUX_KEY_F11": {
+                "value": "78"
+            },
+            "NUX_KEY_F12": {
+                "value": "79"
+            },
+            "NUX_KEY_F13": {
+                "value": "80"
+            },
+            "NUX_KEY_F14": {
+                "value": "81"
+            },
+            "NUX_KEY_F15": {
+                "value": "82"
+            },
+            "NUX_KEY_F16": {
+                "value": "83"
+            },
+            "NUX_KEY_F17": {
+                "value": "84"
+            },
+            "NUX_KEY_F18": {
+                "value": "85"
+            },
+            "NUX_KEY_F19": {
+                "value": "86"
+            },
+            "NUX_KEY_F20": {
+                "value": "87"
+            },
+            "NUX_KEY_F21": {
+                "value": "88"
+            },
+            "NUX_KEY_F22": {
+                "value": "89"
+            },
+            "NUX_KEY_F23": {
+                "value": "90"
+            },
+            "NUX_KEY_F24": {
+                "value": "91"
+            },
+            "NUX_KEY_F25": {
+                "value": "92"
+            },
+            "NUX_KEY_KP_0": {
+                "value": "93"
+            },
+            "NUX_KEY_KP_1": {
+                "value": "94"
+            },
+            "NUX_KEY_KP_2": {
+                "value": "95"
+            },
+            "NUX_KEY_KP_3": {
+                "value": "96"
+            },
+            "NUX_KEY_KP_4": {
+                "value": "97"
+            },
+            "NUX_KEY_KP_5": {
+                "value": "98"
+            },
+            "NUX_KEY_KP_6": {
+                "value": "99"
+            },
+            "NUX_KEY_KP_7": {
+                "value": "100"
+            },
+            "NUX_KEY_KP_8": {
+                "value": "101"
+            },
+            "NUX_KEY_KP_9": {
+                "value": "102"
+            },
+            "NUX_KEY_KP_DECIMAL": {
+                "value": "103"
+            },
+            "NUX_KEY_KP_DIVIDE": {
+                "value": "104"
+            },
+            "NUX_KEY_KP_MULTIPLY": {
+                "value": "105"
+            },
+            "NUX_KEY_KP_SUBTRACT": {
+                "value": "106"
+            },
+            "NUX_KEY_KP_ADD": {
+                "value": "107"
+            },
+            "NUX_KEY_KP_ENTER": {
+                "value": "108"
+            },
+            "NUX_KEY_KP_EQUAL": {
+                "value": "109"
+            },
+            "NUX_KEY_LEFT_SHIFT": {
+                "value": "110"
+            },
+            "NUX_KEY_LEFT_CONTROL": {
+                "value": "111"
+            },
+            "NUX_KEY_LEFT_ALT": {
+                "value": "112"
+            },
+            "NUX_KEY_LEFT_SUPER": {
+                "value": "113"
+            },
+            "NUX_KEY_RIGHT_SHIFT": {
+                "value": "114"
+            },
+            "NUX_KEY_RIGHT_CONTROL": {
+                "value": "115"
+            },
+            "NUX_KEY_RIGHT_ALT": {
+                "value": "116"
+            },
+            "NUX_KEY_RIGHT_SUPER": {
+                "value": "117"
+            },
+            "NUX_KEY_MENU": {
+                "value": "118"
+            },
+            "NUX_MOUSE_BUTTON_LEFT": {
+                "value": "0"
+            },
+            "NUX_MOUSE_BUTTON_RIGHT": {
+                "value": "1"
+            },
+            "NUX_MOUSE_BUTTON_MIDDLE": {
+                "value": "2"
+            },
+            "NUX_MOUSE_WHEEL_UP": {
+                "value": "3"
+            },
+            "NUX_MOUSE_WHEEL_DOWN": {
+                "value": "4"
+            },
+            "NUX_MOUSE_MOTION_RIGHT": {
+                "value": "0"
+            },
+            "NUX_MOUSE_MOTION_LEFT": {
+                "value": "1"
+            },
+            "NUX_MOUSE_MOTION_DOWN": {
+                "value": "2"
+            },
+            "NUX_MOUSE_MOTION_UP": {
+                "value": "3"
+            },
+            "NUX_MOUSE_SCROLL_UP": {
+                "value": "4"
+            },
+            "NUX_MOUSE_SCROLL_DOWN": {
+                "value": "5"
+            },
+            "NUX_GAMEPAD_A": {
+                "value": "0"
+            },
+            "NUX_GAMEPAD_X": {
+                "value": "1"
+            },
+            "NUX_GAMEPAD_Y": {
+                "value": "2"
+            },
+            "NUX_GAMEPAD_B": {
+                "value": "3"
+            },
+            "NUX_GAMEPAD_DPAD_UP": {
+                "value": "4"
+            },
+            "NUX_GAMEPAD_DPAD_DOWN": {
+                "value": "5"
+            },
+            "NUX_GAMEPAD_DPAD_LEFT": {
+                "value": "6"
+            },
+            "NUX_GAMEPAD_DPAD_RIGHT": {
+                "value": "7"
+            },
+            "NUX_GAMEPAD_SHOULDER_LEFT": {
+                "value": "8"
+            },
+            "NUX_GAMEPAD_SHOULDER_RIGHT": {
+                "value": "9"
+            },
+            "NUX_GAMEPAD_LSTICK_LEFT": {
+                "value": "0"
+            },
+            "NUX_GAMEPAD_LSTICK_RIGHT": {
+                "value": "1"
+            },
+            "NUX_GAMEPAD_LSTICK_UP": {
+                "value": "2"
+            },
+            "NUX_GAMEPAD_LSTICK_DOWN": {
+                "value": "3"
+            },
+            "NUX_GAMEPAD_RSTICK_LEFT": {
+                "value": "4"
+            },
+            "NUX_GAMEPAD_RSTICK_RIGHT": {
+                "value": "5"
+            },
+            "NUX_GAMEPAD_RSTICK_UP": {
+                "value": "6"
+            },
+            "NUX_GAMEPAD_RSTICK_DOWN": {
+                "value": "7"
+            },
+            "NUX_GAMEPAD_LTRIGGER": {
+                "value": "8"
+            },
+            "NUX_GAMEPAD_RTRIGGER": {
+                "value": "9"
+            },
+            "NUX_CURSOR_UP": {
+                "value": "0"
+            },
+            "NUX_CURSOR_DOWN": {
+                "value": "1"
+            },
+            "NUX_CURSOR_LEFT": {
+                "value": "2"
+            },
+            "NUX_CURSOR_RIGHT": {
+                "value": "3"
+            },
+            "NUX_CONTROLLER_MAX": {
+                "value": "4"
+            }
+        }
+    },
+    "lua": {
+        "functions": {
+            "nux_lua_load": {
+                "typename": {
+                    "name": "nux_lua_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            }
+        },
+        "constants": {}
+    },
+    "scene": {
+        "functions": {
+            "nux_component_register": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "name",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_component_set_add": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_component_add_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_component_set_remove": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_component_remove_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_component_set_read": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_component_read_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_component_set_write": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "callback",
+                        "typename": {
+                            "name": "nux_component_write_callback_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_get_matrix": {
+                "typename": {
+                    "name": "nux_m4_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_get_local_translation": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_get_local_rotation": {
+                "typename": {
+                    "name": "nux_q4_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_get_local_scale": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_get_translation": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_get_rotation": {
+                "typename": {
+                    "name": "nux_q4_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_get_scale": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_set_translation": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "position",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_set_rotation": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "rotation",
+                        "typename": {
+                            "name": "nux_q4_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_set_rotation_euler": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "euler",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_set_scale": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "scale",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_set_ortho": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "a",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "b",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "c",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_forward": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_backward": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_left": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_right": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_up": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_down": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_rotate": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "axis",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "angle",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_rotate_x": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "angle",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_rotate_y": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "angle",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_rotate_z": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "angle",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_transform_look_at": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "center",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_query_new": {
+                "typename": {
+                    "name": "nux_query_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "include_count",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "exclude_count",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_query_new_any": {
+                "typename": {
+                    "name": "nux_query_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_query_includes": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "it",
+                        "typename": {
+                            "name": "nux_query_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "c",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_query_excludes": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "it",
+                        "typename": {
+                            "name": "nux_query_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "c",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_query_next": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "it",
+                        "typename": {
+                            "name": "nux_query_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_scene_new": {
+                "typename": {
+                    "name": "nux_scene_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_scene_set_active": {
+                "typename": {
+                    "name": "nux_status_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "scene",
+                        "typename": {
+                            "name": "nux_scene_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_scene_active": {
+                "typename": {
+                    "name": "nux_scene_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_scene_count": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_scene_clear": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_node_create": {
+                "typename": {
+                    "name": "nux_nid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "parent",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_delete": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_valid": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_root": {
+                "typename": {
+                    "name": "nux_nid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_node_parent": {
+                "typename": {
+                    "name": "nux_nid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_set_parent": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "p",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_sibling": {
+                "typename": {
+                    "name": "nux_nid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_child": {
+                "typename": {
+                    "name": "nux_nid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_add": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "c",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_remove": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "c",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_has": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "c",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_node_instantiate": {
+                "typename": {
+                    "name": "nux_nid_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "scene",
+                        "typename": {
+                            "name": "nux_scene_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "parent",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_scene_load_gltf": {
+                "typename": {
+                    "name": "nux_scene_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            }
+        },
+        "constants": {
+            "NUX_COMPONENT_TRANSFORM": {
+                "value": "1"
+            },
+            "NUX_COMPONENT_CAMERA": {
+                "value": "2"
+            },
+            "NUX_COMPONENT_STATICMESH": {
+                "value": "3"
+            },
+            "NUX_COMPONENT_RIGIDBODY": {
+                "value": "4"
+            },
+            "NUX_COMPONENT_COLLIDER": {
+                "value": "5"
+            },
+            "NUX_COMPONENT_MAX": {
+                "value": "16"
+            }
+        }
+    },
+    "graphics": {
+        "functions": {
+            "nux_viewport_new": {
+                "typename": {
+                    "name": "nux_viewport_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "target",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_mode": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "mode",
+                        "typename": {
+                            "name": "nux_viewport_mode_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_extent": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "extent",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_anchor": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "anchor",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_layer": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "layer",
+                        "typename": {
+                            "name": "nux_i32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_clear_depth": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "clear",
+                        "typename": {
+                            "name": "nux_b32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_auto_resize": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "enable",
+                        "typename": {
+                            "name": "nux_b32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_camera": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "camera",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_set_texture": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "texture",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_get_normalized_viewport": {
+                "typename": {
+                    "name": "nux_v4_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "viewport",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_to_global": {
+                "typename": {
+                    "name": "nux_v2_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "coord",
+                        "typename": {
+                            "name": "nux_v2_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_viewport_to_local": {
+                "typename": {
+                    "name": "nux_v2_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "vp",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "coord",
+                        "typename": {
+                            "name": "nux_v2_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_texture_new": {
+                "typename": {
+                    "name": "nux_texture_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "format",
+                        "typename": {
+                            "name": "nux_texture_type_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "w",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "h",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_texture_load": {
+                "typename": {
+                    "name": "nux_texture_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "path",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_texture_screen": {
+                "typename": {
+                    "name": "nux_texture_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_texture_get_size": {
+                "typename": {
+                    "name": "nux_v2i_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "texture",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_palette_new": {
+                "typename": {
+                    "name": "nux_palette_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_palette_default": {
+                "typename": {
+                    "name": "nux_palette_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_palette_set_active": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "palette",
+                        "typename": {
+                            "name": "nux_palette_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_palette_set_color": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "palette",
+                        "typename": {
+                            "name": "nux_palette_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "color",
+                        "typename": {
+                            "name": "nux_v4_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_palette_get_color": {
+                "typename": {
+                    "name": "nux_v4_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "palette",
+                        "typename": {
+                            "name": "nux_palette_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "index",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_new": {
+                "typename": {
+                    "name": "nux_mesh_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "capa",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "attributes",
+                        "typename": {
+                            "name": "nux_vertex_attribute_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "primitive",
+                        "typename": {
+                            "name": "nux_vertex_primitive_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_new_cube": {
+                "typename": {
+                    "name": "nux_mesh_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "sx",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "sy",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "sz",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_new_plane": {
+                "typename": {
+                    "name": "nux_mesh_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "sx",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "sy",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_update_bounds": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "mesh",
+                        "typename": {
+                            "name": "nux_mesh_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_bounds_min": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "mesh",
+                        "typename": {
+                            "name": "nux_mesh_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_bounds_max": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "mesh",
+                        "typename": {
+                            "name": "nux_mesh_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_set_origin": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "mesh",
+                        "typename": {
+                            "name": "nux_mesh_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "origin",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_transform": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "mesh",
+                        "typename": {
+                            "name": "nux_mesh_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "transform",
+                        "typename": {
+                            "name": "nux_m4_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_mesh_size": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "mesh",
+                        "typename": {
+                            "name": "nux_mesh_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_new": {
+                "typename": {
+                    "name": "nux_canvas_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "width",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "height",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_get_texture": {
+                "typename": {
+                    "name": "nux_texture_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_get_size": {
+                "typename": {
+                    "name": "nux_v2i_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_set_clear_color": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "color",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_set_wrap_mode": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "mode",
+                        "typename": {
+                            "name": "nux_texture_wrap_mode_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_text": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "x",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "y",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "text",
+                        "typename": {
+                            "name": "nux_c8_t",
+                            "type": "resource",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_rectangle": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "x",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "y",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "w",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "h",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_blit": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "texture",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "extent",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "tex_extent",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_canvas_blit_sliced": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "texture",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "extent",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "tex_extent",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "inner",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_graphics_begin_state": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_graphics_end_state": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_graphics_reset_state": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_graphics_draw_line": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "a",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "b",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_graphics_draw_dir": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "origin",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "dir",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "length",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_graphics_set_layer": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "layer",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_graphics_set_color": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "color",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_graphics_set_transform": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "transform",
+                        "typename": {
+                            "name": "nux_m4_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_graphics_set_transform_identity": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": []
+            },
+            "nux_camera_set_fov": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "fov",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_set_near": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "near",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_set_far": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "far",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_set_aspect": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "aspect",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_reset_aspect": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "viewport",
+                        "typename": {
+                            "name": "nux_viewport_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_camera_set_ortho": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "ortho",
+                        "typename": {
+                            "name": "nux_b32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_set_ortho_size": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "size",
+                        "typename": {
+                            "name": "nux_v2_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_get_projection": {
+                "typename": {
+                    "name": "nux_m4_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_unproject": {
+                "typename": {
+                    "name": "nux_v3_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "pos",
+                        "typename": {
+                            "name": "nux_v2_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_set_render_mask": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "mask",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_camera_get_render_mask": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_set_mesh": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "mesh",
+                        "typename": {
+                            "name": "nux_mesh_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_get_mesh": {
+                "typename": {
+                    "name": "nux_mesh_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_set_texture": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "texture",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_get_texture": {
+                "typename": {
+                    "name": "nux_texture_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_set_colormap": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "colormap",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_set_render_layer": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "layer",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_get_render_layer": {
+                "typename": {
+                    "name": "nux_u32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_staticmesh_set_draw_bounds": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "n",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "draw",
+                        "typename": {
+                            "name": "nux_b32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            }
+        },
+        "constants": {
+            "NUX_PALETTE_SIZE": {
+                "value": "256"
+            },
+            "NUX_COLORMAP_SIZE": {
+                "value": "256"
+            },
+            "NUX_LAYER_DEFAULT": {
+                "value": "0x1"
+            },
+            "NUX_VERTEX_TRIANGLES": {
+                "value": "0"
+            },
+            "NUX_VERTEX_LINES": {
+                "value": "1"
+            },
+            "NUX_VERTEX_POINTS": {
+                "value": "2"
+            },
+            "NUX_VERTEX_POSITION": {
+                "value": "1 << 0"
+            },
+            "NUX_VERTEX_TEXCOORD": {
+                "value": "1 << 1"
+            },
+            "NUX_VERTEX_COLOR": {
+                "value": "1 << 2"
+            },
+            "NUX_TEXTURE_IMAGE_RGBA": {
+                "value": "0"
+            },
+            "NUX_TEXTURE_IMAGE_INDEX": {
+                "value": "1"
+            },
+            "NUX_TEXTURE_RENDER_TARGET": {
+                "value": "2"
+            },
+            "NUX_TEXTURE_WRAP_CLAMP": {
+                "value": "0"
+            },
+            "NUX_TEXTURE_WRAP_REPEAT": {
+                "value": "1"
+            },
+            "NUX_TEXTURE_WRAP_MIRROR": {
+                "value": "2"
+            },
+            "NUX_COLOR_TRANSPARENT": {
+                "value": "0"
+            },
+            "NUX_COLOR_WHITE": {
+                "value": "1"
+            },
+            "NUX_COLOR_RED": {
+                "value": "2"
+            },
+            "NUX_COLOR_GREEN": {
+                "value": "3"
+            },
+            "NUX_COLOR_BLUE": {
+                "value": "4"
+            },
+            "NUX_COLOR_BACKGROUND": {
+                "value": "5"
+            },
+            "NUX_VIEWPORT_HIDDEN": {
+                "value": "0"
+            },
+            "NUX_VIEWPORT_FIXED": {
+                "value": "1"
+            },
+            "NUX_VIEWPORT_FIXED_BEST_FIT": {
+                "value": "2"
+            },
+            "NUX_VIEWPORT_STRETCH_KEEP_ASPECT": {
+                "value": "3"
+            },
+            "NUX_VIEWPORT_STRETCH": {
+                "value": "4"
+            },
+            "NUX_ANCHOR_CENTER": {
+                "value": "0"
+            },
+            "NUX_ANCHOR_TOP": {
+                "value": "1 << 1"
+            },
+            "NUX_ANCHOR_BOTTOM": {
+                "value": "1 << 2"
+            },
+            "NUX_ANCHOR_LEFT": {
+                "value": "1 << 3"
+            },
+            "NUX_ANCHOR_RIGHT": {
+                "value": "1 << 4"
+            }
+        }
+    },
+    "physics": {
+        "functions": {
+            "nux_rigidbody_set_velocity": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "velocity",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_collider_set_sphere": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "radius",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_collider_set_aabb": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "e",
+                        "typename": {
+                            "name": "nux_nid_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "min",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "max",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_physics_raycast": {
+                "typename": {
+                    "name": "nux_raycast_hit_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "pos",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "dir",
+                        "typename": {
+                            "name": "nux_v3_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_physics_set_ground_height": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "height",
+                        "typename": {
+                            "name": "nux_f32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            }
+        },
+        "constants": {
+            "NUX_COLLIDER_SPHERE": {
+                "value": "0"
+            },
+            "NUX_COLLIDER_AABB": {
+                "value": "1"
+            }
+        }
+    },
+    "ui": {
+        "functions": {
+            "nux_stylesheet_new": {
+                "typename": {
+                    "name": "nux_stylesheet_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_stylesheet_set": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "style",
+                        "typename": {
+                            "name": "nux_stylesheet_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "property",
+                        "typename": {
+                            "name": "nux_stylesheet_property_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "texture",
+                        "typename": {
+                            "name": "nux_texture_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "extent",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "inner",
+                        "typename": {
+                            "name": "nux_b2i_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            },
+            "nux_gui_new": {
+                "typename": {
+                    "name": "nux_gui_t",
+                    "type": "resource",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "arena",
+                        "typename": {
+                            "name": "nux_arena_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "canvas",
+                        "typename": {
+                            "name": "nux_canvas_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_gui_push_style": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "gui",
+                        "typename": {
+                            "name": "nux_gui_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "stylesheet",
+                        "typename": {
+                            "name": "nux_stylesheet_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_gui_pop_style": {
+                "typename": {
+                    "name": "void",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "gui",
+                        "typename": {
+                            "name": "nux_gui_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    }
+                ]
+            },
+            "nux_gui_button": {
+                "typename": {
+                    "name": "nux_b32_t",
+                    "type": "primitive",
+                    "const": true
+                },
+                "args": [
+                    {
+                        "name": "gui",
+                        "typename": {
+                            "name": "nux_gui_t",
+                            "type": "resource",
+                            "const": false
+                        }
+                    },
+                    {
+                        "name": "x",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "y",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "w",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    },
+                    {
+                        "name": "h",
+                        "typename": {
+                            "name": "nux_u32_t",
+                            "type": "primitive",
+                            "const": true
+                        }
+                    }
+                ]
+            }
+        },
+        "constants": {
+            "NUX_CONTROLLER_MODE_SELECTION": {
+                "value": "0"
+            },
+            "NUX_CONTROLLER_MODE_CURSOR": {
+                "value": "1"
+            },
+            "NUX_STYLESHEET_BUTTON_PRESSED": {
+                "value": "0"
+            },
+            "NUX_STYLESHEET_BUTTON_RELEASED": {
+                "value": "1"
+            },
+            "NUX_STYLESHEET_BUTTON_HOVERED": {
+                "value": "2"
+            },
+            "NUX_STYLESHEET_CHECKBOX_CHECKED": {
+                "value": "3"
+            },
+            "NUX_STYLESHEET_CHECKBOX_UNCHECKED": {
+                "value": "4"
+            },
+            "NUX_STYLESHEET_CURSOR": {
+                "value": "5"
+            }
+        }
+    }
+}

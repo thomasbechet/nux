@@ -204,18 +204,17 @@ nux_serde_read_q4 (nux_serde_reader_t *s, const nux_c8_t *key, nux_q4_t *v)
     value.q4   = v;
     nux_serde_read(s, &value);
 }
-void
-nux_serde_read_string (nux_serde_reader_t *s,
-                       const nux_c8_t     *key,
-                       const nux_c8_t    **v,
-                       nux_u32_t          *n)
+const nux_c8_t *
+nux_serde_read_string (nux_serde_reader_t *s, const nux_c8_t *key, nux_u32_t *n)
 {
+    const nux_c8_t   *p;
     nux_serde_value_t value;
     value.key   = key;
     value.type  = NUX_SERDE_STRING;
-    value.str.s = v;
+    value.str.s = &p;
     value.str.n = n;
     nux_serde_read(s, &value);
+    return p;
 }
 void
 nux_serde_read_rid (nux_serde_reader_t *s, const nux_c8_t *key, nux_rid_t *rid)

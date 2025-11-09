@@ -176,9 +176,8 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
         for (nux_u32_t j = 0; j < component_count; ++j)
         {
             nux_serde_read_object(s, NUX_NULL); // component
-            const nux_c8_t *name;
             nux_u32_t       n;
-            nux_serde_read_string(s, "component", &name, &n);
+            const nux_c8_t *name = nux_serde_read_string(s, "component", &n);
             for (nux_u32_t c = 0; c < module->components_max; ++c)
             {
                 nux_component_t *comp = module->components + c;
