@@ -5,13 +5,13 @@ module_init (void)
 {
     // Register resources
     nux_resource_register(NUX_RESOURCE_GUI,
-                          (nux_resource_type_info_t) {
+                          (nux_resource_info_t) {
                               .name = "gui",
                               .size = sizeof(nux_gui_t),
                           });
     nux_resource_register(
         NUX_RESOURCE_STYLESHEET,
-        (nux_resource_type_info_t) { .name = "stylesheet",
+        (nux_resource_info_t) { .name = "stylesheet",
                                      .size = sizeof(nux_stylesheet_t) });
 
     return NUX_SUCCESS;

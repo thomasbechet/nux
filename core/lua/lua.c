@@ -373,7 +373,7 @@ module_init (void)
     // Register types
     nux_resource_register(
         NUX_RESOURCE_LUA_MODULE,
-        (nux_resource_type_info_t) { .name    = "lua_module",
+        (nux_resource_info_t) { .name    = "lua_module",
                                      .size    = sizeof(nux_lua_t),
                                      .cleanup = lua_module_cleanup,
                                      .reload  = lua_module_reload });

@@ -1,7 +1,7 @@
 #ifndef NUX_CORE_H
 #define NUX_CORE_H
 
-#include <stdlib/stdlib.h>
+#include <common/common.h>
 
 ////////////////////////////
 ///        MACROS        ///
@@ -115,7 +115,7 @@ typedef struct
     nux_u32_t              size;
     nux_resource_cleanup_t cleanup;
     nux_resource_reload_t  reload;
-} nux_resource_type_info_t;
+} nux_resource_info_t;
 
 typedef struct
 {
@@ -309,10 +309,10 @@ nux_arena_t *nux_arena_frame(void);
 void            nux_log_set_level(nux_log_level_t level);
 nux_log_level_t nux_log_level(void);
 
-void  nux_resource_register(nux_u32_t index, nux_resource_type_info_t info);
-void *nux_resource_new(nux_arena_t *a, nux_u32_t type);
-void *nux_resource_get(nux_u32_t type, nux_rid_t rid);
-void *nux_resource_check(nux_u32_t type, nux_rid_t rid);
+void         nux_resource_register(nux_u32_t index, nux_resource_info_t info);
+void        *nux_resource_new(nux_arena_t *a, nux_u32_t type);
+void        *nux_resource_get(nux_u32_t type, nux_rid_t rid);
+void        *nux_resource_check(nux_u32_t type, nux_rid_t rid);
 nux_status_t nux_resource_reload(nux_rid_t rid);
 
 void            nux_resource_set_path_rid(nux_rid_t rid, const nux_c8_t *path);

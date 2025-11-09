@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 nux_u32_t
 nux_strnlen (const nux_c8_t *s, nux_u32_t n)

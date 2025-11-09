@@ -83,7 +83,7 @@ module_init (void)
 
     nux_resource_register(
         NUX_RESOURCE_INPUTMAP,
-        (nux_resource_type_info_t) { .name = "inputmap",
+        (nux_resource_info_t) { .name = "inputmap",
                                      .size = sizeof(nux_inputmap_t) });
 
     // Allocate events queue

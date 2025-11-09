@@ -111,17 +111,16 @@ nux_core_init (void)
     _module.config.debug.console                   = NUX_TRUE;
 
     // Register base types
-    nux_resource_register(
-        NUX_RESOURCE_NULL,
-        (nux_resource_type_info_t) { .name = "null", .size = 0 });
+    nux_resource_register(NUX_RESOURCE_NULL,
+                          (nux_resource_info_t) { .name = "null", .size = 0 });
     nux_resource_register(
         NUX_RESOURCE_ARENA,
-        (nux_resource_type_info_t) { .name    = "arena",
-                                     .size    = sizeof(nux_arena_t),
-                                     .cleanup = nux_arena_cleanup });
-    nux_resource_register(NUX_RESOURCE_EVENT,
-                          (nux_resource_type_info_t) {
-                              .name = "event", .size = sizeof(nux_event_t) });
+        (nux_resource_info_t) { .name    = "arena",
+                                .size    = sizeof(nux_arena_t),
+                                .cleanup = nux_arena_cleanup });
+    nux_resource_register(
+        NUX_RESOURCE_EVENT,
+        (nux_resource_info_t) { .name = "event", .size = sizeof(nux_event_t) });
 
     // Create frame arena
     _module.frame_arena = nux_arena_new(_module.core_arena);

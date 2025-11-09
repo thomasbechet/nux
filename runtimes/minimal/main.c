@@ -156,11 +156,17 @@ nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
     *count = 0;
 }
 
+static void
+run (void)
+{
+    NUX_INFO("Hello World !");
+}
+
 int
 main (int argc, char *argv[])
 {
     nux_core_init();
-    nux_core_update();
+    run();
     nux_core_free();
     return 0;
 }

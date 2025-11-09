@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 void *
 nux_malloc (nux_allocator_t *a, nux_u32_t size)

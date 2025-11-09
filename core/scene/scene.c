@@ -167,13 +167,13 @@ module_init (void)
 {
     // Register types
     nux_resource_register(NUX_RESOURCE_SCENE,
-                          (nux_resource_type_info_t) {
+                          (nux_resource_info_t) {
                               .name    = "scene",
                               .size    = sizeof(nux_scene_t),
                               .cleanup = nux_scene_cleanup,
                           });
     nux_resource_register(NUX_RESOURCE_QUERY,
-                          (nux_resource_type_info_t) {
+                          (nux_resource_info_t) {
                               .name = "query",
                               .size = sizeof(nux_query_t),
                           });

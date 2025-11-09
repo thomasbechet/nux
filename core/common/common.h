@@ -1,5 +1,5 @@
-#ifndef NUX_STDLIB_H
-#define NUX_STDLIB_H
+#ifndef NUX_COMMON_H
+#define NUX_COMMON_H
 
 #include <config.h>
 #include <stdint.h>
@@ -802,20 +802,5 @@ void nux_block_arena_init(nux_arena_t       *a,
                           nux_allocator_t   *allocator);
 
 void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
-
-typedef struct
-{
-    nux_arena_t *arena;
-    nux_u32_t    capa;
-    nux_u32_t    size;
-    nux_u32_t    object_size;
-} nux_vector_header_t;
-
-void *nux_vector_init_capa(nux_arena_t *arena,
-                           nux_u32_t    capa,
-                           nux_u32_t    object_size);
-
-#define NUX_VECTOR(type) type *
-// #define NUX_VECTOR_INIT(v, arena)
 
 #endif

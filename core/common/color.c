@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 static float
 color_to_linear (float x)

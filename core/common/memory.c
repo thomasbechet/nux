@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 nux_i32_t
 nux_memcmp (const void *p0, const void *p1, nux_u32_t n)

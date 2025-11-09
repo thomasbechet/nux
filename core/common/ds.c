@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 NUX_VEC_IMPL(nux_u32_vec, nux_u32_t);
 NUX_VEC_IMPL(nux_f32_vec, nux_f32_t)

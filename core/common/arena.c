@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 void
 nux_arena_init (nux_arena_t *a,

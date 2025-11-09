@@ -99,7 +99,7 @@ resource_find (const nux_c8_t *name)
 }
 
 void
-nux_resource_register (nux_u32_t index, nux_resource_type_info_t info)
+nux_resource_register (nux_u32_t index, nux_resource_info_t info)
 {
     nux_resource_type_t *resource_types = nux_base_resource_types();
     NUX_ASSERT(index < NUX_RESOURCE_MAX);

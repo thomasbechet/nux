@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 #define NUX_V2_IMPL(name, type, opadd, opsub, opmul, opdiv, opmin, opmax) \
     nux_##name##_t nux_##name(type x, type y)                             \

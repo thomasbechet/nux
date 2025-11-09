@@ -22,7 +22,7 @@ typedef struct
 
 typedef struct
 {
-    nux_resource_type_info_t info;
+    nux_resource_info_t info;
     nux_u32_t                first_entry_index;
     nux_u32_t                last_entry_index;
 } nux_resource_type_t;

@@ -5,13 +5,13 @@ nux_io_init (void)
 {
     nux_core_module_t *module = nux_core();
     nux_resource_register(NUX_RESOURCE_FILE,
-                          (nux_resource_type_info_t) {
+                          (nux_resource_info_t) {
                               .name    = "file",
                               .size    = sizeof(nux_file_t),
                               .cleanup = nux_file_cleanup,
                           });
     nux_resource_register(NUX_RESOURCE_DISK,
-                          (nux_resource_type_info_t) {
+                          (nux_resource_info_t) {
                               .name    = "disk",
                               .size    = sizeof(nux_disk_t),
                               .cleanup = nux_disk_cleanup,

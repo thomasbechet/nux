@@ -1,4 +1,4 @@
-#include "stdlib.h"
+#include "common.h"
 
 nux_pcg_t
 nux_pcg (nux_u64_t state, nux_u64_t incr)
