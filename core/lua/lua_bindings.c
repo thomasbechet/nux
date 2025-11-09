@@ -10,6 +10,1028 @@ l_checkerror (lua_State *L)
 }
 
 static int
+l_stat (lua_State *L)
+{
+    nux_stat_t info = luaL_checknumber(L, 1);
+    nux_u32_t  ret  = nux_stat(info);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_time_elapsed (lua_State *L)
+{
+    nux_f32_t ret = nux_time_elapsed();
+    l_checkerror(L);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+static int
+l_time_delta (lua_State *L)
+{
+    nux_f32_t ret = nux_time_delta();
+    l_checkerror(L);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+static int
+l_time_frame (lua_State *L)
+{
+    nux_u32_t ret = nux_time_frame();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_time_timestamp (lua_State *L)
+{
+    nux_u64_t ret = nux_time_timestamp();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_random (lua_State *L)
+{
+    nux_u32_t ret = nux_random();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_random01 (lua_State *L)
+{
+    nux_f32_t ret = nux_random01();
+    l_checkerror(L);
+
+    lua_pushnumber(L, ret);
+    return 1;
+}
+static int
+l_arena_new (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_arena_t *ret = nux_arena_new(arena);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_arena_clear (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+
+    nux_arena_clear(arena);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_arena_block_count (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_u32_t ret = nux_arena_block_count(arena);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_arena_memory_usage (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_u32_t ret = nux_arena_memory_usage(arena);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_arena_core (lua_State *L)
+{
+    nux_arena_t *ret = nux_arena_core();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_arena_frame (lua_State *L)
+{
+    nux_arena_t *ret = nux_arena_frame();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_log_set_level (lua_State *L)
+{
+    nux_log_level_t level = luaL_checknumber(L, 1);
+
+    nux_log_set_level(level);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_log_level (lua_State *L)
+{
+    nux_log_level_t ret = nux_log_level();
+    l_checkerror(L);
+}
+static int
+l_resource_register (lua_State *L)
+{
+    nux_u32_t           index = luaL_checknumber(L, 1);
+    nux_resource_info_t info  = luaL_checknumber(L, 2);
+
+    nux_resource_register(index, info);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_resource_reload (lua_State *L)
+{
+    nux_rid_t    rid = (nux_rid_t)luaL_checknumber(L, 1);
+    nux_status_t ret = nux_resource_reload(rid);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_resource_set_path_rid (lua_State *L)
+{
+    nux_rid_t       rid  = (nux_rid_t)luaL_checknumber(L, 1);
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+
+    nux_resource_set_path_rid(rid, path);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_resource_set_path (lua_State *L)
+{
+    const nux_c8_t *path = luaL_checkstring(L, 1);
+
+    nux_resource_set_path(path);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_resource_path_rid (lua_State *L)
+{
+    nux_rid_t rid = (nux_rid_t)luaL_checknumber(L, 1);
+    nux_c8_t *ret = nux_resource_path_rid(rid);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_path (lua_State *L)
+{
+    nux_c8_t *ret = nux_resource_path();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_set_name_rid (lua_State *L)
+{
+    nux_rid_t       rid  = (nux_rid_t)luaL_checknumber(L, 1);
+    const nux_c8_t *name = luaL_checkstring(L, 2);
+
+    nux_resource_set_name_rid(rid, name);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_resource_set_name (lua_State *L)
+{
+    const nux_c8_t *name = luaL_checkstring(L, 1);
+
+    nux_resource_set_name(name);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_resource_name_rid (lua_State *L)
+{
+    nux_rid_t rid = (nux_rid_t)luaL_checknumber(L, 1);
+    nux_c8_t *ret = nux_resource_name_rid(rid);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_name (lua_State *L)
+{
+    nux_c8_t *ret = nux_resource_name();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_next_rid (lua_State *L)
+{
+    nux_u32_t type = luaL_checknumber(L, 1);
+    nux_rid_t rid  = (nux_rid_t)luaL_checknumber(L, 2);
+    nux_rid_t ret  = nux_resource_next_rid(type, rid);
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_rid (lua_State *L)
+{
+    nux_rid_t ret = nux_resource_rid();
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_arena_rid (lua_State *L)
+{
+    nux_rid_t    rid = (nux_rid_t)luaL_checknumber(L, 1);
+    nux_arena_t *ret = nux_resource_arena_rid(rid);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_arena (lua_State *L)
+{
+    nux_arena_t *ret = nux_resource_arena();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_resource_find_rid (lua_State *L)
+{
+    const nux_c8_t *name = luaL_checkstring(L, 1);
+    nux_rid_t       ret  = nux_resource_find_rid(name);
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_error_enable (lua_State *L)
+{
+
+    nux_error_enable();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_error_disable (lua_State *L)
+{
+
+    nux_error_disable();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_error_reset (lua_State *L)
+{
+
+    nux_error_reset();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_error_get_message (lua_State *L)
+{
+    nux_c8_t *ret = nux_error_get_message();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_error_get_status (lua_State *L)
+{
+    nux_status_t ret = nux_error_get_status();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_module_register (lua_State *L)
+{
+    nux_module_info_t info = luaL_checknumber(L, 1);
+
+    nux_module_register(info);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_module_requires (lua_State *L)
+{
+    const nux_c8_t *name = luaL_checkstring(L, 1);
+    nux_status_t    ret  = nux_module_requires(name);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_config_set_u32 (lua_State *L)
+{
+    const nux_c8_t *name = luaL_checkstring(L, 1);
+    nux_u32_t       v    = luaL_checknumber(L, 2);
+
+    nux_config_set_u32(name, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_config (lua_State *L)
+{
+    nux_config_t *ret = nux_config();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_event_new (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_event_type_t    type    = luaL_checknumber(L, 2);
+    nux_event_cleanup_t cleanup = luaL_checknumber(L, 3);
+    nux_event_t        *ret     = nux_event_new(arena, type, cleanup);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_event_type (lua_State *L)
+{
+    nux_event_t     *event = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_event_type_t ret   = nux_event_type(event);
+    l_checkerror(L);
+}
+static int
+l_event_unsubscribe (lua_State *L)
+{
+    nux_event_handler_t *handler
+        = nux_resource_check(None, luaL_checkinteger(L, 1));
+
+    nux_event_unsubscribe(handler);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_event_handler_event (lua_State *L)
+{
+    nux_event_handler_t *handler
+        = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_rid_t ret = nux_event_handler_event(handler);
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_event_emit (lua_State *L)
+{
+    nux_event_t *event = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_u32_t    size  = luaL_checknumber(L, 2);
+
+    nux_event_emit(event, size);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_event_process (lua_State *L)
+{
+    nux_event_t *event = nux_resource_check(None, luaL_checkinteger(L, 1));
+
+    nux_event_process(event);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_event_process_all (lua_State *L)
+{
+
+    nux_event_process_all();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_io_cart_begin (lua_State *L)
+{
+    const nux_c8_t *path        = luaL_checkstring(L, 1);
+    nux_u32_t       entry_count = luaL_checknumber(L, 2);
+    nux_status_t    ret         = nux_io_cart_begin(path, entry_count);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_cart_end (lua_State *L)
+{
+    nux_status_t ret = nux_io_cart_end();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_write_cart_file (lua_State *L)
+{
+    const nux_c8_t *path = luaL_checkstring(L, 1);
+    nux_status_t    ret  = nux_io_write_cart_file(path);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_disk_mount (lua_State *L)
+{
+    const nux_c8_t *path = luaL_checkstring(L, 1);
+    nux_status_t    ret  = nux_disk_mount(path);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_file_exists (lua_State *L)
+{
+    const nux_c8_t *path = luaL_checkstring(L, 1);
+    nux_b32_t       ret  = nux_file_exists(path);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_file_open (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+    nux_io_mode_t   mode = luaL_checknumber(L, 3);
+    nux_file_t     *ret  = nux_file_open(arena, path, mode);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_file_close (lua_State *L)
+{
+    nux_file_t *file = nux_resource_check(None, luaL_checkinteger(L, 1));
+
+    nux_file_close(file);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_file_read (lua_State *L)
+{
+    nux_file_t *file = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_u32_t   n    = luaL_checknumber(L, 2);
+    nux_u32_t   ret  = nux_file_read(file, n);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_file_write (lua_State *L)
+{
+    nux_file_t *file = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_u32_t   n    = luaL_checknumber(L, 2);
+    nux_u32_t   ret  = nux_file_write(file, n);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_file_seek (lua_State *L)
+{
+    nux_file_t  *file   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_u32_t    cursor = luaL_checknumber(L, 2);
+    nux_status_t ret    = nux_file_seek(file, cursor);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_file_stat (lua_State *L)
+{
+    nux_file_t      *file = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_file_stat_t *stat = nux_resource_check(None, luaL_checkinteger(L, 2));
+    nux_status_t     ret  = nux_file_stat(file, stat);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_write_cart_data (lua_State *L)
+{
+    const nux_c8_t *path     = luaL_checkstring(L, 1);
+    nux_u32_t       type     = luaL_checknumber(L, 2);
+    nux_b32_t       compress = lua_toboolean(L, 3);
+    nux_u32_t       size     = luaL_checknumber(L, 4);
+    nux_status_t    ret = nux_io_write_cart_data(path, type, compress, size);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_json_writer_init (lua_State *L)
+{
+    nux_json_writer_t *j    = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t    *path = luaL_checkstring(L, 2);
+    nux_status_t       ret  = nux_json_writer_init(j, path);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_json_writer_close (lua_State *L)
+{
+    nux_json_writer_t *j = nux_resource_check(None, luaL_checkinteger(L, 1));
+
+    nux_json_writer_close(j);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_json_reader_init (lua_State *L)
+{
+    nux_json_reader_t *j    = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t    *path = luaL_checkstring(L, 2);
+    nux_status_t       ret  = nux_json_reader_init(j, path);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_serde_write (lua_State *L)
+{
+    nux_serde_writer_t *s = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_serde_value_t  *value
+        = nux_resource_check(None, luaL_checkinteger(L, 2));
+
+    nux_serde_write(s, value);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_object (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+
+    nux_serde_write_object(s, key);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_array (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_u32_t           size = luaL_checknumber(L, 3);
+
+    nux_serde_write_array(s, key, size);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_end (lua_State *L)
+{
+    nux_serde_writer_t *s = nux_resource_check(None, luaL_checkinteger(L, 1));
+
+    nux_serde_write_end(s);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_u32 (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_u32_t           v   = luaL_checknumber(L, 3);
+
+    nux_serde_write_u32(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_f32 (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_f32_t           v   = luaL_checknumber(L, 3);
+
+    nux_serde_write_f32(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_v3 (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_v3_t            v   = nux_lua_check_vec3(L, 3);
+
+    nux_serde_write_v3(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_q4 (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_q4_t            v   = nux_lua_check_q4(L, 3);
+
+    nux_serde_write_q4(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_bytes (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_u8_t *bytes         = nux_resource_check(None, luaL_checkinteger(L, 3));
+    nux_u32_t size          = luaL_checknumber(L, 4);
+
+    nux_serde_write_bytes(s, key, bytes, size);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_string (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    const nux_c8_t     *v   = luaL_checkstring(L, 3);
+
+    nux_serde_write_string(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_rid (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_rid_t           rid = (nux_rid_t)luaL_checknumber(L, 3);
+
+    nux_serde_write_rid(s, key, rid);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_write_eid (lua_State *L)
+{
+    nux_serde_writer_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_nid_t           v   = (nux_nid_t)luaL_checknumber(L, 3);
+
+    nux_serde_write_eid(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read (lua_State *L)
+{
+    nux_serde_reader_t *s = nux_resource_check(None, luaL_checkinteger(L, 1));
+    nux_serde_value_t  *value
+        = nux_resource_check(None, luaL_checkinteger(L, 2));
+
+    nux_serde_read(s, value);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_object (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+
+    nux_serde_read_object(s, key);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_array (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_u32_t *size         = nux_resource_check(None, luaL_checkinteger(L, 3));
+
+    nux_serde_read_array(s, key, size);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_end (lua_State *L)
+{
+    nux_serde_reader_t *s = nux_resource_check(None, luaL_checkinteger(L, 1));
+
+    nux_serde_read_end(s);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_u32 (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_u32_t          *v   = nux_resource_check(None, luaL_checkinteger(L, 3));
+
+    nux_serde_read_u32(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_f32 (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_f32_t          *v   = nux_resource_check(None, luaL_checkinteger(L, 3));
+
+    nux_serde_read_f32(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_v3 (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_v3_t           *v   = nux_resource_check(None, luaL_checkinteger(L, 3));
+
+    nux_serde_read_v3(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_q4 (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_q4_t           *v   = nux_resource_check(None, luaL_checkinteger(L, 3));
+
+    nux_serde_read_q4(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_string (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_u32_t          *n   = nux_resource_check(None, luaL_checkinteger(L, 3));
+    nux_c8_t           *ret = nux_serde_read_string(s, key, n);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_serde_read_rid (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_rid_t          *rid = nux_resource_check(None, luaL_checkinteger(L, 3));
+
+    nux_serde_read_rid(s, key, rid);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_serde_read_nid (lua_State *L)
+{
+    nux_serde_reader_t *s   = nux_resource_check(None, luaL_checkinteger(L, 1));
+    const nux_c8_t     *key = luaL_checkstring(L, 2);
+    nux_nid_t          *v   = nux_resource_check(None, luaL_checkinteger(L, 3));
+
+    nux_serde_read_nid(s, key, v);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_inputmap_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -574,26 +1596,6 @@ l_scene_clear (lua_State *L)
     return 0;
 }
 static int
-l_scene_load_gltf (lua_State *L)
-{
-    nux_arena_t *arena
-        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    const nux_c8_t *path = luaL_checkstring(L, 2);
-    nux_scene_t    *ret  = nux_scene_load_gltf(arena, path);
-    l_checkerror(L);
-
-    nux_rid_t ret_rid = nux_resource_rid(ret);
-    if (ret_rid)
-    {
-        lua_pushinteger(L, ret_rid);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
 l_node_create (lua_State *L)
 {
     nux_nid_t parent = (nux_nid_t)luaL_checknumber(L, 1);
@@ -753,6 +1755,26 @@ l_node_instantiate (lua_State *L)
     if (ret)
     {
         lua_pushinteger(L, ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_scene_load_gltf (lua_State *L)
+{
+    nux_arena_t *arena
+        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    const nux_c8_t *path = luaL_checkstring(L, 2);
+    nux_scene_t    *ret  = nux_scene_load_gltf(arena, path);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
     }
     else
     {
@@ -1794,698 +2816,766 @@ l_gui_button (lua_State *L)
     lua_pushboolean(L, ret);
     return 1;
 }
-static const struct luaL_Reg lib_inputmap[]
-    = { { "new", l_inputmap_new },
-        { "bind_key", l_inputmap_bind_key },
-        { "bind_mouse_button", l_inputmap_bind_mouse_button },
-        { "bind_mouse_axis", l_inputmap_bind_mouse_axis },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_input[]
-    = { { "set_map", l_input_set_map },
-        { "pressed", l_input_pressed },
-        { "released", l_input_released },
-        { "just_pressed", l_input_just_pressed },
-        { "just_released", l_input_just_released },
-        { "value", l_input_value },
-        { "cursor", l_input_cursor },
-        { "set_cursor", l_input_set_cursor },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_button[]     = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_key[]        = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_mouse[]      = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_gamepad[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_cursor[]     = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_lua[]
-    = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_component[]
-    = { { "register", l_component_register }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_transform[]
-    = { { "get_matrix", l_transform_get_matrix },
-        { "get_local_translation", l_transform_get_local_translation },
-        { "get_local_rotation", l_transform_get_local_rotation },
-        { "get_local_scale", l_transform_get_local_scale },
-        { "get_translation", l_transform_get_translation },
-        { "get_rotation", l_transform_get_rotation },
-        { "get_scale", l_transform_get_scale },
-        { "set_translation", l_transform_set_translation },
-        { "set_rotation", l_transform_set_rotation },
-        { "set_rotation_euler", l_transform_set_rotation_euler },
-        { "set_scale", l_transform_set_scale },
-        { "set_ortho", l_transform_set_ortho },
-        { "forward", l_transform_forward },
-        { "backward", l_transform_backward },
-        { "left", l_transform_left },
-        { "right", l_transform_right },
-        { "up", l_transform_up },
-        { "down", l_transform_down },
-        { "rotate", l_transform_rotate },
-        { "rotate_x", l_transform_rotate_x },
-        { "rotate_y", l_transform_rotate_y },
-        { "rotate_z", l_transform_rotate_z },
-        { "look_at", l_transform_look_at },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_query[]
-    = { { "new", l_query_new },           { "new_any", l_query_new_any },
-        { "includes", l_query_includes }, { "excludes", l_query_excludes },
-        { "next", l_query_next },         { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_scene[]
-    = { { "new", l_scene_new },       { "set_active", l_scene_set_active },
-        { "active", l_scene_active }, { "count", l_scene_count },
-        { "clear", l_scene_clear },   { "load_gltf", l_scene_load_gltf },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_node[]
-    = { { "create", l_node_create },   { "delete", l_node_delete },
-        { "valid", l_node_valid },     { "root", l_node_root },
-        { "parent", l_node_parent },   { "set_parent", l_node_set_parent },
-        { "sibling", l_node_sibling }, { "child", l_node_child },
-        { "add", l_node_add },         { "remove", l_node_remove },
-        { "has", l_node_has },         { "instantiate", l_node_instantiate },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_viewport[]
-    = { { "new", l_viewport_new },
-        { "set_mode", l_viewport_set_mode },
-        { "set_extent", l_viewport_set_extent },
-        { "set_anchor", l_viewport_set_anchor },
-        { "set_layer", l_viewport_set_layer },
-        { "set_clear_depth", l_viewport_set_clear_depth },
-        { "set_auto_resize", l_viewport_set_auto_resize },
-        { "set_camera", l_viewport_set_camera },
-        { "set_texture", l_viewport_set_texture },
-        { "get_normalized_viewport", l_viewport_get_normalized_viewport },
-        { "to_global", l_viewport_to_global },
-        { "to_local", l_viewport_to_local },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_texture[]
-    = { { "new", l_texture_new },
-        { "load", l_texture_load },
-        { "screen", l_texture_screen },
-        { "get_size", l_texture_get_size },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_palette[]
-    = { { "new", l_palette_new },
-        { "default", l_palette_default },
-        { "set_active", l_palette_set_active },
-        { "set_color", l_palette_set_color },
-        { "get_color", l_palette_get_color },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_mesh[]
-    = { { "new", l_mesh_new },
-        { "new_cube", l_mesh_new_cube },
-        { "new_plane", l_mesh_new_plane },
-        { "update_bounds", l_mesh_update_bounds },
-        { "bounds_min", l_mesh_bounds_min },
-        { "bounds_max", l_mesh_bounds_max },
-        { "set_origin", l_mesh_set_origin },
-        { "transform", l_mesh_transform },
-        { "size", l_mesh_size },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_canvas[]
-    = { { "new", l_canvas_new },
-        { "get_texture", l_canvas_get_texture },
-        { "get_size", l_canvas_get_size },
-        { "set_clear_color", l_canvas_set_clear_color },
-        { "set_wrap_mode", l_canvas_set_wrap_mode },
-        { "text", l_canvas_text },
-        { "rectangle", l_canvas_rectangle },
-        { "blit", l_canvas_blit },
-        { "blit_sliced", l_canvas_blit_sliced },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_graphics[]
-    = { { "begin_state", l_graphics_begin_state },
-        { "end_state", l_graphics_end_state },
-        { "reset_state", l_graphics_reset_state },
-        { "draw_line", l_graphics_draw_line },
-        { "draw_dir", l_graphics_draw_dir },
-        { "set_layer", l_graphics_set_layer },
-        { "set_color", l_graphics_set_color },
-        { "set_transform", l_graphics_set_transform },
-        { "set_transform_identity", l_graphics_set_transform_identity },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_camera[]
-    = { { "set_fov", l_camera_set_fov },
-        { "set_near", l_camera_set_near },
-        { "set_far", l_camera_set_far },
-        { "set_aspect", l_camera_set_aspect },
-        { "reset_aspect", l_camera_reset_aspect },
-        { "set_ortho", l_camera_set_ortho },
-        { "set_ortho_size", l_camera_set_ortho_size },
-        { "get_projection", l_camera_get_projection },
-        { "unproject", l_camera_unproject },
-        { "set_render_mask", l_camera_set_render_mask },
-        { "get_render_mask", l_camera_get_render_mask },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_staticmesh[]
-    = { { "set_mesh", l_staticmesh_set_mesh },
-        { "get_mesh", l_staticmesh_get_mesh },
-        { "set_texture", l_staticmesh_set_texture },
-        { "get_texture", l_staticmesh_get_texture },
-        { "set_colormap", l_staticmesh_set_colormap },
-        { "set_render_layer", l_staticmesh_set_render_layer },
-        { "get_render_layer", l_staticmesh_get_render_layer },
-        { "set_draw_bounds", l_staticmesh_set_draw_bounds },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_colormap[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_layer[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_vertex[]   = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_color[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_anchor[]   = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_rigidbody[]
-    = { { "set_velocity", l_rigidbody_set_velocity }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_collider[]
-    = { { "set_sphere", l_collider_set_sphere },
-        { "set_aabb", l_collider_set_aabb },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_physics[]
-    = { { "raycast", l_physics_raycast },
-        { "set_ground_height", l_physics_set_ground_height },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_stylesheet[] = { { "new", l_stylesheet_new },
-                                                  { "set", l_stylesheet_set },
-                                                  { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_gui[]        = { { "new", l_gui_new },
-                                                  { "push_style", l_gui_push_style },
-                                                  { "pop_style", l_gui_pop_style },
-                                                  { "button", l_gui_button },
-                                                  { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_nux[] = {
+    { "stat", l_stat },
+    { "time_elapsed", l_time_elapsed },
+    { "time_delta", l_time_delta },
+    { "time_frame", l_time_frame },
+    { "time_timestamp", l_time_timestamp },
+    { "random", l_random },
+    { "random01", l_random01 },
+    { "arena_new", l_arena_new },
+    { "arena_clear", l_arena_clear },
+    { "arena_block_count", l_arena_block_count },
+    { "arena_memory_usage", l_arena_memory_usage },
+    { "arena_core", l_arena_core },
+    { "arena_frame", l_arena_frame },
+    { "log_set_level", l_log_set_level },
+    { "log_level", l_log_level },
+    { "resource_register", l_resource_register },
+    { "resource_reload", l_resource_reload },
+    { "resource_set_path_rid", l_resource_set_path_rid },
+    { "resource_set_path", l_resource_set_path },
+    { "resource_path_rid", l_resource_path_rid },
+    { "resource_path", l_resource_path },
+    { "resource_set_name_rid", l_resource_set_name_rid },
+    { "resource_set_name", l_resource_set_name },
+    { "resource_name_rid", l_resource_name_rid },
+    { "resource_name", l_resource_name },
+    { "resource_next_rid", l_resource_next_rid },
+    { "resource_rid", l_resource_rid },
+    { "resource_arena_rid", l_resource_arena_rid },
+    { "resource_arena", l_resource_arena },
+    { "resource_find_rid", l_resource_find_rid },
+    { "error_enable", l_error_enable },
+    { "error_disable", l_error_disable },
+    { "error_reset", l_error_reset },
+    { "error_get_message", l_error_get_message },
+    { "error_get_status", l_error_get_status },
+    { "module_register", l_module_register },
+    { "module_requires", l_module_requires },
+    { "config_set_u32", l_config_set_u32 },
+    { "config", l_config },
+    { "event_new", l_event_new },
+    { "event_type", l_event_type },
+    { "event_unsubscribe", l_event_unsubscribe },
+    { "event_handler_event", l_event_handler_event },
+    { "event_emit", l_event_emit },
+    { "event_process", l_event_process },
+    { "event_process_all", l_event_process_all },
+    { "io_cart_begin", l_io_cart_begin },
+    { "io_cart_end", l_io_cart_end },
+    { "io_write_cart_file", l_io_write_cart_file },
+    { "disk_mount", l_disk_mount },
+    { "file_exists", l_file_exists },
+    { "file_open", l_file_open },
+    { "file_close", l_file_close },
+    { "file_read", l_file_read },
+    { "file_write", l_file_write },
+    { "file_seek", l_file_seek },
+    { "file_stat", l_file_stat },
+    { "io_write_cart_data", l_io_write_cart_data },
+    { "json_writer_init", l_json_writer_init },
+    { "json_writer_close", l_json_writer_close },
+    { "json_reader_init", l_json_reader_init },
+    { "serde_write", l_serde_write },
+    { "serde_write_object", l_serde_write_object },
+    { "serde_write_array", l_serde_write_array },
+    { "serde_write_end", l_serde_write_end },
+    { "serde_write_u32", l_serde_write_u32 },
+    { "serde_write_f32", l_serde_write_f32 },
+    { "serde_write_v3", l_serde_write_v3 },
+    { "serde_write_q4", l_serde_write_q4 },
+    { "serde_write_bytes", l_serde_write_bytes },
+    { "serde_write_string", l_serde_write_string },
+    { "serde_write_rid", l_serde_write_rid },
+    { "serde_write_eid", l_serde_write_eid },
+    { "serde_read", l_serde_read },
+    { "serde_read_object", l_serde_read_object },
+    { "serde_read_array", l_serde_read_array },
+    { "serde_read_end", l_serde_read_end },
+    { "serde_read_u32", l_serde_read_u32 },
+    { "serde_read_f32", l_serde_read_f32 },
+    { "serde_read_v3", l_serde_read_v3 },
+    { "serde_read_q4", l_serde_read_q4 },
+    { "serde_read_string", l_serde_read_string },
+    { "serde_read_rid", l_serde_read_rid },
+    { "serde_read_nid", l_serde_read_nid },
+    { "inputmap_new", l_inputmap_new },
+    { "inputmap_bind_key", l_inputmap_bind_key },
+    { "inputmap_bind_mouse_button", l_inputmap_bind_mouse_button },
+    { "inputmap_bind_mouse_axis", l_inputmap_bind_mouse_axis },
+    { "input_set_map", l_input_set_map },
+    { "input_pressed", l_input_pressed },
+    { "input_released", l_input_released },
+    { "input_just_pressed", l_input_just_pressed },
+    { "input_just_released", l_input_just_released },
+    { "input_value", l_input_value },
+    { "input_cursor", l_input_cursor },
+    { "input_set_cursor", l_input_set_cursor },
+    { "lua_load", l_lua_load },
+    { "component_register", l_component_register },
+    { "transform_get_matrix", l_transform_get_matrix },
+    { "transform_get_local_translation", l_transform_get_local_translation },
+    { "transform_get_local_rotation", l_transform_get_local_rotation },
+    { "transform_get_local_scale", l_transform_get_local_scale },
+    { "transform_get_translation", l_transform_get_translation },
+    { "transform_get_rotation", l_transform_get_rotation },
+    { "transform_get_scale", l_transform_get_scale },
+    { "transform_set_translation", l_transform_set_translation },
+    { "transform_set_rotation", l_transform_set_rotation },
+    { "transform_set_rotation_euler", l_transform_set_rotation_euler },
+    { "transform_set_scale", l_transform_set_scale },
+    { "transform_set_ortho", l_transform_set_ortho },
+    { "transform_forward", l_transform_forward },
+    { "transform_backward", l_transform_backward },
+    { "transform_left", l_transform_left },
+    { "transform_right", l_transform_right },
+    { "transform_up", l_transform_up },
+    { "transform_down", l_transform_down },
+    { "transform_rotate", l_transform_rotate },
+    { "transform_rotate_x", l_transform_rotate_x },
+    { "transform_rotate_y", l_transform_rotate_y },
+    { "transform_rotate_z", l_transform_rotate_z },
+    { "transform_look_at", l_transform_look_at },
+    { "query_new", l_query_new },
+    { "query_new_any", l_query_new_any },
+    { "query_includes", l_query_includes },
+    { "query_excludes", l_query_excludes },
+    { "query_next", l_query_next },
+    { "scene_new", l_scene_new },
+    { "scene_set_active", l_scene_set_active },
+    { "scene_active", l_scene_active },
+    { "scene_count", l_scene_count },
+    { "scene_clear", l_scene_clear },
+    { "node_create", l_node_create },
+    { "node_delete", l_node_delete },
+    { "node_valid", l_node_valid },
+    { "node_root", l_node_root },
+    { "node_parent", l_node_parent },
+    { "node_set_parent", l_node_set_parent },
+    { "node_sibling", l_node_sibling },
+    { "node_child", l_node_child },
+    { "node_add", l_node_add },
+    { "node_remove", l_node_remove },
+    { "node_has", l_node_has },
+    { "node_instantiate", l_node_instantiate },
+    { "scene_load_gltf", l_scene_load_gltf },
+    { "viewport_new", l_viewport_new },
+    { "viewport_set_mode", l_viewport_set_mode },
+    { "viewport_set_extent", l_viewport_set_extent },
+    { "viewport_set_anchor", l_viewport_set_anchor },
+    { "viewport_set_layer", l_viewport_set_layer },
+    { "viewport_set_clear_depth", l_viewport_set_clear_depth },
+    { "viewport_set_auto_resize", l_viewport_set_auto_resize },
+    { "viewport_set_camera", l_viewport_set_camera },
+    { "viewport_set_texture", l_viewport_set_texture },
+    { "viewport_get_normalized_viewport", l_viewport_get_normalized_viewport },
+    { "viewport_to_global", l_viewport_to_global },
+    { "viewport_to_local", l_viewport_to_local },
+    { "texture_new", l_texture_new },
+    { "texture_load", l_texture_load },
+    { "texture_screen", l_texture_screen },
+    { "texture_get_size", l_texture_get_size },
+    { "palette_new", l_palette_new },
+    { "palette_default", l_palette_default },
+    { "palette_set_active", l_palette_set_active },
+    { "palette_set_color", l_palette_set_color },
+    { "palette_get_color", l_palette_get_color },
+    { "mesh_new", l_mesh_new },
+    { "mesh_new_cube", l_mesh_new_cube },
+    { "mesh_new_plane", l_mesh_new_plane },
+    { "mesh_update_bounds", l_mesh_update_bounds },
+    { "mesh_bounds_min", l_mesh_bounds_min },
+    { "mesh_bounds_max", l_mesh_bounds_max },
+    { "mesh_set_origin", l_mesh_set_origin },
+    { "mesh_transform", l_mesh_transform },
+    { "mesh_size", l_mesh_size },
+    { "canvas_new", l_canvas_new },
+    { "canvas_get_texture", l_canvas_get_texture },
+    { "canvas_get_size", l_canvas_get_size },
+    { "canvas_set_clear_color", l_canvas_set_clear_color },
+    { "canvas_set_wrap_mode", l_canvas_set_wrap_mode },
+    { "canvas_text", l_canvas_text },
+    { "canvas_rectangle", l_canvas_rectangle },
+    { "canvas_blit", l_canvas_blit },
+    { "canvas_blit_sliced", l_canvas_blit_sliced },
+    { "graphics_begin_state", l_graphics_begin_state },
+    { "graphics_end_state", l_graphics_end_state },
+    { "graphics_reset_state", l_graphics_reset_state },
+    { "graphics_draw_line", l_graphics_draw_line },
+    { "graphics_draw_dir", l_graphics_draw_dir },
+    { "graphics_set_layer", l_graphics_set_layer },
+    { "graphics_set_color", l_graphics_set_color },
+    { "graphics_set_transform", l_graphics_set_transform },
+    { "graphics_set_transform_identity", l_graphics_set_transform_identity },
+    { "camera_set_fov", l_camera_set_fov },
+    { "camera_set_near", l_camera_set_near },
+    { "camera_set_far", l_camera_set_far },
+    { "camera_set_aspect", l_camera_set_aspect },
+    { "camera_reset_aspect", l_camera_reset_aspect },
+    { "camera_set_ortho", l_camera_set_ortho },
+    { "camera_set_ortho_size", l_camera_set_ortho_size },
+    { "camera_get_projection", l_camera_get_projection },
+    { "camera_unproject", l_camera_unproject },
+    { "camera_set_render_mask", l_camera_set_render_mask },
+    { "camera_get_render_mask", l_camera_get_render_mask },
+    { "staticmesh_set_mesh", l_staticmesh_set_mesh },
+    { "staticmesh_get_mesh", l_staticmesh_get_mesh },
+    { "staticmesh_set_texture", l_staticmesh_set_texture },
+    { "staticmesh_get_texture", l_staticmesh_get_texture },
+    { "staticmesh_set_colormap", l_staticmesh_set_colormap },
+    { "staticmesh_set_render_layer", l_staticmesh_set_render_layer },
+    { "staticmesh_get_render_layer", l_staticmesh_get_render_layer },
+    { "staticmesh_set_draw_bounds", l_staticmesh_set_draw_bounds },
+    { "rigidbody_set_velocity", l_rigidbody_set_velocity },
+    { "collider_set_sphere", l_collider_set_sphere },
+    { "collider_set_aabb", l_collider_set_aabb },
+    { "physics_raycast", l_physics_raycast },
+    { "physics_set_ground_height", l_physics_set_ground_height },
+    { "stylesheet_new", l_stylesheet_new },
+    { "stylesheet_set", l_stylesheet_set },
+    { "gui_new", l_gui_new },
+    { "gui_push_style", l_gui_push_style },
+    { "gui_pop_style", l_gui_pop_style },
+    { "gui_button", l_gui_button },
+    { NUX_NULL, NUX_NULL }
+};
 
 nux_status_t
 nux_lua_open_api (void)
 {
     lua_State *L = nux_lua_state();
     lua_newtable(L);
-    luaL_setfuncs(L, lib_inputmap, 0);
-    lua_setglobal(L, "inputmap");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_input, 0);
+    luaL_setfuncs(L, lib_nux, 0);
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "UNMAPPED");
+    lua_setfield(L, -2, "ERROR_NONE");
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "KEY");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "MOUSE_BUTTON");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "MOUSE_AXIS");
+    lua_setfield(L, -2, "ERROR_OUT_OF_MEMORY");
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "GAMEPAD_BUTTON");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "GAMEPAD_AXIS");
-    lua_setglobal(L, "input");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_button, 0);
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "PRESSED");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "RELEASED");
-    lua_setglobal(L, "button");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_key, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "SPACE");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "APOSTROPHE");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "COMMA");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "MINUS");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "PERIOD");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "SLASH");
-    lua_pushinteger(L, 6);
-    lua_setfield(L, -2, "NUM0");
-    lua_pushinteger(L, 7);
-    lua_setfield(L, -2, "NUM1");
+    lua_setfield(L, -2, "ERROR_INVALID_TEXTURE_SIZE");
     lua_pushinteger(L, 8);
-    lua_setfield(L, -2, "NUM2");
-    lua_pushinteger(L, 9);
-    lua_setfield(L, -2, "NUM3");
+    lua_setfield(L, -2, "ERROR_WASM_RUNTIME");
     lua_pushinteger(L, 10);
-    lua_setfield(L, -2, "NUM4");
+    lua_setfield(L, -2, "ERROR_CART_EOF");
     lua_pushinteger(L, 11);
-    lua_setfield(L, -2, "NUM5");
+    lua_setfield(L, -2, "ERROR_CART_MOUNT");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "STAT_FPS");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "STAT_SCREEN_WIDTH");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "STAT_SCREEN_HEIGHT");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "STAT_TIMESTAMP");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "STAT_MAX");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "LOG_DEBUG");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "LOG_INFO");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "LOG_WARNING");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "LOG_ERROR");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "RESOURCE_NULL");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "RESOURCE_ARENA");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "RESOURCE_LUA_MODULE");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "RESOURCE_TEXTURE");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "RESOURCE_MESH");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "RESOURCE_PALETTE");
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "RESOURCE_VIEWPORT");
+    lua_pushinteger(L, 7);
+    lua_setfield(L, -2, "RESOURCE_CANVAS");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "RESOURCE_FONT");
+    lua_pushinteger(L, 9);
+    lua_setfield(L, -2, "RESOURCE_FILE");
+    lua_pushinteger(L, 10);
+    lua_setfield(L, -2, "RESOURCE_DISK");
+    lua_pushinteger(L, 11);
+    lua_setfield(L, -2, "RESOURCE_SCENE");
     lua_pushinteger(L, 12);
-    lua_setfield(L, -2, "NUM6");
+    lua_setfield(L, -2, "RESOURCE_QUERY");
     lua_pushinteger(L, 13);
-    lua_setfield(L, -2, "NUM7");
+    lua_setfield(L, -2, "RESOURCE_EVENT");
     lua_pushinteger(L, 14);
-    lua_setfield(L, -2, "NUM8");
+    lua_setfield(L, -2, "RESOURCE_INPUTMAP");
     lua_pushinteger(L, 15);
-    lua_setfield(L, -2, "NUM9");
+    lua_setfield(L, -2, "RESOURCE_GUI");
     lua_pushinteger(L, 16);
-    lua_setfield(L, -2, "SEMICOLON");
-    lua_pushinteger(L, 17);
-    lua_setfield(L, -2, "EQUAL");
-    lua_pushinteger(L, 18);
-    lua_setfield(L, -2, "A");
-    lua_pushinteger(L, 19);
-    lua_setfield(L, -2, "B");
-    lua_pushinteger(L, 20);
-    lua_setfield(L, -2, "C");
-    lua_pushinteger(L, 21);
-    lua_setfield(L, -2, "D");
-    lua_pushinteger(L, 22);
-    lua_setfield(L, -2, "E");
-    lua_pushinteger(L, 23);
-    lua_setfield(L, -2, "F");
-    lua_pushinteger(L, 24);
-    lua_setfield(L, -2, "G");
-    lua_pushinteger(L, 25);
-    lua_setfield(L, -2, "H");
-    lua_pushinteger(L, 26);
-    lua_setfield(L, -2, "I");
-    lua_pushinteger(L, 27);
-    lua_setfield(L, -2, "J");
-    lua_pushinteger(L, 29);
-    lua_setfield(L, -2, "K");
-    lua_pushinteger(L, 30);
-    lua_setfield(L, -2, "L");
-    lua_pushinteger(L, 31);
-    lua_setfield(L, -2, "M");
-    lua_pushinteger(L, 32);
-    lua_setfield(L, -2, "N");
-    lua_pushinteger(L, 33);
-    lua_setfield(L, -2, "O");
-    lua_pushinteger(L, 34);
-    lua_setfield(L, -2, "P");
-    lua_pushinteger(L, 35);
-    lua_setfield(L, -2, "Q");
-    lua_pushinteger(L, 36);
-    lua_setfield(L, -2, "R");
-    lua_pushinteger(L, 37);
-    lua_setfield(L, -2, "S");
-    lua_pushinteger(L, 38);
-    lua_setfield(L, -2, "T");
-    lua_pushinteger(L, 39);
-    lua_setfield(L, -2, "U");
-    lua_pushinteger(L, 40);
-    lua_setfield(L, -2, "V");
-    lua_pushinteger(L, 41);
-    lua_setfield(L, -2, "W");
-    lua_pushinteger(L, 42);
-    lua_setfield(L, -2, "X");
-    lua_pushinteger(L, 43);
-    lua_setfield(L, -2, "Y");
-    lua_pushinteger(L, 44);
-    lua_setfield(L, -2, "Z");
-    lua_pushinteger(L, 45);
-    lua_setfield(L, -2, "LEFT_BRACKET");
-    lua_pushinteger(L, 46);
-    lua_setfield(L, -2, "BACKSLASH");
-    lua_pushinteger(L, 47);
-    lua_setfield(L, -2, "RIGHT_BRACKET");
-    lua_pushinteger(L, 48);
-    lua_setfield(L, -2, "GRAVE_ACCENT");
-    lua_pushinteger(L, 49);
-    lua_setfield(L, -2, "ESCAPE");
-    lua_pushinteger(L, 50);
-    lua_setfield(L, -2, "ENTER");
-    lua_pushinteger(L, 51);
-    lua_setfield(L, -2, "TAB");
-    lua_pushinteger(L, 52);
-    lua_setfield(L, -2, "BACKSPACE");
-    lua_pushinteger(L, 53);
-    lua_setfield(L, -2, "INSERT");
-    lua_pushinteger(L, 54);
-    lua_setfield(L, -2, "DELETE");
-    lua_pushinteger(L, 55);
-    lua_setfield(L, -2, "RIGHT");
-    lua_pushinteger(L, 56);
-    lua_setfield(L, -2, "LEFT");
-    lua_pushinteger(L, 57);
-    lua_setfield(L, -2, "DOWN");
-    lua_pushinteger(L, 58);
-    lua_setfield(L, -2, "UP");
-    lua_pushinteger(L, 59);
-    lua_setfield(L, -2, "PAGE_UP");
-    lua_pushinteger(L, 60);
-    lua_setfield(L, -2, "PAGE_DOWN");
-    lua_pushinteger(L, 61);
-    lua_setfield(L, -2, "HOME");
-    lua_pushinteger(L, 62);
-    lua_setfield(L, -2, "END");
-    lua_pushinteger(L, 63);
-    lua_setfield(L, -2, "CAPS_LOCK");
-    lua_pushinteger(L, 64);
-    lua_setfield(L, -2, "SCROLL_LOCK");
-    lua_pushinteger(L, 65);
-    lua_setfield(L, -2, "NUM_LOCK");
-    lua_pushinteger(L, 66);
-    lua_setfield(L, -2, "PRINT_SCREEN");
-    lua_pushinteger(L, 67);
-    lua_setfield(L, -2, "PAUSE");
-    lua_pushinteger(L, 68);
-    lua_setfield(L, -2, "F1");
-    lua_pushinteger(L, 69);
-    lua_setfield(L, -2, "F2");
-    lua_pushinteger(L, 70);
-    lua_setfield(L, -2, "F3");
-    lua_pushinteger(L, 71);
-    lua_setfield(L, -2, "F4");
-    lua_pushinteger(L, 72);
-    lua_setfield(L, -2, "F5");
-    lua_pushinteger(L, 73);
-    lua_setfield(L, -2, "F6");
-    lua_pushinteger(L, 74);
-    lua_setfield(L, -2, "F7");
-    lua_pushinteger(L, 75);
-    lua_setfield(L, -2, "F8");
-    lua_pushinteger(L, 76);
-    lua_setfield(L, -2, "F9");
-    lua_pushinteger(L, 77);
-    lua_setfield(L, -2, "F10");
-    lua_pushinteger(L, 78);
-    lua_setfield(L, -2, "F11");
-    lua_pushinteger(L, 79);
-    lua_setfield(L, -2, "F12");
-    lua_pushinteger(L, 80);
-    lua_setfield(L, -2, "F13");
-    lua_pushinteger(L, 81);
-    lua_setfield(L, -2, "F14");
-    lua_pushinteger(L, 82);
-    lua_setfield(L, -2, "F15");
-    lua_pushinteger(L, 83);
-    lua_setfield(L, -2, "F16");
-    lua_pushinteger(L, 84);
-    lua_setfield(L, -2, "F17");
-    lua_pushinteger(L, 85);
-    lua_setfield(L, -2, "F18");
-    lua_pushinteger(L, 86);
-    lua_setfield(L, -2, "F19");
-    lua_pushinteger(L, 87);
-    lua_setfield(L, -2, "F20");
-    lua_pushinteger(L, 88);
-    lua_setfield(L, -2, "F21");
-    lua_pushinteger(L, 89);
-    lua_setfield(L, -2, "F22");
-    lua_pushinteger(L, 90);
-    lua_setfield(L, -2, "F23");
-    lua_pushinteger(L, 91);
-    lua_setfield(L, -2, "F24");
-    lua_pushinteger(L, 92);
-    lua_setfield(L, -2, "F25");
-    lua_pushinteger(L, 93);
-    lua_setfield(L, -2, "KP_0");
-    lua_pushinteger(L, 94);
-    lua_setfield(L, -2, "KP_1");
-    lua_pushinteger(L, 95);
-    lua_setfield(L, -2, "KP_2");
-    lua_pushinteger(L, 96);
-    lua_setfield(L, -2, "KP_3");
-    lua_pushinteger(L, 97);
-    lua_setfield(L, -2, "KP_4");
-    lua_pushinteger(L, 98);
-    lua_setfield(L, -2, "KP_5");
-    lua_pushinteger(L, 99);
-    lua_setfield(L, -2, "KP_6");
-    lua_pushinteger(L, 100);
-    lua_setfield(L, -2, "KP_7");
-    lua_pushinteger(L, 101);
-    lua_setfield(L, -2, "KP_8");
-    lua_pushinteger(L, 102);
-    lua_setfield(L, -2, "KP_9");
-    lua_pushinteger(L, 103);
-    lua_setfield(L, -2, "KP_DECIMAL");
-    lua_pushinteger(L, 104);
-    lua_setfield(L, -2, "KP_DIVIDE");
-    lua_pushinteger(L, 105);
-    lua_setfield(L, -2, "KP_MULTIPLY");
-    lua_pushinteger(L, 106);
-    lua_setfield(L, -2, "KP_SUBTRACT");
-    lua_pushinteger(L, 107);
-    lua_setfield(L, -2, "KP_ADD");
-    lua_pushinteger(L, 108);
-    lua_setfield(L, -2, "KP_ENTER");
-    lua_pushinteger(L, 109);
-    lua_setfield(L, -2, "KP_EQUAL");
-    lua_pushinteger(L, 110);
-    lua_setfield(L, -2, "LEFT_SHIFT");
-    lua_pushinteger(L, 111);
-    lua_setfield(L, -2, "LEFT_CONTROL");
-    lua_pushinteger(L, 112);
-    lua_setfield(L, -2, "LEFT_ALT");
-    lua_pushinteger(L, 113);
-    lua_setfield(L, -2, "LEFT_SUPER");
-    lua_pushinteger(L, 114);
-    lua_setfield(L, -2, "RIGHT_SHIFT");
-    lua_pushinteger(L, 115);
-    lua_setfield(L, -2, "RIGHT_CONTROL");
-    lua_pushinteger(L, 116);
-    lua_setfield(L, -2, "RIGHT_ALT");
-    lua_pushinteger(L, 117);
-    lua_setfield(L, -2, "RIGHT_SUPER");
-    lua_pushinteger(L, 118);
-    lua_setfield(L, -2, "MENU");
-    lua_setglobal(L, "key");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_mouse, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "BUTTON_LEFT");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "BUTTON_RIGHT");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "BUTTON_MIDDLE");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "WHEEL_UP");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "WHEEL_DOWN");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "MOTION_RIGHT");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "MOTION_LEFT");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "MOTION_DOWN");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "MOTION_UP");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "SCROLL_UP");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "SCROLL_DOWN");
-    lua_setglobal(L, "mouse");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_gamepad, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "A");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "X");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "Y");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "B");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "DPAD_UP");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "DPAD_DOWN");
-    lua_pushinteger(L, 6);
-    lua_setfield(L, -2, "DPAD_LEFT");
-    lua_pushinteger(L, 7);
-    lua_setfield(L, -2, "DPAD_RIGHT");
-    lua_pushinteger(L, 8);
-    lua_setfield(L, -2, "SHOULDER_LEFT");
-    lua_pushinteger(L, 9);
-    lua_setfield(L, -2, "SHOULDER_RIGHT");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "LSTICK_LEFT");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LSTICK_RIGHT");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "LSTICK_UP");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "LSTICK_DOWN");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "RSTICK_LEFT");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "RSTICK_RIGHT");
-    lua_pushinteger(L, 6);
-    lua_setfield(L, -2, "RSTICK_UP");
-    lua_pushinteger(L, 7);
-    lua_setfield(L, -2, "RSTICK_DOWN");
-    lua_pushinteger(L, 8);
-    lua_setfield(L, -2, "LTRIGGER");
-    lua_pushinteger(L, 9);
-    lua_setfield(L, -2, "RTRIGGER");
-    lua_setglobal(L, "gamepad");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_cursor, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "UP");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "DOWN");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "LEFT");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "RIGHT");
-    lua_setglobal(L, "cursor");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_controller, 0);
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "MAX");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "MODE_SELECTION");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "MODE_CURSOR");
-    lua_setglobal(L, "controller");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_lua, 0);
-    lua_setglobal(L, "lua");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_component, 0);
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "TRANSFORM");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "CAMERA");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "STATICMESH");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "RIGIDBODY");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "COLLIDER");
-    lua_pushinteger(L, 16);
-    lua_setfield(L, -2, "MAX");
-    lua_setglobal(L, "component");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_transform, 0);
-    lua_setglobal(L, "transform");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_query, 0);
-    lua_setglobal(L, "query");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_scene, 0);
-    lua_setglobal(L, "scene");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_node, 0);
-    lua_setglobal(L, "node");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_viewport, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "HIDDEN");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "FIXED");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "FIXED_BEST_FIT");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "STRETCH_KEEP_ASPECT");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "STRETCH");
-    lua_setglobal(L, "viewport");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_texture, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "IMAGE_RGBA");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "IMAGE_INDEX");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "RENDER_TARGET");
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "WRAP_CLAMP");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "WRAP_REPEAT");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "WRAP_MIRROR");
-    lua_setglobal(L, "texture");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_palette, 0);
+    lua_setfield(L, -2, "RESOURCE_STYLESHEET");
     lua_pushinteger(L, 256);
-    lua_setfield(L, -2, "SIZE");
-    lua_setglobal(L, "palette");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_mesh, 0);
-    lua_setglobal(L, "mesh");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_canvas, 0);
-    lua_setglobal(L, "canvas");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_graphics, 0);
-    lua_setglobal(L, "graphics");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_camera, 0);
-    lua_setglobal(L, "camera");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_staticmesh, 0);
-    lua_setglobal(L, "staticmesh");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_colormap, 0);
-    lua_pushinteger(L, 256);
-    lua_setfield(L, -2, "SIZE");
-    lua_setglobal(L, "colormap");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_layer, 0);
-    lua_pushinteger(L, 0x1);
-    lua_setfield(L, -2, "DEFAULT");
-    lua_setglobal(L, "layer");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_vertex, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "TRIANGLES");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "LINES");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "POINTS");
+    lua_setfield(L, -2, "RESOURCE_MAX");
     lua_pushinteger(L, 1 << 0);
-    lua_setfield(L, -2, "POSITION");
-    lua_pushinteger(L, 1 << 1);
-    lua_setfield(L, -2, "TEXCOORD");
-    lua_pushinteger(L, 1 << 2);
-    lua_setfield(L, -2, "COLOR");
-    lua_setglobal(L, "vertex");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_color, 0);
+    lua_setfield(L, -2, "MODULE_NO_DATA_INITIALIZATION");
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "TRANSPARENT");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "WHITE");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "RED");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "GREEN");
+    lua_setfield(L, -2, "EVENT_LUA");
+    lua_pushinteger(L, 64);
+    lua_setfield(L, -2, "NAME_MAX");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "OS_EVENT_INPUT");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SYSTEM_PRE_UPDATE");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SYSTEM_UPDATE");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SYSTEM_POST_UPDATE");
+    lua_pushinteger(L, 64);
+    lua_setfield(L, -2, "FILE_MAX");
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "BLUE");
-    lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "BACKGROUND");
-    lua_setglobal(L, "color");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_anchor, 0);
+    lua_setfield(L, -2, "DISK_MAX");
     lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "CENTER");
-    lua_pushinteger(L, 1 << 1);
-    lua_setfield(L, -2, "TOP");
-    lua_pushinteger(L, 1 << 2);
-    lua_setfield(L, -2, "BOTTOM");
-    lua_pushinteger(L, 1 << 3);
-    lua_setfield(L, -2, "LEFT");
-    lua_pushinteger(L, 1 << 4);
-    lua_setfield(L, -2, "RIGHT");
-    lua_setglobal(L, "anchor");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_rigidbody, 0);
-    lua_setglobal(L, "rigidbody");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_collider, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "SPHERE");
+    lua_setfield(L, -2, "IO_READ");
     lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "AABB");
-    lua_setglobal(L, "collider");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_physics, 0);
-    lua_setglobal(L, "physics");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_stylesheet, 0);
+    lua_setfield(L, -2, "IO_READ_WRITE");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_OBJECT");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_ARRAY");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_END");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_U32");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_F32");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_V3");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_Q4");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_BYTES");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_STRING");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_RID");
+    lua_pushinteger(L, );
+    lua_setfield(L, -2, "SERDE_NID");
     lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "INPUT_UNMAPPED");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "INPUT_KEY");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "INPUT_MOUSE_BUTTON");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "INPUT_MOUSE_AXIS");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "INPUT_GAMEPAD_BUTTON");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "INPUT_GAMEPAD_AXIS");
+    lua_pushinteger(L, 1);
     lua_setfield(L, -2, "BUTTON_PRESSED");
-    lua_pushinteger(L, 1);
+    lua_pushinteger(L, 0);
     lua_setfield(L, -2, "BUTTON_RELEASED");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "KEY_SPACE");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "KEY_APOSTROPHE");
     lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "BUTTON_HOVERED");
+    lua_setfield(L, -2, "KEY_COMMA");
     lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "CHECKBOX_CHECKED");
+    lua_setfield(L, -2, "KEY_MINUS");
     lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "CHECKBOX_UNCHECKED");
+    lua_setfield(L, -2, "KEY_PERIOD");
     lua_pushinteger(L, 5);
-    lua_setfield(L, -2, "CURSOR");
-    lua_setglobal(L, "stylesheet");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_gui, 0);
-    lua_setglobal(L, "gui");
+    lua_setfield(L, -2, "KEY_SLASH");
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "KEY_NUM0");
+    lua_pushinteger(L, 7);
+    lua_setfield(L, -2, "KEY_NUM1");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "KEY_NUM2");
+    lua_pushinteger(L, 9);
+    lua_setfield(L, -2, "KEY_NUM3");
+    lua_pushinteger(L, 10);
+    lua_setfield(L, -2, "KEY_NUM4");
+    lua_pushinteger(L, 11);
+    lua_setfield(L, -2, "KEY_NUM5");
+    lua_pushinteger(L, 12);
+    lua_setfield(L, -2, "KEY_NUM6");
+    lua_pushinteger(L, 13);
+    lua_setfield(L, -2, "KEY_NUM7");
+    lua_pushinteger(L, 14);
+    lua_setfield(L, -2, "KEY_NUM8");
+    lua_pushinteger(L, 15);
+    lua_setfield(L, -2, "KEY_NUM9");
+    lua_pushinteger(L, 16);
+    lua_setfield(L, -2, "KEY_SEMICOLON");
+    lua_pushinteger(L, 17);
+    lua_setfield(L, -2, "KEY_EQUAL");
+    lua_pushinteger(L, 18);
+    lua_setfield(L, -2, "KEY_A");
+    lua_pushinteger(L, 19);
+    lua_setfield(L, -2, "KEY_B");
+    lua_pushinteger(L, 20);
+    lua_setfield(L, -2, "KEY_C");
+    lua_pushinteger(L, 21);
+    lua_setfield(L, -2, "KEY_D");
+    lua_pushinteger(L, 22);
+    lua_setfield(L, -2, "KEY_E");
+    lua_pushinteger(L, 23);
+    lua_setfield(L, -2, "KEY_F");
+    lua_pushinteger(L, 24);
+    lua_setfield(L, -2, "KEY_G");
+    lua_pushinteger(L, 25);
+    lua_setfield(L, -2, "KEY_H");
+    lua_pushinteger(L, 26);
+    lua_setfield(L, -2, "KEY_I");
+    lua_pushinteger(L, 27);
+    lua_setfield(L, -2, "KEY_J");
+    lua_pushinteger(L, 29);
+    lua_setfield(L, -2, "KEY_K");
+    lua_pushinteger(L, 30);
+    lua_setfield(L, -2, "KEY_L");
+    lua_pushinteger(L, 31);
+    lua_setfield(L, -2, "KEY_M");
+    lua_pushinteger(L, 32);
+    lua_setfield(L, -2, "KEY_N");
+    lua_pushinteger(L, 33);
+    lua_setfield(L, -2, "KEY_O");
+    lua_pushinteger(L, 34);
+    lua_setfield(L, -2, "KEY_P");
+    lua_pushinteger(L, 35);
+    lua_setfield(L, -2, "KEY_Q");
+    lua_pushinteger(L, 36);
+    lua_setfield(L, -2, "KEY_R");
+    lua_pushinteger(L, 37);
+    lua_setfield(L, -2, "KEY_S");
+    lua_pushinteger(L, 38);
+    lua_setfield(L, -2, "KEY_T");
+    lua_pushinteger(L, 39);
+    lua_setfield(L, -2, "KEY_U");
+    lua_pushinteger(L, 40);
+    lua_setfield(L, -2, "KEY_V");
+    lua_pushinteger(L, 41);
+    lua_setfield(L, -2, "KEY_W");
+    lua_pushinteger(L, 42);
+    lua_setfield(L, -2, "KEY_X");
+    lua_pushinteger(L, 43);
+    lua_setfield(L, -2, "KEY_Y");
+    lua_pushinteger(L, 44);
+    lua_setfield(L, -2, "KEY_Z");
+    lua_pushinteger(L, 45);
+    lua_setfield(L, -2, "KEY_LEFT_BRACKET");
+    lua_pushinteger(L, 46);
+    lua_setfield(L, -2, "KEY_BACKSLASH");
+    lua_pushinteger(L, 47);
+    lua_setfield(L, -2, "KEY_RIGHT_BRACKET");
+    lua_pushinteger(L, 48);
+    lua_setfield(L, -2, "KEY_GRAVE_ACCENT");
+    lua_pushinteger(L, 49);
+    lua_setfield(L, -2, "KEY_ESCAPE");
+    lua_pushinteger(L, 50);
+    lua_setfield(L, -2, "KEY_ENTER");
+    lua_pushinteger(L, 51);
+    lua_setfield(L, -2, "KEY_TAB");
+    lua_pushinteger(L, 52);
+    lua_setfield(L, -2, "KEY_BACKSPACE");
+    lua_pushinteger(L, 53);
+    lua_setfield(L, -2, "KEY_INSERT");
+    lua_pushinteger(L, 54);
+    lua_setfield(L, -2, "KEY_DELETE");
+    lua_pushinteger(L, 55);
+    lua_setfield(L, -2, "KEY_RIGHT");
+    lua_pushinteger(L, 56);
+    lua_setfield(L, -2, "KEY_LEFT");
+    lua_pushinteger(L, 57);
+    lua_setfield(L, -2, "KEY_DOWN");
+    lua_pushinteger(L, 58);
+    lua_setfield(L, -2, "KEY_UP");
+    lua_pushinteger(L, 59);
+    lua_setfield(L, -2, "KEY_PAGE_UP");
+    lua_pushinteger(L, 60);
+    lua_setfield(L, -2, "KEY_PAGE_DOWN");
+    lua_pushinteger(L, 61);
+    lua_setfield(L, -2, "KEY_HOME");
+    lua_pushinteger(L, 62);
+    lua_setfield(L, -2, "KEY_END");
+    lua_pushinteger(L, 63);
+    lua_setfield(L, -2, "KEY_CAPS_LOCK");
+    lua_pushinteger(L, 64);
+    lua_setfield(L, -2, "KEY_SCROLL_LOCK");
+    lua_pushinteger(L, 65);
+    lua_setfield(L, -2, "KEY_NUM_LOCK");
+    lua_pushinteger(L, 66);
+    lua_setfield(L, -2, "KEY_PRINT_SCREEN");
+    lua_pushinteger(L, 67);
+    lua_setfield(L, -2, "KEY_PAUSE");
+    lua_pushinteger(L, 68);
+    lua_setfield(L, -2, "KEY_F1");
+    lua_pushinteger(L, 69);
+    lua_setfield(L, -2, "KEY_F2");
+    lua_pushinteger(L, 70);
+    lua_setfield(L, -2, "KEY_F3");
+    lua_pushinteger(L, 71);
+    lua_setfield(L, -2, "KEY_F4");
+    lua_pushinteger(L, 72);
+    lua_setfield(L, -2, "KEY_F5");
+    lua_pushinteger(L, 73);
+    lua_setfield(L, -2, "KEY_F6");
+    lua_pushinteger(L, 74);
+    lua_setfield(L, -2, "KEY_F7");
+    lua_pushinteger(L, 75);
+    lua_setfield(L, -2, "KEY_F8");
+    lua_pushinteger(L, 76);
+    lua_setfield(L, -2, "KEY_F9");
+    lua_pushinteger(L, 77);
+    lua_setfield(L, -2, "KEY_F10");
+    lua_pushinteger(L, 78);
+    lua_setfield(L, -2, "KEY_F11");
+    lua_pushinteger(L, 79);
+    lua_setfield(L, -2, "KEY_F12");
+    lua_pushinteger(L, 80);
+    lua_setfield(L, -2, "KEY_F13");
+    lua_pushinteger(L, 81);
+    lua_setfield(L, -2, "KEY_F14");
+    lua_pushinteger(L, 82);
+    lua_setfield(L, -2, "KEY_F15");
+    lua_pushinteger(L, 83);
+    lua_setfield(L, -2, "KEY_F16");
+    lua_pushinteger(L, 84);
+    lua_setfield(L, -2, "KEY_F17");
+    lua_pushinteger(L, 85);
+    lua_setfield(L, -2, "KEY_F18");
+    lua_pushinteger(L, 86);
+    lua_setfield(L, -2, "KEY_F19");
+    lua_pushinteger(L, 87);
+    lua_setfield(L, -2, "KEY_F20");
+    lua_pushinteger(L, 88);
+    lua_setfield(L, -2, "KEY_F21");
+    lua_pushinteger(L, 89);
+    lua_setfield(L, -2, "KEY_F22");
+    lua_pushinteger(L, 90);
+    lua_setfield(L, -2, "KEY_F23");
+    lua_pushinteger(L, 91);
+    lua_setfield(L, -2, "KEY_F24");
+    lua_pushinteger(L, 92);
+    lua_setfield(L, -2, "KEY_F25");
+    lua_pushinteger(L, 93);
+    lua_setfield(L, -2, "KEY_KP_0");
+    lua_pushinteger(L, 94);
+    lua_setfield(L, -2, "KEY_KP_1");
+    lua_pushinteger(L, 95);
+    lua_setfield(L, -2, "KEY_KP_2");
+    lua_pushinteger(L, 96);
+    lua_setfield(L, -2, "KEY_KP_3");
+    lua_pushinteger(L, 97);
+    lua_setfield(L, -2, "KEY_KP_4");
+    lua_pushinteger(L, 98);
+    lua_setfield(L, -2, "KEY_KP_5");
+    lua_pushinteger(L, 99);
+    lua_setfield(L, -2, "KEY_KP_6");
+    lua_pushinteger(L, 100);
+    lua_setfield(L, -2, "KEY_KP_7");
+    lua_pushinteger(L, 101);
+    lua_setfield(L, -2, "KEY_KP_8");
+    lua_pushinteger(L, 102);
+    lua_setfield(L, -2, "KEY_KP_9");
+    lua_pushinteger(L, 103);
+    lua_setfield(L, -2, "KEY_KP_DECIMAL");
+    lua_pushinteger(L, 104);
+    lua_setfield(L, -2, "KEY_KP_DIVIDE");
+    lua_pushinteger(L, 105);
+    lua_setfield(L, -2, "KEY_KP_MULTIPLY");
+    lua_pushinteger(L, 106);
+    lua_setfield(L, -2, "KEY_KP_SUBTRACT");
+    lua_pushinteger(L, 107);
+    lua_setfield(L, -2, "KEY_KP_ADD");
+    lua_pushinteger(L, 108);
+    lua_setfield(L, -2, "KEY_KP_ENTER");
+    lua_pushinteger(L, 109);
+    lua_setfield(L, -2, "KEY_KP_EQUAL");
+    lua_pushinteger(L, 110);
+    lua_setfield(L, -2, "KEY_LEFT_SHIFT");
+    lua_pushinteger(L, 111);
+    lua_setfield(L, -2, "KEY_LEFT_CONTROL");
+    lua_pushinteger(L, 112);
+    lua_setfield(L, -2, "KEY_LEFT_ALT");
+    lua_pushinteger(L, 113);
+    lua_setfield(L, -2, "KEY_LEFT_SUPER");
+    lua_pushinteger(L, 114);
+    lua_setfield(L, -2, "KEY_RIGHT_SHIFT");
+    lua_pushinteger(L, 115);
+    lua_setfield(L, -2, "KEY_RIGHT_CONTROL");
+    lua_pushinteger(L, 116);
+    lua_setfield(L, -2, "KEY_RIGHT_ALT");
+    lua_pushinteger(L, 117);
+    lua_setfield(L, -2, "KEY_RIGHT_SUPER");
+    lua_pushinteger(L, 118);
+    lua_setfield(L, -2, "KEY_MENU");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "MOUSE_BUTTON_LEFT");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "MOUSE_BUTTON_RIGHT");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "MOUSE_BUTTON_MIDDLE");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "MOUSE_WHEEL_UP");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "MOUSE_WHEEL_DOWN");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "MOUSE_MOTION_RIGHT");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "MOUSE_MOTION_LEFT");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "MOUSE_MOTION_DOWN");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "MOUSE_MOTION_UP");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "MOUSE_SCROLL_UP");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "MOUSE_SCROLL_DOWN");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "GAMEPAD_A");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "GAMEPAD_X");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "GAMEPAD_Y");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "GAMEPAD_B");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "GAMEPAD_DPAD_UP");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "GAMEPAD_DPAD_DOWN");
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "GAMEPAD_DPAD_LEFT");
+    lua_pushinteger(L, 7);
+    lua_setfield(L, -2, "GAMEPAD_DPAD_RIGHT");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "GAMEPAD_SHOULDER_LEFT");
+    lua_pushinteger(L, 9);
+    lua_setfield(L, -2, "GAMEPAD_SHOULDER_RIGHT");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "GAMEPAD_LSTICK_LEFT");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "GAMEPAD_LSTICK_RIGHT");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "GAMEPAD_LSTICK_UP");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "GAMEPAD_LSTICK_DOWN");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "GAMEPAD_RSTICK_LEFT");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "GAMEPAD_RSTICK_RIGHT");
+    lua_pushinteger(L, 6);
+    lua_setfield(L, -2, "GAMEPAD_RSTICK_UP");
+    lua_pushinteger(L, 7);
+    lua_setfield(L, -2, "GAMEPAD_RSTICK_DOWN");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "GAMEPAD_LTRIGGER");
+    lua_pushinteger(L, 9);
+    lua_setfield(L, -2, "GAMEPAD_RTRIGGER");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "CURSOR_UP");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "CURSOR_DOWN");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "CURSOR_LEFT");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "CURSOR_RIGHT");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "CONTROLLER_MAX");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "COMPONENT_TRANSFORM");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "COMPONENT_CAMERA");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "COMPONENT_STATICMESH");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "COMPONENT_RIGIDBODY");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "COMPONENT_COLLIDER");
+    lua_pushinteger(L, 16);
+    lua_setfield(L, -2, "COMPONENT_MAX");
+    lua_pushinteger(L, 256);
+    lua_setfield(L, -2, "PALETTE_SIZE");
+    lua_pushinteger(L, 256);
+    lua_setfield(L, -2, "COLORMAP_SIZE");
+    lua_pushinteger(L, 0x1);
+    lua_setfield(L, -2, "LAYER_DEFAULT");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "VERTEX_TRIANGLES");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "VERTEX_LINES");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "VERTEX_POINTS");
+    lua_pushinteger(L, 1 << 0);
+    lua_setfield(L, -2, "VERTEX_POSITION");
+    lua_pushinteger(L, 1 << 1);
+    lua_setfield(L, -2, "VERTEX_TEXCOORD");
+    lua_pushinteger(L, 1 << 2);
+    lua_setfield(L, -2, "VERTEX_COLOR");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "TEXTURE_IMAGE_RGBA");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "TEXTURE_IMAGE_INDEX");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "TEXTURE_RENDER_TARGET");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "TEXTURE_WRAP_CLAMP");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "TEXTURE_WRAP_REPEAT");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "TEXTURE_WRAP_MIRROR");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "COLOR_TRANSPARENT");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "COLOR_WHITE");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "COLOR_RED");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "COLOR_GREEN");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "COLOR_BLUE");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "COLOR_BACKGROUND");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "VIEWPORT_HIDDEN");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "VIEWPORT_FIXED");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "VIEWPORT_FIXED_BEST_FIT");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "VIEWPORT_STRETCH_KEEP_ASPECT");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "VIEWPORT_STRETCH");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "ANCHOR_CENTER");
+    lua_pushinteger(L, 1 << 1);
+    lua_setfield(L, -2, "ANCHOR_TOP");
+    lua_pushinteger(L, 1 << 2);
+    lua_setfield(L, -2, "ANCHOR_BOTTOM");
+    lua_pushinteger(L, 1 << 3);
+    lua_setfield(L, -2, "ANCHOR_LEFT");
+    lua_pushinteger(L, 1 << 4);
+    lua_setfield(L, -2, "ANCHOR_RIGHT");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "COLLIDER_SPHERE");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "COLLIDER_AABB");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "CONTROLLER_MODE_SELECTION");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "CONTROLLER_MODE_CURSOR");
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "STYLESHEET_BUTTON_PRESSED");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "STYLESHEET_BUTTON_RELEASED");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "STYLESHEET_BUTTON_HOVERED");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "STYLESHEET_CHECKBOX_CHECKED");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "STYLESHEET_CHECKBOX_UNCHECKED");
+    lua_pushinteger(L, 5);
+    lua_setfield(L, -2, "STYLESHEET_CURSOR");
+    lua_setglobal(L, "nux");
     return NUX_SUCCESS;
 }

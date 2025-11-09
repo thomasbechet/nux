@@ -22,9 +22,8 @@ static void l_checkerror(lua_State *L)
     "stylesheet": "NUX_RESOURCE_STYLESHEET",
 } %}
 
-{% for module_name, module in modules.items() %}
-{% for function in module.functions %}
-static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
+{% for funcname, function in api.functions.items() %}
+static int l_{{ funcname }}(lua_State *L)
 {
     {# ARGUMENTS #}
     {%- set ns = namespace(stack = 1) %}
@@ -74,6 +73,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
     {%- endfor -%}
 
     {# RETURN VALUE #}
+    {%- if function.typename.const %}const{% endif %}
     {%- if function.typename.name != "void" %}
         {%- if function.typename.type == "primitive" %}
             nux_{{ function.typename.name }}_t ret =
@@ -83,7 +83,7 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
     {% endif %}
 
     {# FUNCTION CALL #}
-    {{ "nux_" + module_name if module_name != "core" else "nux" }}_{{ function.name }}(
+    nux_{{ funcname }}(
         {%- for arg in function.args -%}
             {{ arg.name }}{{ "," if not loop.last }}
         {%- endfor -%}
@@ -150,30 +150,25 @@ static int l_{{ module_name }}_{{ function.name }}(lua_State *L)
     {%- endif %}
 }
 {%- endfor %}
-{% endfor %}
 
-{% for module_name, module in modules.items() %}
-static const struct luaL_Reg lib_{{ module_name }}[] = {
-{% for function in module.functions -%}
+static const struct luaL_Reg lib_nux[] = {
+{% for funcname, function in api.functions.items() -%}
 {% if not function.hasptr -%}
-    { "{{ function.name }}", l_{{ module_name }}_{{ function.name }} },
+    { "{{ funcname }}", l_{{ funcname }} },
 {%- endif -%}
 {%- endfor -%}
     { NUX_NULL, NUX_NULL }
 };
-{% endfor %}
 
 nux_status_t nux_lua_open_api(void)
 {
     lua_State *L = nux_lua_state();
-{% for module_name, module in modules.items() %}
     lua_newtable(L);
-    luaL_setfuncs(L, lib_{{ module_name }}, 0);
-{% for constant in module.constants %}
+    luaL_setfuncs(L, lib_nux, 0);
+{% for constant_name, constant in api.constants.items() %}
     lua_pushinteger(L, {{ constant.value }}); 
-    lua_setfield(L, -2, "{{ constant.name }}");
+    lua_setfield(L, -2, "{{ constant_name }}");
 {% endfor %}
-    lua_setglobal(L, "{{ module_name }}");
-{% endfor %}
+    lua_setglobal(L, "nux");
     return NUX_SUCCESS;
 }

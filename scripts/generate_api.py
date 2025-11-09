@@ -9,8 +9,12 @@ import json
 import glob
 
 def normalize_name(name):
-    # if name != "void":
-    #     name = name.replace("NUX_", "").replace("nux_", "").replace("_t", "")
+    if name != "void":
+        # Remove nux_ and _t
+        if name.startswith("nux_") or name.startswith("NUX_"):
+            name = name[4:]
+        if name.endswith("_t"):
+            name = name[:-2]
     return name
 
 def parse_function(node, module):
@@ -23,7 +27,9 @@ def parse_function(node, module):
         funcname = node.type.type.declname
         typename["name"] = normalize_name(node.type.type.type.names[0])
         typename["type"] = "resource"
-        typename["const"] = True
+        typename["const"] = False
+        if node.type.quals:
+            typename["const"] = True
         if typename["name"] == "void": # Ignore void* returned value functions
             return
         if node.args:
@@ -32,7 +38,7 @@ def parse_function(node, module):
         funcname = node.type.declname 
         typename["name"] = normalize_name(node.type.type.names[0])
         typename["type"] = "primitive"
-        typename["const"] = True
+        typename["const"] = False
         if node.args:
             params = node.args.params
 
@@ -200,12 +206,7 @@ def parse_module(args, header, modules):
     parse_header(args, header, module)
     modules[module_name] = module
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("rootdir")
-    parser.add_argument("--dump", dest="dump", action="store_true")
-    args = parser.parse_args()
-
+def generate_api(args):
     # Parse C headers
     headers = [
         "core/core/core.h",
@@ -221,3 +222,11 @@ if __name__ == "__main__":
         parse_module(args, header, modules)
     with open(os.path.join(args.rootdir, 'docs/api.json'), 'w') as f:
         json.dump(modules, f, indent=4)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("rootdir")
+    parser.add_argument("--dump", dest="dump", action="store_true")
+    args = parser.parse_args()
+    generate_api(args)
+
