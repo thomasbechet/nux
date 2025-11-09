@@ -9,7 +9,7 @@ nux_vlog (nux_log_level_t level, const nux_c8_t *fmt, va_list args)
     {
         nux_c8_t  buf[256];
         nux_u32_t n = nux_vsnprintf(buf, sizeof(buf), fmt, args);
-        nux_os_log(nux_userdata(), level, buf, n);
+        nux_os_log(level, buf, n);
         nux_debug_log_callback(level, buf, n);
     }
 }

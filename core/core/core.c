@@ -7,9 +7,15 @@
 #include <physics/internal.h>
 #include <ui/internal.h>
 #include <debug/internal.h>
+#include <nux.h>
 
 static nux_core_module_t _module;
 
+static void *
+os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
+{
+    return nux_os_alloc(p, osize, nsize);
+}
 static nux_status_t
 bootstrap_core_arena (void)
 {
@@ -45,7 +51,7 @@ bootstrap_core_arena (void)
 static nux_status_t
 module_pre_update (void)
 {
-    nux_os_stats_update(nux_userdata(), _module.stats);
+    nux_os_stats_update(_module.stats);
     return NUX_SUCCESS;
 }
 static nux_status_t
@@ -54,7 +60,7 @@ module_post_update (void)
     nux_arena_clear(nux_arena_frame());
     _module.time_elapsed += nux_time_delta();
     ++_module.frame;
-    nux_os_stats_update(nux_userdata(), _module.stats);
+    nux_os_stats_update(_module.stats);
     return NUX_SUCCESS;
 }
 
@@ -65,13 +71,13 @@ nux_core (void)
 }
 
 nux_status_t
-nux_core_init (void *userdata, const nux_c8_t *entry)
+nux_core_init (void)
 {
     nux_memset(&_module, 0, sizeof(_module));
 
     // Initialize os allocator
-    _module.os_allocator.userdata = userdata;
-    _module.os_allocator.alloc    = nux_os_alloc;
+    _module.os_allocator.userdata = NUX_NULL;
+    _module.os_allocator.alloc    = os_alloc;
 
     // Bootstrap core arena
     bootstrap_core_arena();
@@ -83,7 +89,6 @@ nux_core_init (void *userdata, const nux_c8_t *entry)
               return NUX_FAILURE);
 
     // Initialize system state
-    _module.userdata = userdata;
     _module.config.log.level
         = NUX_LOG_DEBUG; // see errors during initialization
     _module.running      = NUX_TRUE;
@@ -132,33 +137,33 @@ nux_core_init (void *userdata, const nux_c8_t *entry)
     nux_ui_module_register();
     nux_debug_module_register();
 
-    // Detect entry point type
-    NUX_ASSERT(entry);
-    nux_c8_t normpath[NUX_PATH_BUF_SIZE];
-    nux_path_normalize(normpath, entry);
-    const nux_c8_t *entry_script;
-    if (nux_path_endswith(normpath, ".lua"))
-    {
-        // Direct script loading
-        entry_script = normpath;
-    }
-    else
-    {
-        // Expect cartridge
-        NUX_CHECK(nux_disk_mount(normpath), goto cleanup);
-        entry_script = NUX_LUA_INIT_FILE;
-    }
-
-    // Get program configuration
-    nux_config_t *config = (nux_config_t *)nux_config();
-    NUX_CHECK(nux_lua_configure(config), goto cleanup);
-
-    // Apply configuration
-    nux_log_set_level(nux_config()->log.level);
-
-    // Register entry script
-    nux_lua_t *lua = nux_lua_load(nux_arena_core(), entry_script);
-    NUX_CHECK(lua, goto cleanup);
+    // // Detect entry point type
+    // NUX_ASSERT(entry);
+    // nux_c8_t normpath[NUX_PATH_BUF_SIZE];
+    // nux_path_normalize(normpath, entry);
+    // const nux_c8_t *entry_script;
+    // if (nux_path_endswith(normpath, ".lua"))
+    // {
+    //     // Direct script loading
+    //     entry_script = normpath;
+    // }
+    // else
+    // {
+    //     // Expect cartridge
+    //     NUX_CHECK(nux_disk_mount(normpath), goto cleanup);
+    //     entry_script = NUX_LUA_INIT_FILE;
+    // }
+    //
+    // // Get program configuration
+    // nux_config_t *config = (nux_config_t *)nux_config();
+    // NUX_CHECK(nux_lua_configure(config), goto cleanup);
+    //
+    // // Apply configuration
+    // nux_log_set_level(nux_config()->log.level);
+    //
+    // // Register entry script
+    // nux_lua_t *lua = nux_lua_load(nux_arena_core(), entry_script);
+    // NUX_CHECK(lua, goto cleanup);
 
     return NUX_SUCCESS;
 
@@ -201,7 +206,7 @@ nux_core_update (void)
     {
         nux_u32_t count;
         nux_rid_t handles[256];
-        nux_os_hotreload_pull(nux_userdata(), handles, &count);
+        nux_os_hotreload_pull(handles, &count);
         for (nux_u32_t i = 0; i < count; ++i)
         {
             nux_resource_reload(handles[i]);
@@ -234,11 +239,6 @@ nux_config_t *
 nux_config (void)
 {
     return &_module.config;
-}
-void *
-nux_userdata (void)
-{
-    return _module.userdata;
 }
 
 nux_u32_t

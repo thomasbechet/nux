@@ -46,11 +46,11 @@ typedef enum
 
 struct nux_event_handler_t
 {
+    void                       *userdata;
     nux_rid_t                   event;
     struct nux_event_handler_t *next;
     struct nux_event_handler_t *prev;
     nux_event_callback_t        callback;
-    void                       *userdata;
 };
 
 typedef struct nux_event_header
@@ -140,7 +140,6 @@ typedef struct nux_disk
 
 typedef struct
 {
-    void               *userdata;
     nux_config_t        config;
     nux_b32_t           running;
     nux_u64_t           frame;

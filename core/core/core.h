@@ -347,7 +347,6 @@ nux_status_t nux_module_requires(const nux_c8_t *name);
 void nux_config_set_u32(const nux_c8_t *name, nux_u32_t v);
 
 nux_config_t *nux_config(void);
-void         *nux_userdata(void);
 
 nux_event_t         *nux_event_new(nux_arena_t        *arena,
                                    nux_event_type_t    type,

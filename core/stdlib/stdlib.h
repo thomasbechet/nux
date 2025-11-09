@@ -803,4 +803,19 @@ void nux_block_arena_init(nux_arena_t       *a,
 
 void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
 
+typedef struct
+{
+    nux_arena_t *arena;
+    nux_u32_t    capa;
+    nux_u32_t    size;
+    nux_u32_t    object_size;
+} nux_vector_header_t;
+
+void *nux_vector_init_capa(nux_arena_t *arena,
+                           nux_u32_t    capa,
+                           nux_u32_t    object_size);
+
+#define NUX_VECTOR(type) type *
+// #define NUX_VECTOR_INIT(v, arena)
+
 #endif

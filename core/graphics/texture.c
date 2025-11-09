@@ -167,8 +167,7 @@ nux_texture_upload (nux_texture_t *texture)
                "trying to write render target texture");
     if (texture->dirty)
     {
-        NUX_ENSURE(nux_os_texture_update(nux_userdata(),
-                                         texture->gpu.slot,
+        NUX_ENSURE(nux_os_texture_update(texture->gpu.slot,
                                          texture->dirty_extent.x,
                                          texture->dirty_extent.y,
                                          texture->dirty_extent.w,

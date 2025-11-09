@@ -39,8 +39,7 @@ draw (nux_gpu_encoder_t *enc,
     batch.transform_offset  = transform;
     batch.has_texture       = gfx->active_texture ? 1 : 0;
     batch.color             = color;
-    NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    gfx->batches_buffer.slot,
+    NUX_ENSURE(nux_os_buffer_update(gfx->batches_buffer.slot,
                                     batch_index * sizeof(batch),
                                     sizeof(batch),
                                     &batch),
@@ -183,11 +182,8 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         constants.screen_size = nux_v2u(nux_stat(NUX_STAT_SCREEN_WIDTH),
                                         nux_stat(NUX_STAT_SCREEN_HEIGHT));
         constants.time        = nux_time_elapsed();
-        nux_os_buffer_update(nux_userdata(),
-                             gfx->constants_buffer.slot,
-                             0,
-                             sizeof(constants),
-                             &constants);
+        nux_os_buffer_update(
+            gfx->constants_buffer.slot, 0, sizeof(constants), &constants);
 
         // Render nodes
         nux_gpu_bind_pipeline(enc, gfx->uber_pipeline_opaque.slot);

@@ -11,8 +11,7 @@ NUX_VEC_IMPL(nux_immediate_state_vec, nux_immediate_state_t);
 static nux_status_t
 update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
 {
-    NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    _module.transforms_buffer.slot,
+    NUX_ENSURE(nux_os_buffer_update(_module.transforms_buffer.slot,
                                     first * NUX_M4_SIZE * sizeof(nux_f32_t),
                                     count * NUX_M4_SIZE * sizeof(nux_f32_t),
                                     data),
@@ -360,8 +359,7 @@ nux_graphics_update_vertices (nux_u32_t        offset,
                               nux_u32_t        count,
                               const nux_f32_t *data)
 {
-    NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    _module.vertices_buffer.slot,
+    NUX_ENSURE(nux_os_buffer_update(_module.vertices_buffer.slot,
                                     offset * sizeof(nux_f32_t),
                                     count * sizeof(nux_f32_t),
                                     data),

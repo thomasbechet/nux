@@ -52,7 +52,7 @@ nux_io_open_os_file (const nux_c8_t *path,
                normpath);
     nux_u32_t *slot = nux_u32_vec_pop(&module->free_file_slots);
     NUX_ENSURE(slot, return NUX_NULL, "out of os file slots");
-    NUX_ENSURE(nux_os_file_open(nux_userdata(), *slot, normpath, len, mode),
+    NUX_ENSURE(nux_os_file_open(*slot, normpath, len, mode),
                goto cleanup,
                "failed to open os file '%s'",
                normpath);
@@ -66,7 +66,7 @@ void
 nux_io_close_os_file (nux_u32_t slot)
 {
     nux_core_module_t *module = nux_core();
-    nux_os_file_close(nux_userdata(), slot);
+    nux_os_file_close(slot);
     nux_u32_vec_pushv(&module->free_file_slots, slot);
 }
 

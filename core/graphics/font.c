@@ -46,8 +46,7 @@ nux_font_init_default (nux_font_t *font)
             }
 
             // Write glyph to texture
-            NUX_CHECK(nux_os_texture_update(nux_userdata(),
-                                            font->texture.slot,
+            NUX_CHECK(nux_os_texture_update(font->texture.slot,
                                             g * font->glyph_width,
                                             0,
                                             font->glyph_width,

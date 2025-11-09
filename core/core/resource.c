@@ -66,7 +66,7 @@ resource_set_path (nux_resource_entry_t *entry, const nux_c8_t *path)
     NUX_CHECK(entry->path, return);
     if (nux_config()->hotreload)
     {
-        nux_os_hotreload_add(nux_userdata(), entry->path, entry->rid);
+        nux_os_hotreload_add(entry->path, entry->rid);
     }
 }
 void
@@ -155,7 +155,7 @@ resource_finalizer (void *p)
     // Remove from hotreload
     if (nux_config()->hotreload && entry->path)
     {
-        nux_os_hotreload_remove(nux_userdata(), rid);
+        nux_os_hotreload_remove(rid);
     }
 
     // Cleanup resource

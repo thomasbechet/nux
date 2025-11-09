@@ -13,7 +13,6 @@ flush_quads (nux_canvas_t *canvas)
                "out of quads");
     NUX_ENSURE(
         nux_os_buffer_update(
-            nux_userdata(),
             canvas->quads_gpu_buffer.slot,
             canvas->quads_gpu_buffer_head * sizeof(*canvas->quads_buffer),
             canvas->quads_count * sizeof(*canvas->quads_buffer),
@@ -82,8 +81,7 @@ end_batch (nux_canvas_t *canvas)
 
     // Update buffer
     nux_u32_t index = canvas->batches_gpu_buffer_head;
-    NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
-                                    canvas->batches_gpu_buffer.slot,
+    NUX_ENSURE(nux_os_buffer_update(canvas->batches_gpu_buffer.slot,
                                     index * sizeof(canvas->active_batch),
                                     sizeof(canvas->active_batch),
                                     &canvas->active_batch),
@@ -511,11 +509,8 @@ nux_canvas_render (nux_canvas_t *c)
     nux_gpu_constants_buffer_t constants;
     constants.screen_size = nux_v2u(width, height);
     constants.time        = nux_time_elapsed();
-    nux_os_buffer_update(nux_userdata(),
-                         c->constants_buffer.slot,
-                         0,
-                         sizeof(constants),
-                         &constants);
+    nux_os_buffer_update(
+        c->constants_buffer.slot, 0, sizeof(constants), &constants);
 
     // Begin canvas render
     nux_gpu_encoder_t enc;
