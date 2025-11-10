@@ -1,11 +1,11 @@
 #include "internal.h"
 
 nux_event_t *
-nux_event_new (nux_arena_t        *arena,
+nux_new_event (nux_arena_t        *arena,
                nux_event_type_t    type,
                nux_event_cleanup_t cleanup)
 {
-    nux_event_t *event = nux_resource_new(arena, NUX_RESOURCE_EVENT);
+    nux_event_t *event = nux_new_resource(arena, NUX_RESOURCE_EVENT);
     NUX_CHECK(event, return NUX_NULL);
     event->arena         = arena;
     event->type          = type;
@@ -20,7 +20,7 @@ nux_event_type (nux_event_t *event)
     return event->type;
 }
 nux_event_handler_t *
-nux_event_subscribe (nux_arena_t         *arena,
+nux_subscribe_event (nux_arena_t         *arena,
                      nux_event_t         *event,
                      void                *userdata,
                      nux_event_callback_t callback)
@@ -42,10 +42,10 @@ nux_event_subscribe (nux_arena_t         *arena,
     return handler;
 }
 void
-nux_event_unsubscribe (const nux_event_handler_t *handler)
+nux_unsubscribe_event (const nux_event_handler_t *handler)
 {
     NUX_ASSERT(handler);
-    nux_event_t *e = nux_resource_get(NUX_RESOURCE_EVENT, handler->event);
+    nux_event_t *e = nux_get_resource(NUX_RESOURCE_EVENT, handler->event);
     NUX_CHECK(e, return); // event has been deleted
     nux_event_handler_t *h = e->first_handler;
     while (h && h != handler)
@@ -72,9 +72,9 @@ nux_event_handler_event (nux_event_handler_t *handler)
     return handler->event;
 }
 void
-nux_event_emit (nux_event_t *event, nux_u32_t size, const void *data)
+nux_emit_event (nux_event_t *event, nux_u32_t size, const void *data)
 {
-    nux_arena_t        *a      = nux_arena_frame();
+    nux_arena_t        *a      = nux_frame_arena();
     nux_event_header_t *header = nux_arena_malloc(a, sizeof(*header));
     NUX_CHECK(header, return);
     header->next = NUX_NULL;
@@ -91,7 +91,7 @@ nux_event_emit (nux_event_t *event, nux_u32_t size, const void *data)
     }
 }
 void
-nux_event_process (nux_event_t *event)
+nux_process_event (nux_event_t *event)
 {
     nux_event_header_t *header = event->first_event;
     nux_u32_t           count  = 0;
@@ -118,11 +118,11 @@ nux_event_process (nux_event_t *event)
     }
 }
 void
-nux_event_process_all (void)
+nux_process_all_events (void)
 {
     nux_event_t *it = NUX_NULL;
     while ((it = nux_resource_next(NUX_RESOURCE_EVENT, it)))
     {
-        nux_event_process(it);
+        nux_process_event(it);
     }
 }

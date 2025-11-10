@@ -42,9 +42,9 @@ nux_inputmap_find_index (const nux_inputmap_t *map,
 }
 
 nux_inputmap_t *
-nux_inputmap_new (nux_arena_t *arena)
+nux_new_inputmap (nux_arena_t *arena)
 {
-    nux_inputmap_t *map = nux_resource_new(arena, NUX_RESOURCE_INPUTMAP);
+    nux_inputmap_t *map = nux_new_resource(arena, NUX_RESOURCE_INPUTMAP);
     NUX_CHECK(map, return NUX_NULL);
     NUX_CHECK(nux_inputmap_entry_vec_init_capa(
                   arena, DEFAULT_CONTROLLER_INPUT_SIZE, &map->entries),
@@ -52,7 +52,7 @@ nux_inputmap_new (nux_arena_t *arena)
     return map;
 }
 void
-nux_inputmap_bind_key (nux_inputmap_t *map, const nux_c8_t *name, nux_key_t key)
+nux_bind_key (nux_inputmap_t *map, const nux_c8_t *name, nux_key_t key)
 {
     nux_inputmap_entry_t *entry = find_entry(map, name);
     NUX_CHECK(entry, return);
@@ -60,7 +60,7 @@ nux_inputmap_bind_key (nux_inputmap_t *map, const nux_c8_t *name, nux_key_t key)
     entry->key  = key;
 }
 void
-nux_inputmap_bind_mouse_button (nux_inputmap_t    *map,
+nux_bind_mouse_button (nux_inputmap_t    *map,
                                 const nux_c8_t    *name,
                                 nux_mouse_button_t button)
 {
@@ -70,7 +70,7 @@ nux_inputmap_bind_mouse_button (nux_inputmap_t    *map,
     entry->mouse_button = button;
 }
 void
-nux_inputmap_bind_mouse_axis (nux_inputmap_t  *map,
+nux_bind_mouse_axis (nux_inputmap_t  *map,
                               const nux_c8_t  *name,
                               nux_mouse_axis_t axis,
                               nux_f32_t        sensivity)

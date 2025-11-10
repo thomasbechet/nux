@@ -3,9 +3,9 @@
 static void
 l_checkerror (lua_State *L)
 {
-    if (!nux_error_get_status())
+    if (!nux_error_status())
     {
-        luaL_error(L, nux_error_get_message());
+        luaL_error(L, nux_error_message());
     }
 }
 
@@ -14,7 +14,7 @@ event_handler (void *userdata, nux_rid_t event, const void *data)
 {
     lua_State   *L = nux_lua_state();
     nux_lua_t   *m = userdata;
-    nux_event_t *e = nux_resource_get(NUX_RESOURCE_EVENT, event);
+    nux_event_t *e = nux_get_resource(NUX_RESOURCE_EVENT, event);
     NUX_ASSERT(e);
     switch (nux_event_type(e))
     {
@@ -41,8 +41,8 @@ static int
 event_new (lua_State *L)
 {
     nux_arena_t *arena
-        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_event_t *event = nux_event_new(arena, NUX_EVENT_LUA, event_cleanup);
+        = nux_check_resource(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
+    nux_event_t *event = nux_new_event(arena, NUX_EVENT_LUA, event_cleanup);
     l_checkerror(L);
     lua_pushinteger(L, nux_resource_rid(event));
     return 1;
@@ -51,9 +51,9 @@ static int
 event_subscribe (lua_State *L)
 {
     nux_lua_t *module
-        = nux_resource_check(NUX_RESOURCE_LUA_MODULE, luaL_checkinteger(L, 1));
+        = nux_check_resource(NUX_RESOURCE_LUA_MODULE, luaL_checkinteger(L, 1));
     nux_event_t *event
-        = nux_resource_check(NUX_RESOURCE_EVENT, luaL_checkinteger(L, 2));
+        = nux_check_resource(NUX_RESOURCE_EVENT, luaL_checkinteger(L, 2));
     l_checkerror(L);
     // check already subscribed
     for (nux_u32_t i = 0; i < module->event_handles.size; ++i)
@@ -66,7 +66,7 @@ event_subscribe (lua_State *L)
     }
     nux_arena_t         *arena = nux_resource_arena(module);
     nux_event_handler_t *handler
-        = nux_event_subscribe(arena, event, module, event_handler);
+        = nux_subscribe_event(arena, event, module, event_handler);
     l_checkerror(L);
     if (!nux_ptr_vec_pushv(&module->event_handles, handler))
     {
@@ -78,9 +78,9 @@ static int
 event_unsubscribe (lua_State *L)
 {
     nux_lua_t *module
-        = nux_resource_check(NUX_RESOURCE_LUA_MODULE, luaL_checkinteger(L, 1));
+        = nux_check_resource(NUX_RESOURCE_LUA_MODULE, luaL_checkinteger(L, 1));
     nux_event_t *event
-        = nux_resource_check(NUX_RESOURCE_EVENT, luaL_checkinteger(L, 2));
+        = nux_check_resource(NUX_RESOURCE_EVENT, luaL_checkinteger(L, 2));
     l_checkerror(L);
     for (nux_u32_t i = 0; i < module->event_handles.size; ++i)
     {
@@ -97,14 +97,14 @@ static int
 event_emit (lua_State *L)
 {
     nux_event_t *event
-        = nux_resource_check(NUX_RESOURCE_EVENT, luaL_checkinteger(L, 1));
+        = nux_check_resource(NUX_RESOURCE_EVENT, luaL_checkinteger(L, 1));
     // register event data
     if (lua_gettop(L) < 2)
     {
         lua_pushnil(L); // not data
     }
     nux_u32_t ref = luaL_ref(L, LUA_REGISTRYINDEX);
-    nux_event_emit(event, sizeof(ref), &ref);
+    nux_emit_event(event, sizeof(ref), &ref);
     return 0;
 }
 

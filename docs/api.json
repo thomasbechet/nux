@@ -18,7 +18,7 @@
                     }
                 ]
             },
-            "time_elapsed": {
+            "elapsed_time": {
                 "typename": {
                     "name": "f32",
                     "type": "primitive",
@@ -26,7 +26,7 @@
                 },
                 "args": []
             },
-            "time_delta": {
+            "delta_time": {
                 "typename": {
                     "name": "f32",
                     "type": "primitive",
@@ -34,7 +34,7 @@
                 },
                 "args": []
             },
-            "time_frame": {
+            "frame_index": {
                 "typename": {
                     "name": "u32",
                     "type": "primitive",
@@ -42,7 +42,7 @@
                 },
                 "args": []
             },
-            "time_timestamp": {
+            "timestamp": {
                 "typename": {
                     "name": "u64",
                     "type": "primitive",
@@ -66,7 +66,7 @@
                 },
                 "args": []
             },
-            "arena_new": {
+            "new_arena": {
                 "typename": {
                     "name": "arena",
                     "type": "resource",
@@ -83,7 +83,7 @@
                     }
                 ]
             },
-            "arena_clear": {
+            "clear_arena": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -134,7 +134,7 @@
                     }
                 ]
             },
-            "log_set_level": {
+            "set_log_level": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -151,7 +151,7 @@
                     }
                 ]
             },
-            "resource_register": {
+            "register_resource": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -176,7 +176,7 @@
                     }
                 ]
             },
-            "resource_reload": {
+            "reload_resource": {
                 "typename": {
                     "name": "status",
                     "type": "primitive",
@@ -193,150 +193,7 @@
                     }
                 ]
             },
-            "resource_set_path_rid": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "path",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "resource_path_rid": {
-                "typename": {
-                    "name": "c8",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "resource_set_name_rid": {
-                "typename": {
-                    "name": "void",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "name",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "resource_name_rid": {
-                "typename": {
-                    "name": "c8",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "resource_next_rid": {
-                "typename": {
-                    "name": "rid",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "type",
-                        "typename": {
-                            "name": "u32",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "resource_arena_rid": {
-                "typename": {
-                    "name": "arena",
-                    "type": "resource",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "rid",
-                        "typename": {
-                            "name": "rid",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "resource_find_rid": {
-                "typename": {
-                    "name": "rid",
-                    "type": "primitive",
-                    "const": false
-                },
-                "args": [
-                    {
-                        "name": "name",
-                        "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    }
-                ]
-            },
-            "module_register": {
+            "register_module": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -370,7 +227,7 @@
                     }
                 ]
             },
-            "event_new": {
+            "new_event": {
                 "typename": {
                     "name": "event",
                     "type": "resource",
@@ -420,7 +277,7 @@
                     }
                 ]
             },
-            "event_unsubscribe": {
+            "unsubscribe_event": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -454,7 +311,7 @@
                     }
                 ]
             },
-            "event_process": {
+            "process_event": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -513,7 +370,7 @@
                     }
                 ]
             },
-            "disk_mount": {
+            "mount_disk": {
                 "typename": {
                     "name": "status",
                     "type": "primitive",
@@ -547,7 +404,7 @@
                     }
                 ]
             },
-            "file_open": {
+            "open_file": {
                 "typename": {
                     "name": "file",
                     "type": "resource",
@@ -580,7 +437,7 @@
                     }
                 ]
             },
-            "file_close": {
+            "close_file": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -597,7 +454,7 @@
                     }
                 ]
             },
-            "file_seek": {
+            "seek_file": {
                 "typename": {
                     "name": "status",
                     "type": "primitive",
@@ -622,9 +479,9 @@
                     }
                 ]
             },
-            "file_stat": {
+            "file_size": {
                 "typename": {
-                    "name": "status",
+                    "name": "u32",
                     "type": "primitive",
                     "const": false
                 },
@@ -633,14 +490,6 @@
                         "name": "file",
                         "typename": {
                             "name": "file",
-                            "type": "resource",
-                            "const": false
-                        }
-                    },
-                    {
-                        "name": "stat",
-                        "typename": {
-                            "name": "file_stat",
                             "type": "resource",
                             "const": false
                         }
@@ -697,53 +546,56 @@
             "RESOURCE_NULL": {
                 "value": "0"
             },
-            "RESOURCE_ARENA": {
+            "RESOURCE_ANY": {
                 "value": "1"
             },
-            "RESOURCE_LUA_MODULE": {
+            "RESOURCE_ARENA": {
                 "value": "2"
             },
-            "RESOURCE_TEXTURE": {
+            "RESOURCE_LUA_MODULE": {
                 "value": "3"
             },
-            "RESOURCE_MESH": {
+            "RESOURCE_TEXTURE": {
                 "value": "4"
             },
-            "RESOURCE_PALETTE": {
+            "RESOURCE_MESH": {
                 "value": "5"
             },
-            "RESOURCE_VIEWPORT": {
+            "RESOURCE_PALETTE": {
                 "value": "6"
             },
-            "RESOURCE_CANVAS": {
+            "RESOURCE_VIEWPORT": {
                 "value": "7"
             },
-            "RESOURCE_FONT": {
+            "RESOURCE_CANVAS": {
                 "value": "8"
             },
-            "RESOURCE_FILE": {
+            "RESOURCE_FONT": {
                 "value": "9"
             },
-            "RESOURCE_DISK": {
+            "RESOURCE_FILE": {
                 "value": "10"
             },
-            "RESOURCE_SCENE": {
+            "RESOURCE_DISK": {
                 "value": "11"
             },
-            "RESOURCE_QUERY": {
+            "RESOURCE_SCENE": {
                 "value": "12"
             },
-            "RESOURCE_EVENT": {
+            "RESOURCE_QUERY": {
                 "value": "13"
             },
-            "RESOURCE_INPUTMAP": {
+            "RESOURCE_EVENT": {
                 "value": "14"
             },
-            "RESOURCE_GUI": {
+            "RESOURCE_INPUTMAP": {
                 "value": "15"
             },
-            "RESOURCE_STYLESHEET": {
+            "RESOURCE_GUI": {
                 "value": "16"
+            },
+            "RESOURCE_STYLESHEET": {
+                "value": "17"
             },
             "RESOURCE_MAX": {
                 "value": "256"
@@ -782,7 +634,7 @@
     },
     "input": {
         "functions": {
-            "inputmap_new": {
+            "new_inputmap": {
                 "typename": {
                     "name": "inputmap",
                     "type": "resource",
@@ -799,7 +651,7 @@
                     }
                 ]
             },
-            "inputmap_bind_key": {
+            "bind_key": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -832,7 +684,7 @@
                     }
                 ]
             },
-            "inputmap_bind_mouse_button": {
+            "bind_mouse_button": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -865,7 +717,7 @@
                     }
                 ]
             },
-            "inputmap_bind_mouse_axis": {
+            "bind_mouse_axis": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -906,7 +758,7 @@
                     }
                 ]
             },
-            "input_set_map": {
+            "set_input_map": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -931,7 +783,7 @@
                     }
                 ]
             },
-            "input_pressed": {
+            "is_pressed": {
                 "typename": {
                     "name": "b32",
                     "type": "primitive",
@@ -956,7 +808,7 @@
                     }
                 ]
             },
-            "input_released": {
+            "is_released": {
                 "typename": {
                     "name": "b32",
                     "type": "primitive",
@@ -981,7 +833,7 @@
                     }
                 ]
             },
-            "input_just_pressed": {
+            "is_just_pressed": {
                 "typename": {
                     "name": "b32",
                     "type": "primitive",
@@ -1006,7 +858,7 @@
                     }
                 ]
             },
-            "input_just_released": {
+            "is_just_released": {
                 "typename": {
                     "name": "b32",
                     "type": "primitive",
@@ -1056,7 +908,7 @@
                     }
                 ]
             },
-            "input_cursor": {
+            "cursor": {
                 "typename": {
                     "name": "v2",
                     "type": "primitive",
@@ -1073,7 +925,7 @@
                     }
                 ]
             },
-            "input_set_cursor": {
+            "wrap_cursor": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -1628,7 +1480,7 @@
     },
     "scene": {
         "functions": {
-            "component_register": {
+            "register_component": {
                 "typename": {
                     "name": "void",
                     "type": "primitive",
@@ -1661,7 +1513,7 @@
                     }
                 ]
             },
-            "transform_get_matrix": {
+            "transform_matrix": {
                 "typename": {
                     "name": "m4",
                     "type": "primitive",
@@ -1678,7 +1530,7 @@
                     }
                 ]
             },
-            "transform_get_local_translation": {
+            "transform_local_translation": {
                 "typename": {
                     "name": "v3",
                     "type": "primitive",
@@ -1695,7 +1547,7 @@
                     }
                 ]
             },
-            "transform_get_local_rotation": {
+            "transform_local_rotation": {
                 "typename": {
                     "name": "q4",
                     "type": "primitive",
@@ -1712,7 +1564,7 @@
                     }
                 ]
             },
-            "transform_get_local_scale": {
+            "transform_local_scale": {
                 "typename": {
                     "name": "v3",
                     "type": "primitive",
@@ -1729,7 +1581,7 @@
                     }
                 ]
             },
-            "transform_get_translation": {
+            "transform_translation": {
                 "typename": {
                     "name": "v3",
                     "type": "primitive",
@@ -1746,7 +1598,7 @@
                     }
                 ]
             },
-            "transform_get_rotation": {
+            "transform_rotation": {
                 "typename": {
                     "name": "q4",
                     "type": "primitive",
@@ -1763,7 +1615,7 @@
                     }
                 ]
             },
-            "transform_get_scale": {
+            "transform_scale": {
                 "typename": {
                     "name": "v3",
                     "type": "primitive",

@@ -18,13 +18,13 @@ module_init (void)
     if (nux_config()->debug.console)
     {
         // Create canvas
-        _module.console_canvas = nux_canvas_new(nux_arena_core(), 1000, 500);
+        _module.console_canvas = nux_canvas_new(nux_core_arena(), 1000, 500);
         NUX_CHECK(_module.console_canvas, return NUX_FAILURE);
     }
 
     // Create log buffer
     _module.lines
-        = nux_arena_malloc(nux_arena_core(), LOG_LINE_LEN * LOG_LINE_COUNT);
+        = nux_arena_malloc(nux_core_arena(), LOG_LINE_LEN * LOG_LINE_COUNT);
     NUX_CHECK(_module.lines, return NUX_FAILURE);
     _module.lines_count  = 0;
     _module.lines_cursor = 0;

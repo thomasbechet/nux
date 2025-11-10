@@ -333,7 +333,7 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
 nux_lua_t *
 nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
-    nux_lua_t *lua = nux_resource_new(arena, NUX_RESOURCE_LUA_MODULE);
+    nux_lua_t *lua = nux_new_resource(arena, NUX_RESOURCE_LUA_MODULE);
     NUX_CHECK(lua, return NUX_NULL);
     nux_resource_set_path(lua, path);
     // initialize event handles
@@ -354,7 +354,7 @@ lua_module_cleanup (void *data)
     for (nux_u32_t i = 0; i < lua->event_handles.size; ++i)
     {
         const nux_event_handler_t *handler = lua->event_handles.data[i];
-        nux_event_unsubscribe(handler);
+        nux_unsubscribe_event(handler);
     }
 }
 static nux_status_t
@@ -371,7 +371,7 @@ static nux_status_t
 module_init (void)
 {
     // Register types
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_LUA_MODULE,
         (nux_resource_info_t) { .name    = "lua_module",
                                      .size    = sizeof(nux_lua_t),

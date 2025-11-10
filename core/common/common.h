@@ -795,7 +795,7 @@ void            *nux_arena_realloc(nux_arena_t *a,
 void            *nux_arena_new_object(nux_arena_t          *a,
                                       nux_u32_t             size,
                                       nux_arena_finalizer_t finalizer);
-void             nux_arena_clear(nux_arena_t *a);
+void             nux_clear_arena(nux_arena_t *a);
 
 void nux_block_arena_init(nux_arena_t       *a,
                           nux_block_arena_t *ba,

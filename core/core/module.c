@@ -37,7 +37,7 @@ free_module (nux_module_t *module)
 }
 
 void
-nux_module_register (nux_module_info_t info)
+nux_register_module (nux_module_info_t info)
 {
     nux_core_module_t *core = nux_core();
     nux_module_t      *m    = nux_module_vec_push(&core->modules);

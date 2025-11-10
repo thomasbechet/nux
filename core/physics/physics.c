@@ -14,7 +14,7 @@ compute_sum_forces (nux_point_mass_t *pm)
 static void
 integrate (void)
 {
-    nux_f32_t dt = nux_time_delta();
+    nux_f32_t dt = nux_delta_time();
 
     const nux_u32_t substep = 10;
     nux_f32_t       subdt   = dt / substep;
@@ -144,16 +144,16 @@ static nux_status_t
 module_init (void)
 {
     // Register components
-    nux_component_register(
+    nux_register_component(
         NUX_COMPONENT_RIGIDBODY, "rigidbody", sizeof(nux_rigidbody_t));
     nux_component_set_add(NUX_COMPONENT_RIGIDBODY, nux_rigidbody_add);
 
-    nux_component_register(
+    nux_register_component(
         NUX_COMPONENT_COLLIDER, "collider", sizeof(nux_collider_t));
     nux_component_set_add(NUX_COMPONENT_COLLIDER, nux_collider_add);
 
     // Initialize values
-    nux_arena_t *a = nux_arena_core();
+    nux_arena_t *a = nux_core_arena();
     NUX_CHECK(nux_point_mass_vec_init(a, &_module.point_masses),
               return NUX_FAILURE);
     NUX_CHECK(
@@ -163,7 +163,7 @@ module_init (void)
         nux_distance_constraint_vec_init(a, &_module.distance_constraints),
         return NUX_FAILURE);
 
-    nux_arena_t *arena               = nux_arena_core();
+    nux_arena_t *arena               = nux_core_arena();
     _module.rigidbody_transform_iter = nux_query_new(arena, 2, 0);
     NUX_CHECK(_module.rigidbody_transform_iter, return NUX_FAILURE);
     nux_query_includes(_module.rigidbody_transform_iter,
@@ -212,7 +212,7 @@ nux_physics_add_rigidbody (nux_nid_t e)
             }
             break;
             case NUX_COLLIDER_AABB: {
-                nux_v3_t pos = nux_transform_get_translation(e);
+                nux_v3_t pos = nux_transform_translation(e);
                 nux_v3_t vel = NUX_V3_ZEROS;
 
                 nux_v3_t min = nux_v3_add(pos, collider->aabb.box.min);
@@ -327,7 +327,7 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
         nux_collider_t *collider
             = nux_component_get(it, NUX_COMPONENT_COLLIDER);
 
-        nux_v3_t translation = nux_transform_get_translation(it);
+        nux_v3_t translation = nux_transform_translation(it);
         switch (collider->type)
         {
             case NUX_COLLIDER_SPHERE: {

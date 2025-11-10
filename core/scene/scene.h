@@ -3,9 +3,6 @@
 
 #include <serde/serde.h>
 
-typedef struct nux_scene nux_scene_t;
-typedef struct nux_query nux_query_t;
-
 typedef enum
 {
     NUX_COMPONENT_TRANSFORM  = 1,
@@ -17,6 +14,9 @@ typedef enum
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_;
 
+typedef struct nux_scene nux_scene_t;
+typedef struct nux_query nux_query_t;
+
 typedef void (*nux_component_add_callback_t)(nux_nid_t nid, void *data);
 typedef void (*nux_component_remove_callback_t)(nux_nid_t nid, void *data);
 typedef nux_status_t (*nux_component_read_callback_t)(nux_serde_reader_t *s,
@@ -24,7 +24,7 @@ typedef nux_status_t (*nux_component_read_callback_t)(nux_serde_reader_t *s,
 typedef nux_status_t (*nux_component_write_callback_t)(nux_serde_writer_t *s,
                                                        const void *data);
 
-void  nux_component_register(nux_u32_t       index,
+void  nux_register_component(nux_u32_t       index,
                              const nux_c8_t *name,
                              nux_u32_t       size);
 void  nux_component_set_add(nux_u32_t                    index,
@@ -37,13 +37,13 @@ void  nux_component_set_write(nux_u32_t                      index,
                               nux_component_write_callback_t callback);
 void *nux_component_get(nux_nid_t e, nux_u32_t c);
 
-nux_m4_t nux_transform_get_matrix(nux_nid_t e);
-nux_v3_t nux_transform_get_local_translation(nux_nid_t e);
-nux_q4_t nux_transform_get_local_rotation(nux_nid_t e);
-nux_v3_t nux_transform_get_local_scale(nux_nid_t e);
-nux_v3_t nux_transform_get_translation(nux_nid_t e);
-nux_q4_t nux_transform_get_rotation(nux_nid_t e);
-nux_v3_t nux_transform_get_scale(nux_nid_t e);
+nux_m4_t nux_transform_matrix(nux_nid_t e);
+nux_v3_t nux_transform_local_translation(nux_nid_t e);
+nux_q4_t nux_transform_local_rotation(nux_nid_t e);
+nux_v3_t nux_transform_local_scale(nux_nid_t e);
+nux_v3_t nux_transform_translation(nux_nid_t e);
+nux_q4_t nux_transform_rotation(nux_nid_t e);
+nux_v3_t nux_transform_scale(nux_nid_t e);
 void     nux_transform_set_translation(nux_nid_t e, nux_v3_t position);
 void     nux_transform_set_rotation(nux_nid_t e, nux_q4_t rotation);
 void     nux_transform_set_rotation_euler(nux_nid_t e, nux_v3_t euler);

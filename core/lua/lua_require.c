@@ -3,9 +3,9 @@
 static void
 l_checkerror (lua_State *L)
 {
-    if (!nux_error_get_status())
+    if (!nux_error_status())
     {
-        luaL_error(L, nux_error_get_message());
+        luaL_error(L, nux_error_message());
     }
 }
 
@@ -29,7 +29,7 @@ l_require (lua_State *L)
     }
 
     // load the module
-    nux_lua_t *lua = nux_lua_load(nux_arena_core(), filepath);
+    nux_lua_t *lua = nux_lua_load(nux_core_arena(), filepath);
     l_checkerror(L);
     NUX_ASSERT(lua);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);

@@ -5,9 +5,9 @@ draw_image (nux_gui_t                    *gui,
             nux_b2i_t                     extent,
             const nux_stylesheet_image_t *style)
 {
-    nux_canvas_t  *canvas = nux_resource_get(NUX_RESOURCE_CANVAS, gui->canvas);
+    nux_canvas_t  *canvas = nux_get_resource(NUX_RESOURCE_CANVAS, gui->canvas);
     nux_texture_t *texture
-        = nux_resource_get(NUX_RESOURCE_TEXTURE, style->texture);
+        = nux_get_resource(NUX_RESOURCE_TEXTURE, style->texture);
     if (canvas && texture)
     {
         nux_canvas_blit_sliced(
@@ -30,7 +30,7 @@ controller_hit (nux_gui_t *gui, nux_b2i_t extent, nux_u32_t *controller)
 static nux_stylesheet_t *
 active_style (nux_gui_t *gui)
 {
-    nux_stylesheet_t *style = nux_resource_get(
+    nux_stylesheet_t *style = nux_get_resource(
         NUX_RESOURCE_STYLESHEET, *nux_u32_vec_last(&gui->stylesheets));
     return style;
 }
@@ -54,7 +54,7 @@ nux_gui_end (nux_gui_t *gui)
 nux_gui_t *
 nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
 {
-    nux_gui_t *gui = nux_resource_new(arena, NUX_RESOURCE_GUI);
+    nux_gui_t *gui = nux_new_resource(arena, NUX_RESOURCE_GUI);
     NUX_CHECK(gui, return NUX_NULL);
     gui->canvas = nux_resource_rid(canvas);
     NUX_ASSERT(gui->canvas);

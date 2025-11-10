@@ -12,7 +12,7 @@ nux_staticmesh_get_mesh (nux_nid_t n)
 {
     nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return NUX_NULL);
-    return nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
+    return nux_check_resource(NUX_RESOURCE_MESH, sm->mesh);
 }
 void
 nux_staticmesh_set_texture (nux_nid_t e, nux_texture_t *texture)
@@ -26,7 +26,7 @@ nux_staticmesh_get_texture (nux_nid_t n)
 {
     nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return NUX_NULL);
-    return nux_resource_check(NUX_RESOURCE_TEXTURE, sm->texture);
+    return nux_check_resource(NUX_RESOURCE_TEXTURE, sm->texture);
 }
 void
 nux_staticmesh_set_colormap (nux_nid_t e, nux_texture_t *colormap)

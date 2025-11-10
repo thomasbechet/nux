@@ -64,7 +64,7 @@ nux_camera_reset_aspect (nux_nid_t e, nux_viewport_t *viewport)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return);
-    nux_texture_t *t = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
+    nux_texture_t *t = nux_get_resource(NUX_RESOURCE_TEXTURE, viewport->target);
     NUX_ASSERT(t);
     c->aspect = (nux_f32_t)t->gpu.width / t->gpu.height;
 }
@@ -111,7 +111,7 @@ nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
     NUX_CHECK(c, return NUX_V3_ZEROS);
     NUX_CHECK(nux_node_has(e, NUX_COMPONENT_TRANSFORM), return NUX_V3_ZEROS);
 
-    nux_m4_t global_matrix = nux_transform_get_matrix(e);
+    nux_m4_t global_matrix = nux_transform_matrix(e);
 
     nux_v3_t eye    = nux_m4_mulv3(global_matrix, NUX_V3_ZEROS, 1);
     nux_v3_t center = nux_m4_mulv3(global_matrix, NUX_V3_FORWARD, 1);

@@ -62,13 +62,13 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
     nux_scene_t        *prev_scene = nux_scene_active();
     nux_scene_set_active(scene);
 
-    nux_query_t *iter = nux_query_new_any(nux_arena_frame());
+    nux_query_t *iter = nux_query_new_any(nux_frame_arena());
     NUX_CHECK(iter, return NUX_FAILURE);
 
     nux_u32_t entity_count = nux_scene_count();
     // TODO: no entities case ?
     nux_u32_t *entity_map = nux_arena_malloc(
-        nux_arena_frame(), sizeof(*entity_map) * entity_count);
+        nux_frame_arena(), sizeof(*entity_map) * entity_count);
     NUX_CHECK(entity_map, return NUX_FAILURE);
 
     nux_scene_writer_t writer;
@@ -151,7 +151,7 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
     nux_serde_read_array(s, "entities", &entity_count);
 
     nux_u32_t *entity_map = nux_arena_malloc(
-        nux_arena_frame(), sizeof(*entity_map) * entity_count);
+        nux_frame_arena(), sizeof(*entity_map) * entity_count);
     NUX_CHECK(entity_map, goto error);
 
     nux_scene_reader_t reader;

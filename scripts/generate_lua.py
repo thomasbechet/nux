@@ -41,12 +41,11 @@ if __name__ == "__main__":
         api["constants"] |= v["constants"]
     # Filter functions
     for name in [
-            "module_register",
-            "event_new",
-            "event_unsubscribe",
+            "register_module",
+            "new_event",
+            "unsubscribe_event",
             "event_handler_event",
-            "resource_register",
-            "file_stat"
+            "register_resource",
             ]:
         del api["functions"][name]
 

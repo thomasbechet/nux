@@ -4,13 +4,13 @@ nux_status_t
 nux_io_init (void)
 {
     nux_core_module_t *module = nux_core();
-    nux_resource_register(NUX_RESOURCE_FILE,
+    nux_register_resource(NUX_RESOURCE_FILE,
                           (nux_resource_info_t) {
                               .name    = "file",
                               .size    = sizeof(nux_file_t),
                               .cleanup = nux_file_cleanup,
                           });
-    nux_resource_register(NUX_RESOURCE_DISK,
+    nux_register_resource(NUX_RESOURCE_DISK,
                           (nux_resource_info_t) {
                               .name    = "disk",
                               .size    = sizeof(nux_disk_t),
@@ -19,14 +19,14 @@ nux_io_init (void)
 
     // Initialize files
     NUX_CHECK(nux_u32_vec_init_capa(
-                  nux_arena_core(), NUX_FILE_MAX, &module->free_file_slots),
+                  nux_core_arena(), NUX_FILE_MAX, &module->free_file_slots),
               return NUX_FAILURE);
 
     // Initialize values
     nux_u32_vec_fill_reversed(&module->free_file_slots);
 
     // Register base OS disk
-    nux_disk_t *disk = nux_resource_new(nux_arena_core(), NUX_RESOURCE_DISK);
+    nux_disk_t *disk = nux_new_resource(nux_core_arena(), NUX_RESOURCE_DISK);
     disk->type       = NUX_DISK_OS;
 
     return NUX_SUCCESS;
@@ -52,7 +52,7 @@ nux_io_open_os_file (const nux_c8_t *path,
                normpath);
     nux_u32_t *slot = nux_u32_vec_pop(&module->free_file_slots);
     NUX_ENSURE(slot, return NUX_NULL, "out of os file slots");
-    NUX_ENSURE(nux_os_file_open(*slot, normpath, len, mode),
+    NUX_ENSURE(nux_os_open_file(*slot, normpath, len, mode),
                goto cleanup,
                "failed to open os file '%s'",
                normpath);
@@ -66,14 +66,14 @@ void
 nux_io_close_os_file (nux_u32_t slot)
 {
     nux_core_module_t *module = nux_core();
-    nux_os_file_close(slot);
+    nux_os_close_file(slot);
     nux_u32_vec_pushv(&module->free_file_slots, slot);
 }
 
 static nux_status_t
 cart_write (nux_file_t *file, const void *p, nux_u32_t n)
 {
-    NUX_ENSURE(nux_file_write(file, p, n),
+    NUX_ENSURE(nux_write_file(file, p, n),
                return NUX_FAILURE,
                "failed to write cart file");
     return NUX_SUCCESS;
@@ -96,7 +96,7 @@ nux_io_cart_begin (const nux_c8_t *path, nux_u32_t entry_count)
     }
 
     nux_file_t *file
-        = nux_file_open(nux_arena_frame(), path, NUX_IO_READ_WRITE);
+        = nux_open_file(nux_frame_arena(), path, NUX_IO_READ_WRITE);
     NUX_CHECK(file, return NUX_FAILURE);
 
     module->cart_writer.file        = nux_resource_rid(file);
@@ -147,7 +147,7 @@ nux_io_write_cart_data (const nux_c8_t *path,
                "cart writer not started");
 
     nux_file_t *file
-        = nux_resource_check(NUX_RESOURCE_FILE, module->cart_writer.file);
+        = nux_check_resource(NUX_RESOURCE_FILE, module->cart_writer.file);
     NUX_CHECK(file, return NUX_FAILURE);
 
     nux_status_t status = NUX_SUCCESS;
@@ -168,7 +168,7 @@ nux_io_write_cart_data (const nux_c8_t *path,
     module->cart_writer.cursor += path_length + 1 + data_length;
 
     // Write path + data
-    NUX_ENSURE(nux_file_seek(file, path_offset),
+    NUX_ENSURE(nux_seek_file(file, path_offset),
                return NUX_FAILURE,
                "failed to seek to data section");
     status &= cart_write(file, path, path_length);
@@ -180,7 +180,7 @@ nux_io_write_cart_data (const nux_c8_t *path,
                module->cart_writer.entry_index);
 
     // Write entry
-    NUX_ENSURE(nux_file_seek(file, entry_cursor),
+    NUX_ENSURE(nux_seek_file(file, entry_cursor),
                return NUX_FAILURE,
                "failed to seek entry");
     status &= cart_write_u32(file, data_type);
@@ -197,7 +197,7 @@ nux_status_t
 nux_io_write_cart_file (const nux_c8_t *path)
 {
     nux_u32_t size;
-    void     *data = nux_file_load(nux_arena_frame(), path, &size);
+    void     *data = nux_load_file(nux_frame_arena(), path, &size);
     NUX_CHECK(data, return NUX_FAILURE);
     return nux_io_write_cart_data(path, 0, NUX_FALSE, data, size);
 }

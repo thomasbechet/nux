@@ -23,7 +23,7 @@ nux_log (nux_log_level_t level, const nux_c8_t *fmt, ...)
 }
 
 void
-nux_log_set_level (nux_log_level_t level)
+nux_set_log_level (nux_log_level_t level)
 {
     nux_config()->log.level = level;
 }

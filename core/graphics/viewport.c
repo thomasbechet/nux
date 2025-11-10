@@ -6,7 +6,7 @@ nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
     NUX_ENSURE(target->gpu.type == NUX_TEXTURE_RENDER_TARGET,
                return NUX_NULL,
                "viewport target must be a render target texture");
-    nux_viewport_t *vp = nux_resource_new(arena, NUX_RESOURCE_VIEWPORT);
+    nux_viewport_t *vp = nux_new_resource(arena, NUX_RESOURCE_VIEWPORT);
     NUX_CHECK(vp, return NUX_NULL);
     vp->mode           = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
     vp->extent         = nux_b2i(0, 0, target->gpu.width, target->gpu.height);
@@ -70,7 +70,7 @@ nux_viewport_get_normalized_viewport (nux_viewport_t *viewport)
 {
     // Get target resolution
     nux_texture_t *target
-        = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
+        = nux_get_resource(NUX_RESOURCE_TEXTURE, viewport->target);
     nux_v2u_t target_size  = nux_v2u(target->gpu.width, target->gpu.height);
     nux_f32_t target_ratio = (nux_f32_t)target_size.x / target_size.y;
 
@@ -94,7 +94,7 @@ nux_viewport_get_normalized_viewport (nux_viewport_t *viewport)
     else if (viewport->source.texture)
     {
         nux_texture_t *texture
-            = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->source.texture);
+            = nux_get_resource(NUX_RESOURCE_TEXTURE, viewport->source.texture);
         NUX_ASSERT(texture);
         source_size = nux_v2u(texture->gpu.width, texture->gpu.height);
     }

@@ -29,7 +29,7 @@ nux_os_log (nux_log_level_t level, const nux_c8_t *log, nux_u32_t n)
     printf("%.*s\n", n, log);
 }
 nux_status_t
-nux_os_file_open (nux_u32_t       slot,
+nux_os_open_file (nux_u32_t       slot,
                   const nux_c8_t *path,
                   nux_u32_t       len,
                   nux_io_mode_t   mode)
@@ -45,13 +45,13 @@ nux_os_file_open (nux_u32_t       slot,
     return NUX_SUCCESS;
 }
 void
-nux_os_file_close (nux_u32_t slot)
+nux_os_close_file (nux_u32_t slot)
 {
     fclose(files[slot]);
     files[slot] = NULL;
 }
 nux_status_t
-nux_os_file_stat (nux_u32_t slot, nux_file_stat_t *stat)
+nux_os_file_stat (nux_u32_t slot, nux_os_file_stat_t *stat)
 {
     long cursor = ftell(files[slot]);
     if (fseek(files[slot], 0, SEEK_END) < 0)
@@ -63,18 +63,18 @@ nux_os_file_stat (nux_u32_t slot, nux_file_stat_t *stat)
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_file_seek (nux_u32_t slot, nux_u32_t cursor)
+nux_os_seek_file (nux_u32_t slot, nux_u32_t cursor)
 {
     return (fseek(files[slot], cursor, SEEK_SET) < 0) ? NUX_FAILURE
                                                       : NUX_SUCCESS;
 }
 nux_u32_t
-nux_os_file_read (nux_u32_t slot, void *p, nux_u32_t n)
+nux_os_read_file (nux_u32_t slot, void *p, nux_u32_t n)
 {
     return fread(p, 1, n, files[slot]);
 }
 nux_u32_t
-nux_os_file_write (nux_u32_t slot, const void *p, nux_u32_t n)
+nux_os_write_file (nux_u32_t slot, const void *p, nux_u32_t n)
 {
     return fwrite(p, 1, n, files[slot]);
 }
@@ -139,19 +139,19 @@ nux_os_gpu_submit (const nux_gpu_command_t *cmds, nux_u32_t count)
 {
 }
 void
-nux_os_stats_update (nux_u64_t *stats)
+nux_os_update_stats (nux_u64_t *stats)
 {
 }
 void
-nux_os_hotreload_add (const nux_c8_t *path, nux_rid_t handle)
+nux_os_add_hotreload (const nux_c8_t *path, nux_rid_t handle)
 {
 }
 void
-nux_os_hotreload_remove (nux_rid_t handle)
+nux_os_remove_hotreload (nux_rid_t handle)
 {
 }
 void
-nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
+nux_os_pull_hotreload (nux_rid_t *handles, nux_u32_t *count)
 {
     *count = 0;
 }

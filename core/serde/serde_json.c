@@ -7,7 +7,7 @@
 static void
 json_append (nux_json_writer_t *j, const nux_c8_t *s, nux_u32_t n)
 {
-    nux_file_write(j->file, s, n);
+    nux_write_file(j->file, s, n);
 }
 static nux_b32_t
 json_equals (const nux_c8_t *json, jsmntok_t *tok, const nux_c8_t *s)
@@ -248,7 +248,7 @@ nux_json_writer_init (nux_json_writer_t *j, const nux_c8_t *path)
     j->depth              = 0;
     j->has_previous_value = NUX_FALSE;
     nux_serde_writer_init(&j->writer, j, json_writer);
-    j->file = nux_file_open(nux_arena_frame(), path, NUX_IO_READ_WRITE);
+    j->file = nux_open_file(nux_frame_arena(), path, NUX_IO_READ_WRITE);
     NUX_CHECK(j->file, return NUX_FAILURE);
     j->stack[0] = NUX_SERDE_OBJECT;
     nux_serde_write_object(&j->writer, NUX_NULL);
@@ -259,16 +259,16 @@ nux_json_writer_close (nux_json_writer_t *j)
 {
     json_append(j, "\n", 1);
     nux_serde_write_end(&j->writer);
-    nux_file_close(j->file);
+    nux_close_file(j->file);
 }
 nux_status_t
 nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
 {
     nux_serde_reader_init(&j->reader, j, json_reader);
 
-    nux_arena_t *a = nux_arena_frame();
+    nux_arena_t *a = nux_frame_arena();
 
-    j->json = nux_file_load(a, path, &j->json_size);
+    j->json = nux_load_file(a, path, &j->json_size);
     NUX_CHECK(j->json, return NUX_FAILURE);
 
     jsmn_parser parser;

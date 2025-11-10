@@ -2,9 +2,9 @@
 
 static void l_checkerror(lua_State *L)
 {
-    if (!nux_error_get_status())
+    if (!nux_error_status())
     {
-        luaL_error(L, nux_error_get_message());
+        luaL_error(L, nux_error_message());
     }
 }
 
@@ -69,7 +69,7 @@ static int l_{{ funcname }}(lua_State *L)
                 {% set ns.stack = ns.stack + 1 %}
             {% endif %}
         {%- elif arg.typename.type == "resource" %}
-            nux_{{ arg.typename.name }}_t *{{ arg.name}} = nux_resource_check({{ resmap.get(arg.typename.name) }}, luaL_checkinteger(L, {{ ns.stack }}));
+            nux_{{ arg.typename.name }}_t *{{ arg.name}} = nux_check_resource({{ resmap.get(arg.typename.name) }}, luaL_checkinteger(L, {{ ns.stack }}));
             {% set ns.stack = ns.stack + 1 %}
         {%- endif %}
     {%- endfor -%}

@@ -119,7 +119,7 @@ end_batch (nux_canvas_t *canvas)
 nux_canvas_t *
 nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
 {
-    nux_canvas_t *c = nux_resource_new(arena, NUX_RESOURCE_CANVAS);
+    nux_canvas_t *c = nux_new_resource(arena, NUX_RESOURCE_CANVAS);
     NUX_CHECK(c, return NUX_NULL);
 
     // Allocate quads buffer
@@ -508,13 +508,13 @@ nux_canvas_render (nux_canvas_t *c)
     // Update constants
     nux_gpu_constants_buffer_t constants;
     constants.screen_size = nux_v2u(width, height);
-    constants.time        = nux_time_elapsed();
+    constants.time        = nux_elapsed_time();
     nux_os_buffer_update(
         c->constants_buffer.slot, 0, sizeof(constants), &constants);
 
     // Begin canvas render
     nux_gpu_encoder_t enc;
-    nux_gpu_encoder_init(nux_arena_frame(), &enc);
+    nux_gpu_encoder_init(nux_frame_arena(), &enc);
     nux_gpu_bind_framebuffer(&enc, framebuffer);
     nux_gpu_viewport(&enc, nux_v4(0, 0, 1, 1));
     nux_gpu_bind_pipeline(&enc, gfx->canvas_pipeline.slot);

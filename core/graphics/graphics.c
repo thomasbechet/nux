@@ -30,44 +30,44 @@ viewport_compare (const void *a, const void *b)
 static nux_status_t
 module_init (void)
 {
-    nux_arena_t *a = nux_arena_core();
+    nux_arena_t *a = nux_core_arena();
 
     // Register resources
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_VIEWPORT,
         (nux_resource_info_t) { .name = "viewport",
                                 .size = sizeof(nux_viewport_t) });
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_TEXTURE,
         (nux_resource_info_t) { .name    = "texture",
                                 .size    = sizeof(nux_texture_t),
                                 .cleanup = nux_texture_cleanup });
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_PALETTE,
         (nux_resource_info_t) { .name = "palette",
                                 .size = sizeof(nux_palette_t) });
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_MESH,
         (nux_resource_info_t) { .name = "mesh", .size = sizeof(nux_mesh_t) });
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_CANVAS,
         (nux_resource_info_t) { .name    = "canvas",
                                 .size    = sizeof(nux_canvas_t),
                                 .cleanup = nux_canvas_cleanup });
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_FONT,
         (nux_resource_info_t) { .name    = "font",
                                 .size    = sizeof(nux_font_t),
                                 .cleanup = nux_font_cleanup });
 
     // Register components
-    nux_component_register(
+    nux_register_component(
         NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
     nux_component_set_add(NUX_COMPONENT_CAMERA, nux_camera_add);
     nux_component_set_read(NUX_COMPONENT_CAMERA, nux_camera_read);
     nux_component_set_write(NUX_COMPONENT_CAMERA, nux_camera_write);
 
-    nux_component_register(
+    nux_register_component(
         NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
     nux_component_set_add(NUX_COMPONENT_STATICMESH, nux_staticmesh_add);
     nux_component_set_read(NUX_COMPONENT_STATICMESH, nux_staticmesh_read);
@@ -165,16 +165,16 @@ module_init (void)
               return NUX_FAILURE);
 
     // Create iterators
-    _module.transform_iter = nux_query_new(nux_arena_core(), 1, 0);
+    _module.transform_iter = nux_query_new(nux_core_arena(), 1, 0);
     NUX_CHECK(_module.transform_iter, return NUX_FAILURE);
     nux_query_includes(_module.transform_iter, NUX_COMPONENT_TRANSFORM);
 
-    _module.transform_camera_iter = nux_query_new(nux_arena_core(), 2, 0);
+    _module.transform_camera_iter = nux_query_new(nux_core_arena(), 2, 0);
     NUX_CHECK(_module.transform_camera_iter, return NUX_FAILURE);
     nux_query_includes(_module.transform_camera_iter, NUX_COMPONENT_TRANSFORM);
     nux_query_includes(_module.transform_camera_iter, NUX_COMPONENT_CAMERA);
 
-    _module.transform_staticmesh_iter = nux_query_new(nux_arena_core(), 2, 0);
+    _module.transform_staticmesh_iter = nux_query_new(nux_core_arena(), 2, 0);
     NUX_CHECK(_module.transform_staticmesh_iter, return NUX_FAILURE);
     nux_query_includes(_module.transform_staticmesh_iter,
                        NUX_COMPONENT_TRANSFORM);
@@ -189,7 +189,7 @@ module_init (void)
 
     // Create screen rendertarget
     _module.screen_target
-        = nux_resource_new(nux_arena_core(), NUX_RESOURCE_TEXTURE);
+        = nux_new_resource(nux_core_arena(), NUX_RESOURCE_TEXTURE);
     NUX_CHECK(_module.screen_target, return NUX_FAILURE);
     _module.screen_target->gpu.type             = NUX_TEXTURE_RENDER_TARGET;
     _module.screen_target->gpu.framebuffer_slot = 0;
@@ -268,7 +268,7 @@ module_update (void)
     nux_nid_t transform = NUX_NULL;
     while ((transform = nux_query_next(_module.transform_iter, transform)))
     {
-        nux_transform_get_matrix(transform);
+        nux_transform_matrix(transform);
     }
 
     // Upload meshes
@@ -316,7 +316,7 @@ module_update (void)
         nux_v4_t        extent = nux_viewport_get_normalized_viewport(viewport);
 
         nux_texture_t *target
-            = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
+            = nux_get_resource(NUX_RESOURCE_TEXTURE, viewport->target);
         // Skip empty viewports
         if (target->gpu.width * target->gpu.height <= 0)
         {
@@ -330,7 +330,7 @@ module_update (void)
         }
         else if (viewport->source.texture) // Blit texture
         {
-            nux_texture_t *texture = nux_resource_get(NUX_RESOURCE_TEXTURE,
+            nux_texture_t *texture = nux_get_resource(NUX_RESOURCE_TEXTURE,
                                                       viewport->source.texture);
             NUX_ASSERT(texture);
             nux_texture_blit(texture, target, extent);

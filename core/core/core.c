@@ -51,16 +51,16 @@ bootstrap_core_arena (void)
 static nux_status_t
 module_pre_update (void)
 {
-    nux_os_stats_update(_module.stats);
+    nux_os_update_stats(_module.stats);
     return NUX_SUCCESS;
 }
 static nux_status_t
 module_post_update (void)
 {
-    nux_arena_clear(nux_arena_frame());
-    _module.time_elapsed += nux_time_delta();
+    nux_clear_arena(nux_frame_arena());
+    _module.time_elapsed += nux_delta_time();
     ++_module.frame;
-    nux_os_stats_update(_module.stats);
+    nux_os_update_stats(_module.stats);
     return NUX_SUCCESS;
 }
 
@@ -94,7 +94,7 @@ nux_core_init (void)
     _module.running      = NUX_TRUE;
     _module.pcg          = nux_pcg(10243124, 1823719241);
     _module.error_enable = NUX_TRUE;
-    nux_error_reset();
+    nux_reset_error();
 
     // Initialize configuration
     _module.config.hotreload                       = NUX_FALSE;
@@ -111,19 +111,19 @@ nux_core_init (void)
     _module.config.debug.console                   = NUX_TRUE;
 
     // Register base types
-    nux_resource_register(NUX_RESOURCE_NULL,
+    nux_register_resource(NUX_RESOURCE_NULL,
                           (nux_resource_info_t) { .name = "null", .size = 0 });
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_ARENA,
         (nux_resource_info_t) { .name    = "arena",
                                 .size    = sizeof(nux_arena_t),
                                 .cleanup = nux_arena_cleanup });
-    nux_resource_register(
+    nux_register_resource(
         NUX_RESOURCE_EVENT,
         (nux_resource_info_t) { .name = "event", .size = sizeof(nux_event_t) });
 
     // Create frame arena
-    _module.frame_arena = nux_arena_new(_module.core_arena);
+    _module.frame_arena = nux_new_arena(_module.core_arena);
     NUX_ASSERT(_module.frame_arena);
     nux_resource_set_name(_module.frame_arena, "frame_arena");
 
@@ -167,9 +167,9 @@ nux_core_init (void)
     return NUX_SUCCESS;
 
 cleanup:
-    if (!nux_error_get_status())
+    if (!nux_error_status())
     {
-        NUX_ERROR("%s", nux_error_get_message());
+        NUX_ERROR("%s", nux_error_message());
     }
     nux_core_free();
     return NUX_NULL;
@@ -178,7 +178,7 @@ void
 nux_core_free (void)
 {
     // Cleanup all resources
-    nux_arena_clear(nux_arena_core());
+    nux_clear_arena(nux_core_arena());
     // Free all modules
     nux_module_free_all();
     // Free core memory
@@ -195,9 +195,9 @@ nux_core_update (void)
 {
     // TODO: update modules
 
-    if (!nux_error_get_status())
+    if (!nux_error_status())
     {
-        NUX_ERROR("%s", nux_error_get_message());
+        NUX_ERROR("%s", nux_error_message());
     }
 
     // Hotreload
@@ -205,10 +205,10 @@ nux_core_update (void)
     {
         nux_u32_t count;
         nux_rid_t handles[256];
-        nux_os_hotreload_pull(handles, &count);
+        nux_os_pull_hotreload(handles, &count);
         for (nux_u32_t i = 0; i < count; ++i)
         {
-            nux_resource_reload(handles[i]);
+            nux_reload_resource(handles[i]);
         }
     }
 }
@@ -246,22 +246,22 @@ nux_stat (nux_stat_t stat)
     return _module.stats[stat];
 }
 nux_f32_t
-nux_time_elapsed (void)
+nux_elapsed_time (void)
 {
     return _module.time_elapsed;
 }
 nux_f32_t
-nux_time_delta (void)
+nux_delta_time (void)
 {
     return 1. / 60;
 }
 nux_u32_t
-nux_time_frame (void)
+nux_frame_index (void)
 {
     return _module.frame;
 }
 nux_u64_t
-nux_time_timestamp (void)
+nux_timestamp (void)
 {
     return _module.stats[NUX_STAT_TIMESTAMP];
 }
@@ -277,46 +277,46 @@ nux_error (const nux_c8_t *fmt, ...)
             _module.error_message, sizeof(_module.error_message), fmt, args);
         va_end(args);
 #ifdef NUX_BUILD_DEBUG
-        NUX_ERROR("%s", nux_error_get_message());
+        NUX_ERROR("%s", nux_error_message());
         NUX_ASSERT(NUX_FALSE);
 #endif
         _module.error_status = NUX_FAILURE;
     }
 }
 void
-nux_error_enable (void)
+nux_enable_error (void)
 {
     _module.error_enable = NUX_TRUE;
 }
 void
-nux_error_disable (void)
+nux_disable_error (void)
 {
     _module.error_enable = NUX_FALSE;
 }
 void
-nux_error_reset (void)
+nux_reset_error (void)
 {
     _module.error_status = NUX_SUCCESS;
     nux_memset(_module.error_message, 0, sizeof(_module.error_message));
 }
 const nux_c8_t *
-nux_error_get_message (void)
+nux_error_message (void)
 {
     return _module.error_message;
 }
 nux_status_t
-nux_error_get_status (void)
+nux_error_status (void)
 {
     return _module.error_status;
 }
 
 nux_arena_t *
-nux_arena_core (void)
+nux_core_arena (void)
 {
     return _module.core_arena;
 }
 nux_arena_t *
-nux_arena_frame (void)
+nux_frame_arena (void)
 {
     return _module.frame_arena;
 }
