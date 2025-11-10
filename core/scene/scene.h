@@ -35,14 +35,6 @@ typedef struct
 } nux_component_info_t;
 
 void  nux_component_register(nux_u32_t index, nux_component_info_t info);
-void  nux_component_set_add(nux_u32_t                    index,
-                            nux_component_add_callback_t callback);
-void  nux_component_set_remove(nux_u32_t                       index,
-                               nux_component_remove_callback_t callback);
-void  nux_component_set_read(nux_u32_t                     index,
-                             nux_component_read_callback_t callback);
-void  nux_component_set_write(nux_u32_t                      index,
-                              nux_component_write_callback_t callback);
 void *nux_component_get(nux_nid_t e, nux_u32_t c);
 
 nux_m4_t nux_transform_matrix(nux_nid_t e);

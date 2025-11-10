@@ -33,13 +33,23 @@ typedef struct
 {
     nux_module_info_t info;
     nux_b32_t         initialized;
+    nux_u32_t         order; // initialization order
 } nux_module_t;
 
 NUX_VEC_DEFINE(nux_module_vec, nux_module_t);
 
+typedef struct
+{
+    nux_system_phase_t    phase;
+    nux_system_callback_t callback;
+} nux_system_t;
+
+NUX_VEC_DEFINE(nux_system_vec, nux_system_t);
+
 typedef enum
 {
     DEFAULT_MODULE_CAPACITY              = 8,
+    DEFAULT_SYSTEM_CAPACITY              = 32,
     DEFAULT_MODULE_DEPENDENCIES_CAPACITY = 64,
     ARENA_ALLOCATOR_TYPE                 = 12345,
 } nux_base_defaults_t;
@@ -157,6 +167,8 @@ typedef struct
     nux_arena_t        *core_arena;
 
     nux_module_vec_t modules;
+    nux_u32_t        modules_init_order;
+    nux_system_vec_t systems;
 
     nux_cart_writer_t cart_writer;
     nux_u32_vec_t     free_file_slots;
@@ -164,9 +176,9 @@ typedef struct
 
 nux_core_module_t *nux_core(void);
 
-nux_pcg_t           *nux_base_pcg(void);
-nux_resource_pool_t *nux_base_resources(void);
-nux_resource_type_t *nux_base_resource_types(void);
+nux_pcg_t           *nux_core_pcg(void);
+nux_resource_pool_t *nux_core_resources(void);
+nux_resource_type_t *nux_core_resource_types(void);
 nux_allocator_t     *nux_os_allocator(void);
 
 nux_resource_entry_t *nux_resource_add(nux_resource_pool_t *resources,
@@ -195,6 +207,9 @@ nux_status_t nux_io_write_cart_data(const nux_c8_t *path,
                                     const void     *data,
                                     nux_u32_t       size);
 
+void nux_module_init_all(void);
 void nux_module_free_all(void);
+
+void nux_system_call(nux_system_phase_t phase);
 
 #endif

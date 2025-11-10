@@ -91,12 +91,19 @@ def parse_function(node, module):
             typename["name"] = normalize_type(param.type.type.names[0])
             typename["type"] = "primitive"
             typename["const"] = True
-        if typename["name"].endswith("callback"): # Ignore *_callback_t returned value functions
-            return
+
         arg["typename"] = typename
-        # Ignore void * arguments
-        if typename["name"] == "void":
+
+        # Ignore functions with callbacks arguments
+        if "callback" in typename["name"]:
             return
+        # Ignore functions with void* arguments
+        if typename["name"] == "void" and typename["type"] == "resource":
+            return
+        # Skip void primitive arguments
+        if typename["name"] == "void" and typename["type"] == "primitive":
+            continue
+
         func["args"].append(arg)
     put_function(module, funcname, func)
 

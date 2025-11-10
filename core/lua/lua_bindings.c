@@ -126,6 +126,40 @@ l_arena_memory_usage (lua_State *L)
     return 1;
 }
 static int
+l_arena_core (lua_State *L)
+{
+    const nux_arena_t *ret = nux_arena_core();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_arena_frame (lua_State *L)
+{
+    const nux_arena_t *ret = nux_arena_frame();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
 l_logger_set_level (lua_State *L)
 {
     nux_log_level_t level = luaL_checknumber(L, 1);
@@ -136,10 +170,72 @@ l_logger_set_level (lua_State *L)
     return 0;
 }
 static int
+l_logger_level (lua_State *L)
+{
+    nux_log_level_t ret = nux_logger_level();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
 l_resource_reload (lua_State *L)
 {
     nux_rid_t    rid = (nux_rid_t)luaL_checknumber(L, 1);
     nux_status_t ret = nux_resource_reload(rid);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_error_enable (lua_State *L)
+{
+
+    nux_error_enable();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_error_disable (lua_State *L)
+{
+
+    nux_error_disable();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_error_reset (lua_State *L)
+{
+
+    nux_error_reset();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_error_message (lua_State *L)
+{
+    const nux_c8_t *ret = nux_error_message();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_error_status (lua_State *L)
+{
+    nux_status_t ret = nux_error_status();
     l_checkerror(L);
 
     lua_pushinteger(L, ret);
@@ -153,6 +249,23 @@ l_module_requires (lua_State *L)
     l_checkerror(L);
 
     lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_config_get (lua_State *L)
+{
+    const nux_config_t *ret = nux_config_get();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
     return 1;
 }
 static int
@@ -178,11 +291,29 @@ l_event_process (lua_State *L)
     return 0;
 }
 static int
+l_event_process_all (lua_State *L)
+{
+
+    nux_event_process_all();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_io_cart_begin (lua_State *L)
 {
     const nux_c8_t *path        = luaL_checkstring(L, 1);
     nux_u32_t       entry_count = luaL_checknumber(L, 2);
     nux_status_t    ret         = nux_io_cart_begin(path, entry_count);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_io_cart_end (lua_State *L)
+{
+    nux_status_t ret = nux_io_cart_end();
     l_checkerror(L);
 
     lua_pushinteger(L, ret);
@@ -791,6 +922,41 @@ l_scene_set_active (lua_State *L)
     return 1;
 }
 static int
+l_scene_active (lua_State *L)
+{
+    const nux_scene_t *ret = nux_scene_active();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_scene_count (lua_State *L)
+{
+    nux_u32_t ret = nux_scene_count();
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_scene_clear (lua_State *L)
+{
+
+    nux_scene_clear();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_scene_load_gltf (lua_State *L)
 {
     nux_arena_t *arena
@@ -845,6 +1011,22 @@ l_node_valid (lua_State *L)
     l_checkerror(L);
 
     lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_node_root (lua_State *L)
+{
+    nux_nid_t ret = nux_node_root();
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
     return 1;
 }
 static int
@@ -1157,6 +1339,23 @@ l_texture_load (lua_State *L)
     return 1;
 }
 static int
+l_texture_screen (lua_State *L)
+{
+    const nux_texture_t *ret = nux_texture_screen();
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
 l_texture_get_size (lua_State *L)
 {
     nux_texture_t *texture
@@ -1174,6 +1373,23 @@ l_palette_new (lua_State *L)
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
     nux_u32_t            size = luaL_checknumber(L, 2);
     const nux_palette_t *ret  = nux_palette_new(arena, size);
+    l_checkerror(L);
+
+    nux_rid_t ret_rid = nux_resource_rid(ret);
+    if (ret_rid)
+    {
+        lua_pushinteger(L, ret_rid);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_palette_default (lua_State *L)
+{
+    const nux_palette_t *ret = nux_palette_default();
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1492,6 +1708,33 @@ l_canvas_blit_sliced (lua_State *L)
     return 0;
 }
 static int
+l_graphics_begin_state (lua_State *L)
+{
+
+    nux_graphics_begin_state();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_graphics_end_state (lua_State *L)
+{
+
+    nux_graphics_end_state();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_graphics_reset_state (lua_State *L)
+{
+
+    nux_graphics_reset_state();
+    l_checkerror(L);
+
+    return 0;
+}
+static int
 l_graphics_draw_line (lua_State *L)
 {
     nux_v3_t a = nux_lua_check_vec3(L, 1);
@@ -1540,6 +1783,15 @@ l_graphics_set_transform (lua_State *L)
     nux_m4_t transform = nux_lua_check_mat4(L, 1);
 
     nux_graphics_set_transform(transform);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_graphics_set_transform_identity (lua_State *L)
+{
+
+    nux_graphics_set_transform_identity();
     l_checkerror(L);
 
     return 0;
@@ -1940,18 +2192,31 @@ static const struct luaL_Reg lib_arena[]
         { "clear", l_arena_clear },
         { "block_count", l_arena_block_count },
         { "memory_usage", l_arena_memory_usage },
+        { "core", l_arena_core },
+        { "frame", l_arena_frame },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_logger[]
-    = { { "set_level", l_logger_set_level }, { NUX_NULL, NUX_NULL } };
+    = { { "set_level", l_logger_set_level },
+        { "level", l_logger_level },
+        { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_resource[]
     = { { "reload", l_resource_reload }, { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_error[]
+    = { { "enable", l_error_enable }, { "disable", l_error_disable },
+        { "reset", l_error_reset },   { "message", l_error_message },
+        { "status", l_error_status }, { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_module[]
     = { { "requires", l_module_requires }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_event[] = { { "type", l_event_type },
-                                             { "process", l_event_process },
-                                             { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_config[]
+    = { { "get", l_config_get }, { NUX_NULL, NUX_NULL } };
+static const struct luaL_Reg lib_event[]
+    = { { "type", l_event_type },
+        { "process", l_event_process },
+        { "process_all", l_event_process_all },
+        { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_io[]
     = { { "cart_begin", l_io_cart_begin },
+        { "cart_end", l_io_cart_end },
         { "write_cart_file", l_io_write_cart_file },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_mount[]
@@ -1960,7 +2225,6 @@ static const struct luaL_Reg lib_file[]
     = { { "exists", l_file_exists }, { "open", l_file_open },
         { "close", l_file_close },   { "seek", l_file_seek },
         { "size", l_file_size },     { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_error[]  = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_log[]    = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_name[]   = { { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_system[] = { { NUX_NULL, NUX_NULL } };
@@ -2020,22 +2284,17 @@ static const struct luaL_Reg lib_query[]
         { "includes", l_query_includes }, { "excludes", l_query_excludes },
         { "next", l_query_next },         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_scene[]
-    = { { "new", l_scene_new },
-        { "set_active", l_scene_set_active },
-        { "load_gltf", l_scene_load_gltf },
+    = { { "new", l_scene_new },       { "set_active", l_scene_set_active },
+        { "active", l_scene_active }, { "count", l_scene_count },
+        { "clear", l_scene_clear },   { "load_gltf", l_scene_load_gltf },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_node[]
-    = { { "create", l_node_create },
-        { "delete", l_node_delete },
-        { "valid", l_node_valid },
-        { "parent", l_node_parent },
-        { "set_parent", l_node_set_parent },
-        { "sibling", l_node_sibling },
-        { "child", l_node_child },
-        { "add", l_node_add },
-        { "remove", l_node_remove },
-        { "has", l_node_has },
-        { "instantiate", l_node_instantiate },
+    = { { "create", l_node_create },   { "delete", l_node_delete },
+        { "valid", l_node_valid },     { "root", l_node_root },
+        { "parent", l_node_parent },   { "set_parent", l_node_set_parent },
+        { "sibling", l_node_sibling }, { "child", l_node_child },
+        { "add", l_node_add },         { "remove", l_node_remove },
+        { "has", l_node_has },         { "instantiate", l_node_instantiate },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_viewport[]
     = { { "new", l_viewport_new },
@@ -2054,10 +2313,12 @@ static const struct luaL_Reg lib_viewport[]
 static const struct luaL_Reg lib_texture[]
     = { { "new", l_texture_new },
         { "load", l_texture_load },
+        { "screen", l_texture_screen },
         { "get_size", l_texture_get_size },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_palette[]
     = { { "new", l_palette_new },
+        { "default", l_palette_default },
         { "set_active", l_palette_set_active },
         { "set_color", l_palette_set_color },
         { "get_color", l_palette_get_color },
@@ -2085,11 +2346,15 @@ static const struct luaL_Reg lib_canvas[]
         { "blit_sliced", l_canvas_blit_sliced },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_graphics[]
-    = { { "draw_line", l_graphics_draw_line },
+    = { { "begin_state", l_graphics_begin_state },
+        { "end_state", l_graphics_end_state },
+        { "reset_state", l_graphics_reset_state },
+        { "draw_line", l_graphics_draw_line },
         { "draw_dir", l_graphics_draw_dir },
         { "set_layer", l_graphics_set_layer },
         { "set_color", l_graphics_set_color },
         { "set_transform", l_graphics_set_transform },
+        { "set_transform_identity", l_graphics_set_transform_identity },
         { NUX_NULL, NUX_NULL } };
 static const struct luaL_Reg lib_camera[]
     = { { "set_fov", l_camera_set_fov },
@@ -2209,10 +2474,28 @@ nux_lua_open_api (void)
     lua_setfield(L, -2, "MAX");
     lua_setglobal(L, "resource");
     lua_newtable(L);
+    luaL_setfuncs(L, lib_error, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "NONE");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "OUT_OF_MEMORY");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "INVALID_TEXTURE_SIZE");
+    lua_pushinteger(L, 8);
+    lua_setfield(L, -2, "WASM_RUNTIME");
+    lua_pushinteger(L, 10);
+    lua_setfield(L, -2, "CART_EOF");
+    lua_pushinteger(L, 11);
+    lua_setfield(L, -2, "CART_MOUNT");
+    lua_setglobal(L, "error");
+    lua_newtable(L);
     luaL_setfuncs(L, lib_module, 0);
     lua_pushinteger(L, 1 << 0);
     lua_setfield(L, -2, "NO_DATA_INITIALIZATION");
     lua_setglobal(L, "module");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_config, 0);
+    lua_setglobal(L, "config");
     lua_newtable(L);
     luaL_setfuncs(L, lib_event, 0);
     lua_pushinteger(L, 0);
@@ -2233,21 +2516,6 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 64);
     lua_setfield(L, -2, "MAX");
     lua_setglobal(L, "file");
-    lua_newtable(L);
-    luaL_setfuncs(L, lib_error, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "NONE");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "OUT_OF_MEMORY");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "INVALID_TEXTURE_SIZE");
-    lua_pushinteger(L, 8);
-    lua_setfield(L, -2, "WASM_RUNTIME");
-    lua_pushinteger(L, 10);
-    lua_setfield(L, -2, "CART_EOF");
-    lua_pushinteger(L, 11);
-    lua_setfield(L, -2, "CART_MOUNT");
-    lua_setglobal(L, "error");
     lua_newtable(L);
     luaL_setfuncs(L, lib_log, 0);
     lua_pushinteger(L, 4);

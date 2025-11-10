@@ -367,9 +367,21 @@ lua_module_reload (void *data, const nux_c8_t *path)
     return NUX_SUCCESS;
 }
 
+static void
+module_update (void)
+{
+    nux_lua_t *lua = NUX_NULL;
+    while ((lua = nux_resource_next(NUX_RESOURCE_LUA_MODULE, lua)))
+    {
+        nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);
+    }
+}
 static nux_status_t
 module_init (void)
 {
+    // Register systems
+    nux_system_register(NUX_SYSTEM_UPDATE, module_update);
+
     // Register types
     nux_resource_register(
         NUX_RESOURCE_LUA_MODULE,
@@ -401,16 +413,6 @@ module_free (void)
     {
         lua_close(_module.L);
     }
-}
-static nux_status_t
-module_update (void)
-{
-    nux_lua_t *lua = NUX_NULL;
-    while ((lua = nux_resource_next(NUX_RESOURCE_LUA_MODULE, lua)))
-    {
-        nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);
-    }
-    return NUX_SUCCESS;
 }
 void
 nux_lua_module_register (void)

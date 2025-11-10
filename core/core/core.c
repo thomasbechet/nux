@@ -51,7 +51,7 @@ bootstrap_core_arena (void)
 static nux_status_t
 module_pre_update (void)
 {
-    nux_os_update_stats(_module.stats);
+    nux_os_stats_update(_module.stats);
     return NUX_SUCCESS;
 }
 static nux_status_t
@@ -60,7 +60,7 @@ module_post_update (void)
     nux_arena_clear(nux_arena_frame());
     _module.time_elapsed += nux_time_delta();
     ++_module.frame;
-    nux_os_update_stats(_module.stats);
+    nux_os_stats_update(_module.stats);
     return NUX_SUCCESS;
 }
 
@@ -86,6 +86,11 @@ nux_core_init (void)
     NUX_CHECK(nux_module_vec_init_capa(_module.core_arena,
                                        DEFAULT_MODULE_CAPACITY,
                                        &_module.modules),
+              return NUX_FAILURE);
+    // Initialize systems
+    NUX_CHECK(nux_system_vec_init_capa(_module.core_arena,
+                                       DEFAULT_MODULE_CAPACITY,
+                                       &_module.systems),
               return NUX_FAILURE);
 
     // Initialize system state
@@ -127,14 +132,20 @@ nux_core_init (void)
     NUX_ASSERT(_module.frame_arena);
     nux_resource_set_name(_module.frame_arena, "frame_arena");
 
+    // Initialize IO
+    NUX_CHECK(nux_io_init(), goto cleanup);
+
     // Register modules
     nux_input_module_register();
-    nux_lua_module_register();
     nux_scene_module_register();
     nux_graphics_module_register();
     nux_physics_module_register();
     nux_ui_module_register();
     nux_debug_module_register();
+    nux_lua_module_register();
+
+    // Init modules
+    nux_module_init_all();
 
     // // Detect entry point type
     // NUX_ASSERT(entry);
@@ -181,6 +192,8 @@ nux_core_free (void)
     nux_arena_clear(nux_arena_core());
     // Free all modules
     nux_module_free_all();
+    // Free IO
+    nux_io_free();
     // Free core memory
     nux_arena_free(_module.core_arena);
     // Free core arena
@@ -193,8 +206,12 @@ nux_core_free (void)
 void
 nux_core_update (void)
 {
-    // TODO: update modules
+    // Main loop
+    nux_system_call(NUX_SYSTEM_PRE_UPDATE);
+    nux_system_call(NUX_SYSTEM_UPDATE);
+    nux_system_call(NUX_SYSTEM_POST_UPDATE);
 
+    // Check errors
     if (!nux_error_status())
     {
         NUX_ERROR("%s", nux_error_message());
@@ -205,7 +222,7 @@ nux_core_update (void)
     {
         nux_u32_t count;
         nux_rid_t handles[256];
-        nux_os_pull_hotreload(handles, &count);
+        nux_os_hotreload_pull(handles, &count);
         for (nux_u32_t i = 0; i < count; ++i)
         {
             nux_resource_reload(handles[i]);
@@ -214,17 +231,17 @@ nux_core_update (void)
 }
 
 nux_pcg_t *
-nux_base_pcg (void)
+nux_core_pcg (void)
 {
     return &_module.pcg;
 }
 nux_resource_pool_t *
-nux_base_resources (void)
+nux_core_resources (void)
 {
     return &_module.resources;
 }
 nux_resource_type_t *
-nux_base_resource_types (void)
+nux_core_resource_types (void)
 {
     return _module.resources_types;
 }

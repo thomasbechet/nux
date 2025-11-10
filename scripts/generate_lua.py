@@ -49,8 +49,8 @@ if __name__ == "__main__":
 
     # Generate lua_bindings.c
     apply_template(args.rootdir, "lua_bindings.c.jinja", "core/lua/lua_bindings.c", clang_format=True, classes=classes)
-    # # Generate lua embedded code
-    # code = generate_lua_code(args, "core/lua/embedded/*")
-    # apply_template(args.rootdir, "lua_code.c.inc.jinja", "core/lua/lua_code.c.inc", clang_format=True, code=code)
+    # Generate lua embedded code
+    code = generate_lua_code(args, "core/lua/embedded/*")
+    apply_template(args.rootdir, "lua_code.c.inc.jinja", "core/lua/lua_code.c.inc", clang_format=True, code=code)
     # # Generate lua annotations for LSP
     # apply_template(args.rootdir, "lua_api.lua.jinja", "core/lua/lsp/api.lua", modules=modules)

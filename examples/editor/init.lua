@@ -44,7 +44,7 @@ function M:on_load()
     -- inputmap.bind_key(map, "view_up", key.K)
     -- inputmap.bind_key(map, "view_down", key.J)
 
-    input.set_map(0, map)
+    input.set_inputmap(0, map)
 
     self.mesh_cube = mesh.new_cube(self.arena, 1, 1, 1)
 
@@ -125,9 +125,7 @@ function M:on_load()
 end
 
 function M:on_update()
-    nux.transform_translation(self.camera.node)
-
-    local position = transform.get_translation(self.camera.node)
+    local position = transform.translation(self.camera.node)
     c = self.gui_canvas
     local h = 9
     canvas.text(c, 10, h * 1, time.date())

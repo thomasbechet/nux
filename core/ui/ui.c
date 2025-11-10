@@ -1,8 +1,30 @@
 #include "internal.h"
 
+static void
+module_pre_update (void)
+{
+    nux_gui_t *gui = NUX_NULL;
+    while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
+    {
+        nux_gui_begin(gui);
+    }
+}
+static void
+module_post_update (void)
+{
+    nux_gui_t *gui = NUX_NULL;
+    while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
+    {
+        nux_gui_end(gui);
+    }
+}
 static nux_status_t
 module_init (void)
 {
+    // Register systems
+    nux_system_register(NUX_SYSTEM_PRE_UPDATE, module_pre_update);
+    nux_system_register(NUX_SYSTEM_POST_UPDATE, module_post_update);
+
     // Register resources
     nux_resource_register(NUX_RESOURCE_GUI,
                           (nux_resource_info_t) {
@@ -12,28 +34,8 @@ module_init (void)
     nux_resource_register(
         NUX_RESOURCE_STYLESHEET,
         (nux_resource_info_t) { .name = "stylesheet",
-                                     .size = sizeof(nux_stylesheet_t) });
+                                .size = sizeof(nux_stylesheet_t) });
 
-    return NUX_SUCCESS;
-}
-static nux_status_t
-module_pre_update (void)
-{
-    nux_gui_t *gui = NUX_NULL;
-    while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
-    {
-        nux_gui_begin(gui);
-    }
-    return NUX_SUCCESS;
-}
-static nux_status_t
-module_post_update (void)
-{
-    nux_gui_t *gui = NUX_NULL;
-    while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
-    {
-        nux_gui_end(gui);
-    }
     return NUX_SUCCESS;
 }
 void

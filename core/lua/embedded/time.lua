@@ -1,5 +1,5 @@
 function time.date_ymd()
-    local z = time.timestamp() // 86400 -- days since epoch
+    local z = time.epoch() // 86400 -- days since epoch
     z = z + 719468
     local era
     if z >= 0 then
@@ -27,7 +27,7 @@ function time.date_ymd()
 end
 
 function time.date_hms()
-    local z = time.timestamp() % 86400
+    local z = time.epoch() % 86400
     local h = z // 3600
     local m = (z % 3600) // 60
     local s = z % 60

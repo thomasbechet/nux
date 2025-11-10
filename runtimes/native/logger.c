@@ -32,10 +32,7 @@ logger_log (nux_log_level_t level, const char *fmt, ...)
     va_end(args);
 }
 void
-nux_os_log (void           *userdata,
-            nux_log_level_t level,
-            const nux_c8_t *log,
-            nux_u32_t       n)
+nux_os_log (nux_log_level_t level, const nux_c8_t *log, nux_u32_t n)
 {
     logger_log(level, "%.*s", n, log);
 }

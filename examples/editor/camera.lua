@@ -54,7 +54,7 @@ function M:on_update()
     self.velocity = vmath.mul(self.velocity, 0.90)
 
     -- Update position
-    local position = transform.get_translation(e)
+    local position = transform.translation(e)
     transform.set_translation(e, position + self.velocity)
 
     -- Rotation

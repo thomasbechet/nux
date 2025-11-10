@@ -90,7 +90,7 @@ typedef struct
 
     // io
 
-    FILE *files[NUX_IO_FILE_MAX];
+    FILE *files[NUX_FILE_MAX];
 
     // window
 

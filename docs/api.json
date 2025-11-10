@@ -165,6 +165,22 @@
                             }
                         }
                     ]
+                },
+                "core": {
+                    "typename": {
+                        "name": "arena",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "frame": {
+                    "typename": {
+                        "name": "arena",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": []
                 }
             },
             "constants": {}
@@ -187,6 +203,14 @@
                             }
                         }
                     ]
+                },
+                "level": {
+                    "typename": {
+                        "name": "log_level",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
                 }
             },
             "constants": {}
@@ -296,6 +320,70 @@
                 }
             }
         },
+        "error": {
+            "functions": {
+                "enable": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "disable": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "reset": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "message": {
+                    "typename": {
+                        "name": "c8",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "status": {
+                    "typename": {
+                        "name": "status",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                }
+            },
+            "constants": {
+                "NONE": {
+                    "value": "0"
+                },
+                "OUT_OF_MEMORY": {
+                    "value": "1"
+                },
+                "INVALID_TEXTURE_SIZE": {
+                    "value": "4"
+                },
+                "WASM_RUNTIME": {
+                    "value": "8"
+                },
+                "CART_EOF": {
+                    "value": "10"
+                },
+                "CART_MOUNT": {
+                    "value": "11"
+                }
+            }
+        },
         "module": {
             "functions": {
                 "register": {
@@ -338,6 +426,19 @@
                     "value": "1 << 0"
                 }
             }
+        },
+        "config": {
+            "functions": {
+                "get": {
+                    "typename": {
+                        "name": "config",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": []
+                }
+            },
+            "constants": {}
         },
         "event": {
             "functions": {
@@ -441,6 +542,14 @@
                             }
                         }
                     ]
+                },
+                "process_all": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
                 }
             },
             "constants": {
@@ -475,6 +584,14 @@
                             }
                         }
                     ]
+                },
+                "cart_end": {
+                    "typename": {
+                        "name": "status",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
                 },
                 "write_cart_file": {
                     "typename": {
@@ -640,29 +757,6 @@
             "constants": {
                 "MAX": {
                     "value": "64"
-                }
-            }
-        },
-        "error": {
-            "functions": {},
-            "constants": {
-                "NONE": {
-                    "value": "0"
-                },
-                "OUT_OF_MEMORY": {
-                    "value": "1"
-                },
-                "INVALID_TEXTURE_SIZE": {
-                    "value": "4"
-                },
-                "WASM_RUNTIME": {
-                    "value": "8"
-                },
-                "CART_EOF": {
-                    "value": "10"
-                },
-                "CART_MOUNT": {
-                    "value": "11"
                 }
             }
         },
@@ -2315,6 +2409,30 @@
                         }
                     ]
                 },
+                "active": {
+                    "typename": {
+                        "name": "scene",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "count": {
+                    "typename": {
+                        "name": "u32",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "clear": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
                 "load_gltf": {
                     "typename": {
                         "name": "scene",
@@ -2395,6 +2513,14 @@
                             }
                         }
                     ]
+                },
+                "root": {
+                    "typename": {
+                        "name": "nid",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
                 },
                 "parent": {
                     "typename": {
@@ -2958,6 +3084,14 @@
                         }
                     ]
                 },
+                "screen": {
+                    "typename": {
+                        "name": "texture",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": []
+                },
                 "get_size": {
                     "typename": {
                         "name": "v2i",
@@ -3023,6 +3157,14 @@
                             }
                         }
                     ]
+                },
+                "default": {
+                    "typename": {
+                        "name": "palette",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": []
                 },
                 "set_active": {
                     "typename": {
@@ -3648,6 +3790,30 @@
         },
         "graphics": {
             "functions": {
+                "begin_state": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "end_state": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
+                "reset_state": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
+                },
                 "draw_line": {
                     "typename": {
                         "name": "void",
@@ -3756,6 +3922,14 @@
                             }
                         }
                     ]
+                },
+                "set_transform_identity": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": []
                 }
             },
             "constants": {}

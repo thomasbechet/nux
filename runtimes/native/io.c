@@ -18,8 +18,7 @@ io_free (void)
 }
 
 nux_status_t
-nux_os_file_open (void           *userdata,
-                  nux_u32_t       slot,
+nux_os_file_open (nux_u32_t       slot,
                   const nux_c8_t *path,
                   nux_u32_t       n,
                   nux_io_mode_t   mode)
@@ -35,13 +34,13 @@ nux_os_file_open (void           *userdata,
     return NUX_SUCCESS;
 }
 void
-nux_os_file_close (void *userdata, nux_u32_t slot)
+nux_os_file_close (nux_u32_t slot)
 {
     fclose(runtime.files[slot]);
     runtime.files[slot] = NULL;
 }
 nux_status_t
-nux_os_file_stat (void *userdata, nux_u32_t slot, nux_file_stat_t *stat)
+nux_os_file_stat (nux_u32_t slot, nux_os_file_stat_t *stat)
 {
     long cursor = ftell(runtime.files[slot]);
     if (fseek(runtime.files[slot], 0, SEEK_END) < 0)
@@ -53,18 +52,18 @@ nux_os_file_stat (void *userdata, nux_u32_t slot, nux_file_stat_t *stat)
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_file_seek (void *userdata, nux_u32_t slot, nux_u32_t n)
+nux_os_file_seek (nux_u32_t slot, nux_u32_t n)
 {
     return (fseek(runtime.files[slot], n, SEEK_SET) < 0) ? NUX_FAILURE
                                                          : NUX_SUCCESS;
 }
 nux_u32_t
-nux_os_file_read (void *userdata, nux_u32_t slot, void *p, nux_u32_t n)
+nux_os_file_read (nux_u32_t slot, void *p, nux_u32_t n)
 {
     return fread(p, 1, n, runtime.files[slot]);
 }
 nux_u32_t
-nux_os_file_write (void *userdata, nux_u32_t slot, const void *p, nux_u32_t n)
+nux_os_file_write (nux_u32_t slot, const void *p, nux_u32_t n)
 {
     return fwrite(p, 1, n, runtime.files[slot]);
 }

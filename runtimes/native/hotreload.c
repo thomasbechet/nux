@@ -43,7 +43,7 @@ hotreload_free (void)
 }
 
 void
-nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
+nux_os_hotreload_add (const nux_c8_t *path, nux_rid_t handle)
 {
 #if defined(NUX_PLATFORM_UNIX)
     nux_c8_t copypath[NUX_PATH_BUF_SIZE];
@@ -63,7 +63,7 @@ nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
 #endif
 }
 void
-nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
+nux_os_hotreload_remove (nux_rid_t handle)
 {
 #if defined(NUX_PLATFORM_UNIX)
     for (nux_u32_t i = 0; i < hotreload.entries_count; ++i)
@@ -80,7 +80,7 @@ nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
 #endif
 }
 void
-nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
+nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
 {
 #if defined(NUX_PLATFORM_UNIX)
     char                        buf[BUF_LEN];

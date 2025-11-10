@@ -78,7 +78,8 @@ runtime_open (const char *path)
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN);
     runtime.running = false;
-    if (!nux_core_init(NULL, runtime.path))
+    // if (!nux_core_init(NULL, runtime.path))
+    if (!nux_core_init())
     {
         fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
@@ -103,7 +104,7 @@ runtime_reset (void)
 }
 
 void *
-nux_os_alloc (void *userdata, void *p, nux_u32_t o, nux_u32_t n)
+nux_os_alloc (void *p, nux_u32_t o, nux_u32_t n)
 {
     if (!p)
     {
@@ -120,7 +121,7 @@ nux_os_alloc (void *userdata, void *p, nux_u32_t o, nux_u32_t n)
     }
 }
 void
-nux_os_stats_update (void *userdata, nux_u64_t *stats)
+nux_os_stats_update (nux_u64_t *stats)
 {
     stats[NUX_STAT_FPS]           = runtime.fps;
     stats[NUX_STAT_SCREEN_WIDTH]  = runtime.size.x;

@@ -76,34 +76,7 @@ error:
     *prev_value = default_value;
 }
 
-static nux_status_t
-module_init (void)
-{
-    nux_arena_t *a = nux_arena_core();
-
-    nux_resource_register(
-        NUX_RESOURCE_INPUTMAP,
-        (nux_resource_info_t) { .name = "inputmap",
-                                .size = sizeof(nux_inputmap_t) });
-
-    // Allocate events queue
-    NUX_CHECK(nux_input_event_vec_init_capa(
-                  a, DEFAULT_INPUT_EVENT_SIZE, &_module.input_events),
-              return NUX_FAILURE);
-
-    for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
-    {
-        nux_controller_t *controller = _module.controllers + i;
-        controller->inputmap         = NUX_NULL;
-        nux_f32_vec_init_capa(
-            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->inputs);
-        nux_f32_vec_init_capa(
-            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->prev_inputs);
-    }
-
-    return NUX_SUCCESS;
-}
-static nux_status_t
+static void
 module_update (void)
 {
     // Keep previous state
@@ -161,13 +134,41 @@ module_update (void)
         //                                 nux_v2_muls(axis_motion, speed));
         // }
     }
-
-    return NUX_SUCCESS;
 }
-static nux_status_t
+static void
 module_post_update (void)
 {
     nux_input_event_vec_clear(&_module.input_events);
+}
+static nux_status_t
+module_init (void)
+{
+    nux_arena_t *a = nux_arena_core();
+
+    nux_system_register(NUX_SYSTEM_PRE_UPDATE, module_update);
+    nux_system_register(NUX_SYSTEM_POST_UPDATE, module_post_update);
+
+    // Register resources
+    nux_resource_register(
+        NUX_RESOURCE_INPUTMAP,
+        (nux_resource_info_t) { .name = "inputmap",
+                                .size = sizeof(nux_inputmap_t) });
+
+    // Allocate events queue
+    NUX_CHECK(nux_input_event_vec_init_capa(
+                  a, DEFAULT_INPUT_EVENT_SIZE, &_module.input_events),
+              return NUX_FAILURE);
+
+    for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
+    {
+        nux_controller_t *controller = _module.controllers + i;
+        controller->inputmap         = NUX_NULL;
+        nux_f32_vec_init_capa(
+            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->inputs);
+        nux_f32_vec_init_capa(
+            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->prev_inputs);
+    }
+
     return NUX_SUCCESS;
 }
 void
@@ -177,9 +178,12 @@ nux_input_module_register (void)
 }
 
 void
-nux_input_push_event (nux_input_event_t *event)
+nux_core_push_event (nux_os_event_t *event)
 {
-    nux_input_event_vec_pushv(&_module.input_events, *event);
+    if (event->type == NUX_OS_EVENT_INPUT)
+    {
+        nux_input_event_vec_pushv(&_module.input_events, event->input);
+    }
 }
 
 nux_status_t

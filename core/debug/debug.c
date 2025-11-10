@@ -11,9 +11,24 @@ static struct
     nux_u32_t     lines_cursor;
 } _module;
 
-nux_status_t
+static void
+module_update (void)
+{
+    // Render logs
+    // nux_u32_t y = 100;
+    // for (nux_u32_t i = 0; i < _module.lines_count; ++i)
+    // {
+    //     nux_canvas_text(
+    //         _module.console_canvas, 10, y, _module.lines + LOG_LINE_LEN * i);
+    //     y += 10;
+    // }
+}
+static nux_status_t
 module_init (void)
 {
+    // Register systems
+    nux_system_register(NUX_SYSTEM_UPDATE, module_update);
+
     // Create debug console
     if (nux_config_get()->debug.console)
     {
@@ -29,19 +44,6 @@ module_init (void)
     _module.lines_count  = 0;
     _module.lines_cursor = 0;
 
-    return NUX_SUCCESS;
-}
-nux_status_t
-module_update (void)
-{
-    // Render logs
-    // nux_u32_t y = 100;
-    // for (nux_u32_t i = 0; i < _module.lines_count; ++i)
-    // {
-    //     nux_canvas_text(
-    //         _module.console_canvas, 10, y, _module.lines + LOG_LINE_LEN * i);
-    //     y += 10;
-    // }
     return NUX_SUCCESS;
 }
 void

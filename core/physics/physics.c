@@ -140,9 +140,18 @@ compute_transforms (void)
     }
 }
 
+static void
+module_update (void)
+{
+    integrate();
+    compute_transforms();
+}
 static nux_status_t
 module_init (void)
 {
+    // Register systems
+    nux_system_register(NUX_SYSTEM_UPDATE, module_update);
+
     // Register components
     nux_component_register(NUX_COMPONENT_RIGIDBODY,
                            (nux_component_info_t) {
@@ -184,13 +193,6 @@ module_init (void)
 
     _module.ground_height = 0;
 
-    return NUX_SUCCESS;
-}
-static nux_status_t
-module_update (void)
-{
-    integrate();
-    compute_transforms();
     return NUX_SUCCESS;
 }
 void

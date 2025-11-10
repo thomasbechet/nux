@@ -111,9 +111,7 @@ cleanup0:
 }
 
 nux_status_t
-nux_os_pipeline_create (void                          *userdata,
-                        nux_u32_t                      slot,
-                        const nux_gpu_pipeline_info_t *info)
+nux_os_pipeline_create (nux_u32_t slot, const nux_gpu_pipeline_info_t *info)
 {
     CHECK(slot < ARRAY_LEN(runtime.pipelines), return NUX_FAILURE);
     pipeline_t *pipeline        = runtime.pipelines + slot;
@@ -221,13 +219,13 @@ nux_os_pipeline_create (void                          *userdata,
     return NUX_SUCCESS;
 }
 void
-nux_os_pipeline_delete (void *userdata, nux_u32_t slot)
+nux_os_pipeline_delete (nux_u32_t slot)
 {
     pipeline_t *pipeline = runtime.pipelines + slot;
     glDeleteProgram(pipeline->program);
 }
 nux_status_t
-nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
+nux_os_framebuffer_create (nux_u32_t slot, nux_u32_t texture)
 {
     CHECK(slot < ARRAY_LEN(runtime.framebuffers), return NUX_FAILURE);
     CHECK(slot < ARRAY_LEN(runtime.textures), return NUX_FAILURE);
@@ -271,15 +269,13 @@ nux_os_framebuffer_create (void *userdata, nux_u32_t slot, nux_u32_t texture)
     return NUX_SUCCESS;
 }
 void
-nux_os_framebuffer_delete (void *userdata, nux_u32_t slot)
+nux_os_framebuffer_delete (nux_u32_t slot)
 {
     framebuffer_t *fb = runtime.framebuffers + slot;
     glDeleteFramebuffers(1, &fb->handle);
 }
 nux_status_t
-nux_os_texture_create (void                         *userdata,
-                       nux_u32_t                     slot,
-                       const nux_gpu_texture_info_t *info)
+nux_os_texture_create (nux_u32_t slot, const nux_gpu_texture_info_t *info)
 {
     CHECK(slot < ARRAY_LEN(runtime.textures), return NUX_FAILURE);
     texture_t *tex = runtime.textures + slot;
@@ -329,14 +325,13 @@ nux_os_texture_create (void                         *userdata,
     return NUX_SUCCESS;
 }
 void
-nux_os_texture_delete (void *userdata, nux_u32_t slot)
+nux_os_texture_delete (nux_u32_t slot)
 {
     texture_t *tex = runtime.textures + slot;
     glDeleteTextures(1, &tex->handle);
 }
 nux_status_t
-nux_os_texture_update (void       *userdata,
-                       nux_u32_t   slot,
+nux_os_texture_update (nux_u32_t   slot,
                        nux_u32_t   x,
                        nux_u32_t   y,
                        nux_u32_t   w,
@@ -354,8 +349,7 @@ nux_os_texture_update (void       *userdata,
     return NUX_SUCCESS;
 }
 nux_status_t
-nux_os_buffer_create (void                 *userdata,
-                      nux_u32_t             slot,
+nux_os_buffer_create (nux_u32_t             slot,
                       nux_gpu_buffer_type_t type,
                       nux_u32_t             size)
 {
@@ -380,14 +374,13 @@ nux_os_buffer_create (void                 *userdata,
     return NUX_SUCCESS;
 }
 void
-nux_os_buffer_delete (void *userdata, nux_u32_t slot)
+nux_os_buffer_delete (nux_u32_t slot)
 {
     buffer_t *buffer = runtime.buffers + slot;
     glDeleteBuffers(1, &buffer->handle);
 }
 nux_status_t
-nux_os_buffer_update (void       *userdata,
-                      nux_u32_t   slot,
+nux_os_buffer_update (nux_u32_t   slot,
                       nux_u32_t   offset,
                       nux_u32_t   size,
                       const void *data)
@@ -402,9 +395,7 @@ nux_os_buffer_update (void       *userdata,
     return NUX_SUCCESS;
 }
 void
-nux_os_gpu_submit (void                    *userdata,
-                   const nux_gpu_command_t *cmds,
-                   nux_u32_t                count)
+nux_os_gpu_submit (const nux_gpu_command_t *cmds, nux_u32_t count)
 {
     // Execute commands
     for (nux_u32_t i = 0; i < count; ++i)

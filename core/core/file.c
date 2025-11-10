@@ -90,7 +90,7 @@ nux_file_read (nux_file_t *file, void *data, nux_u32_t n)
 {
     if (file->type == NUX_DISK_OS)
     {
-        return nux_os_read_file(file->os.slot, data, n);
+        return nux_os_file_read(file->os.slot, data, n);
     }
     else if (file->type == NUX_DISK_CART)
     {
@@ -99,9 +99,9 @@ nux_file_read (nux_file_t *file, void *data, nux_u32_t n)
         {
             return 0;
         }
-        nux_os_seek_file(file->cart.slot,
+        nux_os_file_seek(file->cart.slot,
                          file->cart.offset + file->cart.cursor);
-        nux_u32_t got = nux_os_read_file(file->cart.slot, data, read);
+        nux_u32_t got = nux_os_file_read(file->cart.slot, data, read);
         NUX_ENSURE(
             got == read,
             return 0,
@@ -121,14 +121,14 @@ nux_file_write (nux_file_t *file, const void *data, nux_u32_t n)
         file->mode != NUX_IO_READ, return 0, "failed to write read only file");
     if (file->type == NUX_DISK_OS)
     {
-        return nux_os_write_file(file->os.slot, data, n);
+        return nux_os_file_write(file->os.slot, data, n);
     }
     else if (file->type == NUX_DISK_CART)
     {
         nux_u32_t write = NUX_MIN(file->cart.length - file->cart.cursor, n);
-        nux_os_seek_file(file->cart.slot,
+        nux_os_file_seek(file->cart.slot,
                          file->cart.offset + file->cart.cursor);
-        nux_u32_t got = nux_os_write_file(file->cart.slot, data, write);
+        nux_u32_t got = nux_os_file_write(file->cart.slot, data, write);
         NUX_ENSURE(got == write,
                    return 0,
                    "failed to write cart data at %d (expected %d, got %d)",
@@ -145,7 +145,7 @@ nux_file_seek (nux_file_t *file, nux_u32_t cursor)
 {
     if (file->type == NUX_DISK_OS)
     {
-        return nux_os_seek_file(file->os.slot, cursor);
+        return nux_os_file_seek(file->os.slot, cursor);
     }
     else if (file->type == NUX_DISK_CART)
     {

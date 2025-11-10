@@ -7,7 +7,7 @@ init_module (nux_module_t *module)
     {
         return NUX_SUCCESS;
     }
-    NUX_INFO("intitializing module '%s'", module->info.name);
+    NUX_INFO("init module '%s'", module->info.name);
     if (module->info.data && module->info.size)
     {
         nux_memset(module->info.data, 0, module->info.size);
@@ -20,6 +20,7 @@ init_module (nux_module_t *module)
                    module->info.name);
     }
     module->initialized = NUX_TRUE;
+    module->order       = ++nux_core()->modules_init_order;
     return NUX_SUCCESS;
 }
 static void
@@ -27,7 +28,7 @@ free_module (nux_module_t *module)
 {
     if (module->initialized)
     {
-        NUX_INFO("terminating module '%s'", module->info.name);
+        NUX_INFO("free module '%s'", module->info.name);
         if (module->info.free)
         {
             module->info.free();
@@ -63,11 +64,27 @@ nux_module_requires (const nux_c8_t *name)
 }
 
 void
-nux_module_free_all (void)
+nux_module_init_all (void)
 {
     nux_core_module_t *core = nux_core();
     for (nux_u32_t i = 0; i < core->modules.size; ++i)
     {
-        free_module(core->modules.data + i);
+        nux_module_t *module = core->modules.data + i;
+        init_module(module);
+    }
+}
+void
+nux_module_free_all (void)
+{
+    nux_core_module_t *core = nux_core();
+    for (nux_u32_t i = core->modules_init_order; i > 0; --i)
+    {
+        for (nux_u32_t m = 0; m < core->modules.size; ++m)
+        {
+            if (core->modules.data[m].order == i)
+            {
+                free_module(core->modules.data + m);
+            }
+        }
     }
 }
