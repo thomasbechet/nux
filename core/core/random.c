@@ -1,12 +1,12 @@
 #include "internal.h"
 
 nux_u32_t
-nux_random (void)
+nux_random_next (void)
 {
     return nux_pcg_u32(nux_base_pcg());
 }
 nux_f32_t
-nux_random01 (void)
+nux_random_nextf (void)
 {
     return nux_pcg_f32(nux_base_pcg());
 }

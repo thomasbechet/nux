@@ -10,6 +10,7 @@ static void l_checkerror(lua_State *L)
 
 {% set resmap = {
     "arena": "NUX_RESOURCE_ARENA",
+    "file": "NUX_RESOURCE_FILE",
     "inputmap": "NUX_RESOURCE_INPUTMAP",
     "texture": "NUX_RESOURCE_TEXTURE",
     "palette": "NUX_RESOURCE_PALETTE",
@@ -19,13 +20,13 @@ static void l_checkerror(lua_State *L)
     "scene": "NUX_RESOURCE_SCENE",
     "query": "NUX_RESOURCE_QUERY",
     "gui": "NUX_RESOURCE_GUI",
-    "stylesheet": "NUX_RESOURCE_STYLESHEET",
     "event": "NUX_RESOURCE_EVENT",
-    "file": "NUX_RESOURCE_FILE"
+    "stylesheet": "NUX_RESOURCE_STYLESHEET",
 } %}
 
-{% for funcname, function in api.functions.items() %}
-static int l_{{ funcname }}(lua_State *L)
+{% for class_name, class in classes.items() %}
+{% for function_name, function in class.functions.items() %}
+static int l_{{ class_name }}_{{ function_name }}(lua_State *L)
 {
     {# ARGUMENTS #}
     {%- set ns = namespace(stack = 1) %}
@@ -69,23 +70,22 @@ static int l_{{ funcname }}(lua_State *L)
                 {% set ns.stack = ns.stack + 1 %}
             {% endif %}
         {%- elif arg.typename.type == "resource" %}
-            nux_{{ arg.typename.name }}_t *{{ arg.name}} = nux_check_resource({{ resmap.get(arg.typename.name) }}, luaL_checkinteger(L, {{ ns.stack }}));
+            nux_{{ arg.typename.name }}_t *{{ arg.name}} = nux_resource_check({{ resmap.get(arg.typename.name) }}, luaL_checkinteger(L, {{ ns.stack }}));
             {% set ns.stack = ns.stack + 1 %}
         {%- endif %}
     {%- endfor -%}
 
     {# RETURN VALUE #}
-    {%- if function.typename.const %}const{% endif %}
     {%- if function.typename.name != "void" %}
         {%- if function.typename.type == "primitive" %}
             nux_{{ function.typename.name }}_t ret =
         {%- elif function.typename.type == "resource" %}
-            nux_{{ function.typename.name }}_t *ret =
+            const nux_{{ function.typename.name }}_t *ret =
         {%- endif %}
     {% endif %}
 
     {# FUNCTION CALL #}
-    nux_{{ funcname }}(
+    nux_{{ class_name }}_{{ function_name }}(
         {%- for arg in function.args -%}
             {{ arg.name }}{{ "," if not loop.last }}
         {%- endfor -%}
@@ -139,7 +139,10 @@ static int l_{{ funcname }}(lua_State *L)
             else
                 lua_pushnil(L);
             return 1;
-        {%- elif function.typename.name == "void" %}
+        {%- elif function.typename.name != "void" %}
+            lua_pushinteger(L, ret);
+            return 1;
+        {%- else %}
             return 0;
         {%- endif %}
     {%- elif function.typename.type == "resource" %}
@@ -152,25 +155,30 @@ static int l_{{ funcname }}(lua_State *L)
     {%- endif %}
 }
 {%- endfor %}
+{% endfor %}
 
-static const struct luaL_Reg lib_nux[] = {
-{% for funcname, function in api.functions.items() -%}
+{% for class_name, class in classes.items() %}
+static const struct luaL_Reg lib_{{ class_name }}[] = {
+{% for function_name, function in class.functions.items() -%}
 {% if not function.hasptr -%}
-    { "{{ funcname }}", l_{{ funcname }} },
+    { "{{ function_name }}", l_{{ class_name }}_{{ function_name }} },
 {%- endif -%}
 {%- endfor -%}
     { NUX_NULL, NUX_NULL }
 };
+{% endfor %}
 
 nux_status_t nux_lua_open_api(void)
 {
     lua_State *L = nux_lua_state();
+{% for class_name, class in classes.items() %}
     lua_newtable(L);
-    luaL_setfuncs(L, lib_nux, 0);
-{% for constant_name, constant in api.constants.items() %}
+    luaL_setfuncs(L, lib_{{ class_name }}, 0);
+{% for constant_name, constant in class.constants.items() %}
     lua_pushinteger(L, {{ constant.value }}); 
     lua_setfield(L, -2, "{{ constant_name }}");
 {% endfor %}
-    lua_setglobal(L, "nux");
+    lua_setglobal(L, "{{ class_name }}");
+{% endfor %}
     return NUX_SUCCESS;
 }

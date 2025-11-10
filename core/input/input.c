@@ -12,7 +12,7 @@ dispatch_event (const nux_input_event_t *event)
     {
         nux_controller_t *ctrl = _module.controllers + i;
         nux_inputmap_t   *map
-            = nux_get_resource(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
+            = nux_resource_get(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
         NUX_CHECK(map, continue);
         for (nux_u32_t j = 0; j < map->entries.size; ++j)
         {
@@ -63,7 +63,7 @@ controller_get_input_value (nux_u32_t       controller,
     NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers), goto error);
     nux_controller_t *ctrl = _module.controllers + controller;
     nux_inputmap_t   *map
-        = nux_get_resource(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
+        = nux_resource_get(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
     NUX_CHECK(map, goto error);
     nux_u32_t index;
     NUX_CHECK(nux_inputmap_find_index(map, name, &index), goto error);
@@ -79,12 +79,12 @@ error:
 static nux_status_t
 module_init (void)
 {
-    nux_arena_t *a = nux_core_arena();
+    nux_arena_t *a = nux_arena_core();
 
-    nux_register_resource(
+    nux_resource_register(
         NUX_RESOURCE_INPUTMAP,
         (nux_resource_info_t) { .name = "inputmap",
-                                     .size = sizeof(nux_inputmap_t) });
+                                .size = sizeof(nux_inputmap_t) });
 
     // Allocate events queue
     NUX_CHECK(nux_input_event_vec_init_capa(
@@ -173,7 +173,7 @@ module_post_update (void)
 void
 nux_input_module_register (void)
 {
-    NUX_REGISTER_MODULE("input", &_module, module_init, NUX_NULL);
+    NUX_MODULE_REGISTER("input", &_module, module_init, NUX_NULL);
 }
 
 void
@@ -199,7 +199,7 @@ nux_controller_resize_values (nux_inputmap_t *map)
 }
 
 void
-nux_set_input_map (nux_u32_t controller, nux_inputmap_t *map)
+nux_input_set_inputmap (nux_u32_t controller, nux_inputmap_t *map)
 {
     NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers), return);
     nux_controller_t *ctrl = _module.controllers + controller;
@@ -208,7 +208,7 @@ nux_set_input_map (nux_u32_t controller, nux_inputmap_t *map)
     nux_f32_vec_resize(&ctrl->prev_inputs, map->entries.size);
 }
 nux_b32_t
-nux_is_pressed (nux_u32_t controller, const nux_c8_t *name)
+nux_input_pressed (nux_u32_t controller, const nux_c8_t *name)
 {
     nux_f32_t value, prev;
     controller_get_input_value(
@@ -216,12 +216,12 @@ nux_is_pressed (nux_u32_t controller, const nux_c8_t *name)
     return value > NUX_BUTTON_RELEASED;
 }
 nux_b32_t
-nux_is_released (nux_u32_t controller, const nux_c8_t *name)
+nux_input_released (nux_u32_t controller, const nux_c8_t *name)
 {
-    return !nux_is_pressed(controller, name);
+    return !nux_input_pressed(controller, name);
 }
 nux_b32_t
-nux_is_just_pressed (nux_u32_t controller, const nux_c8_t *name)
+nux_input_just_pressed (nux_u32_t controller, const nux_c8_t *name)
 {
     nux_f32_t value, prev;
     controller_get_input_value(
@@ -229,7 +229,7 @@ nux_is_just_pressed (nux_u32_t controller, const nux_c8_t *name)
     return value > NUX_BUTTON_RELEASED && prev <= NUX_BUTTON_RELEASED;
 }
 nux_b32_t
-nux_is_just_released (nux_u32_t controller, const nux_c8_t *name)
+nux_input_just_released (nux_u32_t controller, const nux_c8_t *name)
 {
     nux_f32_t value, prev;
     controller_get_input_value(
@@ -237,21 +237,21 @@ nux_is_just_released (nux_u32_t controller, const nux_c8_t *name)
     return value <= NUX_BUTTON_RELEASED && prev > NUX_BUTTON_RELEASED;
 }
 nux_f32_t
-nux_axis (nux_u32_t controller, const nux_c8_t *name)
+nux_input_value (nux_u32_t controller, const nux_c8_t *name)
 {
     nux_f32_t value, prev;
     controller_get_input_value(controller, name, &value, &prev, 0);
     return value;
 }
 nux_v2_t
-nux_cursor (nux_u32_t controller)
+nux_input_cursor (nux_u32_t controller)
 {
     NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers),
               return NUX_V2_ZEROS);
     return _module.controllers[controller].cursor;
 }
 void
-nux_wrap_cursor (nux_u32_t controller, nux_f32_t x, nux_f32_t y)
+nux_input_wrap_cursor (nux_u32_t controller, nux_f32_t x, nux_f32_t y)
 {
     NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers), return);
     _module.controllers[controller].cursor = nux_v2(x, y);

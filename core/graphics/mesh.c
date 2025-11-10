@@ -153,7 +153,7 @@ nux_mesh_new (nux_arena_t           *arena,
               nux_vertex_attribute_t attributes,
               nux_vertex_primitive_t primitive)
 {
-    nux_mesh_t *mesh = nux_new_resource(arena, NUX_RESOURCE_MESH);
+    nux_mesh_t *mesh = nux_resource_new(arena, NUX_RESOURCE_MESH);
     NUX_CHECK(mesh, return NUX_NULL);
     mesh->attributes = attributes;
     mesh->primitive  = primitive;

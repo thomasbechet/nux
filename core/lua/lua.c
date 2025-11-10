@@ -164,7 +164,7 @@ nux_lua_call_function (nux_u32_t nargs, nux_u32_t nreturns)
 {
     if (lua_pcall(_module.L, nargs, nreturns, 0) != LUA_OK) // consume field
     {
-        nux_error("%s", lua_tostring(_module.L, -1));
+        nux_error_report("%s", lua_tostring(_module.L, -1));
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;
@@ -333,9 +333,9 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
 nux_lua_t *
 nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
-    nux_lua_t *lua = nux_new_resource(arena, NUX_RESOURCE_LUA_MODULE);
+    nux_lua_t *lua = nux_resource_new(arena, NUX_RESOURCE_LUA_MODULE);
     NUX_CHECK(lua, return NUX_NULL);
-    nux_set_resource_path(lua, path);
+    nux_resource_set_path(lua, path);
     // initialize event handles
     nux_ptr_vec_init(arena, &lua->event_handles);
     // dofile and call load function
@@ -354,7 +354,7 @@ lua_module_cleanup (void *data)
     for (nux_u32_t i = 0; i < lua->event_handles.size; ++i)
     {
         const nux_event_handler_t *handler = lua->event_handles.data[i];
-        nux_unsubscribe_event(handler);
+        nux_event_unsubscribe(handler);
     }
 }
 static nux_status_t
@@ -371,12 +371,12 @@ static nux_status_t
 module_init (void)
 {
     // Register types
-    nux_register_resource(
+    nux_resource_register(
         NUX_RESOURCE_LUA_MODULE,
         (nux_resource_info_t) { .name    = "lua_module",
-                                     .size    = sizeof(nux_lua_t),
-                                     .cleanup = lua_module_cleanup,
-                                     .reload  = lua_module_reload });
+                                .size    = sizeof(nux_lua_t),
+                                .cleanup = lua_module_cleanup,
+                                .reload  = lua_module_reload });
 
     // Initialize Lua VM
     _module.L = luaL_newstate();
@@ -406,7 +406,7 @@ static nux_status_t
 module_update (void)
 {
     nux_lua_t *lua = NUX_NULL;
-    while ((lua = nux_next_resource(NUX_RESOURCE_LUA_MODULE, lua)))
+    while ((lua = nux_resource_next(NUX_RESOURCE_LUA_MODULE, lua)))
     {
         nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);
     }
@@ -415,7 +415,7 @@ module_update (void)
 void
 nux_lua_module_register (void)
 {
-    NUX_REGISTER_MODULE("lua", &_module, module_init, module_free);
+    NUX_MODULE_REGISTER("lua", &_module, module_init, module_free);
 }
 lua_State *
 nux_lua_state (void)

@@ -4,14 +4,14 @@ static nux_status_t
 open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
 {
     nux_disk_t *disk = NUX_NULL;
-    while ((disk = nux_next_resource(NUX_RESOURCE_DISK, disk)))
+    while ((disk = nux_resource_next(NUX_RESOURCE_DISK, disk)))
     {
         if (disk->type == NUX_DISK_OS)
         {
             nux_u32_t slot;
-            nux_disable_error();
+            nux_error_disable();
             nux_status_t status = nux_io_open_os_file(path, mode, &slot);
-            nux_enable_error();
+            nux_error_enable();
             if (status)
             {
                 file->type    = NUX_DISK_OS;
@@ -70,9 +70,9 @@ file_stat (nux_file_t *file, nux_os_file_stat_t *stat)
 }
 
 nux_file_t *
-nux_open_file (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
+nux_file_open (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
 {
-    nux_file_t *file = nux_new_resource(arena, NUX_RESOURCE_FILE);
+    nux_file_t *file = nux_resource_new(arena, NUX_RESOURCE_FILE);
     NUX_CHECK(file, return NUX_NULL);
     NUX_ENSURE(open_file(file, path, mode),
                return NUX_NULL,
@@ -81,12 +81,12 @@ nux_open_file (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
     return file;
 }
 void
-nux_close_file (nux_file_t *file)
+nux_file_close (nux_file_t *file)
 {
     close_file(file);
 }
 nux_u32_t
-nux_read_file (nux_file_t *file, void *data, nux_u32_t n)
+nux_file_read (nux_file_t *file, void *data, nux_u32_t n)
 {
     if (file->type == NUX_DISK_OS)
     {
@@ -115,7 +115,7 @@ nux_read_file (nux_file_t *file, void *data, nux_u32_t n)
     return 0;
 }
 nux_u32_t
-nux_write_file (nux_file_t *file, const void *data, nux_u32_t n)
+nux_file_write (nux_file_t *file, const void *data, nux_u32_t n)
 {
     NUX_ENSURE(
         file->mode != NUX_IO_READ, return 0, "failed to write read only file");
@@ -141,7 +141,7 @@ nux_write_file (nux_file_t *file, const void *data, nux_u32_t n)
     return 0;
 }
 nux_status_t
-nux_seek_file (nux_file_t *file, nux_u32_t cursor)
+nux_file_seek (nux_file_t *file, nux_u32_t cursor)
 {
     if (file->type == NUX_DISK_OS)
     {
@@ -166,10 +166,10 @@ nux_file_size (nux_file_t *file)
     return stat.size;
 }
 void *
-nux_load_file (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
+nux_file_load (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
 {
     void       *data = NUX_NULL;
-    nux_file_t *file = nux_open_file(nux_frame_arena(), path, NUX_IO_READ);
+    nux_file_t *file = nux_file_open(nux_arena_frame(), path, NUX_IO_READ);
     NUX_CHECK(file, return NUX_NULL);
 
     // Get the file size
@@ -177,7 +177,7 @@ nux_load_file (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
     NUX_CHECK(file_stat(file, &stat), goto cleanup0);
 
     // Seek to beginning
-    NUX_CHECK(nux_seek_file(file, 0), goto cleanup0);
+    NUX_CHECK(nux_file_seek(file, 0), goto cleanup0);
 
     // Return buffer size to user
     if (size)
@@ -194,7 +194,7 @@ nux_load_file (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
     NUX_CHECK(data, goto cleanup0);
 
     // Read file
-    nux_u32_t read = nux_read_file(file, data, stat.size);
+    nux_u32_t read = nux_file_read(file, data, stat.size);
     NUX_ENSURE(
         read == stat.size,
         goto cleanup0,
@@ -215,7 +215,7 @@ nux_file_exists (const nux_c8_t *path)
     {
         close_file(&file);
     }
-    nux_reset_error(); // ignore error if any
+    nux_error_reset(); // ignore error if any
     return status ? NUX_TRUE : NUX_FALSE;
 }
 

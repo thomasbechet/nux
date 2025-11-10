@@ -18,7 +18,7 @@ nux_arena_init (nux_arena_t *a,
 void
 nux_arena_free (nux_arena_t *a)
 {
-    nux_clear_arena(a);
+    nux_arena_clear(a);
     if (a->free)
     {
         a->free(a->userdata);
@@ -68,7 +68,7 @@ nux_arena_new_object (nux_arena_t          *a,
     return obj + 1;
 }
 void
-nux_clear_arena (nux_arena_t *a)
+nux_arena_clear (nux_arena_t *a)
 {
     // Finalize objects
     nux_arena_object_t *obj = a->chain;

@@ -148,7 +148,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
     nux_v4_t       extent      = nux_viewport_get_normalized_viewport(viewport);
     nux_nid_t      camera      = viewport->source.camera;
     nux_texture_t *target
-        = nux_get_resource(NUX_RESOURCE_TEXTURE, viewport->target);
+        = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
     NUX_ASSERT(target);
 
     // Bind framebuffer
@@ -179,9 +179,9 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         nux_gpu_constants_buffer_t constants;
         constants.view        = nux_m4_lookat(eye, center, up);
         constants.proj        = nux_camera_get_projection(camera);
-        constants.screen_size = nux_v2u(nux_stat(NUX_STAT_SCREEN_WIDTH),
-                                        nux_stat(NUX_STAT_SCREEN_HEIGHT));
-        constants.time        = nux_elapsed_time();
+        constants.screen_size = nux_v2u(nux_stat_get(NUX_STAT_SCREEN_WIDTH),
+                                        nux_stat_get(NUX_STAT_SCREEN_HEIGHT));
+        constants.time        = nux_time_elapsed();
         nux_os_buffer_update(
             gfx->constants_buffer.slot, 0, sizeof(constants), &constants);
 
@@ -209,12 +209,12 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
                 continue;
             }
             nux_m4_t    global_matrix = nux_transform_matrix(it);
-            nux_mesh_t *m = nux_check_resource(NUX_RESOURCE_MESH, sm->mesh);
+            nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
             nux_texture_t *tex = NUX_NULL;
             if (sm->texture)
             {
-                tex = nux_check_resource(NUX_RESOURCE_TEXTURE, sm->texture);
+                tex = nux_resource_check(NUX_RESOURCE_TEXTURE, sm->texture);
             }
 
             // Push transform
@@ -248,7 +248,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             {
                 continue;
             }
-            nux_mesh_t *m = nux_check_resource(NUX_RESOURCE_MESH, sm->mesh);
+            nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
             NUX_ASSERT(m);
 
             // Draw

@@ -32,26 +32,23 @@ if __name__ == "__main__":
     with open(os.path.join(args.rootdir, "docs/api.json")) as f:
         modules = json.load(f)
 
-    api = {}
-    api["functions"] = {}
-    api["constants"] = {}
+    classes = {}
     # Flatten modules
-    for v in modules.values():
-        api["functions"] |= v["functions"]
-        api["constants"] |= v["constants"]
-    # Filter functions
-    for name in [
-            "register_module",
-            "register_resource",
-            "register_component",
-            "new_event",
-            "unsubscribe_event",
-            "event_handler_event",
+    for k, v in modules.items():
+        classes |= v
+    # Remove unsupported functions
+    for clazz, name in [
+            ("module", "register"),
+            ("resource", "register"),
+            ("component", "register"),
+            ("event", "new"),
+            ("event", "unsubscribe"),
+            ("event", "handler_event"),
             ]:
-        del api["functions"][name]
+        del classes[clazz]["functions"][name]
 
     # Generate lua_bindings.c
-    apply_template(args.rootdir, "lua_bindings.c.jinja", "core/lua/lua_bindings.c", clang_format=True, api=api)
+    apply_template(args.rootdir, "lua_bindings.c.jinja", "core/lua/lua_bindings.c", clang_format=True, classes=classes)
     # # Generate lua embedded code
     # code = generate_lua_code(args, "core/lua/embedded/*")
     # apply_template(args.rootdir, "lua_code.c.inc.jinja", "core/lua/lua_code.c.inc", clang_format=True, code=code)

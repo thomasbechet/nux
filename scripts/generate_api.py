@@ -8,7 +8,7 @@ import os
 import json
 import glob
 
-def normalize_name(name):
+def normalize_type(name):
     if name != "void":
         # Remove nux_ and _t
         if name.startswith("nux_") or name.startswith("NUX_"):
@@ -16,6 +16,28 @@ def normalize_name(name):
         if name.endswith("_t"):
             name = name[:-2]
     return name
+
+def submodule_entry(module, name):
+    name = name[4:] # Remove nux_ or NUX_
+    splits = name.split("_", 1)
+    submodule = splits[0].lower()
+    name = splits[1].lower()
+
+    if submodule not in module:
+        module[submodule] = {}
+        module[submodule]["functions"] = {}
+        module[submodule]["constants"] = {}
+
+    return module[submodule], name
+
+def put_function(module, name, func):
+    submodule, name = submodule_entry(module, name)
+    submodule["functions"][name] = func
+
+def put_constant(module, name, constant):
+    submodule, name = submodule_entry(module, name)
+    name = name.upper()
+    submodule["constants"][name] = constant
 
 def parse_function(node, module):
     funcname = ""
@@ -25,7 +47,7 @@ def parse_function(node, module):
     # Parse return value and function name
     if type(node.type) == c_parser.c_ast.PtrDecl: # Return pointer
         funcname = node.type.type.declname
-        typename["name"] = normalize_name(node.type.type.type.names[0])
+        typename["name"] = normalize_type(node.type.type.type.names[0])
         typename["type"] = "resource"
         typename["const"] = False
         if node.type.quals:
@@ -36,7 +58,7 @@ def parse_function(node, module):
             params = node.args.params
     elif type(node.type) == c_parser.c_ast.TypeDecl: # Return value
         funcname = node.type.declname 
-        typename["name"] = normalize_name(node.type.type.names[0])
+        typename["name"] = normalize_type(node.type.type.names[0])
         typename["type"] = "primitive"
         typename["const"] = False
         if node.args:
@@ -45,8 +67,6 @@ def parse_function(node, module):
     # Ignore function callback typedefs
     if (funcname.endswith("_t")): 
         return
-
-    funcname = normalize_name(funcname)
 
     func = {}
     func["typename"] = typename
@@ -59,7 +79,7 @@ def parse_function(node, module):
         arg["name"] = param.name
         typename = {}
         if type(param.type) is c_ast.PtrDecl:
-            typename["name"] = normalize_name(param.type.type.type.names[0])
+            typename["name"] = normalize_type(param.type.type.type.names[0])
             typename["type"] = "resource" 
             typename["const"] = False
             if typename["name"] == "c8": # Special string case
@@ -68,7 +88,7 @@ def parse_function(node, module):
             if param.quals:
                 typename["const"] = True
         else:
-            typename["name"] = normalize_name(param.type.type.names[0])
+            typename["name"] = normalize_type(param.type.type.names[0])
             typename["type"] = "primitive"
             typename["const"] = True
         if typename["name"].endswith("callback"): # Ignore *_callback_t returned value functions
@@ -78,14 +98,13 @@ def parse_function(node, module):
         if typename["name"] == "void":
             return
         func["args"].append(arg)
-
-    module["functions"][funcname] = func
+    put_function(module, funcname, func)
 
 def parse_enum(node, module):
     for e in node.type.type.values.enumerators:
         constant = {}
         constant["value"] = c_generator.CGenerator().visit(e.value)
-        module["constants"][normalize_name(e.name)] = constant
+        put_constant(module, e.name, constant)
 
 class FuncDefVisitor(c_ast.NodeVisitor):
     def __init__(self, module):
@@ -203,8 +222,6 @@ def parse_header(args, header, module):
 def parse_module(args, header, modules):
     module_name = re.search(".*/(.*).h", header).group(1)
     module = {}
-    module["functions"] = {}
-    module["constants"] = {}
     parse_header(args, header, module)
     modules[module_name] = module
 

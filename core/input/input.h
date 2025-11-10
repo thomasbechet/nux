@@ -203,23 +203,25 @@ typedef enum
 
 typedef struct nux_inputmap_t nux_inputmap_t;
 
-nux_inputmap_t *nux_new_inputmap(nux_arena_t *arena);
-void nux_bind_key(nux_inputmap_t *map, const nux_c8_t *name, nux_key_t key);
-void nux_bind_mouse_button(nux_inputmap_t    *map,
-                           const nux_c8_t    *name,
-                           nux_mouse_button_t button);
-void nux_bind_mouse_axis(nux_inputmap_t  *map,
-                         const nux_c8_t  *name,
-                         nux_mouse_axis_t axis,
-                         nux_f32_t        sensivity);
+nux_inputmap_t *nux_inputmap_new(nux_arena_t *arena);
+void            nux_inputmap_bind_key(nux_inputmap_t *map,
+                                      const nux_c8_t *name,
+                                      nux_key_t       key);
+void            nux_inputmap_bind_mouse_button(nux_inputmap_t    *map,
+                                               const nux_c8_t    *name,
+                                               nux_mouse_button_t button);
+void            nux_inputmap_bind_mouse_axis(nux_inputmap_t  *map,
+                                             const nux_c8_t  *name,
+                                             nux_mouse_axis_t axis,
+                                             nux_f32_t        sensivity);
 
-void      nux_set_input_map(nux_u32_t controller, nux_inputmap_t *map);
-nux_b32_t nux_is_pressed(nux_u32_t controller, const nux_c8_t *name);
-nux_b32_t nux_is_released(nux_u32_t controller, const nux_c8_t *name);
-nux_b32_t nux_is_just_pressed(nux_u32_t controller, const nux_c8_t *name);
-nux_b32_t nux_is_just_released(nux_u32_t controller, const nux_c8_t *name);
-nux_f32_t nux_axis(nux_u32_t controller, const nux_c8_t *name);
-nux_v2_t  nux_cursor(nux_u32_t controller);
-void      nux_wrap_cursor(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
+void      nux_input_set_inputmap(nux_u32_t controller, nux_inputmap_t *map);
+nux_b32_t nux_input_pressed(nux_u32_t controller, const nux_c8_t *name);
+nux_b32_t nux_input_released(nux_u32_t controller, const nux_c8_t *name);
+nux_b32_t nux_input_just_pressed(nux_u32_t controller, const nux_c8_t *name);
+nux_b32_t nux_input_just_released(nux_u32_t controller, const nux_c8_t *name);
+nux_f32_t nux_input_value(nux_u32_t controller, const nux_c8_t *name);
+nux_v2_t  nux_input_cursor(nux_u32_t controller);
+void      nux_input_wrap_cursor(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
 
 #endif

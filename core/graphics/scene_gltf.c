@@ -232,9 +232,9 @@ load_node (nux_arena_t *arena,
             // Write staticmesh
             nux_node_add(e, NUX_COMPONENT_STATICMESH);
             nux_staticmesh_set_mesh(e,
-                                    nux_get_resource(NUX_RESOURCE_MESH, mesh));
+                                    nux_resource_get(NUX_RESOURCE_MESH, mesh));
             nux_staticmesh_set_texture(
-                e, nux_get_resource(NUX_RESOURCE_TEXTURE, texture));
+                e, nux_resource_get(NUX_RESOURCE_TEXTURE, texture));
         }
     }
     for (nux_u32_t i = 0; i < node->children_count; ++i)
@@ -261,7 +261,7 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
 
     // Load file
     nux_u32_t buf_size;
-    void     *buf = nux_load_file(nux_frame_arena(), path, &buf_size);
+    void     *buf = nux_file_load(nux_arena_frame(), path, &buf_size);
     NUX_CHECK(buf, goto error);
 
     // Parse file

@@ -166,13 +166,13 @@ static nux_status_t
 module_init (void)
 {
     // Register types
-    nux_register_resource(NUX_RESOURCE_SCENE,
+    nux_resource_register(NUX_RESOURCE_SCENE,
                           (nux_resource_info_t) {
                               .name    = "scene",
                               .size    = sizeof(nux_scene_t),
                               .cleanup = nux_scene_cleanup,
                           });
-    nux_register_resource(NUX_RESOURCE_QUERY,
+    nux_resource_register(NUX_RESOURCE_QUERY,
                           (nux_resource_info_t) {
                               .name = "query",
                               .size = sizeof(nux_query_t),
@@ -181,13 +181,13 @@ module_init (void)
     // Initialize values
     nux_memset(_module.components, 0, sizeof(_module.components));
     _module.components_max     = 0;
-    nux_scene_t *default_scene = nux_scene_new(nux_core_arena());
+    nux_scene_t *default_scene = nux_scene_new(nux_arena_core());
     NUX_CHECK(default_scene, return NUX_FAILURE);
     _module.default_scene = default_scene;
     _module.active        = _module.default_scene;
 
     // Register components
-    nux_register_component(NUX_COMPONENT_TRANSFORM,
+    nux_component_register(NUX_COMPONENT_TRANSFORM,
                            (nux_component_info_t) {
                                .name  = "transform",
                                .size  = sizeof(nux_transform_t),
@@ -201,7 +201,7 @@ module_init (void)
 void
 nux_scene_module_register (void)
 {
-    NUX_REGISTER_MODULE("scene", &_module, module_init, NUX_NULL);
+    NUX_MODULE_REGISTER("scene", &_module, module_init, NUX_NULL);
 }
 nux_scene_module_t *
 nux_scene_module (void)
@@ -214,7 +214,7 @@ nux_query_new (nux_arena_t *arena,
                nux_u32_t    include_count,
                nux_u32_t    exclude_count)
 {
-    nux_query_t *it = nux_new_resource(arena, NUX_RESOURCE_QUERY);
+    nux_query_t *it = nux_resource_new(arena, NUX_RESOURCE_QUERY);
     NUX_CHECK(it, return NUX_NULL);
     if (include_count)
     {
@@ -314,7 +314,7 @@ nux_query_next (nux_query_t *it, nux_nid_t e)
 nux_scene_t *
 nux_scene_new (nux_arena_t *arena)
 {
-    nux_scene_t *scene = nux_new_resource(arena, NUX_RESOURCE_SCENE);
+    nux_scene_t *scene = nux_resource_new(arena, NUX_RESOURCE_SCENE);
     NUX_CHECK(scene, return NUX_NULL);
     scene->arena = arena;
     NUX_CHECK(nux_scene_container_vec_init_capa(
@@ -469,7 +469,7 @@ component_get (const nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
                     + container->component_size * offset);
 }
 void
-nux_register_component (nux_u32_t index, nux_component_info_t info)
+nux_component_register (nux_u32_t index, nux_component_info_t info)
 {
     NUX_ASSERT(index != 0);
     NUX_ASSERT(index < NUX_COMPONENT_MAX);

@@ -19,11 +19,11 @@
 // }
 
 nux_arena_t *
-nux_new_arena (nux_arena_t *arena)
+nux_arena_new (nux_arena_t *arena)
 {
     nux_block_arena_t *ba = nux_arena_malloc(arena, sizeof(*ba));
     NUX_CHECK(ba, return NUX_NULL);
-    nux_arena_t *a = nux_new_resource(arena, NUX_RESOURCE_ARENA);
+    nux_arena_t *a = nux_resource_new(arena, NUX_RESOURCE_ARENA);
     NUX_CHECK(a, return NUX_NULL);
     nux_block_arena_init(a, ba, nux_os_allocator());
     return a;

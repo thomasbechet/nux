@@ -14,7 +14,7 @@ compute_sum_forces (nux_point_mass_t *pm)
 static void
 integrate (void)
 {
-    nux_f32_t dt = nux_delta_time();
+    nux_f32_t dt = nux_time_delta();
 
     const nux_u32_t substep = 10;
     nux_f32_t       subdt   = dt / substep;
@@ -144,13 +144,13 @@ static nux_status_t
 module_init (void)
 {
     // Register components
-    nux_register_component(NUX_COMPONENT_RIGIDBODY,
+    nux_component_register(NUX_COMPONENT_RIGIDBODY,
                            (nux_component_info_t) {
                                .name = "rigidbody",
                                .size = sizeof(nux_rigidbody_t),
                                .add  = nux_rigidbody_add,
                            });
-    nux_register_component(NUX_COMPONENT_COLLIDER,
+    nux_component_register(NUX_COMPONENT_COLLIDER,
                            (nux_component_info_t) {
                                .name = "collider",
                                .size = sizeof(nux_collider_t),
@@ -158,7 +158,7 @@ module_init (void)
                            });
 
     // Initialize values
-    nux_arena_t *a = nux_core_arena();
+    nux_arena_t *a = nux_arena_core();
     NUX_CHECK(nux_point_mass_vec_init(a, &_module.point_masses),
               return NUX_FAILURE);
     NUX_CHECK(
@@ -168,7 +168,7 @@ module_init (void)
         nux_distance_constraint_vec_init(a, &_module.distance_constraints),
         return NUX_FAILURE);
 
-    nux_arena_t *arena               = nux_core_arena();
+    nux_arena_t *arena               = nux_arena_core();
     _module.rigidbody_transform_iter = nux_query_new(arena, 2, 0);
     NUX_CHECK(_module.rigidbody_transform_iter, return NUX_FAILURE);
     nux_query_includes(_module.rigidbody_transform_iter,
@@ -196,7 +196,7 @@ module_update (void)
 void
 nux_physics_module_register (void)
 {
-    NUX_REGISTER_MODULE("physics", &_module, module_init, NUX_NULL);
+    NUX_MODULE_REGISTER("physics", &_module, module_init, NUX_NULL);
 }
 nux_physics_module_t *
 nux_physics (void)

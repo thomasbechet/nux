@@ -19,7 +19,7 @@ l_require (lua_State *L)
 
     // check already loaded
     nux_lua_t *it = NUX_NULL;
-    while ((it = nux_next_resource(NUX_RESOURCE_LUA_MODULE, it)))
+    while ((it = nux_resource_next(NUX_RESOURCE_LUA_MODULE, it)))
     {
         if (!nux_strncmp(nux_resource_path(it), filepath, NUX_PATH_MAX))
         {
@@ -29,7 +29,7 @@ l_require (lua_State *L)
     }
 
     // load the module
-    nux_lua_t *lua = nux_lua_load(nux_core_arena(), filepath);
+    nux_lua_t *lua = nux_lua_load(nux_arena_core(), filepath);
     l_checkerror(L);
     NUX_ASSERT(lua);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);

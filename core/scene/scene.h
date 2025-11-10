@@ -34,7 +34,7 @@ typedef struct
     nux_component_write_callback_t  write;
 } nux_component_info_t;
 
-void  nux_register_component(nux_u32_t index, nux_component_info_t info);
+void  nux_component_register(nux_u32_t index, nux_component_info_t info);
 void  nux_component_set_add(nux_u32_t                    index,
                             nux_component_add_callback_t callback);
 void  nux_component_set_remove(nux_u32_t                       index,

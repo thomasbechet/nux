@@ -15,16 +15,16 @@ nux_status_t
 module_init (void)
 {
     // Create debug console
-    if (nux_config()->debug.console)
+    if (nux_config_get()->debug.console)
     {
         // Create canvas
-        _module.console_canvas = nux_canvas_new(nux_core_arena(), 1000, 500);
+        _module.console_canvas = nux_canvas_new(nux_arena_core(), 1000, 500);
         NUX_CHECK(_module.console_canvas, return NUX_FAILURE);
     }
 
     // Create log buffer
     _module.lines
-        = nux_arena_malloc(nux_core_arena(), LOG_LINE_LEN * LOG_LINE_COUNT);
+        = nux_arena_malloc(nux_arena_core(), LOG_LINE_LEN * LOG_LINE_COUNT);
     NUX_CHECK(_module.lines, return NUX_FAILURE);
     _module.lines_count  = 0;
     _module.lines_cursor = 0;
@@ -47,7 +47,7 @@ module_update (void)
 void
 nux_debug_module_register (void)
 {
-    NUX_REGISTER_MODULE("debug", &_module, module_init, NUX_NULL);
+    NUX_MODULE_REGISTER("debug", &_module, module_init, NUX_NULL);
 }
 
 void

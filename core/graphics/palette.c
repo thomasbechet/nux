@@ -9,7 +9,7 @@ nux_palette_register_default (void)
 {
     nux_graphics_module_t *gfx = nux_graphics();
     gfx->default_palette
-        = nux_palette_new(nux_core_arena(), NUX_ARRAY_SIZE(default_palette));
+        = nux_palette_new(nux_arena_core(), NUX_ARRAY_SIZE(default_palette));
     NUX_CHECK(gfx->default_palette, return NUX_FAILURE);
     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(default_palette); ++i)
     {
@@ -22,7 +22,7 @@ nux_palette_register_default (void)
 nux_palette_t *
 nux_palette_new (nux_arena_t *arena, nux_u32_t size)
 {
-    nux_palette_t *pal = nux_new_resource(arena, NUX_RESOURCE_PALETTE);
+    nux_palette_t *pal = nux_resource_new(arena, NUX_RESOURCE_PALETTE);
     NUX_CHECK(pal, return NUX_NULL);
     pal->size   = size;
     pal->colors = nux_arena_malloc(arena, sizeof(*pal->colors) * size);

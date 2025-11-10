@@ -125,6 +125,8 @@ function M:on_load()
 end
 
 function M:on_update()
+    nux.transform_translation(self.camera.node)
+
     local position = transform.get_translation(self.camera.node)
     c = self.gui_canvas
     local h = 9

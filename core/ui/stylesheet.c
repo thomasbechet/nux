@@ -3,7 +3,7 @@
 nux_stylesheet_t *
 nux_stylesheet_new (nux_arena_t *arena)
 {
-    nux_stylesheet_t *s = nux_new_resource(arena, NUX_RESOURCE_STYLESHEET);
+    nux_stylesheet_t *s = nux_resource_new(arena, NUX_RESOURCE_STYLESHEET);
     NUX_CHECK(s, return NUX_NULL);
     return s;
 }

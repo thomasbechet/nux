@@ -256,7 +256,7 @@ typedef struct luaL_Stream {
 
 /* print a string */
 #if !defined(lua_writestring)
-#define lua_writestring(s,l)   nux_log(NUX_LOG_INFO, "%.*s", (l), (s))
+#define lua_writestring(s,l)   nux_logger_log(NUX_LOG_INFO, "%.*s", (l), (s))
 #endif
 
 /* print a newline and flush the output */
@@ -267,7 +267,7 @@ typedef struct luaL_Stream {
 /* print an error message */
 #if !defined(lua_writestringerror)
 #define lua_writestringerror(s,p) \
-        (nux_log(NUX_LOG_ERROR, "%.*s", (s), (p)))
+        (nux_logger_log(NUX_LOG_ERROR, "%.*s", (s), (p)))
 #endif
 
 /* }================================================================== */

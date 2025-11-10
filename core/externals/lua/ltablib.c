@@ -242,7 +242,7 @@ typedef unsigned int IdxT;
 ** is to copy them to an array of a known type and use the array values.
 */
 static unsigned int l_randomizePivot (lua_State *L) {
-    return nux_random();
+    return nux_random_next();
 }
 
 #endif					/* } */
