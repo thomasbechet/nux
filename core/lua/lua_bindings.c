@@ -386,11 +386,11 @@ l_is_just_released (lua_State *L)
     return 1;
 }
 static int
-l_input_value (lua_State *L)
+l_axis (lua_State *L)
 {
     nux_u32_t       controller = luaL_checknumber(L, 1);
     const nux_c8_t *name       = luaL_checkstring(L, 2);
-    nux_f32_t       ret        = nux_input_value(controller, name);
+    nux_f32_t       ret        = nux_axis(controller, name);
     l_checkerror(L);
 
     lua_pushnumber(L, ret);
@@ -437,18 +437,6 @@ l_lua_load (lua_State *L)
         lua_pushnil(L);
     }
     return 1;
-}
-static int
-l_register_component (lua_State *L)
-{
-    nux_u32_t       index = luaL_checknumber(L, 1);
-    const nux_c8_t *name  = luaL_checkstring(L, 2);
-    nux_u32_t       size  = luaL_checknumber(L, 3);
-
-    nux_register_component(index, name, size);
-    l_checkerror(L);
-
-    return 0;
 }
 static int
 l_transform_matrix (lua_State *L)
@@ -1968,11 +1956,10 @@ static const struct luaL_Reg lib_nux[]
         { "is_released", l_is_released },
         { "is_just_pressed", l_is_just_pressed },
         { "is_just_released", l_is_just_released },
-        { "input_value", l_input_value },
+        { "axis", l_axis },
         { "cursor", l_cursor },
         { "wrap_cursor", l_wrap_cursor },
         { "lua_load", l_lua_load },
-        { "register_component", l_register_component },
         { "transform_matrix", l_transform_matrix },
         { "transform_local_translation", l_transform_local_translation },
         { "transform_local_rotation", l_transform_local_rotation },

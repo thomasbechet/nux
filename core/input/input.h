@@ -218,7 +218,7 @@ nux_b32_t nux_is_pressed(nux_u32_t controller, const nux_c8_t *name);
 nux_b32_t nux_is_released(nux_u32_t controller, const nux_c8_t *name);
 nux_b32_t nux_is_just_pressed(nux_u32_t controller, const nux_c8_t *name);
 nux_b32_t nux_is_just_released(nux_u32_t controller, const nux_c8_t *name);
-nux_f32_t nux_input_value(nux_u32_t controller, const nux_c8_t *name);
+nux_f32_t nux_axis(nux_u32_t controller, const nux_c8_t *name);
 nux_v2_t  nux_cursor(nux_u32_t controller);
 void      nux_wrap_cursor(nux_u32_t controller, nux_f32_t x, nux_f32_t y);
 

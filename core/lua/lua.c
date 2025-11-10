@@ -335,7 +335,7 @@ nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
     nux_lua_t *lua = nux_new_resource(arena, NUX_RESOURCE_LUA_MODULE);
     NUX_CHECK(lua, return NUX_NULL);
-    nux_resource_set_path(lua, path);
+    nux_set_resource_path(lua, path);
     // initialize event handles
     nux_ptr_vec_init(arena, &lua->event_handles);
     // dofile and call load function
@@ -406,7 +406,7 @@ static nux_status_t
 module_update (void)
 {
     nux_lua_t *lua = NUX_NULL;
-    while ((lua = nux_resource_next(NUX_RESOURCE_LUA_MODULE, lua)))
+    while ((lua = nux_next_resource(NUX_RESOURCE_LUA_MODULE, lua)))
     {
         nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);
     }

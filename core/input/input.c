@@ -237,7 +237,7 @@ nux_is_just_released (nux_u32_t controller, const nux_c8_t *name)
     return value <= NUX_BUTTON_RELEASED && prev > NUX_BUTTON_RELEASED;
 }
 nux_f32_t
-nux_input_value (nux_u32_t controller, const nux_c8_t *name)
+nux_axis (nux_u32_t controller, const nux_c8_t *name)
 {
     nux_f32_t value, prev;
     controller_get_input_value(controller, name, &value, &prev, 0);

@@ -144,13 +144,18 @@ static nux_status_t
 module_init (void)
 {
     // Register components
-    nux_register_component(
-        NUX_COMPONENT_RIGIDBODY, "rigidbody", sizeof(nux_rigidbody_t));
-    nux_component_set_add(NUX_COMPONENT_RIGIDBODY, nux_rigidbody_add);
-
-    nux_register_component(
-        NUX_COMPONENT_COLLIDER, "collider", sizeof(nux_collider_t));
-    nux_component_set_add(NUX_COMPONENT_COLLIDER, nux_collider_add);
+    nux_register_component(NUX_COMPONENT_RIGIDBODY,
+                           (nux_component_info_t) {
+                               .name = "rigidbody",
+                               .size = sizeof(nux_rigidbody_t),
+                               .add  = nux_rigidbody_add,
+                           });
+    nux_register_component(NUX_COMPONENT_COLLIDER,
+                           (nux_component_info_t) {
+                               .name = "collider",
+                               .size = sizeof(nux_collider_t),
+                               .add  = nux_collider_add,
+                           });
 
     // Initialize values
     nux_arena_t *a = nux_core_arena();

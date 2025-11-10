@@ -24,9 +24,17 @@ typedef nux_status_t (*nux_component_read_callback_t)(nux_serde_reader_t *s,
 typedef nux_status_t (*nux_component_write_callback_t)(nux_serde_writer_t *s,
                                                        const void *data);
 
-void  nux_register_component(nux_u32_t       index,
-                             const nux_c8_t *name,
-                             nux_u32_t       size);
+typedef struct
+{
+    const nux_c8_t                 *name;
+    nux_u32_t                       size;
+    nux_component_add_callback_t    add;
+    nux_component_remove_callback_t remove;
+    nux_component_read_callback_t   read;
+    nux_component_write_callback_t  write;
+} nux_component_info_t;
+
+void  nux_register_component(nux_u32_t index, nux_component_info_t info);
 void  nux_component_set_add(nux_u32_t                    index,
                             nux_component_add_callback_t callback);
 void  nux_component_set_remove(nux_u32_t                       index,

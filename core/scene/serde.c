@@ -98,7 +98,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
         for (nux_u32_t c = 0; c < module->components_max; ++c)
         {
             nux_component_t *comp = module->components + c;
-            if (!comp->name)
+            if (!comp->info.name)
             {
                 continue;
             }
@@ -112,7 +112,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
         for (nux_u32_t c = 0; c < module->components_max; ++c)
         {
             nux_component_t *comp = module->components + c;
-            if (!comp->name)
+            if (!comp->info.name)
             {
                 continue;
             }
@@ -120,10 +120,10 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
             if (data)
             {
                 nux_serde_write_object(s, NUX_NULL);
-                nux_serde_write_string(s, "component", comp->name);
-                if (comp->write)
+                nux_serde_write_string(s, "component", comp->info.name);
+                if (comp->info.write)
                 {
-                    NUX_CHECK(comp->write(s, data), goto error);
+                    NUX_CHECK(comp->info.write(s, data), goto error);
                 }
                 nux_serde_write_end(s);
             }
@@ -181,12 +181,12 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
             for (nux_u32_t c = 0; c < module->components_max; ++c)
             {
                 nux_component_t *comp = module->components + c;
-                if (comp->name && comp->read
-                    && nux_strncmp(comp->name, name, n) == 0)
+                if (comp->info.name && comp->info.read
+                    && nux_strncmp(comp->info.name, name, n) == 0)
                 {
                     nux_node_add(e, c);
                     void *data = nux_component_get(e, c);
-                    NUX_CHECK(comp->read(s, data), goto error);
+                    NUX_CHECK(comp->info.read(s, data), goto error);
                     break;
                 }
             }

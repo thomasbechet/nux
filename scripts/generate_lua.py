@@ -42,10 +42,11 @@ if __name__ == "__main__":
     # Filter functions
     for name in [
             "register_module",
+            "register_resource",
+            "register_component",
             "new_event",
             "unsubscribe_event",
             "event_handler_event",
-            "register_resource",
             ]:
         del api["functions"][name]
 

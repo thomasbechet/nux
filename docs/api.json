@@ -883,7 +883,7 @@
                     }
                 ]
             },
-            "input_value": {
+            "axis": {
                 "typename": {
                     "name": "f32",
                     "type": "primitive",
@@ -1496,17 +1496,9 @@
                         }
                     },
                     {
-                        "name": "name",
+                        "name": "info",
                         "typename": {
-                            "name": "c8",
-                            "type": "primitive",
-                            "const": true
-                        }
-                    },
-                    {
-                        "name": "size",
-                        "typename": {
-                            "name": "u32",
+                            "name": "component_info",
                             "type": "primitive",
                             "const": true
                         }

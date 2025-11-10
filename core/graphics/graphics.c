@@ -61,17 +61,22 @@ module_init (void)
                                 .cleanup = nux_font_cleanup });
 
     // Register components
-    nux_register_component(
-        NUX_COMPONENT_CAMERA, "camera", sizeof(nux_camera_t));
-    nux_component_set_add(NUX_COMPONENT_CAMERA, nux_camera_add);
-    nux_component_set_read(NUX_COMPONENT_CAMERA, nux_camera_read);
-    nux_component_set_write(NUX_COMPONENT_CAMERA, nux_camera_write);
-
-    nux_register_component(
-        NUX_COMPONENT_STATICMESH, "staticmesh", sizeof(nux_staticmesh_t));
-    nux_component_set_add(NUX_COMPONENT_STATICMESH, nux_staticmesh_add);
-    nux_component_set_read(NUX_COMPONENT_STATICMESH, nux_staticmesh_read);
-    nux_component_set_write(NUX_COMPONENT_STATICMESH, nux_staticmesh_write);
+    nux_register_component(NUX_COMPONENT_CAMERA,
+                           (nux_component_info_t) {
+                               .name  = "camera",
+                               .size  = sizeof(nux_camera_t),
+                               .add   = nux_camera_add,
+                               .write = nux_camera_write,
+                               .read  = nux_camera_read,
+                           });
+    nux_register_component(NUX_COMPONENT_STATICMESH,
+                           (nux_component_info_t) {
+                               .name  = "staticmesh",
+                               .size  = sizeof(nux_staticmesh_t),
+                               .add   = nux_staticmesh_add,
+                               .write = nux_staticmesh_write,
+                               .read  = nux_staticmesh_read,
+                           });
 
     // Initialize gpu slots
     NUX_CHECK(nux_u32_vec_init_capa(
@@ -246,7 +251,7 @@ module_pre_update (void)
 
     // Update viewports with auto resize enabled
     nux_viewport_t *vp = NUX_NULL;
-    while ((vp = nux_resource_next(NUX_RESOURCE_VIEWPORT, vp)))
+    while ((vp = nux_next_resource(NUX_RESOURCE_VIEWPORT, vp)))
     {
         if (vp->auto_resize
             && vp->target == nux_resource_rid(_module.screen_target))
@@ -273,14 +278,14 @@ module_update (void)
 
     // Upload meshes
     nux_mesh_t *mesh = NUX_NULL;
-    while ((mesh = nux_resource_next(NUX_RESOURCE_MESH, mesh)))
+    while ((mesh = nux_next_resource(NUX_RESOURCE_MESH, mesh)))
     {
         nux_mesh_upload(mesh);
     }
 
     // Update textures
     nux_texture_t *texture = NUX_NULL;
-    while ((texture = nux_resource_next(NUX_RESOURCE_TEXTURE, texture)))
+    while ((texture = nux_next_resource(NUX_RESOURCE_TEXTURE, texture)))
     {
         if (texture->dirty)
         {
@@ -290,7 +295,7 @@ module_update (void)
 
     // Submit canvas commands
     nux_canvas_t *canvas = NUX_NULL;
-    while ((canvas = nux_resource_next(NUX_RESOURCE_CANVAS, canvas)))
+    while ((canvas = nux_next_resource(NUX_RESOURCE_CANVAS, canvas)))
     {
         nux_canvas_render(canvas);
     }
@@ -299,7 +304,7 @@ module_update (void)
     nux_viewport_t *viewports[32];
     nux_u32_t       viewports_count = 0;
     nux_viewport_t *vp              = NUX_NULL;
-    while ((vp = nux_resource_next(NUX_RESOURCE_VIEWPORT, vp)))
+    while ((vp = nux_next_resource(NUX_RESOURCE_VIEWPORT, vp)))
     {
         NUX_ASSERT(viewports_count < NUX_ARRAY_SIZE(viewports));
         viewports[viewports_count] = vp;

@@ -83,12 +83,7 @@ typedef struct
 
 typedef struct
 {
-    const nux_c8_t                 *name;
-    nux_u32_t                       size;
-    nux_component_read_callback_t   read;
-    nux_component_write_callback_t  write;
-    nux_component_add_callback_t    add;
-    nux_component_remove_callback_t remove;
+    nux_component_info_t info;
 } nux_component_t;
 
 typedef struct

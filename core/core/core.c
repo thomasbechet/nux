@@ -125,7 +125,7 @@ nux_core_init (void)
     // Create frame arena
     _module.frame_arena = nux_new_arena(_module.core_arena);
     NUX_ASSERT(_module.frame_arena);
-    nux_resource_set_name(_module.frame_arena, "frame_arena");
+    nux_set_resource_name(_module.frame_arena, "frame_arena");
 
     // Register modules
     nux_input_module_register();

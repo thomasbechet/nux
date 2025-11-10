@@ -223,14 +223,14 @@ void        *nux_get_resource(nux_u32_t type, nux_rid_t rid);
 void        *nux_check_resource(nux_u32_t type, nux_rid_t rid);
 nux_status_t nux_reload_resource(nux_rid_t rid);
 
-void            nux_resource_set_path(void *data, const nux_c8_t *path);
+void            nux_set_resource_path(void *data, const nux_c8_t *path);
 const nux_c8_t *nux_resource_path(void *data);
-void            nux_resource_set_name(void *data, const nux_c8_t *name);
+void            nux_set_resource_name(void *data, const nux_c8_t *name);
 const nux_c8_t *nux_resource_name(void *data);
-void           *nux_resource_next(nux_u32_t type, void *p);
+void           *nux_next_resource(nux_u32_t type, void *p);
 nux_rid_t       nux_resource_rid(void *data);
 nux_arena_t    *nux_resource_arena(void *data);
-void           *nux_resource_find(const nux_c8_t *name);
+void           *nux_find_resource(const nux_c8_t *name);
 
 void nux_vlog(nux_log_level_t level, const nux_c8_t *fmt, va_list args);
 void nux_log(nux_log_level_t level, const nux_c8_t *fmt, ...);

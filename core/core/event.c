@@ -121,7 +121,7 @@ void
 nux_process_all_events (void)
 {
     nux_event_t *it = NUX_NULL;
-    while ((it = nux_resource_next(NUX_RESOURCE_EVENT, it)))
+    while ((it = nux_next_resource(NUX_RESOURCE_EVENT, it)))
     {
         nux_process_event(it);
     }
