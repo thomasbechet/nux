@@ -149,10 +149,12 @@ function M:on_update()
 
     if self.gizmos.target then
         local tex = staticmesh.texture(self.gizmos.target)
-        local size = texture.size(tex)
-        local csize = canvas.size(c)
-        canvas.blit(c, tex, vmath.box2i(csize.x - size.x, csize.y - size.y, size.x, size.y),
-            vmath.box2i(0, 0, size.x, size.y))
+        if tex then
+            local size = texture.size(tex)
+            local csize = canvas.size(c)
+            canvas.blit(c, tex, vmath.box2i(csize.x - size.x, csize.y - size.y, size.x, size.y),
+                vmath.box2i(0, 0, size.x, size.y))
+        end
     end
 
     canvas.rectangle(c, cur.x * WIDTH - 1, cur.y * HEIGHT - 1, 5, 5)
@@ -167,5 +169,6 @@ function M:on_update()
     -- camera.set_aspect(self.camera.top_node, aspect)
 
     local dir = camera.unproject(self.camera.node, vmath.vec2(0.5, 0.5))
+    local dir = vmath.sub(dir, position) -- Convert position to direction
     self.gizmos:update(position, dir, "click")
 end

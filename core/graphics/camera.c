@@ -115,7 +115,7 @@ nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
 
     nux_v3_t eye    = nux_m4_mulv3(global_matrix, NUX_V3_ZEROS, 1);
     nux_v3_t center = nux_m4_mulv3(global_matrix, NUX_V3_FORWARD, 1);
-    nux_v3_t up     = nux_m4_mulv3(global_matrix, NUX_V3_UP, 0);
+    nux_v3_t up     = nux_m4_mulv3(global_matrix, NUX_V3_UP, 1);
 
     nux_m4_t view = nux_m4_lookat(eye, center, up);
     nux_m4_t proj = nux_camera_projection(e);
@@ -124,7 +124,11 @@ nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
 
     pos.y = 1 - pos.y; // convert screen to ndc space
     pos   = nux_v2_subs(nux_v2_muls(pos, 2), 1);
-    return nux_v3_normalize(nux_m4_mulv3(inv, nux_v3(pos.x, pos.y, 1), 1));
+
+    nux_v4_t p = nux_m4_mulv(inv, nux_v4(pos.x, pos.y, 0, 1));
+    p          = nux_v4_divs(p, p.w);
+
+    return nux_v3(p.x, p.y, p.z);
 }
 void
 nux_camera_set_render_mask (nux_nid_t n, nux_u32_t mask)

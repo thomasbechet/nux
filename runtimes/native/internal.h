@@ -77,6 +77,7 @@ typedef struct
     int  fps;
     char path[PATH_BUF_LEN];
     bool running;
+    bool opened;
 
     // renderer
 

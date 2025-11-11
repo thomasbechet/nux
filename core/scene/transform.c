@@ -112,8 +112,7 @@ nux_transform_scale (nux_nid_t e)
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ONES);
     nux_v3_t scale;
-    nux_m4_trs_decompose(
-        nux_transform_matrix(e), &scale, NUX_NULL, NUX_NULL);
+    nux_m4_trs_decompose(nux_transform_matrix(e), &scale, NUX_NULL, NUX_NULL);
     return scale;
 }
 void

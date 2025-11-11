@@ -312,6 +312,7 @@ nux_resource_next (nux_u32_t type, void *p)
 nux_rid_t
 nux_resource_rid (const void *data)
 {
+    NUX_CHECK(data, return NUX_NULL);
     return nux_resource_header_from_data((void *)data)->rid;
 }
 nux_arena_t *

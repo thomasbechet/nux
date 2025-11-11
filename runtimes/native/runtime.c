@@ -5,10 +5,10 @@ runtime_t runtime;
 static void
 runtime_close (void)
 {
-    if (runtime.running)
+    if (runtime.opened)
     {
         nux_core_free();
-        runtime.running = false;
+        runtime.opened = false;
     }
 }
 
@@ -77,7 +77,6 @@ runtime_open (const char *path)
     runtime_close();
 
     strncpy(runtime.path, path ? path : ".", PATH_MAX_LEN);
-    runtime.running = false;
     // if (!nux_core_init(NULL, runtime.path))
     if (!nux_core_init())
     {
@@ -85,7 +84,7 @@ runtime_open (const char *path)
         goto cleanup0;
     }
     nux_lua_load(nux_arena_core(), "init.lua");
-    runtime.running = true;
+    runtime.opened = true;
 
     return NUX_SUCCESS;
 cleanup0:
