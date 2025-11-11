@@ -139,7 +139,7 @@ nux_texture_screen (void)
     return nux_graphics()->screen_target;
 }
 nux_v2i_t
-nux_texture_get_size (nux_texture_t *texture)
+nux_texture_size (nux_texture_t *texture)
 {
     return nux_v2i(texture->gpu.width, texture->gpu.height);
 }

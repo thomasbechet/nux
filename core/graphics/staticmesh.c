@@ -8,7 +8,7 @@ nux_staticmesh_set_mesh (nux_nid_t e, nux_mesh_t *mesh)
     sm->mesh = nux_resource_rid(mesh);
 }
 nux_mesh_t *
-nux_staticmesh_get_mesh (nux_nid_t n)
+nux_staticmesh_mesh (nux_nid_t n)
 {
     nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return NUX_NULL);
@@ -22,7 +22,7 @@ nux_staticmesh_set_texture (nux_nid_t e, nux_texture_t *texture)
     sm->texture = nux_resource_rid(texture);
 }
 nux_texture_t *
-nux_staticmesh_get_texture (nux_nid_t n)
+nux_staticmesh_texture (nux_nid_t n)
 {
     nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return NUX_NULL);
@@ -40,7 +40,7 @@ nux_staticmesh_set_render_layer (nux_nid_t n, nux_u32_t layer)
     sm->render_layer = layer;
 }
 nux_u32_t
-nux_staticmesh_get_render_layer (nux_nid_t n)
+nux_staticmesh_render_layer (nux_nid_t n)
 {
     nux_staticmesh_t *sm = nux_component_get(n, NUX_COMPONENT_STATICMESH);
     NUX_CHECK(sm, return 0);

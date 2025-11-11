@@ -66,7 +66,7 @@ nux_viewport_set_texture (nux_viewport_t *vp, nux_texture_t *texture)
     vp->source.texture = nux_resource_rid(texture);
 }
 nux_v4_t
-nux_viewport_get_normalized_viewport (nux_viewport_t *viewport)
+nux_viewport_normalized_viewport (nux_viewport_t *viewport)
 {
     // Get target resolution
     nux_texture_t *target
@@ -190,7 +190,7 @@ nux_viewport_get_normalized_viewport (nux_viewport_t *viewport)
 nux_v2_t
 nux_viewport_to_global (nux_viewport_t *vp, nux_v2_t coord)
 {
-    nux_v4_t extent = nux_viewport_get_normalized_viewport(vp);
+    nux_v4_t extent = nux_viewport_normalized_viewport(vp);
     nux_v2_t global;
     global.x = extent.x + coord.x * extent.z;
     global.y = extent.y + coord.y * extent.w;
@@ -199,7 +199,7 @@ nux_viewport_to_global (nux_viewport_t *vp, nux_v2_t coord)
 nux_v2_t
 nux_viewport_to_local (nux_viewport_t *vp, nux_v2_t coord)
 {
-    nux_v4_t extent = nux_viewport_get_normalized_viewport(vp);
+    nux_v4_t extent = nux_viewport_normalized_viewport(vp);
     nux_v2_t local;
     local.x = (coord.x - extent.x) / extent.z;
     local.y = (coord.y - extent.y) / extent.w;

@@ -172,12 +172,12 @@ nux_canvas_cleanup (void *data)
     nux_gpu_buffer_free(&canvas->quads_gpu_buffer);
 }
 nux_texture_t *
-nux_canvas_get_texture (nux_canvas_t *canvas)
+nux_canvas_texture (nux_canvas_t *canvas)
 {
     return canvas->target;
 }
 nux_v2i_t
-nux_canvas_get_size (nux_canvas_t *canvas)
+nux_canvas_size (nux_canvas_t *canvas)
 {
     return nux_v2i(canvas->target->gpu.width, canvas->target->gpu.height);
 }

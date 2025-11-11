@@ -48,20 +48,18 @@ bootstrap_core_arena (void)
     return NUX_SUCCESS;
 }
 
-static nux_status_t
+static void
 module_pre_update (void)
 {
     nux_os_stats_update(_module.stats);
-    return NUX_SUCCESS;
 }
-static nux_status_t
+static void
 module_post_update (void)
 {
     nux_arena_clear(nux_arena_frame());
     _module.time_elapsed += nux_time_delta();
     ++_module.frame;
     nux_os_stats_update(_module.stats);
-    return NUX_SUCCESS;
 }
 
 nux_core_module_t *
@@ -115,7 +113,10 @@ nux_core_init (void)
     _module.config.debug.enable                    = NUX_TRUE;
     _module.config.debug.console                   = NUX_TRUE;
 
-    // Register base types
+    // Register systems
+    nux_system_register(NUX_SYSTEM_PRE_UPDATE, module_pre_update);
+    nux_system_register(NUX_SYSTEM_POST_UPDATE, module_post_update);
+    // Register types
     nux_resource_register(NUX_RESOURCE_NULL,
                           (nux_resource_info_t) { .name = "null", .size = 0 });
     nux_resource_register(

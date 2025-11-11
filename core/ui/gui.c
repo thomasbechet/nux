@@ -68,7 +68,7 @@ nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
         gui->controllers[i].mode   = NUX_CONTROLLER_MODE_CURSOR;
         gui->controllers[i].active = NUX_FALSE;
         gui->controllers[i].cursor
-            = nux_v2i_divs(nux_canvas_get_size(canvas), 2);
+            = nux_v2i_divs(nux_canvas_size(canvas), 2);
         gui->controllers[i].main_pressed = NUX_FALSE;
     }
     return gui;

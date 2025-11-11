@@ -83,7 +83,7 @@ nux_camera_set_ortho_size (nux_nid_t e, nux_v2_t size)
     c->ortho_size = size;
 }
 nux_m4_t
-nux_camera_get_projection (nux_nid_t e)
+nux_camera_projection (nux_nid_t e)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return nux_m4_identity());
@@ -118,7 +118,7 @@ nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
     nux_v3_t up     = nux_m4_mulv3(global_matrix, NUX_V3_UP, 0);
 
     nux_m4_t view = nux_m4_lookat(eye, center, up);
-    nux_m4_t proj = nux_camera_get_projection(e);
+    nux_m4_t proj = nux_camera_projection(e);
     nux_m4_t vp   = nux_m4_mul(proj, view);
     nux_m4_t inv  = nux_m4_inv(vp);
 
@@ -134,7 +134,7 @@ nux_camera_set_render_mask (nux_nid_t n, nux_u32_t mask)
     c->render_mask = mask;
 }
 nux_u32_t
-nux_camera_get_render_mask (nux_nid_t n)
+nux_camera_render_mask (nux_nid_t n)
 {
     nux_camera_t *c = nux_component_get(n, NUX_COMPONENT_CAMERA);
     NUX_CHECK(c, return 0);

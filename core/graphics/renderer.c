@@ -145,7 +145,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 {
     nux_graphics_module_t *gfx = nux_graphics();
     nux_gpu_encoder_t     *enc = &gfx->encoder;
-    nux_v4_t       extent      = nux_viewport_get_normalized_viewport(viewport);
+    nux_v4_t       extent      = nux_viewport_normalized_viewport(viewport);
     nux_nid_t      camera      = viewport->source.camera;
     nux_texture_t *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
@@ -178,7 +178,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 
         nux_gpu_constants_buffer_t constants;
         constants.view        = nux_m4_lookat(eye, center, up);
-        constants.proj        = nux_camera_get_projection(camera);
+        constants.proj        = nux_camera_projection(camera);
         constants.screen_size = nux_v2u(nux_stat_get(NUX_STAT_SCREEN_WIDTH),
                                         nux_stat_get(NUX_STAT_SCREEN_HEIGHT));
         constants.time        = nux_time_elapsed();

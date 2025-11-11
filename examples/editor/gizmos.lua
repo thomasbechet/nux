@@ -37,7 +37,7 @@ function M:on_update()
     if self.target then
         graphics.begin_state()
         graphics.set_layer(LAYER)
-        graphics.set_transform(transform.get_matrix(self.target))
+        graphics.set_transform(transform.matrix(self.target))
         local p = vmath.vec3(0)
         graphics.set_color(color.RED)
         graphics.draw_dir(p, vmath.vec3(1, 0, 0), 1)
