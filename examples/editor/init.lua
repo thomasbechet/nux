@@ -20,8 +20,6 @@ local HEIGHT = 480
 function M:on_load()
     self.arena = arena.core()
 
-    print(arena.core())
-    print(arena.frame())
     local map = inputmap.new(self.arena)
     inputmap.bind_key(map, "up", key.X)
     inputmap.bind_key(map, "down", key.Z)
@@ -65,7 +63,7 @@ function M:on_load()
     self.camera = require("camera")
     self.gizmos = require("gizmos")
 
-    local target = texture.new(self.arena, texture.RENDER_TARGET, 640, 360)
+    local target = texture.new(self.arena, texture.RENDER_TARGET, 640 * 2, 360 * 2)
     -- local target = texture.screen()
 
     local vp = viewport.new(self.arena, target)

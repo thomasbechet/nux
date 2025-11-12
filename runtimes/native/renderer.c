@@ -238,17 +238,24 @@ nux_os_framebuffer_create (nux_u32_t slot, nux_u32_t texture)
     glBindFramebuffer(GL_FRAMEBUFFER, fb->handle);
     glFramebufferTexture2D(
         GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex->handle, 0);
-    // glTexImage2D(GL_TEXTURE_2D,
-    //              0,
-    //              GL_DEPTH24_STENCIL8,
-    //              tex->info.width,
-    //              tex->info.height,
-    //              0,
-    //              GL_DEPTH_STENCIL,
-    //              GL_UNSIGNED_INT_24_8,
-    //              NULL);
-    // glFramebufferTexture2D(
-    //     GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_DEPTH24_STENCIL8,
+                 tex->info.width,
+                 tex->info.height,
+                 0,
+                 GL_DEPTH_STENCIL,
+                 GL_UNSIGNED_INT_24_8,
+                 NULL);
+
+    // Depth buffer
+    GLuint rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glRenderbufferStorage(
+        GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, fb->width, fb->height);
+    glFramebufferRenderbuffer(
+        GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {
@@ -256,14 +263,6 @@ nux_os_framebuffer_create (nux_u32_t slot, nux_u32_t texture)
     }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    // depth buffer
-    // GLuint rbo;
-    // glGenRenderbuffers(1, &rbo);
-    // glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    // glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
-    // glFramebufferRenderbuffer(
-    //     GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
     return NUX_SUCCESS;
 }

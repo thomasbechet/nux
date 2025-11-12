@@ -15,7 +15,7 @@ nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
     vp->source.camera  = NUX_NULL;
     vp->source.texture = NUX_NULL;
     vp->target         = nux_resource_rid(target);
-    vp->clear_color    = NUX_COLOR_RGBA(0, 0, 0, 0);
+    vp->clear_color    = NUX_COLOR_RGBA(0, 0, 0, 1);
     vp->clear_depth    = NUX_FALSE;
     vp->auto_resize    = NUX_FALSE;
     return vp;
