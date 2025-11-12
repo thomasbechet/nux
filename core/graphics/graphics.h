@@ -93,6 +93,9 @@ nux_texture_t *nux_texture_new(nux_arena_t       *arena,
 nux_texture_t *nux_texture_load(nux_arena_t *arena, const nux_c8_t *path);
 nux_texture_t *nux_texture_screen(void);
 nux_v2i_t      nux_texture_size(nux_texture_t *texture);
+void           nux_texture_blit(nux_texture_t *tex,
+                                nux_texture_t *target,
+                                nux_v4_t       extent);
 
 nux_palette_t *nux_palette_new(nux_arena_t *arena, nux_u32_t size);
 nux_palette_t *nux_palette_default(void);

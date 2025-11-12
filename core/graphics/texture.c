@@ -69,7 +69,7 @@ nux_texture_new (nux_arena_t       *arena,
     tex->dirty        = type != NUX_TEXTURE_RENDER_TARGET;
     tex->dirty_extent = nux_b2i(0, 0, w, h);
 
-    // Create gpu texture
+    // Create gpu texture (and framebuffer if needed)
     NUX_CHECK(nux_gpu_texture_init(&tex->gpu), return NUX_NULL);
 
     // Allocate memory

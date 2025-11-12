@@ -241,15 +241,14 @@ nux_os_framebuffer_create (nux_u32_t slot, nux_u32_t texture)
     // glTexImage2D(GL_TEXTURE_2D,
     //              0,
     //              GL_DEPTH24_STENCIL8,
-    //              800,
-    //              600,
+    //              tex->info.width,
+    //              tex->info.height,
     //              0,
     //              GL_DEPTH_STENCIL,
     //              GL_UNSIGNED_INT_24_8,
     //              NULL);
     // glFramebufferTexture2D(
-    //     GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture,
-    //     0);
+    //     GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
     {

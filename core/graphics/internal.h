@@ -314,9 +314,6 @@ void           nux_texture_cleanup(void *data);
 nux_texture_t *nux_texture_load_from_memory(nux_arena_t    *arena,
                                             const nux_u8_t *data,
                                             nux_u32_t       size);
-void           nux_texture_blit(nux_texture_t *tex,
-                                nux_texture_t *target,
-                                nux_v4_t       extent);
 nux_status_t   nux_texture_upload(nux_texture_t *texture);
 
 void nux_mesh_push_vertices(nux_mesh_t     *mesh,

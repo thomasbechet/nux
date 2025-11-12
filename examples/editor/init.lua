@@ -65,14 +65,17 @@ function M:on_load()
     self.camera = require("camera")
     self.gizmos = require("gizmos")
 
-    local vp = viewport.new(self.arena, texture.screen())
+    local target = texture.new(self.arena, texture.RENDER_TARGET, 640, 360)
+    -- local target = texture.screen()
+
+    local vp = viewport.new(self.arena, target)
     viewport.set_camera(vp, self.camera.node)
     -- viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 0)
     viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
     viewport.set_auto_resize(vp, true)
 
-    local vp = viewport.new(self.arena, texture.screen())
+    local vp = viewport.new(self.arena, target)
     viewport.set_camera(vp, self.camera.top_node)
     -- viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 1)
@@ -122,6 +125,10 @@ function M:on_load()
     staticmesh.set_texture(n, canvas.texture(self.gui_canvas))
     transform.set_translation(n, { 10, 2, 0 })
     transform.set_rotation_euler(n, { -math.rad(95), 0, 0 })
+
+    local vp = viewport.new(self.arena, texture.screen())
+    viewport.set_texture(vp, target)
+    viewport.set_clear_depth(vp, true)
 end
 
 function M:on_update()
@@ -168,7 +175,7 @@ function M:on_update()
     -- camera.set_aspect(self.camera.node, aspect)
     -- camera.set_aspect(self.camera.top_node, aspect)
 
-    local dir = camera.unproject(self.camera.node, vmath.vec2(0.5, 0.5))
-    local dir = vmath.sub(dir, position) -- Convert position to direction
+    local pos = camera.unproject(self.camera.node, vmath.vec2(0.5, 0.5))
+    local dir = vmath.sub(pos, position) -- Convert position to direction
     self.gizmos:update(position, dir, "click")
 end
