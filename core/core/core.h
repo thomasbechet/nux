@@ -84,6 +84,7 @@ typedef enum
     NUX_RESOURCE_INPUTMAP   = 15,
     NUX_RESOURCE_GUI        = 16,
     NUX_RESOURCE_STYLESHEET = 17,
+    NUX_RESOURCE_WORLD      = 18,
 
     NUX_RESOURCE_MAX = 256,
 } nux_resource_base_t;

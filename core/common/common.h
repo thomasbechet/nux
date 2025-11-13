@@ -45,6 +45,11 @@
     {                            \
         action;                  \
     }
+#define nux_check(check, action) \
+    if (!(check))                \
+    {                            \
+        action;                  \
+    }
 
 #define NUX_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
 #define NUX_ARRAY_FILL(arr, size, value) \

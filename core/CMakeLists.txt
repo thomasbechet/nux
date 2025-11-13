@@ -28,4 +28,4 @@ if (NUX_BUILD_WASI)
 endif (NUX_BUILD_WASI)
 
 add_library(${PROJECT_NAME} ${SOURCES})
-
+set_property(TARGET ${PROJECT_NAME} PROPERTY C_STANDARD 23)

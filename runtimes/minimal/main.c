@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <nux.h>
 
+#define nullptr (void *)0
+
 static FILE *files[NUX_FILE_MAX];
 
 void *
@@ -154,12 +156,6 @@ void
 nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
 {
     *count = 0;
-}
-
-static void
-run (void)
-{
-    NUX_INFO("Hello World !");
 }
 
 int
