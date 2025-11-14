@@ -71,6 +71,7 @@ cleanup1:
 cleanup0:
     return status;
 }
+
 nux_status_t
 runtime_open (const char *path)
 {
@@ -83,6 +84,7 @@ runtime_open (const char *path)
         fprintf(stderr, "failed to init instance\n");
         goto cleanup0;
     }
+
     nux_lua_load(nux_arena_core(), "init.lua");
     runtime.opened = true;
 

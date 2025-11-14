@@ -808,4 +808,90 @@ void nux_block_arena_init(nux_arena_t       *a,
 
 void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
 
+typedef struct
+{
+    nux_arena_t *arena;
+    nux_u32_t    osize;
+    nux_u32_t    size;
+    nux_u32_t    capa;
+    void        *data;
+} nux_vec_t;
+
+nux_status_t nux__vec_init_capa(nux_vec_t   *vec,
+                                nux_arena_t *a,
+                                nux_u32_t    osize,
+                                nux_u32_t    capa);
+nux_status_t nux__vec_reserve(nux_vec_t *vec, nux_u32_t capa);
+nux_status_t nux__vec_resize(nux_vec_t *vec, nux_u32_t size);
+void        *nux__vec_get(nux_vec_t *vec, nux_u32_t i);
+void        *nux__vec_last(nux_vec_t *vec);
+void        *nux__vec_push(nux_vec_t *vec);
+void        *nux__vec_pop(nux_vec_t *vec);
+void         nux__vec_swap(nux_vec_t *vec, nux_u32_t a, nux_u32_t b);
+void        *nux__vec_swap_pop(nux_vec_t *vec, nux_u32_t i);
+
+#define nux_vec(T)              \
+    union                       \
+    {                           \
+        nux_vec_t vec;          \
+        struct                  \
+        {                       \
+            nux_arena_t *arena; \
+            nux_u32_t    osize; \
+            nux_u32_t    size;  \
+            nux_u32_t    capa;  \
+            T           *data;  \
+        };                      \
+    }
+
+#define nux_vec_init_capa(v, a, c) \
+    nux__vec_init_capa(&(v)->vec, a, sizeof(*(v)->data), c)
+#define nux_vec_init(v, a)      nux_vec_init_capa(v, a, 0)
+#define nux_vec_reserve(v, c)   nux__vec_reserve(&(v)->vec, c)
+#define nux_vec_resize(v, s)    nux__vec_resize(&(v)->vec, s)
+#define nux_vec_get(v, i)       (typeof((v)->data))nux__vec_get(&(v)->vec, i)
+#define nux_vec_last(v)         (typeof((v)->data))nux__vec_last(&(v)->vec)
+#define nux_vec_push(v)         (typeof((v)->data))nux__vec_push(&(v)->vec)
+#define nux_vec_pushv(v, value) *nux_vec_push(v) = value
+#define nux_vec_pop(v)          (typeof((v)->data))nux__vec_pop(&(v)->vec)
+#define nux_vec_clear(v)        v->size = 0
+#define nux_vec_swap(v, a, b)   nux__vec_swap(&(v)->vec, a, b)
+#define nux_vec_swap_pop(v, i) \
+    (typeof((v)->data))nux__vec_swap_pop(&(v)->vec, i)
+
+typedef struct
+{
+    nux_vec(nux_u32_t) freelist;
+    nux_u32_t osize;
+    nux_u32_t capa;
+    nux_u32_t size;
+    void     *data;
+} nux_pool_t;
+
+nux_status_t nux__pool_init_capa(nux_pool_t  *pool,
+                                 nux_arena_t *arena,
+                                 nux_u32_t    osize,
+                                 nux_u32_t    capa);
+void        *nux__pool_add(nux_pool_t *pool);
+void         nux__pool_remove(nux_pool_t *pool, void *i);
+
+#define nux_pool(T)                      \
+    union                                \
+    {                                    \
+        nux_pool_t pool;                 \
+        struct                           \
+        {                                \
+            nux_vec(nux_u32_t) freelist; \
+            nux_u32_t osize;             \
+            nux_u32_t capa;              \
+            nux_u32_t size;              \
+            T        *data;              \
+        };                               \
+    }
+#define nux_pool_init_capa(p, a, c) \
+    nux__pool_init_capa(&(p)->pool, a, sizeof(*(p)->data), c)
+#define nux_pool_init(p, a)   nux_pool_init_capa(p, a, 0)
+#define nux_pool_add(p)       (typeof((p)->data))nux__pool_add(&(p)->pool)
+#define nux_pool_remove(p, i) nux__pool_remove(&(p)->pool, i)
+
 #endif
