@@ -2,6 +2,11 @@
 
 static FILE *files[NUX_FILE_MAX];
 
+void
+nux_os_panic (void)
+{
+    NUX_ASSERT(NUX_FALSE);
+}
 void *
 nux_os_alloc (void *p, nux_u32_t osize, nux_u32_t nsize)
 {

@@ -147,7 +147,7 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     NUX_CHECK(nux_gpu_buffer_init(&c->batches_gpu_buffer), return NUX_NULL);
 
     // Allocate commands
-    NUX_CHECK(nux_gpu_encoder_init(arena, &c->encoder), return NUX_NULL);
+    nux_gpu_encoder_init(arena, &c->encoder);
 
     // Initialize base active batch
     c->active_batch.mode  = 0;

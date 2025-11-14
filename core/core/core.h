@@ -13,6 +13,8 @@
         nux_error_report(format " at %s", ##__VA_ARGS__, __SOURCE__); \
         action;                                                       \
     }
+#define nux_checkn(check) nux_check(check, return nullptr)
+#define nux_checkf(check) nux_check(check, return NUX_FAILURE)
 
 #define NUX_DEBUG(format, ...) \
     nux_logger_log(NUX_LOG_DEBUG, format, ##__VA_ARGS__)

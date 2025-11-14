@@ -2,10 +2,6 @@
 
 static nux_physics_module_t _module;
 
-NUX_VEC_IMPL(nux_point_mass_vec, nux_point_mass_t);
-NUX_VEC_IMPL(nux_collision_constraint_vec, nux_collision_constraint_t);
-NUX_VEC_IMPL(nux_distance_constraint_vec, nux_distance_constraint_t);
-
 static nux_v3_t
 compute_sum_forces (nux_point_mass_t *pm)
 {
@@ -36,7 +32,7 @@ integrate (void)
         }
 
         // (8) generate collision constraints
-        nux_collision_constraint_vec_clear(&_module.collision_constraints);
+        nux_vec_clear(&_module.collision_constraints);
         for (nux_u32_t i = 0; i < _module.point_masses.size; ++i)
         {
             nux_point_mass_t *pm = _module.point_masses.data + i;
@@ -45,8 +41,7 @@ integrate (void)
             if (pm->x.y < _module.ground_height)
             {
                 nux_collision_constraint_t *c
-                    = nux_collision_constraint_vec_push(
-                        &_module.collision_constraints);
+                    = nux_vec_push(&_module.collision_constraints);
                 NUX_ASSERT(c);
                 c->q = nux_v3(pm->x.x, _module.ground_height, pm->x.z);
                 c->n = NUX_V3_UP;
@@ -168,14 +163,9 @@ module_init (void)
 
     // Initialize values
     nux_arena_t *a = nux_arena_core();
-    NUX_CHECK(nux_point_mass_vec_init(a, &_module.point_masses),
-              return NUX_FAILURE);
-    NUX_CHECK(
-        nux_collision_constraint_vec_init(a, &_module.collision_constraints),
-        return NUX_FAILURE);
-    NUX_CHECK(
-        nux_distance_constraint_vec_init(a, &_module.distance_constraints),
-        return NUX_FAILURE);
+    nux_vec_init(&_module.point_masses, a);
+    nux_vec_init(&_module.collision_constraints, a);
+    nux_vec_init(&_module.distance_constraints, a);
 
     nux_arena_t *arena               = nux_arena_core();
     _module.rigidbody_transform_iter = nux_query_new(arena, 2, 0);
@@ -295,7 +285,7 @@ nux_physics_add_rigidbody (nux_nid_t e)
 nux_u32_t
 nux_physics_add_pm (nux_v3_t pos, nux_v3_t vel)
 {
-    nux_point_mass_t *pm = nux_point_mass_vec_push(&_module.point_masses);
+    nux_point_mass_t *pm = nux_vec_push(&_module.point_masses);
     NUX_ASSERT(pm);
     pm->x = pos;
     pm->v = vel;
@@ -308,8 +298,7 @@ nux_physics_add_pm (nux_v3_t pos, nux_v3_t vel)
 void
 nux_physics_add_distance_constraint (nux_u32_t a, nux_u32_t b, float distance)
 {
-    nux_distance_constraint_t *c
-        = nux_distance_constraint_vec_push(&_module.distance_constraints);
+    nux_distance_constraint_t *c = nux_vec_push(&_module.distance_constraints);
     NUX_ASSERT(c);
     c->a        = a;
     c->b        = b;

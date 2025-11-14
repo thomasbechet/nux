@@ -9,7 +9,7 @@ nux_test_vector (void)
     NUX_ASSERT(&v.vec.capa == &v.capa);
     NUX_ASSERT(&v.vec.size == &v.size);
     NUX_ASSERT((void *)&v.vec.data == (void *)&v.data);
-    NUX_ASSERT(nux_vec_init(&v, nux_arena_core()));
+    nux_vec_init(&v, nux_arena_core());
     NUX_ASSERT(v.size == 0 && v.capa == 0);
     *nux_vec_push(&v) = 1;
     *nux_vec_push(&v) = 2;

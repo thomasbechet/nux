@@ -125,12 +125,11 @@ nux_texture_cleanup (void *data)
     nux_texture_t         *tex = data;
     if (tex->gpu.slot)
     {
-        nux_u32_vec_pushv(&gfx->free_texture_slots, tex->gpu.slot);
+        nux_vec_pushv(&gfx->free_texture_slots, tex->gpu.slot);
     }
     if (tex->gpu.framebuffer_slot)
     {
-        nux_u32_vec_pushv(&gfx->free_framebuffer_slots,
-                          tex->gpu.framebuffer_slot);
+        nux_vec_pushv(&gfx->free_framebuffer_slots, tex->gpu.framebuffer_slot);
     }
 }
 nux_texture_t *

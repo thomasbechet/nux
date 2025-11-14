@@ -68,7 +68,7 @@ event_subscribe (lua_State *L)
     nux_event_handler_t *handler
         = nux_event_subscribe(arena, event, module, event_handler);
     l_checkerror(L);
-    if (!nux_ptr_vec_pushv(&module->event_handles, handler))
+    if (!nux_vec_pushv(&module->event_handles, handler))
     {
         luaL_error(L, "failed to add handler to lua module");
     }
@@ -87,7 +87,7 @@ event_unsubscribe (lua_State *L)
         nux_event_handler_t *handler = module->event_handles.data[i];
         if (nux_event_handler_event(handler) == nux_resource_rid(event))
         {
-            nux_ptr_vec_swap_pop(&module->event_handles, i);
+            nux_vec_swap_pop(&module->event_handles, i);
             return 0;
         }
     }

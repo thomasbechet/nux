@@ -36,10 +36,8 @@ nux_world_new (nux_arena_t *a)
     nux_world_t *world = nux_resource_new(a, NUX_RESOURCE_WORLD);
     NUX_CHECK(world, return NUX_NULL);
     world->free = NUX_NULL;
-    NUX_CHECK(
-        nux_object_vec_init_capa(a, NUX_WORLD_DEFAULT_CAPA, &world->objects),
-        return NUX_NULL);
-    nux_object_vec_push(&world->objects); // Reserve first for null
+    nux_vec_init_capa(&world->objects, a, NUX_WORLD_DEFAULT_CAPA);
+    nux_vec_push(&world->objects); // Reserve first for null
     return world;
 }
 void
@@ -77,10 +75,11 @@ nux_object_create (void)
     }
     else
     {
-        object = nux_object_vec_push(&world->objects);
+        object = nux_vec_push(&world->objects);
         NUX_CHECK(object, return NUX_NULL);
     }
     // object->oid
+    return NUX_NULL;
 }
 void
 nux_object_delete (nux_oid_t oid)

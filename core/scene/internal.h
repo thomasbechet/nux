@@ -12,8 +12,7 @@ typedef enum
 } nux_scene_constants_t;
 
 typedef nux_u32_t nux_scene_mask_t;
-NUX_VEC_DEFINE(nux_scene_bitset, nux_scene_mask_t);
-NUX_VEC_DEFINE(nux_scene_chunk_vec, void *);
+typedef nux_vec(nux_scene_mask_t) nux_scene_bitset_t;
 
 typedef struct
 {
@@ -23,25 +22,21 @@ typedef struct
     nux_nid_t child;
 } nux_node_t;
 
-NUX_VEC_DEFINE(nux_node_vec, nux_node_t);
-
 typedef struct
 {
-    nux_u32_t             capa;
-    nux_scene_chunk_vec_t chunks;
-    nux_scene_bitset_t    bitset;
-    nux_u32_t             component_size;
+    nux_u32_t capa;
+    nux_vec(void *) chunks;
+    nux_scene_bitset_t bitset;
+    nux_u32_t          component_size;
 } nux_scene_container_t;
-
-NUX_VEC_DEFINE(nux_scene_container_vec, nux_scene_container_t);
 
 struct nux_scene
 {
-    nux_arena_t              *arena;
-    nux_scene_bitset_t        bitset;
-    nux_node_vec_t            nodes;
-    nux_scene_container_vec_t containers;
-    nux_nid_t                 root;
+    nux_arena_t       *arena;
+    nux_scene_bitset_t bitset;
+    nux_vec(nux_node_t) nodes;
+    nux_vec(nux_scene_container_t) containers;
+    nux_nid_t root;
 };
 
 struct nux_query

@@ -8,6 +8,7 @@ typedef struct
     nux_u32_t size;
 } nux_os_file_stat_t;
 
+NUX_API void  nux_os_panic(void);
 NUX_API void *nux_os_alloc(void *p, nux_u32_t osize, nux_u32_t nsize);
 NUX_API void  nux_os_log(nux_log_level_t level,
                          const nux_c8_t *log,

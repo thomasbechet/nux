@@ -40,8 +40,8 @@ typedef struct
 
 struct nux_lua_t
 {
-    nux_u32_t     ref;
-    nux_ptr_vec_t event_handles;
+    nux_u32_t ref;
+    nux_vec(nux_event_handler_t *) event_handles;
 };
 
 nux_status_t nux_lua_configure(nux_config_t *config);

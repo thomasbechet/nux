@@ -4,10 +4,6 @@
 
 static nux_graphics_module_t _module;
 
-NUX_VEC_IMPL(nux_gpu_command_vec, nux_gpu_command_t)
-NUX_VEC_IMPL(nux_graphics_command_vec, nux_graphics_command_t)
-NUX_VEC_IMPL(nux_immediate_state_vec, nux_immediate_state_t);
-
 static nux_status_t
 update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
 {
@@ -114,7 +110,7 @@ module_update (void)
     for (nux_u32_t i = 0; i < viewports_count; ++i)
     {
         nux_viewport_t *viewport = viewports[i];
-        nux_v4_t        extent = nux_viewport_normalized_viewport(viewport);
+        nux_v4_t        extent   = nux_viewport_normalized_viewport(viewport);
 
         nux_texture_t *target
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
@@ -139,7 +135,7 @@ module_update (void)
     }
 
     // Clear frame buffers
-    nux_graphics_command_vec_clear(&_module.immediate_commands);
+    nux_vec_clear(&_module.immediate_commands);
 }
 static nux_status_t
 module_init (void)
@@ -197,18 +193,11 @@ module_init (void)
                            });
 
     // Initialize gpu slots
-    NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_FRAMEBUFFER_MAX, &_module.free_framebuffer_slots),
-              goto error);
-    NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_PIPELINE_MAX, &_module.free_pipeline_slots),
-              goto error);
-    NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_TEXTURE_MAX, &_module.free_texture_slots),
-              goto error);
-    NUX_CHECK(nux_u32_vec_init_capa(
-                  a, NUX_GPU_BUFFER_MAX, &_module.free_buffer_slots),
-              goto error);
+    nux_vec_init_capa(
+        &_module.free_framebuffer_slots, a, NUX_GPU_FRAMEBUFFER_MAX);
+    nux_vec_init_capa(&_module.free_pipeline_slots, a, NUX_GPU_PIPELINE_MAX);
+    nux_vec_init_capa(&_module.free_texture_slots, a, NUX_GPU_TEXTURE_MAX);
+    nux_vec_init_capa(&_module.free_buffer_slots, a, NUX_GPU_BUFFER_MAX);
     nux_u32_vec_fill_reversed(&_module.free_framebuffer_slots);
     nux_u32_vec_fill_reversed(&_module.free_pipeline_slots);
     nux_u32_vec_fill_reversed(&_module.free_buffer_slots);
@@ -251,17 +240,14 @@ module_init (void)
     NUX_CHECK(nux_palette_register_default(), goto error);
 
     // Allocate gpu commands buffer
-    NUX_CHECK(nux_gpu_encoder_init(a, &_module.encoder), return NUX_NULL);
+    nux_gpu_encoder_init(a, &_module.encoder);
 
     // Allocate immediate command buffer
-    NUX_CHECK(nux_graphics_command_vec_init(a, &_module.immediate_commands),
-              return NUX_NULL);
-    NUX_CHECK(nux_immediate_state_vec_init_capa(
-                  a,
-                  NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE,
-                  &_module.immediate_states),
-              return NUX_NULL);
-    NUX_ASSERT(nux_immediate_state_vec_push(&_module.immediate_states));
+    nux_vec_init(&_module.immediate_commands, a);
+    nux_vec_init_capa(&_module.immediate_states,
+                      a,
+                      NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE);
+    nux_vec_push(&_module.immediate_states);
 
     // Allocate constants buffer
     _module.constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
@@ -319,7 +305,7 @@ module_init (void)
     _module.screen_target->gpu.framebuffer_slot = 0;
     _module.screen_target->gpu.width            = 1600;
     _module.screen_target->gpu.height           = 900;
-    nux_u32_vec_pop(&_module.free_framebuffer_slots);
+    nux_vec_pop(&_module.free_framebuffer_slots);
 
     return NUX_SUCCESS;
 

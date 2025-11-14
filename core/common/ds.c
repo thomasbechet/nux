@@ -1,15 +1,10 @@
 #include "common.h"
 
-NUX_VEC_IMPL(nux_u32_vec, nux_u32_t);
-NUX_VEC_IMPL(nux_f32_vec, nux_f32_t)
-NUX_VEC_IMPL(nux_v4_vec, nux_v4_t)
-NUX_VEC_IMPL(nux_ptr_vec, void *);
-
 void
 nux_u32_vec_fill_reversed (nux_u32_vec_t *v)
 {
     for (nux_u32_t i = 0; i < (v)->capa; ++i)
     {
-        *nux_u32_vec_push((v)) = (v)->capa - i - 1;
+        nux_vec_pushv(v, v->capa - i - 1);
     }
 }

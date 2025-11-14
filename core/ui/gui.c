@@ -31,7 +31,7 @@ static nux_stylesheet_t *
 active_style (nux_gui_t *gui)
 {
     nux_stylesheet_t *style = nux_resource_get(
-        NUX_RESOURCE_STYLESHEET, *nux_u32_vec_last(&gui->stylesheets));
+        NUX_RESOURCE_STYLESHEET, *nux_vec_last(&gui->stylesheets));
     return style;
 }
 
@@ -58,8 +58,7 @@ nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
     NUX_CHECK(gui, return NUX_NULL);
     gui->canvas = nux_resource_rid(canvas);
     NUX_ASSERT(gui->canvas);
-    NUX_CHECK(nux_u32_vec_init_capa(arena, 1, &gui->stylesheets),
-              return NUX_NULL);
+    nux_vec_init_capa(&gui->stylesheets, arena, 1);
     gui->next_id   = 0;
     gui->active_id = 0;
     gui->hot_id    = 0;
@@ -67,8 +66,7 @@ nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
     {
         gui->controllers[i].mode   = NUX_CONTROLLER_MODE_CURSOR;
         gui->controllers[i].active = NUX_FALSE;
-        gui->controllers[i].cursor
-            = nux_v2i_divs(nux_canvas_size(canvas), 2);
+        gui->controllers[i].cursor = nux_v2i_divs(nux_canvas_size(canvas), 2);
         gui->controllers[i].main_pressed = NUX_FALSE;
     }
     return gui;
@@ -77,12 +75,12 @@ void
 nux_gui_push_style (nux_gui_t *gui, nux_stylesheet_t *stylesheet)
 {
     NUX_CHECK(stylesheet, return);
-    nux_u32_vec_pushv(&gui->stylesheets, nux_resource_rid(stylesheet));
+    nux_vec_pushv(&gui->stylesheets, nux_resource_rid(stylesheet));
 }
 void
 nux_gui_pop_style (nux_gui_t *gui)
 {
-    nux_u32_vec_pop(&gui->stylesheets);
+    nux_vec_pop(&gui->stylesheets);
 }
 
 nux_b32_t

@@ -7,6 +7,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # add_compile_options(-pg)
 # add_link_options(-pg)
 
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Werror")
+
 # Add constants
 if (NUX_BUILD_TRACE)
     add_definitions(-DNUX_BUILD_TRACE)

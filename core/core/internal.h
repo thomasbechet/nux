@@ -27,8 +27,6 @@ typedef struct
     nux_u32_t           last_entry_index;
 } nux_resource_type_t;
 
-NUX_POOL_DEFINE(nux_resource_pool, nux_resource_entry_t);
-
 typedef struct
 {
     nux_module_info_t info;
@@ -36,15 +34,11 @@ typedef struct
     nux_u32_t         order; // initialization order
 } nux_module_t;
 
-NUX_VEC_DEFINE(nux_module_vec, nux_module_t);
-
 typedef struct
 {
     nux_system_phase_t    phase;
     nux_system_callback_t callback;
 } nux_system_t;
-
-NUX_VEC_DEFINE(nux_system_vec, nux_system_t);
 
 typedef enum
 {
@@ -53,15 +47,6 @@ typedef enum
     DEFAULT_MODULE_DEPENDENCIES_CAPACITY = 64,
     ARENA_ALLOCATOR_TYPE                 = 12345,
 } nux_base_defaults_t;
-
-struct nux_event_handler_t
-{
-    void                       *userdata;
-    nux_rid_t                   event;
-    struct nux_event_handler_t *next;
-    struct nux_event_handler_t *prev;
-    nux_event_callback_t        callback;
-};
 
 typedef struct nux_event_header
 {
@@ -76,6 +61,15 @@ struct nux_event_t
     nux_event_handler_t *first_handler;
     nux_event_header_t  *first_event;
     nux_event_cleanup_t  cleanup;
+};
+
+struct nux_event_handler_t
+{
+    void                       *userdata;
+    nux_rid_t                   event;
+    struct nux_event_handler_t *next;
+    struct nux_event_handler_t *prev;
+    nux_event_callback_t        callback;
 };
 
 typedef enum
@@ -148,6 +142,8 @@ typedef struct nux_disk
     };
 } nux_disk_t;
 
+typedef nux_pool(nux_resource_entry_t) nux_resource_pool_t;
+
 typedef struct
 {
     nux_config_t        config;
@@ -162,13 +158,11 @@ typedef struct
     nux_c8_t            error_message[256];
     nux_status_t        error_status;
     nux_status_t        error_enable;
-    nux_allocator_t     os_allocator;
-    nux_block_arena_t   core_block_arena;
     nux_arena_t        *core_arena;
 
-    nux_module_vec_t modules;
-    nux_u32_t        modules_init_order;
-    nux_system_vec_t systems;
+    nux_vec(nux_module_t) modules;
+    nux_u32_t modules_init_order;
+    nux_vec(nux_system_t) systems;
 
     nux_cart_writer_t cart_writer;
     nux_u32_vec_t     free_file_slots;
@@ -179,7 +173,6 @@ nux_core_module_t *nux_core(void);
 nux_pcg_t           *nux_core_pcg(void);
 nux_resource_pool_t *nux_core_resources(void);
 nux_resource_type_t *nux_core_resource_types(void);
-nux_allocator_t     *nux_os_allocator(void);
 
 nux_resource_entry_t *nux_resource_add(nux_resource_pool_t *resources,
                                        nux_u32_t            type);
@@ -189,6 +182,7 @@ void  nux_resource_header_init(nux_resource_header_t *header, nux_rid_t rid);
 void *nux_resource_header_to_data(nux_resource_header_t *header);
 nux_resource_header_t *nux_resource_header_from_data(void *data);
 
+void nux_arena_init_core(nux_arena_t *arena);
 void nux_arena_cleanup(void *data);
 
 nux_status_t nux_io_init(void);

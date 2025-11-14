@@ -51,10 +51,6 @@ typedef struct
     float     d; // distance
 } nux_distance_constraint_t;
 
-NUX_VEC_DEFINE(nux_point_mass_vec, nux_point_mass_t);
-NUX_VEC_DEFINE(nux_collision_constraint_vec, nux_collision_constraint_t);
-NUX_VEC_DEFINE(nux_distance_constraint_vec, nux_distance_constraint_t);
-
 typedef struct
 {
     nux_u32_t first;
@@ -81,12 +77,12 @@ typedef struct
 
 typedef struct
 {
-    nux_point_mass_vec_t           point_masses;
-    nux_collision_constraint_vec_t collision_constraints;
-    nux_distance_constraint_vec_t  distance_constraints;
-    nux_query_t                   *rigidbody_transform_iter;
-    nux_query_t                   *collider_transform_iter;
-    nux_f32_t                      ground_height;
+    nux_vec(nux_point_mass_t) point_masses;
+    nux_vec(nux_collision_constraint_t) collision_constraints;
+    nux_vec(nux_distance_constraint_t) distance_constraints;
+    nux_query_t *rigidbody_transform_iter;
+    nux_query_t *collider_transform_iter;
+    nux_f32_t    ground_height;
 } nux_physics_module_t;
 
 void                  nux_physics_module_register(void);

@@ -1,6 +1,6 @@
 #include "common.h"
 
-nux_status_t
+void
 nux__pool_init_capa (nux_pool_t  *pool,
                      nux_arena_t *arena,
                      nux_u32_t    osize,
@@ -9,14 +9,8 @@ nux__pool_init_capa (nux_pool_t  *pool,
     pool->osize = osize;
     pool->capa  = capa;
     pool->size  = 0;
-    NUX_CHECK(nux_vec_init_capa(&pool->freelist, arena, capa),
-              return NUX_FAILURE);
+    nux_vec_init_capa(&pool->freelist, arena, capa);
     pool->data = nux_arena_malloc(arena, osize * capa);
-    if (capa && !pool->data)
-    {
-        return NUX_FAILURE;
-    }
-    return NUX_SUCCESS;
 }
 void *
 nux__pool_add (nux_pool_t *pool)
@@ -55,6 +49,5 @@ nux__pool_remove (nux_pool_t *pool, void *i)
     nux_u32_t index
         = ((nux_intptr_t)i - (nux_intptr_t)pool->data) / pool->osize;
     NUX_ASSERT(index < pool->size);
-    --pool->size;
     *nux_vec_push(&pool->freelist) = index;
 }

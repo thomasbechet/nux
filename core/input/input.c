@@ -2,9 +2,6 @@
 
 static nux_input_module_t _module;
 
-NUX_VEC_IMPL(nux_input_event_vec, nux_input_event_t);
-NUX_VEC_IMPL(nux_inputmap_entry_vec, nux_inputmap_entry_t);
-
 static void
 dispatch_event (const nux_input_event_t *event)
 {
@@ -138,7 +135,7 @@ module_update (void)
 static void
 module_post_update (void)
 {
-    nux_input_event_vec_clear(&_module.input_events);
+    nux_vec_clear(&_module.input_events);
 }
 static nux_status_t
 module_init (void)
@@ -155,18 +152,16 @@ module_init (void)
                                 .size = sizeof(nux_inputmap_t) });
 
     // Allocate events queue
-    NUX_CHECK(nux_input_event_vec_init_capa(
-                  a, DEFAULT_INPUT_EVENT_SIZE, &_module.input_events),
-              return NUX_FAILURE);
+    nux_vec_init_capa(&_module.input_events, a, DEFAULT_INPUT_EVENT_SIZE);
 
     for (nux_u32_t i = 0; i < NUX_CONTROLLER_MAX; ++i)
     {
         nux_controller_t *controller = _module.controllers + i;
         controller->inputmap         = NUX_NULL;
-        nux_f32_vec_init_capa(
-            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->inputs);
-        nux_f32_vec_init_capa(
-            a, DEFAULT_CONTROLLER_INPUT_SIZE, &controller->prev_inputs);
+        nux_vec_init_capa(
+            &controller->inputs, a, DEFAULT_CONTROLLER_INPUT_SIZE);
+        nux_vec_init_capa(
+            &controller->prev_inputs, a, DEFAULT_CONTROLLER_INPUT_SIZE);
     }
 
     return NUX_SUCCESS;
@@ -182,11 +177,11 @@ nux_core_push_event (nux_os_event_t *event)
 {
     if (event->type == NUX_OS_EVENT_INPUT)
     {
-        nux_input_event_vec_pushv(&_module.input_events, event->input);
+        nux_vec_pushv(&_module.input_events, event->input);
     }
 }
 
-nux_status_t
+void
 nux_controller_resize_values (nux_inputmap_t *map)
 {
     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(_module.controllers); ++i)
@@ -194,22 +189,20 @@ nux_controller_resize_values (nux_inputmap_t *map)
         nux_controller_t *controller = _module.controllers + i;
         if (controller->inputmap == nux_resource_rid(map))
         {
-            NUX_CHECK(
-                nux_f32_vec_resize(&controller->inputs, map->entries.size),
-                return NUX_FAILURE);
+            nux_vec_resize(&controller->inputs, map->entries.size);
         }
     }
-    return NUX_SUCCESS;
 }
 
-void
+nux_status_t
 nux_input_set_inputmap (nux_u32_t controller, nux_inputmap_t *map)
 {
-    NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers), return);
+    nux_checkf(controller < NUX_ARRAY_SIZE(_module.controllers));
     nux_controller_t *ctrl = _module.controllers + controller;
     ctrl->inputmap         = nux_resource_rid(map);
-    nux_f32_vec_resize(&ctrl->inputs, map->entries.size);
-    nux_f32_vec_resize(&ctrl->prev_inputs, map->entries.size);
+    nux_vec_resize(&ctrl->inputs, map->entries.size);
+    nux_vec_resize(&ctrl->prev_inputs, map->entries.size);
+    return NUX_SUCCESS;
 }
 nux_b32_t
 nux_input_pressed (nux_u32_t controller, const nux_c8_t *name)

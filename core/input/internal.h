@@ -3,8 +3,6 @@
 
 #include <input/platform.h>
 
-NUX_VEC_DEFINE(nux_input_event_vec, nux_input_event_t);
-
 typedef enum
 {
     DEFAULT_INPUT_EVENT_SIZE      = 32,
@@ -26,12 +24,10 @@ typedef struct
     nux_f32_t sensivity;
 } nux_inputmap_entry_t;
 
-NUX_VEC_DEFINE(nux_inputmap_entry_vec, nux_inputmap_entry_t);
-
 struct nux_inputmap_t
 {
-    nux_inputmap_entry_vec_t entries;
-    nux_u32_t                cursor_motions[4];
+    nux_vec(nux_inputmap_entry_t) entries;
+    nux_u32_t cursor_motions[4];
 };
 
 typedef struct
@@ -39,20 +35,20 @@ typedef struct
     nux_v2_t cursor;
     nux_v2_t cursor_prev;
 
-    nux_rid_t     inputmap;
-    nux_f32_vec_t inputs;
-    nux_f32_vec_t prev_inputs;
+    nux_rid_t inputmap;
+    nux_vec(nux_f32_t) inputs;
+    nux_vec(nux_f32_t) prev_inputs;
 } nux_controller_t;
 
 typedef struct
 {
-    nux_controller_t      controllers[NUX_CONTROLLER_MAX];
-    nux_input_event_vec_t input_events;
+    nux_controller_t controllers[NUX_CONTROLLER_MAX];
+    nux_vec(nux_input_event_t) input_events;
 } nux_input_module_t;
 
 void nux_input_module_register(void);
 
-nux_status_t nux_controller_resize_values(nux_inputmap_t *map);
+void nux_controller_resize_values(nux_inputmap_t *map);
 
 nux_status_t nux_inputmap_find_index(const nux_inputmap_t *map,
                                      const nux_c8_t       *name,

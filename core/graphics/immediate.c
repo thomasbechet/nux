@@ -22,8 +22,7 @@ draw_line (nux_v3_t a, nux_v3_t b)
         nux_graphics_push_frame_vertices(vertex_count * stride, data, &offset),
         return);
 
-    nux_graphics_command_t *cmd
-        = nux_graphics_command_vec_push(&gfx->immediate_commands);
+    nux_graphics_command_t *cmd = nux_vec_push(&gfx->immediate_commands);
     NUX_CHECK(cmd, return);
     cmd->vertex_offset     = offset;
     cmd->vertex_count      = vertex_count;
@@ -36,9 +35,8 @@ draw_line (nux_v3_t a, nux_v3_t b)
 void
 nux_graphics_begin_state (void)
 {
-    nux_graphics_module_t *gfx = nux_graphics();
-    nux_immediate_state_t *state
-        = nux_immediate_state_vec_push(&gfx->immediate_states);
+    nux_graphics_module_t *gfx   = nux_graphics();
+    nux_immediate_state_t *state = nux_vec_push(&gfx->immediate_states);
     NUX_CHECK(gfx->immediate_state, return);
     gfx->immediate_state = state;
     nux_graphics_reset_state();
@@ -51,7 +49,7 @@ nux_graphics_end_state (void)
         gfx->immediate_states.size > 1, return, "invalid graphics end state");
     gfx->immediate_state
         = gfx->immediate_states.data + gfx->immediate_states.size;
-    nux_immediate_state_vec_pop(&gfx->immediate_states);
+    nux_vec_pop(&gfx->immediate_states);
 }
 void
 nux_graphics_reset_state (void)

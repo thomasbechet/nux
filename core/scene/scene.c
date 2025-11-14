@@ -2,11 +2,6 @@
 
 static nux_scene_module_t _module;
 
-NUX_VEC_IMPL(nux_scene_bitset, nux_scene_mask_t);
-NUX_VEC_IMPL(nux_scene_chunk_vec, void *);
-NUX_VEC_IMPL(nux_scene_container_vec, nux_scene_container_t);
-NUX_VEC_IMPL(nux_node_vec, nux_node_t);
-
 static void
 mask_set (nux_scene_mask_t *mask, nux_u32_t n)
 {
@@ -39,20 +34,16 @@ bitset_isset (const nux_scene_bitset_t *bitset, nux_u32_t index)
     nux_u32_t offset = index % NUX_NODE_PER_MASK;
     return (mask < bitset->size && mask_isset(bitset->data[mask], offset));
 }
-static nux_status_t
+static void
 bitset_set (nux_scene_bitset_t *bitset, nux_u32_t index)
 {
     nux_u32_t mask   = index / NUX_NODE_PER_MASK;
     nux_u32_t offset = index % NUX_NODE_PER_MASK;
     while (bitset->size <= mask)
     {
-        if (!nux_scene_bitset_pushv(bitset, 0x0))
-        {
-            return NUX_FAILURE;
-        }
+        nux_vec_pushv(bitset, 0x0);
     }
     mask_set(&bitset->data[mask], offset);
-    return NUX_SUCCESS;
 }
 static nux_b32_t
 bitset_unset (nux_scene_bitset_t *bitset, nux_u32_t index)
@@ -218,13 +209,11 @@ nux_query_new (nux_arena_t *arena,
     NUX_CHECK(it, return NUX_NULL);
     if (include_count)
     {
-        NUX_CHECK(nux_u32_vec_init_capa(arena, include_count, &it->includes),
-                  return NUX_NULL);
+        nux_vec_init_capa(&it->includes, arena, include_count);
     }
     if (exclude_count)
     {
-        NUX_CHECK(nux_u32_vec_init_capa(arena, exclude_count, &it->excludes),
-                  return NUX_NULL);
+        nux_vec_init_capa(&it->excludes, arena, exclude_count);
     }
     return it;
 }
@@ -236,12 +225,12 @@ nux_query_new_any (nux_arena_t *arena)
 void
 nux_query_includes (nux_query_t *it, nux_u32_t c)
 {
-    nux_u32_vec_pushv(&it->includes, c);
+    nux_vec_pushv(&it->includes, c);
 }
 void
 nux_query_excludes (nux_query_t *it, nux_u32_t c)
 {
-    nux_u32_vec_pushv(&it->excludes, c);
+    nux_vec_pushv(&it->excludes, c);
 }
 static nux_nid_t
 query_next (const nux_scene_t *ins, nux_query_t *it)
@@ -317,16 +306,13 @@ nux_scene_new (nux_arena_t *arena)
     nux_scene_t *scene = nux_resource_new(arena, NUX_RESOURCE_SCENE);
     NUX_CHECK(scene, return NUX_NULL);
     scene->arena = arena;
-    NUX_CHECK(nux_scene_container_vec_init_capa(
-                  arena, _module.components_max, &scene->containers),
-              return NUX_NULL);
-    NUX_CHECK(nux_scene_bitset_init(arena, &scene->bitset), return NUX_NULL);
-    NUX_CHECK(nux_node_vec_init(arena, &scene->nodes), return NUX_NULL);
+    nux_vec_init_capa(&scene->containers, arena, _module.components_max);
+    nux_vec_init(&scene->bitset, arena);
+    nux_vec_init(&scene->nodes, arena);
     // create root node
-    nux_node_t *root = nux_node_vec_push(&scene->nodes);
-    NUX_CHECK(root, return NUX_NULL);
+    nux_node_t *root = nux_vec_push(&scene->nodes);
     nux_memset(root, 0, sizeof(*root));
-    NUX_CHECK(bitset_set(&scene->bitset, 0), return NUX_NULL);
+    bitset_set(&scene->bitset, 0);
     scene->root = NUX_NID_MAKE(0);
     return scene;
 }
@@ -371,9 +357,9 @@ nux_scene_clear (void)
     for (nux_u32_t i = 0; i < scene->containers.size; ++i)
     {
         nux_scene_container_t *container = scene->containers.data + i;
-        nux_scene_bitset_clear(&container->bitset);
+        nux_vec_clear(&container->bitset);
     }
-    nux_scene_bitset_clear(&scene->bitset);
+    nux_vec_clear(&scene->bitset);
 }
 
 nux_nid_t
@@ -387,11 +373,11 @@ nux_node_create (nux_nid_t parent)
     {
         index = scene->bitset.size * NUX_NODE_PER_MASK;
     }
-    NUX_CHECK(bitset_set(&scene->bitset, index), return NUX_NULL);
+    bitset_set(&scene->bitset, index);
     while (index >= scene->nodes.size)
     {
         // ensure growth factor with resize
-        NUX_CHECK(nux_node_vec_push(&scene->nodes), return NUX_NULL);
+        NUX_CHECK(nux_vec_push(&scene->nodes), return NUX_NULL);
     }
     nux_nid_t nid = NUX_NID_MAKE(index);
     nux_memset(&scene->nodes.data[index], 0, sizeof(nux_node_t));
@@ -503,17 +489,12 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
     // initialize pool if component missing
     while (c >= scene->containers.size)
     {
-        nux_u32_t              index = scene->containers.size;
-        nux_scene_container_t *container
-            = nux_scene_container_vec_push(&scene->containers);
+        nux_u32_t              index     = scene->containers.size;
+        nux_scene_container_t *container = nux_vec_push(&scene->containers);
         NUX_CHECK(container, return NUX_NULL);
         container->component_size = _module.components[index].info.size;
-        NUX_CHECK(nux_scene_chunk_vec_init_capa(
-                      scene->arena, scene->bitset.capa, &container->chunks),
-                  return NUX_NULL);
-        NUX_CHECK(nux_scene_bitset_init_capa(
-                      scene->arena, scene->bitset.capa, &container->bitset),
-                  return NUX_NULL);
+        nux_vec_init_capa(&container->chunks, scene->arena, scene->bitset.capa);
+        nux_vec_init_capa(&container->bitset, scene->arena, scene->bitset.capa);
     }
 
     nux_scene_container_t *container = scene->containers.data + c;
@@ -528,10 +509,7 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         nux_u32_t mask = index / NUX_NODE_PER_MASK;
         while (mask >= container->chunks.size)
         {
-            if (!nux_scene_chunk_vec_pushv(&container->chunks, NUX_NULL))
-            {
-                return NUX_NULL;
-            }
+            nux_vec_pushv(&container->chunks, NUX_NULL);
         }
 
         // check if chunk exists

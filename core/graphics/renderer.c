@@ -143,11 +143,11 @@ draw_box (nux_gpu_encoder_t     *enc,
 void
 nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 {
-    nux_graphics_module_t *gfx = nux_graphics();
-    nux_gpu_encoder_t     *enc = &gfx->encoder;
-    nux_v4_t       extent      = nux_viewport_normalized_viewport(viewport);
-    nux_nid_t      camera      = viewport->source.camera;
-    nux_texture_t *target
+    nux_graphics_module_t *gfx    = nux_graphics();
+    nux_gpu_encoder_t     *enc    = &gfx->encoder;
+    nux_v4_t               extent = nux_viewport_normalized_viewport(viewport);
+    nux_nid_t              camera = viewport->source.camera;
+    nux_texture_t         *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
     NUX_ASSERT(target);
 
@@ -210,7 +210,10 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             }
             nux_m4_t    global_matrix = nux_transform_matrix(it);
             nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
-            NUX_ASSERT(m);
+            if (!m)
+            {
+                continue;
+            }
             nux_texture_t *tex = NUX_NULL;
             if (sm->texture)
             {

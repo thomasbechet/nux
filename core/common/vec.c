@@ -1,23 +1,18 @@
 #include "common.h"
 
-nux_status_t
+void
 nux__vec_init_capa (nux_vec_t   *vec,
                     nux_arena_t *a,
                     nux_u32_t    osize,
                     nux_u32_t    capa)
 {
-    vec->data = nux_arena_malloc(a, osize * capa);
-    if (capa && !vec->data)
-    {
-        return NUX_FAILURE;
-    }
+    vec->data  = nux_arena_malloc(a, osize * capa);
     vec->arena = a;
     vec->osize = osize;
     vec->size  = 0;
     vec->capa  = capa;
-    return NUX_SUCCESS;
 }
-nux_status_t
+void
 nux__vec_reserve (nux_vec_t *vec, nux_u32_t capa)
 {
     if (capa > vec->capa)
@@ -26,16 +21,13 @@ nux__vec_reserve (nux_vec_t *vec, nux_u32_t capa)
         vec->capa          = capa;
         vec->data          = nux_arena_realloc(
             vec->arena, vec->data, vec->osize * old_capa, vec->osize * capa);
-        NUX_CHECK(vec->data, return NUX_FAILURE);
     }
-    return NUX_SUCCESS;
 }
-nux_status_t
+void
 nux__vec_resize (nux_vec_t *vec, nux_u32_t size)
 {
-    NUX_CHECK(nux__vec_reserve(vec, size), return NUX_FAILURE);
+    nux__vec_reserve(vec, size);
     vec->size = size;
-    return NUX_SUCCESS;
 }
 void *
 nux__vec_get (nux_vec_t *vec, nux_u32_t i)
@@ -57,8 +49,7 @@ nux__vec_push (nux_vec_t *vec)
 {
     if (vec->size >= vec->capa)
     {
-        NUX_CHECK(nux__vec_reserve(vec, vec->capa ? vec->capa * 2 : 1),
-                  return NUX_NULL);
+        nux__vec_reserve(vec, vec->capa ? vec->capa * 2 : 1);
     }
     ++vec->size;
     return nux__vec_last(vec);

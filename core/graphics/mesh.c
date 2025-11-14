@@ -120,8 +120,8 @@ nux_mesh_push_vertices (nux_mesh_t     *mesh,
                         const nux_v3_t *colors)
 {
     nux_u32_t vertex_count = nux_mesh_size(mesh);
-    nux_f32_vec_resize(&mesh->vertices,
-                       mesh->vertices.size + count * mesh->layout.stride);
+    nux_vec_resize(&mesh->vertices,
+                   mesh->vertices.size + count * mesh->layout.stride);
     nux_f32_t *data = mesh->vertices.data + vertex_count * mesh->layout.stride;
     for (nux_u32_t i = 0; i < count; ++i)
     {
@@ -158,9 +158,7 @@ nux_mesh_new (nux_arena_t           *arena,
     mesh->attributes = attributes;
     mesh->primitive  = primitive;
     mesh->layout     = vertex_layout(mesh->attributes);
-    NUX_CHECK(nux_f32_vec_init_capa(
-                  arena, mesh->layout.stride * capa, &mesh->vertices),
-              return NUX_NULL);
+    nux_vec_init_capa(&mesh->vertices, arena, mesh->layout.stride * capa);
     mesh->bounds       = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
     mesh->dirty        = NUX_TRUE;
     mesh->gpu.offset   = 0;

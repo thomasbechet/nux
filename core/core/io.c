@@ -18,9 +18,7 @@ nux_io_init (void)
                           });
 
     // Initialize files
-    NUX_CHECK(nux_u32_vec_init_capa(
-                  nux_arena_core(), NUX_FILE_MAX, &module->free_file_slots),
-              return NUX_FAILURE);
+    nux_vec_init_capa(&module->free_file_slots, nux_arena_core(), NUX_FILE_MAX);
 
     // Initialize values
     nux_u32_vec_fill_reversed(&module->free_file_slots);
@@ -50,7 +48,7 @@ nux_io_open_os_file (const nux_c8_t *path,
                return NUX_NULL,
                "trying to open a directory '%s' as file",
                normpath);
-    nux_u32_t *slot = nux_u32_vec_pop(&module->free_file_slots);
+    nux_u32_t *slot = nux_vec_pop(&module->free_file_slots);
     NUX_ENSURE(slot, return NUX_NULL, "out of os file slots");
     NUX_ENSURE(nux_os_file_open(*slot, normpath, len, mode),
                goto cleanup,
@@ -59,7 +57,7 @@ nux_io_open_os_file (const nux_c8_t *path,
     *ret_slot = *slot;
     return NUX_SUCCESS;
 cleanup:
-    nux_u32_vec_pushv(&module->free_file_slots, *slot);
+    nux_vec_pushv(&module->free_file_slots, *slot);
     return NUX_FAILURE;
 }
 void
@@ -67,7 +65,7 @@ nux_io_close_os_file (nux_u32_t slot)
 {
     nux_core_module_t *module = nux_core();
     nux_os_file_close(slot);
-    nux_u32_vec_pushv(&module->free_file_slots, slot);
+    nux_vec_pushv(&module->free_file_slots, slot);
 }
 
 static nux_status_t

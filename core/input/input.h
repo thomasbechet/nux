@@ -215,10 +215,10 @@ void            nux_inputmap_bind_mouse_axis(nux_inputmap_t  *map,
                                              nux_mouse_axis_t axis,
                                              nux_f32_t        sensivity);
 
-void      nux_input_set_inputmap(nux_u32_t controller, nux_inputmap_t *map);
-nux_b32_t nux_input_pressed(nux_u32_t controller, const nux_c8_t *name);
-nux_b32_t nux_input_released(nux_u32_t controller, const nux_c8_t *name);
-nux_b32_t nux_input_just_pressed(nux_u32_t controller, const nux_c8_t *name);
+nux_status_t nux_input_set_inputmap(nux_u32_t controller, nux_inputmap_t *map);
+nux_b32_t    nux_input_pressed(nux_u32_t controller, const nux_c8_t *name);
+nux_b32_t    nux_input_released(nux_u32_t controller, const nux_c8_t *name);
+nux_b32_t    nux_input_just_pressed(nux_u32_t controller, const nux_c8_t *name);
 nux_b32_t nux_input_just_released(nux_u32_t controller, const nux_c8_t *name);
 nux_f32_t nux_input_value(nux_u32_t controller, const nux_c8_t *name);
 nux_v2_t  nux_input_cursor(nux_u32_t controller);

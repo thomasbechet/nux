@@ -18,14 +18,24 @@
 // nux_block_arena_clear(&arena->block_allocator);
 // }
 
+static void
+oom_panic (void *userdata)
+{
+    NUX_ERROR("out of memory");
+    nux_os_panic();
+}
+static void *
+os_alloc (void *userdata, void *optr, nux_u32_t osize, nux_u32_t nsize)
+{
+    return nux_os_alloc(optr, osize, nsize);
+}
+
 nux_arena_t *
 nux_arena_new (nux_arena_t *arena)
 {
-    nux_block_arena_t *ba = nux_arena_malloc(arena, sizeof(*ba));
-    NUX_CHECK(ba, return NUX_NULL);
     nux_arena_t *a = nux_resource_new(arena, NUX_RESOURCE_ARENA);
     NUX_CHECK(a, return NUX_NULL);
-    nux_block_arena_init(a, ba, nux_os_allocator());
+    nux_arena_init_core(a);
     return a;
 }
 nux_u32_t
@@ -37,6 +47,12 @@ nux_u32_t
 nux_arena_memory_usage (nux_arena_t *arena)
 {
     return nux_arena_info(arena).memory_usage;
+}
+
+void
+nux_arena_init_core (nux_arena_t *arena)
+{
+    nux_arena_init(arena, nullptr, os_alloc, oom_panic);
 }
 void
 nux_arena_cleanup (void *data)

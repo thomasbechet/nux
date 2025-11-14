@@ -35,12 +35,10 @@ typedef struct
     };
 } nux_object_t;
 
-NUX_VEC_DEFINE(nux_object_vec, nux_object_t);
-
 typedef struct nux_world_t
 {
-    nux_object_vec_t objects;
-    nux_u32_t        free;
+    nux_vec(nux_object_t) objects;
+    nux_u32_t free;
 } nux_world_t;
 
 typedef struct

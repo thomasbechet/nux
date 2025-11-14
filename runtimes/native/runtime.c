@@ -105,6 +105,11 @@ runtime_reset (void)
     }
 }
 
+void
+nux_os_panic (void)
+{
+    exit(-1);
+}
 void *
 nux_os_alloc (void *p, nux_u32_t o, nux_u32_t n)
 {
