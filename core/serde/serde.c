@@ -50,7 +50,7 @@ void
 nux_serde_write_end (nux_serde_writer_t *s)
 {
     nux_serde_value_t value;
-    value.key  = NUX_NULL;
+    value.key  = nullptr;
     value.type = NUX_SERDE_END;
     nux_serde_write(s, &value);
 }
@@ -164,7 +164,7 @@ void
 nux_serde_read_end (nux_serde_reader_t *s)
 {
     nux_serde_value_t value;
-    value.key  = NUX_NULL;
+    value.key  = nullptr;
     value.type = NUX_SERDE_END;
     nux_serde_read(s, &value);
 }

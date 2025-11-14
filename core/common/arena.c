@@ -10,11 +10,11 @@ nux_arena_init (nux_arena_t               *arena,
     arena->alloc    = alloc;
     arena->panic    = panic;
 
-    arena->last_object          = NUX_NULL;
-    arena->first_header         = NUX_NULL;
-    arena->last_header          = NUX_NULL;
-    arena->head                 = NUX_NULL;
-    arena->end                  = NUX_NULL;
+    arena->last_object          = nullptr;
+    arena->first_header         = nullptr;
+    arena->last_header          = nullptr;
+    arena->head                 = nullptr;
+    arena->end                  = nullptr;
     arena->info.block_size      = NUX_MEM_4M;
     arena->info.block_count     = 0;
     arena->info.memory_usage    = 0;
@@ -46,7 +46,7 @@ nux_arena_malloc (nux_arena_t *a, nux_u32_t size)
 {
     if (!size)
     {
-        return NUX_NULL;
+        return nullptr;
     }
     a->info.memory_usage += size;
     // check available space in current block
@@ -83,7 +83,7 @@ nux_arena_malloc (nux_arena_t *a, nux_u32_t size)
                 a->last_header->next = new_header;
             }
             new_header->prev = a->last_header;
-            new_header->next = NUX_NULL;
+            new_header->next = nullptr;
             a->last_header   = new_header;
             a->head          = (nux_u8_t *)(new_header + 1);
             a->end           = a->head + a->info.block_size * block_count;
@@ -142,9 +142,9 @@ nux_arena_clear (nux_arena_t *a)
     }
     // Clear arena
     a->last_header       = a->first_header;
-    a->head              = NUX_NULL;
-    a->end               = NUX_NULL;
+    a->head              = nullptr;
+    a->end               = nullptr;
     a->info.memory_usage = 0;
     a->info.memory_waste = 0;
-    a->last_object       = NUX_NULL;
+    a->last_object       = nullptr;
 }

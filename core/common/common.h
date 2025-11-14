@@ -18,10 +18,6 @@
 ///        MACROS        ///
 ////////////////////////////
 
-#define NUX_TRUE  1
-#define NUX_FALSE 0
-#define NUX_NULL  0
-
 #define NUX_UNUSED0()
 #define NUX_UNUSED1(a)             (void)(a)
 #define NUX_UNUSED2(a, b)          (void)(a), NUX_UNUSED1(b)

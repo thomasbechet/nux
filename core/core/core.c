@@ -79,24 +79,24 @@ nux_core_init (void)
     // Initialize system state
     _module.config.log.level
         = NUX_LOG_DEBUG; // see errors during initialization
-    _module.running      = NUX_TRUE;
+    _module.running      = true;
     _module.pcg          = nux_pcg(10243124, 1823719241);
-    _module.error_enable = NUX_TRUE;
+    _module.error_enable = true;
     nux_error_reset();
 
     // Initialize configuration
-    _module.config.hotreload                       = NUX_FALSE;
+    _module.config.hotreload                       = false;
     _module.config.log.level                       = NUX_LOG_INFO;
-    _module.config.window.enable                   = NUX_TRUE;
+    _module.config.window.enable                   = true;
     _module.config.window.width                    = 900;
     _module.config.window.height                   = 400;
-    _module.config.scene.enable                    = NUX_TRUE;
-    _module.config.physics.enable                  = NUX_TRUE;
+    _module.config.scene.enable                    = true;
+    _module.config.physics.enable                  = true;
     _module.config.graphics.transforms_buffer_size = 8192;
     _module.config.graphics.batches_buffer_size    = 8192;
     _module.config.graphics.vertices_buffer_size   = (1 << 18) * 5;
-    _module.config.debug.enable                    = NUX_TRUE;
-    _module.config.debug.console                   = NUX_TRUE;
+    _module.config.debug.enable                    = true;
+    _module.config.debug.console                   = true;
 
     // Register systems
     nux_system_register(NUX_SYSTEM_PRE_UPDATE, module_pre_update);
@@ -169,7 +169,7 @@ cleanup:
         NUX_ERROR("%s", nux_error_message());
     }
     nux_core_free();
-    return NUX_NULL;
+    return NUX_FAILURE;
 }
 void
 nux_core_free (void)
@@ -275,7 +275,7 @@ nux_error_report (const nux_c8_t *fmt, ...)
         va_end(args);
 #ifdef NUX_BUILD_DEBUG
         NUX_ERROR("%s", nux_error_message());
-        NUX_ASSERT(NUX_FALSE);
+        NUX_ASSERT(false);
 #endif
         _module.error_status = NUX_FAILURE;
     }
@@ -283,12 +283,12 @@ nux_error_report (const nux_c8_t *fmt, ...)
 void
 nux_error_enable (void)
 {
-    _module.error_enable = NUX_TRUE;
+    _module.error_enable = true;
 }
 void
 nux_error_disable (void)
 {
-    _module.error_enable = NUX_FALSE;
+    _module.error_enable = false;
 }
 void
 nux_error_reset (void)

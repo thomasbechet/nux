@@ -14,7 +14,7 @@ mark_dirty (nux_u32_t e)
             child = nux_node_sibling(child);
         }
     }
-    t->dirty = NUX_TRUE;
+    t->dirty = true;
 }
 
 nux_m4_t
@@ -28,7 +28,7 @@ nux_transform_matrix (nux_nid_t e)
         t->global_matrix = nux_m4_trs(t->translation, t->rotation, t->scale);
         nux_m4_t parent_matrix = nux_transform_matrix(nux_node_parent(e));
         t->global_matrix       = nux_m4_mul(parent_matrix, t->global_matrix);
-        t->dirty               = NUX_FALSE;
+        t->dirty               = false;
     }
 
     return t->global_matrix;
@@ -41,7 +41,7 @@ nux_transform_add (nux_nid_t e, void *data)
     t->translation     = NUX_V3_ZEROS;
     t->rotation        = nux_q4_identity();
     t->scale           = NUX_V3_ONES;
-    t->dirty           = NUX_TRUE;
+    t->dirty           = true;
 }
 nux_status_t
 nux_transform_write (nux_serde_writer_t *s, const void *data)
@@ -59,7 +59,7 @@ nux_transform_read (nux_serde_reader_t *s, void *data)
     nux_serde_read_v3(s, "translation", &transform->translation);
     nux_serde_read_q4(s, "rotation", &transform->rotation);
     nux_serde_read_v3(s, "scale", &transform->scale);
-    transform->dirty = NUX_TRUE;
+    transform->dirty = true;
     return NUX_SUCCESS;
 }
 
@@ -91,7 +91,7 @@ nux_transform_translation (nux_nid_t e)
     NUX_CHECK(t, return NUX_V3_ZEROS);
     nux_v3_t translation;
     nux_m4_trs_decompose(
-        nux_transform_matrix(e), &translation, NUX_NULL, NUX_NULL);
+        nux_transform_matrix(e), &translation, nullptr, nullptr);
     return translation;
 }
 nux_q4_t
@@ -102,7 +102,7 @@ nux_transform_rotation (nux_nid_t e)
     // TODO: rotation decomposition
     // nux_q4_t rotation;
     // nux_m4_trs_decompose(
-    //     nux_transform_get_matrix(e), NUX_NULL, &rotation, NUX_NULL);
+    //     nux_transform_get_matrix(e), nullptr, &rotation, nullptr);
     // return rotation;
     return t->rotation;
 }
@@ -112,7 +112,7 @@ nux_transform_scale (nux_nid_t e)
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
     NUX_CHECK(t, return NUX_V3_ONES);
     nux_v3_t scale;
-    nux_m4_trs_decompose(nux_transform_matrix(e), &scale, NUX_NULL, NUX_NULL);
+    nux_m4_trs_decompose(nux_transform_matrix(e), &scale, nullptr, nullptr);
     return scale;
 }
 void
@@ -241,5 +241,5 @@ nux_transform_look_at (nux_nid_t e, nux_v3_t center)
     t->global_matrix.z3 = -zaxis.z;
 
     mark_dirty(e);
-    t->dirty = NUX_FALSE;
+    t->dirty = false;
 }

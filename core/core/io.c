@@ -45,11 +45,11 @@ nux_io_open_os_file (const nux_c8_t *path,
     nux_c8_t           normpath[NUX_PATH_BUF_SIZE];
     nux_u32_t          len = nux_path_normalize(normpath, path);
     NUX_ENSURE(!nux_path_isdir(normpath),
-               return NUX_NULL,
+               return NUX_FAILURE,
                "trying to open a directory '%s' as file",
                normpath);
     nux_u32_t *slot = nux_vec_pop(&module->free_file_slots);
-    NUX_ENSURE(slot, return NUX_NULL, "out of os file slots");
+    NUX_ENSURE(slot, return NUX_FAILURE, "out of os file slots");
     NUX_ENSURE(nux_os_file_open(*slot, normpath, len, mode),
                goto cleanup,
                "failed to open os file '%s'",
@@ -109,7 +109,7 @@ nux_io_cart_begin (const nux_c8_t *path, nux_u32_t entry_count)
     status &= cart_write_u32(file, entry_count);
     NUX_CHECK(status, goto cleanup);
 
-    module->cart_writer.started = NUX_TRUE;
+    module->cart_writer.started = true;
 
     return NUX_SUCCESS;
 cleanup:
@@ -127,7 +127,7 @@ nux_io_cart_end (void)
                    "missing cart entries (got %d, expect %d)",
                    module->cart_writer.entry_index,
                    module->cart_writer.entry_count);
-        module->cart_writer.started = NUX_FALSE;
+        module->cart_writer.started = false;
     }
 
     return NUX_SUCCESS;
@@ -197,5 +197,5 @@ nux_io_write_cart_file (const nux_c8_t *path)
     nux_u32_t size;
     void     *data = nux_file_load(nux_arena_frame(), path, &size);
     NUX_CHECK(data, return NUX_FAILURE);
-    return nux_io_write_cart_data(path, 0, NUX_FALSE, data, size);
+    return nux_io_write_cart_data(path, 0, false, data, size);
 }

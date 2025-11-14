@@ -214,7 +214,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             {
                 continue;
             }
-            nux_texture_t *tex = NUX_NULL;
+            nux_texture_t *tex = nullptr;
             if (sm->texture)
             {
                 tex = nux_resource_check(NUX_RESOURCE_TEXTURE, sm->texture);
@@ -255,7 +255,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             NUX_ASSERT(m);
 
             // Draw
-            bind_texture(enc, NUX_NULL);
+            bind_texture(enc, nullptr);
             draw_box(enc,
                      sm->transform,
                      NUX_VERTEX_LINES,

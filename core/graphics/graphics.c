@@ -32,8 +32,8 @@ module_pre_update (void)
     nux_dsa_reset_top(&_module.transforms_dsa);
     nux_dsa_reset_bottom(&_module.transforms_dsa);
     nux_dsa_push_bottom(
-        &_module.transforms_dsa, 1, NUX_NULL); // keep identity transform
-    _module.active_texture = NUX_NULL;
+        &_module.transforms_dsa, 1, nullptr); // keep identity transform
+    _module.active_texture = nullptr;
 
     // Reset immediate state
     _module.immediate_state = _module.immediate_states.data;
@@ -44,7 +44,7 @@ module_pre_update (void)
     _module.screen_target->gpu.height = nux_stat_get(NUX_STAT_SCREEN_HEIGHT);
 
     // Update viewports with auto resize enabled
-    nux_viewport_t *vp = NUX_NULL;
+    nux_viewport_t *vp = nullptr;
     while ((vp = nux_resource_next(NUX_RESOURCE_VIEWPORT, vp)))
     {
         if (vp->auto_resize
@@ -69,14 +69,14 @@ module_update (void)
     }
 
     // Upload meshes
-    nux_mesh_t *mesh = NUX_NULL;
+    nux_mesh_t *mesh = nullptr;
     while ((mesh = nux_resource_next(NUX_RESOURCE_MESH, mesh)))
     {
         nux_mesh_upload(mesh);
     }
 
     // Update textures
-    nux_texture_t *texture = NUX_NULL;
+    nux_texture_t *texture = nullptr;
     while ((texture = nux_resource_next(NUX_RESOURCE_TEXTURE, texture)))
     {
         if (texture->dirty)
@@ -86,7 +86,7 @@ module_update (void)
     }
 
     // Submit canvas commands
-    nux_canvas_t *canvas = NUX_NULL;
+    nux_canvas_t *canvas = nullptr;
     while ((canvas = nux_resource_next(NUX_RESOURCE_CANVAS, canvas)))
     {
         nux_canvas_render(canvas);
@@ -95,7 +95,7 @@ module_update (void)
     // Collect viewports
     nux_viewport_t *viewports[32];
     nux_u32_t       viewports_count = 0;
-    nux_viewport_t *vp              = NUX_NULL;
+    nux_viewport_t *vp              = nullptr;
     while ((vp = nux_resource_next(NUX_RESOURCE_VIEWPORT, vp)))
     {
         NUX_ASSERT(viewports_count < NUX_ARRAY_SIZE(viewports));
@@ -206,23 +206,23 @@ module_init (void)
     // Create pipelines
     _module.uber_pipeline_opaque.info.type              = NUX_GPU_PIPELINE_UBER;
     _module.uber_pipeline_opaque.info.primitive         = NUX_VERTEX_TRIANGLES;
-    _module.uber_pipeline_opaque.info.enable_blend      = NUX_FALSE;
-    _module.uber_pipeline_opaque.info.enable_depth_test = NUX_TRUE;
+    _module.uber_pipeline_opaque.info.enable_blend      = false;
+    _module.uber_pipeline_opaque.info.enable_depth_test = true;
     NUX_CHECK(nux_gpu_pipeline_init(&_module.uber_pipeline_opaque), goto error);
     _module.uber_pipeline_line.info.type              = NUX_GPU_PIPELINE_UBER;
     _module.uber_pipeline_line.info.primitive         = NUX_VERTEX_LINES;
-    _module.uber_pipeline_line.info.enable_blend      = NUX_FALSE;
-    _module.uber_pipeline_line.info.enable_depth_test = NUX_TRUE;
+    _module.uber_pipeline_line.info.enable_blend      = false;
+    _module.uber_pipeline_line.info.enable_depth_test = true;
     NUX_CHECK(nux_gpu_pipeline_init(&_module.uber_pipeline_line), goto error);
     _module.canvas_pipeline.info.type              = NUX_GPU_PIPELINE_CANVAS;
     _module.uber_pipeline_opaque.info.primitive    = NUX_VERTEX_TRIANGLES;
-    _module.canvas_pipeline.info.enable_blend      = NUX_TRUE;
-    _module.canvas_pipeline.info.enable_depth_test = NUX_FALSE;
+    _module.canvas_pipeline.info.enable_blend      = true;
+    _module.canvas_pipeline.info.enable_depth_test = false;
     NUX_CHECK(nux_gpu_pipeline_init(&_module.canvas_pipeline), goto error);
     _module.blit_pipeline.info.type              = NUX_GPU_PIPELINE_BLIT;
     _module.uber_pipeline_opaque.info.primitive  = NUX_VERTEX_TRIANGLES;
-    _module.blit_pipeline.info.enable_blend      = NUX_TRUE;
-    _module.blit_pipeline.info.enable_depth_test = NUX_FALSE;
+    _module.blit_pipeline.info.enable_blend      = true;
+    _module.blit_pipeline.info.enable_depth_test = false;
     NUX_CHECK(nux_gpu_pipeline_init(&_module.blit_pipeline), goto error);
 
     // Create vertices buffers

@@ -40,7 +40,7 @@ nux_scene_writer_init (nux_scene_writer_t *s,
 {
     s->scene    = scene;
     s->output   = output;
-    s->node_map = NUX_NULL;
+    s->node_map = nullptr;
     nux_serde_writer_init(&s->writer, s, scene_writer_callback);
     return NUX_SUCCESS;
 }
@@ -108,7 +108,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
             }
         }
         // Write components
-        nux_serde_write_array(s, NUX_NULL, component_count); // begin entity
+        nux_serde_write_array(s, nullptr, component_count); // begin entity
         for (nux_u32_t c = 0; c < module->components_max; ++c)
         {
             nux_component_t *comp = module->components + c;
@@ -119,7 +119,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
             const void *data = nux_component_get(e, c);
             if (data)
             {
-                nux_serde_write_object(s, NUX_NULL);
+                nux_serde_write_object(s, nullptr);
                 nux_serde_write_string(s, "component", comp->info.name);
                 if (comp->info.write)
                 {
@@ -172,10 +172,10 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
     {
         nux_nid_t e = entity_map[i];
         nux_u32_t component_count;
-        nux_serde_read_array(s, NUX_NULL, &component_count); // entity
+        nux_serde_read_array(s, nullptr, &component_count); // entity
         for (nux_u32_t j = 0; j < component_count; ++j)
         {
-            nux_serde_read_object(s, NUX_NULL); // component
+            nux_serde_read_object(s, nullptr); // component
             nux_u32_t       n;
             const nux_c8_t *name = nux_serde_read_string(s, "component", &n);
             for (nux_u32_t c = 0; c < module->components_max; ++c)

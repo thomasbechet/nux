@@ -3,7 +3,7 @@
 static void
 module_pre_update (void)
 {
-    nux_gui_t *gui = NUX_NULL;
+    nux_gui_t *gui = nullptr;
     while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
     {
         nux_gui_begin(gui);
@@ -12,7 +12,7 @@ module_pre_update (void)
 static void
 module_post_update (void)
 {
-    nux_gui_t *gui = NUX_NULL;
+    nux_gui_t *gui = nullptr;
     while ((gui = nux_resource_next(NUX_RESOURCE_GUI, gui)))
     {
         nux_gui_end(gui);
@@ -42,5 +42,5 @@ void
 nux_ui_module_register (void)
 {
     nux_module_register((nux_module_info_t) {
-        .name = "ui", .data = NUX_NULL, .size = 0, .init = module_init });
+        .name = "ui", .data = nullptr, .size = 0, .init = module_init });
 }

@@ -48,8 +48,8 @@ static nux_mesh_t *
 load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
 {
     // Access attributes
-    const nux_v3_t *positions = NUX_NULL;
-    const nux_v2_t *uvs       = NUX_NULL;
+    const nux_v3_t *positions = nullptr;
+    const nux_v2_t *uvs       = nullptr;
     for (nux_u32_t a = 0; a < primitive->attributes_count; ++a)
     {
         cgltf_attribute   *attribute = primitive->attributes + a;
@@ -70,7 +70,7 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
         }
     }
 
-    NUX_ENSURE(positions, return NUX_NULL, "mesh without position attribute");
+    NUX_ENSURE(positions, return nullptr, "mesh without position attribute");
 
     // Build vertex attributes
     nux_v3_t               base_color = NUX_V3_ONES;
@@ -101,14 +101,14 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     // Create mesh
     nux_mesh_t *mesh
         = nux_mesh_new(arena, indice_count, attributes, NUX_VERTEX_TRIANGLES);
-    NUX_CHECK(mesh, return NUX_NULL);
+    NUX_CHECK(mesh, return nullptr);
 
     // Write vertices
     for (nux_u32_t i = 0; i < indice_count; ++i)
     {
-        const nux_v3_t *position = NUX_NULL;
-        const nux_v2_t *uv       = NUX_NULL;
-        const nux_v3_t *color    = NUX_NULL;
+        const nux_v3_t *position = nullptr;
+        const nux_v2_t *uv       = nullptr;
+        const nux_v3_t *color    = nullptr;
         if (attributes & NUX_VERTEX_POSITION)
         {
             position = positions + buffer_index(accessor, i);
@@ -134,8 +134,7 @@ load_texture (nux_arena_t *arena, const cgltf_texture *texture)
     cgltf_buffer_view *view = texture->image->buffer_view;
     nux_texture_t     *tex  = nux_texture_load_from_memory(
         arena, view->buffer->data + view->offset, view->size);
-    NUX_ENSURE(
-        tex, return NUX_NULL, "failed to load texture %s", texture->name);
+    NUX_ENSURE(tex, return nullptr, "failed to load texture %s", texture->name);
     NUX_DEBUG("loading texture %s w %d h %d",
               texture->name,
               tex->gpu.width,
@@ -252,12 +251,12 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     cgltf_result  result;
     resource_t    resources[512];
     nux_u32_t     resources_count = 0;
-    cgltf_data   *data            = NUX_NULL;
+    cgltf_data   *data            = nullptr;
 
     nux_memset(&options, 0, sizeof(options));
     nux_memset(resources, 0, sizeof(resources));
 
-    nux_scene_t *scene = NUX_NULL;
+    nux_scene_t *scene = nullptr;
 
     // Load file
     nux_u32_t buf_size;
@@ -300,7 +299,7 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     for (nux_u32_t i = 0; i < data->materials_count; ++i)
     {
         cgltf_material *material = data->materials + i;
-        cgltf_texture  *texture  = NUX_NULL;
+        cgltf_texture  *texture  = nullptr;
         if (material->has_pbr_metallic_roughness)
         {
             texture
@@ -355,10 +354,10 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     }
 
     cgltf_free(data);
-    nux_scene_set_active(NUX_NULL);
+    nux_scene_set_active(nullptr);
     return scene;
 error:
     cgltf_free(data);
-    nux_scene_set_active(NUX_NULL);
-    return NUX_NULL;
+    nux_scene_set_active(nullptr);
+    return nullptr;
 }

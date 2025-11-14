@@ -3,7 +3,7 @@
 static nux_status_t
 open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
 {
-    nux_disk_t *disk = NUX_NULL;
+    nux_disk_t *disk = nullptr;
     while ((disk = nux_resource_next(NUX_RESOURCE_DISK, disk)))
     {
         if (disk->type == NUX_DISK_OS)
@@ -15,7 +15,7 @@ open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
             if (status)
             {
                 file->type    = NUX_DISK_OS;
-                file->is_open = NUX_TRUE;
+                file->is_open = true;
                 file->mode    = mode;
                 file->os.slot = slot;
                 return NUX_SUCCESS;
@@ -30,7 +30,7 @@ open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
                 if (entry->path_hash == hash)
                 {
                     file->type        = NUX_DISK_CART;
-                    file->is_open     = NUX_TRUE;
+                    file->is_open     = true;
                     file->mode        = mode;
                     file->cart.slot   = disk->cart.file->cart.slot;
                     file->cart.offset = entry->data_offset;
@@ -51,7 +51,7 @@ close_file (nux_file_t *file)
     {
         nux_io_close_os_file(file->os.slot);
     }
-    file->is_open = NUX_FALSE;
+    file->is_open = false;
     return NUX_SUCCESS;
 }
 static nux_status_t
@@ -73,9 +73,9 @@ nux_file_t *
 nux_file_open (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
 {
     nux_file_t *file = nux_resource_new(arena, NUX_RESOURCE_FILE);
-    NUX_CHECK(file, return NUX_NULL);
+    NUX_CHECK(file, return nullptr);
     NUX_ENSURE(open_file(file, path, mode),
-               return NUX_NULL,
+               return nullptr,
                "file not found '%s'",
                path);
     return file;
@@ -168,9 +168,9 @@ nux_file_size (nux_file_t *file)
 void *
 nux_file_load (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
 {
-    void       *data = NUX_NULL;
+    void       *data = nullptr;
     nux_file_t *file = nux_file_open(nux_arena_frame(), path, NUX_IO_READ);
-    NUX_CHECK(file, return NUX_NULL);
+    NUX_CHECK(file, return nullptr);
 
     // Get the file size
     nux_os_file_stat_t stat;
@@ -216,7 +216,7 @@ nux_file_exists (const nux_c8_t *path)
         close_file(&file);
     }
     nux_error_reset(); // ignore error if any
-    return status ? NUX_TRUE : NUX_FALSE;
+    return status ? true : false;
 }
 
 void

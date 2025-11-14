@@ -9,7 +9,7 @@ nux_camera_add (nux_nid_t e, void *data)
     c->far          = 1000;
     c->aspect       = 16. / 9.;
     c->ortho_size   = nux_v2s(1);
-    c->ortho        = NUX_FALSE;
+    c->ortho        = false;
     c->render_mask  = NUX_LAYER_DEFAULT;
 }
 nux_status_t

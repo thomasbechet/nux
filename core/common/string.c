@@ -45,15 +45,15 @@ nux_strdup (nux_arena_t *a, const nux_c8_t *s)
 {
     if (!s)
     {
-        return NUX_NULL;
+        return nullptr;
     }
     nux_u32_t len = nux_strnlen(s, NUX_PATH_MAX);
     if (!len)
     {
-        return NUX_NULL;
+        return nullptr;
     }
     nux_c8_t *p = nux_arena_malloc(a, len + 1);
-    NUX_CHECK(p, return NUX_NULL);
+    NUX_CHECK(p, return nullptr);
     nux_memcpy(p, s, len + 1); // include '\0'
     return p;
 }
@@ -162,16 +162,16 @@ nux_path_endswith (const nux_c8_t *path, const nux_c8_t *end)
     nux_u32_t end_length  = nux_strnlen(end, NUX_PATH_MAX);
     if (end_length > path_length)
     {
-        return NUX_FALSE;
+        return false;
     }
     for (nux_u32_t i = 0; i < end_length; ++i)
     {
         if (path[path_length - i] != end[end_length - i])
         {
-            return NUX_FALSE;
+            return false;
         }
     }
-    return NUX_TRUE;
+    return true;
 }
 nux_status_t
 nux_path_set_extension (nux_c8_t *path, const nux_c8_t *extension)

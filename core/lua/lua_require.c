@@ -18,7 +18,7 @@ l_require (lua_State *L)
     nux_path_set_extension(filepath, "lua");
 
     // check already loaded
-    nux_lua_t *it = NUX_NULL;
+    nux_lua_t *it = nullptr;
     while ((it = nux_resource_next(NUX_RESOURCE_LUA_MODULE, it)))
     {
         if (!nux_strncmp(nux_resource_path(it), filepath, NUX_PATH_MAX))

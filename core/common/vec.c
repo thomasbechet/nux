@@ -72,7 +72,7 @@ nux__vec_swap (nux_vec_t *vec, nux_u32_t a, nux_u32_t b)
 void *
 nux__vec_swap_pop (nux_vec_t *vec, nux_u32_t i)
 {
-    NUX_CHECK(i < vec->size, return NUX_NULL);
+    NUX_CHECK(i < vec->size, return nullptr);
     nux__vec_swap(vec, i, vec->size - 1);
     return nux__vec_pop(vec);
 }

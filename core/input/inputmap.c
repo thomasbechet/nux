@@ -44,7 +44,7 @@ nux_inputmap_t *
 nux_inputmap_new (nux_arena_t *arena)
 {
     nux_inputmap_t *map = nux_resource_new(arena, NUX_RESOURCE_INPUTMAP);
-    NUX_CHECK(map, return NUX_NULL);
+    NUX_CHECK(map, return nullptr);
     nux_vec_init_capa(&map->entries, arena, DEFAULT_CONTROLLER_INPUT_SIZE);
     return map;
 }

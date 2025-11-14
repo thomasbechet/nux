@@ -2178,15 +2178,15 @@ l_gui_button (lua_State *L)
     return 1;
 }
 static const struct luaL_Reg lib_stat[]
-    = { { "get", l_stat_get }, { NUX_NULL, NUX_NULL } };
+    = { { "get", l_stat_get }, { nullptr, nullptr } };
 static const struct luaL_Reg lib_time[]   = { { "elapsed", l_time_elapsed },
                                               { "delta", l_time_delta },
                                               { "frame", l_time_frame },
                                               { "epoch", l_time_epoch },
-                                              { NUX_NULL, NUX_NULL } };
+                                              { nullptr, nullptr } };
 static const struct luaL_Reg lib_random[] = { { "next", l_random_next },
                                               { "nextf", l_random_nextf },
-                                              { NUX_NULL, NUX_NULL } };
+                                              { nullptr, nullptr } };
 static const struct luaL_Reg lib_arena[]
     = { { "new", l_arena_new },
         { "clear", l_arena_clear },
@@ -2194,47 +2194,47 @@ static const struct luaL_Reg lib_arena[]
         { "memory_usage", l_arena_memory_usage },
         { "core", l_arena_core },
         { "frame", l_arena_frame },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_logger[]
     = { { "set_level", l_logger_set_level },
         { "level", l_logger_level },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_resource[]
-    = { { "reload", l_resource_reload }, { NUX_NULL, NUX_NULL } };
+    = { { "reload", l_resource_reload }, { nullptr, nullptr } };
 static const struct luaL_Reg lib_error[]
     = { { "enable", l_error_enable }, { "disable", l_error_disable },
         { "reset", l_error_reset },   { "message", l_error_message },
-        { "status", l_error_status }, { NUX_NULL, NUX_NULL } };
+        { "status", l_error_status }, { nullptr, nullptr } };
 static const struct luaL_Reg lib_module[]
-    = { { "requires", l_module_requires }, { NUX_NULL, NUX_NULL } };
+    = { { "requires", l_module_requires }, { nullptr, nullptr } };
 static const struct luaL_Reg lib_config[]
-    = { { "get", l_config_get }, { NUX_NULL, NUX_NULL } };
+    = { { "get", l_config_get }, { nullptr, nullptr } };
 static const struct luaL_Reg lib_event[]
     = { { "type", l_event_type },
         { "process", l_event_process },
         { "process_all", l_event_process_all },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_io[]
     = { { "cart_begin", l_io_cart_begin },
         { "cart_end", l_io_cart_end },
         { "write_cart_file", l_io_write_cart_file },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_mount[]
-    = { { "disk", l_mount_disk }, { NUX_NULL, NUX_NULL } };
+    = { { "disk", l_mount_disk }, { nullptr, nullptr } };
 static const struct luaL_Reg lib_file[]
     = { { "exists", l_file_exists }, { "open", l_file_open },
         { "close", l_file_close },   { "seek", l_file_seek },
-        { "size", l_file_size },     { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_log[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_name[]   = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_system[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_disk[]   = { { NUX_NULL, NUX_NULL } };
+        { "size", l_file_size },     { nullptr, nullptr } };
+static const struct luaL_Reg lib_log[]    = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_name[]   = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_system[] = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_disk[]   = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_inputmap[]
     = { { "new", l_inputmap_new },
         { "bind_key", l_inputmap_bind_key },
         { "bind_mouse_button", l_inputmap_bind_mouse_button },
         { "bind_mouse_axis", l_inputmap_bind_mouse_axis },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_input[]
     = { { "set_inputmap", l_input_set_inputmap },
         { "pressed", l_input_pressed },
@@ -2244,16 +2244,16 @@ static const struct luaL_Reg lib_input[]
         { "value", l_input_value },
         { "cursor", l_input_cursor },
         { "wrap_cursor", l_input_wrap_cursor },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_button[]     = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_key[]        = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_mouse[]      = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_gamepad[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_cursor[]     = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_controller[] = { { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
+static const struct luaL_Reg lib_button[]     = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_key[]        = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_mouse[]      = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_gamepad[]    = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_cursor[]     = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_controller[] = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_lua[]
-    = { { "load", l_lua_load }, { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_component[] = { { NUX_NULL, NUX_NULL } };
+    = { { "load", l_lua_load }, { nullptr, nullptr } };
+static const struct luaL_Reg lib_component[] = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_transform[]
     = { { "matrix", l_transform_matrix },
         { "local_translation", l_transform_local_translation },
@@ -2278,16 +2278,16 @@ static const struct luaL_Reg lib_transform[]
         { "rotate_y", l_transform_rotate_y },
         { "rotate_z", l_transform_rotate_z },
         { "look_at", l_transform_look_at },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_query[]
     = { { "new", l_query_new },           { "new_any", l_query_new_any },
         { "includes", l_query_includes }, { "excludes", l_query_excludes },
-        { "next", l_query_next },         { NUX_NULL, NUX_NULL } };
+        { "next", l_query_next },         { nullptr, nullptr } };
 static const struct luaL_Reg lib_scene[]
     = { { "new", l_scene_new },       { "set_active", l_scene_set_active },
         { "active", l_scene_active }, { "count", l_scene_count },
         { "clear", l_scene_clear },   { "load_gltf", l_scene_load_gltf },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_node[]
     = { { "create", l_node_create },   { "delete", l_node_delete },
         { "valid", l_node_valid },     { "root", l_node_root },
@@ -2295,7 +2295,7 @@ static const struct luaL_Reg lib_node[]
         { "sibling", l_node_sibling }, { "child", l_node_child },
         { "add", l_node_add },         { "remove", l_node_remove },
         { "has", l_node_has },         { "instantiate", l_node_instantiate },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_viewport[]
     = { { "new", l_viewport_new },
         { "set_mode", l_viewport_set_mode },
@@ -2309,19 +2309,19 @@ static const struct luaL_Reg lib_viewport[]
         { "normalized_viewport", l_viewport_normalized_viewport },
         { "to_global", l_viewport_to_global },
         { "to_local", l_viewport_to_local },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_texture[] = { { "new", l_texture_new },
                                                { "load", l_texture_load },
                                                { "screen", l_texture_screen },
                                                { "size", l_texture_size },
-                                               { NUX_NULL, NUX_NULL } };
+                                               { nullptr, nullptr } };
 static const struct luaL_Reg lib_palette[]
     = { { "new", l_palette_new },
         { "default", l_palette_default },
         { "set_active", l_palette_set_active },
         { "set_color", l_palette_set_color },
         { "get_color", l_palette_get_color },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_mesh[]
     = { { "new", l_mesh_new },
         { "new_cube", l_mesh_new_cube },
@@ -2332,7 +2332,7 @@ static const struct luaL_Reg lib_mesh[]
         { "set_origin", l_mesh_set_origin },
         { "transform", l_mesh_transform },
         { "size", l_mesh_size },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
         { "texture", l_canvas_texture },
@@ -2343,7 +2343,7 @@ static const struct luaL_Reg lib_canvas[]
         { "rectangle", l_canvas_rectangle },
         { "blit", l_canvas_blit },
         { "blit_sliced", l_canvas_blit_sliced },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_graphics[]
     = { { "begin_state", l_graphics_begin_state },
         { "end_state", l_graphics_end_state },
@@ -2354,7 +2354,7 @@ static const struct luaL_Reg lib_graphics[]
         { "set_color", l_graphics_set_color },
         { "set_transform", l_graphics_set_transform },
         { "set_transform_identity", l_graphics_set_transform_identity },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_camera[]
     = { { "set_fov", l_camera_set_fov },
         { "set_near", l_camera_set_near },
@@ -2367,7 +2367,7 @@ static const struct luaL_Reg lib_camera[]
         { "unproject", l_camera_unproject },
         { "set_render_mask", l_camera_set_render_mask },
         { "render_mask", l_camera_render_mask },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_staticmesh[]
     = { { "set_mesh", l_staticmesh_set_mesh },
         { "mesh", l_staticmesh_mesh },
@@ -2377,30 +2377,30 @@ static const struct luaL_Reg lib_staticmesh[]
         { "set_render_layer", l_staticmesh_set_render_layer },
         { "render_layer", l_staticmesh_render_layer },
         { "set_draw_bounds", l_staticmesh_set_draw_bounds },
-        { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_colormap[] = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_layer[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_vertex[]   = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_color[]    = { { NUX_NULL, NUX_NULL } };
-static const struct luaL_Reg lib_anchor[]   = { { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
+static const struct luaL_Reg lib_colormap[] = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_layer[]    = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_vertex[]   = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_color[]    = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_anchor[]   = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_rigidbody[]
-    = { { "set_velocity", l_rigidbody_set_velocity }, { NUX_NULL, NUX_NULL } };
+    = { { "set_velocity", l_rigidbody_set_velocity }, { nullptr, nullptr } };
 static const struct luaL_Reg lib_collider[]
     = { { "set_sphere", l_collider_set_sphere },
         { "set_aabb", l_collider_set_aabb },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_physics[]
     = { { "raycast", l_physics_raycast },
         { "set_ground_height", l_physics_set_ground_height },
-        { NUX_NULL, NUX_NULL } };
+        { nullptr, nullptr } };
 static const struct luaL_Reg lib_stylesheet[] = { { "new", l_stylesheet_new },
                                                   { "set", l_stylesheet_set },
-                                                  { NUX_NULL, NUX_NULL } };
+                                                  { nullptr, nullptr } };
 static const struct luaL_Reg lib_gui[]        = { { "new", l_gui_new },
                                                   { "push_style", l_gui_push_style },
                                                   { "pop_style", l_gui_pop_style },
                                                   { "button", l_gui_button },
-                                                  { NUX_NULL, NUX_NULL } };
+                                                  { nullptr, nullptr } };
 
 nux_status_t
 nux_lua_open_api (void)

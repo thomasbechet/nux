@@ -188,7 +188,7 @@ module_init (void)
 void
 nux_physics_module_register (void)
 {
-    NUX_MODULE_REGISTER("physics", &_module, module_init, NUX_NULL);
+    NUX_MODULE_REGISTER("physics", &_module, module_init, nullptr);
 }
 nux_physics_module_t *
 nux_physics (void)

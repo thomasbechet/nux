@@ -264,7 +264,7 @@ static int
 math_add (lua_State *L)
 {
     nux_lua_userdata_t *a   = check_anyuserdata(L, 1);
-    nux_lua_userdata_t *ret = NUX_NULL;
+    nux_lua_userdata_t *ret = nullptr;
     switch (a->type)
     {
         case NUX_LUA_TYPE_VEC2: {

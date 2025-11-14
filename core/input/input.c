@@ -169,7 +169,7 @@ module_init (void)
 void
 nux_input_module_register (void)
 {
-    NUX_MODULE_REGISTER("input", &_module, module_init, NUX_NULL);
+    NUX_MODULE_REGISTER("input", &_module, module_init, nullptr);
 }
 
 void

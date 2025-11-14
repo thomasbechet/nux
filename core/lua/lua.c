@@ -87,7 +87,7 @@ serde_field_enum (nux_lua_serde_t            *s,
             }
             ++e;
         }
-        NUX_ASSERT(NUX_FALSE);
+        NUX_ASSERT(false);
         return 0;
     }
     else
@@ -212,13 +212,13 @@ serde_config (nux_config_t *config, nux_b32_t serialize)
     serde_end_table(&s);
 
     // log
-    serde_begin_table(&s, "log", NUX_NULL);
+    serde_begin_table(&s, "log", nullptr);
     const nux_lua_serde_enum_t levels[]
         = { { .name = "debug", .value = NUX_LOG_DEBUG },
             { .name = "info", .value = NUX_LOG_INFO },
             { .name = "warning", .value = NUX_LOG_WARNING },
             { .name = "error", .value = NUX_LOG_ERROR },
-            { .name = NUX_NULL, .value = 0 } };
+            { .name = nullptr, .value = 0 } };
     config->log.level
         = serde_field_enum(&s, levels, "level", config->log.level);
     serde_end_table(&s);
@@ -227,7 +227,7 @@ serde_config (nux_config_t *config, nux_b32_t serialize)
     serde_field_b32(&s, "hotreload", &config->hotreload);
 
     // graphics
-    serde_begin_table(&s, "graphics", NUX_NULL);
+    serde_begin_table(&s, "graphics", nullptr);
     serde_field_u32(
         &s, "batches_buffer_size", &config->graphics.batches_buffer_size);
     serde_field_u32(
@@ -244,12 +244,12 @@ serde_config (nux_config_t *config, nux_b32_t serialize)
 static void
 serialize_config (nux_config_t *config)
 {
-    serde_config(config, NUX_TRUE);
+    serde_config(config, true);
 }
 static void
 deserialize_config (nux_config_t *config)
 {
-    serde_config(config, NUX_FALSE);
+    serde_config(config, false);
 }
 
 static void
@@ -334,13 +334,13 @@ nux_lua_t *
 nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
     nux_lua_t *lua = nux_resource_new(arena, NUX_RESOURCE_LUA_MODULE);
-    NUX_CHECK(lua, return NUX_NULL);
+    NUX_CHECK(lua, return nullptr);
     nux_resource_set_path(lua, path);
     // initialize event handles
     nux_vec_init(&lua->event_handles, arena);
     // dofile and call load function
-    NUX_CHECK(load_lua_module(lua, path), return NUX_NULL);
-    NUX_CHECK(nux_lua_call_module(lua, NUX_LUA_ON_LOAD, 0), return NUX_NULL);
+    NUX_CHECK(load_lua_module(lua, path), return nullptr);
+    NUX_CHECK(nux_lua_call_module(lua, NUX_LUA_ON_LOAD, 0), return nullptr);
     return lua;
 }
 static void
@@ -370,7 +370,7 @@ lua_module_reload (void *data, const nux_c8_t *path)
 static void
 module_update (void)
 {
-    nux_lua_t *lua = NUX_NULL;
+    nux_lua_t *lua = nullptr;
     while ((lua = nux_resource_next(NUX_RESOURCE_LUA_MODULE, lua)))
     {
         nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);

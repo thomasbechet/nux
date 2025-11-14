@@ -4,10 +4,10 @@ nux_viewport_t *
 nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
 {
     NUX_ENSURE(target->gpu.type == NUX_TEXTURE_RENDER_TARGET,
-               return NUX_NULL,
+               return nullptr,
                "viewport target must be a render target texture");
     nux_viewport_t *vp = nux_resource_new(arena, NUX_RESOURCE_VIEWPORT);
-    NUX_CHECK(vp, return NUX_NULL);
+    NUX_CHECK(vp, return nullptr);
     vp->mode           = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
     vp->extent         = nux_b2i(0, 0, target->gpu.width, target->gpu.height);
     vp->anchor         = NUX_ANCHOR_CENTER;
@@ -16,8 +16,8 @@ nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
     vp->source.texture = NUX_NULL;
     vp->target         = nux_resource_rid(target);
     vp->clear_color    = NUX_COLOR_RGBA(0, 0, 0, 1);
-    vp->clear_depth    = NUX_FALSE;
-    vp->auto_resize    = NUX_FALSE;
+    vp->clear_depth    = false;
+    vp->auto_resize    = false;
     return vp;
 }
 void

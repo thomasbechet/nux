@@ -22,10 +22,10 @@ controller_hit (nux_gui_t *gui, nux_b2i_t extent, nux_u32_t *controller)
         if (nux_b2i_containsi(extent, gui->controllers[i].cursor))
         {
             *controller = i;
-            return NUX_TRUE;
+            return true;
         }
     }
-    return NUX_FALSE;
+    return false;
 }
 static nux_stylesheet_t *
 active_style (nux_gui_t *gui)
@@ -55,7 +55,7 @@ nux_gui_t *
 nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
 {
     nux_gui_t *gui = nux_resource_new(arena, NUX_RESOURCE_GUI);
-    NUX_CHECK(gui, return NUX_NULL);
+    NUX_CHECK(gui, return nullptr);
     gui->canvas = nux_resource_rid(canvas);
     NUX_ASSERT(gui->canvas);
     nux_vec_init_capa(&gui->stylesheets, arena, 1);
@@ -65,9 +65,9 @@ nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
     for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(gui->controllers); ++i)
     {
         gui->controllers[i].mode   = NUX_CONTROLLER_MODE_CURSOR;
-        gui->controllers[i].active = NUX_FALSE;
+        gui->controllers[i].active = false;
         gui->controllers[i].cursor = nux_v2i_divs(nux_canvas_size(canvas), 2);
-        gui->controllers[i].main_pressed = NUX_FALSE;
+        gui->controllers[i].main_pressed = false;
     }
     return gui;
 }
@@ -88,12 +88,12 @@ nux_gui_button (
     nux_gui_t *gui, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
 {
     nux_stylesheet_t *style = active_style(gui);
-    NUX_CHECK(style, return NUX_FALSE);
+    NUX_CHECK(style, return false);
     nux_b2i_t extent = nux_b2i(x, y, w, h);
 
     nux_u32_t id = gui->next_id++;
     nux_u32_t controller;
-    nux_b32_t result  = NUX_FALSE;
+    nux_b32_t result  = false;
     nux_b32_t inside  = controller_hit(gui, extent, &controller);
     nux_b32_t pressed = gui->controllers[0].main_pressed;
 
@@ -120,7 +120,7 @@ nux_gui_button (
         {
             if (gui->active_id != id)
             {
-                result = NUX_TRUE;
+                result = true;
             }
             gui->active_id = id;
         }

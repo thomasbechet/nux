@@ -10,14 +10,14 @@ nux_intersect_ray_sphere (nux_ray_t r, nux_sphere_t s, nux_f32_t *t0)
     // Exit if r’s origin outside s (c > 0) and r pointing away from s (b > 0)
     if (c > 0.0f && b > 0.0f)
     {
-        return NUX_FALSE;
+        return false;
     }
     nux_f32_t discr = b * b - c;
 
     // A negative discriminant corresponds to ray missing sphere
     if (discr < 0.0f)
     {
-        return NUX_FALSE;
+        return false;
     }
 
     // Ray now found to intersect sphere, compute smallest t value of
@@ -34,7 +34,7 @@ nux_intersect_ray_sphere (nux_ray_t r, nux_sphere_t s, nux_f32_t *t0)
         *t0 = t;
     }
 
-    return NUX_TRUE;
+    return true;
 }
 nux_b32_t
 nux_intersect_segment_plane (nux_segment_t s, nux_plane_t p, nux_v3_t *i0)
@@ -49,18 +49,18 @@ nux_intersect_segment_plane (nux_segment_t s, nux_plane_t p, nux_v3_t *i0)
         {
             // segment in plane
         }
-        return NUX_FALSE;
+        return false;
     }
     nux_f32_t i = n / d;
     if (i < 0 || i > 1)
     {
-        return NUX_FALSE;
+        return false;
     }
     if (i0)
     {
         *i0 = nux_v3_add(s.p0, nux_v3_muls(u, i));
     }
-    return NUX_TRUE;
+    return true;
 }
 nux_b32_t
 nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_f32_t *t0, nux_f32_t *t1)
@@ -101,8 +101,8 @@ nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_f32_t *t0, nux_f32_t *t1)
         {
             *t1 = tmax;
         }
-        return NUX_TRUE;
+        return true;
     }
 
-    return NUX_FALSE;
+    return false;
 }

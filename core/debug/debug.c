@@ -49,7 +49,7 @@ module_init (void)
 void
 nux_debug_module_register (void)
 {
-    NUX_MODULE_REGISTER("debug", &_module, module_init, NUX_NULL);
+    NUX_MODULE_REGISTER("debug", &_module, module_init, nullptr);
 }
 
 void

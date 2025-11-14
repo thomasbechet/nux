@@ -19,7 +19,7 @@ init_module (nux_module_t *module)
                    "failed to init '%s' module",
                    module->info.name);
     }
-    module->initialized = NUX_TRUE;
+    module->initialized = true;
     module->order       = ++nux_core()->modules_init_order;
     return NUX_SUCCESS;
 }
@@ -33,7 +33,7 @@ free_module (nux_module_t *module)
         {
             module->info.free();
         }
-        module->initialized = NUX_FALSE;
+        module->initialized = false;
     }
 }
 
@@ -44,7 +44,7 @@ nux_module_register (nux_module_info_t info)
     nux_module_t      *m    = nux_vec_push(&core->modules);
     nux_memset(m, 0, sizeof(*m));
     m->info        = info;
-    m->initialized = NUX_FALSE;
+    m->initialized = false;
 }
 nux_status_t
 nux_module_requires (const nux_c8_t *name)

@@ -36,7 +36,7 @@ nux__pool_add (nux_pool_t *pool)
                                            old_data,
                                            pool->osize * old_capa,
                                            pool->osize * new_capa);
-            NUX_CHECK(pool->data, return NUX_NULL);
+            NUX_CHECK(pool->data, return nullptr);
         }
         void *data = pool->data + pool->size * pool->osize;
         ++pool->size;

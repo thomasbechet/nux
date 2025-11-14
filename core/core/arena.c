@@ -34,7 +34,7 @@ nux_arena_t *
 nux_arena_new (nux_arena_t *arena)
 {
     nux_arena_t *a = nux_resource_new(arena, NUX_RESOURCE_ARENA);
-    NUX_CHECK(a, return NUX_NULL);
+    NUX_CHECK(a, return nullptr);
     nux_arena_init_core(a);
     return a;
 }

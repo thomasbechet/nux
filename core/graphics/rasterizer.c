@@ -92,7 +92,7 @@
 //     nux_i32_t curx1 = v0.x;
 //     nux_i32_t cury0 = v0.y;
 //     nux_i32_t cury1 = v0.y;
-//     nux_b32_t lower = NUX_FALSE;
+//     nux_b32_t lower = false;
 //
 // bresenham0:
 //     for (;;)
@@ -107,7 +107,7 @@
 //             err0  = dx0 + dy0;
 //             curx0 = v1.x;
 //             cury0 = v1.y;
-//             lower = NUX_TRUE;
+//             lower = true;
 //         }
 //         e20 = 2 * err0;
 //         if (e20 >= dy0)

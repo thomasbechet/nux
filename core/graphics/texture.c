@@ -51,7 +51,7 @@ texture_update (nux_texture_t *tex,
     {
         tex->dirty_extent = extent;
     }
-    tex->dirty = NUX_TRUE;
+    tex->dirty = true;
 }
 
 nux_texture_t *
@@ -62,7 +62,7 @@ nux_texture_new (nux_arena_t       *arena,
 {
     // Create object
     nux_texture_t *tex = nux_resource_new(arena, NUX_RESOURCE_TEXTURE);
-    NUX_CHECK(tex, return NUX_NULL);
+    NUX_CHECK(tex, return nullptr);
     tex->gpu.type     = type;
     tex->gpu.width    = w;
     tex->gpu.height   = h;
@@ -70,7 +70,7 @@ nux_texture_new (nux_arena_t       *arena,
     tex->dirty_extent = nux_b2i(0, 0, w, h);
 
     // Create gpu texture (and framebuffer if needed)
-    NUX_CHECK(nux_gpu_texture_init(&tex->gpu), return NUX_NULL);
+    NUX_CHECK(nux_gpu_texture_init(&tex->gpu), return nullptr);
 
     // Allocate memory
     nux_u32_t pixel_size;
@@ -89,7 +89,7 @@ nux_texture_new (nux_arena_t       *arena,
     if (pixel_size)
     {
         tex->data = nux_arena_malloc(arena, pixel_size * w * h);
-        NUX_CHECK(tex->data, return NUX_NULL);
+        NUX_CHECK(tex->data, return nullptr);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
@@ -100,7 +100,7 @@ nux_texture_load (nux_arena_t *arena, const nux_c8_t *path)
 {
     nux_u32_t size;
     void     *data = nux_file_load(nux_arena_frame(), path, &size);
-    NUX_CHECK(data, return NUX_NULL);
+    NUX_CHECK(data, return nullptr);
     return nux_texture_load_from_memory(arena, data, size);
 }
 nux_texture_t *
@@ -174,7 +174,7 @@ nux_texture_upload (nux_texture_t *texture)
                                          texture->data),
                    return NUX_FAILURE,
                    "failed to update colormap texture");
-        texture->dirty = NUX_FALSE;
+        texture->dirty = false;
     }
     return NUX_SUCCESS;
 }

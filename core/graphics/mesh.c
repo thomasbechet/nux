@@ -31,7 +31,7 @@ push_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
     switch (m->primitive)
     {
         case NUX_VERTEX_POINTS: {
-            nux_mesh_push_vertices(m, 4, positions, uvs, NUX_NULL);
+            nux_mesh_push_vertices(m, 4, positions, uvs, nullptr);
         }
         break;
         case NUX_VERTEX_LINES: {
@@ -39,13 +39,13 @@ push_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
             for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(indices); ++i)
             {
                 nux_mesh_push_vertices(
-                    m, 1, positions + indices[i], uvs + indices[i], NUX_NULL);
+                    m, 1, positions + indices[i], uvs + indices[i], nullptr);
             }
         }
         break;
         // case NU_PRIMITIVE_LINES_STRIP: {
-        //     nux_mesh_push_vertices(m, 4, positions, uvs, NUX_NULL);
-        //     nux_mesh_push_vertices(m, 1, positions, uvs, NUX_NULL);
+        //     nux_mesh_push_vertices(m, 4, positions, uvs, nullptr);
+        //     nux_mesh_push_vertices(m, 1, positions, uvs, nullptr);
         // }
         // break;
         case NUX_VERTEX_TRIANGLES: {
@@ -53,7 +53,7 @@ push_quad (nux_mesh_t *m, const nux_v3_t *positions, const nux_v2_t *uvs)
             for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(indices); ++i)
             {
                 nux_mesh_push_vertices(
-                    m, 1, positions + indices[i], uvs + indices[i], NUX_NULL);
+                    m, 1, positions + indices[i], uvs + indices[i], nullptr);
             }
         }
         break;
@@ -108,7 +108,7 @@ nux_mesh_upload (nux_mesh_t *mesh)
                                                    mesh->vertices.data),
                       return NUX_FAILURE);
         }
-        mesh->dirty = NUX_FALSE;
+        mesh->dirty = false;
     }
     return NUX_SUCCESS;
 }
@@ -144,7 +144,7 @@ nux_mesh_push_vertices (nux_mesh_t     *mesh,
             data[offset + mesh->layout.color + 2] = colors[i].z;
         }
     }
-    mesh->dirty = NUX_TRUE;
+    mesh->dirty = true;
 }
 
 nux_mesh_t *
@@ -154,13 +154,13 @@ nux_mesh_new (nux_arena_t           *arena,
               nux_vertex_primitive_t primitive)
 {
     nux_mesh_t *mesh = nux_resource_new(arena, NUX_RESOURCE_MESH);
-    NUX_CHECK(mesh, return NUX_NULL);
+    NUX_CHECK(mesh, return nullptr);
     mesh->attributes = attributes;
     mesh->primitive  = primitive;
     mesh->layout     = vertex_layout(mesh->attributes);
     nux_vec_init_capa(&mesh->vertices, arena, mesh->layout.stride * capa);
     mesh->bounds       = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
-    mesh->dirty        = NUX_TRUE;
+    mesh->dirty        = true;
     mesh->gpu.offset   = 0;
     mesh->gpu.capacity = 0;
     return mesh;
@@ -200,11 +200,11 @@ nux_mesh_new_cube (nux_arena_t *arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
                                     NUX_ARRAY_SIZE(positions),
                                     NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD,
                                     NUX_VERTEX_TRIANGLES);
-    NUX_CHECK(mesh, return NUX_NULL);
+    NUX_CHECK(mesh, return nullptr);
     mesh->bounds = box;
 
     nux_mesh_push_vertices(
-        mesh, NUX_ARRAY_SIZE(positions), positions, uvs, NUX_NULL);
+        mesh, NUX_ARRAY_SIZE(positions), positions, uvs, nullptr);
 
     return mesh;
 }
@@ -223,7 +223,7 @@ nux_mesh_new_plane (nux_arena_t *arena, nux_f32_t sx, nux_f32_t sy)
                                     NUX_ARRAY_SIZE(positions),
                                     NUX_VERTEX_POSITION | NUX_VERTEX_TEXCOORD,
                                     NUX_VERTEX_TRIANGLES);
-    NUX_CHECK(mesh, return NUX_NULL);
+    NUX_CHECK(mesh, return nullptr);
 
     push_quad(mesh, positions, uvs);
 
@@ -284,7 +284,7 @@ nux_mesh_transform (nux_mesh_t *mesh, nux_m4_t transform)
         mesh->vertices.data[offset + mesh->layout.position + 1] = v.y;
         mesh->vertices.data[offset + mesh->layout.position + 2] = v.z;
     }
-    mesh->dirty = NUX_TRUE;
+    mesh->dirty = true;
     nux_mesh_update_bounds(mesh);
 }
 nux_u32_t

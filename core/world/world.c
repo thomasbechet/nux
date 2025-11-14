@@ -9,7 +9,7 @@ world_cleanup (void *data)
     if (_module.active_world == world && world != _module.default_world)
     {
         NUX_WARNING("cleanup active world, default world has been set");
-        nux_world_set_active(NUX_NULL);
+        nux_world_set_active(nullptr);
     }
 }
 
@@ -34,7 +34,7 @@ nux_world_t *
 nux_world_new (nux_arena_t *a)
 {
     nux_world_t *world = nux_resource_new(a, NUX_RESOURCE_WORLD);
-    NUX_CHECK(world, return NUX_NULL);
+    NUX_CHECK(world, return nullptr);
     world->free = NUX_NULL;
     nux_vec_init_capa(&world->objects, a, NUX_WORLD_DEFAULT_CAPA);
     nux_vec_push(&world->objects); // Reserve first for null
@@ -67,7 +67,7 @@ nux_oid_t
 nux_object_create (void)
 {
     nux_world_t  *world  = _module.active_world;
-    nux_object_t *object = NUX_NULL;
+    nux_object_t *object = nullptr;
     if (world->free)
     {
         object      = world->objects.data + world->free;

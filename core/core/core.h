@@ -41,6 +41,11 @@ typedef nux_u32_t nux_nid_t;
 
 typedef enum
 {
+    NUX_NULL = 0,
+} nux_core_constants_t;
+
+typedef enum
+{
     NUX_ERROR_NONE                 = 0,
     NUX_ERROR_OUT_OF_MEMORY        = 1,
     NUX_ERROR_INVALID_TEXTURE_SIZE = 4,

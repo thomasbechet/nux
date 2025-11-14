@@ -6,11 +6,11 @@ nux_event_new (nux_arena_t        *arena,
                nux_event_cleanup_t cleanup)
 {
     nux_event_t *event = nux_resource_new(arena, NUX_RESOURCE_EVENT);
-    NUX_CHECK(event, return NUX_NULL);
+    NUX_CHECK(event, return nullptr);
     event->arena         = arena;
     event->type          = type;
-    event->first_handler = NUX_NULL;
-    event->first_event   = NUX_NULL;
+    event->first_handler = nullptr;
+    event->first_event   = nullptr;
     event->cleanup       = cleanup;
     return event;
 }
@@ -29,7 +29,7 @@ nux_event_subscribe (nux_arena_t         *arena,
     handler->event               = nux_resource_rid(event);
     handler->userdata            = userdata;
     handler->callback            = callback;
-    handler->next                = NUX_NULL;
+    handler->next                = nullptr;
     handler->prev                = event->first_handler;
     if (handler->prev)
     {
@@ -77,7 +77,7 @@ nux_event_emit (nux_event_t *event, nux_u32_t size, const void *data)
     nux_arena_t        *a      = nux_arena_frame();
     nux_event_header_t *header = nux_arena_malloc(a, sizeof(*header));
     NUX_CHECK(header, return);
-    header->next = NUX_NULL;
+    header->next = nullptr;
     header->data = nux_arena_malloc(a, size);
     NUX_CHECK(header->data, return);
     nux_memcpy(header->data, data, size);
@@ -111,7 +111,7 @@ nux_event_process (nux_event_t *event)
         header = header->next;
         ++count;
     }
-    event->first_event = NUX_NULL;
+    event->first_event = nullptr;
     if (count)
     {
         NUX_DEBUG("%d events processed for 0x%X", count, event);
@@ -120,7 +120,7 @@ nux_event_process (nux_event_t *event)
 void
 nux_event_process_all (void)
 {
-    nux_event_t *it = NUX_NULL;
+    nux_event_t *it = nullptr;
     while ((it = nux_resource_next(NUX_RESOURCE_EVENT, it)))
     {
         nux_event_process(it);
