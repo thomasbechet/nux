@@ -7,14 +7,14 @@ init_module (nux_module_t *module)
     {
         return NUX_SUCCESS;
     }
-    NUX_INFO("init module '%s'", module->info.name);
+    nux_info("init module '%s'", module->info.name);
     if (module->info.data && module->info.size)
     {
         nux_memset(module->info.data, 0, module->info.size);
     }
     if (module->info.init)
     {
-        NUX_ENSURE(module->info.init(),
+        nux_ensure(module->info.init(),
                    return NUX_FAILURE,
                    "failed to init '%s' module",
                    module->info.name);
@@ -28,7 +28,7 @@ free_module (nux_module_t *module)
 {
     if (module->initialized)
     {
-        NUX_INFO("free module '%s'", module->info.name);
+        nux_info("free module '%s'", module->info.name);
         if (module->info.free)
         {
             module->info.free();
@@ -59,7 +59,7 @@ nux_module_requires (const nux_c8_t *name)
         }
     }
 
-    NUX_ERROR("module '%s' not found", name);
+    nux_error("module '%s' not found", name);
     return NUX_FAILURE;
 }
 

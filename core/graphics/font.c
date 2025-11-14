@@ -8,7 +8,7 @@ nux_font_init_default (nux_font_t *font)
     const nux_u32_t pixel_per_glyph
         = DEFAULT_FONT_DATA_WIDTH * DEFAULT_FONT_DATA_HEIGHT;
     const nux_u32_t glyph_count
-        = (NUX_ARRAY_SIZE(default_font_data) * 8) / pixel_per_glyph;
+        = (nux_array_size(default_font_data) * 8) / pixel_per_glyph;
 
     font->texture.width       = glyph_count * DEFAULT_FONT_DATA_WIDTH;
     font->texture.height      = DEFAULT_FONT_DATA_HEIGHT;
@@ -16,9 +16,9 @@ nux_font_init_default (nux_font_t *font)
     font->glyph_height        = DEFAULT_FONT_DATA_HEIGHT;
     font->glyph_width         = DEFAULT_FONT_DATA_WIDTH;
     font->char_to_glyph_index = default_font_data_chars;
-    NUX_CHECK(nux_gpu_texture_init(&font->texture), return NUX_FAILURE);
+    nux_check(nux_gpu_texture_init(&font->texture), return NUX_FAILURE);
 
-    // NUX_INFO("default font : %d %d %d %d",
+    // nux_info("default font : %d %d %d %d",
     //          font->glyph_width,
     //          font->glyph_height,
     //          glyph_count,
@@ -28,11 +28,11 @@ nux_font_init_default (nux_font_t *font)
     for (nux_u32_t g = 0; g < glyph_count; ++g)
     {
         nux_u32_t pixels[256];
-        NUX_ASSERT(NUX_ARRAY_SIZE(pixels) >= pixel_per_glyph);
+        nux_assert(nux_array_size(pixels) >= pixel_per_glyph);
         for (nux_u32_t p = 0; p < pixel_per_glyph; ++p)
         {
             nux_u32_t bit_offset = g * pixel_per_glyph + p;
-            NUX_ASSERT((bit_offset / 8) < sizeof(default_font_data));
+            nux_assert((bit_offset / 8) < sizeof(default_font_data));
             nux_u8_t  byte    = default_font_data[bit_offset / 8];
             nux_b32_t bit_set = (byte & (1 << (7 - (p % 8)))) != 0;
 
@@ -46,7 +46,7 @@ nux_font_init_default (nux_font_t *font)
             }
 
             // Write glyph to texture
-            NUX_CHECK(nux_os_texture_update(font->texture.slot,
+            nux_check(nux_os_texture_update(font->texture.slot,
                                             g * font->glyph_width,
                                             0,
                                             font->glyph_width,

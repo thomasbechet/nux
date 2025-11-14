@@ -21,7 +21,7 @@ bootstrap_core_arena (void)
     // 1. Allocate arena + header
     nux_resource_header_t *core_arena_header = nux_os_alloc(
         nullptr, 0, nux_resource_header_size(sizeof(nux_arena_t)));
-    NUX_CHECK(core_arena_header, return NUX_FAILURE);
+    nux_check(core_arena_header, return NUX_FAILURE);
     // 2. Get arena from the header
     _module.core_arena = nux_resource_header_to_data(core_arena_header);
     // 3. Initialize core arena
@@ -33,7 +33,7 @@ bootstrap_core_arena (void)
     // 6. Create core arena resource entry
     nux_resource_entry_t *entry
         = nux_resource_add(&_module.resources, NUX_RESOURCE_ARENA);
-    NUX_CHECK(entry, return NUX_FAILURE);
+    nux_check(entry, return NUX_FAILURE);
     entry->data = _module.core_arena;
     // 7. Initialize core arena header
     nux_resource_header_init(core_arena_header, entry->rid);
@@ -115,11 +115,11 @@ nux_core_init (void)
 
     // Create frame arena
     _module.frame_arena = nux_arena_new(_module.core_arena);
-    NUX_ASSERT(_module.frame_arena);
+    nux_assert(_module.frame_arena);
     nux_resource_set_name(_module.frame_arena, "frame_arena");
 
     // Initialize IO
-    NUX_CHECK(nux_io_init(), goto cleanup);
+    nux_check(nux_io_init(), goto cleanup);
 
     // Register modules
     nux_input_module_register();
@@ -134,7 +134,7 @@ nux_core_init (void)
     nux_module_init_all();
 
     // // Detect entry point type
-    // NUX_ASSERT(entry);
+    // nux_assert(entry);
     // nux_c8_t normpath[NUX_PATH_BUF_SIZE];
     // nux_path_normalize(normpath, entry);
     // const nux_c8_t *entry_script;
@@ -146,27 +146,27 @@ nux_core_init (void)
     // else
     // {
     //     // Expect cartridge
-    //     NUX_CHECK(nux_disk_mount(normpath), goto cleanup);
+    //     nux_check(nux_disk_mount(normpath), goto cleanup);
     //     entry_script = NUX_LUA_INIT_FILE;
     // }
     //
     // // Get program configuration
     // nux_config_t *config = (nux_config_t *)nux_config();
-    // NUX_CHECK(nux_lua_configure(config), goto cleanup);
+    // nux_check(nux_lua_configure(config), goto cleanup);
     //
     // // Apply configuration
     // nux_log_set_level(nux_config()->log.level);
     //
     // // Register entry script
     // nux_lua_t *lua = nux_lua_load(nux_arena_core(), entry_script);
-    // NUX_CHECK(lua, goto cleanup);
+    // nux_check(lua, goto cleanup);
 
     return NUX_SUCCESS;
 
 cleanup:
     if (!nux_error_status())
     {
-        NUX_ERROR("%s", nux_error_message());
+        nux_error("%s", nux_error_message());
     }
     nux_core_free();
     return NUX_FAILURE;
@@ -199,7 +199,7 @@ nux_core_update (void)
     // Check errors
     if (!nux_error_status())
     {
-        NUX_ERROR("%s", nux_error_message());
+        nux_error("%s", nux_error_message());
     }
 
     // Hotreload
@@ -274,8 +274,8 @@ nux_error_report (const nux_c8_t *fmt, ...)
             _module.error_message, sizeof(_module.error_message), fmt, args);
         va_end(args);
 #ifdef NUX_BUILD_DEBUG
-        NUX_ERROR("%s", nux_error_message());
-        NUX_ASSERT(false);
+        nux_error("%s", nux_error_message());
+        nux_assert(false);
 #endif
         _module.error_status = NUX_FAILURE;
     }

@@ -5,9 +5,9 @@ nux_gpu_buffer_init (nux_gpu_buffer_t *buffer)
 {
     nux_graphics_module_t *gfx  = nux_graphics();
     nux_u32_t             *slot = nux_vec_pop(&gfx->free_buffer_slots);
-    NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu buffer");
+    nux_ensure(slot, return NUX_FAILURE, "out of gpu buffer");
     buffer->slot = *slot;
-    NUX_CHECK(nux_os_buffer_create(buffer->slot, buffer->type, buffer->size),
+    nux_check(nux_os_buffer_create(buffer->slot, buffer->type, buffer->size),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
@@ -29,9 +29,9 @@ nux_gpu_texture_init (nux_gpu_texture_t *texture)
         .height = texture->height,
     };
     nux_u32_t *slot = nux_vec_pop(&gfx->free_texture_slots);
-    NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu textures");
+    nux_ensure(slot, return NUX_FAILURE, "out of gpu textures");
     texture->slot = *slot;
-    NUX_ENSURE(nux_os_texture_create(texture->slot, &info),
+    nux_ensure(nux_os_texture_create(texture->slot, &info),
                return NUX_FAILURE,
                "failed to create texture");
     // Create framebuffer
@@ -39,9 +39,9 @@ nux_gpu_texture_init (nux_gpu_texture_t *texture)
     {
         // Create framebuffer
         slot = nux_vec_pop(&gfx->free_framebuffer_slots);
-        NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu framebuffer slots");
+        nux_ensure(slot, return NUX_FAILURE, "out of gpu framebuffer slots");
         texture->framebuffer_slot = *slot;
-        NUX_ENSURE(
+        nux_ensure(
             nux_os_framebuffer_create(texture->framebuffer_slot, texture->slot),
             return NUX_FAILURE,
             "failed to create framebuffer");
@@ -60,9 +60,9 @@ nux_gpu_pipeline_init (nux_gpu_pipeline_t *pipeline)
 {
     nux_graphics_module_t *gfx  = nux_graphics();
     nux_u32_t             *slot = nux_vec_pop(&gfx->free_pipeline_slots);
-    NUX_ENSURE(slot, return NUX_FAILURE, "out of gpu pipelines");
+    nux_ensure(slot, return NUX_FAILURE, "out of gpu pipelines");
     pipeline->slot = *slot;
-    NUX_ENSURE(nux_os_pipeline_create(pipeline->slot, &pipeline->info),
+    nux_ensure(nux_os_pipeline_create(pipeline->slot, &pipeline->info),
                return NUX_FAILURE,
                "failed to create pipeline");
     return NUX_SUCCESS;

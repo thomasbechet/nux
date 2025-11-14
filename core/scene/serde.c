@@ -63,13 +63,13 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
     nux_scene_set_active(scene);
 
     nux_query_t *iter = nux_query_new_any(nux_arena_frame());
-    NUX_CHECK(iter, return NUX_FAILURE);
+    nux_check(iter, return NUX_FAILURE);
 
     nux_u32_t entity_count = nux_scene_count();
     // TODO: no entities case ?
     nux_u32_t *entity_map = nux_arena_malloc(
         nux_arena_frame(), sizeof(*entity_map) * entity_count);
-    NUX_CHECK(entity_map, return NUX_FAILURE);
+    nux_check(entity_map, return NUX_FAILURE);
 
     nux_scene_writer_t writer;
     nux_scene_writer_init(&writer, s, scene);
@@ -123,7 +123,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
                 nux_serde_write_string(s, "component", comp->info.name);
                 if (comp->info.write)
                 {
-                    NUX_CHECK(comp->info.write(s, data), goto error);
+                    nux_check(comp->info.write(s, data), goto error);
                 }
                 nux_serde_write_end(s);
             }
@@ -152,7 +152,7 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
 
     nux_u32_t *entity_map = nux_arena_malloc(
         nux_arena_frame(), sizeof(*entity_map) * entity_count);
-    NUX_CHECK(entity_map, goto error);
+    nux_check(entity_map, goto error);
 
     nux_scene_reader_t reader;
     nux_scene_reader_init(&reader, s, scene);
@@ -164,7 +164,7 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
     for (nux_u32_t i = 0; i < entity_count; ++i)
     {
         entity_map[i] = nux_node_create(nux_node_root());
-        NUX_CHECK(entity_map[i], goto error);
+        nux_check(entity_map[i], goto error);
     }
 
     // 2. Read entities components
@@ -186,7 +186,7 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
                 {
                     nux_node_add(e, c);
                     void *data = nux_component_get(e, c);
-                    NUX_CHECK(comp->info.read(s, data), goto error);
+                    nux_check(comp->info.read(s, data), goto error);
                     break;
                 }
             }

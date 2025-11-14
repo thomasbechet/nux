@@ -4,7 +4,7 @@ static void
 mark_dirty (nux_u32_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_ASSERT(t);
+    nux_assert(t);
     if (!t->dirty)
     {
         nux_nid_t child = nux_node_child(e);
@@ -21,7 +21,7 @@ nux_m4_t
 nux_transform_matrix (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return nux_m4_identity());
+    nux_check(t, return nux_m4_identity());
 
     if (t->dirty)
     {
@@ -67,28 +67,28 @@ nux_v3_t
 nux_transform_local_translation (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROS);
+    nux_check(t, return NUX_V3_ZEROS);
     return t->translation;
 }
 nux_q4_t
 nux_transform_local_rotation (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return nux_q4_identity());
+    nux_check(t, return nux_q4_identity());
     return t->rotation;
 }
 nux_v3_t
 nux_transform_local_scale (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROS);
+    nux_check(t, return NUX_V3_ZEROS);
     return t->scale;
 }
 nux_v3_t
 nux_transform_translation (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROS);
+    nux_check(t, return NUX_V3_ZEROS);
     nux_v3_t translation;
     nux_m4_trs_decompose(
         nux_transform_matrix(e), &translation, nullptr, nullptr);
@@ -98,7 +98,7 @@ nux_q4_t
 nux_transform_rotation (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return nux_q4_identity());
+    nux_check(t, return nux_q4_identity());
     // TODO: rotation decomposition
     // nux_q4_t rotation;
     // nux_m4_trs_decompose(
@@ -110,7 +110,7 @@ nux_v3_t
 nux_transform_scale (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ONES);
+    nux_check(t, return NUX_V3_ONES);
     nux_v3_t scale;
     nux_m4_trs_decompose(nux_transform_matrix(e), &scale, nullptr, nullptr);
     return scale;
@@ -119,7 +119,7 @@ void
 nux_transform_set_translation (nux_nid_t e, nux_v3_t position)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
+    nux_check(t, return);
     t->translation = position;
     mark_dirty(e);
 }
@@ -127,7 +127,7 @@ void
 nux_transform_set_rotation (nux_nid_t e, nux_q4_t rotation)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
+    nux_check(t, return);
     t->rotation = rotation;
     mark_dirty(e);
 }
@@ -140,7 +140,7 @@ void
 nux_transform_set_scale (nux_nid_t e, nux_v3_t scale)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
+    nux_check(t, return);
     t->scale = scale;
     mark_dirty(e);
 }
@@ -148,7 +148,7 @@ void
 nux_transform_set_ortho (nux_nid_t e, nux_v3_t a, nux_v3_t b, nux_v3_t c)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
+    nux_check(t, return);
     nux_v3_t x     = nux_v3_normalize(nux_v3_sub(c, a));
     nux_v3_t y     = nux_v3_normalize(nux_v3_sub(b, a));
     nux_v3_t z     = nux_v3_normalize(nux_v3_cross(x, y));
@@ -161,7 +161,7 @@ static nux_v3_t
 rotate_v3 (nux_nid_t e, nux_v3_t v)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return NUX_V3_ZEROS);
+    nux_check(t, return NUX_V3_ZEROS);
     return nux_m4_mulv3(nux_transform_matrix(e), v, 0);
 }
 nux_v3_t
@@ -198,7 +198,7 @@ void
 nux_transform_rotate (nux_nid_t e, nux_v3_t axis, nux_f32_t angle)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
+    nux_check(t, return);
     t->rotation = nux_q4_mul_axis(t->rotation, axis, angle);
     mark_dirty(e);
 }
@@ -221,7 +221,7 @@ void
 nux_transform_look_at (nux_nid_t e, nux_v3_t center)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    NUX_CHECK(t, return);
+    nux_check(t, return);
     nux_v3_t eye = nux_transform_translation(e);
 
     nux_v3_t zaxis = nux_v3_normalize(nux_v3_sub(center, eye));

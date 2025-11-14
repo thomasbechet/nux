@@ -45,7 +45,7 @@ void
 nux_gui_end (nux_gui_t *gui)
 {
     nux_stylesheet_t *style = active_style(gui);
-    NUX_CHECK(style, return);
+    nux_check(style, return);
     nux_v2i_t cursor = gui->controllers[0].cursor;
     draw_image(
         gui, nux_b2i(cursor.x - 4, cursor.y - 4, 8, 7), &style->cursor.image);
@@ -55,14 +55,14 @@ nux_gui_t *
 nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
 {
     nux_gui_t *gui = nux_resource_new(arena, NUX_RESOURCE_GUI);
-    NUX_CHECK(gui, return nullptr);
+    nux_check(gui, return nullptr);
     gui->canvas = nux_resource_rid(canvas);
-    NUX_ASSERT(gui->canvas);
+    nux_assert(gui->canvas);
     nux_vec_init_capa(&gui->stylesheets, arena, 1);
     gui->next_id   = 0;
     gui->active_id = 0;
     gui->hot_id    = 0;
-    for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(gui->controllers); ++i)
+    for (nux_u32_t i = 0; i < nux_array_size(gui->controllers); ++i)
     {
         gui->controllers[i].mode   = NUX_CONTROLLER_MODE_CURSOR;
         gui->controllers[i].active = false;
@@ -74,7 +74,7 @@ nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
 void
 nux_gui_push_style (nux_gui_t *gui, nux_stylesheet_t *stylesheet)
 {
-    NUX_CHECK(stylesheet, return);
+    nux_check(stylesheet, return);
     nux_vec_pushv(&gui->stylesheets, nux_resource_rid(stylesheet));
 }
 void
@@ -88,7 +88,7 @@ nux_gui_button (
     nux_gui_t *gui, nux_u32_t x, nux_u32_t y, nux_u32_t w, nux_u32_t h)
 {
     nux_stylesheet_t *style = active_style(gui);
-    NUX_CHECK(style, return false);
+    nux_check(style, return false);
     nux_b2i_t extent = nux_b2i(x, y, w, h);
 
     nux_u32_t id = gui->next_id++;

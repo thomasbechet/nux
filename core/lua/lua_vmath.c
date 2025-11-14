@@ -786,17 +786,17 @@ meta_index (lua_State *L)
         break;
         case NUX_LUA_TYPE_HIT: {
             const char *key = luaL_checkstring(L, 2);
-            if (NUX_MATCH(key, "node"))
+            if (nux_match(key, "node"))
             {
                 lua_pushinteger(L, u->hit->node);
                 return 1;
             }
-            else if (NUX_MATCH(key, "position"))
+            else if (nux_match(key, "position"))
             {
                 nux_lua_push_vec3(L, u->hit->p);
                 return 1;
             }
-            else if (NUX_MATCH(key, "normal"))
+            else if (nux_match(key, "normal"))
             {
                 nux_lua_push_vec3(L, u->hit->n);
                 return 1;

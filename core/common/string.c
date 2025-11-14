@@ -53,7 +53,7 @@ nux_strdup (nux_arena_t *a, const nux_c8_t *s)
         return nullptr;
     }
     nux_c8_t *p = nux_arena_malloc(a, len + 1);
-    NUX_CHECK(p, return nullptr);
+    nux_check(p, return nullptr);
     nux_memcpy(p, s, len + 1); // include '\0'
     return p;
 }

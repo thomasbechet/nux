@@ -35,58 +35,58 @@ void
 nux_camera_set_fov (nux_nid_t e, nux_f32_t fov)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     c->fov = fov;
 }
 void
 nux_camera_set_near (nux_nid_t e, nux_f32_t near)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     c->near = near;
 }
 void
 nux_camera_set_far (nux_nid_t e, nux_f32_t far)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     c->far = far;
 }
 void
 nux_camera_set_aspect (nux_nid_t e, nux_f32_t aspect)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     c->aspect = aspect;
 }
 void
 nux_camera_reset_aspect (nux_nid_t e, nux_viewport_t *viewport)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     nux_texture_t *t = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
-    NUX_ASSERT(t);
+    nux_assert(t);
     c->aspect = (nux_f32_t)t->gpu.width / t->gpu.height;
 }
 void
 nux_camera_set_ortho (nux_nid_t e, nux_b32_t ortho)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     c->ortho = ortho;
 }
 void
 nux_camera_set_ortho_size (nux_nid_t e, nux_v2_t size)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     c->ortho_size = size;
 }
 nux_m4_t
 nux_camera_projection (nux_nid_t e)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return nux_m4_identity());
+    nux_check(c, return nux_m4_identity());
     nux_m4_t proj;
     if (c->ortho)
     {
@@ -108,8 +108,8 @@ nux_v3_t
 nux_camera_unproject (nux_nid_t e, nux_v2_t pos)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return NUX_V3_ZEROS);
-    NUX_CHECK(nux_node_has(e, NUX_COMPONENT_TRANSFORM), return NUX_V3_ZEROS);
+    nux_check(c, return NUX_V3_ZEROS);
+    nux_check(nux_node_has(e, NUX_COMPONENT_TRANSFORM), return NUX_V3_ZEROS);
 
     nux_m4_t global_matrix = nux_transform_matrix(e);
 
@@ -134,13 +134,13 @@ void
 nux_camera_set_render_mask (nux_nid_t n, nux_u32_t mask)
 {
     nux_camera_t *c = nux_component_get(n, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return);
+    nux_check(c, return);
     c->render_mask = mask;
 }
 nux_u32_t
 nux_camera_render_mask (nux_nid_t n)
 {
     nux_camera_t *c = nux_component_get(n, NUX_COMPONENT_CAMERA);
-    NUX_CHECK(c, return 0);
+    nux_check(c, return 0);
     return c->render_mask;
 }

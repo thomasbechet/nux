@@ -41,7 +41,7 @@ buffer_index (cgltf_accessor *accessor, nux_u32_t i)
         default:
             break;
     }
-    NUX_ASSERT(index != (nux_u32_t)-1);
+    nux_assert(index != (nux_u32_t)-1);
     return index;
 }
 static nux_mesh_t *
@@ -70,7 +70,7 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
         }
     }
 
-    NUX_ENSURE(positions, return nullptr, "mesh without position attribute");
+    nux_ensure(positions, return nullptr, "mesh without position attribute");
 
     // Build vertex attributes
     nux_v3_t               base_color = NUX_V3_ONES;
@@ -101,7 +101,7 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     // Create mesh
     nux_mesh_t *mesh
         = nux_mesh_new(arena, indice_count, attributes, NUX_VERTEX_TRIANGLES);
-    NUX_CHECK(mesh, return nullptr);
+    nux_check(mesh, return nullptr);
 
     // Write vertices
     for (nux_u32_t i = 0; i < indice_count; ++i)
@@ -134,8 +134,8 @@ load_texture (nux_arena_t *arena, const cgltf_texture *texture)
     cgltf_buffer_view *view = texture->image->buffer_view;
     nux_texture_t     *tex  = nux_texture_load_from_memory(
         arena, view->buffer->data + view->offset, view->size);
-    NUX_ENSURE(tex, return nullptr, "failed to load texture %s", texture->name);
-    NUX_DEBUG("loading texture %s w %d h %d",
+    nux_ensure(tex, return nullptr, "failed to load texture %s", texture->name);
+    nux_debug("loading texture %s w %d h %d",
               texture->name,
               tex->gpu.width,
               tex->gpu.height);
@@ -150,7 +150,7 @@ load_node (nux_arena_t *arena,
            nux_nid_t    parent)
 {
     nux_nid_t e = nux_node_create(parent);
-    NUX_CHECK(e, return NUX_FAILURE);
+    nux_check(e, return NUX_FAILURE);
 
     nux_v3_t translation = NUX_V3_ZEROS;
     nux_q4_t rotation    = nux_q4_identity();
@@ -194,7 +194,7 @@ load_node (nux_arena_t *arena,
                     break;
                 }
             }
-            NUX_ENSURE(mesh,
+            nux_ensure(mesh,
                        return NUX_FAILURE,
                        "mesh primitive not found for model %s",
                        node->name);
@@ -219,11 +219,11 @@ load_node (nux_arena_t *arena,
             }
             if (!texture)
             {
-                NUX_WARNING("texture not found for model %s, using default",
+                nux_warning("texture not found for model %s, using default",
                             node->name);
             }
 
-            NUX_DEBUG("loading node %s mesh 0x%08X texture 0x%08X",
+            nux_debug("loading node %s mesh 0x%08X texture 0x%08X",
                       node->name,
                       mesh,
                       texture);
@@ -261,11 +261,11 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
     // Load file
     nux_u32_t buf_size;
     void     *buf = nux_file_load(nux_arena_frame(), path, &buf_size);
-    NUX_CHECK(buf, goto error);
+    nux_check(buf, goto error);
 
     // Parse file
     result = cgltf_parse(&options, buf, buf_size, &data);
-    NUX_ENSURE(result == cgltf_result_success,
+    nux_ensure(result == cgltf_result_success,
                goto error,
                "failed to parse gltf file %s (code %d)",
                path,
@@ -273,7 +273,7 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
 
     // Load buffers
     result = cgltf_load_buffers(&options, data, path);
-    NUX_ENSURE(result == cgltf_result_success,
+    nux_ensure(result == cgltf_result_success,
                goto error,
                "failed to load gltf buffers %s",
                path);
@@ -286,8 +286,8 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
         {
             nux_rid_t rid = nux_resource_rid(
                 load_primitive_mesh(arena, mesh->primitives + p));
-            NUX_CHECK(rid, goto error);
-            NUX_DEBUG(
+            nux_check(rid, goto error);
+            nux_debug(
                 "loading mesh %s primitive %d rid 0x%08X", mesh->name, p, rid);
             resources[resources_count].cgltf_ptr = mesh->primitives + p;
             resources[resources_count].rid       = rid;
@@ -317,7 +317,7 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
         if (texture)
         {
             nux_rid_t rid = nux_resource_rid(load_texture(arena, texture));
-            NUX_CHECK(rid, goto error);
+            nux_check(rid, goto error);
             resources[resources_count].cgltf_ptr = texture;
             resources[resources_count].rid       = rid;
             ++resources_count;
@@ -331,7 +331,7 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
 
         // Create scene
         scene = nux_scene_new(arena);
-        NUX_CHECK(scene, goto error);
+        nux_check(scene, goto error);
         nux_scene_set_active(scene);
 
         for (nux_u32_t c = 0; c < gltf_scene->nodes_count; ++c)
@@ -339,9 +339,9 @@ nux_scene_load_gltf (nux_arena_t *arena, const nux_c8_t *path)
             cgltf_node *node = gltf_scene->nodes[c];
             if (!node->parent) // root only nodes
             {
-                NUX_CHECK(load_node(arena,
+                nux_check(load_node(arena,
                                     resources,
-                                    NUX_ARRAY_SIZE(resources),
+                                    nux_array_size(resources),
                                     gltf_scene,
                                     node,
                                     nux_node_root()),

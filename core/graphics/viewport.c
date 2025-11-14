@@ -3,11 +3,11 @@
 nux_viewport_t *
 nux_viewport_new (nux_arena_t *arena, nux_texture_t *target)
 {
-    NUX_ENSURE(target->gpu.type == NUX_TEXTURE_RENDER_TARGET,
+    nux_ensure(target->gpu.type == NUX_TEXTURE_RENDER_TARGET,
                return nullptr,
                "viewport target must be a render target texture");
     nux_viewport_t *vp = nux_resource_new(arena, NUX_RESOURCE_VIEWPORT);
-    NUX_CHECK(vp, return nullptr);
+    nux_check(vp, return nullptr);
     vp->mode           = NUX_VIEWPORT_STRETCH_KEEP_ASPECT;
     vp->extent         = nux_b2i(0, 0, target->gpu.width, target->gpu.height);
     vp->anchor         = NUX_ANCHOR_CENTER;
@@ -59,7 +59,7 @@ nux_viewport_set_camera (nux_viewport_t *vp, nux_nid_t camera)
 void
 nux_viewport_set_texture (nux_viewport_t *vp, nux_texture_t *texture)
 {
-    NUX_ENSURE(nux_resource_rid(texture) != vp->target,
+    nux_ensure(nux_resource_rid(texture) != vp->target,
                return,
                "viewport target must be equals to the source");
     vp->source.camera  = NUX_NULL;
@@ -80,7 +80,7 @@ nux_viewport_normalized_viewport (nux_viewport_t *viewport)
     {
         nux_camera_t *cam
             = nux_component_get(viewport->source.camera, NUX_COMPONENT_CAMERA);
-        NUX_ASSERT(cam);
+        nux_assert(cam);
         if (cam->aspect != 0)
         {
             source_size.x = nux_floor(target_size.y * cam->aspect);
@@ -95,7 +95,7 @@ nux_viewport_normalized_viewport (nux_viewport_t *viewport)
     {
         nux_texture_t *texture
             = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->source.texture);
-        NUX_ASSERT(texture);
+        nux_assert(texture);
         source_size = nux_v2u(texture->gpu.width, texture->gpu.height);
     }
     nux_f32_t source_ratio = (nux_f32_t)source_size.x / source_size.y;

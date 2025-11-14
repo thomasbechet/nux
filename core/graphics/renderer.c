@@ -30,7 +30,7 @@ draw (nux_gpu_encoder_t *enc,
 
     // Create batch
     nux_u32_t batch_index;
-    NUX_ENSURE(nux_dsa_push_bottom(&gfx->batches_dsa, 1, &batch_index),
+    nux_ensure(nux_dsa_push_bottom(&gfx->batches_dsa, 1, &batch_index),
                return NUX_FAILURE,
                "out of batches");
     nux_gpu_scene_batch_t batch;
@@ -39,7 +39,7 @@ draw (nux_gpu_encoder_t *enc,
     batch.transform_offset  = transform;
     batch.has_texture       = gfx->active_texture ? 1 : 0;
     batch.color             = color;
-    NUX_ENSURE(nux_os_buffer_update(gfx->batches_buffer.slot,
+    nux_ensure(nux_os_buffer_update(gfx->batches_buffer.slot,
                                     batch_index * sizeof(batch),
                                     sizeof(batch),
                                     &batch),
@@ -73,7 +73,7 @@ draw_rect (nux_gpu_encoder_t     *enc,
                 = { 0, 1, 2, 2, 3, 0, 4, 6, 5, 6, 4, 7, 0, 3, 7, 7, 4, 0,
                     1, 5, 6, 6, 2, 1, 0, 4, 5, 5, 1, 0, 3, 2, 6, 6, 7, 3 };
             indices      = triangles_indices;
-            vertex_count = NUX_ARRAY_SIZE(triangles_indices);
+            vertex_count = nux_array_size(triangles_indices);
         }
         break;
         case NUX_VERTEX_LINES: {
@@ -81,7 +81,7 @@ draw_rect (nux_gpu_encoder_t     *enc,
                 = { 0, 1, 1, 2, 2, 3, 3, 0, 4, 5, 5, 6,
                     6, 7, 7, 4, 0, 4, 1, 5, 2, 6, 3, 7 };
             indices      = lines_indices;
-            vertex_count = NUX_ARRAY_SIZE(lines_indices);
+            vertex_count = nux_array_size(lines_indices);
         }
         break;
         case NUX_VERTEX_POINTS:
@@ -111,7 +111,7 @@ draw_rect (nux_gpu_encoder_t     *enc,
     }
 
     nux_u32_t offset;
-    NUX_CHECK(
+    nux_check(
         nux_graphics_push_frame_vertices(vertex_count * stride, data, &offset),
         return);
 
@@ -149,7 +149,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
     nux_nid_t              camera = viewport->source.camera;
     nux_texture_t         *target
         = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
-    NUX_ASSERT(target);
+    nux_assert(target);
 
     // Bind framebuffer
     nux_gpu_bind_framebuffer(enc, target->gpu.framebuffer_slot);
@@ -168,7 +168,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
     {
         // Update constants
         nux_camera_t *cc = nux_component_get(camera, NUX_COMPONENT_CAMERA);
-        NUX_ASSERT(nux_node_has(camera, NUX_COMPONENT_TRANSFORM) && cc);
+        nux_assert(nux_node_has(camera, NUX_COMPONENT_TRANSFORM) && cc);
 
         nux_m4_t global_matrix = nux_transform_matrix(camera);
 
@@ -221,13 +221,13 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
             }
 
             // Push transform
-            NUX_CHECK(
+            nux_check(
                 nux_graphics_push_transforms(1, &global_matrix, &sm->transform),
                 continue);
 
             // Draw
             bind_texture(enc, tex);
-            NUX_CHECK(draw(enc,
+            nux_check(draw(enc,
                            m->gpu.offset,
                            nux_mesh_size(m),
                            sm->transform,
@@ -252,7 +252,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
                 continue;
             }
             nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
-            NUX_ASSERT(m);
+            nux_assert(m);
 
             // Draw
             bind_texture(enc, nullptr);

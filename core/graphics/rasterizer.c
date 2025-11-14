@@ -8,9 +8,9 @@
 //                    nux_i32_t  y1,
 //                    nux_u8_t   c)
 // {
-//     nux_i32_t dx  = NUX_ABS(x1 - x0);
+//     nux_i32_t dx  = nux_abs(x1 - x0);
 //     nux_i32_t sx  = x0 < x1 ? 1 : -1;
-//     nux_i32_t dy  = -NUX_ABS(y1 - y0);
+//     nux_i32_t dy  = -nux_abs(y1 - y0);
 //     nux_i32_t sy  = y0 < y1 ? 1 : -1;
 //     nux_i32_t err = dx + dy;
 //     nux_i32_t e2;
@@ -52,24 +52,24 @@
 //     if (y0 == y1 && y0 == y2)
 //     {
 //         nux_graphics_line(ctx,
-//                           NUX_MIN(x0, NUX_MIN(x1, x2)),
+//                           nux_min(x0, nux_min(x1, x2)),
 //                           y0,
-//                           NUX_MAX(x0, NUX_MAX(x1, x2)),
+//                           nux_max(x0, nux_max(x1, x2)),
 //                           y0,
 //                           c);
 //         return;
 //     }
 //     if (v0.y > v1.y)
 //     {
-//         NUX_SWAP(v0, v1, nux_v2i_t);
+//         nux_swap(v0, v1, nux_v2i_t);
 //     }
 //     if (v0.y > v2.y)
 //     {
-//         NUX_SWAP(v0, v2, nux_v2i_t);
+//         nux_swap(v0, v2, nux_v2i_t);
 //     }
 //     if (v1.y > v2.y)
 //     {
-//         NUX_SWAP(v1, v2, nux_v2i_t);
+//         nux_swap(v1, v2, nux_v2i_t);
 //     }
 //
 //     // 3 bresenham iterations :
@@ -77,12 +77,12 @@
 //     //  v1 -> v2 (bresenham1)
 //     //  v0 -> v2 (bresenham1) (longest iteration)
 //
-//     nux_i32_t dx0  = NUX_ABS(v1.x - v0.x);
-//     nux_i32_t dx1  = NUX_ABS(v2.x - v0.x);
+//     nux_i32_t dx0  = nux_abs(v1.x - v0.x);
+//     nux_i32_t dx1  = nux_abs(v2.x - v0.x);
 //     nux_i32_t sx0  = v0.x < v1.x ? 1 : -1;
 //     nux_i32_t sx1  = v0.x < v2.x ? 1 : -1;
-//     nux_i32_t dy0  = -NUX_ABS(v1.y - v0.y);
-//     nux_i32_t dy1  = -NUX_ABS(v2.y - v0.y);
+//     nux_i32_t dy0  = -nux_abs(v1.y - v0.y);
+//     nux_i32_t dy1  = -nux_abs(v2.y - v0.y);
 //     nux_i32_t sy0  = v0.y < v1.y ? 1 : -1;
 //     nux_i32_t sy1  = v0.y < v2.y ? 1 : -1;
 //     nux_i32_t err0 = dx0 + dy0;
@@ -100,9 +100,9 @@
 //         if (curx0 == v1.x && cury0 == v1.y && !lower)
 //         {
 //             // End of first iteration, transition to v1 -> v2
-//             dx0   = NUX_ABS(v2.x - v1.x);
+//             dx0   = nux_abs(v2.x - v1.x);
 //             sx0   = v1.x < v2.x ? 1 : -1;
-//             dy0   = -NUX_ABS(v2.y - v1.y);
+//             dy0   = -nux_abs(v2.y - v1.y);
 //             sy0   = v1.y < v2.y ? 1 : -1;
 //             err0  = dx0 + dy0;
 //             curx0 = v1.x;
@@ -141,7 +141,7 @@
 //     }
 //
 // processline:
-//     for (nux_i32_t x = NUX_MIN(curx0, curx1); x < NUX_MAX(curx0, curx1); ++x)
+//     for (nux_i32_t x = nux_min(curx0, curx1); x < nux_max(curx0, curx1); ++x)
 //     {
 //         nux_pset(ctx, x, cury1, c);
 //     }
@@ -181,10 +181,10 @@
 //                         nux_i32_t  y1,
 //                         nux_u8_t   c)
 // {
-//     nux_i32_t xmin = NUX_MIN(x0, x1);
-//     nux_i32_t xmax = NUX_MAX(x0, x1);
-//     nux_i32_t ymin = NUX_MIN(y0, y1);
-//     nux_i32_t ymax = NUX_MAX(y0, y1);
+//     nux_i32_t xmin = nux_min(x0, x1);
+//     nux_i32_t xmax = nux_max(x0, x1);
+//     nux_i32_t ymin = nux_min(y0, y1);
+//     nux_i32_t ymax = nux_max(y0, y1);
 //     for (nux_i32_t x = xmin; x <= xmax; ++x)
 //     {
 //         nux_pset(ctx, x, y0, c);
@@ -465,16 +465,16 @@
 //             nux_f32_t inv_vw2 = 1. / v2.w;
 //
 //             nux_i32_t xmin
-//                 = NUX_MAX(vp.min.x, NUX_MIN(v0vp.x, NUX_MIN(v1vp.x,
+//                 = nux_max(vp.min.x, nux_min(v0vp.x, nux_min(v1vp.x,
 //                 v2vp.x)));
 //             nux_i32_t ymin
-//                 = NUX_MAX(vp.min.y, NUX_MIN(v0vp.y, NUX_MIN(v1vp.y,
+//                 = nux_max(vp.min.y, nux_min(v0vp.y, nux_min(v1vp.y,
 //                 v2vp.y)));
 //             nux_i32_t xmax
-//                 = NUX_MIN(vp.max.x, NUX_MAX(v0vp.x, NUX_MAX(v1vp.x,
+//                 = nux_min(vp.max.x, nux_max(v0vp.x, nux_max(v1vp.x,
 //                 v2vp.x)));
 //             nux_i32_t ymax
-//                 = NUX_MIN(vp.max.y, NUX_MAX(v0vp.y, NUX_MAX(v1vp.y,
+//                 = nux_min(vp.max.y, nux_max(v0vp.y, nux_max(v1vp.y,
 //                 v2vp.y)));
 //
 //             for (nux_i32_t y = ymin; y < ymax; ++y)
@@ -532,7 +532,7 @@
 //                         // nux_v3_t  sun
 //                         //     = nux_v3_normalize(nux_v3(nu_sin(t), 1,
 //                         //     nu_cos(t)));
-//                         // nux_f32_t dot = NUX_MAX(0.5, nux_v3_dot(normal,
+//                         // nux_f32_t dot = nux_max(0.5, nux_v3_dot(normal,
 //                         sun));
 //                         // c            = blend_color(c, 0, dot);
 //
@@ -544,12 +544,12 @@
 //             }
 //
 //             // {
-//             //     nux_u32_t x0 = NUX_CLAMP(v0vp.x, 0, NUX_SCREEN_WIDTH);
-//             //     nux_u32_t x1 = NUX_CLAMP(v1vp.x, 0, NUX_SCREEN_WIDTH);
-//             //     nux_u32_t x2 = NUX_CLAMP(v2vp.x, 0, NUX_SCREEN_WIDTH);
-//             //     nux_u32_t y0 = NUX_CLAMP(v0vp.y, 0, NUX_SCREEN_HEIGHT);
-//             //     nux_u32_t y1 = NUX_CLAMP(v1vp.y, 0, NUX_SCREEN_HEIGHT);
-//             //     nux_u32_t y2 = NUX_CLAMP(v2vp.y, 0, NUX_SCREEN_HEIGHT);
+//             //     nux_u32_t x0 = nux_clamp(v0vp.x, 0, NUX_SCREEN_WIDTH);
+//             //     nux_u32_t x1 = nux_clamp(v1vp.x, 0, NUX_SCREEN_WIDTH);
+//             //     nux_u32_t x2 = nux_clamp(v2vp.x, 0, NUX_SCREEN_WIDTH);
+//             //     nux_u32_t y0 = nux_clamp(v0vp.y, 0, NUX_SCREEN_HEIGHT);
+//             //     nux_u32_t y1 = nux_clamp(v1vp.y, 0, NUX_SCREEN_HEIGHT);
+//             //     nux_u32_t y2 = nux_clamp(v2vp.y, 0, NUX_SCREEN_HEIGHT);
 //             //     nux_line(ctx, x0, y0, x1, y1, 0);
 //             //     nux_line(ctx, x0, y0, x2, y2, 0);
 //             //     nux_line(ctx, x1, y1, x2, y2, 0);
@@ -645,12 +645,12 @@
 //                 continue;
 //             }
 //
-//             nux_u32_t x0 = NUX_CLAMP(v0vp.x, 0, NUX_CANVAS_WIDTH);
-//             nux_u32_t x1 = NUX_CLAMP(v1vp.x, 0, NUX_CANVAS_WIDTH);
-//             nux_u32_t x2 = NUX_CLAMP(v2vp.x, 0, NUX_CANVAS_WIDTH);
-//             nux_u32_t y0 = NUX_CLAMP(v0vp.y, 0, NUX_CANVAS_HEIGHT);
-//             nux_u32_t y1 = NUX_CLAMP(v1vp.y, 0, NUX_CANVAS_HEIGHT);
-//             nux_u32_t y2 = NUX_CLAMP(v2vp.y, 0, NUX_CANVAS_HEIGHT);
+//             nux_u32_t x0 = nux_clamp(v0vp.x, 0, NUX_CANVAS_WIDTH);
+//             nux_u32_t x1 = nux_clamp(v1vp.x, 0, NUX_CANVAS_WIDTH);
+//             nux_u32_t x2 = nux_clamp(v2vp.x, 0, NUX_CANVAS_WIDTH);
+//             nux_u32_t y0 = nux_clamp(v0vp.y, 0, NUX_CANVAS_HEIGHT);
+//             nux_u32_t y1 = nux_clamp(v1vp.y, 0, NUX_CANVAS_HEIGHT);
+//             nux_u32_t y2 = nux_clamp(v2vp.y, 0, NUX_CANVAS_HEIGHT);
 //             nux_line(ctx, x0, y0, x1, y1, 7);
 //             nux_line(ctx, x0, y0, x2, y2, 7);
 //             nux_line(ctx, x1, y1, x2, y2, 7);
@@ -712,7 +712,7 @@
 // nux_mesh(ctx,
 //          (const nux_f32_t *)positions,
 //          (const nux_f32_t *)uvs,
-//          NUX_ARRAY_SIZE(positions),
+//          nux_array_size(positions),
 //          m);
 // }
 // void
@@ -735,6 +735,6 @@
 //     nux_mesh(ctx,
 //              (const nux_f32_t *)positions,
 //              (const nux_f32_t *)uvs,
-//              NUX_ARRAY_SIZE(positions),
+//              nux_array_size(positions),
 //              m);
 // }

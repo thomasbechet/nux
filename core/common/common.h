@@ -18,13 +18,6 @@
 ///        MACROS        ///
 ////////////////////////////
 
-#define NUX_UNUSED0()
-#define NUX_UNUSED1(a)             (void)(a)
-#define NUX_UNUSED2(a, b)          (void)(a), NUX_UNUSED1(b)
-#define NUX_UNUSED3(a, b, c)       (void)(a), NUX_UNUSED2(b, c)
-#define NUX_UNUSED4(a, b, c, d)    (void)(a), NUX_UNUSED3(b, c, d)
-#define NUX_UNUSED5(a, b, c, d, e) (void)(a), NUX_UNUSED4(b, c, d, e)
-
 #define _NU_S(x)      #x
 #define _NU_S_(x)     _NU_S(x)
 #define _NU_S__LINE__ _NU_S_(__LINE__)
@@ -35,46 +28,13 @@
 #define __SOURCE__ ""
 #endif
 
-#define NUX_CHECK(check, action) \
-    if (!(check))                \
-    {                            \
-        action;                  \
-    }
-#define nux_check(check, action) \
-    if (!(check))                \
-    {                            \
-        action;                  \
-    }
-
-#define NUX_ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
-#define NUX_ARRAY_FILL(arr, size, value) \
-    for (nu_size_t i = 0; i < size; ++i) \
-    {                                    \
-        (arr)[i] = (value);              \
-    }
-
-#define NUX_MATCH(v, k) (nux_strncmp((v), k, NUX_ARRAY_SIZE(k)) == 0)
-
 #define NUX_BIG_ENDIAN (!*(unsigned char *)&(uint16_t) { 1 })
 
 #if defined(NUX_BUILD_DEBUG) && defined(NUX_BUILD_STDLIB)
-#define NUX_ASSERT(x) assert((x))
+#define nux_assert(x) assert((x))
 #else
-#define NUX_ASSERT(x) (void)((x))
+#define nux_assert(x) (void)((x))
 #endif
-
-#define NUX_MIN(a, b)          (((a) < (b)) ? (a) : (b))
-#define NUX_MAX(a, b)          (((a) > (b)) ? (a) : (b))
-#define NUX_CLAMP(x, min, max) (NUX_MAX(min, NUX_MIN(max, x)))
-#define NUX_CLAMP01(x)         (NUX_CLAMP(x, 0, 1))
-#define NUX_ABS(x)             (((x) < 0) ? -(x) : (x))
-#define NUX_SWAP(x, y, T) \
-    do                    \
-    {                     \
-        T SWAP = x;       \
-        x      = y;       \
-        y      = SWAP;    \
-    } while (0)
 
 #define NUX_PI          3.14159265359
 #define NUX_FLT_MAX     3.402823E+38
@@ -136,7 +96,42 @@
                    ((hex & 0xFF) >> 0),      \
                    ((hex & 0xFF000000) >> 24))
 
-#define NUX_V2_DEFINE(name, type)                                         \
+#define nux_unused0()
+#define nux_unused1(a)             (void)(a)
+#define nux_unused2(a, b)          (void)(a), nux_unused1(b)
+#define nux_unused3(a, b, c)       (void)(a), nux_unused2(b, c)
+#define nux_unused4(a, b, c, d)    (void)(a), nux_unused3(b, c, d)
+#define nux_unused5(a, b, c, d, e) (void)(a), nux_unused4(b, c, d, e)
+
+#define nux_check(check, action) \
+    if (!(check))                \
+    {                            \
+        action;                  \
+    }
+
+#define nux_array_size(arr) (sizeof(arr) / sizeof(arr[0]))
+#define nux_array_fill(arr, size, value) \
+    for (nux_u32_t i = 0; i < size; ++i) \
+    {                                    \
+        (arr)[i] = (value);              \
+    }
+
+#define nux_match(v, k) (nux_strncmp((v), k, nux_array_size(k)) == 0)
+
+#define nux_min(a, b)          (((a) < (b)) ? (a) : (b))
+#define nux_max(a, b)          (((a) > (b)) ? (a) : (b))
+#define nux_clamp(x, min, max) (nux_max(min, nux_min(max, x)))
+#define nux_clamp01(x)         (nux_clamp(x, 0, 1))
+#define nux_abs(x)             (((x) < 0) ? -(x) : (x))
+#define nux_swap(x, y, T) \
+    do                    \
+    {                     \
+        T SWAP = x;       \
+        x      = y;       \
+        y      = SWAP;    \
+    } while (0)
+
+#define nux_v2_define(name, type)                                         \
     nux_##name##_t nux_##name(type x, type y);                            \
     nux_##name##_t nux_##name##s(type x);                                 \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);  \
@@ -154,7 +149,7 @@
     nux_f32_t      nux_##name##_dist(nux_##name##_t a, nux_##name##_t b); \
     type           nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b);
 
-#define NUX_V3_DEFINE(name, type)                                          \
+#define nux_v3_define(name, type)                                          \
     nux_##name##_t nux_##name(type x, type y, type z);                     \
     nux_##name##_t nux_##name##s(type x);                                  \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);   \
@@ -174,7 +169,7 @@
     nux_f32_t      nux_##name##_dist(nux_##name##_t a, nux_##name##_t b);  \
     type           nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b);
 
-#define NUX_V4_DEFINE(name, type)                                         \
+#define nux_v4_define(name, type)                                         \
     nux_##name##_t nux_##name(type x, type y, type z, type w);            \
     nux_##name##_t nux_##name##s(type x);                                 \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);  \
@@ -190,7 +185,7 @@
     nux_f32_t      nux_##name##_dist(nux_##name##_t a, nux_##name##_t b); \
     type           nux_##name##_dist2(nux_##name##_t a, nux_##name##_t b);
 
-#define NUX_B3_DEFINE(name, type) nux_##name##_t nux_##name(type min, type max);
+#define nux_b3_define(name, type) nux_##name##_t nux_##name(type min, type max);
 
 #define nux_vec(T)              \
     union                       \
@@ -509,19 +504,14 @@ typedef struct
     void     *data;
 } nux_pool_t;
 
-NUX_V2_DEFINE(v2i, nux_i32_t)
-NUX_V2_DEFINE(v2u, nux_u32_t)
-NUX_V2_DEFINE(v2, nux_f32_t)
-NUX_V3_DEFINE(v3i, nux_i32_t)
-NUX_V3_DEFINE(v3u, nux_u32_t)
-NUX_V3_DEFINE(v3, nux_f32_t)
-NUX_V4_DEFINE(v4i, nux_i32_t)
-NUX_V4_DEFINE(v4u, nux_u32_t)
-NUX_V4_DEFINE(v4, nux_f32_t)
-NUX_B3_DEFINE(b3, nux_v3_t)
-NUX_B3_DEFINE(b3i, nux_v3i_t)
+nux_v2_define(v2i, nux_i32_t) nux_v2_define(v2u, nux_u32_t)
+    nux_v2_define(v2, nux_f32_t) nux_v3_define(v3i, nux_i32_t)
+        nux_v3_define(v3u, nux_u32_t) nux_v3_define(v3, nux_f32_t)
+            nux_v4_define(v4i, nux_i32_t) nux_v4_define(v4u, nux_u32_t)
+                nux_v4_define(v4, nux_f32_t) nux_b3_define(b3, nux_v3_t)
+                    nux_b3_define(b3i, nux_v3i_t)
 
-typedef nux_vec(nux_u32_t) nux_u32_vec_t;
+                        typedef nux_vec(nux_u32_t) nux_u32_vec_t;
 
 ////////////////////////////
 ///      FUNCTIONS       ///

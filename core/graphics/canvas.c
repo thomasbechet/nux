@@ -7,11 +7,11 @@ flush_quads (nux_canvas_t *canvas)
     {
         return NUX_SUCCESS;
     }
-    NUX_ENSURE(canvas->quads_gpu_buffer_head + canvas->quads_count
+    nux_ensure(canvas->quads_gpu_buffer_head + canvas->quads_count
                    < NUX_QUADS_DEFAULT_SIZE,
                return NUX_FAILURE,
                "out of quads");
-    NUX_ENSURE(
+    nux_ensure(
         nux_os_buffer_update(
             canvas->quads_gpu_buffer.slot,
             canvas->quads_gpu_buffer_head * sizeof(*canvas->quads_buffer),
@@ -81,7 +81,7 @@ end_batch (nux_canvas_t *canvas)
 
     // Update buffer
     nux_u32_t index = canvas->batches_gpu_buffer_head;
-    NUX_ENSURE(nux_os_buffer_update(canvas->batches_gpu_buffer.slot,
+    nux_ensure(nux_os_buffer_update(canvas->batches_gpu_buffer.slot,
                                     index * sizeof(canvas->active_batch),
                                     sizeof(canvas->active_batch),
                                     &canvas->active_batch),
@@ -101,10 +101,10 @@ end_batch (nux_canvas_t *canvas)
 // push_quad (nux_canvas_t *canvas, nux_gpu_canvas_quad_t *quads, nux_u32_t
 // count)
 // {
-//     NUX_ENSURE(canvas->quads_buffer_head + count < NUX_QUADS_DEFAULT_SIZE,
+//     nux_ensure(canvas->quads_buffer_head + count < NUX_QUADS_DEFAULT_SIZE,
 //                return NUX_FAILURE,
 //                "out of quads");
-//     NUX_ENSURE(nux_os_buffer_update(nux_userdata(),
+//     nux_ensure(nux_os_buffer_update(nux_userdata(),
 //                                     canvas->quads_buffer.slot,
 //                                     canvas->quads_buffer_head *
 //                                     sizeof(*quads), count * sizeof(*quads),
@@ -120,7 +120,7 @@ nux_canvas_t *
 nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
 {
     nux_canvas_t *c = nux_resource_new(arena, NUX_RESOURCE_CANVAS);
-    NUX_CHECK(c, return nullptr);
+    nux_check(c, return nullptr);
 
     // Allocate quads buffer
     c->quads_buffer = nux_arena_malloc(
@@ -130,21 +130,21 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     // Allocate constants gpu buffer
     c->constants_buffer.type = NUX_GPU_BUFFER_UNIFORM;
     c->constants_buffer.size = sizeof(nux_gpu_constants_buffer_t);
-    NUX_CHECK(nux_gpu_buffer_init(&c->constants_buffer), return nullptr);
+    nux_check(nux_gpu_buffer_init(&c->constants_buffer), return nullptr);
 
     // Allocate quads gpu buffer
     c->quads_gpu_buffer_head = 0;
     c->quads_gpu_buffer.type = NUX_GPU_BUFFER_STORAGE;
     c->quads_gpu_buffer.size
         = sizeof(nux_gpu_canvas_quad_t) * NUX_QUADS_DEFAULT_SIZE;
-    NUX_CHECK(nux_gpu_buffer_init(&c->quads_gpu_buffer), return nullptr);
+    nux_check(nux_gpu_buffer_init(&c->quads_gpu_buffer), return nullptr);
 
     // Allocate batches gpu buffer
     c->batches_gpu_buffer_head = 0;
     c->batches_gpu_buffer.type = NUX_GPU_BUFFER_STORAGE;
     c->batches_gpu_buffer.size
         = sizeof(nux_gpu_canvas_batch_t) * NUX_BATCHES_DEFAULT_SIZE;
-    NUX_CHECK(nux_gpu_buffer_init(&c->batches_gpu_buffer), return nullptr);
+    nux_check(nux_gpu_buffer_init(&c->batches_gpu_buffer), return nullptr);
 
     // Allocate commands
     nux_gpu_encoder_init(arena, &c->encoder);
@@ -159,7 +159,7 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     // Create render target
     c->target
         = nux_texture_new(arena, NUX_TEXTURE_RENDER_TARGET, width, height);
-    NUX_CHECK(c->target, return nullptr);
+    nux_check(c->target, return nullptr);
 
     return c;
 }
@@ -265,8 +265,8 @@ nux_canvas_blit (nux_canvas_t  *canvas,
                       extent.y,
                       tex_extent.x,
                       tex_extent.y,
-                      NUX_MIN(extent.w, tex_extent.w),
-                      NUX_MIN(extent.h, tex_extent.h));
+                      nux_min(extent.w, tex_extent.w),
+                      nux_min(extent.h, tex_extent.h));
         }
         break;
         case NUX_TEXTURE_WRAP_REPEAT: {
@@ -500,7 +500,7 @@ nux_canvas_render (nux_canvas_t *c)
 {
     nux_graphics_module_t *gfx = nux_graphics();
 
-    NUX_ASSERT(c->target);
+    nux_assert(c->target);
     nux_u32_t framebuffer = c->target->gpu.framebuffer_slot;
     nux_u32_t width       = c->target->gpu.width;
     nux_u32_t height      = c->target->gpu.height;

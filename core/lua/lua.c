@@ -13,14 +13,14 @@ serde_begin (nux_lua_serde_t *s, lua_State *L, nux_b32_t serialize)
     s->L         = L;
     s->serialize = serialize;
     s->head      = 0;
-    NUX_ASSERT(lua_istable(L, -1));
+    nux_assert(lua_istable(L, -1));
 }
 static void
 serde_field_b32 (nux_lua_serde_t *s, const nux_c8_t *name, nux_b32_t *value)
 {
     if (s->serialize)
     {
-        NUX_ASSERT(lua_istable(s->L, -1));
+        nux_assert(lua_istable(s->L, -1));
         lua_pushboolean(s->L, *value);
         lua_setfield(s->L, -2, name);
     }
@@ -45,7 +45,7 @@ serde_field_u32_minmax (nux_lua_serde_t *s,
 {
     if (s->serialize)
     {
-        NUX_ASSERT(lua_istable(s->L, -1));
+        nux_assert(lua_istable(s->L, -1));
         lua_pushinteger(s->L, *value);
         lua_setfield(s->L, -2, name);
     }
@@ -55,7 +55,7 @@ serde_field_u32_minmax (nux_lua_serde_t *s,
         {
             if (lua_getfield(s->L, -1, name) == LUA_TNUMBER)
             {
-                *value = NUX_CLAMP(lua_tointeger(s->L, -1), min, max);
+                *value = nux_clamp(lua_tointeger(s->L, -1), min, max);
             }
         }
         lua_pop(s->L, 1);
@@ -74,7 +74,7 @@ serde_field_enum (nux_lua_serde_t            *s,
 {
     if (s->serialize)
     {
-        NUX_ASSERT(lua_istable(s->L, -1));
+        nux_assert(lua_istable(s->L, -1));
 
         const nux_lua_serde_enum_t *e = enums;
         while (e->name)
@@ -87,7 +87,7 @@ serde_field_enum (nux_lua_serde_t            *s,
             }
             ++e;
         }
-        NUX_ASSERT(false);
+        nux_assert(false);
         return 0;
     }
     else
@@ -120,10 +120,10 @@ serde_begin_table (nux_lua_serde_t *s,
                    const nux_c8_t  *name,
                    nux_b32_t       *has_table)
 {
-    NUX_ASSERT(s->head < NUX_ARRAY_SIZE(s->stack));
+    nux_assert(s->head < nux_array_size(s->stack));
     if (s->serialize)
     {
-        NUX_ASSERT(lua_istable(s->L, -1));
+        nux_assert(lua_istable(s->L, -1));
         lua_newtable(s->L);
     }
     else
@@ -147,11 +147,11 @@ serde_begin_table (nux_lua_serde_t *s,
 static void
 serde_end_table (nux_lua_serde_t *s)
 {
-    NUX_ASSERT(s->head);
+    nux_assert(s->head);
     --s->head;
     if (s->serialize)
     {
-        NUX_ASSERT(lua_istable(s->L, -1));
+        nux_assert(lua_istable(s->L, -1));
         lua_setfield(s->L, -2, s->stack[s->head]);
     }
     else
@@ -175,7 +175,7 @@ nux_lua_call_module (nux_lua_t *lua, const nux_c8_t *name, nux_u32_t nargs)
     nux_status_t status = NUX_SUCCESS;
     lua_State   *L      = _module.L;
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
-    NUX_ASSERT(lua_istable(L, -1));
+    nux_assert(lua_istable(L, -1));
     // -1=M
     lua_getfield(L, -1, name);
     // -2=M -1=F
@@ -295,14 +295,14 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
         lua_pushinteger(L, nux_resource_rid(lua));
         lua_setfield(L, -2, NUX_LUA_MODULE_RID);
     }
-    NUX_ASSERT(lua_istable(L, -1));
+    nux_assert(lua_istable(L, -1));
     lua_setglobal(L, NUX_LUA_MODULE_TABLE);
 
     // 3. execute module
     nux_u32_t prev = lua_gettop(L);
     if (luaL_dofile(L, path) != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(L, -1));
+        nux_error("%s", lua_tostring(L, -1));
         return NUX_FAILURE;
     }
 
@@ -310,7 +310,7 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
     nux_u32_t nret = lua_gettop(L) - prev;
     if (nret)
     {
-        NUX_ENSURE(nret == 1 && lua_istable(L, -1),
+        nux_ensure(nret == 1 && lua_istable(L, -1),
                    return NUX_FAILURE,
                    "lua module '%s' returned value is not a table",
                    path);
@@ -318,7 +318,7 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
     else
     {
         lua_getglobal(L, NUX_LUA_MODULE_TABLE);
-        NUX_ENSURE(lua_istable(L, -1),
+        nux_ensure(lua_istable(L, -1),
                    return NUX_FAILURE,
                    "lua module table '%s' removed",
                    path);
@@ -334,13 +334,13 @@ nux_lua_t *
 nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
     nux_lua_t *lua = nux_resource_new(arena, NUX_RESOURCE_LUA_MODULE);
-    NUX_CHECK(lua, return nullptr);
+    nux_check(lua, return nullptr);
     nux_resource_set_path(lua, path);
     // initialize event handles
     nux_vec_init(&lua->event_handles, arena);
     // dofile and call load function
-    NUX_CHECK(load_lua_module(lua, path), return nullptr);
-    NUX_CHECK(nux_lua_call_module(lua, NUX_LUA_ON_LOAD, 0), return nullptr);
+    nux_check(load_lua_module(lua, path), return nullptr);
+    nux_check(nux_lua_call_module(lua, NUX_LUA_ON_LOAD, 0), return nullptr);
     return lua;
 }
 static void
@@ -361,8 +361,8 @@ static nux_status_t
 lua_module_reload (void *data, const nux_c8_t *path)
 {
     nux_lua_t *lua = data;
-    NUX_CHECK(load_lua_module(lua, path), return NUX_FAILURE);
-    NUX_CHECK(nux_lua_call_module(lua, NUX_LUA_ON_RELOAD, 0),
+    nux_check(load_lua_module(lua, path), return NUX_FAILURE);
+    nux_check(nux_lua_call_module(lua, NUX_LUA_ON_RELOAD, 0),
               return NUX_FAILURE);
     return NUX_SUCCESS;
 }
@@ -392,7 +392,7 @@ module_init (void)
 
     // Initialize Lua VM
     _module.L = luaL_newstate();
-    NUX_ENSURE(_module.L, return NUX_FAILURE, "failed to initialize lua state");
+    nux_ensure(_module.L, return NUX_FAILURE, "failed to initialize lua state");
 
     // Register base lua API
     luaL_openlibs(_module.L);
@@ -433,7 +433,7 @@ nux_lua_configure (nux_config_t *config)
         // Execute configuration script
         if (luaL_dofile(_module.L, NUX_LUA_CONF_FILE) != LUA_OK)
         {
-            NUX_ERROR("%s", lua_tostring(_module.L, -1));
+            nux_error("%s", lua_tostring(_module.L, -1));
             return NUX_FAILURE;
         }
 
@@ -447,7 +447,7 @@ nux_lua_configure (nux_config_t *config)
             return NUX_FAILURE;
         }
         lua_pushvalue(_module.L, -2); // push config as argument
-        NUX_CHECK(nux_lua_call_function(1, 0), return NUX_FAILURE);
+        nux_check(nux_lua_call_function(1, 0), return NUX_FAILURE);
 
         deserialize_config(config);
         lua_pop(_module.L, 1);
@@ -460,7 +460,7 @@ nux_lua_dostring (const nux_c8_t *string)
 {
     if (luaL_dostring(_module.L, string) != LUA_OK)
     {
-        NUX_ERROR("%s", lua_tostring(_module.L, -1));
+        nux_error("%s", lua_tostring(_module.L, -1));
         return NUX_FAILURE;
     }
     return NUX_SUCCESS;

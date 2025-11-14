@@ -32,7 +32,7 @@ nux__vec_resize (nux_vec_t *vec, nux_u32_t size)
 void *
 nux__vec_get (nux_vec_t *vec, nux_u32_t i)
 {
-    NUX_CHECK(i < vec->size, return nullptr);
+    nux_check(i < vec->size, return nullptr);
     return (nux_u8_t *)vec->data + vec->osize * i;
 }
 void *
@@ -57,7 +57,7 @@ nux__vec_push (nux_vec_t *vec)
 void *
 nux__vec_pop (nux_vec_t *vec)
 {
-    NUX_CHECK(vec->size, return nullptr);
+    nux_check(vec->size, return nullptr);
     void *ret = nux__vec_last(vec);
     --vec->size;
     return ret;
@@ -65,14 +65,14 @@ nux__vec_pop (nux_vec_t *vec)
 void
 nux__vec_swap (nux_vec_t *vec, nux_u32_t a, nux_u32_t b)
 {
-    NUX_CHECK(a < vec->size && b < vec->size && a != b, return);
+    nux_check(a < vec->size && b < vec->size && a != b, return);
     nux_memswp(
         vec->data + vec->osize * a, vec->data + vec->osize * b, vec->osize);
 }
 void *
 nux__vec_swap_pop (nux_vec_t *vec, nux_u32_t i)
 {
-    NUX_CHECK(i < vec->size, return nullptr);
+    nux_check(i < vec->size, return nullptr);
     nux__vec_swap(vec, i, vec->size - 1);
     return nux__vec_pop(vec);
 }

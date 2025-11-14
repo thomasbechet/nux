@@ -43,7 +43,7 @@ nux_intersect_segment_plane (nux_segment_t s, nux_plane_t p, nux_v3_t *i0)
     nux_v3_t  w = nux_v3_sub(s.p0, p.p);
     nux_f32_t d = nux_v3_dot(p.n, u);
     nux_f32_t n = -nux_v3_dot(p.n, w);
-    if (NUX_ABS(d) < NUX_F32_EPSILON)
+    if (nux_abs(d) < NUX_F32_EPSILON)
     {
         if (n == 0)
         {
@@ -74,22 +74,22 @@ nux_intersect_ray_box (nux_ray_t r, nux_b3_t box, nux_f32_t *t0, nux_f32_t *t1)
     nux_f32_t tx1 = (box.min.x - r.p.x) * n_inv.x;
     nux_f32_t tx2 = (box.max.x - r.p.x) * n_inv.x;
 
-    nux_f32_t tmin = NUX_MIN(tx1, tx2);
-    nux_f32_t tmax = NUX_MAX(tx1, tx2);
+    nux_f32_t tmin = nux_min(tx1, tx2);
+    nux_f32_t tmax = nux_max(tx1, tx2);
 
     nux_f32_t ty1 = (box.min.y - r.p.y) * n_inv.y;
     nux_f32_t ty2 = (box.max.y - r.p.y) * n_inv.y;
 
-    tmin = NUX_MAX(tmin, NUX_MIN(ty1, ty2));
-    tmax = NUX_MIN(tmax, NUX_MAX(ty1, ty2));
+    tmin = nux_max(tmin, nux_min(ty1, ty2));
+    tmax = nux_min(tmax, nux_max(ty1, ty2));
 
     nux_f32_t tz1 = (box.min.z - r.p.z) * n_inv.z;
     nux_f32_t tz2 = (box.max.z - r.p.z) * n_inv.z;
 
-    tmin = NUX_MAX(tmin, NUX_MIN(tz1, tz2));
-    tmax = NUX_MIN(tmax, NUX_MAX(tz1, tz2));
+    tmin = nux_max(tmin, nux_min(tz1, tz2));
+    tmax = nux_min(tmax, nux_max(tz1, tz2));
 
-    nux_b32_t hit = (tmax >= NUX_MAX(0, tmin)) && (tmin < NUX_FLT_MAX);
+    nux_b32_t hit = (tmax >= nux_max(0, tmin)) && (tmin < NUX_FLT_MAX);
 
     if (hit)
     {

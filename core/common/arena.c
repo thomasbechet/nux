@@ -64,7 +64,7 @@ nux_arena_malloc (nux_arena_t *a, nux_u32_t size)
         else
         {
             // allocate new block
-            NUX_ASSERT(a->info.block_size);
+            nux_assert(a->info.block_size);
             nux_u32_t           block_count = (size / a->info.block_size) + 1;
             nux_arena_header_t *new_header  = a->alloc(
                 a->userdata, nullptr, 0, a->info.block_size * block_count);
@@ -88,7 +88,7 @@ nux_arena_malloc (nux_arena_t *a, nux_u32_t size)
             a->head          = (nux_u8_t *)(new_header + 1);
             a->end           = a->head + a->info.block_size * block_count;
         }
-        NUX_ASSERT(a->head < a->end);
+        nux_assert(a->head < a->end);
     }
     void *p = a->head;
     nux_memset(p, 0, size);
@@ -106,7 +106,7 @@ nux_arena_realloc (nux_arena_t *a, void *optr, nux_u32_t osize, nux_u32_t nsize)
     }
     else // grow
     {
-        NUX_ASSERT(nsize);
+        nux_assert(nsize);
         p = nux_arena_malloc(a, nsize);
         a->info.memory_waste += osize;
         nux_memset(p, 0, nsize);

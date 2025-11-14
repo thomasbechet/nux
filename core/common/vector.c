@@ -1,6 +1,6 @@
 #include "common.h"
 
-#define NUX_V2_IMPL(name, type, opadd, opsub, opmul, opdiv, opmin, opmax) \
+#define nux_v2_impl(name, type, opadd, opsub, opmul, opdiv, opmin, opmax) \
     nux_##name##_t nux_##name(type x, type y)                             \
     {                                                                     \
         nux_##name##_t v;                                                 \
@@ -70,7 +70,7 @@
         return nux_##name##_dot(sub, sub);                                \
     }
 
-#define NUX_V3_IMPL(name, type, opadd, opsub, opmul, opdiv, opmin, opmax)     \
+#define nux_v3_impl(name, type, opadd, opsub, opmul, opdiv, opmin, opmax)     \
     nux_##name##_t nux_##name(type x, type y, type z)                         \
     {                                                                         \
         nux_##name##_t v;                                                     \
@@ -117,7 +117,7 @@
     }                                                                         \
     nux_##name##_t nux_##name##_inv(nux_##name##_t a)                         \
     {                                                                         \
-        NUX_ASSERT(a.x != 0 && a.y != 0 && a.z != 0);                         \
+        nux_assert(a.x != 0 && a.y != 0 && a.z != 0);                         \
         return nux_##name##_div(nux_##name##s(1), a);                         \
     }                                                                         \
     nux_##name##_t nux_##name##_cross(nux_##name##_t a, nux_##name##_t b)     \
@@ -154,7 +154,7 @@
         return nux_##name##_dot(sub, sub);                                    \
     }
 
-#define NUX_V4_IMPL(name, type, opadd, opsub, opmul, opdiv)             \
+#define nux_v4_impl(name, type, opadd, opsub, opmul, opdiv)             \
     nux_##name##_t nux_##name(type x, type y, type z, type w)           \
     {                                                                   \
         nux_##name##_t v;                                               \
@@ -230,64 +230,64 @@
         return nux_##name##_dot(sub, sub);                              \
     }
 
-#define NATIVE_ADD(a, b) (a + b)
-#define NATIVE_SUB(a, b) (a - b)
-#define NATIVE_MUL(a, b) (a * b)
-#define NATIVE_DIV(a, b) (a / b)
-#define NATIVE_MIN(a, b) NUX_MIN(a, b)
-#define NATIVE_MAX(a, b) NUX_MAX(a, b)
+#define native_add(a, b) (a + b)
+#define native_sub(a, b) (a - b)
+#define native_mul(a, b) (a * b)
+#define native_div(a, b) (a / b)
+#define native_min(a, b) nux_min(a, b)
+#define native_max(a, b) nux_max(a, b)
 
-NUX_V2_IMPL(v2i,
+nux_v2_impl(v2i,
             nux_i32_t,
-            NATIVE_ADD,
-            NATIVE_SUB,
-            NATIVE_MUL,
-            NATIVE_DIV,
-            NATIVE_MIN,
-            NATIVE_MAX);
-NUX_V2_IMPL(v2u,
+            native_add,
+            native_sub,
+            native_mul,
+            native_div,
+            native_min,
+            native_max);
+nux_v2_impl(v2u,
             nux_u32_t,
-            NATIVE_ADD,
-            NATIVE_SUB,
-            NATIVE_MUL,
-            NATIVE_DIV,
-            NATIVE_MIN,
-            NATIVE_MAX);
-NUX_V2_IMPL(v2,
+            native_add,
+            native_sub,
+            native_mul,
+            native_div,
+            native_min,
+            native_max);
+nux_v2_impl(v2,
             nux_f32_t,
-            NATIVE_ADD,
-            NATIVE_SUB,
-            NATIVE_MUL,
-            NATIVE_DIV,
-            NATIVE_MIN,
-            NATIVE_MAX);
-NUX_V3_IMPL(v3i,
+            native_add,
+            native_sub,
+            native_mul,
+            native_div,
+            native_min,
+            native_max);
+nux_v3_impl(v3i,
             nux_i32_t,
-            NATIVE_ADD,
-            NATIVE_SUB,
-            NATIVE_MUL,
-            NATIVE_DIV,
-            NATIVE_MIN,
-            NATIVE_MAX);
-NUX_V3_IMPL(v3u,
+            native_add,
+            native_sub,
+            native_mul,
+            native_div,
+            native_min,
+            native_max);
+nux_v3_impl(v3u,
             nux_u32_t,
-            NATIVE_ADD,
-            NATIVE_SUB,
-            NATIVE_MUL,
-            NATIVE_DIV,
-            NATIVE_MIN,
-            NATIVE_MAX);
-NUX_V3_IMPL(v3,
+            native_add,
+            native_sub,
+            native_mul,
+            native_div,
+            native_min,
+            native_max);
+nux_v3_impl(v3,
             nux_f32_t,
-            NATIVE_ADD,
-            NATIVE_SUB,
-            NATIVE_MUL,
-            NATIVE_DIV,
-            NATIVE_MIN,
-            NATIVE_MAX);
-NUX_V4_IMPL(v4i, nux_i32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
-NUX_V4_IMPL(v4u, nux_u32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
-NUX_V4_IMPL(v4, nux_f32_t, NATIVE_ADD, NATIVE_SUB, NATIVE_MUL, NATIVE_DIV);
+            native_add,
+            native_sub,
+            native_mul,
+            native_div,
+            native_min,
+            native_max);
+nux_v4_impl(v4i, nux_i32_t, native_add, native_sub, native_mul, native_div);
+nux_v4_impl(v4u, nux_u32_t, native_add, native_sub, native_mul, native_div);
+nux_v4_impl(v4, nux_f32_t, native_add, native_sub, native_mul, native_div);
 
 nux_v3_t
 nux_v3_normalize (nux_v3_t a)

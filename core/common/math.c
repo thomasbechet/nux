@@ -3,7 +3,7 @@
 #define NUX_B3_IMPL(name, type)                                         \
     nux_##name##_t nux_##name(type min, type max)                       \
     {                                                                   \
-        NUX_ASSERT(max.x >= min.x && max.y >= min.y && max.z >= min.z); \
+        nux_assert(max.x >= min.x && max.y >= min.y && max.z >= min.z); \
         nux_##name##_t b;                                               \
         b.min = min;                                                    \
         b.max = max;                                                    \
@@ -101,7 +101,7 @@ nux_atan2 (nux_f32_t x, nux_f32_t y)
 nux_b2i_t
 nux_b2i_min_max (nux_v2i_t min, nux_v2i_t max)
 {
-    NUX_ASSERT(max.x >= min.x && max.y >= min.y);
+    nux_assert(max.x >= min.x && max.y >= min.y);
     nux_b2i_t ret;
     ret.x = min.x;
     ret.y = min.y;

@@ -5,12 +5,12 @@ static nux_input_module_t _module;
 static void
 dispatch_event (const nux_input_event_t *event)
 {
-    for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(_module.controllers); ++i)
+    for (nux_u32_t i = 0; i < nux_array_size(_module.controllers); ++i)
     {
         nux_controller_t *ctrl = _module.controllers + i;
         nux_inputmap_t   *map
             = nux_resource_get(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
-        NUX_CHECK(map, continue);
+        nux_check(map, continue);
         for (nux_u32_t j = 0; j < map->entries.size; ++j)
         {
             nux_inputmap_entry_t *entry = map->entries.data + j;
@@ -57,14 +57,14 @@ controller_get_input_value (nux_u32_t       controller,
                             nux_f32_t      *prev_value,
                             nux_f32_t       default_value)
 {
-    NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers), goto error);
+    nux_check(controller < nux_array_size(_module.controllers), goto error);
     nux_controller_t *ctrl = _module.controllers + controller;
     nux_inputmap_t   *map
         = nux_resource_get(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
-    NUX_CHECK(map, goto error);
+    nux_check(map, goto error);
     nux_u32_t index;
-    NUX_CHECK(nux_inputmap_find_index(map, name, &index), goto error);
-    NUX_ASSERT(index < ctrl->inputs.size);
+    nux_check(nux_inputmap_find_index(map, name, &index), goto error);
+    nux_assert(index < ctrl->inputs.size);
     *value      = ctrl->inputs.data[index];
     *prev_value = ctrl->prev_inputs.data[index];
     return;
@@ -114,7 +114,7 @@ module_update (void)
         //     nux_v2(0, -1),
         // };
         // for (nux_u32_t j = 0;
-        //      j < NUX_ARRAY_SIZE(controller->cursor_motion_buttons);
+        //      j < nux_array_size(controller->cursor_motion_buttons);
         //      ++j)
         // {
         //     if (controller->buttons &
@@ -184,7 +184,7 @@ nux_core_push_event (nux_os_event_t *event)
 void
 nux_controller_resize_values (nux_inputmap_t *map)
 {
-    for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(_module.controllers); ++i)
+    for (nux_u32_t i = 0; i < nux_array_size(_module.controllers); ++i)
     {
         nux_controller_t *controller = _module.controllers + i;
         if (controller->inputmap == nux_resource_rid(map))
@@ -197,7 +197,7 @@ nux_controller_resize_values (nux_inputmap_t *map)
 nux_status_t
 nux_input_set_inputmap (nux_u32_t controller, nux_inputmap_t *map)
 {
-    nux_checkf(controller < NUX_ARRAY_SIZE(_module.controllers));
+    nux_checkf(controller < nux_array_size(_module.controllers));
     nux_controller_t *ctrl = _module.controllers + controller;
     ctrl->inputmap         = nux_resource_rid(map);
     nux_vec_resize(&ctrl->inputs, map->entries.size);
@@ -243,13 +243,13 @@ nux_input_value (nux_u32_t controller, const nux_c8_t *name)
 nux_v2_t
 nux_input_cursor (nux_u32_t controller)
 {
-    NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers),
+    nux_check(controller < nux_array_size(_module.controllers),
               return NUX_V2_ZEROS);
     return _module.controllers[controller].cursor;
 }
 void
 nux_input_wrap_cursor (nux_u32_t controller, nux_f32_t x, nux_f32_t y)
 {
-    NUX_CHECK(controller < NUX_ARRAY_SIZE(_module.controllers), return);
+    nux_check(controller < nux_array_size(_module.controllers), return);
     _module.controllers[controller].cursor = nux_v2(x, y);
 }

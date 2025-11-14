@@ -1,5 +1,5 @@
-#ifndef NUX_DEBUG_INTERNAL_H
-#define NUX_DEBUG_INTERNAL_H
+#ifndef nux_debug_INTERNAL_H
+#define nux_debug_INTERNAL_H
 
 #include <debug/debug.h>
 

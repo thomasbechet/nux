@@ -36,7 +36,7 @@ nux__pool_add (nux_pool_t *pool)
                                            old_data,
                                            pool->osize * old_capa,
                                            pool->osize * new_capa);
-            NUX_CHECK(pool->data, return nullptr);
+            nux_check(pool->data, return nullptr);
         }
         void *data = pool->data + pool->size * pool->osize;
         ++pool->size;
@@ -48,6 +48,6 @@ nux__pool_remove (nux_pool_t *pool, void *i)
 {
     nux_u32_t index
         = ((nux_intptr_t)i - (nux_intptr_t)pool->data) / pool->osize;
-    NUX_ASSERT(index < pool->size);
+    nux_assert(index < pool->size);
     *nux_vec_push(&pool->freelist) = index;
 }

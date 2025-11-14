@@ -3,7 +3,7 @@
 #define STBIR_DEBUG
 #define STB_IMAGE_STATIC
 #define STBI_NO_STDIO
-#define STBI_ASSERT(x) NUX_ASSERT(x)
+#define STBI_ASSERT(x) nux_assert(x)
 #define STB_IMAGE_IMPLEMENTATION
 #include <externals/stb/stb_image.h>
 
@@ -29,18 +29,18 @@ texture_update (nux_texture_t *tex,
                 nux_u32_t      h,
                 const void    *data)
 {
-    NUX_ENSURE(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
+    nux_ensure(tex->gpu.type != NUX_TEXTURE_RENDER_TARGET,
                return,
                "trying to write render target texture");
     nux_u32_t ps = pixel_size(tex);
-    NUX_ASSERT(ps);
+    nux_assert(ps);
     if (x == 0 && y == 0 && w == tex->gpu.width && h == tex->gpu.height)
     {
         nux_memcpy(tex->data, data, w * h * ps);
     }
     else
     {
-        NUX_ASSERT(0);
+        nux_assert(0);
     }
     nux_b2i_t extent = nux_b2i(x, y, w, h);
     if (tex->dirty)
@@ -62,7 +62,7 @@ nux_texture_new (nux_arena_t       *arena,
 {
     // Create object
     nux_texture_t *tex = nux_resource_new(arena, NUX_RESOURCE_TEXTURE);
-    NUX_CHECK(tex, return nullptr);
+    nux_check(tex, return nullptr);
     tex->gpu.type     = type;
     tex->gpu.width    = w;
     tex->gpu.height   = h;
@@ -70,7 +70,7 @@ nux_texture_new (nux_arena_t       *arena,
     tex->dirty_extent = nux_b2i(0, 0, w, h);
 
     // Create gpu texture (and framebuffer if needed)
-    NUX_CHECK(nux_gpu_texture_init(&tex->gpu), return nullptr);
+    nux_check(nux_gpu_texture_init(&tex->gpu), return nullptr);
 
     // Allocate memory
     nux_u32_t pixel_size;
@@ -89,7 +89,7 @@ nux_texture_new (nux_arena_t       *arena,
     if (pixel_size)
     {
         tex->data = nux_arena_malloc(arena, pixel_size * w * h);
-        NUX_CHECK(tex->data, return nullptr);
+        nux_check(tex->data, return nullptr);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }
 
@@ -100,7 +100,7 @@ nux_texture_load (nux_arena_t *arena, const nux_c8_t *path)
 {
     nux_u32_t size;
     void     *data = nux_file_load(nux_arena_frame(), path, &size);
-    NUX_CHECK(data, return nullptr);
+    nux_check(data, return nullptr);
     return nux_texture_load_from_memory(arena, data, size);
 }
 nux_texture_t *
@@ -112,7 +112,7 @@ nux_texture_load_from_memory (nux_arena_t    *arena,
     nux_u8_t *img
         = stbi_load_from_memory(data, size, &w, &h, &n, STBI_rgb_alpha);
     nux_texture_t *tex = nux_texture_new(arena, NUX_TEXTURE_IMAGE_RGBA, w, h);
-    NUX_CHECK(tex, goto error);
+    nux_check(tex, goto error);
     texture_update(tex, 0, 0, w, h, img);
 error:
     stbi_image_free(img);
@@ -146,7 +146,7 @@ void
 nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
 {
     nux_graphics_module_t *gfx = nux_graphics();
-    NUX_CHECK(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
+    nux_check(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_encoder_t enc;
     nux_gpu_encoder_init(nux_arena_frame(), &enc);
     nux_gpu_bind_framebuffer(&enc, target->gpu.framebuffer_slot);
@@ -161,12 +161,12 @@ nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
 nux_status_t
 nux_texture_upload (nux_texture_t *texture)
 {
-    NUX_ENSURE(texture->gpu.type != NUX_TEXTURE_RENDER_TARGET,
+    nux_ensure(texture->gpu.type != NUX_TEXTURE_RENDER_TARGET,
                return NUX_FAILURE,
                "trying to write render target texture");
     if (texture->dirty)
     {
-        NUX_ENSURE(nux_os_texture_update(texture->gpu.slot,
+        nux_ensure(nux_os_texture_update(texture->gpu.slot,
                                          texture->dirty_extent.x,
                                          texture->dirty_extent.y,
                                          texture->dirty_extent.w,

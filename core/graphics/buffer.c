@@ -10,7 +10,7 @@ nux_dsa_init (nux_dsa_t *a, nux_u32_t capacity)
 nux_status_t
 nux_dsa_push_bottom (nux_dsa_t *a, nux_u32_t count, nux_u32_t *index)
 {
-    NUX_CHECK(a->bottom + count < a->top, return NUX_FAILURE);
+    nux_check(a->bottom + count < a->top, return NUX_FAILURE);
     if (index)
     {
         *index = a->bottom;
@@ -21,7 +21,7 @@ nux_dsa_push_bottom (nux_dsa_t *a, nux_u32_t count, nux_u32_t *index)
 nux_status_t
 nux_dsa_push_top (nux_dsa_t *a, nux_u32_t count, nux_u32_t *index)
 {
-    NUX_CHECK(a->top - count > a->bottom, return NUX_FAILURE);
+    nux_check(a->top - count > a->bottom, return NUX_FAILURE);
     if (index)
     {
         *index = a->top - count;

@@ -7,7 +7,7 @@
 ///        MACROS        ///
 ////////////////////////////
 
-#define NUX_ENSURE(check, action, format, ...)                        \
+#define nux_ensure(check, action, format, ...)                        \
     if (!(check))                                                     \
     {                                                                 \
         nux_error_report(format " at %s", ##__VA_ARGS__, __SOURCE__); \
@@ -16,13 +16,13 @@
 #define nux_checkn(check) nux_check(check, return nullptr)
 #define nux_checkf(check) nux_check(check, return NUX_FAILURE)
 
-#define NUX_DEBUG(format, ...) \
+#define nux_debug(format, ...) \
     nux_logger_log(NUX_LOG_DEBUG, format, ##__VA_ARGS__)
-#define NUX_INFO(format, ...) \
+#define nux_info(format, ...) \
     nux_logger_log(NUX_LOG_INFO, format, ##__VA_ARGS__)
-#define NUX_WARNING(format, ...) \
+#define nux_warning(format, ...) \
     nux_logger_log(NUX_LOG_WARNING, format, ##__VA_ARGS__)
-#define NUX_ERROR(format, ...) \
+#define nux_error(format, ...) \
     nux_logger_log(NUX_LOG_ERROR, format, ##__VA_ARGS__)
 
 #define NUX_MODULE_REGISTER(mname, mdata, minit, mfree)               \
@@ -41,18 +41,11 @@ typedef nux_u32_t nux_nid_t;
 
 typedef enum
 {
-    NUX_NULL = 0,
+    NUX_NULL     = 0,
+    NUX_NAME_MAX = 64,
+    NUX_FILE_MAX = 64,
+    NUX_DISK_MAX = 4,
 } nux_core_constants_t;
-
-typedef enum
-{
-    NUX_ERROR_NONE                 = 0,
-    NUX_ERROR_OUT_OF_MEMORY        = 1,
-    NUX_ERROR_INVALID_TEXTURE_SIZE = 4,
-    NUX_ERROR_WASM_RUNTIME         = 8,
-    NUX_ERROR_CART_EOF             = 10,
-    NUX_ERROR_CART_MOUNT           = 11,
-} nux_error_t;
 
 typedef enum
 {
@@ -98,18 +91,8 @@ typedef enum
 
 typedef enum
 {
-    NUX_MODULE_NO_DATA_INITIALIZATION = 1 << 0,
-} nux_module_flags_t;
-
-typedef enum
-{
     NUX_EVENT_LUA = 0,
 } nux_event_type_t;
-
-typedef enum
-{
-    NUX_NAME_MAX = 64,
-} nux_base_constants_t;
 
 typedef void (*nux_event_callback_t)(void       *userdata,
                                      nux_rid_t   event,
@@ -192,12 +175,6 @@ typedef enum
 } nux_system_phase_t;
 
 typedef void (*nux_system_callback_t)(void);
-
-typedef enum
-{
-    NUX_FILE_MAX = 64,
-    NUX_DISK_MAX = 4,
-} nux_io_constants_t;
 
 typedef enum
 {

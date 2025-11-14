@@ -34,13 +34,13 @@ module_init (void)
     {
         // Create canvas
         _module.console_canvas = nux_canvas_new(nux_arena_core(), 1000, 500);
-        NUX_CHECK(_module.console_canvas, return NUX_FAILURE);
+        nux_check(_module.console_canvas, return NUX_FAILURE);
     }
 
     // Create log buffer
     _module.lines
         = nux_arena_malloc(nux_arena_core(), LOG_LINE_LEN * LOG_LINE_COUNT);
-    NUX_CHECK(_module.lines, return NUX_FAILURE);
+    nux_check(_module.lines, return NUX_FAILURE);
     _module.lines_count  = 0;
     _module.lines_cursor = 0;
 
@@ -60,7 +60,7 @@ nux_debug_log_callback (nux_log_level_t level, const nux_c8_t *buf, nux_u32_t n)
         nux_strncpy(_module.lines + LOG_LINE_LEN * _module.lines_cursor,
                     buf,
                     LOG_LINE_LEN);
-        _module.lines_count = NUX_MIN(LOG_LINE_COUNT, _module.lines_count + 1);
+        _module.lines_count = nux_min(LOG_LINE_COUNT, _module.lines_count + 1);
 
         ++_module.lines_cursor;
         _module.lines_cursor = _module.lines_cursor % LOG_LINE_COUNT;

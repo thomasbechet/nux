@@ -15,7 +15,7 @@ event_handler (void *userdata, nux_rid_t event, const void *data)
     lua_State   *L = nux_lua_state();
     nux_lua_t   *m = userdata;
     nux_event_t *e = nux_resource_get(NUX_RESOURCE_EVENT, event);
-    NUX_ASSERT(e);
+    nux_assert(e);
     switch (nux_event_type(e))
     {
         case NUX_EVENT_LUA: {

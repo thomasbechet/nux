@@ -54,7 +54,7 @@ nux_memswp (void *a, void *b, nux_u32_t n)
 void *
 nux_memalign (void *ptr, nux_u32_t align)
 {
-    NUX_ASSERT(align > 0);
+    nux_assert(align > 0);
     return (void *)(((nux_intptr_t)ptr + align - 1) & ~(align - 1));
 }
 nux_u32_t

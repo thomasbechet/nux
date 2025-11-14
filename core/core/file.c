@@ -46,7 +46,7 @@ open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
 static nux_status_t
 close_file (nux_file_t *file)
 {
-    NUX_CHECK(file->is_open, return NUX_SUCCESS);
+    nux_check(file->is_open, return NUX_SUCCESS);
     if (file->type == NUX_DISK_OS)
     {
         nux_io_close_os_file(file->os.slot);
@@ -73,8 +73,8 @@ nux_file_t *
 nux_file_open (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
 {
     nux_file_t *file = nux_resource_new(arena, NUX_RESOURCE_FILE);
-    NUX_CHECK(file, return nullptr);
-    NUX_ENSURE(open_file(file, path, mode),
+    nux_check(file, return nullptr);
+    nux_ensure(open_file(file, path, mode),
                return nullptr,
                "file not found '%s'",
                path);
@@ -94,7 +94,7 @@ nux_file_read (nux_file_t *file, void *data, nux_u32_t n)
     }
     else if (file->type == NUX_DISK_CART)
     {
-        nux_u32_t read = NUX_MIN(file->cart.length - file->cart.cursor, n);
+        nux_u32_t read = nux_min(file->cart.length - file->cart.cursor, n);
         if (!read)
         {
             return 0;
@@ -102,7 +102,7 @@ nux_file_read (nux_file_t *file, void *data, nux_u32_t n)
         nux_os_file_seek(file->cart.slot,
                          file->cart.offset + file->cart.cursor);
         nux_u32_t got = nux_os_file_read(file->cart.slot, data, read);
-        NUX_ENSURE(
+        nux_ensure(
             got == read,
             return 0,
             "failed to load cart data at offset %d (expected %d, got %d)",
@@ -117,7 +117,7 @@ nux_file_read (nux_file_t *file, void *data, nux_u32_t n)
 nux_u32_t
 nux_file_write (nux_file_t *file, const void *data, nux_u32_t n)
 {
-    NUX_ENSURE(
+    nux_ensure(
         file->mode != NUX_IO_READ, return 0, "failed to write read only file");
     if (file->type == NUX_DISK_OS)
     {
@@ -125,11 +125,11 @@ nux_file_write (nux_file_t *file, const void *data, nux_u32_t n)
     }
     else if (file->type == NUX_DISK_CART)
     {
-        nux_u32_t write = NUX_MIN(file->cart.length - file->cart.cursor, n);
+        nux_u32_t write = nux_min(file->cart.length - file->cart.cursor, n);
         nux_os_file_seek(file->cart.slot,
                          file->cart.offset + file->cart.cursor);
         nux_u32_t got = nux_os_file_write(file->cart.slot, data, write);
-        NUX_ENSURE(got == write,
+        nux_ensure(got == write,
                    return 0,
                    "failed to write cart data at %d (expected %d, got %d)",
                    file->cart.offset,
@@ -162,7 +162,7 @@ nux_u32_t
 nux_file_size (nux_file_t *file)
 {
     nux_os_file_stat_t stat;
-    NUX_CHECK(file_stat(file, &stat), return 0);
+    nux_check(file_stat(file, &stat), return 0);
     return stat.size;
 }
 void *
@@ -170,14 +170,14 @@ nux_file_load (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
 {
     void       *data = nullptr;
     nux_file_t *file = nux_file_open(nux_arena_frame(), path, NUX_IO_READ);
-    NUX_CHECK(file, return nullptr);
+    nux_check(file, return nullptr);
 
     // Get the file size
     nux_os_file_stat_t stat;
-    NUX_CHECK(file_stat(file, &stat), goto cleanup0);
+    nux_check(file_stat(file, &stat), goto cleanup0);
 
     // Seek to beginning
-    NUX_CHECK(nux_file_seek(file, 0), goto cleanup0);
+    nux_check(nux_file_seek(file, 0), goto cleanup0);
 
     // Return buffer size to user
     if (size)
@@ -191,11 +191,11 @@ nux_file_load (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
 
     // Allocate memory
     data = nux_arena_malloc(a, stat.size);
-    NUX_CHECK(data, goto cleanup0);
+    nux_check(data, goto cleanup0);
 
     // Read file
     nux_u32_t read = nux_file_read(file, data, stat.size);
-    NUX_ENSURE(
+    nux_ensure(
         read == stat.size,
         goto cleanup0,
         "failed to read file content '%s' (expect %d bytes, got %d bytes)",

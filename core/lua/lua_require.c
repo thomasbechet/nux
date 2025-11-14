@@ -31,7 +31,7 @@ l_require (lua_State *L)
     // load the module
     nux_lua_t *lua = nux_lua_load(nux_arena_core(), filepath);
     l_checkerror(L);
-    NUX_ASSERT(lua);
+    nux_assert(lua);
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua->ref);
     return 1;
 }

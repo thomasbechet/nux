@@ -34,7 +34,7 @@ nux_v4_t
 nux_color_to_srgb (nux_v4_t color)
 {
     nux_v4_t c;
-    for (nux_u32_t i = 0; i < NUX_ARRAY_SIZE(color.data); ++i)
+    for (nux_u32_t i = 0; i < nux_array_size(color.data); ++i)
     {
         c.data[i] = color_to_linear(color.data[i]);
     }

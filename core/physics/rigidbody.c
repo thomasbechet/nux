@@ -5,7 +5,7 @@ nux_rigidbody_set_velocity (nux_nid_t e, nux_v3_t velocity)
 {
     nux_physics_module_t *module = nux_physics();
     nux_rigidbody_t      *body = nux_component_get(e, NUX_COMPONENT_RIGIDBODY);
-    NUX_CHECK(body, return);
+    nux_check(body, return);
     for (nux_u32_t i = 0; i < body->count; ++i)
     {
         nux_point_mass_t *pm = module->point_masses.data + body->first + i;

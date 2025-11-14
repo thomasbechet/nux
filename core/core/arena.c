@@ -8,7 +8,7 @@
 // {
 //     nux_c8_t alloc_buf[10];
 //     nux_c8_t waste_buf[10];
-//     NUX_DEBUG("reset arena '%s' - alloc %s - waste %s (%.02lf%)",
+//     nux_debug("reset arena '%s' - alloc %s - waste %s (%.02lf%)",
 //               nux_resource_name(arena),
 //               nux_mem_human(arena->block_allocator.total_alloc, alloc_buf),
 //               nux_mem_human(arena->block_allocator.total_waste, waste_buf),
@@ -21,7 +21,7 @@
 static void
 oom_panic (void *userdata)
 {
-    NUX_ERROR("out of memory");
+    nux_error("out of memory");
     nux_os_panic();
 }
 static void *
@@ -34,7 +34,7 @@ nux_arena_t *
 nux_arena_new (nux_arena_t *arena)
 {
     nux_arena_t *a = nux_resource_new(arena, NUX_RESOURCE_ARENA);
-    NUX_CHECK(a, return nullptr);
+    nux_check(a, return nullptr);
     nux_arena_init_core(a);
     return a;
 }

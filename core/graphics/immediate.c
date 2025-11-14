@@ -6,7 +6,7 @@ draw_line (nux_v3_t a, nux_v3_t b)
     nux_graphics_module_t *gfx = nux_graphics();
 
     const nux_v3_t  positions[]  = { a, b };
-    const nux_u32_t vertex_count = NUX_ARRAY_SIZE(positions);
+    const nux_u32_t vertex_count = nux_array_size(positions);
     const nux_u32_t stride       = 3;
     nux_f32_t       data[stride * vertex_count];
     nux_v4_t        c = nux_palette_get_color(gfx->active_palette,
@@ -18,12 +18,12 @@ draw_line (nux_v3_t a, nux_v3_t b)
         data[i * stride + 2] = positions[i].z;
     }
     nux_u32_t offset;
-    NUX_CHECK(
+    nux_check(
         nux_graphics_push_frame_vertices(vertex_count * stride, data, &offset),
         return);
 
     nux_graphics_command_t *cmd = nux_vec_push(&gfx->immediate_commands);
-    NUX_CHECK(cmd, return);
+    nux_check(cmd, return);
     cmd->vertex_offset     = offset;
     cmd->vertex_count      = vertex_count;
     cmd->vertex_attributes = NUX_VERTEX_POSITION;
@@ -37,7 +37,7 @@ nux_graphics_begin_state (void)
 {
     nux_graphics_module_t *gfx   = nux_graphics();
     nux_immediate_state_t *state = nux_vec_push(&gfx->immediate_states);
-    NUX_CHECK(gfx->immediate_state, return);
+    nux_check(gfx->immediate_state, return);
     gfx->immediate_state = state;
     nux_graphics_reset_state();
 }
@@ -45,7 +45,7 @@ void
 nux_graphics_end_state (void)
 {
     nux_graphics_module_t *gfx = nux_graphics();
-    NUX_ENSURE(
+    nux_ensure(
         gfx->immediate_states.size > 1, return, "invalid graphics end state");
     gfx->immediate_state
         = gfx->immediate_states.data + gfx->immediate_states.size;
@@ -88,7 +88,7 @@ nux_graphics_set_transform (nux_m4_t transform)
 {
     nux_graphics_module_t *gfx = nux_graphics();
     nux_u32_t              transform_index;
-    NUX_CHECK(
+    nux_check(
         nux_graphics_push_frame_transforms(1, &transform, &transform_index),
         return);
     gfx->immediate_state->immediate_transform = transform_index;

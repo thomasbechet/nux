@@ -8,7 +8,7 @@ world_cleanup (void *data)
     nux_world_t *world = data;
     if (_module.active_world == world && world != _module.default_world)
     {
-        NUX_WARNING("cleanup active world, default world has been set");
+        nux_warning("cleanup active world, default world has been set");
         nux_world_set_active(nullptr);
     }
 }
@@ -24,7 +24,7 @@ module_init (void)
 
     // Create default world
     _module.default_world = nux_world_new(nux_arena_core());
-    NUX_CHECK(_module.default_world, return NUX_FAILURE);
+    nux_check(_module.default_world, return NUX_FAILURE);
     _module.active_world = _module.default_world;
 
     return NUX_SUCCESS;
@@ -34,7 +34,7 @@ nux_world_t *
 nux_world_new (nux_arena_t *a)
 {
     nux_world_t *world = nux_resource_new(a, NUX_RESOURCE_WORLD);
-    NUX_CHECK(world, return nullptr);
+    nux_check(world, return nullptr);
     world->free = NUX_NULL;
     nux_vec_init_capa(&world->objects, a, NUX_WORLD_DEFAULT_CAPA);
     nux_vec_push(&world->objects); // Reserve first for null
@@ -56,11 +56,11 @@ nux_world_set_active (nux_world_t *world)
 void
 nux_wcomponent_register (nux_u32_t index, nux_wcomponent_info_t info)
 {
-    NUX_ASSERT(index != 0);
-    NUX_ASSERT(index < NUX_WORLD_COMPONENT_MAX);
+    nux_assert(index != 0);
+    nux_assert(index < NUX_WORLD_COMPONENT_MAX);
     nux_wcomponent_t *comp = &_module.components[index];
     comp->info             = info;
-    _module.components_max = NUX_MAX(_module.components_max, index + 1);
+    _module.components_max = nux_max(_module.components_max, index + 1);
 }
 
 nux_oid_t
@@ -76,7 +76,7 @@ nux_object_create (void)
     else
     {
         object = nux_vec_push(&world->objects);
-        NUX_CHECK(object, return NUX_NULL);
+        nux_check(object, return NUX_NULL);
     }
     // object->oid
     return NUX_NULL;
