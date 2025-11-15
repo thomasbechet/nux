@@ -13,11 +13,12 @@
 #define NUX_PLATFORM_APPLE
 #endif
 
-#define NUX_VERSION_MAJOR(num)          ((num >> 16) & 0xFF)
-#define NUX_VERSION_MINOR(num)          ((num >> 8) & 0xFF)
-#define NUX_VERSION_PATCH(num)          (num & 0xFF)
-#define NUX_VERSION_MAKE(maj, min, pat) (maj << 16 | min << 8 | pat)
-#define NUX_VERSION                     NUX_VERSION_MAKE(0, 0, 1)
+#define nux_version_major(num)          ((num >> 16) & 0xFF)
+#define nux_version_minor(num)          ((num >> 8) & 0xFF)
+#define nux_version_patch(num)          (num & 0xFF)
+#define nux_version_make(maj, min, pat) (maj << 16 | min << 8 | pat)
+
+#define NUX_VERSION nux_version_make(0, 0, 1)
 
 #define NUX_API extern
 

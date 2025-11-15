@@ -14,15 +14,9 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
-#define MAX_COMMAND   64
-#define PATH_MAX_LEN  255
-#define PATH_BUF_LEN  256
-#define ARRAY_LEN(ar) (nux_u32_t)(sizeof(ar) / sizeof(ar[0]))
-#define CHECK(cond, action) \
-    if (!(cond))            \
-    {                       \
-        action;             \
-    }
+#define MAX_COMMAND  64
+#define PATH_MAX_LEN 255
+#define PATH_BUF_LEN 256
 
 typedef struct
 {

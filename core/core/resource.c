@@ -1,15 +1,15 @@
 #include "internal.h"
 
-#define RID_INDEX(rid)   (((nux_rid_t)(rid) >> 0) & 0xFFFFFF)
-#define RID_VERSION(rid) (((nux_rid_t)(rid) >> 24) & 0xFF)
-#define RID_BUILD(old, type, index) \
-    (nux_rid_t)(((nux_rid_t)(RID_VERSION(old) + 1) << (nux_rid_t)24) | (index))
+#define rid_index(rid)   (((nux_rid_t)(rid) >> 0) & 0xFFFFFF)
+#define rid_version(rid) (((nux_rid_t)(rid) >> 24) & 0xFF)
+#define rid_build(old, type, index) \
+    (nux_rid_t)(((nux_rid_t)(rid_version(old) + 1) << (nux_rid_t)24) | (index))
 
 static nux_resource_entry_t *
 get_entry (nux_rid_t rid, nux_u32_t type)
 {
     nux_resource_pool_t *resources = nux_core_resources();
-    nux_u32_t            index     = RID_INDEX(rid);
+    nux_u32_t            index     = rid_index(rid);
     nux_check(index < resources->size && resources->data[index].rid == rid,
               return nullptr);
     nux_resource_entry_t *entry = resources->data + index;
@@ -25,7 +25,7 @@ get_entry_from_data (void *data)
     nux_check(data, return nullptr);
     nux_rid_t                  rid       = nux_resource_rid(data);
     const nux_resource_pool_t *resources = nux_core_resources();
-    nux_resource_entry_t      *entry     = &resources->data[RID_INDEX(rid)];
+    nux_resource_entry_t      *entry     = &resources->data[rid_index(rid)];
     nux_assert(entry->data == data);
     return entry;
 }
@@ -115,7 +115,7 @@ nux_resource_add (nux_resource_pool_t *resources, nux_u32_t type)
 {
     nux_resource_entry_t *entry = nux_pool_add(resources);
     nux_u32_t             index = entry - resources->data;
-    entry->rid                  = RID_BUILD(entry->rid, type, index);
+    entry->rid                  = rid_build(entry->rid, type, index);
     entry->arena                = nullptr;
     entry->type_index           = type;
     entry->data                 = nullptr;
@@ -149,7 +149,7 @@ resource_finalizer (void *p)
     nux_resource_type_t  *resource_types = nux_core_resource_types();
     nux_resource_entry_t *entry          = check_entry(rid, NUX_RESOURCE_NULL);
     nux_check(entry, return);
-    nux_u32_t index = RID_INDEX(rid);
+    nux_u32_t index = rid_index(rid);
 
     // Remove from hotreload
     if (nux_config_get()->hotreload && entry->path)

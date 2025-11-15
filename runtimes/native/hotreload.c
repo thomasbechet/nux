@@ -28,7 +28,7 @@ hotreload_init (void)
 {
 #if defined(NUX_PLATFORM_UNIX)
     hotreload.fd = inotify_init1(IN_NONBLOCK);
-    CHECK(hotreload.fd >= 0, return NUX_FAILURE);
+    nux_check(hotreload.fd >= 0, return NUX_FAILURE);
     inotify_add_watch(hotreload.fd, ".", IN_MODIFY | IN_CREATE | IN_DELETE);
     hotreload.entries_count = 0;
 #endif
@@ -51,7 +51,7 @@ nux_os_hotreload_add (const nux_c8_t *path, nux_rid_t handle)
     const nux_c8_t *dir = dirname((char *)copypath);
     int             wd  = inotify_add_watch(
         hotreload.fd, dir, IN_MODIFY | IN_CREATE | IN_DELETE);
-    if (hotreload.entries_count >= ARRAY_LEN(hotreload.entries))
+    if (hotreload.entries_count >= nux_array_size(hotreload.entries))
     {
         fprintf(stderr, "out of hotreload resources");
         return;

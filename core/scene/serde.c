@@ -7,7 +7,7 @@ scene_writer_callback (void *userdata, const nux_serde_value_t *v)
     if (v->type == NUX_SERDE_NID)
     {
         nux_nid_t nid       = *v->u32;
-        nux_u32_t nid_index = NUX_NID_INDEX(nid);
+        nux_u32_t nid_index = nux_nid_index(nid);
         nux_u32_t index
             = nid_index < s->node_count ? s->node_map[nid_index] : NUX_NULL;
         nux_serde_value_t value = *v;
@@ -82,7 +82,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
     nux_u32_t index = 0;
     while ((it = nux_query_next(iter, it)))
     {
-        writer.node_map[NUX_NID_INDEX(it)] = index;
+        writer.node_map[nux_nid_index(it)] = index;
         ++index;
     }
 

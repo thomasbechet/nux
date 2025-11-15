@@ -3,8 +3,8 @@
 
 #include <scene/scene.h>
 
-#define NUX_NID_INDEX(id)   (id - 1)
-#define NUX_NID_MAKE(index) (index + 1)
+#define nux_nid_index(id)   (id - 1)
+#define nux_nid_make(index) (index + 1)
 
 typedef enum
 {

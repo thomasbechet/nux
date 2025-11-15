@@ -8,7 +8,7 @@ io_init (void)
 void
 io_free (void)
 {
-    for (int i = 0; i < (int)ARRAY_LEN(runtime.files); ++i)
+    for (int i = 0; i < (int)nux_array_size(runtime.files); ++i)
     {
         if (runtime.files[i])
         {
