@@ -169,7 +169,10 @@ module_init (void)
 void
 nux_input_module_register (void)
 {
-    NUX_MODULE_REGISTER("input", &_module, module_init, nullptr);
+    nux_module_register((nux_module_info_t) { .name = "input",
+                                              .data = &_module,
+                                              .init = module_init,
+                                              .free = nullptr });
 }
 
 void
@@ -197,7 +200,8 @@ nux_controller_resize_values (nux_inputmap_t *map)
 nux_status_t
 nux_input_set_inputmap (nux_u32_t controller, nux_inputmap_t *map)
 {
-    nux_checkf(controller < nux_array_size(_module.controllers));
+    nux_check(controller < nux_array_size(_module.controllers),
+              return NUX_FAILURE);
     nux_controller_t *ctrl = _module.controllers + controller;
     ctrl->inputmap         = nux_resource_rid(map);
     nux_vec_resize(&ctrl->inputs, map->entries.size);

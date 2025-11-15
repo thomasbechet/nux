@@ -417,7 +417,10 @@ module_free (void)
 void
 nux_lua_module_register (void)
 {
-    NUX_MODULE_REGISTER("lua", &_module, module_init, module_free);
+    nux_module_register((nux_module_info_t) { .name = "lua",
+                                              .data = &_module,
+                                              .init = module_init,
+                                              .free = module_free });
 }
 lua_State *
 nux_lua_state (void)

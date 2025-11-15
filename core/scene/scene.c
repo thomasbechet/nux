@@ -192,7 +192,10 @@ module_init (void)
 void
 nux_scene_module_register (void)
 {
-    NUX_MODULE_REGISTER("scene", &_module, module_init, nullptr);
+    nux_module_register((nux_module_info_t) { .name = "scene",
+                                              .data = &_module,
+                                              .init = module_init,
+                                              .free = nullptr });
 }
 nux_scene_module_t *
 nux_scene_module (void)

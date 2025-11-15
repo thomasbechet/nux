@@ -13,8 +13,6 @@
         nux_error_report(format " at %s", ##__VA_ARGS__, __SOURCE__); \
         action;                                                       \
     }
-#define nux_checkn(check) nux_check(check, return nullptr)
-#define nux_checkf(check) nux_check(check, return NUX_FAILURE)
 
 #define nux_debug(format, ...) \
     nux_logger_log(NUX_LOG_DEBUG, format, ##__VA_ARGS__)
@@ -24,13 +22,6 @@
     nux_logger_log(NUX_LOG_WARNING, format, ##__VA_ARGS__)
 #define nux_error(format, ...) \
     nux_logger_log(NUX_LOG_ERROR, format, ##__VA_ARGS__)
-
-#define NUX_MODULE_REGISTER(mname, mdata, minit, mfree)               \
-    nux_module_register((nux_module_info_t) { .name = mname,          \
-                                              .data = mdata,          \
-                                              .size = sizeof(*mdata), \
-                                              .init = minit,          \
-                                              .free = mfree })
 
 ////////////////////////////
 ///        TYPES         ///
