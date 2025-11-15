@@ -73,7 +73,7 @@ load_primitive_mesh (nux_arena_t *arena, const cgltf_primitive *primitive)
     nux_ensure(positions, return nullptr, "mesh without position attribute");
 
     // Build vertex attributes
-    nux_v3_t               base_color = NUX_V3_ONES;
+    nux_v3_t               base_color = nux_v3_one();
     nux_vertex_attribute_t attributes = 0;
     if (positions)
     {
@@ -152,9 +152,9 @@ load_node (nux_arena_t *arena,
     nux_nid_t e = nux_node_create(parent);
     nux_check(e, return NUX_FAILURE);
 
-    nux_v3_t translation = NUX_V3_ZEROS;
+    nux_v3_t translation = nux_v3_zero();
     nux_q4_t rotation    = nux_q4_identity();
-    nux_v3_t scale       = NUX_V3_ONES;
+    nux_v3_t scale       = nux_v3_one();
     if (node->has_scale)
     {
         scale = nux_v3(node->scale[0], node->scale[1], node->scale[2]);

@@ -6,7 +6,7 @@ nux__vec_init_capa (nux_vec_t   *vec,
                     nux_u32_t    osize,
                     nux_u32_t    capa)
 {
-    vec->data  = nux_arena_malloc(a, osize * capa);
+    vec->data  = nux_malloc(a, osize * capa);
     vec->arena = a;
     vec->osize = osize;
     vec->size  = 0;
@@ -19,7 +19,7 @@ nux__vec_reserve (nux_vec_t *vec, nux_u32_t capa)
     {
         nux_u32_t old_capa = vec->capa;
         vec->capa          = capa;
-        vec->data          = nux_arena_realloc(
+        vec->data          = nux_realloc(
             vec->arena, vec->data, vec->osize * old_capa, vec->osize * capa);
     }
 }

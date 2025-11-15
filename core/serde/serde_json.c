@@ -275,7 +275,7 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
     jsmn_init(&parser);
 
     j->tokens_capa = 256;
-    j->tokens      = nux_arena_malloc(a, sizeof(jsmntok_t) * j->tokens_capa);
+    j->tokens      = nux_malloc(a, sizeof(jsmntok_t) * j->tokens_capa);
     nux_check(j->tokens, return NUX_FAILURE);
 
     nux_i32_t r
@@ -284,7 +284,7 @@ nux_json_reader_init (nux_json_reader_t *j, const nux_c8_t *path)
     {
         nux_u32_t old_capa = j->tokens_capa;
         j->tokens_capa *= 2;
-        j->tokens = nux_arena_realloc(a,
+        j->tokens = nux_realloc(a,
                                       j->tokens,
                                       sizeof(jsmntok_t) * old_capa,
                                       sizeof(jsmntok_t) * j->tokens_capa);

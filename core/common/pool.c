@@ -10,7 +10,7 @@ nux__pool_init_capa (nux_pool_t  *pool,
     pool->capa  = capa;
     pool->size  = 0;
     nux_vec_init_capa(&pool->freelist, arena, capa);
-    pool->data = nux_arena_malloc(arena, osize * capa);
+    pool->data = nux_malloc(arena, osize * capa);
 }
 void *
 nux__pool_add (nux_pool_t *pool)
@@ -32,7 +32,7 @@ nux__pool_add (nux_pool_t *pool)
                 new_capa = 1;
             }
             pool->capa = new_capa;
-            pool->data = nux_arena_realloc(pool->freelist.arena,
+            pool->data = nux_realloc(pool->freelist.arena,
                                            old_data,
                                            pool->osize * old_capa,
                                            pool->osize * new_capa);

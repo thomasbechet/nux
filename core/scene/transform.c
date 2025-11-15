@@ -38,9 +38,9 @@ void
 nux_transform_add (nux_nid_t e, void *data)
 {
     nux_transform_t *t = data;
-    t->translation     = NUX_V3_ZEROS;
+    t->translation     = nux_v3_zero();
     t->rotation        = nux_q4_identity();
-    t->scale           = NUX_V3_ONES;
+    t->scale           = nux_v3_one();
     t->dirty           = true;
 }
 nux_status_t
@@ -67,7 +67,7 @@ nux_v3_t
 nux_transform_local_translation (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    nux_check(t, return NUX_V3_ZEROS);
+    nux_check(t, return nux_v3_zero());
     return t->translation;
 }
 nux_q4_t
@@ -81,14 +81,14 @@ nux_v3_t
 nux_transform_local_scale (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    nux_check(t, return NUX_V3_ZEROS);
+    nux_check(t, return nux_v3_zero());
     return t->scale;
 }
 nux_v3_t
 nux_transform_translation (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    nux_check(t, return NUX_V3_ZEROS);
+    nux_check(t, return nux_v3_zero());
     nux_v3_t translation;
     nux_m4_trs_decompose(
         nux_transform_matrix(e), &translation, nullptr, nullptr);
@@ -110,7 +110,7 @@ nux_v3_t
 nux_transform_scale (nux_nid_t e)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    nux_check(t, return NUX_V3_ONES);
+    nux_check(t, return nux_v3_one());
     nux_v3_t scale;
     nux_m4_trs_decompose(nux_transform_matrix(e), &scale, nullptr, nullptr);
     return scale;
@@ -161,38 +161,38 @@ static nux_v3_t
 rotate_v3 (nux_nid_t e, nux_v3_t v)
 {
     nux_transform_t *t = nux_component_get(e, NUX_COMPONENT_TRANSFORM);
-    nux_check(t, return NUX_V3_ZEROS);
+    nux_check(t, return nux_v3_zero());
     return nux_m4_mulv3(nux_transform_matrix(e), v, 0);
 }
 nux_v3_t
 nux_transform_forward (nux_nid_t e)
 {
-    return rotate_v3(e, NUX_V3_FORWARD);
+    return rotate_v3(e, nux_v3_forward());
 }
 nux_v3_t
 nux_transform_backward (nux_nid_t e)
 {
-    return rotate_v3(e, NUX_V3_BACKWARD);
+    return rotate_v3(e, nux_v3_backward());
 }
 nux_v3_t
 nux_transform_left (nux_nid_t e)
 {
-    return rotate_v3(e, NUX_V3_LEFT);
+    return rotate_v3(e, nux_v3_left());
 }
 nux_v3_t
 nux_transform_right (nux_nid_t e)
 {
-    return rotate_v3(e, NUX_V3_RIGHT);
+    return rotate_v3(e, nux_v3_right());
 }
 nux_v3_t
 nux_transform_up (nux_nid_t e)
 {
-    return rotate_v3(e, NUX_V3_UP);
+    return rotate_v3(e, nux_v3_up());
 }
 nux_v3_t
 nux_transform_down (nux_nid_t e)
 {
-    return rotate_v3(e, NUX_V3_DOWN);
+    return rotate_v3(e, nux_v3_down());
 }
 void
 nux_transform_rotate (nux_nid_t e, nux_v3_t axis, nux_f32_t angle)
@@ -205,17 +205,17 @@ nux_transform_rotate (nux_nid_t e, nux_v3_t axis, nux_f32_t angle)
 void
 nux_transform_rotate_x (nux_nid_t e, nux_f32_t angle)
 {
-    nux_transform_rotate(e, NUX_V3_RIGHT, angle);
+    nux_transform_rotate(e, nux_v3_right(), angle);
 }
 void
 nux_transform_rotate_y (nux_nid_t e, nux_f32_t angle)
 {
-    nux_transform_rotate(e, NUX_V3_UP, angle);
+    nux_transform_rotate(e, nux_v3_up(), angle);
 }
 void
 nux_transform_rotate_z (nux_nid_t e, nux_f32_t angle)
 {
-    nux_transform_rotate(e, NUX_V3_BACKWARD, angle);
+    nux_transform_rotate(e, nux_v3_backward(), angle);
 }
 void
 nux_transform_look_at (nux_nid_t e, nux_v3_t center)
@@ -225,7 +225,7 @@ nux_transform_look_at (nux_nid_t e, nux_v3_t center)
     nux_v3_t eye = nux_transform_translation(e);
 
     nux_v3_t zaxis = nux_v3_normalize(nux_v3_sub(center, eye));
-    nux_v3_t xaxis = nux_v3_normalize(nux_v3_cross(zaxis, NUX_V3_UP));
+    nux_v3_t xaxis = nux_v3_normalize(nux_v3_cross(zaxis, nux_v3_up()));
     nux_v3_t yaxis = nux_v3_cross(xaxis, zaxis);
 
     t->global_matrix.x1 = xaxis.x;

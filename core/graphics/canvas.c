@@ -8,7 +8,7 @@ flush_quads (nux_canvas_t *canvas)
         return NUX_SUCCESS;
     }
     nux_ensure(canvas->quads_gpu_buffer_head + canvas->quads_count
-                   < NUX_QUADS_DEFAULT_SIZE,
+                   < QUADS_DEFAULT_SIZE,
                return NUX_FAILURE,
                "out of quads");
     nux_ensure(
@@ -41,7 +41,7 @@ push_quad (nux_canvas_t *canvas,
     //     = (pass->depth - NUGL__MIN_DEPTH) / (NUGL__MAX_DEPTH -
     //     NUGL__MIN_DEPTH);
 
-    if (canvas->quads_count >= NUX_CANVAS_QUAD_BUFFER_SIZE)
+    if (canvas->quads_count >= CANVAS_QUAD_BUFFER_SIZE)
     {
         flush_quads(canvas);
     }
@@ -123,8 +123,8 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     nux_check(c, return nullptr);
 
     // Allocate quads buffer
-    c->quads_buffer = nux_arena_malloc(
-        arena, sizeof(*c->quads_buffer) * NUX_CANVAS_QUAD_BUFFER_SIZE);
+    c->quads_buffer = nux_malloc(
+        arena, sizeof(*c->quads_buffer) * CANVAS_QUAD_BUFFER_SIZE);
     c->quads_count = 0;
 
     // Allocate constants gpu buffer
@@ -136,14 +136,14 @@ nux_canvas_new (nux_arena_t *arena, nux_u32_t width, nux_u32_t height)
     c->quads_gpu_buffer_head = 0;
     c->quads_gpu_buffer.type = NUX_GPU_BUFFER_STORAGE;
     c->quads_gpu_buffer.size
-        = sizeof(nux_gpu_canvas_quad_t) * NUX_QUADS_DEFAULT_SIZE;
+        = sizeof(nux_gpu_canvas_quad_t) * QUADS_DEFAULT_SIZE;
     nux_check(nux_gpu_buffer_init(&c->quads_gpu_buffer), return nullptr);
 
     // Allocate batches gpu buffer
     c->batches_gpu_buffer_head = 0;
     c->batches_gpu_buffer.type = NUX_GPU_BUFFER_STORAGE;
     c->batches_gpu_buffer.size
-        = sizeof(nux_gpu_canvas_batch_t) * NUX_BATCHES_DEFAULT_SIZE;
+        = sizeof(nux_gpu_canvas_batch_t) * BATCHES_DEFAULT_SIZE;
     nux_check(nux_gpu_buffer_init(&c->batches_gpu_buffer), return nullptr);
 
     // Allocate commands

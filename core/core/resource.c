@@ -232,7 +232,7 @@ nux_resource_new (nux_arena_t *a, nux_u32_t type)
     entry->arena = a;
 
     // Allocate header + resource
-    nux_resource_header_t *header = nux_arena_new_object(
+    nux_resource_header_t *header = nux_mallocf(
         a, nux_resource_header_size(t->info.size), resource_finalizer);
     nux_check(header, return nullptr);
     nux_resource_header_init(header, entry->rid);

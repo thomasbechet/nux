@@ -44,7 +44,7 @@ integrate (void)
                     = nux_vec_push(&_module.collision_constraints);
                 nux_assert(c);
                 c->q = nux_v3(pm->x.x, _module.ground_height, pm->x.z);
-                c->n = NUX_V3_UP;
+                c->n = nux_v3_up();
                 c->a = i;
             }
         }
@@ -213,7 +213,7 @@ nux_physics_add_rigidbody (nux_nid_t e)
             break;
             case NUX_COLLIDER_AABB: {
                 nux_v3_t pos = nux_transform_translation(e);
-                nux_v3_t vel = NUX_V3_ZEROS;
+                nux_v3_t vel = nux_v3_zero();
 
                 nux_v3_t min = nux_v3_add(pos, collider->aabb.box.min);
                 nux_v3_t max = nux_v3_add(pos, collider->aabb.box.max);
@@ -292,10 +292,10 @@ nux_physics_add_pm (nux_v3_t pos, nux_v3_t vel)
     nux_assert(pm);
     pm->x = pos;
     pm->v = vel;
-    pm->f = NUX_V3_ZEROS;
+    pm->f = nux_v3_zero();
     pm->m = 1;
     pm->w = 1.0 / pm->m;
-    pm->p = NUX_V3_ZEROS;
+    pm->p = nux_v3_zero();
     return _module.point_masses.size - 1;
 }
 void
@@ -319,8 +319,8 @@ nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
     nux_f32_t         nearest = NUX_FLT_MAX;
     nux_raycast_hit_t hit;
     hit.node = NUX_NULL;
-    hit.p    = NUX_V3_ZEROS;
-    hit.n    = NUX_V3_ZEROS;
+    hit.p    = nux_v3_zero();
+    hit.n    = nux_v3_zero();
     while ((it = nux_query_next(_module.collider_transform_iter, it)))
     {
         nux_collider_t *collider

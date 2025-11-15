@@ -88,7 +88,7 @@ nux_texture_new (nux_arena_t       *arena,
     }
     if (pixel_size)
     {
-        tex->data = nux_arena_malloc(arena, pixel_size * w * h);
+        tex->data = nux_malloc(arena, pixel_size * w * h);
         nux_check(tex->data, return nullptr);
         nux_memset(tex->data, 0, pixel_size * w * h);
     }

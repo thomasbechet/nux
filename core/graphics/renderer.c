@@ -172,9 +172,9 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
 
         nux_m4_t global_matrix = nux_transform_matrix(camera);
 
-        nux_v3_t eye    = nux_m4_mulv3(global_matrix, NUX_V3_ZEROS, 1);
-        nux_v3_t center = nux_m4_mulv3(global_matrix, NUX_V3_FORWARD, 1);
-        nux_v3_t up     = nux_m4_mulv3(global_matrix, NUX_V3_UP, 0);
+        nux_v3_t eye    = nux_m4_mulv3(global_matrix, nux_v3_zero(), 1);
+        nux_v3_t center = nux_m4_mulv3(global_matrix, nux_v3_forward(), 1);
+        nux_v3_t up     = nux_m4_mulv3(global_matrix, nux_v3_up(), 0);
 
         nux_gpu_constants_buffer_t constants;
         constants.view        = nux_m4_lookat(eye, center, up);

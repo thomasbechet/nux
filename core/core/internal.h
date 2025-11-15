@@ -3,6 +3,26 @@
 
 #include <core/platform.h>
 
+typedef enum
+{
+    DEFAULT_MODULE_CAPACITY              = 8,
+    DEFAULT_SYSTEM_CAPACITY              = 32,
+    DEFAULT_MODULE_DEPENDENCIES_CAPACITY = 64,
+    ARENA_ALLOCATOR_TYPE                 = 12345,
+} nux_base_defaults_t;
+
+typedef enum
+{
+    NUX_DISK_OS,
+    NUX_DISK_CART,
+} nux_disk_type_t;
+
+typedef enum
+{
+    NUX_CART_HEADER_SIZE = 4 * 3,
+    NUX_CART_ENTRY_SIZE  = 4 * 6,
+} nux_cart_layout_t;
+
 typedef struct nux_resource_finalizer
 {
     nux_rid_t rid;
@@ -40,14 +60,6 @@ typedef struct
     nux_system_callback_t callback;
 } nux_system_t;
 
-typedef enum
-{
-    DEFAULT_MODULE_CAPACITY              = 8,
-    DEFAULT_SYSTEM_CAPACITY              = 32,
-    DEFAULT_MODULE_DEPENDENCIES_CAPACITY = 64,
-    ARENA_ALLOCATOR_TYPE                 = 12345,
-} nux_base_defaults_t;
-
 typedef struct nux_event_header
 {
     struct nux_event_header *next;
@@ -71,18 +83,6 @@ struct nux_event_handler_t
     struct nux_event_handler_t *prev;
     nux_event_callback_t        callback;
 };
-
-typedef enum
-{
-    NUX_DISK_OS,
-    NUX_DISK_CART,
-} nux_disk_type_t;
-
-typedef enum
-{
-    NUX_CART_HEADER_SIZE = 4 * 3,
-    NUX_CART_ENTRY_SIZE  = 4 * 6,
-} nux_cart_layout_t;
 
 struct nux_file_t
 {

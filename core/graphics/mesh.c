@@ -159,7 +159,7 @@ nux_mesh_new (nux_arena_t           *arena,
     mesh->primitive  = primitive;
     mesh->layout     = vertex_layout(mesh->attributes);
     nux_vec_init_capa(&mesh->vertices, arena, mesh->layout.stride * capa);
-    mesh->bounds       = nux_b3(NUX_V3_ZEROS, NUX_V3_ZEROS);
+    mesh->bounds       = nux_b3(nux_v3_zero(), nux_v3_zero());
     mesh->dirty        = true;
     mesh->gpu.offset   = 0;
     mesh->gpu.capacity = 0;
@@ -168,7 +168,7 @@ nux_mesh_new (nux_arena_t           *arena,
 nux_mesh_t *
 nux_mesh_new_cube (nux_arena_t *arena, nux_f32_t sx, nux_f32_t sy, nux_f32_t sz)
 {
-    const nux_b3_t box = nux_b3(NUX_V3_ZEROS, nux_v3(sx, sy, sz));
+    const nux_b3_t box = nux_b3(nux_v3_zero(), nux_v3(sx, sy, sz));
 
     const nux_v3_t v0 = nux_v3(box.min.x, box.min.y, box.min.z);
     const nux_v3_t v1 = nux_v3(box.max.x, box.min.y, box.min.z);

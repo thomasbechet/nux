@@ -100,7 +100,7 @@ module_update (void)
 
         // Validate update
         controller->cursor = nux_v2_min(
-            nux_v2_max(controller->cursor, NUX_V2_ZEROS), NUX_V2_ONES);
+            nux_v2_max(controller->cursor, nux_v2_zero()), nux_v2_one());
 
         // Integrate cursor motion
         // if (controller->mode == NUX_CONTROLLER_MODE_CURSOR)
@@ -248,7 +248,7 @@ nux_v2_t
 nux_input_cursor (nux_u32_t controller)
 {
     nux_check(controller < nux_array_size(_module.controllers),
-              return NUX_V2_ZEROS);
+              return nux_v2_zero());
     return _module.controllers[controller].cursor;
 }
 void

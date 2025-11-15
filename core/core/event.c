@@ -25,7 +25,7 @@ nux_event_subscribe (nux_arena_t         *arena,
                      void                *userdata,
                      nux_event_callback_t callback)
 {
-    nux_event_handler_t *handler = nux_arena_malloc(arena, sizeof(*handler));
+    nux_event_handler_t *handler = nux_malloc(arena, sizeof(*handler));
     handler->event               = nux_resource_rid(event);
     handler->userdata            = userdata;
     handler->callback            = callback;
@@ -75,10 +75,10 @@ void
 nux_event_emit (nux_event_t *event, nux_u32_t size, const void *data)
 {
     nux_arena_t        *a      = nux_arena_frame();
-    nux_event_header_t *header = nux_arena_malloc(a, sizeof(*header));
+    nux_event_header_t *header = nux_malloc(a, sizeof(*header));
     nux_check(header, return);
     header->next = nullptr;
-    header->data = nux_arena_malloc(a, size);
+    header->data = nux_malloc(a, size);
     nux_check(header->data, return);
     nux_memcpy(header->data, data, size);
     if (event->first_event)

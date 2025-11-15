@@ -12,6 +12,14 @@
     {                                                                     \
         return nux_##name(x, x);                                          \
     }                                                                     \
+    nux_##name##_t nux_##name##_zero(void)                                \
+    {                                                                     \
+        return nux_##name##s(0);                                          \
+    }                                                                     \
+    nux_##name##_t nux_##name##_one(void)                                 \
+    {                                                                     \
+        return nux_##name##s(1);                                          \
+    }                                                                     \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b)   \
     {                                                                     \
         return nux_##name(opadd(a.x, b.x), opadd(a.y, b.y));              \
@@ -82,6 +90,14 @@
     nux_##name##_t nux_##name##s(type x)                                      \
     {                                                                         \
         return nux_##name(x, x, x);                                           \
+    }                                                                         \
+    nux_##name##_t nux_##name##_zero(void)                                    \
+    {                                                                         \
+        return nux_##name##s(0);                                              \
+    }                                                                         \
+    nux_##name##_t nux_##name##_one(void)                                     \
+    {                                                                         \
+        return nux_##name##s(1);                                              \
     }                                                                         \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b)       \
     {                                                                         \
@@ -167,6 +183,14 @@
     nux_##name##_t nux_##name##s(type x)                                \
     {                                                                   \
         return nux_##name(x, x, x, x);                                  \
+    }                                                                   \
+    nux_##name##_t nux_##name##_zero(void)                              \
+    {                                                                   \
+        return nux_##name##s(0);                                        \
+    }                                                                   \
+    nux_##name##_t nux_##name##_one(void)                               \
+    {                                                                   \
+        return nux_##name##s(1);                                        \
     }                                                                   \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b) \
     {                                                                   \
@@ -295,11 +319,41 @@ nux_v3_normalize (nux_v3_t a)
     nux_f32_t norm = nux_v3_norm(a);
     if (norm == 0)
     {
-        return NUX_V3_ZEROS;
+        return nux_v3_zero();
     }
     nux_v3_t ret;
     ret.x = a.x / norm;
     ret.y = a.y / norm;
     ret.z = a.z / norm;
     return ret;
+}
+nux_v3_t
+nux_v3_up (void)
+{
+    return nux_v3(0, 1, 0);
+}
+nux_v3_t
+nux_v3_down (void)
+{
+    return nux_v3(0, -1, 0);
+}
+nux_v3_t
+nux_v3_forward (void)
+{
+    return nux_v3(0, 0, -1);
+}
+nux_v3_t
+nux_v3_backward (void)
+{
+    return nux_v3(0, 0, 1);
+}
+nux_v3_t
+nux_v3_left (void)
+{
+    return nux_v3(-1, 0, 0);
+}
+nux_v3_t
+nux_v3_right (void)
+{
+    return nux_v3(1, 0, 0);
 }

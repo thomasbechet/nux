@@ -41,8 +41,27 @@ nux_arena_info (nux_arena_t *a)
 {
     return a->info;
 }
+void
+nux_arena_clear (nux_arena_t *a)
+{
+    // Finalize objects
+    nux_arena_object_t *obj = a->last_object;
+    while (obj)
+    {
+        obj->finalize(obj + 1); // TODO: handle proper alignment
+        obj = obj->prev;
+    }
+    // Clear arena
+    a->last_header       = a->first_header;
+    a->head              = nullptr;
+    a->end               = nullptr;
+    a->info.memory_usage = 0;
+    a->info.memory_waste = 0;
+    a->last_object       = nullptr;
+}
+
 void *
-nux_arena_malloc (nux_arena_t *a, nux_u32_t size)
+nux_malloc (nux_arena_t *a, nux_u32_t size)
 {
     if (!size)
     {
@@ -96,7 +115,17 @@ nux_arena_malloc (nux_arena_t *a, nux_u32_t size)
     return p;
 }
 void *
-nux_arena_realloc (nux_arena_t *a, void *optr, nux_u32_t osize, nux_u32_t nsize)
+nux_mallocf (nux_arena_t *a, nux_u32_t size, nux_arena_finalizer_t finalizer)
+{
+    // TODO: handle proper alignment
+    nux_arena_object_t *obj = nux_malloc(a, sizeof(nux_arena_object_t) + size);
+    obj->finalize           = finalizer;
+    obj->prev               = a->last_object;
+    a->last_object          = obj;
+    return obj + 1;
+}
+void *
+nux_realloc (nux_arena_t *a, void *optr, nux_u32_t osize, nux_u32_t nsize)
 {
     void *p;
     if (nsize <= osize) // shrink
@@ -107,7 +136,7 @@ nux_arena_realloc (nux_arena_t *a, void *optr, nux_u32_t osize, nux_u32_t nsize)
     else // grow
     {
         nux_assert(nsize);
-        p = nux_arena_malloc(a, nsize);
+        p = nux_malloc(a, nsize);
         a->info.memory_waste += osize;
         nux_memset(p, 0, nsize);
         if (optr) // copy previous memory
@@ -116,35 +145,4 @@ nux_arena_realloc (nux_arena_t *a, void *optr, nux_u32_t osize, nux_u32_t nsize)
         }
     }
     return p;
-}
-void *
-nux_arena_new_object (nux_arena_t          *a,
-                      nux_u32_t             size,
-                      nux_arena_finalizer_t finalizer)
-{
-    // TODO: handle proper alignment
-    nux_arena_object_t *obj
-        = nux_arena_malloc(a, sizeof(nux_arena_object_t) + size);
-    obj->finalize  = finalizer;
-    obj->prev      = a->last_object;
-    a->last_object = obj;
-    return obj + 1;
-}
-void
-nux_arena_clear (nux_arena_t *a)
-{
-    // Finalize objects
-    nux_arena_object_t *obj = a->last_object;
-    while (obj)
-    {
-        obj->finalize(obj + 1); // TODO: handle proper alignment
-        obj = obj->prev;
-    }
-    // Clear arena
-    a->last_header       = a->first_header;
-    a->head              = nullptr;
-    a->end               = nullptr;
-    a->info.memory_usage = 0;
-    a->info.memory_waste = 0;
-    a->last_object       = nullptr;
 }

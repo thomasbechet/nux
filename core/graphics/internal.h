@@ -3,6 +3,14 @@
 
 #include <graphics/platform.h>
 
+typedef enum
+{
+    GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE = 8,
+    QUADS_DEFAULT_SIZE                    = 4096 * 8,
+    BATCHES_DEFAULT_SIZE                  = 512,
+    CANVAS_QUAD_BUFFER_SIZE               = 64,
+} nux_graphics_defaults_t;
+
 typedef struct
 {
     nux_u32_t top;
@@ -26,14 +34,6 @@ typedef struct
     nux_u32_t immediate_color;
     nux_u32_t immediate_transform;
 } nux_immediate_state_t;
-
-typedef enum
-{
-    NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE = 8,
-    NUX_QUADS_DEFAULT_SIZE                    = 4096 * 8,
-    NUX_BATCHES_DEFAULT_SIZE                  = 512,
-    NUX_CANVAS_QUAD_BUFFER_SIZE               = 64,
-} nux_graphics_defaults_t;
 
 typedef struct
 {

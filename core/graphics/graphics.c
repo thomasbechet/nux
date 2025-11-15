@@ -246,7 +246,7 @@ module_init (void)
     nux_vec_init(&_module.immediate_commands, a);
     nux_vec_init_capa(&_module.immediate_states,
                       a,
-                      NUX_GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE);
+                      GRAPHICS_DEFAULT_IMMEDIATE_STACK_SIZE);
     nux_vec_push(&_module.immediate_states);
 
     // Allocate constants buffer

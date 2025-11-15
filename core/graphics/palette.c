@@ -2,7 +2,7 @@
 
 static nux_v4_t default_palette[]
     = { { 0, 0, 0, 0 }, { 1, 1, 1, 1 }, { 1, 0, 0, 1 },
-        { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, NUX_COLOR_HEX(0x99ccff) };
+        { 0, 1, 0, 1 }, { 0, 0, 1, 1 }, nux_color_hex(0x99ccff) };
 
 nux_status_t
 nux_palette_register_default (void)
@@ -25,7 +25,7 @@ nux_palette_new (nux_arena_t *arena, nux_u32_t size)
     nux_palette_t *pal = nux_resource_new(arena, NUX_RESOURCE_PALETTE);
     nux_check(pal, return nullptr);
     pal->size   = size;
-    pal->colors = nux_arena_malloc(arena, sizeof(*pal->colors) * size);
+    pal->colors = nux_malloc(arena, sizeof(*pal->colors) * size);
     nux_check(pal->colors, return nullptr);
     pal->texture = nux_texture_new(arena, NUX_TEXTURE_IMAGE_RGBA, size, 1);
     nux_check(pal->texture, return nullptr);
@@ -52,6 +52,6 @@ nux_v4_t
 nux_palette_get_color (const nux_palette_t *palette, nux_u32_t index)
 {
     nux_check(palette, return nux_color_rgba(255, 255, 255, 255));
-    nux_check(index < palette->size, return NUX_V4_ZEROS);
+    nux_check(index < palette->size, return nux_v4_zero());
     return palette->colors[index];
 }

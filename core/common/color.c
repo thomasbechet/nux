@@ -13,16 +13,6 @@ color_to_linear (float x)
     }
 }
 
-nux_v4_t
-nux_color_rgba (nux_u8_t r, nux_u8_t g, nux_u8_t b, nux_u8_t a)
-{
-    return NUX_COLOR_RGBA(r, g, b, a);
-}
-nux_v4_t
-nux_color_hex (nux_u32_t hex)
-{
-    return NUX_COLOR_HEX(hex);
-}
 nux_u32_t
 nux_color_to_hex (nux_v4_t color)
 {

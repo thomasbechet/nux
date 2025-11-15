@@ -462,7 +462,7 @@ math_vec2 (lua_State *L)
     nux_v2_t v;
     if (lua_gettop(L) == 0)
     {
-        v = NUX_V2_ZEROS;
+        v = nux_v2_zero();
     }
     else if (lua_gettop(L) == 1)
     {
@@ -516,7 +516,7 @@ math_vec3 (lua_State *L)
     nux_v3_t v;
     if (lua_gettop(L) == 0)
     {
-        v = NUX_V3_ZEROS;
+        v = nux_v3_zero();
     }
     else if (lua_gettop(L) == 1)
     {
@@ -544,7 +544,7 @@ math_vec4 (lua_State *L)
     nux_v4_t v;
     if (lua_gettop(L) == 0)
     {
-        v = NUX_V4_ZEROS;
+        v = nux_v4_zero();
     }
     else if (lua_gettop(L) == 1)
     {

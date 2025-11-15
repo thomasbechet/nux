@@ -519,7 +519,7 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
         if (!container->chunks.data[mask])
         {
             // allocate new chunk
-            container->chunks.data[mask] = nux_arena_malloc(
+            container->chunks.data[mask] = nux_malloc(
                 scene->arena, container->component_size * NUX_NODE_PER_MASK);
             // expect zero memory by default
             nux_memset(container->chunks.data[mask],

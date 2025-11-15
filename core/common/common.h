@@ -73,29 +73,6 @@
 #define NUX_M3_SIZE 9
 #define NUX_M4_SIZE 16
 
-#define NUX_V2_ONES  nux_v2s(1)
-#define NUX_V2_ZEROS nux_v2s(0)
-
-#define NUX_V3_ONES     nux_v3s(1)
-#define NUX_V3_ZEROS    nux_v3s(0)
-#define NUX_V3_UP       nux_v3(0, 1, 0)
-#define NUX_V3_DOWN     nux_v3(0, -1, 0)
-#define NUX_V3_FORWARD  nux_v3(0, 0, -1)
-#define NUX_V3_BACKWARD nux_v3(0, 0, 1)
-#define NUX_V3_LEFT     nux_v3(-1, 0, 0)
-#define NUX_V3_RIGHT    nux_v3(1, 0, 0)
-
-#define NUX_V4_ONES  nux_v4s(1)
-#define NUX_V4_ZEROS nux_v4s(0)
-
-#define NUX_COLOR_RGBA(r, g, b, a) \
-    (nux_v4_t) { r / 255., g / 255., b / 255., a / 255. }
-#define NUX_COLOR_HEX(hex)                   \
-    NUX_COLOR_RGBA(((hex & 0xFF0000) >> 16), \
-                   ((hex & 0xFF00) >> 8),    \
-                   ((hex & 0xFF) >> 0),      \
-                   ((hex & 0xFF000000) >> 24))
-
 #define nux_unused0()
 #define nux_unused1(a)             (void)(a)
 #define nux_unused2(a, b)          (void)(a), nux_unused1(b)
@@ -131,9 +108,19 @@
         y      = SWAP;    \
     } while (0)
 
+#define nux_color_hex(hex)                   \
+    nux_color_rgba(((hex & 0xFF0000) >> 16), \
+                   ((hex & 0xFF00) >> 8),    \
+                   ((hex & 0xFF) >> 0),      \
+                   ((hex & 0xFF000000) >> 24))
+#define nux_color_rgba(r, g, b, a) \
+    (nux_v4_t) { r / 255., g / 255., b / 255., a / 255. }
+
 #define nux_v2_define(name, type)                                         \
     nux_##name##_t nux_##name(type x, type y);                            \
     nux_##name##_t nux_##name##s(type x);                                 \
+    nux_##name##_t nux_##name##_zero(void);                               \
+    nux_##name##_t nux_##name##_one(void);                                \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);  \
     nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b);  \
     nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b);  \
@@ -152,6 +139,8 @@
 #define nux_v3_define(name, type)                                          \
     nux_##name##_t nux_##name(type x, type y, type z);                     \
     nux_##name##_t nux_##name##s(type x);                                  \
+    nux_##name##_t nux_##name##_zero(void);                                \
+    nux_##name##_t nux_##name##_one(void);                                 \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);   \
     nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b);   \
     nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b);   \
@@ -172,6 +161,8 @@
 #define nux_v4_define(name, type)                                         \
     nux_##name##_t nux_##name(type x, type y, type z, type w);            \
     nux_##name##_t nux_##name##s(type x);                                 \
+    nux_##name##_t nux_##name##_zero(void);                               \
+    nux_##name##_t nux_##name##_one(void);                                \
     nux_##name##_t nux_##name##_add(nux_##name##_t a, nux_##name##_t b);  \
     nux_##name##_t nux_##name##_sub(nux_##name##_t a, nux_##name##_t b);  \
     nux_##name##_t nux_##name##_mul(nux_##name##_t a, nux_##name##_t b);  \
@@ -238,6 +229,18 @@
 ////////////////////////////
 ///        TYPES         ///
 ////////////////////////////
+
+typedef enum
+{
+    NUX_SUCCESS = 1,
+    NUX_FAILURE = 0
+} nux_status_t;
+
+typedef enum
+{
+    NUX_PATH_MAX      = 256, // does not include '\0'
+    NUX_PATH_BUF_SIZE = NUX_PATH_MAX + 1
+} nux_constants_t;
 
 typedef _Bool    nux_b32_t;
 typedef uint8_t  nux_u8_t;
@@ -431,18 +434,6 @@ typedef struct
     nux_u64_t incr;
 } nux_pcg_t;
 
-typedef enum
-{
-    NUX_SUCCESS = 1,
-    NUX_FAILURE = 0
-} nux_status_t;
-
-typedef enum
-{
-    NUX_PATH_MAX      = 256, // does not include '\0'
-    NUX_PATH_BUF_SIZE = NUX_PATH_MAX + 1
-} nux_constants_t;
-
 typedef struct
 {
     nux_u32_t block_count;
@@ -504,14 +495,19 @@ typedef struct
     void     *data;
 } nux_pool_t;
 
-nux_v2_define(v2i, nux_i32_t) nux_v2_define(v2u, nux_u32_t)
-    nux_v2_define(v2, nux_f32_t) nux_v3_define(v3i, nux_i32_t)
-        nux_v3_define(v3u, nux_u32_t) nux_v3_define(v3, nux_f32_t)
-            nux_v4_define(v4i, nux_i32_t) nux_v4_define(v4u, nux_u32_t)
-                nux_v4_define(v4, nux_f32_t) nux_b3_define(b3, nux_v3_t)
-                    nux_b3_define(b3i, nux_v3i_t)
+nux_v2_define(v2i, nux_i32_t);
+nux_v2_define(v2u, nux_u32_t);
+nux_v2_define(v2, nux_f32_t);
+nux_v3_define(v3i, nux_i32_t);
+nux_v3_define(v3u, nux_u32_t);
+nux_v3_define(v3, nux_f32_t);
+nux_v4_define(v4i, nux_i32_t);
+nux_v4_define(v4u, nux_u32_t);
+nux_v4_define(v4, nux_f32_t);
+nux_b3_define(b3, nux_v3_t);
+nux_b3_define(b3i, nux_v3i_t);
 
-                        typedef nux_vec(nux_u32_t) nux_u32_vec_t;
+typedef nux_vec(nux_u32_t) nux_u32_vec_t;
 
 ////////////////////////////
 ///      FUNCTIONS       ///
@@ -571,8 +567,6 @@ void nux_qsort(void     *base,
                nux_u32_t size,
                nux_i32_t (*compare)(const void *a, const void *b));
 
-nux_v4_t  nux_color_rgba(nux_u8_t r, nux_u8_t g, nux_u8_t b, nux_u8_t a);
-nux_v4_t  nux_color_hex(nux_u32_t hex);
 nux_u32_t nux_color_to_hex(nux_v4_t color);
 nux_v4_t  nux_color_to_srgb(nux_v4_t color);
 
@@ -591,6 +585,12 @@ nux_u32_t nux_pcg_u32(nux_pcg_t *pcg);
 nux_f32_t nux_pcg_f32(nux_pcg_t *pcg);
 
 nux_v3_t nux_v3_normalize(nux_v3_t a);
+nux_v3_t nux_v3_up(void);
+nux_v3_t nux_v3_down(void);
+nux_v3_t nux_v3_forward(void);
+nux_v3_t nux_v3_backward(void);
+nux_v3_t nux_v3_left(void);
+nux_v3_t nux_v3_right(void);
 
 nux_m3_t nux_m3_zero(void);
 nux_m3_t nux_m3_identity(void);
@@ -643,15 +643,13 @@ void             nux_arena_init(nux_arena_t               *arena,
                                 nux_arena_panic_callback_t panic);
 void             nux_arena_free(nux_arena_t *a);
 nux_arena_info_t nux_arena_info(nux_arena_t *a);
-void            *nux_arena_malloc(nux_arena_t *a, nux_u32_t size);
-void            *nux_arena_realloc(nux_arena_t *a,
-                                   void        *p,
-                                   nux_u32_t    osize,
-                                   nux_u32_t    nsize);
-void            *nux_arena_new_object(nux_arena_t          *a,
-                                      nux_u32_t             size,
-                                      nux_arena_finalizer_t finalizer);
 void             nux_arena_clear(nux_arena_t *a);
+
+void *nux_malloc(nux_arena_t *a, nux_u32_t size);
+void *nux_mallocf(nux_arena_t          *a,
+                  nux_u32_t             size,
+                  nux_arena_finalizer_t finalizer);
+void *nux_realloc(nux_arena_t *a, void *p, nux_u32_t osize, nux_u32_t nsize);
 
 void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
 

@@ -190,7 +190,7 @@ nux_file_load (nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size)
     }
 
     // Allocate memory
-    data = nux_arena_malloc(a, stat.size);
+    data = nux_malloc(a, stat.size);
     nux_check(data, goto cleanup0);
 
     // Read file
