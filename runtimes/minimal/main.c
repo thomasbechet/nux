@@ -4,8 +4,6 @@
 #include <assert.h>
 #include <nux.h>
 
-#define nullptr (void *)0
-
 static FILE *files[NUX_FILE_MAX];
 
 void *

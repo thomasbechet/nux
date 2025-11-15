@@ -63,33 +63,26 @@ function M:on_load()
     self.camera = require("camera")
     self.gizmos = require("gizmos")
 
-    local target = texture.new(self.arena, texture.RENDER_TARGET, 640, 360)
+    local target = texture.new(self.arena, texture.RENDER_TARGET, 1024, 576)
     -- local target = texture.screen()
 
     local vp = viewport.new(self.arena, target)
     viewport.set_camera(vp, self.camera.node)
-    -- viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 0)
     viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
-    viewport.set_auto_resize(vp, true)
 
     local vp = viewport.new(self.arena, target)
     viewport.set_camera(vp, self.camera.top_node)
-    -- viewport.set_extent(vp, { 0, 0, 1, 1 })
     viewport.set_layer(vp, 1)
     viewport.set_clear_depth(vp, true)
     viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
-    viewport.set_auto_resize(vp, true)
-    viewport.set_anchor(vp, anchor.LEFT)
 
     self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
     self.vp = viewport.new(self.arena, texture.screen())
-    -- viewport.set_extent(self.vp, { 0, 0, 1, 1 })
     viewport.set_texture(self.vp, canvas.texture(self.gui_canvas))
     viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
     viewport.set_layer(self.vp, 2)
     viewport.set_auto_resize(vp, true)
-    -- viewport.set_anchor(self.vp, anchor.TOP | anchor.LEFT)
 
     local gui_tex = texture.load(self.arena, "assets/GUI.png")
     local style = stylesheet.new(self.arena)
@@ -126,7 +119,7 @@ function M:on_load()
 
     local vp = viewport.new(self.arena, texture.screen())
     viewport.set_texture(vp, target)
-    viewport.set_clear_depth(vp, true)
+    -- viewport.set_clear_depth(vp, true)
 end
 
 function M:on_update()

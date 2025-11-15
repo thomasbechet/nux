@@ -164,7 +164,7 @@ static const struct luaL_Reg lib_{{ class_name }}[] = {
     { "{{ function_name }}", l_{{ class_name }}_{{ function_name }} },
 {%- endif -%}
 {%- endfor -%}
-    { NUX_NULL, NUX_NULL }
+    { nullptr, nullptr }
 };
 {% endfor %}
 

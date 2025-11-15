@@ -315,6 +315,9 @@
                 "STYLESHEET": {
                     "value": "17"
                 },
+                "WORLD": {
+                    "value": "18"
+                },
                 "MAX": {
                     "value": "256"
                 }
@@ -363,26 +366,7 @@
                     "args": []
                 }
             },
-            "constants": {
-                "NONE": {
-                    "value": "0"
-                },
-                "OUT_OF_MEMORY": {
-                    "value": "1"
-                },
-                "INVALID_TEXTURE_SIZE": {
-                    "value": "4"
-                },
-                "WASM_RUNTIME": {
-                    "value": "8"
-                },
-                "CART_EOF": {
-                    "value": "10"
-                },
-                "CART_MOUNT": {
-                    "value": "11"
-                }
-            }
+            "constants": {}
         },
         "module": {
             "functions": {
@@ -421,11 +405,7 @@
                     ]
                 }
             },
-            "constants": {
-                "NO_DATA_INITIALIZATION": {
-                    "value": "1 << 0"
-                }
-            }
+            "constants": {}
         },
         "config": {
             "functions": {
@@ -760,6 +740,22 @@
                 }
             }
         },
+        "name": {
+            "functions": {},
+            "constants": {
+                "MAX": {
+                    "value": "64"
+                }
+            }
+        },
+        "disk": {
+            "functions": {},
+            "constants": {
+                "MAX": {
+                    "value": "4"
+                }
+            }
+        },
         "log": {
             "functions": {},
             "constants": {
@@ -777,14 +773,6 @@
                 }
             }
         },
-        "name": {
-            "functions": {},
-            "constants": {
-                "MAX": {
-                    "value": "64"
-                }
-            }
-        },
         "system": {
             "functions": {},
             "constants": {
@@ -796,14 +784,6 @@
                 },
                 "POST_UPDATE": {
                     "value": "2"
-                }
-            }
-        },
-        "disk": {
-            "functions": {},
-            "constants": {
-                "MAX": {
-                    "value": "4"
                 }
             }
         }
@@ -942,7 +922,7 @@
             "functions": {
                 "set_inputmap": {
                     "typename": {
-                        "name": "void",
+                        "name": "status",
                         "type": "primitive",
                         "const": false
                     },
@@ -3105,6 +3085,39 @@
                                 "name": "texture",
                                 "type": "resource",
                                 "const": false
+                            }
+                        }
+                    ]
+                },
+                "blit": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "tex",
+                            "typename": {
+                                "name": "texture",
+                                "type": "resource",
+                                "const": false
+                            }
+                        },
+                        {
+                            "name": "target",
+                            "typename": {
+                                "name": "texture",
+                                "type": "resource",
+                                "const": false
+                            }
+                        },
+                        {
+                            "name": "extent",
+                            "typename": {
+                                "name": "v4",
+                                "type": "primitive",
+                                "const": true
                             }
                         }
                     ]

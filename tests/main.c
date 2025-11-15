@@ -35,7 +35,7 @@ nux_os_file_open (nux_u32_t       slot,
                   nux_u32_t       len,
                   nux_io_mode_t   mode)
 {
-    assert(files[slot] == NULL);
+    nux_assert(files[slot] == NULL);
     nux_c8_t finalpath[NUX_PATH_BUF_SIZE + 2];
     snprintf(finalpath, sizeof(finalpath), "./%s", path);
     files[slot] = fopen(path, mode == NUX_IO_READ ? "rb" : "wb");

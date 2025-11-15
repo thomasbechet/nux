@@ -2,10 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-static nux_ctx_t *ctx;
-
 void *
-nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
+nux_os_alloc (void *p, nux_u32_t osize, nux_u32_t nsize)
 {
     if (!p)
     {
@@ -23,20 +21,20 @@ nux_os_alloc (void *userdata, void *p, nux_u32_t osize, nux_u32_t nsize)
 }
 
 void
-nux_os_hotreload_add (void *userdata, const nux_c8_t *path, nux_rid_t handle)
+nux_os_hotreload_add (const nux_c8_t *path, nux_rid_t handle)
 {
 }
 void
-nux_os_hotreload_remove (void *userdata, nux_rid_t handle)
+nux_os_hotreload_remove (nux_rid_t handle)
 {
 }
 void
-nux_os_hotreload_pull (void *userdata, nux_rid_t *handles, nux_u32_t *count)
+nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
 {
     *count = 0;
 }
 void
-nux_os_stats_update (void *userdata, nux_u64_t *stats)
+nux_os_stats_update (nux_u64_t *stats)
 {
     stats[NUX_STAT_FPS]           = 100;
     stats[NUX_STAT_SCREEN_WIDTH]  = 1600;
@@ -47,15 +45,15 @@ nux_os_stats_update (void *userdata, nux_u64_t *stats)
 void
 instance_init (void)
 {
-    ctx = nux_instance_init(NULL, "cart.bin");
+    nux_core_init();
 }
 void
 instance_update (void)
 {
-    nux_instance_update(ctx);
+    nux_core_update();
 }
 void
 instance_free (void)
 {
-    nux_instance_free(ctx);
+    nux_core_free();
 }

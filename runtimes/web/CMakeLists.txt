@@ -27,3 +27,5 @@ target_link_libraries(${PROJECT_NAME} core m)
 # cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/.local -DCMAKE_TOOLCHAIN_FILE=/home/thomas/Documents/wasi-sdk/wasi-sdk-25.0-x86_64-linux/share/cmake/wasi-sdk.cmake
 # wasm-opt --translate-to-exnref -all -o nux.patch.wasm nux.wasm
 # wasm-decompile nux.wasm > dump.txt
+
+# TOBUILD -> see docs/compile_wasm.sh

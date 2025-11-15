@@ -16,8 +16,8 @@ endif ()
 
 include_directories(${CMAKE_SOURCE_DIR}/core)
 file(GLOB_RECURSE SOURCES *.c)
-list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/core/luavm/liolib.c)
-list(REMOVE_ITEM LUA_SOURCES ${CMAKE_SOURCE_DIR}/core/luavm/loslib.c)
+list(REMOVE_ITEM SOURCES ${CMAKE_SOURCE_DIR}/core/externals/lua/liolib.c)
+list(REMOVE_ITEM SOURCES ${CMAKE_SOURCE_DIR}/core/externals/lua/loslib.c)
 
 if (NUX_BUILD_WASI)
     add_definitions(-D_WASI_EMULATED_SIGNAL)

@@ -238,6 +238,7 @@ typedef enum
 
 typedef enum
 {
+    NUX_NULL          = 0,
     NUX_PATH_MAX      = 256, // does not include '\0'
     NUX_PATH_BUF_SIZE = NUX_PATH_MAX + 1
 } nux_constants_t;

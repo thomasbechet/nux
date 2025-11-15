@@ -32,7 +32,6 @@ typedef nux_u32_t nux_nid_t;
 
 typedef enum
 {
-    NUX_NULL     = 0,
     NUX_NAME_MAX = 64,
     NUX_FILE_MAX = 64,
     NUX_DISK_MAX = 4,
