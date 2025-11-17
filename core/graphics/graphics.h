@@ -3,12 +3,11 @@
 
 #include <scene/scene.h>
 
-typedef struct nux_canvas_t   nux_canvas_t;
-typedef struct nux_mesh_t     nux_mesh_t;
-typedef struct nux_texture_t  nux_texture_t;
-typedef struct nux_palette_t  nux_palette_t;
-typedef struct nux_viewport_t nux_viewport_t;
-typedef struct nux_font_t     nux_font_t;
+typedef struct nux_canvas_t  nux_canvas_t;
+typedef struct nux_mesh_t    nux_mesh_t;
+typedef struct nux_texture_t nux_texture_t;
+typedef struct nux_palette_t nux_palette_t;
+typedef struct nux_font_t    nux_font_t;
 
 typedef enum
 {
@@ -159,13 +158,18 @@ void      nux_camera_set_fov(nux_nid_t e, nux_f32_t fov);
 void      nux_camera_set_near(nux_nid_t e, nux_f32_t near);
 void      nux_camera_set_far(nux_nid_t e, nux_f32_t far);
 void      nux_camera_set_aspect(nux_nid_t e, nux_f32_t aspect);
-void      nux_camera_reset_aspect(nux_nid_t e, nux_viewport_t *viewport);
 void      nux_camera_set_ortho(nux_nid_t e, nux_b32_t ortho);
 void      nux_camera_set_ortho_size(nux_nid_t e, nux_v2_t size);
 nux_m4_t  nux_camera_projection(nux_nid_t e);
 nux_v3_t  nux_camera_unproject(nux_nid_t e, nux_v2_t pos);
 void      nux_camera_set_render_mask(nux_nid_t n, nux_u32_t mask);
 nux_u32_t nux_camera_render_mask(nux_nid_t n);
+void      nux_camera_set_viewport(nux_nid_t e, nux_b2i_t viewport);
+nux_b2i_t nux_camera_viewport(nux_nid_t e);
+void      nux_camera_set_target(nux_nid_t e, nux_rid_t target);
+nux_rid_t nux_camera_target(nux_nid_t e);
+nux_v2_t  nux_camera_to_global(nux_nid_t e, nux_v2_t coord);
+nux_v2_t  nux_camera_to_local(nux_nid_t e, nux_v2_t coord);
 
 void           nux_staticmesh_set_mesh(nux_nid_t e, nux_mesh_t *mesh);
 nux_mesh_t    *nux_staticmesh_mesh(nux_nid_t n);

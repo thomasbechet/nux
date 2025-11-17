@@ -60,15 +60,6 @@ nux_camera_set_aspect (nux_nid_t e, nux_f32_t aspect)
     c->aspect = aspect;
 }
 void
-nux_camera_reset_aspect (nux_nid_t e, nux_viewport_t *viewport)
-{
-    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    nux_check(c, return);
-    nux_texture_t *t = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
-    nux_assert(t);
-    c->aspect = (nux_f32_t)t->gpu.width / t->gpu.height;
-}
-void
 nux_camera_set_ortho (nux_nid_t e, nux_b32_t ortho)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
@@ -143,4 +134,40 @@ nux_camera_render_mask (nux_nid_t n)
     nux_camera_t *c = nux_component_get(n, NUX_COMPONENT_CAMERA);
     nux_check(c, return 0);
     return c->render_mask;
+}
+void
+nux_camera_set_viewport (nux_nid_t e, nux_b2i_t viewport)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return);
+    c->viewport = viewport;
+}
+nux_b2i_t
+nux_camera_viewport (nux_nid_t e)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return nux_b2i(0, 0, 0, 0));
+    return c->viewport;
+}
+void
+nux_camera_set_target (nux_nid_t e, nux_rid_t target)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return);
+    c->target = target;
+}
+nux_rid_t
+nux_camera_target (nux_nid_t e)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return NUX_NULL);
+    return c->target;
+}
+nux_v2_t
+nux_camera_to_global (nux_nid_t e, nux_v2_t coord)
+{
+}
+nux_v2_t
+nux_camera_to_local (nux_nid_t e, nux_v2_t coord)
+{
 }

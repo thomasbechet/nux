@@ -34,10 +34,7 @@ runtime_run (const config_t *config)
         if (runtime.reload)
         {
             runtime_close();
-            if (config->path)
-            {
-                nux_check(runtime_open(config->path), runtime.running = false);
-            }
+            nux_check(runtime_open(config->path), runtime.running = false);
             runtime.reload = false;
         }
 

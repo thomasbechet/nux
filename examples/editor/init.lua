@@ -63,7 +63,10 @@ function M:on_load()
     self.camera = require("camera")
     self.gizmos = require("gizmos")
 
-    local target = texture.new(self.arena, texture.RENDER_TARGET, 1024, 576)
+    -- local target = texture.new(self.arena, texture.RENDER_TARGET, 1024, 576)
+    -- local target = texture.new(self.arena, texture.RENDER_TARGET, 986, 504)
+    local target = texture.new(self.arena, texture.RENDER_TARGET, 900, 600)
+    -- local target = texture.new(self.arena, texture.RENDER_TARGET, 1600, 900)
     -- local target = texture.screen()
 
     local vp = viewport.new(self.arena, target)

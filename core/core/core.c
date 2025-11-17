@@ -74,7 +74,7 @@ nux_core_init (void)
         &_module.modules, _module.core_arena, DEFAULT_MODULE_CAPACITY);
     // Initialize systems
     nux_vec_init_capa(
-        &_module.systems, _module.core_arena, DEFAULT_MODULE_CAPACITY);
+        &_module.systems, _module.core_arena, DEFAULT_SYSTEM_CAPACITY);
 
     // Initialize system state
     _module.config.log.level

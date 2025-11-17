@@ -81,23 +81,6 @@ struct nux_palette_t
     nux_texture_t *texture;
 };
 
-struct nux_viewport_t
-{
-    nux_rid_t           target;
-    nux_viewport_mode_t mode;
-    nux_b2i_t           extent;
-    nux_u32_t           anchor;
-    struct
-    {
-        nux_nid_t camera;
-        nux_rid_t texture;
-    } source;
-    nux_i32_t layer;
-    nux_v4_t  clear_color;
-    nux_b32_t clear_depth;
-    nux_b32_t auto_resize;
-};
-
 typedef struct
 {
     nux_u8_t stride;
@@ -187,6 +170,15 @@ typedef struct
     nux_b32_t ortho;
     nux_v2_t  ortho_size;
     nux_u32_t render_mask;
+
+    nux_rid_t           target;
+    nux_b2i_t           viewport;
+    nux_viewport_mode_t viewport_mode;
+    nux_v4_t            clear_color;
+    nux_b32_t           clear_depth;
+    nux_b32_t           auto_resize;
+    nux_i32_t           layer;
+    nux_u32_t           anchor;
 } nux_camera_t;
 
 typedef struct
