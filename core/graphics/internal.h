@@ -139,9 +139,10 @@ struct nux_canvas_t
     nux_u32_t               batches_gpu_buffer_head;
     nux_gpu_canvas_batch_t  active_batch;
     nux_u32_t               active_texture;
-    nux_texture_t          *target;
     nux_u32_t               clear_color;
     nux_texture_wrap_mode_t wrap_mode;
+    nux_rid_t               target;
+    nux_b2i_t               viewport;
 };
 
 struct nux_font_t
@@ -200,6 +201,7 @@ typedef struct
     nux_font_t     default_font;
     nux_palette_t *default_palette;
     nux_texture_t *screen_target;
+    nux_v2u_t      window_size;
 
     nux_gpu_pipeline_t uber_pipeline_opaque;
     nux_gpu_pipeline_t uber_pipeline_line;
@@ -218,9 +220,9 @@ typedef struct
 
     nux_gpu_encoder_t encoder;
 
-    nux_query_t *transform_iter;
-    nux_query_t *transform_staticmesh_iter;
-    nux_query_t *transform_camera_iter;
+    nux_query_t *query_transform;
+    nux_query_t *query_transform_staticmesh;
+    nux_query_t *query_transform_camera;
 
     nux_vec(nux_graphics_command_t) immediate_commands;
     nux_vec(nux_immediate_state_t) immediate_states;
@@ -294,7 +296,7 @@ void nux_gpu_draw(nux_gpu_encoder_t *enc, nux_u32_t count);
 void nux_gpu_draw_full_quad(nux_gpu_encoder_t *enc);
 void nux_gpu_clear_color(nux_gpu_encoder_t *enc, nux_u32_t color);
 void nux_gpu_clear_depth(nux_gpu_encoder_t *enc);
-void nux_gpu_viewport(nux_gpu_encoder_t *enc, nux_v4_t viewport);
+void nux_gpu_viewport(nux_gpu_encoder_t *enc, nux_b2i_t viewport);
 
 void           nux_texture_cleanup(void *data);
 nux_texture_t *nux_texture_load_from_memory(nux_arena_t    *arena,
@@ -316,6 +318,6 @@ void         nux_camera_add(nux_nid_t e, void *data);
 nux_status_t nux_camera_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_camera_read(nux_serde_reader_t *s, void *data);
 
-void nux_renderer_render_scene(nux_scene_t *scene, nux_viewport_t *viewport);
+void nux_renderer_render_scene(nux_scene_t *scene, nux_nid_t camera);
 
 #endif

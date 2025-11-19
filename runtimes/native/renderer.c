@@ -318,6 +318,7 @@ nux_os_texture_create (nux_u32_t slot, const nux_gpu_texture_info_t *info)
                  NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, tex->filtering);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, tex->filtering);
+    // glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     return NUX_SUCCESS;
@@ -503,22 +504,19 @@ nux_os_gpu_submit (const nux_gpu_command_t *cmds, nux_u32_t count)
             }
             break;
             case NUX_GPU_COMMAND_VIEWPORT: {
-                nux_u32_t width, height;
+                nux_u32_t height;
                 if (runtime.active_framebuffer)
                 {
-                    framebuffer_t *fb = runtime.active_framebuffer;
-                    width             = fb->width;
-                    height            = fb->height;
+                    height = runtime.active_framebuffer->height;
                 }
                 else
                 {
-                    width  = runtime.size.x;
                     height = runtime.size.y;
                 }
-                float x = cmd->viewport.extent.x * width;
-                float y = cmd->viewport.extent.y * height;
-                float w = cmd->viewport.extent.z * width;
-                float h = cmd->viewport.extent.w * height;
+                float x = cmd->viewport.extent.x;
+                float y = cmd->viewport.extent.y;
+                float w = cmd->viewport.extent.w;
+                float h = cmd->viewport.extent.h;
 
                 // Patch extent (bottom left for GL)
                 y = height - (y + h);

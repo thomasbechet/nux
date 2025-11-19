@@ -1,12 +1,12 @@
 local LAYER = 0x2
 
 function M:on_load()
-    self.node = node.create(node.root())
+    self.cam = node.create(node.root())
     self.target = nil
 
-    node.add(self.node, component.COLLIDER)
-    node.add(self.node, component.TRANSFORM)
-    collider.set_sphere(self.node, 1)
+    node.add(self.cam, component.COLLIDER)
+    node.add(self.cam, component.TRANSFORM)
+    collider.set_sphere(self.cam, 1)
 end
 
 function M:update(pos, ray, btn)

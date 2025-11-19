@@ -170,7 +170,7 @@ nux_gpu_clear_depth (nux_gpu_encoder_t *enc)
     cmd->type              = NUX_GPU_COMMAND_CLEAR_DEPTH;
 }
 void
-nux_gpu_viewport (nux_gpu_encoder_t *enc, nux_v4_t viewport)
+nux_gpu_viewport (nux_gpu_encoder_t *enc, nux_b2i_t viewport)
 {
     nux_gpu_command_t *cmd = push_cmd(enc);
     cmd->type              = NUX_GPU_COMMAND_VIEWPORT;

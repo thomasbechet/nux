@@ -48,3 +48,21 @@ Type of source :
 - Camera
 - Texture
 
+
+
+
+# Fixed Resolution
+
++ Pixel consistency (3D and GUI)
++ Fantasy console feeling
++ Easy screenshots
++ Intuitive API (no normalized coordinate devices)
++ Crunchy look
+
+# Variable Resolution
+
++ Higher fidelity / details for 3D
++ Split screen
++ Support various devices (event with small resolution)
++ Higher resolution in editor
++ Also support lower resolution

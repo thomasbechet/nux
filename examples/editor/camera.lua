@@ -5,23 +5,30 @@ function M:on_load()
     self.fov = 90
     self.pitch = 0
     self.yaw = 0
-    self.node = node.create(node.root())
+    self.cam = node.create(node.root())
     self.velocity = vmath.vec3(0)
     self.max_speed = 10
     self.acc = 10
-    node.add(self.node, component.CAMERA)
-    node.add(self.node, component.TRANSFORM)
-    camera.set_render_mask(self.node, 1)
-    transform.set_translation(self.node, { 13, 15, 10 })
-    self.top_node = node.create(self.node)
-    node.add(self.top_node, component.CAMERA)
-    node.add(self.top_node, component.TRANSFORM)
-    camera.set_render_mask(self.top_node, 2)
+    node.add(self.cam, component.CAMERA)
+    node.add(self.cam, component.TRANSFORM)
+    camera.set_render_mask(self.cam, 1)
+    camera.set_layer(self.cam, 1)
+    camera.set_target(self.cam, texture.screen())
+    transform.set_translation(self.cam, { 13, 15, 10 })
+    self.cam_overlay = node.create(self.cam)
+    node.add(self.cam_overlay, component.CAMERA)
+    node.add(self.cam_overlay, component.TRANSFORM)
+    -- camera.set_render_mask(self.cam_overlay, 2)
+    -- camera.set_layer(self.cam_overlay, 2)
+    -- camera.set_clear_depth(self.cam_overlay, false)
+    -- camera.set_clear_color(self.cam_overlay, false)
+    -- camera.set_target(self.cam_overlay, texture.screen())
+    -- camera.set_viewport(self.cam_overlay, { 0, 0, 640, 340 })
 end
 
 function M:on_update()
     local speed = self.speed
-    local e = self.node
+    local e = self.cam
 
     if input.pressed(0, "sprint") then
         speed = self.fast_speed
@@ -68,11 +75,11 @@ function M:on_update()
     transform.set_rotation_euler(e, vmath.vec3(-math.rad(self.pitch), -math.rad(self.yaw), 0))
     camera.set_far(e, 1000)
     camera.set_near(e, 0.1)
-    camera.set_far(self.top_node, 1000)
-    camera.set_near(self.top_node, 0.1)
+    camera.set_far(self.cam_overlay, 1000)
+    camera.set_near(self.cam_overlay, 0.1)
 
     -- Update fov
     self.fov = self.fov + input.value(0, "zoom") - input.value(0, "dezoom")
     camera.set_fov(e, self.fov)
-    camera.set_fov(self.top_node, self.fov)
+    camera.set_fov(self.cam_overlay, self.fov)
 end

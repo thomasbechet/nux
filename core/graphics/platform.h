@@ -5,10 +5,11 @@
 
 typedef enum
 {
-    NUX_GPU_PIPELINE_MAX    = 128,
-    NUX_GPU_FRAMEBUFFER_MAX = 32,
-    NUX_GPU_TEXTURE_MAX     = 128,
-    NUX_GPU_BUFFER_MAX      = 32,
+    NUX_GPU_PIPELINE_MAX       = 128,
+    NUX_GPU_FRAMEBUFFER_MAX    = 32,
+    NUX_GPU_TEXTURE_MAX        = 128,
+    NUX_GPU_BUFFER_MAX         = 32,
+    NUX_GPU_WINDOW_FRAMEBUFFER = 0,
 } nux_os_constants_t;
 
 typedef enum
@@ -123,7 +124,7 @@ typedef struct
     } clear_color;
     struct
     {
-        nux_v4_t extent;
+        nux_b2i_t extent;
     } viewport;
 } nux_gpu_command_t;
 

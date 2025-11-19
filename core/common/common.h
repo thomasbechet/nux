@@ -202,7 +202,7 @@
 #define nux_vec_push(v)         (typeof((v)->data))nux__vec_push(&(v)->vec)
 #define nux_vec_pushv(v, value) (*nux_vec_push(v) = (value))
 #define nux_vec_pop(v)          (typeof((v)->data))nux__vec_pop(&(v)->vec)
-#define nux_vec_clear(v)        (v)->size = 0
+#define nux_vec_clear(v)        ((v)->vec).size = 0
 #define nux_vec_swap(v, a, b)   nux__vec_swap(&(v)->vec, a, b)
 #define nux_vec_swap_pop(v, i) \
     (typeof((v)->data))nux__vec_swap_pop(&(v)->vec, i)
@@ -549,6 +549,7 @@ nux_f32_t nux_atan2(nux_f32_t x, nux_f32_t y);
 
 nux_b2i_t nux_b2i_min_max(nux_v2i_t min, nux_v2i_t max);
 nux_b2i_t nux_b2i(nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h);
+nux_b2i_t nux_b2i_empty(void);
 nux_b2i_t nux_b2i_translate(nux_b2i_t b, nux_v2i_t t);
 nux_b2i_t nux_b2i_moveto(nux_b2i_t b, nux_v2i_t p);
 nux_v2u_t nux_b2i_size(nux_b2i_t b);
@@ -652,7 +653,7 @@ void *nux_mallocf(nux_arena_t          *a,
                   nux_arena_finalizer_t finalizer);
 void *nux_realloc(nux_arena_t *a, void *p, nux_u32_t osize, nux_u32_t nsize);
 
-void nux_u32_vec_fill_reversed(nux_u32_vec_t *v);
+void nux_u32_vec_fill_reversed(nux_u32_vec_t *v, nux_u32_t count);
 
 void  nux__vec_init_capa(nux_vec_t   *vec,
                          nux_arena_t *a,

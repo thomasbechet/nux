@@ -143,13 +143,15 @@ nux_texture_size (nux_texture_t *texture)
     return nux_v2i(texture->gpu.width, texture->gpu.height);
 }
 void
-nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_v4_t extent)
+nux_texture_blit (nux_texture_t *tex, nux_texture_t *target, nux_b2i_t extent)
 {
     nux_graphics_module_t *gfx = nux_graphics();
     nux_check(tex->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
     nux_gpu_encoder_t enc;
     nux_gpu_encoder_init(nux_arena_frame(), &enc);
-    nux_gpu_bind_framebuffer(&enc, target->gpu.framebuffer_slot);
+    nux_gpu_bind_framebuffer(&enc,
+                             target ? target->gpu.framebuffer_slot
+                                    : NUX_GPU_WINDOW_FRAMEBUFFER);
     nux_gpu_viewport(&enc, extent);
     nux_gpu_bind_pipeline(&enc, gfx->blit_pipeline.slot);
     nux_gpu_bind_texture(&enc, NUX_GPU_DESC_BLIT_TEXTURE, tex->gpu.slot);

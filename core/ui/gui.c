@@ -64,9 +64,11 @@ nux_gui_new (nux_arena_t *arena, nux_canvas_t *canvas)
     gui->hot_id    = 0;
     for (nux_u32_t i = 0; i < nux_array_size(gui->controllers); ++i)
     {
+        nux_b2i_t viewport         = nux_canvas_viewport(canvas);
         gui->controllers[i].mode   = NUX_CONTROLLER_MODE_CURSOR;
         gui->controllers[i].active = false;
-        gui->controllers[i].cursor = nux_v2i_divs(nux_canvas_size(canvas), 2);
+        gui->controllers[i].cursor
+            = nux_v2i_divs(nux_v2i(viewport.x, viewport.y), 2);
         gui->controllers[i].main_pressed = false;
     }
     return gui;

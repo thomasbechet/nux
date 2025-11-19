@@ -21,7 +21,7 @@ nux_io_init (void)
     nux_vec_init_capa(&module->free_file_slots, nux_arena_core(), NUX_FILE_MAX);
 
     // Initialize values
-    nux_u32_vec_fill_reversed(&module->free_file_slots);
+    nux_u32_vec_fill_reversed(&module->free_file_slots, NUX_FILE_MAX);
 
     // Register base OS disk
     nux_disk_t *disk = nux_resource_new(nux_arena_core(), NUX_RESOURCE_DISK);

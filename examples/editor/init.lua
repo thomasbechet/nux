@@ -14,9 +14,6 @@ local function add_colliders(root)
     end
 end
 
-local WIDTH = 640
-local HEIGHT = 480
-
 function M:on_load()
     self.arena = arena.core()
 
@@ -65,27 +62,15 @@ function M:on_load()
 
     -- local target = texture.new(self.arena, texture.RENDER_TARGET, 1024, 576)
     -- local target = texture.new(self.arena, texture.RENDER_TARGET, 986, 504)
-    local target = texture.new(self.arena, texture.RENDER_TARGET, 900, 600)
+    -- local target = texture.new(self.arena, texture.RENDER_TARGET, 900, 600)
     -- local target = texture.new(self.arena, texture.RENDER_TARGET, 1600, 900)
     -- local target = texture.screen()
 
-    local vp = viewport.new(self.arena, target)
-    viewport.set_camera(vp, self.camera.node)
-    viewport.set_layer(vp, 0)
-    viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
+    self.gui_canvas = canvas.new(self.arena)
+    canvas.set_target(self.gui_canvas, texture.screen())
 
-    local vp = viewport.new(self.arena, target)
-    viewport.set_camera(vp, self.camera.top_node)
-    viewport.set_layer(vp, 1)
-    viewport.set_clear_depth(vp, true)
-    viewport.set_mode(vp, viewport.STRETCH_KEEP_ASPECT)
-
-    self.gui_canvas = canvas.new(self.arena, WIDTH, HEIGHT)
-    self.vp = viewport.new(self.arena, texture.screen())
-    viewport.set_texture(self.vp, canvas.texture(self.gui_canvas))
-    viewport.set_mode(self.vp, viewport.STRETCH_KEEP_ASPECT)
-    viewport.set_layer(self.vp, 2)
-    viewport.set_auto_resize(vp, true)
+    -- self.vp = viewport.new(self.arena, texture.screen())
+    -- viewport.set_texture(self.vp, canvas.texture(self.gui_canvas))
 
     local gui_tex = texture.load(self.arena, "assets/GUI.png")
     local style = stylesheet.new(self.arena)
@@ -116,17 +101,12 @@ function M:on_load()
     node.add(n, component.STATICMESH)
     node.add(n, component.TRANSFORM)
     staticmesh.set_mesh(n, plane)
-    staticmesh.set_texture(n, canvas.texture(self.gui_canvas))
     transform.set_translation(n, { 10, 2, 0 })
     transform.set_rotation_euler(n, { -math.rad(95), 0, 0 })
-
-    local vp = viewport.new(self.arena, texture.screen())
-    viewport.set_texture(vp, target)
-    -- viewport.set_clear_depth(vp, true)
 end
 
 function M:on_update()
-    local position = transform.translation(self.camera.node)
+    local position = transform.translation(self.camera.cam)
     c = self.gui_canvas
     local h = 9
     canvas.text(c, 10, h * 1, time.date())
@@ -142,7 +122,7 @@ function M:on_update()
             arena.block_count(arena.frame())))
     canvas.text(c, 10, h * 6, string.format("nodes: %d", scene.count()))
     local gcur = input.cursor(0)
-    local cur = viewport.to_local(self.vp, gcur)
+    local cur = camera.to_local(self.camera.cam, gcur)
     canvas.text(c, 10, h * 7, string.format("cursor: %.2f %.2f", cur.x, cur.y))
     canvas.text(c, 10, h * 8, string.format("fov: %d", self.camera.fov))
     local screen_size = texture.size(texture.screen())
@@ -158,18 +138,19 @@ function M:on_update()
         end
     end
 
-    canvas.rectangle(c, cur.x * WIDTH - 1, cur.y * HEIGHT - 1, 5, 5)
+    local viewport = canvas.viewport(c)
+    canvas.rectangle(c, cur.x * viewport.w - 1, cur.y * viewport.h - 1, 5, 5)
 
     gui.button(self.gui, 200, 400, 100, 50)
     -- gui.button(self.gui, 400, 200, 100, 50)
 
-    camera.reset_aspect(self.camera.node, self.vp)
-    camera.reset_aspect(self.camera.top_node, self.vp)
+    -- camera.reset_aspect(self.camera.node, self.vp)
+    -- camera.reset_aspect(self.camera.top_node, self.vp)
     -- local aspect = WIDTH / HEIGHT
     -- camera.set_aspect(self.camera.node, aspect)
     -- camera.set_aspect(self.camera.top_node, aspect)
 
-    local pos = camera.unproject(self.camera.node, vmath.vec2(0.5, 0.5))
+    local pos = camera.unproject(self.camera.cam, vmath.vec2(0.5, 0.5))
     local dir = vmath.sub(pos, position) -- Convert position to direction
     self.gizmos:update(position, dir, "click")
 end

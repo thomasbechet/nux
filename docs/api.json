@@ -282,41 +282,38 @@
                 "PALETTE": {
                     "value": "6"
                 },
-                "VIEWPORT": {
+                "CANVAS": {
                     "value": "7"
                 },
-                "CANVAS": {
+                "FONT": {
                     "value": "8"
                 },
-                "FONT": {
+                "FILE": {
                     "value": "9"
                 },
-                "FILE": {
+                "DISK": {
                     "value": "10"
                 },
-                "DISK": {
+                "SCENE": {
                     "value": "11"
                 },
-                "SCENE": {
+                "QUERY": {
                     "value": "12"
                 },
-                "QUERY": {
+                "EVENT": {
                     "value": "13"
                 },
-                "EVENT": {
+                "INPUTMAP": {
                     "value": "14"
                 },
-                "INPUTMAP": {
+                "GUI": {
                     "value": "15"
                 },
-                "GUI": {
+                "STYLESHEET": {
                     "value": "16"
                 },
-                "STYLESHEET": {
-                    "value": "17"
-                },
                 "WORLD": {
-                    "value": "18"
+                    "value": "17"
                 },
                 "MAX": {
                     "value": "256"
@@ -2683,319 +2680,6 @@
         }
     },
     "graphics": {
-        "viewport": {
-            "functions": {
-                "new": {
-                    "typename": {
-                        "name": "viewport",
-                        "type": "resource",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "arena",
-                            "typename": {
-                                "name": "arena",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "target",
-                            "typename": {
-                                "name": "texture",
-                                "type": "resource",
-                                "const": false
-                            }
-                        }
-                    ]
-                },
-                "set_mode": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "mode",
-                            "typename": {
-                                "name": "viewport_mode",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "set_extent": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "extent",
-                            "typename": {
-                                "name": "b2i",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "set_anchor": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "anchor",
-                            "typename": {
-                                "name": "u32",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "set_layer": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "layer",
-                            "typename": {
-                                "name": "i32",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "set_clear_depth": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "clear",
-                            "typename": {
-                                "name": "b32",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "set_auto_resize": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "enable",
-                            "typename": {
-                                "name": "b32",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "set_camera": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "camera",
-                            "typename": {
-                                "name": "nid",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "set_texture": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "texture",
-                            "typename": {
-                                "name": "texture",
-                                "type": "resource",
-                                "const": false
-                            }
-                        }
-                    ]
-                },
-                "normalized_viewport": {
-                    "typename": {
-                        "name": "v4",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "viewport",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        }
-                    ]
-                },
-                "to_global": {
-                    "typename": {
-                        "name": "v2",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "coord",
-                            "typename": {
-                                "name": "v2",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                },
-                "to_local": {
-                    "typename": {
-                        "name": "v2",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "vp",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        },
-                        {
-                            "name": "coord",
-                            "typename": {
-                                "name": "v2",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        }
-                    ]
-                }
-            },
-            "constants": {
-                "HIDDEN": {
-                    "value": "0"
-                },
-                "FIXED": {
-                    "value": "1"
-                },
-                "FIXED_BEST_FIT": {
-                    "value": "2"
-                },
-                "STRETCH_KEEP_ASPECT": {
-                    "value": "3"
-                },
-                "STRETCH": {
-                    "value": "4"
-                }
-            }
-        },
         "texture": {
             "functions": {
                 "new": {
@@ -3115,7 +2799,7 @@
                         {
                             "name": "extent",
                             "typename": {
-                                "name": "v4",
+                                "name": "b2i",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3515,29 +3199,55 @@
                                 "type": "resource",
                                 "const": false
                             }
-                        },
+                        }
+                    ]
+                },
+                "target": {
+                    "typename": {
+                        "name": "texture",
+                        "type": "resource",
+                        "const": false
+                    },
+                    "args": [
                         {
-                            "name": "width",
+                            "name": "canvas",
                             "typename": {
-                                "name": "u32",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        },
-                        {
-                            "name": "height",
-                            "typename": {
-                                "name": "u32",
-                                "type": "primitive",
-                                "const": true
+                                "name": "canvas",
+                                "type": "resource",
+                                "const": false
                             }
                         }
                     ]
                 },
-                "texture": {
+                "set_target": {
                     "typename": {
-                        "name": "texture",
-                        "type": "resource",
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "canvas",
+                            "typename": {
+                                "name": "canvas",
+                                "type": "resource",
+                                "const": false
+                            }
+                        },
+                        {
+                            "name": "target",
+                            "typename": {
+                                "name": "texture",
+                                "type": "resource",
+                                "const": false
+                            }
+                        }
+                    ]
+                },
+                "viewport": {
+                    "typename": {
+                        "name": "b2i",
+                        "type": "primitive",
                         "const": false
                     },
                     "args": [
@@ -4049,31 +3759,6 @@
                         }
                     ]
                 },
-                "reset_aspect": {
-                    "typename": {
-                        "name": "void",
-                        "type": "primitive",
-                        "const": false
-                    },
-                    "args": [
-                        {
-                            "name": "e",
-                            "typename": {
-                                "name": "nid",
-                                "type": "primitive",
-                                "const": true
-                            }
-                        },
-                        {
-                            "name": "viewport",
-                            "typename": {
-                                "name": "viewport",
-                                "type": "resource",
-                                "const": false
-                            }
-                        }
-                    ]
-                },
                 "set_ortho": {
                     "typename": {
                         "name": "void",
@@ -4202,6 +3887,274 @@
                             "name": "n",
                             "typename": {
                                 "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "set_viewport": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "viewport",
+                            "typename": {
+                                "name": "b2i",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "viewport": {
+                    "typename": {
+                        "name": "b2i",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "set_target": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "target",
+                            "typename": {
+                                "name": "rid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "target": {
+                    "typename": {
+                        "name": "rid",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "set_layer": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "layer",
+                            "typename": {
+                                "name": "i32",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "layer": {
+                    "typename": {
+                        "name": "i32",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "set_clear_depth": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "clear_depth",
+                            "typename": {
+                                "name": "b32",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "clear_depth": {
+                    "typename": {
+                        "name": "b32",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "set_auto_resize": {
+                    "typename": {
+                        "name": "void",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "auto_resize",
+                            "typename": {
+                                "name": "b32",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "auto_resize": {
+                    "typename": {
+                        "name": "b32",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "auto_resize",
+                            "typename": {
+                                "name": "b32",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "to_global": {
+                    "typename": {
+                        "name": "v2",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "coord",
+                            "typename": {
+                                "name": "v2",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        }
+                    ]
+                },
+                "to_local": {
+                    "typename": {
+                        "name": "v2",
+                        "type": "primitive",
+                        "const": false
+                    },
+                    "args": [
+                        {
+                            "name": "e",
+                            "typename": {
+                                "name": "nid",
+                                "type": "primitive",
+                                "const": true
+                            }
+                        },
+                        {
+                            "name": "coord",
+                            "typename": {
+                                "name": "v2",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4451,6 +4404,26 @@
                 },
                 "BACKGROUND": {
                     "value": "5"
+                }
+            }
+        },
+        "viewport": {
+            "functions": {},
+            "constants": {
+                "HIDDEN": {
+                    "value": "0"
+                },
+                "FIXED": {
+                    "value": "1"
+                },
+                "FIXED_BEST_FIT": {
+                    "value": "2"
+                },
+                "STRETCH_KEEP_ASPECT": {
+                    "value": "3"
+                },
+                "STRETCH": {
+                    "value": "4"
                 }
             }
         },

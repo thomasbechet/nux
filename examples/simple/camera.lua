@@ -4,15 +4,15 @@ function M:on_load()
     self.fov = 90
     self.pitch = 0
     self.yaw = 0
-    self.node = node.create(node.root())
-    camera.add(self.node)
-    camera.set_render_mask(self.node, 1)
-    transform.add(self.node)
-    transform.set_translation(self.node, { 13, 15, 10 })
-    self.top_node = node.create(self.node)
-    camera.add(self.top_node)
-    camera.set_render_mask(self.top_node, 2)
-    transform.add(self.top_node)
+    self.cam = node.create(node.root())
+    camera.add(self.cam)
+    camera.set_render_mask(self.cam, 1)
+    transform.add(self.cam)
+    transform.set_translation(self.cam, { 13, 15, 10 })
+    self.cam_overlay = node.create(self.cam)
+    camera.add(self.cam_overlay)
+    camera.set_render_mask(self.cam_overlay, 2)
+    transform.add(self.cam_overlay)
 end
 
 function M:on_event(e)
@@ -21,7 +21,7 @@ end
 
 function M:on_update()
     local speed = self.speed
-    local e = self.node
+    local e = self.cam
 
     if button.pressed(0, button.LB) then
         speed = self.fast_speed
@@ -62,6 +62,6 @@ function M:on_update()
     transform.set_rotation_euler(e, vmath.vec3(-math.rad(self.pitch), -math.rad(self.yaw), 0))
     camera.set_far(e, 1000)
     camera.set_near(e, 0.1)
-    camera.set_far(self.top_node, 1000)
-    camera.set_near(self.top_node, 0.1)
+    camera.set_far(self.cam_overlay, 1000)
+    camera.set_near(self.cam_overlay, 0.1)
 end

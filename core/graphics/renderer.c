@@ -141,26 +141,32 @@ draw_box (nux_gpu_encoder_t     *enc,
 }
 
 void
-nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
+nux_renderer_render_scene (nux_scene_t *scene, nux_nid_t camera)
 {
-    nux_graphics_module_t *gfx    = nux_graphics();
-    nux_gpu_encoder_t     *enc    = &gfx->encoder;
-    nux_v4_t               extent = nux_viewport_normalized_viewport(viewport);
-    nux_nid_t              camera = viewport->source.camera;
-    nux_texture_t         *target
-        = nux_resource_get(NUX_RESOURCE_TEXTURE, viewport->target);
-    nux_assert(target);
+    nux_graphics_module_t *gfx = nux_graphics();
+    nux_gpu_encoder_t     *enc = &gfx->encoder;
+
+    nux_camera_t *c = nux_component_get(camera, NUX_COMPONENT_CAMERA);
+    nux_assert(c);
+    nux_texture_t *target = nux_resource_get(NUX_RESOURCE_TEXTURE, c->target);
+    nux_check(target, return);
 
     // Bind framebuffer
     nux_gpu_bind_framebuffer(enc, target->gpu.framebuffer_slot);
-    nux_gpu_viewport(enc, extent);
-    if (viewport->clear_depth)
+    nux_gpu_viewport(enc, c->viewport);
+    if (c->clear_depth)
     {
         nux_gpu_clear_depth(enc);
     }
-    if (viewport->clear_color.w != 0)
+    if (c->clear_color.w != 0)
     {
-        nux_gpu_clear_color(enc, nux_color_to_hex(viewport->clear_color));
+        nux_gpu_clear_color(enc, nux_color_to_hex(c->clear_color));
+    }
+
+    // Auto resize
+    if (c->auto_resize)
+    {
+        c->viewport = nux_b2i(0, 0, target->gpu.width, target->gpu.height);
     }
 
     // Render scene
@@ -175,6 +181,8 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         nux_v3_t eye    = nux_m4_mulv3(global_matrix, nux_v3_zero(), 1);
         nux_v3_t center = nux_m4_mulv3(global_matrix, nux_v3_forward(), 1);
         nux_v3_t up     = nux_m4_mulv3(global_matrix, nux_v3_up(), 0);
+
+        cc->aspect = (nux_f32_t)target->gpu.width / target->gpu.height;
 
         nux_gpu_constants_buffer_t constants;
         constants.view        = nux_m4_lookat(eye, center, up);
@@ -196,7 +204,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         nux_gpu_bind_buffer(
             enc, NUX_GPU_DESC_UBER_VERTICES, gfx->vertices_buffer.slot);
         nux_nid_t it = NUX_NULL;
-        while ((it = nux_query_next(gfx->transform_staticmesh_iter, it)))
+        while ((it = nux_query_next(gfx->query_transform_staticmesh, it)))
         {
             nux_staticmesh_t *sm
                 = nux_component_get(it, NUX_COMPONENT_STATICMESH);
@@ -239,7 +247,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_viewport_t *viewport)
         // Draw debug lines
         nux_gpu_bind_pipeline(enc, gfx->uber_pipeline_line.slot);
         it = NUX_NULL;
-        while ((it = nux_query_next(gfx->transform_staticmesh_iter, it)))
+        while ((it = nux_query_next(gfx->query_transform_staticmesh, it)))
         {
             nux_staticmesh_t *sm
                 = nux_component_get(it, NUX_COMPONENT_STATICMESH);

@@ -7,10 +7,17 @@ nux_camera_add (nux_nid_t e, void *data)
     c->fov          = 60;
     c->near         = 0.1;
     c->far          = 1000;
-    c->aspect       = 16. / 9.;
+    c->aspect       = 0;
     c->ortho_size   = nux_v2s(1);
     c->ortho        = false;
     c->render_mask  = NUX_LAYER_DEFAULT;
+
+    c->layer       = 0;
+    c->viewport    = nux_b2i_empty();
+    c->target      = NUX_NULL;
+    c->clear_color = nux_color_rgba(0, 0, 0, 1);
+    c->clear_depth = true;
+    c->auto_resize = true;
 }
 nux_status_t
 nux_camera_write (nux_serde_writer_t *s, const void *data)
@@ -146,7 +153,7 @@ nux_b2i_t
 nux_camera_viewport (nux_nid_t e)
 {
     nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
-    nux_check(c, return nux_b2i(0, 0, 0, 0));
+    nux_check(c, return nux_b2i_empty());
     return c->viewport;
 }
 void
@@ -163,11 +170,65 @@ nux_camera_target (nux_nid_t e)
     nux_check(c, return NUX_NULL);
     return c->target;
 }
+void
+nux_camera_set_layer (nux_nid_t e, nux_i32_t layer)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return);
+    c->layer = layer;
+}
+nux_i32_t
+nux_camera_layer (nux_nid_t e)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return 0);
+    return c->layer;
+}
+void
+nux_camera_set_clear_depth (nux_nid_t e, nux_b32_t clear_depth)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return);
+    c->clear_depth = clear_depth;
+}
+nux_b32_t
+nux_camera_clear_depth (nux_nid_t e)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return 0);
+    return c->clear_depth;
+}
+void
+nux_camera_set_auto_resize (nux_nid_t e, nux_b32_t auto_resize)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return);
+    c->auto_resize = auto_resize;
+}
+nux_b32_t
+nux_camera_auto_resize (nux_nid_t e, nux_b32_t auto_resize)
+{
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return 0);
+    return c->auto_resize;
+}
 nux_v2_t
 nux_camera_to_global (nux_nid_t e, nux_v2_t coord)
 {
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return nux_v2_zero());
+    nux_texture_t *target = nux_resource_get(NUX_RESOURCE_TEXTURE, c->target);
+    nux_check(target, return nux_v2_zero());
+    nux_v2u_t target_size = nux_v2u(target->gpu.width, target->gpu.height);
+    return nux_v2_add(nux_v2(c->viewport.x, c->viewport.y), coord);
 }
 nux_v2_t
 nux_camera_to_local (nux_nid_t e, nux_v2_t coord)
 {
+    nux_camera_t *c = nux_component_get(e, NUX_COMPONENT_CAMERA);
+    nux_check(c, return nux_v2_zero());
+    nux_texture_t *target = nux_resource_get(NUX_RESOURCE_TEXTURE, c->target);
+    nux_check(target, return nux_v2_zero());
+    nux_v2u_t target_size = nux_v2u(target->gpu.width, target->gpu.height);
+    return nux_v2_sub(nux_v2(c->viewport.x, c->viewport.y), coord);
 }

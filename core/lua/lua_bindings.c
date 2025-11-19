@@ -1144,159 +1144,6 @@ l_node_instantiate (lua_State *L)
     return 1;
 }
 static int
-l_viewport_new (lua_State *L)
-{
-    nux_arena_t *arena
-        = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_texture_t *target
-        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
-    const nux_viewport_t *ret = nux_viewport_new(arena, target);
-    l_checkerror(L);
-
-    nux_rid_t ret_rid = nux_resource_rid(ret);
-    if (ret_rid)
-    {
-        lua_pushinteger(L, ret_rid);
-    }
-    else
-    {
-        lua_pushnil(L);
-    }
-    return 1;
-}
-static int
-l_viewport_set_mode (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_viewport_mode_t mode = luaL_checknumber(L, 2);
-
-    nux_viewport_set_mode(vp, mode);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_set_extent (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_b2i_t extent = nux_lua_check_box2i(L, 2);
-
-    nux_viewport_set_extent(vp, extent);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_set_anchor (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_u32_t anchor = luaL_checknumber(L, 2);
-
-    nux_viewport_set_anchor(vp, anchor);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_set_layer (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_i32_t layer = luaL_checknumber(L, 2);
-
-    nux_viewport_set_layer(vp, layer);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_set_clear_depth (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_b32_t clear = lua_toboolean(L, 2);
-
-    nux_viewport_set_clear_depth(vp, clear);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_set_auto_resize (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_b32_t enable = lua_toboolean(L, 2);
-
-    nux_viewport_set_auto_resize(vp, enable);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_set_camera (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_nid_t camera = (nux_nid_t)luaL_checknumber(L, 2);
-
-    nux_viewport_set_camera(vp, camera);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_set_texture (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_texture_t *texture
-        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
-
-    nux_viewport_set_texture(vp, texture);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
-l_viewport_normalized_viewport (lua_State *L)
-{
-    nux_viewport_t *viewport
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_v4_t ret = nux_viewport_normalized_viewport(viewport);
-    l_checkerror(L);
-
-    nux_lua_push_vec4(L, ret);
-    return 1;
-}
-static int
-l_viewport_to_global (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_v2_t coord = nux_lua_check_vec2(L, 2);
-    nux_v2_t ret   = nux_viewport_to_global(vp, coord);
-    l_checkerror(L);
-
-    nux_lua_push_vec2(L, ret);
-    return 1;
-}
-static int
-l_viewport_to_local (lua_State *L)
-{
-    nux_viewport_t *vp
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 1));
-    nux_v2_t coord = nux_lua_check_vec2(L, 2);
-    nux_v2_t ret   = nux_viewport_to_local(vp, coord);
-    l_checkerror(L);
-
-    nux_lua_push_vec2(L, ret);
-    return 1;
-}
-static int
 l_texture_new (lua_State *L)
 {
     nux_arena_t *arena
@@ -1373,7 +1220,7 @@ l_texture_blit (lua_State *L)
         = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 1));
     nux_texture_t *target
         = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
-    nux_v4_t extent = nux_lua_check_vec4(L, 3);
+    nux_b2i_t extent = nux_lua_check_box2i(L, 3);
 
     nux_texture_blit(tex, target, extent);
     l_checkerror(L);
@@ -1591,9 +1438,7 @@ l_canvas_new (lua_State *L)
 {
     nux_arena_t *arena
         = nux_resource_check(NUX_RESOURCE_ARENA, luaL_checkinteger(L, 1));
-    nux_u32_t           width  = luaL_checknumber(L, 2);
-    nux_u32_t           height = luaL_checknumber(L, 3);
-    const nux_canvas_t *ret    = nux_canvas_new(arena, width, height);
+    const nux_canvas_t *ret = nux_canvas_new(arena);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1608,11 +1453,11 @@ l_canvas_new (lua_State *L)
     return 1;
 }
 static int
-l_canvas_texture (lua_State *L)
+l_canvas_target (lua_State *L)
 {
     nux_canvas_t *canvas
         = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
-    const nux_texture_t *ret = nux_canvas_texture(canvas);
+    const nux_texture_t *ret = nux_canvas_target(canvas);
     l_checkerror(L);
 
     nux_rid_t ret_rid = nux_resource_rid(ret);
@@ -1624,6 +1469,30 @@ l_canvas_texture (lua_State *L)
     {
         lua_pushnil(L);
     }
+    return 1;
+}
+static int
+l_canvas_set_target (lua_State *L)
+{
+    nux_canvas_t *canvas
+        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
+    nux_texture_t *target
+        = nux_resource_check(NUX_RESOURCE_TEXTURE, luaL_checkinteger(L, 2));
+
+    nux_canvas_set_target(canvas, target);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_canvas_viewport (lua_State *L)
+{
+    nux_canvas_t *canvas
+        = nux_resource_check(NUX_RESOURCE_CANVAS, luaL_checkinteger(L, 1));
+    nux_b2i_t ret = nux_canvas_viewport(canvas);
+    l_checkerror(L);
+
+    nux_lua_push_box2i(L, ret);
     return 1;
 }
 static int
@@ -1855,18 +1724,6 @@ l_camera_set_aspect (lua_State *L)
     return 0;
 }
 static int
-l_camera_reset_aspect (lua_State *L)
-{
-    nux_nid_t       e = (nux_nid_t)luaL_checknumber(L, 1);
-    nux_viewport_t *viewport
-        = nux_resource_check(NUX_RESOURCE_VIEWPORT, luaL_checkinteger(L, 2));
-
-    nux_camera_reset_aspect(e, viewport);
-    l_checkerror(L);
-
-    return 0;
-}
-static int
 l_camera_set_ortho (lua_State *L)
 {
     nux_nid_t e     = (nux_nid_t)luaL_checknumber(L, 1);
@@ -1928,6 +1785,141 @@ l_camera_render_mask (lua_State *L)
     l_checkerror(L);
 
     lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_camera_set_viewport (lua_State *L)
+{
+    nux_nid_t e        = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b2i_t viewport = nux_lua_check_box2i(L, 2);
+
+    nux_camera_set_viewport(e, viewport);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_viewport (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b2i_t ret = nux_camera_viewport(e);
+    l_checkerror(L);
+
+    nux_lua_push_box2i(L, ret);
+    return 1;
+}
+static int
+l_camera_set_target (lua_State *L)
+{
+    nux_nid_t e      = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_rid_t target = (nux_rid_t)luaL_checknumber(L, 2);
+
+    nux_camera_set_target(e, target);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_target (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_rid_t ret = nux_camera_target(e);
+    l_checkerror(L);
+
+    if (ret)
+    {
+        lua_pushinteger(L, ret);
+    }
+    else
+    {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+static int
+l_camera_set_layer (lua_State *L)
+{
+    nux_nid_t e     = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_i32_t layer = luaL_checknumber(L, 2);
+
+    nux_camera_set_layer(e, layer);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_layer (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_i32_t ret = nux_camera_layer(e);
+    l_checkerror(L);
+
+    lua_pushinteger(L, ret);
+    return 1;
+}
+static int
+l_camera_set_clear_depth (lua_State *L)
+{
+    nux_nid_t e           = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b32_t clear_depth = lua_toboolean(L, 2);
+
+    nux_camera_set_clear_depth(e, clear_depth);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_clear_depth (lua_State *L)
+{
+    nux_nid_t e   = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b32_t ret = nux_camera_clear_depth(e);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_camera_set_auto_resize (lua_State *L)
+{
+    nux_nid_t e           = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b32_t auto_resize = lua_toboolean(L, 2);
+
+    nux_camera_set_auto_resize(e, auto_resize);
+    l_checkerror(L);
+
+    return 0;
+}
+static int
+l_camera_auto_resize (lua_State *L)
+{
+    nux_nid_t e           = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_b32_t auto_resize = lua_toboolean(L, 2);
+    nux_b32_t ret         = nux_camera_auto_resize(e, auto_resize);
+    l_checkerror(L);
+
+    lua_pushboolean(L, ret);
+    return 1;
+}
+static int
+l_camera_to_global (lua_State *L)
+{
+    nux_nid_t e     = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_v2_t  coord = nux_lua_check_vec2(L, 2);
+    nux_v2_t  ret   = nux_camera_to_global(e, coord);
+    l_checkerror(L);
+
+    nux_lua_push_vec2(L, ret);
+    return 1;
+}
+static int
+l_camera_to_local (lua_State *L)
+{
+    nux_nid_t e     = (nux_nid_t)luaL_checknumber(L, 1);
+    nux_v2_t  coord = nux_lua_check_vec2(L, 2);
+    nux_v2_t  ret   = nux_camera_to_local(e, coord);
+    l_checkerror(L);
+
+    nux_lua_push_vec2(L, ret);
     return 1;
 }
 static int
@@ -2310,20 +2302,6 @@ static const struct luaL_Reg lib_node[]
         { "add", l_node_add },         { "remove", l_node_remove },
         { "has", l_node_has },         { "instantiate", l_node_instantiate },
         { nullptr, nullptr } };
-static const struct luaL_Reg lib_viewport[]
-    = { { "new", l_viewport_new },
-        { "set_mode", l_viewport_set_mode },
-        { "set_extent", l_viewport_set_extent },
-        { "set_anchor", l_viewport_set_anchor },
-        { "set_layer", l_viewport_set_layer },
-        { "set_clear_depth", l_viewport_set_clear_depth },
-        { "set_auto_resize", l_viewport_set_auto_resize },
-        { "set_camera", l_viewport_set_camera },
-        { "set_texture", l_viewport_set_texture },
-        { "normalized_viewport", l_viewport_normalized_viewport },
-        { "to_global", l_viewport_to_global },
-        { "to_local", l_viewport_to_local },
-        { nullptr, nullptr } };
 static const struct luaL_Reg lib_texture[]
     = { { "new", l_texture_new },       { "load", l_texture_load },
         { "screen", l_texture_screen }, { "size", l_texture_size },
@@ -2348,7 +2326,9 @@ static const struct luaL_Reg lib_mesh[]
         { nullptr, nullptr } };
 static const struct luaL_Reg lib_canvas[]
     = { { "new", l_canvas_new },
-        { "texture", l_canvas_texture },
+        { "target", l_canvas_target },
+        { "set_target", l_canvas_set_target },
+        { "viewport", l_canvas_viewport },
         { "size", l_canvas_size },
         { "set_clear_color", l_canvas_set_clear_color },
         { "set_wrap_mode", l_canvas_set_wrap_mode },
@@ -2373,13 +2353,24 @@ static const struct luaL_Reg lib_camera[]
         { "set_near", l_camera_set_near },
         { "set_far", l_camera_set_far },
         { "set_aspect", l_camera_set_aspect },
-        { "reset_aspect", l_camera_reset_aspect },
         { "set_ortho", l_camera_set_ortho },
         { "set_ortho_size", l_camera_set_ortho_size },
         { "projection", l_camera_projection },
         { "unproject", l_camera_unproject },
         { "set_render_mask", l_camera_set_render_mask },
         { "render_mask", l_camera_render_mask },
+        { "set_viewport", l_camera_set_viewport },
+        { "viewport", l_camera_viewport },
+        { "set_target", l_camera_set_target },
+        { "target", l_camera_target },
+        { "set_layer", l_camera_set_layer },
+        { "layer", l_camera_layer },
+        { "set_clear_depth", l_camera_set_clear_depth },
+        { "clear_depth", l_camera_clear_depth },
+        { "set_auto_resize", l_camera_set_auto_resize },
+        { "auto_resize", l_camera_auto_resize },
+        { "to_global", l_camera_to_global },
+        { "to_local", l_camera_to_local },
         { nullptr, nullptr } };
 static const struct luaL_Reg lib_staticmesh[]
     = { { "set_mesh", l_staticmesh_set_mesh },
@@ -2395,6 +2386,7 @@ static const struct luaL_Reg lib_colormap[] = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_layer[]    = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_vertex[]   = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_color[]    = { { nullptr, nullptr } };
+static const struct luaL_Reg lib_viewport[] = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_anchor[]   = { { nullptr, nullptr } };
 static const struct luaL_Reg lib_rigidbody[]
     = { { "set_velocity", l_rigidbody_set_velocity }, { nullptr, nullptr } };
@@ -2461,28 +2453,26 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 6);
     lua_setfield(L, -2, "PALETTE");
     lua_pushinteger(L, 7);
-    lua_setfield(L, -2, "VIEWPORT");
-    lua_pushinteger(L, 8);
     lua_setfield(L, -2, "CANVAS");
-    lua_pushinteger(L, 9);
+    lua_pushinteger(L, 8);
     lua_setfield(L, -2, "FONT");
-    lua_pushinteger(L, 10);
+    lua_pushinteger(L, 9);
     lua_setfield(L, -2, "FILE");
-    lua_pushinteger(L, 11);
+    lua_pushinteger(L, 10);
     lua_setfield(L, -2, "DISK");
-    lua_pushinteger(L, 12);
+    lua_pushinteger(L, 11);
     lua_setfield(L, -2, "SCENE");
-    lua_pushinteger(L, 13);
+    lua_pushinteger(L, 12);
     lua_setfield(L, -2, "QUERY");
-    lua_pushinteger(L, 14);
+    lua_pushinteger(L, 13);
     lua_setfield(L, -2, "EVENT");
-    lua_pushinteger(L, 15);
+    lua_pushinteger(L, 14);
     lua_setfield(L, -2, "INPUTMAP");
-    lua_pushinteger(L, 16);
+    lua_pushinteger(L, 15);
     lua_setfield(L, -2, "GUI");
-    lua_pushinteger(L, 17);
+    lua_pushinteger(L, 16);
     lua_setfield(L, -2, "STYLESHEET");
-    lua_pushinteger(L, 18);
+    lua_pushinteger(L, 17);
     lua_setfield(L, -2, "WORLD");
     lua_pushinteger(L, 256);
     lua_setfield(L, -2, "MAX");
@@ -2927,19 +2917,6 @@ nux_lua_open_api (void)
     luaL_setfuncs(L, lib_node, 0);
     lua_setglobal(L, "node");
     lua_newtable(L);
-    luaL_setfuncs(L, lib_viewport, 0);
-    lua_pushinteger(L, 0);
-    lua_setfield(L, -2, "HIDDEN");
-    lua_pushinteger(L, 1);
-    lua_setfield(L, -2, "FIXED");
-    lua_pushinteger(L, 2);
-    lua_setfield(L, -2, "FIXED_BEST_FIT");
-    lua_pushinteger(L, 3);
-    lua_setfield(L, -2, "STRETCH_KEEP_ASPECT");
-    lua_pushinteger(L, 4);
-    lua_setfield(L, -2, "STRETCH");
-    lua_setglobal(L, "viewport");
-    lua_newtable(L);
     luaL_setfuncs(L, lib_texture, 0);
     lua_pushinteger(L, 0);
     lua_setfield(L, -2, "IMAGE_RGBA");
@@ -3014,6 +2991,19 @@ nux_lua_open_api (void)
     lua_pushinteger(L, 5);
     lua_setfield(L, -2, "BACKGROUND");
     lua_setglobal(L, "color");
+    lua_newtable(L);
+    luaL_setfuncs(L, lib_viewport, 0);
+    lua_pushinteger(L, 0);
+    lua_setfield(L, -2, "HIDDEN");
+    lua_pushinteger(L, 1);
+    lua_setfield(L, -2, "FIXED");
+    lua_pushinteger(L, 2);
+    lua_setfield(L, -2, "FIXED_BEST_FIT");
+    lua_pushinteger(L, 3);
+    lua_setfield(L, -2, "STRETCH_KEEP_ASPECT");
+    lua_pushinteger(L, 4);
+    lua_setfield(L, -2, "STRETCH");
+    lua_setglobal(L, "viewport");
     lua_newtable(L);
     luaL_setfuncs(L, lib_anchor, 0);
     lua_pushinteger(L, 0);

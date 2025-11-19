@@ -120,6 +120,11 @@ nux_b2i (nux_i32_t x, nux_i32_t y, nux_u32_t w, nux_u32_t h)
     return ret;
 }
 nux_b2i_t
+nux_b2i_empty (void)
+{
+    return nux_b2i(0, 0, 0, 0);
+}
+nux_b2i_t
 nux_b2i_translate (nux_b2i_t b, nux_v2i_t t)
 {
     b.x += t.x;
