@@ -368,7 +368,7 @@ module_init (void)
 
     // Create screen rendertarget
     _module.screen_target
-        = nux_texture_new(a, NUX_TEXTURE_RENDER_TARGET, 640, 480);
+        = nux_texture_new(a, NUX_TEXTURE_RENDER_TARGET, 900, 600);
     nux_check(_module.screen_target, return NUX_FAILURE);
 
     return NUX_SUCCESS;
