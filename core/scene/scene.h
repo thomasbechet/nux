@@ -14,8 +14,9 @@ typedef enum
     NUX_COMPONENT_MAX = 16,
 } nux_component_type_;
 
-typedef struct nux_scene nux_scene_t;
-typedef struct nux_query nux_query_t;
+typedef struct nux_scene  nux_scene_t;
+typedef struct nux_node_t nux_node_t;
+typedef struct nux_query  nux_query_t;
 
 typedef void (*nux_component_add_callback_t)(nux_id_t id, void *data);
 typedef void (*nux_component_remove_callback_t)(nux_id_t id, void *data);
