@@ -48,7 +48,7 @@ def parse_function(node, module):
     if type(node.type) == c_parser.c_ast.PtrDecl: # Return pointer
         funcname = node.type.type.declname
         typename["name"] = normalize_type(node.type.type.type.names[0])
-        typename["type"] = "resource"
+        typename["type"] = "object"
         typename["const"] = False
         if node.type.quals:
             typename["const"] = True
@@ -80,7 +80,7 @@ def parse_function(node, module):
         typename = {}
         if type(param.type) is c_ast.PtrDecl:
             typename["name"] = normalize_type(param.type.type.type.names[0])
-            typename["type"] = "resource" 
+            typename["type"] = "object" 
             typename["const"] = False
             if typename["name"] == "c8": # Special string case
                 typename["type"] = "primitive"
@@ -98,7 +98,7 @@ def parse_function(node, module):
         if "callback" in typename["name"]:
             return
         # Ignore functions with void* arguments
-        if typename["name"] == "void" and typename["type"] == "resource":
+        if typename["name"] == "void" and typename["type"] == "object":
             return
         # Skip void primitive arguments
         if typename["name"] == "void" and typename["type"] == "primitive":
@@ -155,8 +155,7 @@ def parse_header(args, header, module):
         typedef int nux_f32_t;
         typedef int nux_f64_t;
         typedef int nux_intptr_t;
-        typedef int nux_rid_t;
-        typedef int nux_nid_t;
+        typedef int nux_id_t;
 
         typedef int nux_status_t;
 
@@ -196,7 +195,7 @@ def parse_header(args, header, module):
         } nux_b2i_t;
     """
 
-    # Append resource types
+    # Append object types
     for typename in [
         'nux_arena_t',
         'nux_texture_t',

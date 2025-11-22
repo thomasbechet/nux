@@ -144,15 +144,15 @@ nux_os_stats_update (nux_u64_t *stats)
 {
 }
 void
-nux_os_hotreload_add (const nux_c8_t *path, nux_rid_t handle)
+nux_os_hotreload_add (const nux_c8_t *path, nux_id_t id)
 {
 }
 void
-nux_os_hotreload_remove (nux_rid_t handle)
+nux_os_hotreload_remove (nux_id_t id)
 {
 }
 void
-nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
+nux_os_hotreload_pull (nux_id_t *ids, nux_u32_t *count)
 {
     *count = 0;
 }

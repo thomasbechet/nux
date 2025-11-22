@@ -4,7 +4,7 @@ static nux_status_t
 open_file (nux_file_t *file, const nux_c8_t *path, nux_io_mode_t mode)
 {
     nux_disk_t *disk = nullptr;
-    while ((disk = nux_resource_next(NUX_RESOURCE_DISK, disk)))
+    while ((disk = nux_object_next(NUX_OBJECT_DISK, disk)))
     {
         if (disk->type == NUX_DISK_OS)
         {
@@ -72,7 +72,7 @@ file_stat (nux_file_t *file, nux_os_file_stat_t *stat)
 nux_file_t *
 nux_file_open (nux_arena_t *arena, const nux_c8_t *path, nux_io_mode_t mode)
 {
-    nux_file_t *file = nux_resource_new(arena, NUX_RESOURCE_FILE);
+    nux_file_t *file = nux_object_new(arena, NUX_OBJECT_FILE);
     nux_check(file, return nullptr);
     nux_ensure(open_file(file, path, mode),
                return nullptr,

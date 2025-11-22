@@ -5,7 +5,7 @@
 
 typedef struct
 {
-    nux_rid_t texture;
+    nux_id_t  texture;
     nux_b2i_t extent;
     nux_b2i_t inner;
 } nux_stylesheet_image_t;
@@ -31,7 +31,7 @@ struct nux_stylesheet_t
 
 struct nux_gui_t
 {
-    nux_rid_t     canvas;
+    nux_id_t      canvas;
     nux_u32_vec_t stylesheets;
     struct
     {

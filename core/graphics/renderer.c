@@ -62,8 +62,8 @@ draw_rect (nux_gpu_encoder_t     *enc,
     nux_graphics_module_t *gfx = nux_graphics();
 
     nux_u32_t        vertex_count;
-    const nux_u32_t  stride = 5;
-    nux_f32_t        data[24 * stride]; // must constains all primitives type
+    const nux_u32_t  stide = 5;
+    nux_f32_t        data[24 * stide]; // must constains all primitives type
     const nux_u32_t *indices;
 
     switch (primitive)
@@ -102,17 +102,17 @@ draw_rect (nux_gpu_encoder_t     *enc,
     nux_v4_t c = nux_palette_get_color(gfx->active_palette, color);
     for (nux_u32_t i = 0; i < vertex_count; ++i)
     {
-        nux_u32_t index      = indices[i];
-        data[i * stride + 0] = positions[index].x;
-        data[i * stride + 1] = positions[index].y;
-        data[i * stride + 2] = positions[index].z;
-        data[i * stride + 3] = uvs[index].x;
-        data[i * stride + 4] = uvs[index].y;
+        nux_u32_t index     = indices[i];
+        data[i * stide + 0] = positions[index].x;
+        data[i * stide + 1] = positions[index].y;
+        data[i * stide + 2] = positions[index].z;
+        data[i * stide + 3] = uvs[index].x;
+        data[i * stide + 4] = uvs[index].y;
     }
 
     nux_u32_t offset;
     nux_check(
-        nux_graphics_push_frame_vertices(vertex_count * stride, data, &offset),
+        nux_graphics_push_frame_vertices(vertex_count * stide, data, &offset),
         return);
 
     draw(enc,
@@ -141,14 +141,14 @@ draw_box (nux_gpu_encoder_t     *enc,
 }
 
 void
-nux_renderer_render_scene (nux_scene_t *scene, nux_nid_t camera)
+nux_renderer_render_scene (nux_scene_t *scene, nux_id_t camera)
 {
     nux_graphics_module_t *gfx = nux_graphics();
     nux_gpu_encoder_t     *enc = &gfx->encoder;
 
     nux_camera_t *c = nux_component_get(camera, NUX_COMPONENT_CAMERA);
     nux_assert(c);
-    nux_texture_t *target = nux_resource_get(NUX_RESOURCE_TEXTURE, c->target);
+    nux_texture_t *target = nux_object_get(NUX_OBJECT_TEXTURE, c->target);
     nux_check(target, return);
 
     // Bind framebuffer
@@ -203,7 +203,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_nid_t camera)
             enc, NUX_GPU_DESC_UBER_TRANSFORMS, gfx->transforms_buffer.slot);
         nux_gpu_bind_buffer(
             enc, NUX_GPU_DESC_UBER_VERTICES, gfx->vertices_buffer.slot);
-        nux_nid_t it = NUX_NULL;
+        nux_id_t it = NUX_NULL;
         while ((it = nux_query_next(gfx->query_transform_staticmesh, it)))
         {
             nux_staticmesh_t *sm
@@ -217,7 +217,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_nid_t camera)
                 continue;
             }
             nux_m4_t    global_matrix = nux_transform_matrix(it);
-            nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
+            nux_mesh_t *m = nux_object_check(NUX_OBJECT_MESH, sm->mesh);
             if (!m)
             {
                 continue;
@@ -225,7 +225,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_nid_t camera)
             nux_texture_t *tex = nullptr;
             if (sm->texture)
             {
-                tex = nux_resource_check(NUX_RESOURCE_TEXTURE, sm->texture);
+                tex = nux_object_check(NUX_OBJECT_TEXTURE, sm->texture);
             }
 
             // Push transform
@@ -259,7 +259,7 @@ nux_renderer_render_scene (nux_scene_t *scene, nux_nid_t camera)
             {
                 continue;
             }
-            nux_mesh_t *m = nux_resource_check(NUX_RESOURCE_MESH, sm->mesh);
+            nux_mesh_t *m = nux_object_check(NUX_OBJECT_MESH, sm->mesh);
             nux_assert(m);
 
             // Draw

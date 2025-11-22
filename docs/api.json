@@ -101,7 +101,7 @@
                 "new": {
                     "typename": {
                         "name": "arena",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -109,7 +109,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -126,7 +126,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -143,7 +143,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -160,7 +160,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -169,7 +169,7 @@
                 "core": {
                     "typename": {
                         "name": "arena",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": []
@@ -177,7 +177,7 @@
                 "frame": {
                     "typename": {
                         "name": "arena",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": []
@@ -215,7 +215,7 @@
             },
             "constants": {}
         },
-        "resource": {
+        "object": {
             "functions": {
                 "register": {
                     "typename": {
@@ -235,13 +235,22 @@
                         {
                             "name": "info",
                             "typename": {
-                                "name": "resource_info",
+                                "name": "object_info",
                                 "type": "primitive",
                                 "const": true
                             }
                         }
                     ]
-                },
+                }
+            },
+            "constants": {
+                "MAX": {
+                    "value": "256"
+                }
+            }
+        },
+        "resource": {
+            "functions": {
                 "reload": {
                     "typename": {
                         "name": "status",
@@ -250,9 +259,9 @@
                     },
                     "args": [
                         {
-                            "name": "rid",
+                            "name": "id",
                             "typename": {
-                                "name": "rid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -314,9 +323,6 @@
                 },
                 "WORLD": {
                     "value": "17"
-                },
-                "MAX": {
-                    "value": "256"
                 }
             }
         },
@@ -349,7 +355,7 @@
                 "message": {
                     "typename": {
                         "name": "c8",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": []
@@ -409,7 +415,7 @@
                 "get": {
                     "typename": {
                         "name": "config",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": []
@@ -422,7 +428,7 @@
                 "new": {
                     "typename": {
                         "name": "event",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -430,7 +436,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -463,7 +469,7 @@
                             "name": "event",
                             "typename": {
                                 "name": "event",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -480,7 +486,7 @@
                             "name": "handler",
                             "typename": {
                                 "name": "event_handler",
-                                "type": "resource",
+                                "type": "object",
                                 "const": true
                             }
                         }
@@ -488,7 +494,7 @@
                 },
                 "handler_event": {
                     "typename": {
-                        "name": "rid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
@@ -497,7 +503,7 @@
                             "name": "handler",
                             "typename": {
                                 "name": "event_handler",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -514,7 +520,7 @@
                             "name": "event",
                             "typename": {
                                 "name": "event",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -641,7 +647,7 @@
                 "open": {
                     "typename": {
                         "name": "file",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -649,7 +655,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -682,7 +688,7 @@
                             "name": "file",
                             "typename": {
                                 "name": "file",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -699,7 +705,7 @@
                             "name": "file",
                             "typename": {
                                 "name": "file",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -724,7 +730,7 @@
                             "name": "file",
                             "typename": {
                                 "name": "file",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -791,7 +797,7 @@
                 "new": {
                     "typename": {
                         "name": "inputmap",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -799,7 +805,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -816,7 +822,7 @@
                             "name": "map",
                             "typename": {
                                 "name": "inputmap",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -849,7 +855,7 @@
                             "name": "map",
                             "typename": {
                                 "name": "inputmap",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -882,7 +888,7 @@
                             "name": "map",
                             "typename": {
                                 "name": "inputmap",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -936,7 +942,7 @@
                             "name": "map",
                             "typename": {
                                 "name": "inputmap",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -1644,7 +1650,7 @@
                 "load": {
                     "typename": {
                         "name": "lua",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -1652,7 +1658,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -1730,9 +1736,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1747,9 +1753,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1764,9 +1770,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1781,9 +1787,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1798,9 +1804,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1815,9 +1821,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1832,9 +1838,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1849,9 +1855,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1874,9 +1880,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1899,9 +1905,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1924,9 +1930,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1949,9 +1955,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -1990,9 +1996,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2007,9 +2013,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2024,9 +2030,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2041,9 +2047,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2058,9 +2064,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2075,9 +2081,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2092,9 +2098,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2125,9 +2131,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2150,9 +2156,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2175,9 +2181,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2200,9 +2206,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2225,7 +2231,7 @@
                 "new": {
                     "typename": {
                         "name": "query",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2233,7 +2239,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2258,7 +2264,7 @@
                 "new_any": {
                     "typename": {
                         "name": "query",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2266,7 +2272,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -2283,7 +2289,7 @@
                             "name": "it",
                             "typename": {
                                 "name": "query",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2308,7 +2314,7 @@
                             "name": "it",
                             "typename": {
                                 "name": "query",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2333,14 +2339,14 @@
                             "name": "it",
                             "typename": {
                                 "name": "query",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2355,7 +2361,7 @@
                 "new": {
                     "typename": {
                         "name": "scene",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2363,7 +2369,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -2380,7 +2386,7 @@
                             "name": "scene",
                             "typename": {
                                 "name": "scene",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -2389,7 +2395,7 @@
                 "active": {
                     "typename": {
                         "name": "scene",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": []
@@ -2413,7 +2419,7 @@
                 "load_gltf": {
                     "typename": {
                         "name": "scene",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2421,7 +2427,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2442,7 +2448,7 @@
             "functions": {
                 "create": {
                     "typename": {
-                        "name": "nid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
@@ -2450,7 +2456,7 @@
                         {
                             "name": "parent",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2465,9 +2471,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2482,9 +2488,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2493,7 +2499,7 @@
                 },
                 "root": {
                     "typename": {
-                        "name": "nid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
@@ -2501,15 +2507,15 @@
                 },
                 "parent": {
                     "typename": {
-                        "name": "nid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2524,9 +2530,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2534,7 +2540,7 @@
                         {
                             "name": "p",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2543,15 +2549,15 @@
                 },
                 "sibling": {
                     "typename": {
-                        "name": "nid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2560,15 +2566,15 @@
                 },
                 "child": {
                     "typename": {
-                        "name": "nid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2585,7 +2591,7 @@
                         {
                             "name": "n",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2608,9 +2614,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2633,9 +2639,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2652,7 +2658,7 @@
                 },
                 "instantiate": {
                     "typename": {
-                        "name": "nid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
@@ -2661,14 +2667,14 @@
                             "name": "scene",
                             "typename": {
                                 "name": "scene",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
                         {
                             "name": "parent",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -2685,7 +2691,7 @@
                 "new": {
                     "typename": {
                         "name": "texture",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2693,7 +2699,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2726,7 +2732,7 @@
                 "load": {
                     "typename": {
                         "name": "texture",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2734,7 +2740,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2751,7 +2757,7 @@
                 "screen": {
                     "typename": {
                         "name": "texture",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": []
@@ -2767,7 +2773,7 @@
                             "name": "texture",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -2784,7 +2790,7 @@
                             "name": "tex",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2792,7 +2798,7 @@
                             "name": "target",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2833,7 +2839,7 @@
                 "new": {
                     "typename": {
                         "name": "palette",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2841,7 +2847,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2858,7 +2864,7 @@
                 "default": {
                     "typename": {
                         "name": "palette",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": []
@@ -2874,7 +2880,7 @@
                             "name": "palette",
                             "typename": {
                                 "name": "palette",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -2891,7 +2897,7 @@
                             "name": "palette",
                             "typename": {
                                 "name": "palette",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2924,7 +2930,7 @@
                             "name": "palette",
                             "typename": {
                                 "name": "palette",
-                                "type": "resource",
+                                "type": "object",
                                 "const": true
                             }
                         },
@@ -2950,7 +2956,7 @@
                 "new": {
                     "typename": {
                         "name": "mesh",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2958,7 +2964,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -2991,7 +2997,7 @@
                 "new_cube": {
                     "typename": {
                         "name": "mesh",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -2999,7 +3005,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3032,7 +3038,7 @@
                 "new_plane": {
                     "typename": {
                         "name": "mesh",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -3040,7 +3046,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3073,7 +3079,7 @@
                             "name": "mesh",
                             "typename": {
                                 "name": "mesh",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3090,7 +3096,7 @@
                             "name": "mesh",
                             "typename": {
                                 "name": "mesh",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3107,7 +3113,7 @@
                             "name": "mesh",
                             "typename": {
                                 "name": "mesh",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3124,7 +3130,7 @@
                             "name": "mesh",
                             "typename": {
                                 "name": "mesh",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3149,7 +3155,7 @@
                             "name": "mesh",
                             "typename": {
                                 "name": "mesh",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3174,7 +3180,7 @@
                             "name": "mesh",
                             "typename": {
                                 "name": "mesh",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3188,7 +3194,7 @@
                 "new": {
                     "typename": {
                         "name": "canvas",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -3196,7 +3202,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3205,7 +3211,7 @@
                 "target": {
                     "typename": {
                         "name": "texture",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -3213,7 +3219,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3230,7 +3236,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3238,7 +3244,7 @@
                             "name": "target",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3255,7 +3261,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3272,7 +3278,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -3289,7 +3295,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3314,7 +3320,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3339,7 +3345,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3380,7 +3386,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3429,7 +3435,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3437,7 +3443,7 @@
                             "name": "texture",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3470,7 +3476,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3478,7 +3484,7 @@
                             "name": "texture",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -3667,9 +3673,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3692,9 +3698,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3717,9 +3723,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3742,9 +3748,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3767,9 +3773,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3792,9 +3798,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3817,9 +3823,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3834,9 +3840,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3859,9 +3865,9 @@
                     },
                     "args": [
                         {
-                            "name": "n",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3884,9 +3890,9 @@
                     },
                     "args": [
                         {
-                            "name": "n",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3901,9 +3907,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3926,9 +3932,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3943,9 +3949,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3953,7 +3959,7 @@
                         {
                             "name": "target",
                             "typename": {
-                                "name": "rid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3962,15 +3968,15 @@
                 },
                 "target": {
                     "typename": {
-                        "name": "rid",
+                        "name": "id",
                         "type": "primitive",
                         "const": false
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -3985,9 +3991,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4010,9 +4016,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4027,9 +4033,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4052,9 +4058,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4069,9 +4075,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4094,9 +4100,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4119,9 +4125,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4144,9 +4150,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4174,9 +4180,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4185,7 +4191,7 @@
                             "name": "mesh",
                             "typename": {
                                 "name": "mesh",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -4194,14 +4200,14 @@
                 "mesh": {
                     "typename": {
                         "name": "mesh",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
                         {
-                            "name": "n",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4216,9 +4222,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4227,7 +4233,7 @@
                             "name": "texture",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -4236,14 +4242,14 @@
                 "texture": {
                     "typename": {
                         "name": "texture",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
                         {
-                            "name": "n",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4258,9 +4264,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4269,7 +4275,7 @@
                             "name": "colormap",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -4283,9 +4289,9 @@
                     },
                     "args": [
                         {
-                            "name": "n",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4308,9 +4314,9 @@
                     },
                     "args": [
                         {
-                            "name": "n",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4325,9 +4331,9 @@
                     },
                     "args": [
                         {
-                            "name": "n",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4459,9 +4465,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4489,9 +4495,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4514,9 +4520,9 @@
                     },
                     "args": [
                         {
-                            "name": "e",
+                            "name": "id",
                             "typename": {
-                                "name": "nid",
+                                "name": "id",
                                 "type": "primitive",
                                 "const": true
                             }
@@ -4603,7 +4609,7 @@
                 "new": {
                     "typename": {
                         "name": "stylesheet",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -4611,7 +4617,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -4628,7 +4634,7 @@
                             "name": "style",
                             "typename": {
                                 "name": "stylesheet",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -4644,7 +4650,7 @@
                             "name": "texture",
                             "typename": {
                                 "name": "texture",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -4693,7 +4699,7 @@
                 "new": {
                     "typename": {
                         "name": "gui",
-                        "type": "resource",
+                        "type": "object",
                         "const": false
                     },
                     "args": [
@@ -4701,7 +4707,7 @@
                             "name": "arena",
                             "typename": {
                                 "name": "arena",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -4709,7 +4715,7 @@
                             "name": "canvas",
                             "typename": {
                                 "name": "canvas",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -4726,7 +4732,7 @@
                             "name": "gui",
                             "typename": {
                                 "name": "gui",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },
@@ -4734,7 +4740,7 @@
                             "name": "stylesheet",
                             "typename": {
                                 "name": "stylesheet",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -4751,7 +4757,7 @@
                             "name": "gui",
                             "typename": {
                                 "name": "gui",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         }
@@ -4768,7 +4774,7 @@
                             "name": "gui",
                             "typename": {
                                 "name": "gui",
-                                "type": "resource",
+                                "type": "object",
                                 "const": false
                             }
                         },

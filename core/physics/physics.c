@@ -114,7 +114,7 @@ integrate (void)
 static void
 compute_transforms (void)
 {
-    nux_nid_t it = NUX_NULL;
+    nux_id_t it = NUX_NULL;
     while ((it = nux_query_next(_module.rigidbody_transform_iter, it)))
     {
         nux_rigidbody_t *body = nux_component_get(it, NUX_COMPONENT_RIGIDBODY);
@@ -200,7 +200,7 @@ nux_physics (void)
 }
 
 void
-nux_physics_add_rigidbody (nux_nid_t e)
+nux_physics_add_rigidbody (nux_id_t e)
 {
     nux_rigidbody_t *rigidbody = nux_component_get(e, NUX_COMPONENT_RIGIDBODY);
     nux_collider_t  *collider  = nux_component_get(e, NUX_COMPONENT_COLLIDER);
@@ -315,7 +315,7 @@ nux_raycast_hit_t
 nux_physics_raycast (nux_v3_t pos, nux_v3_t dir)
 {
     nux_ray_t         r       = { .p = pos, .d = nux_v3_normalize(dir) };
-    nux_nid_t         it      = NUX_NULL;
+    nux_id_t          it      = NUX_NULL;
     nux_f32_t         nearest = NUX_FLT_MAX;
     nux_raycast_hit_t hit;
     hit.node = NUX_NULL;

@@ -119,7 +119,7 @@ end_batch (nux_canvas_t *canvas)
 nux_canvas_t *
 nux_canvas_new (nux_arena_t *arena)
 {
-    nux_canvas_t *c = nux_resource_new(arena, NUX_RESOURCE_CANVAS);
+    nux_canvas_t *c = nux_object_new(arena, NUX_OBJECT_CANVAS);
     nux_check(c, return nullptr);
 
     // Allocate quads buffer
@@ -173,13 +173,13 @@ nux_canvas_cleanup (void *data)
 nux_texture_t *
 nux_canvas_target (nux_canvas_t *canvas)
 {
-    return nux_resource_get(NUX_RESOURCE_TEXTURE, canvas->target);
+    return nux_object_get(NUX_OBJECT_TEXTURE, canvas->target);
 }
 void
 nux_canvas_set_target (nux_canvas_t *canvas, nux_texture_t *target)
 {
     nux_check(target->gpu.type == NUX_TEXTURE_RENDER_TARGET, return);
-    canvas->target   = nux_resource_rid(target);
+    canvas->target   = nux_object_id(target);
     canvas->viewport = nux_b2i(0, 0, target->gpu.width, target->gpu.height);
 }
 nux_b2i_t
@@ -511,7 +511,7 @@ nux_canvas_render (nux_canvas_t *c)
 {
     nux_graphics_module_t *gfx = nux_graphics();
 
-    nux_texture_t *target = nux_resource_get(NUX_RESOURCE_TEXTURE, c->target);
+    nux_texture_t *target = nux_object_get(NUX_OBJECT_TEXTURE, c->target);
     if (!target)
     {
         nux_vec_clear(&c->encoder.cmds);

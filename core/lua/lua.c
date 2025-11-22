@@ -292,7 +292,7 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
     else
     {
         lua_newtable(L);
-        lua_pushinteger(L, nux_resource_rid(lua));
+        lua_pushinteger(L, nux_object_id(lua));
         lua_setfield(L, -2, NUX_LUA_MODULE_RID);
     }
     nux_assert(lua_istable(L, -1));
@@ -333,9 +333,9 @@ load_lua_module (nux_lua_t *lua, const nux_c8_t *path)
 nux_lua_t *
 nux_lua_load (nux_arena_t *arena, const nux_c8_t *path)
 {
-    nux_lua_t *lua = nux_resource_new(arena, NUX_RESOURCE_LUA_MODULE);
+    nux_lua_t *lua = nux_object_new(arena, NUX_OBJECT_LUA_MODULE);
     nux_check(lua, return nullptr);
-    nux_resource_set_path(lua, path);
+    nux_object_set_path(lua, path);
     // initialize event handles
     nux_vec_init(&lua->event_handles, arena);
     // dofile and call load function
@@ -371,7 +371,7 @@ static void
 module_update (void)
 {
     nux_lua_t *lua = nullptr;
-    while ((lua = nux_resource_next(NUX_RESOURCE_LUA_MODULE, lua)))
+    while ((lua = nux_object_next(NUX_OBJECT_LUA_MODULE, lua)))
     {
         nux_lua_call_module(lua, NUX_LUA_ON_UPDATE, 0);
     }
@@ -383,12 +383,11 @@ module_init (void)
     nux_system_register(NUX_SYSTEM_UPDATE, module_update);
 
     // Register types
-    nux_resource_register(
-        NUX_RESOURCE_LUA_MODULE,
-        (nux_resource_info_t) { .name    = "lua_module",
-                                .size    = sizeof(nux_lua_t),
-                                .cleanup = lua_module_cleanup,
-                                .reload  = lua_module_reload });
+    nux_object_register(NUX_OBJECT_LUA_MODULE,
+                        (nux_object_info_t) { .name    = "lua_module",
+                                              .size    = sizeof(nux_lua_t),
+                                              .cleanup = lua_module_cleanup,
+                                              .reload  = lua_module_reload });
 
     // Initialize Lua VM
     _module.L = luaL_newstate();

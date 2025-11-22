@@ -22,7 +22,7 @@ nux_palette_register_default (void)
 nux_palette_t *
 nux_palette_new (nux_arena_t *arena, nux_u32_t size)
 {
-    nux_palette_t *pal = nux_resource_new(arena, NUX_RESOURCE_PALETTE);
+    nux_palette_t *pal = nux_object_new(arena, NUX_OBJECT_PALETTE);
     nux_check(pal, return nullptr);
     pal->size   = size;
     pal->colors = nux_malloc(arena, sizeof(*pal->colors) * size);

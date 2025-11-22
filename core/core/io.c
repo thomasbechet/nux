@@ -4,18 +4,18 @@ nux_status_t
 nux_io_init (void)
 {
     nux_core_module_t *module = nux_core();
-    nux_resource_register(NUX_RESOURCE_FILE,
-                          (nux_resource_info_t) {
-                              .name    = "file",
-                              .size    = sizeof(nux_file_t),
-                              .cleanup = nux_file_cleanup,
-                          });
-    nux_resource_register(NUX_RESOURCE_DISK,
-                          (nux_resource_info_t) {
-                              .name    = "disk",
-                              .size    = sizeof(nux_disk_t),
-                              .cleanup = nux_disk_cleanup,
-                          });
+    nux_object_register(NUX_OBJECT_FILE,
+                        (nux_object_info_t) {
+                            .name    = "file",
+                            .size    = sizeof(nux_file_t),
+                            .cleanup = nux_file_cleanup,
+                        });
+    nux_object_register(NUX_OBJECT_DISK,
+                        (nux_object_info_t) {
+                            .name    = "disk",
+                            .size    = sizeof(nux_disk_t),
+                            .cleanup = nux_disk_cleanup,
+                        });
 
     // Initialize files
     nux_vec_init_capa(&module->free_file_slots, nux_arena_core(), NUX_FILE_MAX);
@@ -24,7 +24,7 @@ nux_io_init (void)
     nux_u32_vec_fill_reversed(&module->free_file_slots, NUX_FILE_MAX);
 
     // Register base OS disk
-    nux_disk_t *disk = nux_resource_new(nux_arena_core(), NUX_RESOURCE_DISK);
+    nux_disk_t *disk = nux_object_new(nux_arena_core(), NUX_OBJECT_DISK);
     disk->type       = NUX_DISK_OS;
 
     return NUX_SUCCESS;
@@ -97,7 +97,7 @@ nux_io_cart_begin (const nux_c8_t *path, nux_u32_t entry_count)
         = nux_file_open(nux_arena_frame(), path, NUX_IO_READ_WRITE);
     nux_check(file, return NUX_FAILURE);
 
-    module->cart_writer.file        = nux_resource_rid(file);
+    module->cart_writer.file        = nux_object_id(file);
     module->cart_writer.entry_count = entry_count;
     module->cart_writer.entry_index = 0;
     module->cart_writer.cursor
@@ -145,7 +145,7 @@ nux_io_write_cart_data (const nux_c8_t *path,
                "cart writer not started");
 
     nux_file_t *file
-        = nux_resource_check(NUX_RESOURCE_FILE, module->cart_writer.file);
+        = nux_object_check(NUX_OBJECT_FILE, module->cart_writer.file);
     nux_check(file, return NUX_FAILURE);
 
     nux_status_t status = NUX_SUCCESS;

@@ -24,8 +24,8 @@ cart_read_entries (nux_cart_t *cart)
     status &= cart_read_u32(cart->file, &version);
     status &= cart_read_u32(cart->file, &cart->entries_count);
     nux_check(status, return NUX_FAILURE);
-    cart->entries = nux_malloc(
-        nux_arena_core(), sizeof(*cart->entries) * cart->entries_count);
+    cart->entries = nux_malloc(nux_arena_core(),
+                               sizeof(*cart->entries) * cart->entries_count);
     nux_check(cart->entries, return NUX_FAILURE);
     for (nux_u32_t i = 0; i < cart->entries_count; ++i)
     {
@@ -64,7 +64,7 @@ nux_status_t
 nux_mount_disk (const nux_c8_t *path)
 {
     nux_debug("mounting '%s", path);
-    nux_disk_t *disk = nux_resource_new(nux_arena_core(), NUX_RESOURCE_DISK);
+    nux_disk_t *disk = nux_object_new(nux_arena_core(), NUX_OBJECT_DISK);
     nux_check(disk, return NUX_FAILURE);
 
     disk->type      = NUX_DISK_CART;

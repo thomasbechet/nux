@@ -16,10 +16,10 @@ typedef nux_vec(nux_scene_mask_t) nux_scene_bitset_t;
 
 typedef struct
 {
-    nux_nid_t parent;
-    nux_nid_t next;
-    nux_nid_t prev;
-    nux_nid_t child;
+    nux_id_t parent;
+    nux_id_t next;
+    nux_id_t prev;
+    nux_id_t child;
 } nux_node_t;
 
 typedef struct
@@ -36,7 +36,7 @@ struct nux_scene
     nux_scene_bitset_t bitset;
     nux_vec(nux_node_t) nodes;
     nux_vec(nux_scene_container_t) containers;
-    nux_nid_t root;
+    nux_id_t root;
 };
 
 struct nux_query
@@ -92,7 +92,7 @@ typedef struct
 
 void nux_scene_cleanup(void *data);
 
-void         nux_transform_add(nux_nid_t e, void *data);
+void         nux_transform_add(nux_id_t id, void *data);
 nux_status_t nux_transform_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_transform_read(nux_serde_reader_t *s, void *data);
 

@@ -9,7 +9,7 @@ dispatch_event (const nux_input_event_t *event)
     {
         nux_controller_t *ctrl = _module.controllers + i;
         nux_inputmap_t   *map
-            = nux_resource_get(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
+            = nux_object_get(NUX_OBJECT_INPUTMAP, ctrl->inputmap);
         nux_check(map, continue);
         for (nux_u32_t j = 0; j < map->entries.size; ++j)
         {
@@ -59,8 +59,7 @@ controller_get_input_value (nux_u32_t       controller,
 {
     nux_check(controller < nux_array_size(_module.controllers), goto error);
     nux_controller_t *ctrl = _module.controllers + controller;
-    nux_inputmap_t   *map
-        = nux_resource_get(NUX_RESOURCE_INPUTMAP, ctrl->inputmap);
+    nux_inputmap_t   *map = nux_object_get(NUX_OBJECT_INPUTMAP, ctrl->inputmap);
     nux_check(map, goto error);
     nux_u32_t index;
     nux_check(nux_inputmap_find_index(map, name, &index), goto error);
@@ -145,11 +144,10 @@ module_init (void)
     nux_system_register(NUX_SYSTEM_PRE_UPDATE, module_update);
     nux_system_register(NUX_SYSTEM_POST_UPDATE, module_post_update);
 
-    // Register resources
-    nux_resource_register(
-        NUX_RESOURCE_INPUTMAP,
-        (nux_resource_info_t) { .name = "inputmap",
-                                .size = sizeof(nux_inputmap_t) });
+    // Register objects
+    nux_object_register(NUX_OBJECT_INPUTMAP,
+                        (nux_object_info_t) { .name = "inputmap",
+                                              .size = sizeof(nux_inputmap_t) });
 
     // Allocate events queue
     nux_vec_init_capa(&_module.input_events, a, DEFAULT_INPUT_EVENT_SIZE);
@@ -190,7 +188,7 @@ nux_controller_resize_values (nux_inputmap_t *map)
     for (nux_u32_t i = 0; i < nux_array_size(_module.controllers); ++i)
     {
         nux_controller_t *controller = _module.controllers + i;
-        if (controller->inputmap == nux_resource_rid(map))
+        if (controller->inputmap == nux_object_id(map))
         {
             nux_vec_resize(&controller->inputs, map->entries.size);
         }
@@ -203,7 +201,7 @@ nux_input_set_inputmap (nux_u32_t controller, nux_inputmap_t *map)
     nux_check(controller < nux_array_size(_module.controllers),
               return NUX_FAILURE);
     nux_controller_t *ctrl = _module.controllers + controller;
-    ctrl->inputmap         = nux_resource_rid(map);
+    ctrl->inputmap         = nux_object_id(map);
     nux_vec_resize(&ctrl->inputs, map->entries.size);
     nux_vec_resize(&ctrl->prev_inputs, map->entries.size);
     return NUX_SUCCESS;

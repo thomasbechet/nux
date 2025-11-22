@@ -17,10 +17,10 @@ static nux_status_t
 module_init (void)
 {
     // Register resources
-    nux_resource_register(NUX_RESOURCE_WORLD,
-                          (nux_resource_info_t) { .name = "world",
-                                                  .size = sizeof(nux_world_t),
-                                                  .cleanup = world_cleanup });
+    nux_object_register(NUX_OBJECT_WORLD,
+                        (nux_object_info_t) { .name    = "world",
+                                              .size    = sizeof(nux_world_t),
+                                              .cleanup = world_cleanup });
 
     // Create default world
     _module.default_world = nux_world_new(nux_arena_core());
@@ -33,7 +33,7 @@ module_init (void)
 nux_world_t *
 nux_world_new (nux_arena_t *a)
 {
-    nux_world_t *world = nux_resource_new(a, NUX_RESOURCE_WORLD);
+    nux_world_t *world = nux_object_new(a, NUX_OBJECT_WORLD);
     nux_check(world, return nullptr);
     world->free = NUX_NULL;
     nux_vec_init_capa(&world->objects, a, NUX_WORLD_DEFAULT_CAPA);
@@ -66,7 +66,7 @@ nux_wcomponent_register (nux_u32_t index, nux_wcomponent_info_t info)
 nux_oid_t
 nux_object_create (void)
 {
-    nux_world_t  *world  = _module.active_world;
+    nux_world_t           *world  = _module.active_world;
     nux_handlemap_entry_t *object = nullptr;
     if (world->free)
     {

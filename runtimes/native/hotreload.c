@@ -18,7 +18,7 @@ static struct
     {
         int             wd;
         const nux_c8_t *path;
-        nux_rid_t       handle;
+        nux_id_t        id;
     } entries[256];
     nux_u32_t entries_count;
 } hotreload;
@@ -43,7 +43,7 @@ hotreload_free (void)
 }
 
 void
-nux_os_hotreload_add (const nux_c8_t *path, nux_rid_t handle)
+nux_os_hotreload_add (const nux_c8_t *path, nux_id_t id)
 {
 #if defined(NUX_PLATFORM_UNIX)
     nux_c8_t copypath[NUX_PATH_BUF_SIZE];
@@ -56,19 +56,19 @@ nux_os_hotreload_add (const nux_c8_t *path, nux_rid_t handle)
         fprintf(stderr, "out of hotreload resources");
         return;
     }
-    hotreload.entries[hotreload.entries_count].path   = path;
-    hotreload.entries[hotreload.entries_count].wd     = wd;
-    hotreload.entries[hotreload.entries_count].handle = handle;
+    hotreload.entries[hotreload.entries_count].path = path;
+    hotreload.entries[hotreload.entries_count].wd   = wd;
+    hotreload.entries[hotreload.entries_count].id   = id;
     ++hotreload.entries_count;
 #endif
 }
 void
-nux_os_hotreload_remove (nux_rid_t handle)
+nux_os_hotreload_remove (nux_id_t id)
 {
 #if defined(NUX_PLATFORM_UNIX)
     for (nux_u32_t i = 0; i < hotreload.entries_count; ++i)
     {
-        if (hotreload.entries[i].handle == handle)
+        if (hotreload.entries[i].id == id)
         {
             // swap remove
             hotreload.entries[i]
@@ -80,7 +80,7 @@ nux_os_hotreload_remove (nux_rid_t handle)
 #endif
 }
 void
-nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
+nux_os_hotreload_pull (nux_id_t *ids, nux_u32_t *count)
 {
 #if defined(NUX_PLATFORM_UNIX)
     char                        buf[BUF_LEN];
@@ -109,7 +109,7 @@ nux_os_hotreload_pull (nux_rid_t *handles, nux_u32_t *count)
                         const nux_c8_t *bn = basename(copy);
                         if (strcmp(bn, event->name) == 0)
                         {
-                            handles[*count] = hotreload.entries[j].handle;
+                            ids[*count] = hotreload.entries[j].id;
                             ++(*count);
                         }
                     }

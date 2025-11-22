@@ -6,7 +6,7 @@ scene_writer_callback (void *userdata, const nux_serde_value_t *v)
     nux_scene_writer_t *s = userdata;
     if (v->type == NUX_SERDE_NID)
     {
-        nux_nid_t nid       = *v->u32;
+        nux_id_t  nid       = *v->u32;
         nux_u32_t nid_index = nux_nid_index(nid);
         nux_u32_t index
             = nid_index < s->node_count ? s->node_map[nid_index] : NUX_NULL;
@@ -67,8 +67,8 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
 
     nux_u32_t entity_count = nux_scene_count();
     // TODO: no entities case ?
-    nux_u32_t *entity_map = nux_malloc(
-        nux_arena_frame(), sizeof(*entity_map) * entity_count);
+    nux_u32_t *entity_map
+        = nux_malloc(nux_arena_frame(), sizeof(*entity_map) * entity_count);
     nux_check(entity_map, return NUX_FAILURE);
 
     nux_scene_writer_t writer;
@@ -78,7 +78,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
     s                 = &writer.writer;
 
     // 1. Fill entity map (global index to local index)
-    nux_nid_t it    = NUX_NULL;
+    nux_id_t  it    = NUX_NULL;
     nux_u32_t index = 0;
     while ((it = nux_query_next(iter, it)))
     {
@@ -89,7 +89,7 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
     // 2. Iterate over entities and write components
     nux_serde_write_object(s, key);
     nux_serde_write_array(s, "entities", nux_scene_count());
-    nux_nid_t e            = NUX_NULL;
+    nux_id_t  e            = NUX_NULL;
     nux_u32_t entity_index = 0;
     while ((e = nux_query_next(iter, e)))
     {
@@ -150,8 +150,8 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
     nux_u32_t entity_count;
     nux_serde_read_array(s, "entities", &entity_count);
 
-    nux_u32_t *entity_map = nux_malloc(
-        nux_arena_frame(), sizeof(*entity_map) * entity_count);
+    nux_u32_t *entity_map
+        = nux_malloc(nux_arena_frame(), sizeof(*entity_map) * entity_count);
     nux_check(entity_map, goto error);
 
     nux_scene_reader_t reader;
@@ -170,7 +170,7 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
     // 2. Read entities components
     for (nux_u32_t i = 0; i < entity_count; ++i)
     {
-        nux_nid_t e = entity_map[i];
+        nux_id_t  e = entity_map[i];
         nux_u32_t component_count;
         nux_serde_read_array(s, nullptr, &component_count); // entity
         for (nux_u32_t j = 0; j < component_count; ++j)

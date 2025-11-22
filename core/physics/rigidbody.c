@@ -1,7 +1,7 @@
 #include "internal.h"
 
 void
-nux_rigidbody_set_velocity (nux_nid_t e, nux_v3_t velocity)
+nux_rigidbody_set_velocity (nux_id_t e, nux_v3_t velocity)
 {
     nux_physics_module_t *module = nux_physics();
     nux_rigidbody_t      *body = nux_component_get(e, NUX_COMPONENT_RIGIDBODY);
@@ -14,7 +14,7 @@ nux_rigidbody_set_velocity (nux_nid_t e, nux_v3_t velocity)
 }
 
 void
-nux_rigidbody_add (nux_nid_t e, void *data)
+nux_rigidbody_add (nux_id_t e, void *data)
 {
     nux_rigidbody_t *body = data;
     body->first           = 0;

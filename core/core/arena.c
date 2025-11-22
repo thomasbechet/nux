@@ -1,7 +1,7 @@
 #include "internal.h"
 
 // static void
-// arena_clear (nux_arena_t *arena, nux_rid_t rid)
+// arena_clear (nux_arena_t *arena, nux_id_t id)
 // {
 // // clear memory
 // if (arena->block_allocator.total_alloc)
@@ -33,7 +33,7 @@ os_alloc (void *userdata, void *optr, nux_u32_t osize, nux_u32_t nsize)
 nux_arena_t *
 nux_arena_new (nux_arena_t *arena)
 {
-    nux_arena_t *a = nux_resource_new(arena, NUX_RESOURCE_ARENA);
+    nux_arena_t *a = nux_object_new(arena, NUX_OBJECT_ARENA);
     nux_check(a, return nullptr);
     nux_arena_init_core(a);
     return a;

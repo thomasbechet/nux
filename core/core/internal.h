@@ -1,5 +1,5 @@
-#ifndef NUX_BASE_INTERNAL_H
-#define NUX_BASE_INTERNAL_H
+#ifndef NUX_CORE_INTERNAL_H
+#define NUX_CORE_INTERNAL_H
 
 #include <core/platform.h>
 
@@ -23,29 +23,29 @@ typedef enum
     NUX_CART_ENTRY_SIZE  = 4 * 6,
 } nux_cart_layout_t;
 
-typedef struct nux_resource_finalizer
+typedef struct nux_object_finalizer
 {
-    nux_rid_t rid;
-} nux_resource_header_t;
+    nux_id_t id;
+} nux_object_header_t;
 
 typedef struct
 {
-    nux_rid_t       rid; // for validity check
+    nux_u32_t       type;
+    nux_id_t        id; // for validity check
     nux_arena_t    *arena;
-    nux_u32_t       type_index;
     void           *data;
     const nux_c8_t *path;
     const nux_c8_t *name;
     nux_u32_t       prev_entry_index; // same type
     nux_u32_t       next_entry_index; // same type
-} nux_resource_entry_t;
+} nux_object_entry_t;
 
 typedef struct
 {
-    nux_resource_info_t info;
-    nux_u32_t           first_entry_index;
-    nux_u32_t           last_entry_index;
-} nux_resource_type_t;
+    nux_object_info_t info;
+    nux_u32_t         first_entry_index;
+    nux_u32_t         last_entry_index;
+} nux_object_type_t;
 
 typedef struct
 {
@@ -78,7 +78,7 @@ struct nux_event_t
 struct nux_event_handler_t
 {
     void                       *userdata;
-    nux_rid_t                   event;
+    nux_id_t                    event;
     struct nux_event_handler_t *next;
     struct nux_event_handler_t *prev;
     nux_event_callback_t        callback;
@@ -127,7 +127,7 @@ typedef struct
 typedef struct
 {
     nux_b32_t started;
-    nux_rid_t file;
+    nux_id_t  file;
     nux_u32_t entry_count;
     nux_u32_t entry_index;
     nux_u32_t cursor;
@@ -142,23 +142,23 @@ typedef struct nux_disk
     };
 } nux_disk_t;
 
-typedef nux_pool(nux_resource_entry_t) nux_resource_pool_t;
+typedef nux_pool(nux_object_entry_t) nux_object_pool_t;
 
 typedef struct
 {
-    nux_config_t        config;
-    nux_b32_t           running;
-    nux_u64_t           frame;
-    nux_f32_t           time_elapsed;
-    nux_pcg_t           pcg;
-    nux_u64_t           stats[NUX_STAT_MAX];
-    nux_resource_pool_t resources;
-    nux_resource_type_t resources_types[NUX_RESOURCE_MAX];
-    nux_arena_t        *frame_arena;
-    nux_c8_t            error_message[256];
-    nux_status_t        error_status;
-    nux_status_t        error_enable;
-    nux_arena_t        *core_arena;
+    nux_config_t      config;
+    nux_b32_t         running;
+    nux_u64_t         frame;
+    nux_f32_t         time_elapsed;
+    nux_pcg_t         pcg;
+    nux_u64_t         stats[NUX_STAT_MAX];
+    nux_object_pool_t objects;
+    nux_object_type_t object_types[NUX_OBJECT_MAX];
+    nux_arena_t      *frame_arena;
+    nux_c8_t          error_message[256];
+    nux_status_t      error_status;
+    nux_status_t      error_enable;
+    nux_arena_t      *core_arena;
 
     nux_vec(nux_module_t) modules;
     nux_u32_t modules_init_order;
@@ -170,17 +170,17 @@ typedef struct
 
 nux_core_module_t *nux_core(void);
 
-nux_pcg_t           *nux_core_pcg(void);
-nux_resource_pool_t *nux_core_resources(void);
-nux_resource_type_t *nux_core_resource_types(void);
+nux_pcg_t         *nux_core_pcg(void);
+nux_object_pool_t *nux_core_objects(void);
+nux_object_type_t *nux_core_object_types(void);
 
-nux_resource_entry_t *nux_resource_add(nux_resource_pool_t *resources,
-                                       nux_u32_t            type);
+nux_object_entry_t *nux_object_add(nux_object_pool_t *resources,
+                                   nux_u32_t          type);
 
-nux_u32_t nux_resource_header_size(nux_u32_t size);
-void  nux_resource_header_init(nux_resource_header_t *header, nux_rid_t rid);
-void *nux_resource_header_to_data(nux_resource_header_t *header);
-nux_resource_header_t *nux_resource_header_from_data(void *data);
+nux_u32_t nux_object_header_size(nux_u32_t size);
+void      nux_object_header_init(nux_object_header_t *header, nux_id_t id);
+void     *nux_object_header_to_data(nux_object_header_t *header);
+nux_object_header_t *nux_object_header_from_data(void *data);
 
 void nux_arena_init_core(nux_arena_t *arena);
 void nux_arena_cleanup(void *data);

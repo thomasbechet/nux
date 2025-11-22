@@ -28,13 +28,13 @@ void         nux_world_set_active(nux_world_t *world);
 
 void nux_wcomponent_register(nux_u32_t index, nux_wcomponent_info_t info);
 
-nux_oid_t nux_object_create(void);
-void      nux_object_delete(nux_oid_t oid);
-void      nux_object_add(nux_oid_t oid, nux_u32_t type);
-void      nux_object_remove(nux_oid_t oid, nux_u32_t type);
-void      nux_object_attach(nux_oid_t oid, nux_oid_t parent);
-nux_b32_t nux_object_has(nux_oid_t oid, nux_u32_t type);
-nux_u32_t nux_object_get(nux_oid_t oid, nux_u32_t type);
-void      nux_object_set(nux_oid_t oid, nux_u32_t type, nux_u32_t handle);
+// nux_oid_t nux_object_create(void);
+// void      nux_object_delete(nux_oid_t oid);
+// void      nux_object_add(nux_oid_t oid, nux_u32_t type);
+// void      nux_object_remove(nux_oid_t oid, nux_u32_t type);
+// void      nux_object_attach(nux_oid_t oid, nux_oid_t parent);
+// nux_b32_t nux_object_has(nux_oid_t oid, nux_u32_t type);
+// nux_u32_t nux_object_get(nux_oid_t oid, nux_u32_t type);
+// void      nux_object_set(nux_oid_t oid, nux_u32_t type, nux_u32_t handle);
 
 #endif

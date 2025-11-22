@@ -1,7 +1,7 @@
 #include "internal.h"
 
 void
-nux_collider_add (nux_nid_t e, void *data)
+nux_collider_add (nux_id_t e, void *data)
 {
     nux_collider_t *collider = data;
     collider->type           = NUX_COLLIDER_SPHERE;
@@ -9,7 +9,7 @@ nux_collider_add (nux_nid_t e, void *data)
 }
 
 void
-nux_collider_set_sphere (nux_nid_t e, nux_f32_t radius)
+nux_collider_set_sphere (nux_id_t e, nux_f32_t radius)
 {
     nux_collider_t *collider = nux_component_get(e, NUX_COMPONENT_COLLIDER);
     nux_check(collider, return);
@@ -17,7 +17,7 @@ nux_collider_set_sphere (nux_nid_t e, nux_f32_t radius)
     collider->sphere.radius = radius;
 }
 void
-nux_collider_set_aabb (nux_nid_t e, nux_v3_t min, nux_v3_t max)
+nux_collider_set_aabb (nux_id_t e, nux_v3_t min, nux_v3_t max)
 {
     nux_collider_t *collider = nux_component_get(e, NUX_COMPONENT_COLLIDER);
     nux_check(collider, return);

@@ -61,7 +61,7 @@ nux_texture_new (nux_arena_t       *arena,
                  nux_u32_t          h)
 {
     // Create object
-    nux_texture_t *tex = nux_resource_new(arena, NUX_RESOURCE_TEXTURE);
+    nux_texture_t *tex = nux_object_new(arena, NUX_OBJECT_TEXTURE);
     nux_check(tex, return nullptr);
     tex->gpu.type     = type;
     tex->gpu.width    = w;

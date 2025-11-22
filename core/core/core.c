@@ -19,24 +19,24 @@ bootstrap_core_arena (void)
     // NOTE: The core arena resource entry doesn't have arena
 
     // 1. Allocate arena + header
-    nux_resource_header_t *core_arena_header = nux_os_alloc(
-        nullptr, 0, nux_resource_header_size(sizeof(nux_arena_t)));
+    nux_object_header_t *core_arena_header
+        = nux_os_alloc(nullptr, 0, nux_object_header_size(sizeof(nux_arena_t)));
     nux_check(core_arena_header, return NUX_FAILURE);
     // 2. Get arena from the header
-    _module.core_arena = nux_resource_header_to_data(core_arena_header);
+    _module.core_arena = nux_object_header_to_data(core_arena_header);
     // 3. Initialize core arena
     nux_arena_init_core(_module.core_arena);
     // 4. Allocate resource table
-    nux_pool_init(&_module.resources, _module.core_arena);
+    nux_pool_init(&_module.objects, _module.core_arena);
     // 5. Reserve index 0 for null id
-    nux_pool_add(&_module.resources, nullptr);
+    nux_pool_add(&_module.objects, nullptr);
     // 6. Create core arena resource entry
-    nux_resource_entry_t *entry
-        = nux_resource_add(&_module.resources, NUX_RESOURCE_ARENA);
+    nux_object_entry_t *entry
+        = nux_object_add(&_module.objects, NUX_OBJECT_ARENA);
     nux_check(entry, return NUX_FAILURE);
     entry->data = _module.core_arena;
     // 7. Initialize core arena header
-    nux_resource_header_init(core_arena_header, entry->rid);
+    nux_object_header_init(core_arena_header, entry->id);
 
     return NUX_SUCCESS;
 }
@@ -102,21 +102,20 @@ nux_core_init (void)
     nux_system_register(NUX_SYSTEM_PRE_UPDATE, module_pre_update);
     nux_system_register(NUX_SYSTEM_POST_UPDATE, module_post_update);
     // Register types
-    nux_resource_register(NUX_RESOURCE_NULL,
-                          (nux_resource_info_t) { .name = "null", .size = 0 });
-    nux_resource_register(
-        NUX_RESOURCE_ARENA,
-        (nux_resource_info_t) { .name    = "arena",
-                                .size    = sizeof(nux_arena_t),
-                                .cleanup = nux_arena_cleanup });
-    nux_resource_register(
-        NUX_RESOURCE_EVENT,
-        (nux_resource_info_t) { .name = "event", .size = sizeof(nux_event_t) });
+    nux_object_register(NUX_OBJECT_NULL,
+                        (nux_object_info_t) { .name = "null", .size = 0 });
+    nux_object_register(NUX_OBJECT_ARENA,
+                        (nux_object_info_t) { .name    = "arena",
+                                              .size    = sizeof(nux_arena_t),
+                                              .cleanup = nux_arena_cleanup });
+    nux_object_register(
+        NUX_OBJECT_EVENT,
+        (nux_object_info_t) { .name = "event", .size = sizeof(nux_event_t) });
 
     // Create frame arena
     _module.frame_arena = nux_arena_new(_module.core_arena);
     nux_assert(_module.frame_arena);
-    nux_resource_set_name(_module.frame_arena, "frame_arena");
+    nux_object_set_name(_module.frame_arena, "frame_arena");
 
     // Initialize IO
     nux_check(nux_io_init(), goto cleanup);
@@ -145,7 +144,7 @@ nux_core_init (void)
     // }
     // else
     // {
-    //     // Expect cartridge
+    //     // Expect cartidge
     //     nux_check(nux_disk_mount(normpath), goto cleanup);
     //     entry_script = NUX_LUA_INIT_FILE;
     // }
@@ -174,7 +173,7 @@ cleanup:
 void
 nux_core_free (void)
 {
-    // Cleanup all resources
+    // Cleanup all objects
     nux_arena_clear(nux_arena_core());
     // Free all modules
     nux_module_free_all();
@@ -183,10 +182,10 @@ nux_core_free (void)
     // Free core memory
     nux_arena_free(_module.core_arena);
     // Free core arena
-    nux_resource_header_t *core_arena_header
-        = nux_resource_header_from_data(_module.core_arena);
+    nux_object_header_t *core_arena_header
+        = nux_object_header_from_data(_module.core_arena);
     nux_os_alloc(
-        core_arena_header, nux_resource_header_size(sizeof(nux_arena_t)), 0);
+        core_arena_header, nux_object_header_size(sizeof(nux_arena_t)), 0);
 }
 void
 nux_core_update (void)
@@ -206,11 +205,11 @@ nux_core_update (void)
     if (nux_config_get()->hotreload)
     {
         nux_u32_t count;
-        nux_rid_t handles[256];
-        nux_os_hotreload_pull(handles, &count);
+        nux_id_t  ids[256];
+        nux_os_hotreload_pull(ids, &count);
         for (nux_u32_t i = 0; i < count; ++i)
         {
-            nux_resource_reload(handles[i]);
+            nux_object_reload(ids[i]);
         }
     }
 }
@@ -220,15 +219,15 @@ nux_core_pcg (void)
 {
     return &_module.pcg;
 }
-nux_resource_pool_t *
-nux_core_resources (void)
+nux_object_pool_t *
+nux_core_objects (void)
 {
-    return &_module.resources;
+    return &_module.objects;
 }
-nux_resource_type_t *
-nux_core_resource_types (void)
+nux_object_type_t *
+nux_core_object_types (void)
 {
-    return _module.resources_types;
+    return _module.object_types;
 }
 
 nux_config_t *

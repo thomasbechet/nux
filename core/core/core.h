@@ -27,8 +27,7 @@
 ///        TYPES         ///
 ////////////////////////////
 
-typedef nux_u32_t nux_rid_t;
-typedef nux_u32_t nux_nid_t;
+typedef nux_u32_t nux_id_t;
 
 typedef enum
 {
@@ -56,27 +55,26 @@ typedef enum
 
 typedef enum
 {
-    NUX_RESOURCE_NULL       = 0,
-    NUX_RESOURCE_ANY        = 1,
-    NUX_RESOURCE_ARENA      = 2,
-    NUX_RESOURCE_LUA_MODULE = 3,
-    NUX_RESOURCE_TEXTURE    = 4,
-    NUX_RESOURCE_MESH       = 5,
-    NUX_RESOURCE_PALETTE    = 6,
-    NUX_RESOURCE_CANVAS     = 7,
-    NUX_RESOURCE_FONT       = 8,
-    NUX_RESOURCE_FILE       = 9,
-    NUX_RESOURCE_DISK       = 10,
-    NUX_RESOURCE_SCENE      = 11,
-    NUX_RESOURCE_QUERY      = 12,
-    NUX_RESOURCE_EVENT      = 13,
-    NUX_RESOURCE_INPUTMAP   = 14,
-    NUX_RESOURCE_GUI        = 15,
-    NUX_RESOURCE_STYLESHEET = 16,
-    NUX_RESOURCE_WORLD      = 17,
+    NUX_OBJECT_NULL       = 0,
+    NUX_OBJECT_ARENA      = 1,
+    NUX_OBJECT_LUA_MODULE = 2,
+    NUX_OBJECT_TEXTURE    = 3,
+    NUX_OBJECT_MESH       = 4,
+    NUX_OBJECT_PALETTE    = 5,
+    NUX_OBJECT_CANVAS     = 6,
+    NUX_OBJECT_FONT       = 7,
+    NUX_OBJECT_FILE       = 8,
+    NUX_OBJECT_DISK       = 9,
+    NUX_OBJECT_SCENE      = 10,
+    NUX_OBJECT_QUERY      = 11,
+    NUX_OBJECT_EVENT      = 12,
+    NUX_OBJECT_INPUTMAP   = 13,
+    NUX_OBJECT_GUI        = 14,
+    NUX_OBJECT_STYLESHEET = 15,
+    NUX_OBJECT_WORLD      = 16,
 
-    NUX_RESOURCE_MAX = 256,
-} nux_resource_base_t;
+    NUX_OBJECT_MAX = 256,
+} nux_object_types_t;
 
 typedef enum
 {
@@ -84,7 +82,7 @@ typedef enum
 } nux_event_type_t;
 
 typedef void (*nux_event_callback_t)(void       *userdata,
-                                     nux_rid_t   event,
+                                     nux_id_t    event,
                                      const void *data);
 typedef void (*nux_event_cleanup_t)(void *data);
 
@@ -92,19 +90,19 @@ typedef struct nux_event_t         nux_event_t;
 typedef struct nux_file_t          nux_file_t;
 typedef struct nux_event_handler_t nux_event_handler_t;
 
-typedef void (*nux_resource_cleanup_t)(void *data);
-typedef nux_status_t (*nux_resource_reload_t)(void *data, const nux_c8_t *path);
+typedef void (*nux_object_cleanup_t)(void *data);
+typedef nux_status_t (*nux_object_reload_t)(void *data, const nux_c8_t *path);
 
 typedef nux_status_t (*nux_module_init_callback_t)(void);
 typedef void (*nux_module_free_callback_t)(void);
 
 typedef struct
 {
-    const nux_c8_t        *name;
-    nux_u32_t              size;
-    nux_resource_cleanup_t cleanup;
-    nux_resource_reload_t  reload;
-} nux_resource_info_t;
+    const nux_c8_t      *name;
+    nux_u32_t            size;
+    nux_object_cleanup_t cleanup;
+    nux_object_reload_t  reload;
+} nux_object_info_t;
 
 typedef struct
 {
@@ -195,20 +193,20 @@ nux_arena_t *nux_arena_frame(void);
 void            nux_logger_set_level(nux_log_level_t level);
 nux_log_level_t nux_logger_level(void);
 
-void         nux_resource_register(nux_u32_t index, nux_resource_info_t info);
-void        *nux_resource_new(nux_arena_t *a, nux_u32_t type);
-void        *nux_resource_get(nux_u32_t type, nux_rid_t rid);
-void        *nux_resource_check(nux_u32_t type, nux_rid_t rid);
-nux_status_t nux_resource_reload(nux_rid_t rid);
+void         nux_object_register(nux_u32_t index, nux_object_info_t info);
+void        *nux_object_new(nux_arena_t *a, nux_u32_t type);
+void        *nux_object_get(nux_u32_t type, nux_id_t id);
+void        *nux_object_check(nux_u32_t type, nux_id_t id);
+nux_status_t nux_object_reload(nux_id_t id);
 
-void            nux_resource_set_path(void *data, const nux_c8_t *path);
-const nux_c8_t *nux_resource_path(void *data);
-void            nux_resource_set_name(void *data, const nux_c8_t *name);
-const nux_c8_t *nux_resource_name(void *data);
-void           *nux_resource_next(nux_u32_t type, void *p);
-nux_rid_t       nux_resource_rid(const void *data);
-nux_arena_t    *nux_resource_arena(void *data);
-void           *nux_resource_find(const nux_c8_t *name);
+void            nux_object_set_path(void *data, const nux_c8_t *path);
+const nux_c8_t *nux_object_path(void *data);
+void            nux_object_set_name(void *data, const nux_c8_t *name);
+const nux_c8_t *nux_object_name(void *data);
+void           *nux_object_next(nux_u32_t type, void *p);
+nux_id_t        nux_object_id(const void *data);
+nux_arena_t    *nux_object_arena(void *data);
+void           *nux_object_find(const nux_c8_t *name);
 
 void nux_logger_vlog(nux_log_level_t level, const nux_c8_t *fmt, va_list args);
 void nux_logger_log(nux_log_level_t level, const nux_c8_t *fmt, ...);
@@ -234,7 +232,7 @@ nux_event_handler_t *nux_event_subscribe(nux_arena_t         *arena,
                                          void                *userdata,
                                          nux_event_callback_t callback);
 void                 nux_event_unsubscribe(const nux_event_handler_t *handler);
-nux_rid_t            nux_event_handler_event(nux_event_handler_t *handler);
+nux_id_t             nux_event_handler_event(nux_event_handler_t *handler);
 void nux_event_emit(nux_event_t *event, nux_u32_t size, const void *data);
 void nux_event_process(nux_event_t *event);
 void nux_event_process_all(void);

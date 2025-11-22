@@ -83,7 +83,7 @@ struct nux_palette_t
 
 typedef struct
 {
-    nux_u8_t stride;
+    nux_u8_t stide;
     nux_u8_t position;
     nux_u8_t texcoord;
     nux_u8_t color;
@@ -141,7 +141,7 @@ struct nux_canvas_t
     nux_u32_t               active_texture;
     nux_u32_t               clear_color;
     nux_texture_wrap_mode_t wrap_mode;
-    nux_rid_t               target;
+    nux_id_t                target;
     nux_b2i_t               viewport;
 };
 
@@ -172,7 +172,7 @@ typedef struct
     nux_v2_t  ortho_size;
     nux_u32_t render_mask;
 
-    nux_rid_t           target;
+    nux_id_t            target;
     nux_b2i_t           viewport;
     nux_viewport_mode_t viewport_mode;
     nux_v4_t            clear_color;
@@ -184,8 +184,8 @@ typedef struct
 
 typedef struct
 {
-    nux_rid_t mesh;
-    nux_rid_t texture;
+    nux_id_t  mesh;
+    nux_id_t  texture;
     nux_u32_t transform;
     nux_u32_t render_layer;
     nux_b32_t draw_bounds;
@@ -310,14 +310,14 @@ void nux_mesh_push_vertices(nux_mesh_t     *mesh,
                             const nux_v2_t *uvs,
                             const nux_v3_t *colors);
 
-void         nux_staticmesh_add(nux_nid_t e, void *data);
+void         nux_staticmesh_add(nux_id_t id, void *data);
 nux_status_t nux_staticmesh_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_staticmesh_read(nux_serde_reader_t *s, void *data);
 
-void         nux_camera_add(nux_nid_t e, void *data);
+void         nux_camera_add(nux_id_t id, void *data);
 nux_status_t nux_camera_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_camera_read(nux_serde_reader_t *s, void *data);
 
-void nux_renderer_render_scene(nux_scene_t *scene, nux_nid_t camera);
+void nux_renderer_render_scene(nux_scene_t *scene, nux_id_t camera);
 
 #endif

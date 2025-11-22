@@ -19,9 +19,9 @@ static nux_i32_t
 camera_compare (const void *a, const void *b)
 {
     const nux_camera_t *ca
-        = nux_component_get(*(const nux_nid_t *)a, NUX_COMPONENT_CAMERA);
+        = nux_component_get(*(const nux_id_t *)a, NUX_COMPONENT_CAMERA);
     const nux_camera_t *cb
-        = nux_component_get(*(const nux_nid_t *)b, NUX_COMPONENT_CAMERA);
+        = nux_component_get(*(const nux_id_t *)b, NUX_COMPONENT_CAMERA);
     return ca->layer - cb->layer;
 }
 static nux_b2i_t
@@ -143,7 +143,7 @@ static void
 module_update (void)
 {
     // Propagate transforms
-    nux_nid_t transform = NUX_NULL;
+    nux_id_t transform = NUX_NULL;
     while ((transform = nux_query_next(_module.query_transform, transform)))
     {
         nux_transform_matrix(transform);
@@ -151,14 +151,14 @@ module_update (void)
 
     // Upload meshes
     nux_mesh_t *mesh = nullptr;
-    while ((mesh = nux_resource_next(NUX_RESOURCE_MESH, mesh)))
+    while ((mesh = nux_object_next(NUX_OBJECT_MESH, mesh)))
     {
         nux_mesh_upload(mesh);
     }
 
     // Update textures
     nux_texture_t *texture = nullptr;
-    while ((texture = nux_resource_next(NUX_RESOURCE_TEXTURE, texture)))
+    while ((texture = nux_object_next(NUX_OBJECT_TEXTURE, texture)))
     {
         if (texture->dirty)
         {
@@ -167,9 +167,9 @@ module_update (void)
     }
 
     // Collect cameras
-    nux_nid_t cameras[32];
+    nux_id_t  cameras[32];
     nux_u32_t cameras_count = 0;
-    nux_nid_t it            = NUX_NULL;
+    nux_id_t  it            = NUX_NULL;
     while ((it = nux_query_next(_module.query_transform_camera, it)))
     {
         nux_assert(cameras_count < nux_array_size(cameras));
@@ -183,14 +183,14 @@ module_update (void)
     // Render cameras
     for (nux_u32_t i = 0; i < cameras_count; ++i)
     {
-        nux_nid_t    camera = cameras[i];
+        nux_id_t     camera = cameras[i];
         nux_scene_t *scene  = nux_scene_active();
         nux_renderer_render_scene(scene, camera);
     }
 
     // Submit canvas commands
     nux_canvas_t *canvas = nullptr;
-    while ((canvas = nux_resource_next(NUX_RESOURCE_CANVAS, canvas)))
+    while ((canvas = nux_object_next(NUX_OBJECT_CANVAS, canvas)))
     {
         nux_canvas_render(canvas);
     }
@@ -216,28 +216,24 @@ module_init (void)
     nux_system_register(NUX_SYSTEM_UPDATE, module_update);
 
     // Register resources
-    nux_resource_register(
-        NUX_RESOURCE_TEXTURE,
-        (nux_resource_info_t) { .name    = "texture",
-                                .size    = sizeof(nux_texture_t),
-                                .cleanup = nux_texture_cleanup });
-    nux_resource_register(
-        NUX_RESOURCE_PALETTE,
-        (nux_resource_info_t) { .name = "palette",
-                                .size = sizeof(nux_palette_t) });
-    nux_resource_register(
-        NUX_RESOURCE_MESH,
-        (nux_resource_info_t) { .name = "mesh", .size = sizeof(nux_mesh_t) });
-    nux_resource_register(
-        NUX_RESOURCE_CANVAS,
-        (nux_resource_info_t) { .name    = "canvas",
-                                .size    = sizeof(nux_canvas_t),
-                                .cleanup = nux_canvas_cleanup });
-    nux_resource_register(
-        NUX_RESOURCE_FONT,
-        (nux_resource_info_t) { .name    = "font",
-                                .size    = sizeof(nux_font_t),
-                                .cleanup = nux_font_cleanup });
+    nux_object_register(NUX_OBJECT_TEXTURE,
+                        (nux_object_info_t) { .name    = "texture",
+                                              .size    = sizeof(nux_texture_t),
+                                              .cleanup = nux_texture_cleanup });
+    nux_object_register(NUX_OBJECT_PALETTE,
+                        (nux_object_info_t) { .name = "palette",
+                                              .size = sizeof(nux_palette_t) });
+    nux_object_register(
+        NUX_OBJECT_MESH,
+        (nux_object_info_t) { .name = "mesh", .size = sizeof(nux_mesh_t) });
+    nux_object_register(NUX_OBJECT_CANVAS,
+                        (nux_object_info_t) { .name    = "canvas",
+                                              .size    = sizeof(nux_canvas_t),
+                                              .cleanup = nux_canvas_cleanup });
+    nux_object_register(NUX_OBJECT_FONT,
+                        (nux_object_info_t) { .name    = "font",
+                                              .size    = sizeof(nux_font_t),
+                                              .cleanup = nux_font_cleanup });
 
     // Register components
     nux_component_register(NUX_COMPONENT_CAMERA,

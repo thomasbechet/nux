@@ -5,7 +5,7 @@ nux_event_new (nux_arena_t        *arena,
                nux_event_type_t    type,
                nux_event_cleanup_t cleanup)
 {
-    nux_event_t *event = nux_resource_new(arena, NUX_RESOURCE_EVENT);
+    nux_event_t *event = nux_object_new(arena, NUX_OBJECT_EVENT);
     nux_check(event, return nullptr);
     event->arena         = arena;
     event->type          = type;
@@ -26,7 +26,7 @@ nux_event_subscribe (nux_arena_t         *arena,
                      nux_event_callback_t callback)
 {
     nux_event_handler_t *handler = nux_malloc(arena, sizeof(*handler));
-    handler->event               = nux_resource_rid(event);
+    handler->event               = nux_object_id(event);
     handler->userdata            = userdata;
     handler->callback            = callback;
     handler->next                = nullptr;
@@ -45,7 +45,7 @@ void
 nux_event_unsubscribe (const nux_event_handler_t *handler)
 {
     nux_assert(handler);
-    nux_event_t *e = nux_resource_get(NUX_RESOURCE_EVENT, handler->event);
+    nux_event_t *e = nux_object_get(NUX_OBJECT_EVENT, handler->event);
     nux_check(e, return); // event has been deleted
     nux_event_handler_t *h = e->first_handler;
     while (h && h != handler)
@@ -66,7 +66,7 @@ nux_event_unsubscribe (const nux_event_handler_t *handler)
         e->first_handler = h->next;
     }
 }
-nux_rid_t
+nux_id_t
 nux_event_handler_event (nux_event_handler_t *handler)
 {
     return handler->event;
@@ -101,7 +101,7 @@ nux_event_process (nux_event_t *event)
         while (handler)
         {
             handler->callback(
-                handler->userdata, nux_resource_rid(event), header->data);
+                handler->userdata, nux_object_id(event), header->data);
             handler = handler->next;
         }
         if (event->cleanup)
@@ -121,7 +121,7 @@ void
 nux_event_process_all (void)
 {
     nux_event_t *it = nullptr;
-    while ((it = nux_resource_next(NUX_RESOURCE_EVENT, it)))
+    while ((it = nux_object_next(NUX_OBJECT_EVENT, it)))
     {
         nux_event_process(it);
     }

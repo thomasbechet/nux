@@ -35,7 +35,7 @@ typedef struct
     nux_v2_t cursor;
     nux_v2_t cursor_prev;
 
-    nux_rid_t inputmap;
+    nux_id_t inputmap;
     nux_vec(nux_f32_t) inputs;
     nux_vec(nux_f32_t) prev_inputs;
 } nux_controller_t;

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     # Remove unsupported functions
     for clazz, name in [
             ("module", "register"),
-            ("resource", "register"),
+            ("object", "register"),
             ("component", "register"),
             ("event", "new"),
             ("event", "unsubscribe"),

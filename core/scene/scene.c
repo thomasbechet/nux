@@ -97,13 +97,13 @@ bitset_find_unset (const nux_scene_bitset_t *bitset, nux_u32_t *found)
     return false;
 }
 static nux_b32_t
-node_valid (const nux_scene_t *scene, nux_nid_t e)
+node_valid (const nux_scene_t *scene, nux_id_t e)
 {
     nux_u32_t index = nux_nid_index(e);
     return bitset_isset(&scene->bitset, index);
 }
 static nux_node_t *
-node_check (const nux_scene_t *scene, nux_nid_t e)
+node_check (const nux_scene_t *scene, nux_id_t e)
 {
     nux_ensure(e, return nullptr, "invalid null nid", e);
     nux_u32_t index = nux_nid_index(e);
@@ -114,7 +114,7 @@ node_check (const nux_scene_t *scene, nux_nid_t e)
     return scene->nodes.data + index;
 }
 static void
-node_detach (nux_node_t *nodes, nux_nid_t e)
+node_detach (nux_node_t *nodes, nux_id_t e)
 {
     nux_u32_t ei = nux_nid_index(e);
     if (nodes[ei].parent)
@@ -135,7 +135,7 @@ node_detach (nux_node_t *nodes, nux_nid_t e)
     }
 }
 static void
-node_attach (nux_node_t *entities, nux_nid_t e, nux_nid_t p)
+node_attach (nux_node_t *entities, nux_id_t e, nux_id_t p)
 {
     nux_check(e != p, return);
     node_detach(entities, e);
@@ -157,17 +157,17 @@ static nux_status_t
 module_init (void)
 {
     // Register types
-    nux_resource_register(NUX_RESOURCE_SCENE,
-                          (nux_resource_info_t) {
-                              .name    = "scene",
-                              .size    = sizeof(nux_scene_t),
-                              .cleanup = nux_scene_cleanup,
-                          });
-    nux_resource_register(NUX_RESOURCE_QUERY,
-                          (nux_resource_info_t) {
-                              .name = "query",
-                              .size = sizeof(nux_query_t),
-                          });
+    nux_object_register(NUX_OBJECT_SCENE,
+                        (nux_object_info_t) {
+                            .name    = "scene",
+                            .size    = sizeof(nux_scene_t),
+                            .cleanup = nux_scene_cleanup,
+                        });
+    nux_object_register(NUX_OBJECT_QUERY,
+                        (nux_object_info_t) {
+                            .name = "query",
+                            .size = sizeof(nux_query_t),
+                        });
 
     // Initialize values
     nux_memset(_module.components, 0, sizeof(_module.components));
@@ -208,7 +208,7 @@ nux_query_new (nux_arena_t *arena,
                nux_u32_t    include_count,
                nux_u32_t    exclude_count)
 {
-    nux_query_t *it = nux_resource_new(arena, NUX_RESOURCE_QUERY);
+    nux_query_t *it = nux_object_new(arena, NUX_OBJECT_QUERY);
     nux_check(it, return nullptr);
     if (include_count)
     {
@@ -235,7 +235,7 @@ nux_query_excludes (nux_query_t *it, nux_u32_t c)
 {
     nux_vec_pushv(&it->excludes, c);
 }
-static nux_nid_t
+static nux_id_t
 query_next (const nux_scene_t *ins, nux_query_t *it)
 {
     // find next non empty mask
@@ -291,7 +291,7 @@ query_next (const nux_scene_t *ins, nux_query_t *it)
     return nux_nid_make(it->mask_index * NUX_NODE_PER_MASK + offset);
 }
 nux_u32_t
-nux_query_next (nux_query_t *it, nux_nid_t e)
+nux_query_next (nux_query_t *it, nux_id_t e)
 {
     if (!e) // initialize iterator
     {
@@ -306,7 +306,7 @@ nux_query_next (nux_query_t *it, nux_nid_t e)
 nux_scene_t *
 nux_scene_new (nux_arena_t *arena)
 {
-    nux_scene_t *scene = nux_resource_new(arena, NUX_RESOURCE_SCENE);
+    nux_scene_t *scene = nux_object_new(arena, NUX_OBJECT_SCENE);
     nux_check(scene, return nullptr);
     scene->arena = arena;
     nux_vec_init_capa(&scene->containers, arena, _module.components_max);
@@ -365,8 +365,8 @@ nux_scene_clear (void)
     nux_vec_clear(&scene->bitset);
 }
 
-nux_nid_t
-nux_node_create (nux_nid_t parent)
+nux_id_t
+nux_node_create (nux_id_t parent)
 {
     nux_scene_t *scene = _module.active;
     nux_check(scene, return NUX_NULL);
@@ -382,13 +382,13 @@ nux_node_create (nux_nid_t parent)
         // ensure growth factor with resize
         nux_check(nux_vec_push(&scene->nodes), return NUX_NULL);
     }
-    nux_nid_t nid = nux_nid_make(index);
+    nux_id_t nid = nux_nid_make(index);
     nux_memset(&scene->nodes.data[index], 0, sizeof(nux_node_t));
     node_attach(scene->nodes.data, nid, parent);
     return nid;
 }
 void
-nux_node_delete (nux_nid_t e)
+nux_node_delete (nux_id_t e)
 {
     nux_scene_t *scene = nux_scene_active();
     nux_u32_t    index = nux_nid_index(e);
@@ -409,46 +409,46 @@ nux_node_delete (nux_nid_t e)
     }
 }
 nux_b32_t
-nux_node_valid (nux_nid_t e)
+nux_node_valid (nux_id_t e)
 {
     nux_scene_t *scene = nux_scene_active();
     return node_valid(scene, e);
 }
-nux_nid_t
+nux_id_t
 nux_node_root (void)
 {
     return nux_nid_make(0);
 }
-nux_nid_t
-nux_node_parent (nux_nid_t e)
+nux_id_t
+nux_node_parent (nux_id_t e)
 {
     nux_scene_t *scene = nux_scene_active();
     nux_check(node_check(scene, e), return NUX_NULL);
     return scene->nodes.data[nux_nid_index(e)].parent;
 }
 void
-nux_node_set_parent (nux_nid_t e, nux_nid_t p)
+nux_node_set_parent (nux_id_t e, nux_id_t p)
 {
     nux_scene_t *scene = nux_scene_active();
     nux_check(node_check(scene, e) && node_check(scene, p), return);
     node_attach(scene->nodes.data, e, p);
 }
-nux_nid_t
-nux_node_sibling (nux_nid_t e)
+nux_id_t
+nux_node_sibling (nux_id_t e)
 {
     nux_scene_t *scene = nux_scene_active();
     nux_check(node_check(scene, e), return NUX_NULL);
     return scene->nodes.data[nux_nid_index(e)].next;
 }
-nux_nid_t
-nux_node_child (nux_nid_t e)
+nux_id_t
+nux_node_child (nux_id_t e)
 {
     nux_scene_t *scene = nux_scene_active();
     nux_check(node_check(scene, e), return NUX_NULL);
     return scene->nodes.data[nux_nid_index(e)].child;
 }
 static void *
-component_get (const nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
+component_get (const nux_scene_t *scene, nux_id_t e, nux_u32_t c)
 {
     nux_u32_t              index     = nux_nid_index(e);
     nux_u32_t              mask      = index / NUX_NODE_PER_MASK;
@@ -468,7 +468,7 @@ nux_component_register (nux_u32_t index, nux_component_info_t info)
     _module.components_max = nux_max(_module.components_max, index + 1);
 }
 void *
-nux_component_get (nux_nid_t e, nux_u32_t c)
+nux_component_get (nux_id_t e, nux_u32_t c)
 {
     nux_assert(e);
     nux_assert(c);
@@ -479,7 +479,7 @@ nux_component_get (nux_nid_t e, nux_u32_t c)
     return component_get(nux_scene_active(), e, c);
 }
 static void *
-component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
+component_add (nux_scene_t *scene, nux_id_t e, nux_u32_t c)
 {
     nux_u32_t index = nux_nid_index(e);
 
@@ -538,12 +538,12 @@ component_add (nux_scene_t *scene, nux_nid_t e, nux_u32_t c)
 }
 
 void
-nux_node_add (nux_nid_t n, nux_u32_t c)
+nux_node_add (nux_id_t n, nux_u32_t c)
 {
     component_add(nux_scene_active(), n, c);
 }
 void
-nux_node_remove (nux_nid_t e, nux_u32_t c)
+nux_node_remove (nux_id_t e, nux_u32_t c)
 {
     nux_scene_t           *scene     = nux_scene_active();
     nux_u32_t              index     = nux_nid_index(e);
@@ -552,7 +552,7 @@ nux_node_remove (nux_nid_t e, nux_u32_t c)
     node_detach(scene->nodes.data, e);
 }
 nux_b32_t
-nux_node_has (nux_nid_t e, nux_u32_t c)
+nux_node_has (nux_id_t e, nux_u32_t c)
 {
     nux_assert(e);
     nux_assert(c);
@@ -564,10 +564,10 @@ nux_node_has (nux_nid_t e, nux_u32_t c)
 }
 static nux_status_t
 node_clone (nux_scene_t *scene,
-            nux_nid_t    dst_root,
-            nux_nid_t    dst_nid,
-            nux_nid_t    src_nid,
-            nux_nid_t    parent)
+            nux_id_t     dst_root,
+            nux_id_t     dst_nid,
+            nux_id_t     src_nid,
+            nux_id_t     parent)
 {
     nux_u32_t index = nux_nid_index(src_nid);
 
@@ -589,12 +589,12 @@ node_clone (nux_scene_t *scene,
     }
 
     // Duplicate children
-    nux_nid_t child = scene->nodes.data[index].child;
+    nux_id_t child = scene->nodes.data[index].child;
     while (child)
     {
         if (child != dst_root)
         {
-            nux_nid_t child_nid = nux_node_create(dst_nid);
+            nux_id_t child_nid = nux_node_create(dst_nid);
             nux_check(child_nid, return NUX_FAILURE);
             nux_check(node_clone(scene, dst_root, child_nid, child, dst_nid),
                       return NUX_FAILURE);
@@ -604,10 +604,10 @@ node_clone (nux_scene_t *scene,
 
     return NUX_SUCCESS;
 }
-nux_nid_t
-nux_node_instantiate (nux_scene_t *scene, nux_nid_t parent)
+nux_id_t
+nux_node_instantiate (nux_scene_t *scene, nux_id_t parent)
 {
-    nux_nid_t nid = nux_node_create(parent);
+    nux_id_t nid = nux_node_create(parent);
     nux_check(nid, return NUX_NULL);
     nux_check(node_clone(scene, nid, nid, scene->root, parent),
               return NUX_NULL);

@@ -12,7 +12,7 @@ find_entry (nux_inputmap_t *map, const nux_c8_t *name)
         }
     }
 
-    nux_arena_t          *a     = nux_resource_arena(map);
+    nux_arena_t          *a     = nux_object_arena(map);
     nux_inputmap_entry_t *entry = nux_vec_push(&map->entries);
     entry->name                 = nux_strdup(a, name);
     entry->type                 = NUX_INPUT_UNMAPPED;
@@ -43,7 +43,7 @@ nux_inputmap_find_index (const nux_inputmap_t *map,
 nux_inputmap_t *
 nux_inputmap_new (nux_arena_t *arena)
 {
-    nux_inputmap_t *map = nux_resource_new(arena, NUX_RESOURCE_INPUTMAP);
+    nux_inputmap_t *map = nux_object_new(arena, NUX_OBJECT_INPUTMAP);
     nux_check(map, return nullptr);
     nux_vec_init_capa(&map->entries, arena, DEFAULT_CONTROLLER_INPUT_SIZE);
     return map;

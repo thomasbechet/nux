@@ -7,19 +7,19 @@ draw_line (nux_v3_t a, nux_v3_t b)
 
     const nux_v3_t  positions[]  = { a, b };
     const nux_u32_t vertex_count = nux_array_size(positions);
-    const nux_u32_t stride       = 3;
-    nux_f32_t       data[stride * vertex_count];
+    const nux_u32_t stide        = 3;
+    nux_f32_t       data[stide * vertex_count];
     nux_v4_t        c = nux_palette_get_color(gfx->active_palette,
                                        gfx->immediate_state->immediate_color);
     for (nux_u32_t i = 0; i < vertex_count; ++i)
     {
-        data[i * stride + 0] = positions[i].x;
-        data[i * stride + 1] = positions[i].y;
-        data[i * stride + 2] = positions[i].z;
+        data[i * stide + 0] = positions[i].x;
+        data[i * stide + 1] = positions[i].y;
+        data[i * stide + 2] = positions[i].z;
     }
     nux_u32_t offset;
     nux_check(
-        nux_graphics_push_frame_vertices(vertex_count * stride, data, &offset),
+        nux_graphics_push_frame_vertices(vertex_count * stide, data, &offset),
         return);
 
     nux_graphics_command_t *cmd = nux_vec_push(&gfx->immediate_commands);

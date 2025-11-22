@@ -120,12 +120,9 @@ void nux_serde_write_bytes(nux_serde_writer_t *s,
 void nux_serde_write_string(nux_serde_writer_t *s,
                             const nux_c8_t     *key,
                             const nux_c8_t     *v);
-void nux_serde_write_rid(nux_serde_writer_t *s,
-                         const nux_c8_t     *key,
-                         nux_rid_t           rid);
-void nux_serde_write_eid(nux_serde_writer_t *s,
-                         const nux_c8_t     *key,
-                         nux_nid_t           v);
+void nux_serde_write_id(nux_serde_writer_t *s,
+                        const nux_c8_t     *key,
+                        nux_id_t            id);
 
 void nux_serde_read(nux_serde_reader_t *s, nux_serde_value_t *value);
 void nux_serde_read_object(nux_serde_reader_t *s, const nux_c8_t *key);
@@ -144,11 +141,8 @@ void nux_serde_read_q4(nux_serde_reader_t *s, const nux_c8_t *key, nux_q4_t *v);
 const nux_c8_t *nux_serde_read_string(nux_serde_reader_t *s,
                                       const nux_c8_t     *key,
                                       nux_u32_t          *n);
-void            nux_serde_read_rid(nux_serde_reader_t *s,
-                                   const nux_c8_t     *key,
-                                   nux_rid_t          *rid);
-void            nux_serde_read_nid(nux_serde_reader_t *s,
-                                   const nux_c8_t     *key,
-                                   nux_nid_t          *v);
+void            nux_serde_read_id(nux_serde_reader_t *s,
+                                  const nux_c8_t     *key,
+                                  nux_id_t           *id);
 
 #endif

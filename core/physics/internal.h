@@ -88,15 +88,15 @@ typedef struct
 void                  nux_physics_module_register(void);
 nux_physics_module_t *nux_physics(void);
 
-void      nux_physics_add_rigidbody(nux_nid_t e);
+void      nux_physics_add_rigidbody(nux_id_t id);
 nux_u32_t nux_physics_add_pm(nux_v3_t pos, nux_v3_t vel);
 void      nux_physics_add_distance_constraint(nux_u32_t a,
                                               nux_u32_t b,
                                               float     distance);
 
-void nux_rigidbody_add(nux_nid_t e, void *data);
+void nux_rigidbody_add(nux_id_t id, void *data);
 
-void nux_collider_add(nux_nid_t e, void *data);
+void nux_collider_add(nux_id_t id, void *data);
 
 nux_b32_t nux_intersect_ray_sphere(nux_ray_t r, nux_sphere_t s, nux_f32_t *t0);
 nux_b32_t nux_intersect_segment_plane(nux_segment_t s,

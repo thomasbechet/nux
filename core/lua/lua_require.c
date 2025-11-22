@@ -19,9 +19,9 @@ l_require (lua_State *L)
 
     // check already loaded
     nux_lua_t *it = nullptr;
-    while ((it = nux_resource_next(NUX_RESOURCE_LUA_MODULE, it)))
+    while ((it = nux_object_next(NUX_OBJECT_LUA_MODULE, it)))
     {
-        if (!nux_strncmp(nux_resource_path(it), filepath, NUX_PATH_MAX))
+        if (!nux_strncmp(nux_object_path(it), filepath, NUX_PATH_MAX))
         {
             lua_rawgeti(L, LUA_REGISTRYINDEX, it->ref);
             return 1;

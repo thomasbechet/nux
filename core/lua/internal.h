@@ -14,7 +14,7 @@
 #include <externals/lua/lauxlib.h>
 
 #define NUX_LUA_MODULE_TABLE "M"
-#define NUX_LUA_MODULE_RID   "rid"
+#define NUX_LUA_MODULE_RID   "id"
 #define NUX_LUA_ON_CONF      "on_conf"
 #define NUX_LUA_ON_LOAD      "on_load"
 #define NUX_LUA_ON_UNLOAD    "on_unload"
