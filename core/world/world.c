@@ -67,7 +67,7 @@ nux_oid_t
 nux_object_create (void)
 {
     nux_world_t  *world  = _module.active_world;
-    nux_object_t *object = nullptr;
+    nux_handlemap_entry_t *object = nullptr;
     if (world->free)
     {
         object      = world->objects.data + world->free;

@@ -222,9 +222,12 @@
     }
 #define nux_pool_init_capa(p, a, c) \
     nux__pool_init_capa(&(p)->pool, a, sizeof(*(p)->data), c)
-#define nux_pool_init(p, a)   nux_pool_init_capa(p, a, 0)
-#define nux_pool_add(p)       (typeof((p)->data))nux__pool_add(&(p)->pool)
+#define nux_pool_init(p, a) nux_pool_init_capa(p, a, 0)
+#define nux_pool_add(p, pindex) \
+    (typeof((p)->data))nux__pool_add(&(p)->pool, (pindex))
 #define nux_pool_remove(p, i) nux__pool_remove(&(p)->pool, i)
+#define nux_pool_get(p, index) \
+    (typeof((p)->data))nux__pool_get(&(p)->pool, (index))
 
 ////////////////////////////
 ///        TYPES         ///
@@ -672,7 +675,8 @@ void  nux__pool_init_capa(nux_pool_t  *pool,
                           nux_arena_t *arena,
                           nux_u32_t    osize,
                           nux_u32_t    capa);
-void *nux__pool_add(nux_pool_t *pool);
-void  nux__pool_remove(nux_pool_t *pool, void *i);
+void *nux__pool_add(nux_pool_t *pool, nux_u32_t *index);
+void  nux__pool_remove(nux_pool_t *pool, nux_u32_t index);
+void *nux__pool_get(nux_pool_t *pool, nux_u32_t index);
 
 #endif

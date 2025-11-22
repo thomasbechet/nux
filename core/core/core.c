@@ -29,7 +29,7 @@ bootstrap_core_arena (void)
     // 4. Allocate resource table
     nux_pool_init(&_module.resources, _module.core_arena);
     // 5. Reserve index 0 for null id
-    nux_pool_add(&_module.resources);
+    nux_pool_add(&_module.resources, nullptr);
     // 6. Create core arena resource entry
     nux_resource_entry_t *entry
         = nux_resource_add(&_module.resources, NUX_RESOURCE_ARENA);

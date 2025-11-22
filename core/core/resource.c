@@ -113,8 +113,8 @@ nux_resource_register (nux_u32_t index, nux_resource_info_t info)
 nux_resource_entry_t *
 nux_resource_add (nux_resource_pool_t *resources, nux_u32_t type)
 {
-    nux_resource_entry_t *entry = nux_pool_add(resources);
-    nux_u32_t             index = entry - resources->data;
+    nux_u32_t             index;
+    nux_resource_entry_t *entry = nux_pool_add(resources, &index);
     entry->rid                  = rid_build(entry->rid, type, index);
     entry->arena                = nullptr;
     entry->type_index           = type;
@@ -190,7 +190,7 @@ resource_finalizer (void *p)
     {
         t->first_entry_index = entry->next_entry_index;
     }
-    nux_pool_remove(resources, entry);
+    nux_pool_remove(resources, index);
 }
 
 nux_u32_t

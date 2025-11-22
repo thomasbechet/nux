@@ -33,11 +33,11 @@ typedef struct
         };
         nux_u32_t free;
     };
-} nux_object_t;
+} nux_handlemap_entry_t;
 
 typedef struct nux_world_t
 {
-    nux_vec(nux_object_t) objects;
+    nux_vec(nux_handlemap_entry_t) objects;
     nux_u32_t free;
 } nux_world_t;
 
