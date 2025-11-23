@@ -66,11 +66,12 @@ typedef enum
     NUX_OBJECT_FILE       = 8,
     NUX_OBJECT_DISK       = 9,
     NUX_OBJECT_SCENE      = 10,
-    NUX_OBJECT_QUERY      = 11,
-    NUX_OBJECT_EVENT      = 12,
-    NUX_OBJECT_INPUTMAP   = 13,
-    NUX_OBJECT_GUI        = 14,
-    NUX_OBJECT_STYLESHEET = 15,
+    NUX_OBJECT_NODE       = 11,
+    NUX_OBJECT_QUERY      = 12,
+    NUX_OBJECT_EVENT      = 13,
+    NUX_OBJECT_INPUTMAP   = 14,
+    NUX_OBJECT_GUI        = 15,
+    NUX_OBJECT_STYLESHEET = 16,
 
     NUX_OBJECT_MAX = 256,
 } nux_object_types_t;

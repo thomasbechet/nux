@@ -14,12 +14,21 @@ typedef enum
 typedef nux_u32_t nux_scene_mask_t;
 typedef nux_vec(nux_scene_mask_t) nux_scene_bitset_t;
 
-typedef struct
+typedef enum
 {
-    nux_id_t parent;
-    nux_id_t next;
-    nux_id_t prev;
-    nux_id_t child;
+    NUX_NODE_TRANSFORM  = 0,
+    NUX_NODE_STATICMESH = 1,
+    NUX_NODE_CAMERA     = 2,
+    NUX_NODE_POINTLIGHT = 3,
+} nux_node_type_t;
+
+typedef struct nux_node_t
+{
+    nux_node_type_t type;
+    nux_id_t        parent;
+    nux_id_t        next;
+    nux_id_t        prev;
+    nux_id_t        child;
 } nux_node_t;
 
 typedef struct
