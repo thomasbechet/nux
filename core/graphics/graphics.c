@@ -18,10 +18,8 @@ update_transform_buffer (nux_u32_t first, nux_u32_t count, const nux_m4_t *data)
 static nux_i32_t
 camera_compare (const void *a, const void *b)
 {
-    const nux_camera_t *ca
-        = nux_component_get(*(const nux_id_t *)a, NUX_COMPONENT_CAMERA);
-    const nux_camera_t *cb
-        = nux_component_get(*(const nux_id_t *)b, NUX_COMPONENT_CAMERA);
+    const nux_camera_t *ca = nux_node_check(NUX_NODE_CAMERA, *(nux_node_t **)a);
+    const nux_camera_t *cb = nux_node_check(NUX_NODE_CAMERA, *(nux_node_t **)b);
     return ca->layer - cb->layer;
 }
 static nux_b2i_t
@@ -143,10 +141,10 @@ static void
 module_update (void)
 {
     // Propagate transforms
-    nux_id_t transform = NUX_NULL;
-    while ((transform = nux_query_next(_module.query_transform, transform)))
+    nux_node_t *node = nullptr;
+    while ((node = nux_object_next(NUX_OBJECT_NODE, node)))
     {
-        nux_transform_matrix(transform);
+        nux_transform_matrix(node);
     }
 
     // Upload meshes
@@ -167,13 +165,13 @@ module_update (void)
     }
 
     // Collect cameras
-    nux_id_t  cameras[32];
-    nux_u32_t cameras_count = 0;
-    nux_id_t  it            = NUX_NULL;
-    while ((it = nux_query_next(_module.query_transform_camera, it)))
+    nux_node_t *cameras[32];
+    nux_u32_t   cameras_count = 0;
+    nux_node_t *camera        = nullptr;
+    while ((camera = nux_node_next(NUX_NODE_CAMERA, camera)))
     {
         nux_assert(cameras_count < nux_array_size(cameras));
-        cameras[cameras_count] = it;
+        cameras[cameras_count] = camera;
         ++cameras_count;
     }
 
@@ -183,9 +181,8 @@ module_update (void)
     // Render cameras
     for (nux_u32_t i = 0; i < cameras_count; ++i)
     {
-        nux_id_t     camera = cameras[i];
-        nux_scene_t *scene  = nux_scene_active();
-        nux_renderer_render_scene(scene, camera);
+        nux_node_t *camera = cameras[i];
+        nux_renderer_render_scene(camera);
     }
 
     // Submit canvas commands
@@ -236,22 +233,22 @@ module_init (void)
                                               .cleanup = nux_font_cleanup });
 
     // Register components
-    nux_component_register(NUX_COMPONENT_CAMERA,
-                           (nux_component_info_t) {
-                               .name  = "camera",
-                               .size  = sizeof(nux_camera_t),
-                               .add   = nux_camera_add,
-                               .write = nux_camera_write,
-                               .read  = nux_camera_read,
-                           });
-    nux_component_register(NUX_COMPONENT_STATICMESH,
-                           (nux_component_info_t) {
-                               .name  = "staticmesh",
-                               .size  = sizeof(nux_staticmesh_t),
-                               .add   = nux_staticmesh_add,
-                               .write = nux_staticmesh_write,
-                               .read  = nux_staticmesh_read,
-                           });
+    nux_node_register(NUX_NODE_CAMERA,
+                      (nux_node_info_t) {
+                          .name  = "camera",
+                          .size  = sizeof(nux_camera_t),
+                          .add   = nux_camera_add,
+                          .write = nux_camera_write,
+                          .read  = nux_camera_read,
+                      });
+    nux_node_register(NUX_NODE_STATICMESH,
+                      (nux_node_info_t) {
+                          .name  = "staticmesh",
+                          .size  = sizeof(nux_staticmesh_t),
+                          .add   = nux_staticmesh_add,
+                          .write = nux_staticmesh_write,
+                          .read  = nux_staticmesh_read,
+                      });
 
     // Initialize gpu slots
     nux_vec_init_capa(
@@ -338,23 +335,6 @@ module_init (void)
                  nux_config_get()->graphics.transforms_buffer_size);
     nux_check(nux_gpu_buffer_init(&_module.transforms_buffer),
               return NUX_FAILURE);
-
-    // Create queries
-    _module.query_transform = nux_query_new(nux_arena_core(), 1, 0);
-    nux_check(_module.query_transform, return NUX_FAILURE);
-    nux_query_includes(_module.query_transform, NUX_COMPONENT_TRANSFORM);
-
-    _module.query_transform_camera = nux_query_new(nux_arena_core(), 2, 0);
-    nux_check(_module.query_transform_camera, return NUX_FAILURE);
-    nux_query_includes(_module.query_transform_camera, NUX_COMPONENT_TRANSFORM);
-    nux_query_includes(_module.query_transform_camera, NUX_COMPONENT_CAMERA);
-
-    _module.query_transform_staticmesh = nux_query_new(nux_arena_core(), 2, 0);
-    nux_check(_module.query_transform_staticmesh, return NUX_FAILURE);
-    nux_query_includes(_module.query_transform_staticmesh,
-                       NUX_COMPONENT_TRANSFORM);
-    nux_query_includes(_module.query_transform_staticmesh,
-                       NUX_COMPONENT_STATICMESH);
 
     // Push identity transform
     nux_m4_t identity = nux_m4_identity();

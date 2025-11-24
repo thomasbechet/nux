@@ -9,19 +9,19 @@ static void l_checkerror(lua_State *L)
 }
 
 {% set objmap = {
-    "arena": "NUX_RESOURCE_ARENA",
-    "file": "NUX_RESOURCE_FILE",
-    "inputmap": "NUX_RESOURCE_INPUTMAP",
-    "texture": "NUX_RESOURCE_TEXTURE",
-    "palette": "NUX_RESOURCE_PALETTE",
-    "viewport": "NUX_RESOURCE_VIEWPORT",
-    "mesh": "NUX_RESOURCE_MESH",
-    "canvas": "NUX_RESOURCE_CANVAS",
-    "scene": "NUX_RESOURCE_SCENE",
-    "query": "NUX_RESOURCE_QUERY",
-    "gui": "NUX_RESOURCE_GUI",
-    "event": "NUX_RESOURCE_EVENT",
-    "stylesheet": "NUX_RESOURCE_STYLESHEET",
+    "arena": "NUX_OBJECT_ARENA",
+    "file": "NUX_OBJECT_FILE",
+    "inputmap": "NUX_OBJECT_INPUTMAP",
+    "texture": "NUX_OBJECT_TEXTURE",
+    "palette": "NUX_OBJECT_PALETTE",
+    "viewport": "NUX_OBJECT_VIEWPORT",
+    "mesh": "NUX_OBJECT_MESH",
+    "canvas": "NUX_OBJECT_CANVAS",
+    "scene": "NUX_OBJECT_SCENE",
+    "node": "NUX_OBJECT_NODE",
+    "gui": "NUX_OBJECT_GUI",
+    "event": "NUX_OBJECT_EVENT",
+    "stylesheet": "NUX_OBJECT_STYLESHEET",
 } %}
 
 {% for class_name, class in classes.items() %}

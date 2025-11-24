@@ -147,10 +147,9 @@ load_node (nux_arena_t *arena,
            nux_u32_t    resources_count,
            cgltf_scene *scene,
            cgltf_node  *node,
-           nux_id_t     parent)
+           nux_node_t  *parent)
 {
-    nux_id_t e = nux_node_create(parent);
-    nux_check(e, return NUX_FAILURE);
+    nux_node_t *n = nux_node_new(NUX_NODE_STATICMESH, parent);
 
     nux_v3_t translation = nux_v3_zero();
     nux_q4_t rotation    = nux_q4_identity();
@@ -173,10 +172,9 @@ load_node (nux_arena_t *arena,
     }
 
     // Set transform
-    nux_node_add(e, NUX_COMPONENT_TRANSFORM);
-    nux_transform_set_translation(e, translation);
-    nux_transform_set_rotation(e, rotation);
-    nux_transform_set_scale(e, scale);
+    nux_transform_set_translation(n, translation);
+    nux_transform_set_rotation(n, rotation);
+    nux_transform_set_scale(n, scale);
 
     if (node->mesh)
     {
@@ -229,16 +227,15 @@ load_node (nux_arena_t *arena,
                       texture);
 
             // Write staticmesh
-            nux_node_add(e, NUX_COMPONENT_STATICMESH);
-            nux_staticmesh_set_mesh(e, nux_object_get(NUX_OBJECT_MESH, mesh));
+            nux_staticmesh_set_mesh(n, nux_object_get(NUX_OBJECT_MESH, mesh));
             nux_staticmesh_set_texture(
-                e, nux_object_get(NUX_OBJECT_TEXTURE, texture));
+                n, nux_object_get(NUX_OBJECT_TEXTURE, texture));
         }
     }
     for (nux_u32_t i = 0; i < node->children_count; ++i)
     {
         cgltf_node *child = node->children[i];
-        load_node(arena, resources, resources_count, scene, child, e);
+        load_node(arena, resources, resources_count, scene, child, n);
     }
     return NUX_SUCCESS;
 }

@@ -40,7 +40,7 @@ if __name__ == "__main__":
     for clazz, name in [
             ("module", "register"),
             ("object", "register"),
-            ("component", "register"),
+            ("node", "register"),
             ("event", "new"),
             ("event", "unsubscribe"),
             ("event", "handler_event"),

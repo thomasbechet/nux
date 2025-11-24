@@ -220,10 +220,6 @@ typedef struct
 
     nux_gpu_encoder_t encoder;
 
-    nux_query_t *query_transform;
-    nux_query_t *query_transform_staticmesh;
-    nux_query_t *query_transform_camera;
-
     nux_vec(nux_graphics_command_t) immediate_commands;
     nux_vec(nux_immediate_state_t) immediate_states;
     nux_immediate_state_t *immediate_state;
@@ -310,14 +306,14 @@ void nux_mesh_push_vertices(nux_mesh_t     *mesh,
                             const nux_v2_t *uvs,
                             const nux_v3_t *colors);
 
-void         nux_staticmesh_add(nux_id_t id, void *data);
+void         nux_staticmesh_add(nux_node_t *node);
 nux_status_t nux_staticmesh_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_staticmesh_read(nux_serde_reader_t *s, void *data);
 
-void         nux_camera_add(nux_id_t id, void *data);
+void         nux_camera_add(nux_node_t *node);
 nux_status_t nux_camera_write(nux_serde_writer_t *s, const void *data);
 nux_status_t nux_camera_read(nux_serde_reader_t *s, void *data);
 
-void nux_renderer_render_scene(nux_scene_t *scene, nux_id_t camera);
+void nux_renderer_render_scene(nux_node_t *camera);
 
 #endif

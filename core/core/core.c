@@ -101,6 +101,7 @@ nux_core_init (void)
     // Register systems
     nux_system_register(NUX_SYSTEM_PRE_UPDATE, module_pre_update);
     nux_system_register(NUX_SYSTEM_POST_UPDATE, module_post_update);
+
     // Register types
     nux_object_register(NUX_OBJECT_NULL,
                         (nux_object_info_t) { .name = "null", .size = 0 });
@@ -111,18 +112,30 @@ nux_core_init (void)
     nux_object_register(
         NUX_OBJECT_EVENT,
         (nux_object_info_t) { .name = "event", .size = sizeof(nux_event_t) });
+    nux_object_register(NUX_OBJECT_SCENE,
+                        (nux_object_info_t) {
+                            .name    = "scene",
+                            .size    = sizeof(nux_scene_t),
+                            .cleanup = nux_scene_cleanup,
+                        });
+    nux_object_register(NUX_OBJECT_NODE,
+                        (nux_object_info_t) {
+                            .name    = "node",
+                            .size    = sizeof(nux_node_t),
+                            .cleanup = nux_node_cleanup,
+                        });
 
     // Create frame arena
     _module.frame_arena = nux_arena_new(_module.core_arena);
     nux_assert(_module.frame_arena);
     nux_object_set_name(_module.frame_arena, "frame_arena");
 
-    // Initialize IO
+    // Initialize core systems
     nux_check(nux_io_init(), goto cleanup);
+    nux_check(nux_scene_init(), goto cleanup);
 
     // Register modules
     nux_input_module_register();
-    nux_scene_module_register();
     nux_graphics_module_register();
     nux_physics_module_register();
     nux_ui_module_register();
@@ -218,16 +231,6 @@ nux_pcg_t *
 nux_core_pcg (void)
 {
     return &_module.pcg;
-}
-nux_object_pool_t *
-nux_core_objects (void)
-{
-    return &_module.objects;
-}
-nux_object_type_t *
-nux_core_object_types (void)
-{
-    return _module.object_types;
 }
 
 nux_config_t *

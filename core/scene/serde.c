@@ -6,13 +6,13 @@ scene_writer_callback (void *userdata, const nux_serde_value_t *v)
     nux_scene_writer_t *s = userdata;
     if (v->type == NUX_SERDE_NID)
     {
-        nux_id_t  nid       = *v->u32;
-        nux_u32_t nid_index = nux_nid_index(nid);
-        nux_u32_t index
-            = nid_index < s->node_count ? s->node_map[nid_index] : NUX_NULL;
-        nux_serde_value_t value = *v;
-        value.u32               = &index;
-        nux_serde_write(s->output, v);
+        // nux_id_t  nid       = *v->u32;
+        // nux_u32_t nid_index = nux_nid_index(nid);
+        // nux_u32_t index
+        //     = nid_index < s->node_count ? s->node_map[nid_index] : NUX_NULL;
+        // nux_serde_value_t value = *v;
+        // value.u32               = &index;
+        // nux_serde_write(s->output, v);
     }
     else
     {
@@ -62,9 +62,6 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
     nux_scene_t        *prev_scene = nux_scene_active();
     nux_scene_set_active(scene);
 
-    nux_query_t *iter = nux_query_new_any(nux_arena_frame());
-    nux_check(iter, return NUX_FAILURE);
-
     nux_u32_t entity_count = nux_scene_count();
     // TODO: no entities case ?
     nux_u32_t *entity_map
@@ -78,58 +75,58 @@ nux_scene_write (nux_serde_writer_t *s, const nux_c8_t *key, nux_scene_t *scene)
     s                 = &writer.writer;
 
     // 1. Fill entity map (global index to local index)
-    nux_id_t  it    = NUX_NULL;
-    nux_u32_t index = 0;
-    while ((it = nux_query_next(iter, it)))
-    {
-        writer.node_map[nux_nid_index(it)] = index;
-        ++index;
-    }
+    // nux_id_t  it    = NUX_NULL;
+    // nux_u32_t index = 0;
+    // while ((it = nux_query_next(iter, it)))
+    // {
+    //     writer.node_map[nux_nid_index(it)] = index;
+    //     ++index;
+    // }
 
     // 2. Iterate over entities and write components
     nux_serde_write_object(s, key);
     nux_serde_write_array(s, "entities", nux_scene_count());
-    nux_id_t  e            = NUX_NULL;
-    nux_u32_t entity_index = 0;
-    while ((e = nux_query_next(iter, e)))
-    {
-        // Compute component count
-        nux_u32_t component_count = 0;
-        for (nux_u32_t c = 0; c < module->components_max; ++c)
-        {
-            nux_component_t *comp = module->components + c;
-            if (!comp->info.name)
-            {
-                continue;
-            }
-            if (nux_node_has(e, c))
-            {
-                ++component_count;
-            }
-        }
-        // Write components
-        nux_serde_write_array(s, nullptr, component_count); // begin entity
-        for (nux_u32_t c = 0; c < module->components_max; ++c)
-        {
-            nux_component_t *comp = module->components + c;
-            if (!comp->info.name)
-            {
-                continue;
-            }
-            const void *data = nux_component_get(e, c);
-            if (data)
-            {
-                nux_serde_write_object(s, nullptr);
-                nux_serde_write_string(s, "component", comp->info.name);
-                if (comp->info.write)
-                {
-                    nux_check(comp->info.write(s, data), goto error);
-                }
-                nux_serde_write_end(s);
-            }
-        }
-        nux_serde_write_end(s); // end entity
-    }
+    nux_id_t e = NUX_NULL;
+    // nux_u32_t entity_index = 0;
+    // while ((e = nux_query_next(iter, e)))
+    // {
+    //     // Compute component count
+    //     nux_u32_t component_count = 0;
+    //     for (nux_u32_t c = 0; c < module->components_max; ++c)
+    //     {
+    //         nux_component_t *comp = module->components + c;
+    //         if (!comp->info.name)
+    //         {
+    //             continue;
+    //         }
+    //         if (nux_node_has(e, c))
+    //         {
+    //             ++component_count;
+    //         }
+    //     }
+    //     // Write components
+    //     nux_serde_write_array(s, nullptr, component_count); // begin entity
+    //     for (nux_u32_t c = 0; c < module->components_max; ++c)
+    //     {
+    //         nux_component_t *comp = module->components + c;
+    //         if (!comp->info.name)
+    //         {
+    //             continue;
+    //         }
+    //         const void *data = nux_component_get(e, c);
+    //         if (data)
+    //         {
+    //             nux_serde_write_object(s, nullptr);
+    //             nux_serde_write_string(s, "component", comp->info.name);
+    //             if (comp->info.write)
+    //             {
+    //                 nux_check(comp->info.write(s, data), goto error);
+    //             }
+    //             nux_serde_write_end(s);
+    //         }
+    //     }
+    //     nux_serde_write_end(s); // end entity
+    // }
     nux_serde_write_end(s); // entities
     nux_serde_write_end(s); // scene
 
@@ -161,39 +158,39 @@ nux_scene_read (nux_serde_reader_t *s, const nux_c8_t *key, nux_scene_t *scene)
     s                 = &reader.reader;
 
     // 1. Create entities
-    for (nux_u32_t i = 0; i < entity_count; ++i)
-    {
-        entity_map[i] = nux_node_create(nux_node_root());
-        nux_check(entity_map[i], goto error);
-    }
+    // for (nux_u32_t i = 0; i < entity_count; ++i)
+    // {
+    //     entity_map[i] = nux_node_create(nux_node_root());
+    //     nux_check(entity_map[i], goto error);
+    // }
 
     // 2. Read entities components
-    for (nux_u32_t i = 0; i < entity_count; ++i)
-    {
-        nux_id_t  e = entity_map[i];
-        nux_u32_t component_count;
-        nux_serde_read_array(s, nullptr, &component_count); // entity
-        for (nux_u32_t j = 0; j < component_count; ++j)
-        {
-            nux_serde_read_object(s, nullptr); // component
-            nux_u32_t       n;
-            const nux_c8_t *name = nux_serde_read_string(s, "component", &n);
-            for (nux_u32_t c = 0; c < module->components_max; ++c)
-            {
-                nux_component_t *comp = module->components + c;
-                if (comp->info.name && comp->info.read
-                    && nux_strncmp(comp->info.name, name, n) == 0)
-                {
-                    nux_node_add(e, c);
-                    void *data = nux_component_get(e, c);
-                    nux_check(comp->info.read(s, data), goto error);
-                    break;
-                }
-            }
-            nux_serde_read_end(s); // component
-        }
-        nux_serde_read_end(s); // entity
-    }
+    // for (nux_u32_t i = 0; i < entity_count; ++i)
+    // {
+    //     nux_id_t  e = entity_map[i];
+    //     nux_u32_t component_count;
+    //     nux_serde_read_array(s, nullptr, &component_count); // entity
+    //     for (nux_u32_t j = 0; j < component_count; ++j)
+    //     {
+    //         nux_serde_read_object(s, nullptr); // component
+    //         nux_u32_t       n;
+    //         const nux_c8_t *name = nux_serde_read_string(s, "component", &n);
+    //         for (nux_u32_t c = 0; c < module->components_max; ++c)
+    //         {
+    //             nux_component_t *comp = module->components + c;
+    //             if (comp->info.name && comp->info.read
+    //                 && nux_strncmp(comp->info.name, name, n) == 0)
+    //             {
+    //                 nux_node_add(e, c);
+    //                 void *data = nux_component_get(e, c);
+    //                 nux_check(comp->info.read(s, data), goto error);
+    //                 break;
+    //             }
+    //         }
+    //         nux_serde_read_end(s); // component
+    //     }
+    //     nux_serde_read_end(s); // entity
+    // }
     nux_serde_read_end(s); // entities
     nux_serde_read_end(s); // scene
 

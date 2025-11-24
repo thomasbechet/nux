@@ -8,7 +8,6 @@ typedef enum
     DEFAULT_MODULE_CAPACITY              = 8,
     DEFAULT_SYSTEM_CAPACITY              = 32,
     DEFAULT_MODULE_DEPENDENCIES_CAPACITY = 64,
-    ARENA_ALLOCATOR_TYPE                 = 12345,
 } nux_base_defaults_t;
 
 typedef enum
@@ -39,13 +38,6 @@ typedef struct
     nux_u32_t       prev_entry_index; // same type
     nux_u32_t       next_entry_index; // same type
 } nux_object_entry_t;
-
-typedef struct
-{
-    nux_object_info_t info;
-    nux_u32_t         first_entry_index;
-    nux_u32_t         last_entry_index;
-} nux_object_type_t;
 
 typedef struct
 {
@@ -144,6 +136,30 @@ typedef struct nux_disk
 
 typedef nux_pool(nux_object_entry_t) nux_object_pool_t;
 
+typedef struct nux_transform_t
+{
+    nux_v3_t  translation;
+    nux_q4_t  rotation;
+    nux_v3_t  scale;
+    nux_m4_t  global_matrix;
+    nux_b32_t dirty;
+} nux_transform_t;
+
+typedef struct nux_node_t
+{
+    nux_scene_t *scene;
+    nux_id_t     parent;
+    nux_id_t     next;
+    nux_id_t     prev;
+    nux_id_t     child;
+    nux_id_t     components[32];
+} nux_node_t;
+
+typedef struct nux_scene_t
+{
+    nux_node_t *root;
+} nux_scene_t;
+
 typedef struct
 {
     nux_config_t      config;
@@ -154,6 +170,7 @@ typedef struct
     nux_u64_t         stats[NUX_STAT_MAX];
     nux_object_pool_t objects;
     nux_object_type_t object_types[NUX_OBJECT_MAX];
+    nux_u32_t         component_count;
     nux_arena_t      *frame_arena;
     nux_c8_t          error_message[256];
     nux_status_t      error_status;
@@ -166,13 +183,12 @@ typedef struct
 
     nux_cart_writer_t cart_writer;
     nux_u32_vec_t     free_file_slots;
+
+    nux_scene_t *active_scene;
+    nux_scene_t *default_scene;
 } nux_core_module_t;
 
 nux_core_module_t *nux_core(void);
-
-nux_pcg_t         *nux_core_pcg(void);
-nux_object_pool_t *nux_core_objects(void);
-nux_object_type_t *nux_core_object_types(void);
 
 nux_object_entry_t *nux_object_add(nux_object_pool_t *resources,
                                    nux_u32_t          type);
@@ -187,6 +203,8 @@ void nux_arena_cleanup(void *data);
 
 nux_status_t nux_io_init(void);
 void         nux_io_free(void);
+
+nux_status_t nux_scene_init(void);
 
 void nux_file_cleanup(void *data);
 void nux_disk_cleanup(void *data);

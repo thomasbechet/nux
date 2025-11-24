@@ -14,8 +14,7 @@ typedef enum
     NUX_SERDE_Q4,
     NUX_SERDE_BYTES,
     NUX_SERDE_STRING,
-    NUX_SERDE_RID,
-    NUX_SERDE_NID,
+    NUX_SERDE_ID,
 } nux_serde_type_t;
 
 typedef struct

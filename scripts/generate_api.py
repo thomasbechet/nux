@@ -200,6 +200,7 @@ def parse_header(args, header, module):
         'nux_arena_t',
         'nux_texture_t',
         'nux_canvas_t',
+        'nux_node_t',
         'nux_serde_reader_t',
         'nux_serde_writer_t',
         ]:

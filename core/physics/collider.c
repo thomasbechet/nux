@@ -1,30 +1,26 @@
 #include "internal.h"
 
 void
-nux_collider_add (nux_id_t e, void *data)
+nux_collider_add (nux_node_t *node)
 {
-    nux_collider_t *collider = data;
+    nux_collider_t *collider = nux_node_check(NUX_NODE_COLLIDER, node);
     collider->type           = NUX_COLLIDER_SPHERE;
     collider->sphere.radius  = 1;
 }
 
 void
-nux_collider_set_sphere (nux_id_t e, nux_f32_t radius)
+nux_collider_set_sphere (nux_node_t *node, nux_f32_t radius)
 {
-    nux_collider_t *collider = nux_component_get(e, NUX_COMPONENT_COLLIDER);
+    nux_collider_t *collider = nux_node_check(NUX_NODE_COLLIDER, node);
     nux_check(collider, return);
     collider->type          = NUX_COLLIDER_SPHERE;
     collider->sphere.radius = radius;
 }
 void
-nux_collider_set_aabb (nux_id_t e, nux_v3_t min, nux_v3_t max)
+nux_collider_set_aabb (nux_node_t *node, nux_v3_t min, nux_v3_t max)
 {
-    nux_collider_t *collider = nux_component_get(e, NUX_COMPONENT_COLLIDER);
+    nux_collider_t *collider = nux_node_check(NUX_NODE_COLLIDER, node);
     nux_check(collider, return);
     collider->type     = NUX_COLLIDER_AABB;
     collider->aabb.box = nux_b3(min, max);
-    if (nux_node_has(e, NUX_COMPONENT_RIGIDBODY))
-    {
-        nux_physics_add_rigidbody(e);
-    }
 }

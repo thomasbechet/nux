@@ -788,7 +788,7 @@ meta_index (lua_State *L)
             const char *key = luaL_checkstring(L, 2);
             if (nux_match(key, "node"))
             {
-                lua_pushinteger(L, u->hit->node);
+                lua_pushinteger(L, nux_object_id(u->hit->node));
                 return 1;
             }
             else if (nux_match(key, "position"))
