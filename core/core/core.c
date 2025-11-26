@@ -1,8 +1,8 @@
 #include "internal.h"
 
 #include <input/internal.h>
-#include <lua/internal.h>
 #include <scene/internal.h>
+#include <lua/internal.h>
 #include <graphics/internal.h>
 #include <physics/internal.h>
 #include <ui/internal.h>
@@ -112,18 +112,6 @@ nux_core_init (void)
     nux_object_register(
         NUX_OBJECT_EVENT,
         (nux_object_info_t) { .name = "event", .size = sizeof(nux_event_t) });
-    nux_object_register(NUX_OBJECT_SCENE,
-                        (nux_object_info_t) {
-                            .name    = "scene",
-                            .size    = sizeof(nux_scene_t),
-                            .cleanup = nux_scene_cleanup,
-                        });
-    nux_object_register(NUX_OBJECT_NODE,
-                        (nux_object_info_t) {
-                            .name    = "node",
-                            .size    = sizeof(nux_node_t),
-                            .cleanup = nux_node_cleanup,
-                        });
 
     // Create frame arena
     _module.frame_arena = nux_arena_new(_module.core_arena);
@@ -132,7 +120,6 @@ nux_core_init (void)
 
     // Initialize core systems
     nux_check(nux_io_init(), goto cleanup);
-    nux_check(nux_scene_init(), goto cleanup);
 
     // Register modules
     nux_input_module_register();

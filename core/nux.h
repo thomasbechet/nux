@@ -8,7 +8,6 @@
 
 #include <core/core.h>
 #include <input/input.h>
-#include <scene/scene.h>
 #include <lua/lua.h>
 #include <physics/physics.h>
 #include <graphics/graphics.h>

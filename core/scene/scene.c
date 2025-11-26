@@ -36,15 +36,38 @@ node_attach (nux_node_t *node, nux_node_t *parent)
 static nux_status_t
 module_init (void)
 {
-
-    // Initialize values
-    nux_memset(_module.types, 0, sizeof(_module.types));
     nux_scene_t *default_scene = nux_scene_new(nux_arena_core());
-    nux_check(default_scene, return NUX_FAILURE);
-    _module.default_scene = default_scene;
-    _module.active        = _module.default_scene;
-
+    _module.default_scene      = default_scene;
+    _module.active_scene       = _module.default_scene;
     return NUX_SUCCESS;
+}
+void
+nux_scene_module_register (void)
+{
+    nux_module_register((nux_module_info_t) { .name = "scene",
+                                              .data = &_module,
+                                              .init = module_init,
+                                              .free = nullptr });
+}
+
+void
+nux_component_register (nux_u32_t type, nux_component_info_t info)
+{
+    nux_assert(nux_object_type(type));
+    nux_assert(_module.component_count < NUX_COMPONENT_MAX);
+    nux_component_type_t *t = _module.components + type;
+    t->used                 = true;
+    t->info                 = info;
+    t->index                = _module.component_count;
+    ++_module.component_count;
+}
+nux_component_type_t *
+nux_component_type (nux_u32_t type)
+{
+    nux_check(type < _module.component_count, return nullptr);
+    nux_component_type_t *t = _module.components + type;
+    nux_check(t->used, return nullptr);
+    return t;
 }
 
 nux_scene_t *
@@ -57,7 +80,6 @@ nux_scene_new (nux_arena_t *arena)
     nux_memset(root, 0, sizeof(*root));
     nux_transform_init(root);
     root->scene = scene;
-    root->type  = NUX_NODE_EMPTY;
     scene->root = root;
 
     return scene;
@@ -66,7 +88,7 @@ void
 nux_scene_cleanup (void *data)
 {
     nux_scene_t *scene = data;
-    if (_module.active == scene && scene != _module.default_scene)
+    if (nux_scene_active() == scene && scene != _module.default_scene)
     {
         nux_warning("cleanup active scene, default scene has been set");
         nux_scene_set_active(nullptr);
@@ -77,18 +99,18 @@ nux_scene_set_active (nux_scene_t *scene)
 {
     if (scene)
     {
-        _module.active = scene;
+        _module.active_scene = scene;
     }
     else
     {
-        _module.active = _module.default_scene;
+        _module.active_scene = _module.default_scene;
     }
     return NUX_SUCCESS;
 }
 nux_scene_t *
 nux_scene_active (void)
 {
-    return _module.active;
+    return _module.active_scene;
 }
 nux_u32_t
 nux_scene_count (void)
@@ -99,168 +121,4 @@ void
 nux_scene_clear (void)
 {
     // TODO
-}
-
-nux_node_t *
-nux_node_root (void)
-{
-    nux_check(_module.active, return nullptr);
-    return _module.active->root;
-}
-nux_node_t *
-nux_node_parent (nux_node_t *node)
-{
-    return nux_object_get(NUX_OBJECT_NODE, node->parent);
-}
-void
-nux_node_set_parent (nux_node_t *node, nux_node_t *parent)
-{
-    nux_check(node != parent, return);
-    node_detach(node);
-    node->parent = nux_object_id(parent);
-    node->next   = parent->child;
-    if (parent->child)
-    {
-        nux_node_t *child = nux_object_get(NUX_OBJECT_NODE, parent->child);
-        child->prev       = nux_object_id(child);
-        node->next        = parent->child;
-    }
-    parent->child = nux_object_id(node);
-    parent->prev  = NUX_NULL;
-}
-nux_node_t *
-nux_node_sibling (nux_node_t *node)
-{
-    return nux_object_get(NUX_OBJECT_NODE, node->next);
-}
-nux_node_t *
-nux_node_child (nux_node_t *node)
-{
-    return nux_object_get(NUX_OBJECT_NODE, node->child);
-}
-
-nux_node_t *
-nux_node_new (nux_node_t *parent)
-{
-    nux_assert(type < nux_array_size(_module.types));
-    nux_scene_t *scene = parent->scene;
-    nux_arena_t *a     = nux_object_arena(parent);
-    nux_node_t  *node  = nux_object_new(a, NUX_OBJECT_NODE);
-    node->parent       = nux_object_id(parent);
-    node->scene        = scene;
-    nux_transform_init(node);
-    node->data = nux_malloc(a, t->info.size);
-    if (t->info.add)
-    {
-        t->info.add(node);
-    }
-
-    // Append to type chain
-    if (scene->nodes[type])
-    {
-        scene->nodes[type]->prev_same_type = node;
-        node->next_same_type               = scene->nodes[type];
-    }
-    node->prev_same_type = nullptr;
-
-    return node->data;
-}
-void *
-nux_node_get (nux_node_t *node, nux_u32_t type)
-{
-    nux_object_type_t *t = nux_object_type(type);
-    nux_check(t && t->is_component, return nullptr);
-    return nux_object_get(type, node->components[t->component_index]);
-}
-nux_node_t *
-nux_node_next (nux_u32_t type, nux_node_t *it)
-{
-    if (!it)
-    {
-        nux_assert(type < nux_array_size(_module.types));
-        nux_scene_t *scene = nux_scene_active();
-        return scene->nodes[type];
-    }
-    return it->next_same_type;
-}
-nux_node_t *
-nux_node_next_all (nux_node_t *it)
-{
-    nux_scene_t *scene = nux_scene_active();
-    if (!it)
-    {
-        // return first node from types list
-        for (nux_u32_t i = 0; i < nux_array_size(_module.types); ++i)
-        {
-            if (scene->nodes[i])
-            {
-                return scene->nodes[i];
-            }
-        }
-        return nullptr;
-    }
-
-    if (!it->next_same_type)
-    {
-        // find next type chain
-        for (nux_u32_t i = it->type; i < nux_array_size(_module.types); ++i)
-        {
-            if (scene->nodes[i])
-            {
-                return scene->nodes[i];
-            }
-        }
-        return nullptr;
-    }
-
-    return it->next_same_type;
-}
-
-static nux_status_t
-node_clone (nux_scene_t *scene,
-            nux_id_t     dst_root,
-            nux_id_t     dst_nid,
-            nux_id_t     src_nid,
-            nux_id_t     parent)
-{
-    // nux_u32_t index = nux_nid_index(src_nid);
-    //
-    // // Duplicate components
-    // for (nux_u32_t c = 0; c < scene->containers.size; ++c)
-    // {
-    //     nux_component_t *comp = _module.components + c;
-    //     if (scene->containers.data[c].component_size
-    //         && bitset_isset(&scene->containers.data[c].bitset, index))
-    //     {
-    //         void *src = component_get(scene, src_nid, c);
-    //         nux_assert(src);
-    //         void *dst = component_add(nux_scene_active(), dst_nid, c);
-    //         nux_check(dst, return NUX_FAILURE);
-    //         nux_memcpy(dst, src, comp->info.size);
-    //
-    //         // TODO: remap entity references
-    //     }
-    // }
-    //
-    // // Duplicate children
-    // nux_id_t child = scene->nodes.data[index].child;
-    // while (child)
-    // {
-    //     if (child != dst_root)
-    //     {
-    //         nux_id_t child_nid = nux_node_create(dst_nid);
-    //         nux_check(child_nid, return NUX_FAILURE);
-    //         nux_check(node_clone(scene, dst_root, child_nid, child, dst_nid),
-    //                   return NUX_FAILURE);
-    //     }
-    //     child = scene->nodes.data[nux_nid_index(child)].next;
-    // }
-
-    return NUX_SUCCESS;
-}
-nux_node_t *
-nux_node_instantiate (nux_scene_t *scene, nux_node_t *parent)
-{
-    nux_node_t *node = nux_node_new(NUX_NODE_EMPTY, parent);
-    return node;
 }

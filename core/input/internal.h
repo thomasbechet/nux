@@ -24,11 +24,11 @@ typedef struct
     nux_f32_t sensivity;
 } nux_inputmap_entry_t;
 
-struct nux_inputmap_t
+typedef struct nux_inputmap_t
 {
     nux_vec(nux_inputmap_entry_t) entries;
     nux_u32_t cursor_motions[4];
-};
+} nux_inputmap_t;
 
 typedef struct
 {

@@ -85,20 +85,32 @@ typedef enum
     NUX_EVENT_LUA = 0,
 } nux_event_type_t;
 
+typedef enum
+{
+    NUX_SYSTEM_PRE_UPDATE  = 0,
+    NUX_SYSTEM_UPDATE      = 1,
+    NUX_SYSTEM_POST_UPDATE = 2
+} nux_system_phase_t;
+
+typedef enum
+{
+    NUX_IO_READ       = 0,
+    NUX_IO_READ_WRITE = 1,
+} nux_io_mode_t;
+
+typedef struct nux_event_t         nux_event_t;
+typedef struct nux_file_t          nux_file_t;
+typedef struct nux_event_handler_t nux_event_handler_t;
+
 typedef void (*nux_event_callback_t)(void       *userdata,
                                      nux_id_t    event,
                                      const void *data);
 typedef void (*nux_event_cleanup_t)(void *data);
 
-typedef struct nux_event_t         nux_event_t;
-typedef struct nux_file_t          nux_file_t;
-typedef struct nux_event_handler_t nux_event_handler_t;
-typedef struct nux_scene_t         nux_scene_t;
-typedef struct nux_node_t          nux_node_t;
-typedef struct nux_transform_t     nux_transform_t;
-
 typedef void (*nux_object_cleanup_t)(void *data);
 typedef nux_status_t (*nux_object_reload_t)(void *data, const nux_c8_t *path);
+
+typedef void (*nux_system_callback_t)(void);
 
 typedef nux_status_t (*nux_module_init_callback_t)(void);
 typedef void (*nux_module_free_callback_t)(void);
@@ -109,7 +121,6 @@ typedef struct
     nux_u32_t            size;
     nux_object_cleanup_t cleanup;
     nux_object_reload_t  reload;
-    nux_b32_t            is_component;
 } nux_object_info_t;
 
 typedef struct
@@ -162,24 +173,6 @@ typedef struct
 
 } nux_config_t;
 
-typedef enum
-{
-    NUX_SYSTEM_PRE_UPDATE  = 0,
-    NUX_SYSTEM_UPDATE      = 1,
-    NUX_SYSTEM_POST_UPDATE = 2
-} nux_system_phase_t;
-
-typedef void (*nux_system_callback_t)(void);
-
-typedef enum
-{
-    NUX_IO_READ       = 0,
-    NUX_IO_READ_WRITE = 1,
-} nux_io_mode_t;
-
-typedef void (*nux_node_add_callback_t)(nux_node_t *node);
-typedef void (*nux_node_remove_callback_t)(nux_node_t *node);
-
 typedef struct
 {
     const nux_c8_t      *name;
@@ -188,8 +181,6 @@ typedef struct
     nux_object_reload_t  reload;
     nux_u32_t            first_entry_index;
     nux_u32_t            last_entry_index;
-    nux_u32_t            component_index;
-    nux_b32_t            is_component;
 } nux_object_type_t;
 
 ////////////////////////////
@@ -222,15 +213,15 @@ void              *nux_object_new(nux_arena_t *a, nux_u32_t type);
 void              *nux_object_get(nux_u32_t type, nux_id_t id);
 void              *nux_object_check(nux_u32_t type, nux_id_t id);
 nux_status_t       nux_object_reload(nux_id_t id);
-
-void            nux_object_set_path(void *data, const nux_c8_t *path);
-const nux_c8_t *nux_object_path(void *data);
-void            nux_object_set_name(void *data, const nux_c8_t *name);
-const nux_c8_t *nux_object_name(void *data);
-void           *nux_object_next(nux_u32_t type, void *p);
-nux_id_t        nux_object_id(const void *data);
-nux_arena_t    *nux_object_arena(void *data);
-void           *nux_object_find(const nux_c8_t *name);
+void               nux_object_invalidate(void *data);
+void               nux_object_set_path(void *data, const nux_c8_t *path);
+const nux_c8_t    *nux_object_path(void *data);
+void               nux_object_set_name(void *data, const nux_c8_t *name);
+const nux_c8_t    *nux_object_name(void *data);
+void              *nux_object_next(nux_u32_t type, void *p);
+nux_id_t           nux_object_id(const void *data);
+nux_arena_t       *nux_object_arena(void *data);
+void              *nux_object_find(const nux_c8_t *name);
 
 void nux_logger_vlog(nux_log_level_t level, const nux_c8_t *fmt, va_list args);
 void nux_logger_log(nux_log_level_t level, const nux_c8_t *fmt, ...);
@@ -280,59 +271,5 @@ nux_u32_t    nux_file_write(nux_file_t *file, const void *data, nux_u32_t n);
 nux_status_t nux_file_seek(nux_file_t *file, nux_u32_t cursor);
 nux_u32_t    nux_file_size(nux_file_t *file);
 void *nux_file_load(nux_arena_t *a, const nux_c8_t *path, nux_u32_t *size);
-
-nux_node_t *nux_node_new(nux_node_t *parent);
-void       *nux_node_get(nux_node_t *node, nux_u32_t type);
-nux_node_t *nux_node_next(nux_u32_t type, nux_node_t *it);
-nux_node_t *nux_node_next_all(nux_node_t *it);
-void       *nux_node_add(nux_node_t *node, nux_u32_t type);
-void        nux_node_remove(nux_node_t *node, nux_u32_t type);
-void       *nux_node_get(nux_node_t *node, nux_u32_t type);
-
-nux_m4_t nux_transform_matrix(nux_transform_t *transform);
-nux_v3_t nux_transform_local_translation(nux_transform_t *transform);
-nux_q4_t nux_transform_local_rotation(nux_transform_t *transform);
-nux_v3_t nux_transform_local_scale(nux_transform_t *transform);
-nux_v3_t nux_transform_translation(nux_transform_t *transform);
-nux_q4_t nux_transform_rotation(nux_transform_t *transform);
-nux_v3_t nux_transform_scale(nux_transform_t *transform);
-void     nux_transform_set_translation(nux_transform_t *transform,
-                                       nux_v3_t         position);
-void nux_transform_set_rotation(nux_transform_t *transform, nux_q4_t rotation);
-void nux_transform_set_rotation_euler(nux_transform_t *transform,
-                                      nux_v3_t         euler);
-void nux_transform_set_scale(nux_transform_t *transform, nux_v3_t scale);
-void nux_transform_set_ortho(nux_transform_t *transform,
-                             nux_v3_t         a,
-                             nux_v3_t         b,
-                             nux_v3_t         c);
-nux_v3_t nux_transform_forward(nux_transform_t *transform);
-nux_v3_t nux_transform_backward(nux_transform_t *transform);
-nux_v3_t nux_transform_left(nux_transform_t *transform);
-nux_v3_t nux_transform_right(nux_transform_t *transform);
-nux_v3_t nux_transform_up(nux_transform_t *transform);
-nux_v3_t nux_transform_down(nux_transform_t *transform);
-void     nux_transform_rotate(nux_transform_t *transform,
-                              nux_v3_t         axis,
-                              nux_f32_t        angle);
-void     nux_transform_rotate_x(nux_transform_t *transform, nux_f32_t angle);
-void     nux_transform_rotate_y(nux_transform_t *transform, nux_f32_t angle);
-void     nux_transform_rotate_z(nux_transform_t *transform, nux_f32_t angle);
-void     nux_transform_look_at(nux_transform_t *transform, nux_v3_t center);
-
-nux_scene_t *nux_scene_new(nux_arena_t *arena);
-nux_status_t nux_scene_set_active(nux_scene_t *scene);
-nux_scene_t *nux_scene_active(void);
-nux_u32_t    nux_scene_count(void);
-void         nux_scene_clear(void);
-
-nux_node_t *nux_node_root(void);
-nux_node_t *nux_node_parent(nux_node_t *node);
-void        nux_node_set_parent(nux_node_t *node, nux_node_t *parent);
-nux_node_t *nux_node_sibling(nux_node_t *node);
-nux_node_t *nux_node_child(nux_node_t *node);
-nux_node_t *nux_node_instantiate(nux_scene_t *scene, nux_node_t *parent);
-
-nux_scene_t *nux_scene_load_gltf(nux_arena_t *arena, const nux_c8_t *path);
 
 #endif

@@ -69,66 +69,8 @@ object_set_path (nux_object_entry_t *entry, const nux_c8_t *path)
         nux_os_hotreload_add(entry->path, entry->id);
     }
 }
-void
-object_set_name (nux_object_entry_t *entry, const nux_c8_t *name)
-{
-    nux_ensure(
-        !nux_object_find(name), return, "duplicated object name '%s'", name);
-    nux_check(entry, return);
-    entry->name = nux_strdup(entry->arena, name);
-    nux_assert(entry->name);
-}
-nux_object_entry_t *
-object_find (const nux_c8_t *name)
-{
-    nux_object_pool_t *objects = &nux_core()->objects;
-    for (nux_u32_t i = 0; i < objects->size; ++i)
-    {
-        nux_object_entry_t *entry = objects->data + i;
-        if (entry->type && entry->name)
-        {
-            if (nux_strncmp(entry->name, name, NUX_PATH_MAX) == 0)
-            {
-                return entry;
-            }
-        }
-    }
-    return nullptr;
-}
-
-void
-nux_object_register (nux_u32_t index, nux_object_info_t info)
-{
-    nux_object_type_t *types = nux_core()->object_types;
-    nux_assert(index < NUX_OBJECT_MAX);
-    nux_assert(types[index].name == nullptr);
-    nux_object_type_t *type = types + index;
-    nux_memset(type, 0, sizeof(*type));
-    type->name              = info.name;
-    type->size              = info.size;
-    type->cleanup           = info.cleanup;
-    type->reload            = info.reload;
-    type->first_entry_index = 0;
-    type->last_entry_index  = 0;
-    type->is_component      = info.is_component;
-    if (type->is_component)
-    {
-        type->component_index = nux_core()->component_count;
-        ++nux_core()->component_count;
-    }
-}
-nux_object_type_t *
-nux_object_type (nux_u32_t type)
-{
-    nux_object_type_t *types = nux_core()->object_types;
-    nux_check(type < NUX_OBJECT_MAX, return nullptr);
-    nux_object_type_t *t = types + type;
-    nux_check(t->name, return nullptr);
-    return t;
-}
-
-nux_object_entry_t *
-nux_object_add (nux_object_pool_t *objects, nux_u32_t type)
+static nux_object_entry_t *
+object_add (nux_object_pool_t *objects, nux_u32_t type)
 {
     nux_u32_t           index;
     nux_object_entry_t *entry = nux_pool_add(objects, &index);
@@ -210,6 +152,31 @@ object_finalizer (void *p)
     nux_pool_remove(objects, index);
 }
 
+void
+nux_object_register (nux_u32_t index, nux_object_info_t info)
+{
+    nux_object_type_t *types = nux_core()->object_types;
+    nux_assert(index < NUX_OBJECT_MAX);
+    nux_assert(types[index].name == nullptr);
+    nux_object_type_t *type = types + index;
+    nux_memset(type, 0, sizeof(*type));
+    type->name              = info.name;
+    type->size              = info.size;
+    type->cleanup           = info.cleanup;
+    type->reload            = info.reload;
+    type->first_entry_index = 0;
+    type->last_entry_index  = 0;
+}
+nux_object_type_t *
+nux_object_type (nux_u32_t type)
+{
+    nux_object_type_t *types = nux_core()->object_types;
+    nux_check(type < NUX_OBJECT_MAX, return nullptr);
+    nux_object_type_t *t = types + type;
+    nux_check(t->name, return nullptr);
+    return t;
+}
+
 nux_u32_t
 nux_object_header_size (nux_u32_t size)
 {
@@ -244,7 +211,7 @@ nux_object_new (nux_arena_t *a, nux_u32_t type)
     nux_object_type_t *t       = nux_object_type(type);
 
     // Add entry
-    nux_object_entry_t *entry = nux_object_add(objects, type);
+    nux_object_entry_t *entry = object_add(objects, type);
     nux_check(entry, return nullptr);
     entry->arena = a;
 
@@ -288,6 +255,10 @@ nux_object_reload (nux_id_t id)
     return NUX_SUCCESS;
 }
 void
+nux_object_invalidate (void *data)
+{
+}
+void
 nux_object_set_path (void *data, const nux_c8_t *path)
 {
     nux_object_entry_t *entry = get_entry_from_data(data);
@@ -303,7 +274,11 @@ void
 nux_object_set_name (void *data, const nux_c8_t *name)
 {
     nux_object_entry_t *entry = get_entry_from_data(data);
-    object_set_name(entry, name);
+    nux_ensure(
+        !nux_object_find(name), return, "duplicated object name '%s'", name);
+    nux_check(entry, return);
+    entry->name = nux_strdup(entry->arena, name);
+    nux_assert(entry->name);
 }
 const nux_c8_t *
 nux_object_name (void *data)
@@ -335,7 +310,17 @@ nux_object_arena (void *data)
 void *
 nux_object_find (const nux_c8_t *name)
 {
-    nux_object_entry_t *entry = object_find(name);
-    nux_check(entry, return nullptr);
-    return entry->data;
+    nux_object_pool_t *objects = &nux_core()->objects;
+    for (nux_u32_t i = 0; i < objects->size; ++i)
+    {
+        nux_object_entry_t *entry = objects->data + i;
+        if (entry->type && entry->name)
+        {
+            if (nux_strncmp(entry->name, name, NUX_PATH_MAX) == 0)
+            {
+                return entry->data;
+            }
+        }
+    }
+    return nullptr;
 }

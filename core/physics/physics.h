@@ -1,7 +1,7 @@
 #ifndef NUX_PHYSICS_H
 #define NUX_PHYSICS_H
 
-#include <scene/scene.h>
+#include <core/core.h>
 
 typedef enum
 {
